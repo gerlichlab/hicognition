@@ -7,3 +7,9 @@ COPY . /temp/install/
 
 RUN cd /temp/install &&\
     pip install -r requirements.txt
+
+# install bach
+
+RUN apk update && apk add bash
+
+CMD ["/bin/bash"]
