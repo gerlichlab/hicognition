@@ -21,8 +21,20 @@
         </head>
     </head>
     <body>
-        <div>HiCognition: <a href="/index">Home</a> <a href="/login">Login</a></div></div>
+        <div>
+            HiCognition:
+                <a href="{{ url_for('higlass') }}">Home</a>
+                <a href="{{ url_for('login') }}">Login</a></div>
         <hr>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </body>
     <script>
