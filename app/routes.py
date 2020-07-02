@@ -11,8 +11,7 @@ from werkzeug.urls import url_parse
 @login_required
 def higlass():
     return render_template("higlass.html",
-                           config=render_template("config.json",
-                                                  server=app.config["HIGLASS_URL"]))
+                           config=render_template("config.json", server=app.config["HIGLASS_URL"]))
 
 
 @app.route('/login', methods=['GET', 'POST'])

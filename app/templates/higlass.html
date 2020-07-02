@@ -4,8 +4,7 @@
 <table class="center" >
   <tr>
     <td id="higlass" style="width:40%"></td>
-    <td>asdf</td>
-    <td>asdf</td>
+    <td></td>
   </tr>
 </table>
 {% endblock %}
@@ -13,7 +12,7 @@
 {% block script %}
   const hgApi = window.hglib.viewer(
       document.getElementById("higlass"),
-      {% config %},
+      {{ config | safe }},
     { bounded: true}
   );
 {% endblock %}

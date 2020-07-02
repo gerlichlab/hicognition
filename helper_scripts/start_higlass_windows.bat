@@ -1,0 +1,1 @@
+docker run --detach --publish 8888:80 --volume C:\\temp\\Higlass_data:/data --volume C:\\temp\\Higlass_temp:/tmp --name higlass-container higlass/higlass-docker

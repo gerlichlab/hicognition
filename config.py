@@ -9,3 +9,4 @@ class Config(object):
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     HIGLASS_URL = "localhost:8888"
+    DEFAULT_CONFIG = "default_config.json"
