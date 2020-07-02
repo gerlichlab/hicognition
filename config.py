@@ -8,5 +8,5 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    HIGLASS_URL = "localhost:8888"
+    HIGLASS_URL = "http://localhost:8888"
     DEFAULT_CONFIG = "default_config.json"
