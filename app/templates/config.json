@@ -2,8 +2,7 @@
     "editable": true,
     "zoomFixed": false,
     "trackSourceServers": [
-        "{{ server }}/api/v1",
-        "//higlass.io/api/v1"
+        "{{ server }}/api/v1"
     ],
     "exportViewUrl": "/api/v1/viewconfs",
     "views": [
