@@ -97,3 +97,6 @@ d3.csv("http://localhost:5000/static/pileup_test.csv", function(data){
                   .on("mousemove", mousemove)
                   .on("mouseleave", mouseleave)
     });
+// update slider text
+
+document.getElementById("sliderText").innerHTML = `Values: 0-20`;

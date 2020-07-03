@@ -3,6 +3,8 @@ function draw(minval, pivot1, pivot2 , maxval){
         .range(["white", "orange", "red" ,"black"])
         .domain([minval, pivot1, pivot2 ,maxval])
     picture.style("fill", function(d) { return colorScale(d.value); });
+    // update slider text
+    document.getElementById("sliderText").innerHTML = `Values: ${minval}-${maxval}`;
 }
 
 $( "#slider" ).slider({
