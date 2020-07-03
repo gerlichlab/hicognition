@@ -4,15 +4,22 @@
 <table class="center" >
   <tr>
     <td id="higlass" style="width:40%"></td>
-    <td></td>
+    <td>
+      <div id="heatmap", style="margin: 0 auto; height: 50%; width: 40%;"></div>
+      <div id="slider" style="width: 50%; margin: 0 auto;"></div>
+    </td>
   </tr>
 </table>
 {% endblock %}
 
 {% block script %}
-  const hgApi = window.hglib.viewer(
+    <script>
+    const hgApi = window.hglib.viewer(
       document.getElementById("higlass"),
       {{ config | safe }},
     { bounded: true}
   );
+  </script>
+  <script src="{{ url_for('static', filename='drawHeatmap.js') }}" charset="utf-8"></script>
+  <script src="{{ url_for('static', filename='slider.js') }}" charset="utf-8"></script>
 {% endblock %}

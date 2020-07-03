@@ -14,14 +14,17 @@
           table {
             font-family: arial, sans-serif;
             width: 95%;
-            height: 90%;
+            height: 80%;
           }
           table.center {
             margin-left:auto;
             margin-right:auto;
           }
           </style>
-        
+          <script src="https://d3js.org/d3.v4.js"></script>
+          <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+          <script src="http://code.jquery.com/jquery-1.8.3.js"></script>
+          <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
           <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
           <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
           <script crossorigin src="https://unpkg.com/pixi.js@5/dist/pixi.min.js"></script>
@@ -52,7 +55,5 @@
         {% endwith %}
         {% block content %}{% endblock %}
     </body>
-    <script>
     {% block script %}{% endblock %}
-    </script>
 </html>
