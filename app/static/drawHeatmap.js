@@ -24,14 +24,8 @@ var myVars = new Array(90);
 
 for (let dummy = 0; dummy < 90; dummy++){
   myGroups[dummy] = String(dummy);
-  myVars[dummy] = String(dummy);
+  myVars[dummy] = String(90 - dummy);
 }
-
-console.log(myGroups)
-console.log(myVars)
-
-//var myGroups = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
-//var myVars = ["v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "v10"]
 
 // Build X scales and axis:
 var x = d3.scaleBand()
@@ -53,7 +47,7 @@ svg.append("g")
 // Build color scale
 var myColor = d3.scaleLinear()
   .range(["white", "orange", "red" ,"black"])
-  .domain([1, 66, 132 , 200])
+  .domain([0, 6.6, 13.2 , 20])
 
 
 // declare variable so that it is available to the slider adjustment logic
@@ -84,8 +78,6 @@ d3.csv("http://localhost:5000/static/pileup_test.csv", function(data){
           .html("The exact value of<br>this cell is: " + d.value)
           .style("left", (d3.mouse(document.body)[0]) + "px")
           .style("top", (d3.mouse(document.body)[1]) + "px");
-          console.log(d3.mouse(this)[0] + $('#heatmap').offset().left)
-          console.log(d3.mouse(this)[1] + $('#heatmap').offset().top)
       }
       var mouseleave = function(d) {
       tooltip.style("opacity", 0)
@@ -93,7 +85,7 @@ d3.csv("http://localhost:5000/static/pileup_test.csv", function(data){
 
       // add the squares
       picture = svg.selectAll()
-                  .data(data, function(d) {return d.group+':'+d.variable;})
+                  .data(data, function(d) {return d.variable+':'+d.group;})
                   .enter()
                   .append("rect")
                       .attr("x", function(d) { return x(d.group) })

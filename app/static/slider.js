@@ -8,12 +8,12 @@ function draw(minval, pivot1, pivot2 , maxval){
 $( "#slider" ).slider({
     range: true,
     min: 0,
-    max: 200,
-    values: [0, 200],
+    max: 20,
+    values: [0, 20],
     slide: function( event, ui ) {
       var minval = ui.values[0];
       var maxval = ui.values[1];
-      draw(minval, (minval + maxval) / 3, 2 * (minval + maxval) / 3 ,maxval);
+      draw(minval, minval + (maxval - minval)/3, minval + 2 * (maxval - minval) / 3 ,maxval);
     }
 });
 
