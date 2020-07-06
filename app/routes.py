@@ -1,21 +1,24 @@
-from app import app, db
+"""Routes for HiCognition"""
 from flask import render_template, flash, redirect, url_for, request
-from app.forms import LoginForm, RegistrationForm
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User
 from werkzeug.urls import url_parse
+from app import app, db
+from app.models import User
+from app.forms import LoginForm, RegistrationForm
 
 @app.route('/')
 @app.route('/index')
 @app.route('/higlass')
 @login_required
 def higlass():
+    """Main app."""
     return render_template("higlass.html",
                            config=render_template("config.json", server=app.config["HIGLASS_URL"]))
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """Login page."""
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     form = LoginForm()
@@ -34,12 +37,14 @@ def login():
 
 @app.route('/logout')
 def logout():
+    """Logout route."""
     logout_user()
     return redirect(url_for('higlass'))
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """Register route."""
     if current_user.is_authenticated:
         return redirect(url_for('higlass'))
     form = RegistrationForm()
