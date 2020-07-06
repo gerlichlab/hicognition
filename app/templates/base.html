@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+        <head>
+          <meta charset="utf-8">
+          <title>HiCognition</title>
+          <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+          <link rel="stylesheet" href="https://unpkg.com/higlass@1.6.6/dist/hglib.css">
+        
+          <style type="text/css">
+            html, body {
+              width: 100%;
+              height: 100%;
+            }
+            
+          table {
+            font-family: arial, sans-serif;
+            width: 95%;
+            height: 80%;
+          }
+          table.center {
+            margin-left:auto;
+            margin-right:auto;
+          }
+          </style>
+          <script src="https://d3js.org/d3.v4.js"></script>
+          <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+          <script src="http://code.jquery.com/jquery-1.8.3.js"></script>
+          <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+          <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+          <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+          <script crossorigin src="https://unpkg.com/pixi.js@5/dist/pixi.min.js"></script>
+          <script crossorigin src="https://unpkg.com/react-bootstrap@0.32.1/dist/react-bootstrap.min.js"></script>
+          <script crossorigin src="https://unpkg.com/higlass@1.6.6/dist/hglib.min.js"></script>
+        </head>
+    </head>
+    <body>
+        <div style="height: 5px;">
+            HiCognition:
+                <a href="{{ url_for('higlass') }}">Home</a>
+                {% if current_user.is_anonymous %}
+                <a href="{{ url_for('login') }}">Login</a>
+                {% else %}
+                <a href="{{ url_for('logout') }}">Logout</a>
+                Hi, {{ current_user.username }}!
+                {% endif %}
+          </div>
+        <hr>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </body>
+    {% block script %}{% endblock %}
+</html>
