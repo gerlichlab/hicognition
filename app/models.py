@@ -29,6 +29,7 @@ class Dataset(db.Model):
     dataset_name = db.Column(db.String(64), index=True, unique=True)
     file_path = db.Column(db.String(128), index=True, unique=True)
     higlass_uuid = db.Column(db.String(64), index=True, unique=True)
+    filetype = db.Column(db.String(64), index=True)
 
     def __repr__(self):
         """Format print output."""
