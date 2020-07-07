@@ -24,6 +24,17 @@ class User(db.Model, UserMixin):
         return '<User {}>'.format(self.username)
 
 
+class Dataset(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    dataset_name = db.Column(db.String(64), index=True, unique=True)
+    file_path = db.Column(db.String(128), index=True, unique=True)
+    higlass_uuid = db.Column(db.String(64), index=True, unique=True)
+
+    def __repr__(self):
+        """Format print output."""
+        return f'<Dataset {self.dataset_name}>'
+
+
 @login.user_loader
 def load_user(id):
     """Helper function to load user."""
