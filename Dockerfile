@@ -27,8 +27,10 @@ RUN cd /temp/install &&\
 
 # install things from github
 
-RUN pip install git+git://github.com/mirnylab/bioframe &&\
+RUN source activate flask &&\
+    pip install git+git://github.com/mirnylab/bioframe &&\
     pip install git+git://github.com/mirnylab/cooltools@26b885356e5fd81dd6f34ef688edc45a020ca9d0 &&\
-    pip install git+git://github.com/gerlichlab/ngs
+    pip install git+git://github.com/gerlichlab/ngs &&\
+    pip install git+git://github.com/Mittmich/higlassupload
 
 CMD ["/bin/bash"]
