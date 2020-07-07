@@ -12,3 +12,4 @@ class Config():
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     HIGLASS_URL = "http://localhost:8888"
     DEFAULT_CONFIG = "default_config.json"
+    UPLOAD_DIR = os.environ.get('UPLOAD_DIR') or os.path.join(basedir, "temp")

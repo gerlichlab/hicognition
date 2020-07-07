@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 style="text-align: center"> Select a dataset to upload </h1>
+<form action="" method="post" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <p style="text-align: center;">
+        {{ form.name.label }}<br>
+        {{ form.name(size=32) }}<br>
+        {% for error in form.name.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p style="text-align: center; margin: 0 auto;">
+        {{ form.filePath.label }}<br>
+        {{ form.filePath(size=64) }}<br>
+        {% for error in form.filePath.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p style="text-align: center;">{{ form.submit() }}</p>
+
+</form>
+{% endblock %}

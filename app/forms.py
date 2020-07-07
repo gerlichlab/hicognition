@@ -1,5 +1,6 @@
 """Collestion of forms for HiCognition"""
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from app.models import User
@@ -33,3 +34,10 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError('Please use a different email address.')
+
+
+class AddDatasetForm(FlaskForm):
+    """Form to add a new dataset"""
+    name = StringField('Dataset name', validators=[DataRequired()])
+    filePath = FileField("Data file", validators=[FileRequired()])
+    submit = SubmitField('Add dataset')

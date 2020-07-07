@@ -2,3 +2,5 @@ __pycache__/*
 app.db
 *.pyc
 helper_scripts/*
+temp/*
+.vscode/*
