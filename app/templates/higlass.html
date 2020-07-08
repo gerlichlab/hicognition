@@ -36,7 +36,7 @@
     const hgApi = window.hglib.viewer(
       document.getElementById("higlass"),
       {{ config | safe }},
-    { bounded: true}
+    { bounded: true, editable: false}
   );
   </script>
   <script src="{{ url_for('static', filename='drawHeatmap.js') }}" charset="utf-8"></script>

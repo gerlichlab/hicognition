@@ -11,6 +11,12 @@ from app.models import User, Dataset
 from app.forms import LoginForm, RegistrationForm, AddDatasetForm, SelectDatasetForm
 
 
+# map for view update
+
+DATATYPES = {"bedfile": "bedlike",
+             "cooler": "heatmap"}
+
+
 @app.route("/", methods=["GET", "POST"])
 @app.route("/index", methods=["GET", "POST"])
 @app.route("/higlass", methods=["GET", "POST"])
@@ -30,6 +36,22 @@ def higlass():
         # construct new view
         print(form.region.data)
         print(form.cooler.data)
+        region_dataset = Dataset.query.get(form.region.data)
+        cooler_dataset = Dataset.query.get(form.cooler.data)
+        # construct top view
+        top_view = render_template("_topview.json", server=app.config["HIGLASS_URL"] + "/api/v1", 
+                            uuid=region_dataset.higlass_uuid,
+                            filetype=DATATYPES[region_dataset.filetype],
+                            name=region_dataset.dataset_name)
+        # construct center view
+        center_view = render_template("_centerview.json", server=app.config["HIGLASS_URL"] + "/api/v1", 
+                    uuid=cooler_dataset.higlass_uuid,
+                    filetype=DATATYPES[cooler_dataset.filetype],
+                    name=cooler_dataset.dataset_name)
+        return render_template("higlass.html",
+                                config=render_template("config.json",
+                                server=app.config["HIGLASS_URL"], top=top_view, center=center_view),
+                                form=form)
     # construct default topview
     top_view = render_template("_topview.json", server=app.config["HIGLASS_URL"] + "/api/v1", 
                                uuid="Txg3Ri04TLeyWKeZT_lQ4Q",
@@ -37,7 +59,7 @@ def higlass():
                                name="test")
     return render_template(
         "higlass.html",
-        config=render_template("config.json", server=app.config["HIGLASS_URL"], top=top_view, center=[]),
+        config=render_template("config.json", server=app.config["HIGLASS_URL"], top=[], center=[]),
         form=form)
 
 
@@ -123,11 +145,11 @@ def add_dataset():
             return redirect(url_for("higlass"))
         # upload succeeded, add things to database
         uuid = result['uuid']
-        import pdb; pdb.set_trace()
         new_entry = Dataset(dataset_name=form.name.data,
                             file_path=file_path,
                             higlass_uuid=uuid,
                             filetype=form.file_type.data)
+        # TODO: nice error handling for failed unique constraints
         db.session.add(new_entry)
         db.session.commit()
         return redirect(url_for("higlass"))
