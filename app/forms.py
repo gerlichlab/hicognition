@@ -40,11 +40,14 @@ class AddDatasetForm(FlaskForm):
     """Form to add a new dataset"""
     name = StringField('Dataset name', validators=[DataRequired()])
     filePath = FileField("Data file", validators=[FileRequired()])
+    file_type = SelectField("Data type", validators=[Required()],
+                            choices=[("bedfile", "bedfile"),
+                                     ("cooler", "cooler")])
     submit = SubmitField('Add dataset')
 
 
 class SelectDatasetForm(FlaskForm):
     """Form to select a dataset."""
-    region = SelectField("Region", validators=[Required()])
-    cooler = SelectField("Cooler file", validators=[Required()])
+    region = SelectField("Region", validators=[Required()], coerce=int)
+    cooler = SelectField("Cooler file", validators=[Required()], coerce=int)
     submit = SubmitField("Submit")

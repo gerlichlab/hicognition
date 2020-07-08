@@ -13,3 +13,6 @@ class Config():
     HIGLASS_URL = "http://localhost:8888"
     DEFAULT_CONFIG = "default_config.json"
     UPLOAD_DIR = os.environ.get('UPLOAD_DIR') or os.path.join(basedir, "temp")
+    CHROM_SIZES = os.environ.get("CHROM_SIZES") or os.path.join(basedir, "data/hg19.chrom.sizes")
+    HIGLASS_USER = os.environ.get("HIGLASS_USER") or "dummy"
+    HIGLASS_PWD = os.environ.get("HIGLASS_PWD") or 'xnVMhmKF7d^7'

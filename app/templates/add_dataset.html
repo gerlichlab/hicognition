@@ -11,6 +11,13 @@
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
     </p>
+    <p style="text-align: center;">
+        {{ form.file_type.label }}<br>
+        {{ form.file_type(size=32) }}<br>
+        {% for error in form.file_type.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
     <p style="text-align:center; margin: auto; width: 100vw;">
         {{ form.filePath.label }}<br>
         {{ form.filePath(size=64) }}<br>

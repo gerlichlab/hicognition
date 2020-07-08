@@ -4,8 +4,10 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
+from hicognition import higlass_interface
+from requests.errors import HTTPError
 from app import app, db
-from app.models import User
+from app.models import User, Dataset
 from app.forms import LoginForm, RegistrationForm, AddDatasetForm, SelectDatasetForm
 
 
@@ -16,9 +18,16 @@ from app.forms import LoginForm, RegistrationForm, AddDatasetForm, SelectDataset
 def higlass():
     """Main app."""
     form = SelectDatasetForm()
-    form.region.choices = [("asdf", "asdf"), ("fdsa", "fdsa")]
-    form.cooler.choices = [("cooler1", "cooler1"), ("cooler2", "cooler2")]
+    # select region files for region choices
+    bed_files = Dataset.query.filter(Dataset.filetype == "bedfile").all()
+    bed_display = [(i.id, i.dataset_name) for i in bed_files]
+    form.region.choices = bed_display
+    # select cooler files for cooler choices
+    cooler_files = Dataset.query.filter(Dataset.filetype == "cooler").all()
+    cooler_display = [(i.id, i.dataset_name) for i in cooler_files]
+    form.cooler.choices = cooler_display
     if form.validate_on_submit():
+        # construct new view
         print(form.region.data)
         print(form.cooler.data)
     return render_template(
@@ -75,11 +84,45 @@ def add_dataset():
     """Add dataset"""
     form = AddDatasetForm()
     if form.validate_on_submit():
-        print(form.name)
-        print(form.filePath)
+        print(form.name.data)
+        print(form.filePath.data)
+        # save locally
         f = form.filePath.data
         filename = secure_filename(f.filename)
-        f.save(os.path.join(app.config["UPLOAD_DIR"], filename))
-        flash("Added dataset successfully!")
+        file_path = os.path.join(app.config["UPLOAD_DIR"], filename)
+        f.save(file_path)
+        # preprocess with clodius if file is bedfile
+        if form.file_type.data == "bedfile":
+            output_path = os.path.join(app.config["UPLOAD_DIR"], filename + ".beddb")
+            exit_code = higlass_interface.preprocess_dataset("bedfile",
+                                                 app.config["CHROM_SIZES"],
+                                                 file_path,
+                                                 output_path)
+            if exit_code != 0:
+                print(f"Clodius failed")
+                return redirect(url_for("higlass"))
+            upload_file = output_path
+        else:
+            upload_file = file_path
+        # add to higlass
+        credentials = {"name": app.config["HIGLASS_USER"],
+                       "password": app.config["HIGLASS_PWD"]}
+        try:
+            result = higlass_interface.add_tileset(form.file_type.data,
+                                                upload_file,
+                                                app.config["HIGLASS_URL"] + "/api/v1/tilesets/",
+                                                credentials,
+                                                form.name.data)
+        except HTTPError:
+            print("Higlass upload failed!")
+            return redirect(url_for("higlass"))
+        # upload succeeded, add things to database
+        uuid = result['uuid']
+        new_entry = Dataset(dataset_name=form.name.data,
+                            file_path=form.filePath.data,
+                            higlass_uuid=uuid,
+                            filetype=form.file_type.data)
+        db.session.add(new_entry)
+        db.session.commit()
         return redirect(url_for("higlass"))
     return render_template("add_dataset.html", form=form)
