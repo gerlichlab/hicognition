@@ -31,6 +31,7 @@ RUN source activate flask &&\
     pip install git+git://github.com/mirnylab/bioframe &&\
     pip install git+git://github.com/mirnylab/cooltools@26b885356e5fd81dd6f34ef688edc45a020ca9d0 &&\
     pip install git+git://github.com/gerlichlab/ngs &&\
-    pip install git+git://github.com/Mittmich/higlassupload
+    pip install git+git://github.com/Mittmich/higlassupload &&\
+    pip install git+git://github.com/gerlichlab/HiCognition_queue@higlass_request_interface
 
 CMD ["/bin/bash"]
