@@ -6,19 +6,25 @@ from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from app import app, db
 from app.models import User
-from app.forms import LoginForm, RegistrationForm, AddDatasetForm
+from app.forms import LoginForm, RegistrationForm, AddDatasetForm, SelectDatasetForm
 
 
-@app.route("/")
-@app.route("/index")
-@app.route("/higlass")
+@app.route("/", methods=["GET", "POST"])
+@app.route("/index", methods=["GET", "POST"])
+@app.route("/higlass", methods=["GET", "POST"])
 @login_required
 def higlass():
     """Main app."""
+    form = SelectDatasetForm()
+    form.region.choices = [("asdf", "asdf"), ("fdsa", "fdsa")]
+    form.cooler.choices = [("cooler1", "cooler1"), ("cooler2", "cooler2")]
+    if form.validate_on_submit():
+        print(form.region.data)
+        print(form.cooler.data)
     return render_template(
         "higlass.html",
         config=render_template("config.json", server=app.config["HIGLASS_URL"]),
-    )
+        form=form)
 
 
 @app.route("/login", methods=["GET", "POST"])

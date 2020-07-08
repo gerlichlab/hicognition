@@ -1,6 +1,24 @@
 {% extends "base.html" %}
 
 {% block content %}
+<form action="" method="post">
+  {{ form.hidden_tag() }}
+  <div style="display: inline-block; margin-left: 2.2%;">
+      {{ form.region.label }}<br>
+      {{ form.region(size=32) }}<br>
+      {% for error in form.region.errors %}
+      <span style="color: red;">[{{ error }}]</span>
+      {% endfor %}
+  </div>
+  <div style="display: inline-block;">
+      {{ form.cooler.label }}<br>
+      {{ form.cooler(size=64) }}<br>
+      {% for error in form.cooler.errors %}
+      <span style="color: red;">[{{ error }}]</span>
+      {% endfor %}
+  </div>
+  <div style="display: inline-block; margin-bottom: 3%; vertical-align: center;">{{ form.submit() }}</div>
+</form>
 <table class="center" >
   <tr>
     <td id="higlass" style="width:40%"></td>
