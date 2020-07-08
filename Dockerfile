@@ -6,7 +6,7 @@ COPY . /temp/install/
 # Update and create base image (libz-dev is needed by pypairix)
 RUN apt-get update -y &&\
     apt-get install apt-utils -y &&\
-    apt-get install -y file bzip2 default-jre gcc g++ git make ssh unzip wget libz-dev &&\
+    apt-get install -y file bzip2 default-jre gcc g++ git make ssh unzip wget libz-dev iproute2 curl iputils-ping &&\
     apt-get clean
 
 # Install Anaconda
@@ -31,7 +31,6 @@ RUN source activate flask &&\
     pip install git+git://github.com/mirnylab/bioframe &&\
     pip install git+git://github.com/mirnylab/cooltools@26b885356e5fd81dd6f34ef688edc45a020ca9d0 &&\
     pip install git+git://github.com/gerlichlab/ngs &&\
-    pip install git+git://github.com/Mittmich/higlassupload &&\
-    pip install git+git://github.com/gerlichlab/HiCognition_queue@higlass_request_interface
+    pip install git+git://github.com/Mittmich/higlassupload
 
 CMD ["/bin/bash"]

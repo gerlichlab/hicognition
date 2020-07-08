@@ -5,7 +5,7 @@ from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from hicognition import higlass_interface
-from requests.errors import HTTPError
+from requests.exceptions import HTTPError
 from app import app, db
 from app.models import User, Dataset
 from app.forms import LoginForm, RegistrationForm, AddDatasetForm, SelectDatasetForm
@@ -30,9 +30,14 @@ def higlass():
         # construct new view
         print(form.region.data)
         print(form.cooler.data)
+    # construct default topview
+    top_view = render_template("_topview.json", server=app.config["HIGLASS_URL"] + "/api/v1", 
+                               uuid="Txg3Ri04TLeyWKeZT_lQ4Q",
+                               filetype="bedlike",
+                               name="test")
     return render_template(
         "higlass.html",
-        config=render_template("config.json", server=app.config["HIGLASS_URL"]),
+        config=render_template("config.json", server=app.config["HIGLASS_URL"], top=top_view, center=[]),
         form=form)
 
 
@@ -105,12 +110,12 @@ def add_dataset():
         else:
             upload_file = file_path
         # add to higlass
-        credentials = {"name": app.config["HIGLASS_USER"],
+        credentials = {"user": app.config["HIGLASS_USER"],
                        "password": app.config["HIGLASS_PWD"]}
         try:
             result = higlass_interface.add_tileset(form.file_type.data,
                                                 upload_file,
-                                                app.config["HIGLASS_URL"] + "/api/v1/tilesets/",
+                                                app.config["HIGLASS_API"],
                                                 credentials,
                                                 form.name.data)
         except HTTPError:
@@ -118,8 +123,9 @@ def add_dataset():
             return redirect(url_for("higlass"))
         # upload succeeded, add things to database
         uuid = result['uuid']
+        import pdb; pdb.set_trace()
         new_entry = Dataset(dataset_name=form.name.data,
-                            file_path=form.filePath.data,
+                            file_path=file_path,
                             higlass_uuid=uuid,
                             filetype=form.file_type.data)
         db.session.add(new_entry)

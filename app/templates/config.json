@@ -21,7 +21,10 @@
                 "visible": true
             },
             "chromInfoPath": "//s3.amazonaws.com/pkerp/data/hg19/chromSizes.tsv",
-            "tracks": {},
+            "tracks": {
+              "top":  {{ top }},
+              "center": {{ center }}
+            },
             "layout": {
                 "w": 20,
                 "h": 20,

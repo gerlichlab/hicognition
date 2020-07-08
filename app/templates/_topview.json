@@ -1,0 +1,32 @@
+[
+    {
+      "server": "{{ server }}",
+      "tilesetUid": "{{ uuid }}",
+      "type": "{{ filetype }}",
+      "options": {
+        "fillColor": "blue",
+        "axisPositionHorizontal": "right",
+        "labelColor": "black",
+        "labelPosition": "hidden",
+        "labelLeftMargin": 0,
+        "labelRightMargin": 0,
+        "labelTopMargin": 0,
+        "labelBottomMargin": 0,
+        "trackBorderWidth": 0,
+        "trackBorderColor": "black",
+        "valueColumn": null,
+        "colorEncoding": false,
+        "colorRange": [
+          "#000000",
+          "#652537",
+          "#bf5458",
+          "#fba273",
+          "#ffffe0"
+        ],
+        "colorEncodingRange": false,
+        "name": "{{ test }}"
+      },
+      "width": 20,
+      "height": 20
+    }
+  ]
