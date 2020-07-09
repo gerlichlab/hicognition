@@ -30,11 +30,24 @@ class Dataset(db.Model):
     file_path = db.Column(db.String(128), index=True, unique=True)
     higlass_uuid = db.Column(db.String(64), index=True, unique=True)
     filetype = db.Column(db.String(64), index=True)
+    pileup_regions = db.relationship("Pileupregion", backref="source_dataset", lazy="dynamic")
 
     def __repr__(self):
         """Format print output."""
         return f'<Dataset {self.dataset_name}>'
 
+
+class Pileupregion(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
+    name = db.Column(db.String(64), index=True, unique=True)
+    file_path = db.Column(db.String(128), index=True)
+    higlass_uuid = db.Column(db.String(64), index=True)
+    windowsize = db.Column(db.Integer, index=True)
+
+    def __repr__(self):
+        """Format print output."""
+        return f'<Pileupregion {self.name}>'
 
 @login.user_loader
 def load_user(id):

@@ -4,17 +4,27 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
+import cooler
 from hicognition import higlass_interface
 from requests.exceptions import HTTPError
 from app import app, db
 from app.models import User, Dataset
-from app.forms import LoginForm, RegistrationForm, AddDatasetForm, SelectDatasetForm
+from app.forms import (
+    LoginForm,
+    RegistrationForm,
+    AddDatasetForm,
+    SelectDatasetForm,
+    DefinePileupRegionsForm,
+)
 
 
 # map for view update
 
-DATATYPES = {"bedfile": "bedlike",
-             "cooler": "heatmap"}
+DATATYPES = {"bedfile": "bedlike", "cooler": "heatmap"}
+
+# user region mapping
+
+DATASET_MAPPING = {}
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -23,6 +33,7 @@ DATATYPES = {"bedfile": "bedlike",
 @login_required
 def higlass():
     """Main app."""
+    # Construct select dataset form
     form = SelectDatasetForm()
     # select region files for region choices
     bed_files = Dataset.query.filter(Dataset.filetype == "bedfile").all()
@@ -32,35 +43,44 @@ def higlass():
     cooler_files = Dataset.query.filter(Dataset.filetype == "cooler").all()
     cooler_display = [(i.id, i.dataset_name) for i in cooler_files]
     form.cooler.choices = cooler_display
-    if form.validate_on_submit():
-        # construct new view
-        print(form.region.data)
-        print(form.cooler.data)
-        region_dataset = Dataset.query.get(form.region.data)
-        cooler_dataset = Dataset.query.get(form.cooler.data)
-        # construct top view
-        top_view = render_template("_topview.json", server=app.config["HIGLASS_URL"] + "/api/v1", 
-                            uuid=region_dataset.higlass_uuid,
-                            filetype=DATATYPES[region_dataset.filetype],
-                            name=region_dataset.dataset_name)
-        # construct center view
-        center_view = render_template("_centerview.json", server=app.config["HIGLASS_URL"] + "/api/v1", 
-                    uuid=cooler_dataset.higlass_uuid,
-                    filetype=DATATYPES[cooler_dataset.filetype],
-                    name=cooler_dataset.dataset_name)
-        return render_template("higlass.html",
-                                config=render_template("config.json",
-                                server=app.config["HIGLASS_URL"], top=top_view, center=center_view),
-                                form=form)
-    # construct default topview
-    top_view = render_template("_topview.json", server=app.config["HIGLASS_URL"] + "/api/v1", 
-                               uuid="Txg3Ri04TLeyWKeZT_lQ4Q",
-                               filetype="bedlike",
-                               name="test")
+    # construct define pileup form
+    form_pileup = DefinePileupRegionsForm()
+    if current_user.id not in DATASET_MAPPING:
+        choices = []
+    else:
+        region_id, cooler_id = DATASET_MAPPING[current_user.id]
+        # get filepath for cooler
+        cooler_file = Dataset.query.get(cooler_id)
+        path = cooler_file.file_path
+        multires_paths = cooler.fileops.list_coolers(path)
+        choices = [
+            (i.split("/resolutions/")[1], i.split("/resolutions/")[1])
+            for i in multires_paths
+        ]
+    form_pileup.binsize.choices = choices
+    # pileup define form has been submitted
+    if form_pileup.submit_define.data and form_pileup.validate_on_submit():
+        redirect(url_for("higlass"))
+    # region and cooler select form has been submitted
+    if form.submit_select.data and form.validate_on_submit():
+        # set current user attributes
+        DATASET_MAPPING[current_user.id] = (form.region.data, form.cooler.data)
+        # redirect
+        return redirect(url_for("higlass"))
+    # render view using current user parameters
+    current_region, current_cooler = DATASET_MAPPING.get(current_user.id, (None, None))
+    top_view, center_view = render_viewconfig(current_region, current_cooler)
     return render_template(
         "higlass.html",
-        config=render_template("config.json", server=app.config["HIGLASS_URL"], top=[], center=[]),
-        form=form)
+        config=render_template(
+            "config.json",
+            server=app.config["HIGLASS_URL"],
+            top=top_view,
+            center=center_view,
+        ),
+        form=form,
+        form_pileup=form_pileup,
+    )
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -121,10 +141,9 @@ def add_dataset():
         # preprocess with clodius if file is bedfile
         if form.file_type.data == "bedfile":
             output_path = os.path.join(app.config["UPLOAD_DIR"], filename + ".beddb")
-            exit_code = higlass_interface.preprocess_dataset("bedfile",
-                                                 app.config["CHROM_SIZES"],
-                                                 file_path,
-                                                 output_path)
+            exit_code = higlass_interface.preprocess_dataset(
+                "bedfile", app.config["CHROM_SIZES"], file_path, output_path
+            )
             if exit_code != 0:
                 print(f"Clodius failed")
                 return redirect(url_for("higlass"))
@@ -132,25 +151,63 @@ def add_dataset():
         else:
             upload_file = file_path
         # add to higlass
-        credentials = {"user": app.config["HIGLASS_USER"],
-                       "password": app.config["HIGLASS_PWD"]}
+        credentials = {
+            "user": app.config["HIGLASS_USER"],
+            "password": app.config["HIGLASS_PWD"],
+        }
         try:
-            result = higlass_interface.add_tileset(form.file_type.data,
-                                                upload_file,
-                                                app.config["HIGLASS_API"],
-                                                credentials,
-                                                form.name.data)
+            result = higlass_interface.add_tileset(
+                form.file_type.data,
+                upload_file,
+                app.config["HIGLASS_API"],
+                credentials,
+                form.name.data,
+            )
         except HTTPError:
             print("Higlass upload failed!")
             return redirect(url_for("higlass"))
         # upload succeeded, add things to database
-        uuid = result['uuid']
-        new_entry = Dataset(dataset_name=form.name.data,
-                            file_path=file_path,
-                            higlass_uuid=uuid,
-                            filetype=form.file_type.data)
+        uuid = result["uuid"]
+        new_entry = Dataset(
+            dataset_name=form.name.data,
+            file_path=file_path,
+            higlass_uuid=uuid,
+            filetype=form.file_type.data,
+        )
         # TODO: nice error handling for failed unique constraints
         db.session.add(new_entry)
         db.session.commit()
         return redirect(url_for("higlass"))
     return render_template("add_dataset.html", form=form)
+
+
+# Helper functions
+
+
+def render_viewconfig(region_id, cooler_id):
+    """Takes region_id and cooler_id (both ids of Dataset table)
+    and renders a higlass viewconfig"""
+    if (region_id is None) or (cooler_id is None):
+        return [], []
+    region_dataset = Dataset.query.get(region_id)
+    cooler_dataset = Dataset.query.get(cooler_id)
+    # construct top view
+    top_view = render_template(
+        "_topview.json",
+        server=app.config["HIGLASS_URL"] + "/api/v1",
+        uuid=region_dataset.higlass_uuid,
+        filetype=DATATYPES[region_dataset.filetype],
+        name=region_dataset.dataset_name,
+    )
+    # construct center view
+    center_view = render_template(
+        "_centerview.json",
+        server=app.config["HIGLASS_URL"] + "/api/v1",
+        uuid=cooler_dataset.higlass_uuid,
+        filetype=DATATYPES[cooler_dataset.filetype],
+        name=cooler_dataset.dataset_name,
+    )
+    return top_view, center_view
+
+def construct_and_upload_bedpe():
+    """Converts bed to bedpe and uploads to higlass."""

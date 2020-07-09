@@ -1,8 +1,8 @@
 """Collestion of forms for HiCognition"""
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField
-from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Required
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, IntegerField
+from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Required, NumberRange
 from app.models import User
 
 
@@ -50,4 +50,17 @@ class SelectDatasetForm(FlaskForm):
     """Form to select a dataset."""
     region = SelectField("Region", validators=[Required()], coerce=int)
     cooler = SelectField("Cooler file", validators=[Required()], coerce=int)
-    submit = SubmitField("Submit")
+    submit_select = SubmitField("Submit")
+
+
+class DefinePileupRegionsForm(FlaskForm):
+    """Form to define the pileup regions before
+    commencing pileup."""
+    windowsize = IntegerField("Halfwindow", validators=[Required(), NumberRange(min=10000, max=1000000)])
+    binsize = SelectField("Binsize", validators=[DataRequired()])
+    submit_define = SubmitField("Submit")
+
+    #def validate_windowsize(self, binsize, windowsize):
+    #    """Checks whether windowsize is larger than binsize."""
+    #    if windowsize < binsize:
+    #        raise ValidationError("Windowsize must be larger than binsize!")

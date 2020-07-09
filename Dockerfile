@@ -22,7 +22,8 @@ RUN conda env create -f /temp/install/flask.yml
 
 # install python packages
 
-RUN cd /temp/install &&\
+RUN source activate flask &&\
+    cd /temp/install &&\
     pip install -r requirements.txt
 
 # install things from github
