@@ -1,0 +1,26 @@
+,{
+    "server": "{{ server }}",
+    "tilesetUid": "{{ uuid }}",
+    "type": "2d-rectangle-domains",
+    "options": {
+      "flipDiagonal": "none",
+      "labelColor": "black",
+      "labelPosition": "hidden",
+      "labelLeftMargin": 0,
+      "labelRightMargin": 0,
+      "labelTopMargin": 0,
+      "labelBottomMargin": 0,
+      "trackBorderWidth": 0,
+      "trackBorderColor": "black",
+      "rectangleDomainFillColor": "grey",
+      "rectangleDomainStrokeColor": "black",
+      "rectangleDomainOpacity": 0.6,
+      "minSquareSize": "none",
+      "name": "test_bedpe"
+    }
+  }
+],
+"width": 823,
+"height": 670,
+"options": {}
+}

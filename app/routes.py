@@ -5,7 +5,7 @@ from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 import cooler
-from hicognition import higlass_interface
+from hicognition import higlass_interface, io_helpers
 from requests.exceptions import HTTPError
 from app import app, db
 from app.models import User, Dataset
@@ -60,6 +60,18 @@ def higlass():
     form_pileup.binsize.choices = choices
     # pileup define form has been submitted
     if form_pileup.submit_define.data and form_pileup.validate_on_submit():
+        # construct bedpe file from regions
+        current_region, current_cooler = DATASET_MAPPING.get(current_user.id, (None, None))
+        if current_region is not None:
+            input_region = Dataset.query.get(current_region)
+            input_file = input_region.file_path
+            target_file = input_file + ".bedpe"
+            io_helpers.convert_bed_to_bedpe(input_file, target_file, form_pileup.windowsize.data)
+            # preprocess with clodius
+            clodius_output = target_file + ".bed2ddb"
+            higlass_interface.preprocess_dataset("bedpe",
+                                                 app.config["CHROM_SIZES"],
+                                                 target_file, clodius_output)
         redirect(url_for("higlass"))
     # region and cooler select form has been submitted
     if form.submit_select.data and form.validate_on_submit():
@@ -208,6 +220,3 @@ def render_viewconfig(region_id, cooler_id):
         name=cooler_dataset.dataset_name,
     )
     return top_view, center_view
-
-def construct_and_upload_bedpe():
-    """Converts bed to bedpe and uploads to higlass."""
