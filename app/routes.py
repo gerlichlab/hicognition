@@ -1,5 +1,6 @@
 """Routes for HiCognition"""
 import os
+from collections import defaultdict
 from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
@@ -18,13 +19,9 @@ from app.forms import (
 )
 
 
-# map for view update
-
-DATATYPES = {"bedfile": "bedlike", "cooler": "heatmap"}
-
 # user region mapping
 
-DATASET_MAPPING = {}
+DATASET_MAPPING = defaultdict(lambda: None)
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -41,16 +38,17 @@ def higlass():
     # region and cooler select form has been submitted
     if form.submit_select.data and form.validate_on_submit():
         # set current user attributes
-        DATASET_MAPPING[current_user.id] = (form.region.data, form.cooler.data, None)
+        DATASET_MAPPING[current_user.id] = {"region": form.region.data, "cooler": form.cooler.data, "pileup_region": None}
         # redirect
         return redirect(url_for("higlass"))
     # render view using current user parameters
-    current_region, current_cooler, bedpe_id = DATASET_MAPPING.get(
-        current_user.id, (None, None, None)
-    )
-    top_view, center_view = render_viewconfig(
-        current_region, current_cooler, bedpe_id=bedpe_id
-    )
+    current_user_dict = DATASET_MAPPING[current_user.id]
+    if current_user_dict is not None:
+        top_view, center_view = render_viewconfig(
+            current_user_dict["region"], current_user_dict["cooler"], current_user_dict["pileup_region"]
+        )
+    else:
+        top_view, center_view = [], []
     return render_template(
         "higlass.html",
         config=render_template(
@@ -178,16 +176,14 @@ def render_viewconfig(region_id, cooler_id, bedpe_id):
         "_topview.json",
         server=app.config["HIGLASS_URL"] + "/api/v1",
         uuid=region_dataset.higlass_uuid,
-        filetype=DATATYPES[region_dataset.filetype],
-        name=region_dataset.dataset_name,
+        name=region_dataset.dataset_name
     )
     # construct center view
     cooler_building_block = render_template(
         "_coolerview.json",
         server=app.config["HIGLASS_URL"] + "/api/v1",
         uuid=cooler_dataset.higlass_uuid,
-        filetype=DATATYPES[cooler_dataset.filetype],
-        name=cooler_dataset.dataset_name,
+        name=cooler_dataset.dataset_name
     )
     if bedpe_id is not None:
         bedpe_dataset = Pileupregion.query.get(bedpe_id)
@@ -212,10 +208,9 @@ def handle_pileup_region_select(form_pileup):
     """Handles event that pileup region
     select form has been submitted and validated."""
     # construct bedpe file from regions
-    current_region, current_cooler, current_bedpe = DATASET_MAPPING.get(
-        current_user.id, (None, None, None)
-    )
-    if current_region is not None:
+    current_user_dict = DATASET_MAPPING[current_user.id]
+    if current_user_dict is not None:
+        current_region = current_user_dict["region"]
         input_region = Dataset.query.get(current_region)
         input_file = input_region.file_path
         target_file = input_file + f".{form_pileup.windowsize.data}" + ".bedpe"
@@ -256,12 +251,7 @@ def handle_pileup_region_select(form_pileup):
         db.session.add(new_entry)
         db.session.commit()
         # update current data dictionary
-        current_region, current_cooler, _ = DATASET_MAPPING[current_user.id]
-        DATASET_MAPPING[current_user.id] = (
-            current_region,
-            current_cooler,
-            new_entry.id,
-        )
+        DATASET_MAPPING[current_user.id]["pileup_region"] = new_entry.id
         redirect(url_for("higlass"))
 
 
@@ -283,10 +273,10 @@ def construct_dataset_select_form():
 def construct_region_select_form():
     """Makes the region select form"""
     form_pileup = DefinePileupRegionsForm()
-    if current_user.id not in DATASET_MAPPING:
+    if DATASET_MAPPING[current_user.id] is None:
         choices = []
     else:
-        region_id, cooler_id, bedpe_id = DATASET_MAPPING[current_user.id]
+        cooler_id = DATASET_MAPPING[current_user.id]["cooler"]
         # get filepath for cooler
         cooler_file = Dataset.query.get(cooler_id)
         path = cooler_file.file_path

@@ -2,7 +2,7 @@
     {
       "server": "{{ server }}",
       "tilesetUid": "{{ uuid }}",
-      "type": "{{ filetype }}",
+      "type": "bedlike",
       "options": {
         "fillColor": "blue",
         "axisPositionHorizontal": "right",
