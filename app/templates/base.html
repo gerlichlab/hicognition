@@ -17,15 +17,14 @@
         </head>
     </head>
     <body>
-        <div style="height: 5px;">
-            HiCognition:
-                <a href="{{ url_for('higlass') }}">Home</a>
+        <div style="height: 20px;">
+          <a class="navbar-brand bg-dark" disabled>HiCognition</a>
+                <a class="btn btn-light" href="{{ url_for('higlass') }}">Home</a>
                 {% if current_user.is_anonymous %}
-                <a href="{{ url_for('login') }}">Login</a>
+                <a class="btn btn-light" href="{{ url_for('login') }}">Login</a>
                 {% else %}
-                <a href="{{ url_for('logout') }}">Logout</a>
-                <a href="{{ url_for('add_dataset') }}">Dataset+</a>
-                Hi, {{ current_user.username }}!
+                <a class="btn btn-light" href="{{ url_for('logout') }}">Logout</a>
+                <a class="btn btn-light" href="{{ url_for('add_dataset') }}">Dataset+</a>
                 {% endif %}
           </div>
         <hr>

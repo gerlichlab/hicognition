@@ -6,7 +6,7 @@ html, body {
 table {
 font-family: arial, sans-serif;
 width: 95vw;
-height: 90vh;
+height: 85vh;
 }
 .center {
 margin-left:auto;
@@ -19,16 +19,16 @@ border-collapse: separate;
 tr.toprow {
 height: 5vh;
 border-radius: 10px;
-border: solid 2px rgb(145, 144, 144);
+border: solid 1px grey;
 }
 tr.centerrow {
-height: 80vh;
+height: 75vh;
 border-radius: 10px;
-border: solid 2px rgb(145, 144, 144);
+border: solid 1px grey;
 }
 td {
 border-radius: 10px;
-border: solid 2px rgb(145, 144, 144);
+border: solid 1px grey;
 outline: none;
 }
 #filePath {
