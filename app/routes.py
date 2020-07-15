@@ -34,7 +34,7 @@ def higlass():
     form_pileup = construct_region_select_form()
     # pileup define form has been submitted
     if form_pileup.submit_define.data and form_pileup.validate_on_submit():
-        handle_pileup_region_select(form_pileup)
+        return handle_pileup_region_select(form_pileup)
     # region and cooler select form has been submitted
     if form.submit_select.data and form.validate_on_submit():
         # set current user attributes
@@ -212,6 +212,12 @@ def handle_pileup_region_select(form_pileup):
     if current_user_dict is not None:
         current_region = current_user_dict["region"]
         input_region = Dataset.query.get(current_region)
+        # check whether regions have been constructed with this windowsize before
+        query_result = input_region.pileup_regions.filter_by(windowsize=form_pileup.windowsize.data).all()
+        if len(query_result) != 0:
+            # cache hit
+            DATASET_MAPPING[current_user.id]["pileup_region"] = query_result[0].id
+            return redirect(url_for("higlass"))
         input_file = input_region.file_path
         target_file = input_file + f".{form_pileup.windowsize.data}" + ".bedpe"
         io_helpers.convert_bed_to_bedpe(
@@ -252,7 +258,7 @@ def handle_pileup_region_select(form_pileup):
         db.session.commit()
         # update current data dictionary
         DATASET_MAPPING[current_user.id]["pileup_region"] = new_entry.id
-        redirect(url_for("higlass"))
+        return redirect(url_for("higlass"))
 
 
 def construct_dataset_select_form():
