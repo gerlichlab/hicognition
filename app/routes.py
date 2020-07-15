@@ -33,77 +33,11 @@ DATASET_MAPPING = {}
 @login_required
 def higlass():
     """Main app."""
-    # Construct select dataset form
-    form = SelectDatasetForm()
-    # select region files for region choices
-    bed_files = Dataset.query.filter(Dataset.filetype == "bedfile").all()
-    bed_display = [(i.id, i.dataset_name) for i in bed_files]
-    form.region.choices = bed_display
-    # select cooler files for cooler choices
-    cooler_files = Dataset.query.filter(Dataset.filetype == "cooler").all()
-    cooler_display = [(i.id, i.dataset_name) for i in cooler_files]
-    form.cooler.choices = cooler_display
-    # construct define pileup form
-    form_pileup = DefinePileupRegionsForm()
-    if current_user.id not in DATASET_MAPPING:
-        choices = []
-    else:
-        region_id, cooler_id, bedpe_id = DATASET_MAPPING[current_user.id]
-        # get filepath for cooler
-        cooler_file = Dataset.query.get(cooler_id)
-        path = cooler_file.file_path
-        multires_paths = cooler.fileops.list_coolers(path)
-        choices = [
-            (i.split("/resolutions/")[1], i.split("/resolutions/")[1])
-            for i in multires_paths
-        ]
-    form_pileup.binsize.choices = choices
+    form = construct_dataset_select_form()
+    form_pileup = construct_region_select_form()
     # pileup define form has been submitted
     if form_pileup.submit_define.data and form_pileup.validate_on_submit():
-        # construct bedpe file from regions
-        current_region, current_cooler, current_bedpe = DATASET_MAPPING.get(current_user.id, (None, None, None))
-        if current_region is not None:
-            input_region = Dataset.query.get(current_region)
-            input_file = input_region.file_path
-            target_file = input_file + f".{form_pileup.windowsize.data}"  + ".bedpe"
-            io_helpers.convert_bed_to_bedpe(input_file, target_file, form_pileup.windowsize.data)
-            # preprocess with clodius
-            clodius_output = target_file + ".bed2ddb"
-            higlass_interface.preprocess_dataset("bedpe",
-                                                 app.config["CHROM_SIZES"],
-                                                 target_file, clodius_output)
-            # add to higlass
-            credentials = {
-                        "user": app.config["HIGLASS_USER"],
-                        "password": app.config["HIGLASS_PWD"],
-                    }
-            dataset_name = clodius_output.split("/")[-1]
-            try:
-                result = higlass_interface.add_tileset(
-                    "bedpe",
-                    clodius_output,
-                    app.config["HIGLASS_API"],
-                    credentials,
-                    dataset_name,
-                )
-            except HTTPError:
-                print("Higlass upload failed!")
-                return redirect(url_for("higlass"))
-            # upload succeeded, add things to database
-            uuid = result["uuid"]
-            new_entry = Pileupregion(
-                dataset_id=current_region,
-                name=dataset_name,
-                file_path=clodius_output,
-                higlass_uuid=uuid,
-                windowsize=form_pileup.windowsize.data,
-            )
-            db.session.add(new_entry)
-            db.session.commit()
-            # update current data dictionary
-            current_region, current_cooler, _ = DATASET_MAPPING[current_user.id]
-            DATASET_MAPPING[current_user.id] = (current_region, current_cooler, new_entry.id)
-            redirect(url_for("higlass"))
+        handle_pileup_region_select(form_pileup)
     # region and cooler select form has been submitted
     if form.submit_select.data and form.validate_on_submit():
         # set current user attributes
@@ -111,8 +45,12 @@ def higlass():
         # redirect
         return redirect(url_for("higlass"))
     # render view using current user parameters
-    current_region, current_cooler, bedpe_id = DATASET_MAPPING.get(current_user.id, (None, None, None))
-    top_view, center_view = render_viewconfig(current_region, current_cooler, bedpe_id=bedpe_id)
+    current_region, current_cooler, bedpe_id = DATASET_MAPPING.get(
+        current_user.id, (None, None, None)
+    )
+    top_view, center_view = render_viewconfig(
+        current_region, current_cooler, bedpe_id=bedpe_id
+    )
     return render_template(
         "higlass.html",
         config=render_template(
@@ -244,20 +182,118 @@ def render_viewconfig(region_id, cooler_id, bedpe_id):
         name=region_dataset.dataset_name,
     )
     # construct center view
-    cooler_building_block = render_template("_coolerview.json",
-                                            server=app.config["HIGLASS_URL"] + "/api/v1",
-                                            uuid=cooler_dataset.higlass_uuid,
-                                            filetype=DATATYPES[cooler_dataset.filetype],
-                                            name=cooler_dataset.dataset_name)
+    cooler_building_block = render_template(
+        "_coolerview.json",
+        server=app.config["HIGLASS_URL"] + "/api/v1",
+        uuid=cooler_dataset.higlass_uuid,
+        filetype=DATATYPES[cooler_dataset.filetype],
+        name=cooler_dataset.dataset_name,
+    )
     if bedpe_id is not None:
         bedpe_dataset = Pileupregion.query.get(bedpe_id)
-        bedpe_building_block = render_template("_bedpeview.json",
-                                               server=app.config["HIGLASS_URL"] + "/api/v1",
-                                               uuid=bedpe_dataset.higlass_uuid)
+        bedpe_building_block = render_template(
+            "_bedpeview.json",
+            server=app.config["HIGLASS_URL"] + "/api/v1",
+            uuid=bedpe_dataset.higlass_uuid,
+        )
         center_view = render_template(
-            "_centerview.json", coolerview=cooler_building_block,
-                                bedpeview=bedpe_building_block)
+            "_centerview.json",
+            coolerview=cooler_building_block,
+            bedpeview=bedpe_building_block,
+        )
     else:
         center_view = render_template(
-        "_centerview.json", coolerview=cooler_building_block)
+            "_centerview.json", coolerview=cooler_building_block
+        )
     return top_view, center_view
+
+
+def handle_pileup_region_select(form_pileup):
+    """Handles event that pileup region
+    select form has been submitted and validated."""
+    # construct bedpe file from regions
+    current_region, current_cooler, current_bedpe = DATASET_MAPPING.get(
+        current_user.id, (None, None, None)
+    )
+    if current_region is not None:
+        input_region = Dataset.query.get(current_region)
+        input_file = input_region.file_path
+        target_file = input_file + f".{form_pileup.windowsize.data}" + ".bedpe"
+        io_helpers.convert_bed_to_bedpe(
+            input_file, target_file, form_pileup.windowsize.data
+        )
+        # preprocess with clodius
+        clodius_output = target_file + ".bed2ddb"
+        higlass_interface.preprocess_dataset(
+            "bedpe", app.config["CHROM_SIZES"], target_file, clodius_output
+        )
+        # add to higlass
+        credentials = {
+            "user": app.config["HIGLASS_USER"],
+            "password": app.config["HIGLASS_PWD"],
+        }
+        dataset_name = clodius_output.split("/")[-1]
+        try:
+            result = higlass_interface.add_tileset(
+                "bedpe",
+                clodius_output,
+                app.config["HIGLASS_API"],
+                credentials,
+                dataset_name,
+            )
+        except HTTPError:
+            print("Higlass upload failed!")
+            return redirect(url_for("higlass"))
+        # upload succeeded, add things to database
+        uuid = result["uuid"]
+        new_entry = Pileupregion(
+            dataset_id=current_region,
+            name=dataset_name,
+            file_path=clodius_output,
+            higlass_uuid=uuid,
+            windowsize=form_pileup.windowsize.data,
+        )
+        db.session.add(new_entry)
+        db.session.commit()
+        # update current data dictionary
+        current_region, current_cooler, _ = DATASET_MAPPING[current_user.id]
+        DATASET_MAPPING[current_user.id] = (
+            current_region,
+            current_cooler,
+            new_entry.id,
+        )
+        redirect(url_for("higlass"))
+
+
+def construct_dataset_select_form():
+    """constructs select dataset form"""
+    # Construct select dataset form
+    form = SelectDatasetForm()
+    # select region files for region choices
+    bed_files = Dataset.query.filter(Dataset.filetype == "bedfile").all()
+    bed_display = [(i.id, i.dataset_name) for i in bed_files]
+    form.region.choices = bed_display
+    # select cooler files for cooler choices
+    cooler_files = Dataset.query.filter(Dataset.filetype == "cooler").all()
+    cooler_display = [(i.id, i.dataset_name) for i in cooler_files]
+    form.cooler.choices = cooler_display
+    return form
+
+
+def construct_region_select_form():
+    """Makes the region select form"""
+    form_pileup = DefinePileupRegionsForm()
+    if current_user.id not in DATASET_MAPPING:
+        choices = []
+    else:
+        region_id, cooler_id, bedpe_id = DATASET_MAPPING[current_user.id]
+        # get filepath for cooler
+        cooler_file = Dataset.query.get(cooler_id)
+        path = cooler_file.file_path
+        multires_paths = cooler.fileops.list_coolers(path)
+        choices = [
+            (i.split("/resolutions/")[1], i.split("/resolutions/")[1])
+            for i in multires_paths
+        ]
+    form_pileup.binsize.choices = choices
+    return form_pileup
