@@ -1,51 +1,56 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div style="display: inline-block ;text-align: left; width: 40%;">
-  <form action="" method="post">
-    {{ form.hidden_tag() }}
-    <div style="display: inline-block; margin-left: 2.2%;">
-        {{ form.region.label }}<br>
-        {{ form.region(size=32) }}<br>
-        {% for error in form.region.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </div>
-    <div style="display: inline-block;">
-        {{ form.cooler.label }}<br>
-        {{ form.cooler(size=64) }}<br>
-        {% for error in form.cooler.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </div>
-    <div style="display: inline-block; margin-bottom: 3%; vertical-align: center;">{{ form.submit_select() }}</div>
-  </form>
-</div>
 
-<div style="display: inline-block; text-align: center;">
-  <form action="" method="post">
-    {{ form_pileup.hidden_tag() }}
-    <div style="display: inline-block;">
-        {{ form_pileup.windowsize.label }}<br>
-        {{ form_pileup.windowsize(size=2) }}<br>
-        {% for error in form_pileup.windowsize.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </div>
-    <div style="display: inline-block; vertical-align: center;">
-        {{ form_pileup.binsize.label }}<br>
-        {{ form_pileup.binsize(size=64) }}<br>
-        {% for error in form_pileup.binsize.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-    </div>
-    <div style="display: inline-block">{{ form_pileup.submit_define() }}</div>
-  </form>
-</div>
-
-<table class="center" >
-  <tr>
-    <td id="higlass" style="width:40%"></td>
+<table class="center table-spacing table-borderless" >
+  <tr class="toprow table-borderless">
+    <td>
+        <div style="display: inline-block ;text-align: left; margin-left: 2.2vh; margin-bottom: 1vh;">
+        <form action="" method="post">
+            {{ form.hidden_tag() }}
+            <div style="display: inline-block; margin: auto; height: 5vh;">
+                {{ form.region.label }}<br>
+                {{ form.region(size=2) }}<br>
+                {% for error in form.region.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </div>
+            <div style="display: inline-block; margin: auto; height: 5vh;">
+                {{ form.cooler.label }}<br>
+                {{ form.cooler(size=2) }}<br>
+                {% for error in form.cooler.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </div>
+            <div style="display: inline-block; margin: auto;">{{ form.submit_select() }}</div>
+        </form>
+      </div>
+    </td>
+    <td>
+        <div style="display: inline-block; text-align: left; margin-left: 2.2vh; margin-bottom: 1vh;">
+        <form action="" method="post">
+            {{ form_pileup.hidden_tag() }}
+            <div style="display: inline-block; margin: auto; height: 5vh;">
+                {{ form_pileup.windowsize.label }}<br>
+                {{ form_pileup.windowsize(size=2) }}<br>
+                {% for error in form_pileup.windowsize.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </div>
+            <div style="display: inline-block; margin: auto; height: 5vh;">
+                {{ form_pileup.binsize.label }}<br>
+                {{ form_pileup.binsize(size=2) }}<br>
+                {% for error in form_pileup.binsize.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </div>
+            <div style="display: inline-block; margin: auto;">{{ form_pileup.submit_define() }}</div>
+        </form>
+      </div>
+    </td>
+  </tr>
+  <tr class="centerrow">
+    <td id="higlass" style="width:40vw"></td>
     <td>
       <div id="heatmap", style="margin: 0 auto; height: 50%; width: 40%;"></div>
       <div id="slider" style="width: 50%; margin: 0 auto;"></div>

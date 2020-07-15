@@ -13,7 +13,7 @@
     </p>
     <p style="text-align: center;">
         {{ form.file_type.label }}<br>
-        {{ form.file_type(size=32) }}<br>
+        {{ form.file_type(size=2) }}<br>
         {% for error in form.file_type.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
