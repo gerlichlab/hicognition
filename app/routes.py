@@ -112,7 +112,7 @@ def higlass():
         return redirect(url_for("higlass"))
     # render view using current user parameters
     current_region, current_cooler, bedpe_id = DATASET_MAPPING.get(current_user.id, (None, None, None))
-    top_view, center_view = render_viewconfig(current_region, current_cooler, bedpe_id=5)
+    top_view, center_view = render_viewconfig(current_region, current_cooler, bedpe_id=bedpe_id)
     return render_template(
         "higlass.html",
         config=render_template(
@@ -248,16 +248,16 @@ def render_viewconfig(region_id, cooler_id, bedpe_id):
                                             server=app.config["HIGLASS_URL"] + "/api/v1",
                                             uuid=cooler_dataset.higlass_uuid,
                                             filetype=DATATYPES[cooler_dataset.filetype],
-                                            name=cooler_dataset.dataset_name,)
+                                            name=cooler_dataset.dataset_name)
     if bedpe_id is not None:
+        bedpe_dataset = Pileupregion.query.get(bedpe_id)
         bedpe_building_block = render_template("_bedpeview.json",
                                                server=app.config["HIGLASS_URL"] + "/api/v1",
-                                               uuid="NT6wTjQyQB2Yk9HoROkmSw")
+                                               uuid=bedpe_dataset.higlass_uuid)
         center_view = render_template(
             "_centerview.json", coolerview=cooler_building_block,
                                 bedpeview=bedpe_building_block)
     else:
         center_view = render_template(
-        "_centerview.json", coolerview=cooler_building_block,
-                            bedpeview={})
+        "_centerview.json", coolerview=cooler_building_block)
     return top_view, center_view

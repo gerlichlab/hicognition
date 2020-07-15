@@ -1,4 +1,6 @@
 [
-{{ coolerview }},
-{{ bedpeview }}
+{{ coolerview }}
+{% if bedpeview %}
+,{{ bedpeview }}
+{% endif %}
   ]
