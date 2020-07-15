@@ -1,8 +1,8 @@
 """Start hicognition server."""
 from app import app, db
-from app.models import User, Dataset
+from app.models import User, Dataset, Pileupregion
 
 @app.shell_context_processor
 def make_shell_context():
     """Make shell context for app."""
-    return {'db': db, 'User': User, "Dataset": Dataset}
+    return {'db': db, 'User': User, "Dataset": Dataset, "Pileupregion": Pileupregion}

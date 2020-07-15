@@ -1,4 +1,4 @@
-,{
+{
     "server": "{{ server }}",
     "tilesetUid": "{{ uuid }}",
     "type": "2d-rectangle-domains",
@@ -19,8 +19,3 @@
       "name": "test_bedpe"
     }
   }
-],
-"width": 823,
-"height": 670,
-"options": {}
-}
