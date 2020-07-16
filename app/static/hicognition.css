@@ -6,7 +6,7 @@ html, body {
 table {
 font-family: arial, sans-serif;
 width: 95vw;
-height: 85vh;
+height: 80vh;
 }
 .center {
 margin-left:auto;
@@ -22,7 +22,7 @@ border-radius: 10px;
 border: solid 1px grey;
 }
 tr.centerrow {
-height: 75vh;
+height: 65vh;
 border-radius: 10px;
 border: solid 1px grey;
 }
