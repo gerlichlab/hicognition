@@ -288,11 +288,17 @@ def handle_pileup_form(pileup_form):
     pileup_region = Pileupregion.query.get(pileup_region_id)
     # extract dataset location from related source datafile
     file_path = pileup_region.source_dataset.file_path
-    # get winowsize, binsize and cooler path
+    # get windowsize, binsize and cooler path
     window_size = pileup_region.windowsize
     binsize = pileup_form.binsize.data
-    cooler_path = Dataset.query.get(DATASET_MAPPING[current_user.id]["cooler"]).file_path
+    cooler_id = DATASET_MAPPING[current_user.id]["cooler"]
+    cooler_path = Dataset.query.get(cooler_id).file_path
     # check whether pileup has been performed before
+    query_result = Pileup.query.filter_by(pileupregion_id=pileup_region_id, cooler_id=cooler_id, binsize=binsize).all()
+    if len(query_result) != 0:
+        # cache hit
+        DATASET_MAPPING[current_user.id]["pileup"] = query_result[0].id
+        return redirect(url_for("higlass"))
     # load bedfile
     regions = pd.read_csv(file_path, sep="\t", header=None).rename(columns={0: "chrom", 1: "start", 2: "end"})
     regions.loc[:, "pos"] = (regions["start"] + regions["end"])//2
@@ -310,7 +316,8 @@ def handle_pileup_form(pileup_form):
     file_name = file_path.split("/")[-1] + f".{window_size}" + f".{binsize}.csv"
     output_molten.to_csv(f"app/static/{file_name}", index=False)
     # add this to database
-    new_entry = Pileup(binsize=int(binsize), name=file_name, file_path=file_name, pileupregion_id=pileup_region_id)
+    new_entry = Pileup(binsize=int(binsize), name=file_name, file_path=file_name, pileupregion_id=pileup_region_id,
+                       cooler_id=cooler_id)
     db.session.add(new_entry)
     db.session.commit()
     # add this to data mapping

@@ -31,7 +31,7 @@ d3.csv(pileup_path, function(data){
       var myGroups = new Array(axisSize);
       var myVars = new Array(axisSize);
 
-      for (let dummy = 0; dummy < axisSize; dummy++){
+      for (let dummy = 0; dummy <= axisSize; dummy++){
         myGroups[dummy] = String(dummy);
         myVars[dummy] = String(axisSize - dummy);
       }
