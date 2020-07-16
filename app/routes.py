@@ -6,16 +6,19 @@ from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 import cooler
+import pandas as pd
+from ngs import HiCTools as HT
 from hicognition import higlass_interface, io_helpers
 from requests.exceptions import HTTPError
 from app import app, db
-from app.models import User, Dataset, Pileupregion
+from app.models import User, Dataset, Pileupregion, Pileup
 from app.forms import (
     LoginForm,
     RegistrationForm,
     AddDatasetForm,
     SelectDatasetForm,
     DefinePileupRegionsForm,
+    PileupForm
 )
 
 
@@ -31,16 +34,20 @@ DATASET_MAPPING = defaultdict(lambda: None)
 def higlass():
     """Main app."""
     form = construct_dataset_select_form()
-    form_pileup = construct_region_select_form()
+    form_region_select = DefinePileupRegionsForm()
+    form_pileup = construct_pileup_form()
     # pileup define form has been submitted
-    if form_pileup.submit_define.data and form_pileup.validate_on_submit():
-        return handle_pileup_region_select(form_pileup)
+    if form_region_select.submit_define.data and form_region_select.validate_on_submit():
+        return handle_pileup_region_select(form_region_select)
     # region and cooler select form has been submitted
     if form.submit_select.data and form.validate_on_submit():
         # set current user attributes
         DATASET_MAPPING[current_user.id] = {"region": form.region.data, "cooler": form.cooler.data, "pileup_region": None}
         # redirect
         return redirect(url_for("higlass"))
+    # pileup form has been submitted
+    if form_pileup.submit_pileup.data and form_pileup.validate_on_submit():
+        return handle_pileup_form(form_pileup)
     # render view using current user parameters
     current_user_dict = DATASET_MAPPING[current_user.id]
     if current_user_dict is not None:
@@ -49,6 +56,14 @@ def higlass():
         )
     else:
         top_view, center_view = [], []
+    # get pileup location
+    current_user_dict = DATASET_MAPPING[current_user.id]
+    if (current_user_dict is None) or ("pileup" not in current_user_dict):
+        pileup_file = "pileup_test.csv"
+    else:
+        pileup_entry = Pileup.query.get(current_user_dict["pileup"])
+        pileup_file = pileup_entry.file_path
+    pileup_path = "http://localhost:5000/static/" + pileup_file
     return render_template(
         "higlass.html",
         config=render_template(
@@ -58,7 +73,9 @@ def higlass():
             center=center_view,
         ),
         form=form,
+        form_region_select=form_region_select,
         form_pileup=form_pileup,
+        pileup_path=pileup_path
     )
 
 
@@ -261,6 +278,47 @@ def handle_pileup_region_select(form_pileup):
         return redirect(url_for("higlass"))
 
 
+def handle_pileup_form(pileup_form):
+    """Do ICCF pileup."""
+    pileup_region_id = DATASET_MAPPING[current_user.id]["pileup_region"]
+    if pileup_region_id is None:
+        flash("No pileup regions defined!")
+        return redirect(url_for("higlass"))
+    # get pileup region dataset entry
+    pileup_region = Pileupregion.query.get(pileup_region_id)
+    # extract dataset location from related source datafile
+    file_path = pileup_region.source_dataset.file_path
+    # get winowsize, binsize and cooler path
+    window_size = pileup_region.windowsize
+    binsize = pileup_form.binsize.data
+    cooler_path = Dataset.query.get(DATASET_MAPPING[current_user.id]["cooler"]).file_path
+    # check whether pileup has been performed before
+    # load bedfile
+    regions = pd.read_csv(file_path, sep="\t", header=None).rename(columns={0: "chrom", 1: "start", 2: "end"})
+    regions.loc[:, "pos"] = (regions["start"] + regions["end"])//2
+    # do pileup
+    arms = HT.get_arms_hg19()
+    cooler_file = cooler.Cooler(cooler_path + f"::/resolutions/{binsize}")
+    pileup_windows = HT.assign_regions(window_size, int(binsize), regions["chrom"], regions["pos"], arms).dropna()
+    pileup_array = HT.do_pileup_iccf(cooler_file, pileup_windows, proc=2)
+    # prepare dataframe for d3
+    output_frame = pd.DataFrame(pileup_array)
+    output_molten = output_frame.stack().reset_index().rename(columns={"level_0": "variable", "level_1": "group", 0: "value"})
+    # scale output so that colormap can be adjusted in integer steps
+    output_molten.loc[:, "value"] = output_molten["value"] * 10000
+    # stitch together filepath
+    file_name = file_path.split("/")[-1] + f".{window_size}" + f".{binsize}.csv"
+    output_molten.to_csv(f"app/static/{file_name}", index=False)
+    # add this to database
+    new_entry = Pileup(binsize=int(binsize), name=file_name, file_path=file_name, pileupregion_id=pileup_region_id)
+    db.session.add(new_entry)
+    db.session.commit()
+    # add this to data mapping
+    DATASET_MAPPING[current_user.id]["pileup"] = new_entry.id
+    return redirect(url_for("higlass"))
+
+
+
 def construct_dataset_select_form():
     """constructs select dataset form"""
     # Construct select dataset form
@@ -276,9 +334,9 @@ def construct_dataset_select_form():
     return form
 
 
-def construct_region_select_form():
+def construct_pileup_form():
     """Makes the region select form"""
-    form_pileup = DefinePileupRegionsForm()
+    form_pileup = PileupForm()
     if DATASET_MAPPING[current_user.id] is None:
         choices = []
     else:

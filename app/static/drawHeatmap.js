@@ -17,57 +17,57 @@ var svg = d3.select("#heatmap")
   .attr("transform",
         "translate(" + margin.left + "," + margin.top + ")");
 
-// Labels of row and columns
-
-var myGroups = new Array(90);
-var myVars = new Array(90);
-
-for (let dummy = 0; dummy < 90; dummy++){
-  myGroups[dummy] = String(dummy);
-  myVars[dummy] = String(90 - dummy);
-}
-
-// Build X scales and axis:
-var x = d3.scaleBand()
-  .range([ 0, width ])
-  .domain(myGroups)
-  .padding(0.01);
-svg.append("g")
-  .attr("transform", "translate(0," + height + ")")
-  .call(d3.axisBottom(x))
-
-// Build y scales and axis:
-var y = d3.scaleBand()
-  .range([ height, 0 ])
-  .domain(myVars)
-  .padding(0.01);
-svg.append("g")
-  .call(d3.axisLeft(y));
-
-// Build color scale
-var myColor = d3.scaleLinear()
-  .range(["white", "orange", "red" ,"black"])
-  .domain([0, 6.6, 13.2 , 20])
-
 
 // declare variable so that it is available to the slider adjustment logic
 var picture
 
 //Read the data
 
+d3.csv(pileup_path, function(data){
+      // determine length of axis
+      var lastElement = data[data.length - 1]
+      var axisSize = lastElement["variable"]
+      // Labels of row and columns
+      var myGroups = new Array(axisSize);
+      var myVars = new Array(axisSize);
 
-d3.csv("http://localhost:5000/static/pileup_test.csv", function(data){
-      console.log(data)
-      // create a tooltip
-      var tooltip = d3.select("#heatmap")
-      .append("div")
-      .style("opacity", 0)
-      .attr("class", "tooltip")
-      .style("background-color", "white")
-      .style("border", "solid")
-      .style("border-width", "2px")
-      .style("border-radius", "5px")
-      .style("padding", "5px")
+      for (let dummy = 0; dummy < axisSize; dummy++){
+        myGroups[dummy] = String(dummy);
+        myVars[dummy] = String(axisSize - dummy);
+      }
+
+      // Build X scales and axis:
+      var x = d3.scaleBand()
+        .range([ 0, width ])
+        .domain(myGroups)
+        .padding(0.01);
+      svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x))
+
+      // Build y scales and axis:
+      var y = d3.scaleBand()
+        .range([ height, 0 ])
+        .domain(myVars)
+        .padding(0.01);
+      svg.append("g")
+        .call(d3.axisLeft(y));
+
+      // Build color scale
+      var myColor = d3.scaleLinear()
+        .range(["white", "orange", "red" ,"black"])
+        .domain([0, 6.6, 13.2 , 20])
+            console.log(data)
+            // create a tooltip
+            var tooltip = d3.select("#heatmap")
+            .append("div")
+            .style("opacity", 0)
+            .attr("class", "tooltip")
+            .style("background-color", "white")
+            .style("border", "solid")
+            .style("border-width", "2px")
+            .style("border-radius", "5px")
+            .style("padding", "5px")
 
       // Three function that change the tooltip when user hover / move / leave a cell
       var mouseover = function(d) {

@@ -31,6 +31,7 @@ class Dataset(db.Model):
     higlass_uuid = db.Column(db.String(64), index=True, unique=True)
     filetype = db.Column(db.String(64), index=True)
     pileup_regions = db.relationship("Pileupregion", backref="source_dataset", lazy="dynamic")
+    pileup = db.relationship("Pileup", backref="source_cooler", lazy="dynamic")
 
     def __repr__(self):
         """Format print output."""
@@ -56,6 +57,7 @@ class Pileup(db.Model):
     binsize = db.Column(db.Integer)
     name = db.Column(db.String(64), index=True, unique=True)
     file_path = db.Column(db.String(128), index=True)
+    cooler_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     pileupregion_id = db.Column(db.Integer, db.ForeignKey("pileupregion.id"))
 
     def __repr__(self):

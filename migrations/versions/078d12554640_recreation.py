@@ -1,8 +1,8 @@
-"""initial entries
+"""recreation
 
-Revision ID: 94ec23b39994
+Revision ID: 078d12554640
 Revises: 
-Create Date: 2020-07-16 07:54:06.691698
+Create Date: 2020-07-16 10:09:36.036476
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '94ec23b39994'
+revision = '078d12554640'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -58,7 +58,9 @@ def upgrade():
     sa.Column('binsize', sa.Integer(), nullable=True),
     sa.Column('name', sa.String(length=64), nullable=True),
     sa.Column('file_path', sa.String(length=128), nullable=True),
+    sa.Column('cooler_id', sa.Integer(), nullable=True),
     sa.Column('pileupregion_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['cooler_id'], ['dataset.id'], ),
     sa.ForeignKeyConstraint(['pileupregion_id'], ['pileupregion.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

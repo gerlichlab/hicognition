@@ -29,14 +29,21 @@
     <td>
         <div style="display: inline-block; text-align: left; margin-left: 2.2vh; margin-bottom: 1vh;">
         <form action="" method="post">
-            {{ form_pileup.hidden_tag() }}
+            {{ form_region_select.hidden_tag() }}
             <div style="display: inline-block; margin: auto; height: 5vh;">
-                {{ form_pileup.windowsize.label }}<br>
-                {{ form_pileup.windowsize(size=2) }}<br>
-                {% for error in form_pileup.windowsize.errors %}
+                {{ form_region_select.windowsize.label }}<br>
+                {{ form_region_select.windowsize(size=2) }}<br>
+                {% for error in form_region_select.windowsize.errors %}
                 <span style="color: red;">[{{ error }}]</span>
                 {% endfor %}
             </div>
+            <div style="display: inline-block; margin: auto;">{{ form_region_select.submit_define() }}</div>
+        </form>
+      </div>
+
+      <div style="display: inline-block; text-align: left; margin-left: 2.2vh; margin-bottom: 1vh;">
+        <form action="" method="post">
+            {{ form_pileup.hidden_tag() }}
             <div style="display: inline-block; margin: auto; height: 5vh;">
                 {{ form_pileup.binsize.label }}<br>
                 {{ form_pileup.binsize(size=2) }}<br>
@@ -44,9 +51,10 @@
                 <span style="color: red;">[{{ error }}]</span>
                 {% endfor %}
             </div>
-            <div style="display: inline-block; margin: auto;">{{ form_pileup.submit_define() }}</div>
+            <div style="display: inline-block; margin: auto;">{{ form_pileup.submit_pileup() }}</div>
         </form>
       </div>
+
     </td>
   </tr>
   <tr class="centerrow">
@@ -67,6 +75,8 @@
       {{ config | safe }},
     { bounded: true}
   );
+  // define location of pileup file
+  let pileup_path = {{ pileup_path | tojson }};
   </script>
   <script src="{{ url_for('static', filename='drawHeatmap.js') }}" charset="utf-8"></script>
   <script src="{{ url_for('static', filename='slider.js') }}" charset="utf-8"></script>

@@ -4,3 +4,4 @@ app.db
 helper_scripts/*
 temp/*
 .vscode/*
+*.csv

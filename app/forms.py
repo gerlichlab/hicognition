@@ -56,11 +56,11 @@ class SelectDatasetForm(FlaskForm):
 class DefinePileupRegionsForm(FlaskForm):
     """Form to define the pileup regions before
     commencing pileup."""
-    windowsize = IntegerField("Halfwindow", validators=[Required(), NumberRange(min=10000, max=1000000)])
-    binsize = SelectField("Binsize", validators=[DataRequired()])
+    windowsize = IntegerField("Halfwindow", validators=[Required(), NumberRange(min=10000, max=5000000)])
     submit_define = SubmitField("Submit")
 
-    #def validate_windowsize(self, binsize, windowsize):
-    #    """Checks whether windowsize is larger than binsize."""
-    #    if windowsize < binsize:
-    #        raise ValidationError("Windowsize must be larger than binsize!")
+
+class PileupForm(FlaskForm):
+    """Form to trigger pileup with certain binsize"""
+    binsize = SelectField("Binsize", validators=[DataRequired()])
+    submit_pileup = SubmitField("Submit")
