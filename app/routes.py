@@ -313,8 +313,10 @@ def handle_pileup_form(pileup_form):
     # scale output so that colormap can be adjusted in integer steps
     output_molten.loc[:, "value"] = output_molten["value"] * 10000
     # stitch together filepath
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    static_dir = os.path.join(basedir, "static")
     file_name = file_path.split("/")[-1] + f".{window_size}" + f".{binsize}.csv"
-    output_molten.to_csv(f"app/static/{file_name}", index=False)
+    output_molten.to_csv(os.path.join(static_dir, file_name), index=False)
     # add this to database
     new_entry = Pileup(binsize=int(binsize), name=file_name, file_path=file_name, pileupregion_id=pileup_region_id,
                        cooler_id=cooler_id)

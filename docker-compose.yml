@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+    higlass:
+        container_name: higlass-container
+        image: higlass/higlass-docker
+        environment:
+            - UPLOAD_ENABLED=true
+            - PUBLIC_UPLOAD_ENABLED=true
+        volumes:
+            - C:\\temp\\Higlass_data:/data
+            - C:\\temp\\Higlass_temp:/tmp
+        ports:
+            - "8888:80"
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.2
+
+    hicognition:
+        container_name: flask-server
+        volumes: 
+            - C:\\:/mnt/c
+        environment:
+            - PYTHONPATH=/mnt/c/Users/michael.mitter/Documents/HiCognition/HiCognition_queue/
+            - FLASK_APP=/mnt/c/Users/michael.mitter/Documents/HiCognition/HiCognition_flask/hicognition_server.py
+        ports:
+            - "5000:5000"
+        image: flask:test
+        entrypoint: "/bin/bash"
+        command: -c "source activate flask && flask run --host=0.0.0.0"
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.3
+
+networks:
+    hicognition-net:
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.18.0.0/16
