@@ -5,3 +5,5 @@ helper_scripts/*
 temp/*
 .vscode/*
 *.csv
+workdir/higlass_data/*
+workdir/higlass_temp/*

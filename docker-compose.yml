@@ -8,8 +8,8 @@ services:
             - UPLOAD_ENABLED=true
             - PUBLIC_UPLOAD_ENABLED=true
         volumes:
-            - C:\\temp\\Higlass_data:/data
-            - C:\\temp\\Higlass_temp:/tmp
+            - ${DATA_DIR}:/data
+            - ${HIGLASS_TMP}:/tmp
         ports:
             - "8888:80"
         networks:
@@ -18,16 +18,21 @@ services:
 
     hicognition:
         container_name: flask-server
-        volumes: 
-            - C:\\:/mnt/c
+        volumes:  
+            - ${HICOGNITION_DIR}:/code # quick and dirty mount of the git repo
+            # TODO fix this, this is horrible
+            # #HICOGNITION_DIR=./workdir/hicognition_dir -> use for path of DB
         environment:
-            - PYTHONPATH=/mnt/c/Users/michael.mitter/Documents/HiCognition/HiCognition_queue/
-            - FLASK_APP=/mnt/c/Users/michael.mitter/Documents/HiCognition/HiCognition_flask/hicognition_server.py
+            - UPLOAD_ENABLED=true
+            - PUBLIC_UPLOAD_ENABLED=true
+            - FLASK_DEBUG=1
+            - FLASK_APP=/code/hicognition_server.py
         ports:
             - "5000:5000"
-        image: flask:test
+        image: flask:test2
+            # TODO Host this on Dockerhub
         entrypoint: "/bin/bash"
-        command: -c "source activate flask && flask run --host=0.0.0.0"
+        command: -c "source activate flask && cd /code && flask db upgrade && flask run --host=0.0.0.0"
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.3

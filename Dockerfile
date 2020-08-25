@@ -17,6 +17,8 @@ RUN source activate flask &&\
     pip install git+git://github.com/mirnylab/bioframe &&\
     pip install git+git://github.com/mirnylab/cooltools &&\
     pip install git+git://github.com/gerlichlab/ngs &&\
-    pip install git+git://github.com/Mittmich/higlassupload
+    pip install git+git://github.com/Mittmich/higlassupload &&\
+    pip install /temp/install/. 
+    #Installs the repo itselve
 
 CMD ["/bin/bash"]
