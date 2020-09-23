@@ -5,12 +5,7 @@ import json
 import os
 from requests.exceptions import HTTPError
 from test_helpers import TempDirTestCase
-# hack for development
-import sys
-
-sys.path.append("./")
 from hicognition import higlass_interface
-
 
 class TestPreprocessDataset(TempDirTestCase):
     """Tests for preprocess_datasets function."""

@@ -2,6 +2,7 @@
 data formats."""
 import pandas as pd
 import bioframe
+from functools import partial
 
 
 def convert_bed_to_bedpe(input_file, target_file, halfwindowsize):
@@ -47,6 +48,34 @@ def convert_bed_to_bedpe(input_file, target_file, halfwindowsize):
     final.to_csv(target_file, sep="\t", header=None, index=False)
 
 
-def sort_bed(bedfile, chromsizes):
+def sort_bed(input_file, output_file, chromsizes):
     """Sorts entries in bedfile according to chromsizes and
-    writes it to a file."""
+    writes it to a file. input_file, output_file and chromsizes
+    should be a string containing the path to the respective
+    files."""
+    # create helper sort function
+    def chromo_sort_function(element, data_unsorted, chromsizes):
+        return chromsizes.index(data_unsorted.iloc[element, 0])
+
+    # open inputfile and chromosome sizes
+    data_unsorted = pd.read_csv(input_file, sep="\t", header=None)
+    chromsizes = pd.read_csv(chromsizes, sep="\t", header=None)
+    # extract chromsizes order as a list for later searching
+    chrom_order = chromsizes[0].to_list()
+    # presort data based on genomic positions. Column at index 1 should contain genomic positions.
+    genome_pos_sorted = data_unsorted.sort_values(by=[1])
+    # reset index
+    genome_pos_sorted.index = range(len(genome_pos_sorted))
+    # get sorted index based on chromosome names
+    sorted_index = sorted(
+        range(len(genome_pos_sorted)),
+        key=partial(
+            chromo_sort_function,
+            data_unsorted=genome_pos_sorted,
+            chromsizes=chrom_order,
+        ),
+    )
+    # reorder based on chromosome order
+    output = genome_pos_sorted.iloc[sorted_index, :]
+    # write to file
+    output.to_csv(output_file, sep="\t", index=False, header=None)

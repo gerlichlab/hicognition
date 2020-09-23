@@ -54,6 +54,22 @@ class TestSortBed(TempDirTestCase):
     """Tests sorting of bedfiles according to chromosomesizes
     and genomic position."""
 
+    def test_small_data_w_standard_chromos(self):
+        """tests sorting of a small test dataset with only
+        chromosomes that are named chr${int}"""
+        io_helpers.sort_bed(
+            "tests/testfiles/test_small.bed",
+             os.path.join(self.tempdir, "test_small_sorted_result.bed"),
+             "data/hg19.chrom.sizes"
+        )
+        # load expected data
+        expected = pd.read_csv("tests/testfiles/test_small_sorted.bed", sep="\t", header=None)
+        # load result
+        result = pd.read_csv(
+            os.path.join(self.tempdir, "test_small_sorted_result.bed"), sep="\t", header=None
+        )
+        # compare
+        assert_frame_equal(expected, result)
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)
