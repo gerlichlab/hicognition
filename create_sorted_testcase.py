@@ -50,3 +50,30 @@ inputFile = pd.concat((dataUnsorted, badChromos))
 inputFile.to_csv("./tests/testfiles/test_small_bad_chromos.bed", sep="\t", index=False, header=None)
 
 # expected behavior, remove the bad chromosoes, smae as test_small_sorted.bed
+
+###### sort real dataset with two columns
+
+dataUnsorted = pd.read_csv("./tests/testfiles/test2_realData_twocol.bed", sep="\t", header=None)
+chromsizes = pd.read_csv("./data/hg19.chrom.sizes", sep="\t", header=None)
+chrom_order = chromsizes[0].to_list()
+
+# find center
+
+def sortFunction(element, dataUnsorted, chromsizes):
+    return chromsizes.index(dataUnsorted.iloc[element, 0])
+
+
+
+input_frame = dataUnsorted.rename(columns={0: "chrom", 1: "start", 2: "end"})
+input_frame.loc[:, "pos"] = (input_frame["start"] + input_frame["end"]) // 2
+temp_frame = input_frame[["chrom", "pos"]]
+
+dummyIndex = temp_frame.index
+
+sortedByGenomicPos = temp_frame.sort_values(by=["pos"])
+
+sortedIndex = sorted(dummyIndex, key=partial(sortFunction, dataUnsorted=sortedByGenomicPos, chromsizes=chrom_order))
+
+dataSorted = sortedByGenomicPos.iloc[sortedIndex, :]
+
+dataSorted.to_csv("./tests/testfiles/test2_realData_twocol_sorted.bed", sep="\t", index=False, header=None)

@@ -64,15 +64,27 @@ def sort_bed(input_file, output_file, chromsizes):
     chromsizes = pd.read_csv(chromsizes, sep="\t", header=None)
     # extract chromsizes order as a list for later searching
     chrom_order = chromsizes[0].to_list()
+    # handle case that positions are specified in two columns
+    if (
+        len(data_unsorted.columns) > 2
+    ):  # assuming second and third column hold position info
+        data_unsorted = data_unsorted.rename(columns={0: "chrom", 1: "start", 2: "end"})
+        data_unsorted.loc[:, "pos"] = (
+            data_unsorted["start"] + data_unsorted["end"]
+        ) // 2
+        temp_frame = data_unsorted[["chrom", "pos"]]
+    else:  # assuming second column holds position info
+        data_unsorted = data_unsorted.rename(columns={0: "chrom", 1: "pos"})
+        temp_frame = data_unsorted
     # filter out chromosomes that are not in chromsizes
-    data_filtered = data_unsorted.loc[data_unsorted[0].isin(chrom_order), :]
+    data_filtered = temp_frame.loc[temp_frame["chrom"].isin(chrom_order), :]
     # warn that this has happened
-    if len(data_unsorted) != len(data_filtered):
-        filtered_rows = data_unsorted.loc[~data_unsorted[0].isin(chrom_order), :]
-        bad_chroms = " ".join(sorted([i for i in set(filtered_rows[0])]))
+    if len(temp_frame) != len(data_filtered):
+        filtered_rows = temp_frame.loc[~temp_frame["chrom"].isin(chrom_order), :]
+        bad_chroms = " ".join(sorted([i for i in set(filtered_rows["chrom"])]))
         logging.warning(f"Unsupported chromosomes in bedfile: {bad_chroms}")
     # presort data based on genomic positions. Column at index 1 should contain genomic positions.
-    genome_pos_sorted = data_filtered.sort_values(by=[1])
+    genome_pos_sorted = data_filtered.sort_values(by=["pos"])
     # reset index
     genome_pos_sorted.index = range(len(genome_pos_sorted))
     # get sorted index based on chromosome names

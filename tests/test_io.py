@@ -60,14 +60,18 @@ class TestSortBed(TempDirTestCase):
         chromosomes that are named chr${int}"""
         io_helpers.sort_bed(
             "tests/testfiles/test_small.bed",
-             os.path.join(self.tempdir, "test_small_sorted_result.bed"),
-             "data/hg19.chrom.sizes"
+            os.path.join(self.tempdir, "test_small_sorted_result.bed"),
+            "data/hg19.chrom.sizes",
         )
         # load expected data
-        expected = pd.read_csv("tests/testfiles/test_small_sorted.bed", sep="\t", header=None)
+        expected = pd.read_csv(
+            "tests/testfiles/test_small_sorted.bed", sep="\t", header=None
+        )
         # load result
         result = pd.read_csv(
-            os.path.join(self.tempdir, "test_small_sorted_result.bed"), sep="\t", header=None
+            os.path.join(self.tempdir, "test_small_sorted_result.bed"),
+            sep="\t",
+            header=None,
         )
         # compare
         assert_frame_equal(expected, result)
@@ -77,14 +81,18 @@ class TestSortBed(TempDirTestCase):
         that comply to chr${int} as well as chrX and chrY"""
         io_helpers.sort_bed(
             "tests/testfiles/test_small_weird_chromos.bed",
-             os.path.join(self.tempdir, "test_small_sorted_weird_chromos_result.bed"),
-             "data/hg19.chrom.sizes"
+            os.path.join(self.tempdir, "test_small_sorted_weird_chromos_result.bed"),
+            "data/hg19.chrom.sizes",
         )
         # load expected data
-        expected = pd.read_csv("tests/testfiles/test_small_weird_chromos_sorted.bed", sep="\t", header=None)
+        expected = pd.read_csv(
+            "tests/testfiles/test_small_weird_chromos_sorted.bed", sep="\t", header=None
+        )
         # load result
         result = pd.read_csv(
-            os.path.join(self.tempdir, "test_small_sorted_weird_chromos_result.bed"), sep="\t", header=None
+            os.path.join(self.tempdir, "test_small_sorted_weird_chromos_result.bed"),
+            sep="\t",
+            header=None,
         )
         # compare
         assert_frame_equal(expected, result)
@@ -95,19 +103,45 @@ class TestSortBed(TempDirTestCase):
         that comply to chr${int} as well as chrX and chrY"""
         io_helpers.sort_bed(
             "tests/testfiles/test_small_bad_chromos.bed",
-             os.path.join(self.tempdir, "test_small_sorted_bad_chromos_result.bed"),
-             "data/hg19.chrom.sizes"
+            os.path.join(self.tempdir, "test_small_sorted_bad_chromos_result.bed"),
+            "data/hg19.chrom.sizes",
         )
         # load expected data
-        expected = pd.read_csv("tests/testfiles/test_small_sorted.bed", sep="\t", header=None)
+        expected = pd.read_csv(
+            "tests/testfiles/test_small_sorted.bed", sep="\t", header=None
+        )
         # load result
         result = pd.read_csv(
-            os.path.join(self.tempdir, "test_small_sorted_bad_chromos_result.bed"), sep="\t", header=None
+            os.path.join(self.tempdir, "test_small_sorted_bad_chromos_result.bed"),
+            sep="\t",
+            header=None,
         )
         # compare
         assert_frame_equal(expected, result)
         # assert that warning has been issued
-        mock_logging.assert_called_with("Unsupported chromosomes in bedfile: chrA chrB chrD")
+        mock_logging.assert_called_with(
+            "Unsupported chromosomes in bedfile: chrA chrB chrD"
+        )
+
+    def test_real_data_two_col(self):
+        """tests sorting of part of a real dataset with positions specified in twocolumns"""
+        io_helpers.sort_bed(
+            "tests/testfiles/test2_realData_twocol.bed",
+            os.path.join(self.tempdir, "test2_realData_twocol_sorted_result.bed"),
+            "data/hg19.chrom.sizes",
+        )
+        # load expected data
+        expected = pd.read_csv(
+            "tests/testfiles/test2_realData_twocol_sorted.bed", sep="\t", header=None
+        )
+        # load result
+        result = pd.read_csv(
+            os.path.join(self.tempdir, "test2_realData_twocol_sorted_result.bed"),
+            sep="\t",
+            header=None,
+        )
+        # compare
+        assert_frame_equal(expected, result)
 
 
 if __name__ == "__main__":
