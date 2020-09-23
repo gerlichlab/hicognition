@@ -1,4 +1,4 @@
-"""Helper functions and class for unittesting"""
+"""Helper functions and classes for unittesting"""
 import unittest
 import os
 import shutil

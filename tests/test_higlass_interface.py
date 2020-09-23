@@ -2,6 +2,7 @@
 import unittest
 from functools import partial
 import json
+import os
 from requests.exceptions import HTTPError
 from test_helpers import TempDirTestCase
 # hack for development
@@ -24,7 +25,7 @@ class TestPreprocessDataset(TempDirTestCase):
             file_type="bedfile",
             chromsizes_path="./data/hg19.chrom.sizes",
             file_path="./tests/testfiles/test3_realData_large.bed",
-            output_path="./tmp_test/test3_realData_large.beddb",
+            output_path=os.path.join(self.tempdir, "test3_realData_large.beddb"),
         )
         # test exit code
         self.assertEqual(exit_code, 0)
@@ -37,7 +38,7 @@ class TestPreprocessDataset(TempDirTestCase):
             file_type="bedfile",
             chromsizes_path="./data/hg19.chrom.sizes",
             file_path="./tests/testfiles/test3_realData_large_false.bed",
-            output_path="./tmp_test/test3_realData_large.beddb",
+            output_path=os.path.join(self.tempdir, "test3_realData_large.beddb"),
         )
         self.assertNotEqual(exit_code, 0)
 
@@ -49,7 +50,7 @@ class TestPreprocessDataset(TempDirTestCase):
             file_type="awesomefile",
             chromsizes_path="./data/hg19.chrom.sizes",
             file_path="./tests/testfiles/test3_realData_large_false.bed",
-            output_path="./tmp_test/test3_realData_large.beddb",
+            output_path=os.path.join(self.tempdir, "test3_realData_large.beddb"),
         )
         self.assertRaises(ValueError, badcall)
 
@@ -63,7 +64,7 @@ class TestPreprocessDataset(TempDirTestCase):
             file_type="bedpe",
             chromsizes_path="./data/hg19.chrom.sizes",
             file_path="./tests/testfiles/test2_realData_twocol.bedpe",
-            output_path="./tmp_test/test2_realData_twocol.bed2ddb",
+            output_path=os.path.join(self.tempdir, "test2_realData_twocol.bed2ddb")
         )
         # test exit code
         self.assertEqual(exit_code, 0)
