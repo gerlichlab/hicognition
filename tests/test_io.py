@@ -1,25 +1,15 @@
 """Tests for io_helpers.py."""
 import unittest
-import shutil
 import os
 import pandas as pd
 from pandas.testing import assert_frame_equal
+from test_helpers import TempDirTestCase
 from hicognition import io_helpers
 
 
-class TestConvertBedToBedPE(unittest.TestCase):
+class TestConvertBedToBedPE(TempDirTestCase):
     """Tests to check conversion from bed
     to bedpe with a given windowsize."""
-
-    def setUp(self):
-        """setup test environment."""
-        # make test directory
-        os.mkdir("./tmp_test")
-        self.tempdir = "./tmp_test"
-
-    def tearDown(self):
-        """remove test directory"""
-        shutil.rmtree("./tmp_test")
 
     def test_small_single_column(self):
         """Tests conversion of a small synthetic file to
@@ -58,6 +48,11 @@ class TestConvertBedToBedPE(unittest.TestCase):
         )
         # compare
         assert_frame_equal(expected, result)
+
+
+class TestSortBed(TempDirTestCase):
+    """Tests sorting of bedfiles according to chromosomesizes
+    and genomic position."""
 
 
 if __name__ == "__main__":

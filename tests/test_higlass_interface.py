@@ -1,10 +1,9 @@
 """Tests for higlass_interface.py."""
 import unittest
-import shutil
-import os
 from functools import partial
 import json
 from requests.exceptions import HTTPError
+from test_helpers import TempDirTestCase
 # hack for development
 import sys
 
@@ -12,18 +11,8 @@ sys.path.append("./")
 from hicognition import higlass_interface
 
 
-class TestPreprocessDataset(unittest.TestCase):
+class TestPreprocessDataset(TempDirTestCase):
     """Tests for preprocess_datasets function."""
-
-    def setUp(self):
-        """setup test environment."""
-        # make test directory
-        os.mkdir("./tmp_test")
-        self.tempdir = "./tmp_test"
-
-    def tearDown(self):
-        """remove test directory"""
-        shutil.rmtree("./tmp_test")
 
     def test_preprocess_bed(self):
         """Test preprocessing of bedfile.

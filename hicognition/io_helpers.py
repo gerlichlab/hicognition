@@ -45,3 +45,8 @@ def convert_bed_to_bedpe(input_file, target_file, halfwindowsize):
     # construct final dataframe and write it to file
     final = pd.concat((filtered, filtered), axis=1)
     final.to_csv(target_file, sep="\t", header=None, index=False)
+
+
+def sort_bed(bedfile, chromsizes):
+    """Sorts entries in bedfile according to chromsizes and
+    writes it to a file."""
