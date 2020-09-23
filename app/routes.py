@@ -236,9 +236,15 @@ def handle_pileup_region_select(form_pileup):
             DATASET_MAPPING[current_user.id]["pileup_region"] = query_result[0].id
             return redirect(url_for("higlass"))
         input_file = input_region.file_path
-        target_file = input_file + f".{form_pileup.windowsize.data}" + ".bedpe"
+        # sort file
+        sorted_file_name = input_file.split(".")[0] + "_sorted.bed"
+        io_helpers.sort_bed(input_file,
+            sorted_file_name,
+            app.config["CHROM_SIZES"]
+        )
+        target_file = sorted_file_name + f".{form_pileup.windowsize.data}" + ".bedpe"
         io_helpers.convert_bed_to_bedpe(
-            input_file, target_file, form_pileup.windowsize.data
+            sorted_file_name, target_file, form_pileup.windowsize.data
         )
         # preprocess with clodius
         clodius_output = target_file + ".bed2ddb"
