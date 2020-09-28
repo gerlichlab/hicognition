@@ -7,3 +7,18 @@ temp/*
 *.csv
 workdir/higlass_data/*
 workdir/higlass_temp/*
+
+.DS_Store
+front_end/node_modules/
+front_end/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
