@@ -1,5 +1,11 @@
 # HiCognition_flask
-Flask server for HiCognition
+Flask server for HiCognition with Vue.js frontend.
+
+## Project architecture
+
+This is a single-page application (SPA) that uses nginx to serve
+Front-end files are located in [front_end](./front_end) and back-end files are located in [back_end](./back_end). 
+
 
 ## Branches
 `stable` locked version, will be updated only once at the end of a sprint.

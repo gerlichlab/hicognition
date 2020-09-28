@@ -30,6 +30,7 @@ DATASET_MAPPING = defaultdict(lambda: None)
 @app.route("/", methods=["GET", "POST"])
 @app.route("/index", methods=["GET", "POST"])
 @app.route("/higlass", methods=["GET", "POST"])
+@app.route("/api/higlass", methods=["GET", "POST"])
 @login_required
 def higlass():
     """Main app."""

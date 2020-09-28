@@ -59,6 +59,19 @@ services:
                                                                                                                                                                                 'admin1@example.com',
                                                                                                                                                                                 '${DJANGO_SUPERUSER_PASSWORD}')"
 
+    nginx:
+        container_name: hicognition-nginx
+        build:
+            context: "./nginx"
+        ports:
+            - "80:80"
+        # map front-end files
+        volumes:
+            - ${DIR_FRONT_END}:/front_end
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.4
+
 networks:
     hicognition-net:
         ipam:
