@@ -3,7 +3,7 @@ Flask server for HiCognition with Vue.js frontend.
 
 ## Project architecture
 
-This is a single-page application (SPA) that uses nginx to serve
+This is a single-page application (SPA) that uses nginx to serve the front-end to redirect api-calls from the front-end to a back-end flask-server.
 Front-end files are located in [front_end](./front_end) and back-end files are located in [back_end](./back_end). 
 
 
