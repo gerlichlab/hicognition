@@ -18,7 +18,8 @@ services:
         depends_on:
             - higlass
         ports:
-            - "5000:5000"
+            # only map localhost-port
+            - "127.0.0.1:5000:5000"
         image: flask:test2
             # TODO Host this on Dockerhub
         entrypoint: "/bin/bash"
