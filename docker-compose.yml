@@ -1,6 +1,7 @@
 version: "3"
 
 services:
+    # flask-api server
     hicognition:
         container_name: flask-server
         volumes:  
@@ -26,6 +27,7 @@ services:
             hicognition-net:
                 ipv4_address: 172.18.0.3
 
+    # higlass server
     higlass:
         container_name: higlass-container
         image: higlass/higlass-docker
@@ -39,6 +41,7 @@ services:
             - "8888:80"
         depends_on:
             - higlass-usercreation
+            - nginx
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.2
@@ -58,7 +61,7 @@ services:
                                                                                   User.objects.filter(username='${DJANGO_SUPERUSER}').exists() or User.objects.create_superuser('${DJANGO_SUPERUSER}',
                                                                                                                                                                                 'admin1@example.com',
                                                                                                                                                                                 '${DJANGO_SUPERUSER_PASSWORD}')"
-
+    # nginx server to serve front-end and redirect requests to flask-pai
     nginx:
         container_name: hicognition-nginx
         build:
@@ -66,11 +69,24 @@ services:
         ports:
             - "80:80"
         # map front-end files
+        depends_on:
+            - node
         volumes:
             - ${DIR_FRONT_END}:/front_end
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.4
+
+# container to build front-end
+    node:
+        container_name: node-builder
+        image: node:latest
+        volumes:
+            - ${DIR_FRONT_END}:/front_end
+        entrypoint: 
+            - "/bin/bash"
+        command: -c "cd /front_end && npm install && npm run build"
+
 
 networks:
     hicognition-net:

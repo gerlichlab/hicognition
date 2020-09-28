@@ -36,7 +36,7 @@ export default {
 <style>
 
 .span-window-horizontal {
-  width: 97vw;
+  width: 97vw !important;
 }
 
 </style>
