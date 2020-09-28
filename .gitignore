@@ -1,12 +1,12 @@
 __pycache__/*
 app.db
 *.pyc
-helper_scripts/*
-temp/*
+helper_scripts/
+back_end/temp/
 .vscode/*
 *.csv
-workdir/higlass_data/*
-workdir/higlass_temp/*
+workdir/higlass_data/
+workdir/higlass_temp/
 
 .DS_Store
 front_end/node_modules/
