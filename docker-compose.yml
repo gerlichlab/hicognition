@@ -20,6 +20,8 @@ services:
         ports:
             # only map localhost-port
             - "127.0.0.1:5000:5000"
+        build:
+            context: "./back_end"
         image: flask:test2
             # TODO Host this on Dockerhub
         entrypoint: "/bin/bash"
