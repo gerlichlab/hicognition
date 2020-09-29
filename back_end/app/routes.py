@@ -27,12 +27,6 @@ from app.forms import (
 
 DATASET_MAPPING = defaultdict(lambda: None)
 
-
-@app.route("/api/test", methods=["GET"])
-def test():
-    """test api calls"""
-    return jsonify({"test": "Hello, world!"})
-
 @app.route("/", methods=["GET", "POST"])
 @app.route("/index", methods=["GET", "POST"])
 @app.route("/higlass", methods=["GET", "POST"])
