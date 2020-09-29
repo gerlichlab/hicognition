@@ -1,15 +1,22 @@
 """Init script for HiCognition"""
 from flask import Flask
-from config import Config
+from config import config
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from flask_login import LoginManager
 
-app = Flask(__name__)
-app.config.from_object(Config)
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-login = LoginManager(app)
-login.login_view = "login"
 
-from app import routes, models
+db = SQLAlchemy()
+login = LoginManager()
+
+def create_app(config_name):
+    """factory to create app."""
+    app = Flask(__name__)
+    app.config.from_object(config[config_name])
+    db.init_app(app)
+    # TODO: check if this is needed
+    login.init_app(app)
+    login.login_view = "login"
+    # register api blueprint
+    from .api import api as api_blueprint
+    app.register_blueprint(api_blueprint, url_prefix='/api/')
+    return app
