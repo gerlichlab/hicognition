@@ -11,8 +11,8 @@ def test():
     return jsonify({"test": "Hello, world!"})
 
 
-@api.route('/testConf', methods=["GET"])
+@api.route('/testProtected', methods=["GET"])
 @auth.login_required
-def test_conf():
+def test_protected():
     """test api calls"""
     return jsonify({"test": "Hello, world!"})
