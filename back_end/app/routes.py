@@ -2,6 +2,7 @@
 import os
 from collections import defaultdict
 from flask import render_template, flash, redirect, url_for, request
+from flask.json import jsonify
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
@@ -26,6 +27,11 @@ from app.forms import (
 
 DATASET_MAPPING = defaultdict(lambda: None)
 
+
+@app.route("/api/test", methods=["GET"])
+def test():
+    """test api calls"""
+    return jsonify({"test": "Hello, world!"})
 
 @app.route("/", methods=["GET", "POST"])
 @app.route("/index", methods=["GET", "POST"])

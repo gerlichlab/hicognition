@@ -42,7 +42,6 @@ services:
             - "8888:80"
         depends_on:
             - higlass-usercreation
-            - nginx
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.2
@@ -72,6 +71,7 @@ services:
         # map front-end files
         depends_on:
             - node
+            - hicognition
         volumes:
             - ${DIR_FRONT_END}:/front_end
         networks:
