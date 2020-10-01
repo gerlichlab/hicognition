@@ -11,10 +11,7 @@
       </md-app-drawer>
 
       <md-app-content>
-        <div>
-          <higlass></higlass>
-          <pileupcard></pileupcard>
-        </div>
+        <router-view></router-view>
       </md-app-content>
 
     </md-app>
@@ -22,28 +19,40 @@
 </template>
 
 <script>
-import pileupcard from "./components/pileupcard";
-import higlass from "./components/higlass";
 import drawer from "./components/drawer"
 import toolbar from "./components/toolbar"
+import VueRouter from 'vue-router'
+
+// import routes
+
+import mainRoute from "./routes/mainRoute"
+import loginRoute from "./routes/loginRoute"
+
+// define routes
+
+const routes = [
+  { path: '/main', component: mainRoute },
+  { path: '/login', component: loginRoute }
+]
+
+var router = new VueRouter({routes})
 
 export default {
-  name: "LastRowFixed",
+  name: "mainApp",
   components: {
-    pileupcard,
-    higlass,
     drawer,
     toolbar
   },
   data: () => ({
     menuVisible: false,
   }),
+  router
 };
 </script>
 
 <style lang="scss" scoped>
 .md-app {
-  max-height: 100vh;
+  height: 100vh;
   border: 1px solid rgba(#000, 0.12);
 }
 </style>

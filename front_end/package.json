@@ -13,7 +13,8 @@
     "apexcharts": "^3.21.0",
     "vue": "^2.5.2",
     "vue-apexcharts": "^1.6.0",
-    "vue-material": "latest"
+    "vue-material": "latest",
+    "vue-router": "^3.4.5"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

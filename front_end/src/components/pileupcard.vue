@@ -26,7 +26,7 @@ export default {
 <style lang="scss" scoped>
 .pileup-card {
   width: 30vw;
-  height: 85vh;
+  height: 88vh;
   margin: 4px;
   display: inline-block;
 }

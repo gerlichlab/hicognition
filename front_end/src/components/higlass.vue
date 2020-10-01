@@ -13,6 +13,21 @@
 <script>
 export default {
   name: "higlass-card",
+  mounted(){
+    this.createHiGlass()
+  },
+  methods: {
+    createHiGlass: function () {
+      const hgApi = hglib.viewer(
+            document.getElementById('higlass-browser'),
+            'http://higlass.io/api/v1/viewconfs/?d=default',
+            {
+              bounded: true,
+              editable: false
+            }
+          ); 
+    }
+  }
 };
 </script>
 
@@ -20,7 +35,7 @@ export default {
 <style lang="scss" scoped>
 .higlass-card {
   width: 65vw;
-  height: 85vh;
+  height: 88vh;
   margin: 4px;
   display: inline-block;
   vertical-align: top;
