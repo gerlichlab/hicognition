@@ -38,7 +38,7 @@ export default {
       handleSubmit: function (e) {
         e.preventDefault();
         if (this.password.length > 0) {
-          this.$http.post('http://localhost:5000/api/tokens/', {}, {
+          this.$http.post(process.env.API_URL + "tokens/", {}, {
             auth: {
               username: this.username,
               password: this.password
