@@ -26,5 +26,8 @@ name: "mainRoute",
     toolbar,
     drawer
   },
+  data: () => ({
+    menuVisible: false,
+  }),
 }
 </script>>

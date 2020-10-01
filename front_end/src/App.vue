@@ -34,9 +34,6 @@ export default {
     drawer,
     toolbar
   },
-  data: () => ({
-    menuVisible: false,
-  }),
   router
 };
 </script>
