@@ -1,35 +1,30 @@
 <template>
-  <div>
+    <md-app md-waterfall md-mode="fixed-last">
+      <md-app-toolbar class="md-large md-dense md-primary">
+        <loginToolbar></loginToolbar>
+      </md-app-toolbar>
 
-  <md-card md-with-hover class="halfwidth center">
-    <md-card-header>
-      <div class="md-title">Login</div>
-    </md-card-header>
-
-    <md-card-content>
-        <md-field md-clearable>
-        <label>Username</label>
-        <label>Username</label>
-        <md-input v-model="initial"></md-input>
-        </md-field>
-
-        <md-field>
-        <label>Password</label>
-        <md-input v-model="password" type="password"></md-input>
-        </md-field>
-        <md-button class="md-dense md-raised md-primary">Submit</md-button>
-    </md-card-content>
-  </md-card>
-  </div>
+      <md-app-content>
+        <loginForm></loginForm>
+      </md-app-content>
+    </md-app>
 </template>
 
 <script>
+
+import loginToolbar from "../components/loginToolbar"
+import loginForm from "../components/loginForm"
+
 export default {
     name: 'Login',
     props: [
         "initial",
         "password"
-    ]
+    ],
+    components: {
+        loginToolbar,
+        loginForm
+    }
 }
 </script>>
 
@@ -48,4 +43,4 @@ export default {
   transform: translate(-50%, -50%);
 }
 
-</style>>
+</style>
