@@ -17,6 +17,9 @@ class Config:
     )
     HIGLASS_USER = os.environ.get("HIGLASS_USER") or "dummy"
     HIGLASS_PWD = os.environ.get("HIGLASS_PWD") or "xnVMhmKF7d^7"
+    CORS_SUPPORTS_CREDENTIALS = True
+    CORS_ALLOW_HEADERS = True
+    CORS_EXPOSE_HEADERS = True
 
 
 class DevelopmentConfig(Config):

@@ -28,7 +28,7 @@ services:
             - HIGLASS_PWD=${DJANGO_SUPERUSER_PASSWORD}
         ports:
             # only map localhost-port
-            - "127.0.0.1:5000:5000"
+            - "5000:5000"
         build:
             context: "./back_end"
         image: flask:test2

@@ -14,7 +14,7 @@
         <label>Password</label>
         <md-input v-model="password" type="password"></md-input>
         </md-field>
-        <md-button class="md-dense md-raised md-primary">Submit</md-button>
+        <md-button class="md-dense md-raised md-primary" @click="handleSubmit">Submit</md-button>
     </md-card-content>
   </md-card>
 </template>
@@ -33,13 +33,19 @@ export default {
       handleSubmit: function (e) {
         e.preventDefault();
         if (this.password.length > 0) {
-                    this.$http.post('http://localhost:5000/login', {
-                        email: this.email,
+                    this.$http.post('http://localhost:5000/api/tokens/', {}, {
+                      auth: {
+                        username: this.username,
                         password: this.password
+                      }
                     })
                     .then(response => {
-                      if (response){
-                        //TODO: check status code
+                      if (response.status != 200){
+                        //TODO: show failure to user
+                      }else{
+                        // success, store token and route to main/predefined
+                        localStorage.setItem("token", response.data.token);
+                        this.$router.push("/main/predefined");
                       }
                     })
                     .catch(function (error) {
