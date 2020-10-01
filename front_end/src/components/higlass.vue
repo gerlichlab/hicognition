@@ -13,12 +13,17 @@
 <script>
 export default {
   name: "higlass-card",
+  data: function() {
+    return {
+      higlass: null
+    }
+  },
   mounted(){
     this.createHiGlass()
   },
   methods: {
     createHiGlass: function () {
-      const hgApi = hglib.viewer(
+      this.higlass = hglib.viewer(
             document.getElementById('higlass-browser'),
             'http://higlass.io/api/v1/viewconfs/?d=default',
             {

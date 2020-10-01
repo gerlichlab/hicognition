@@ -5,8 +5,6 @@
 </template>
 
 <script>
-import drawer from "./components/drawer"
-import toolbar from "./components/toolbar"
 import VueRouter from 'vue-router'
 
 // import routes
@@ -39,10 +37,6 @@ var router = new VueRouter({routes})
 
 export default {
   name: "mainApp",
-  components: {
-    drawer,
-    toolbar
-  },
   router
 };
 </script>
