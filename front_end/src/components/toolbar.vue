@@ -19,9 +19,9 @@
 
     <div class="md-toolbar-row">
       <md-tabs class="md-primary">
-        <md-tab id="tab-home" md-label="Predefined"></md-tab>
-        <md-tab id="tab-pages" md-label="Annotate"></md-tab>
-        <md-tab id="tab-posts" md-label="Explore"></md-tab>
+        <md-tab id="tab-home" md-label="Predefined" to="/main/predefined"></md-tab>
+        <md-tab id="tab-pages" md-label="Annotate" to="/main/annotate"></md-tab>
+        <md-tab id="tab-posts" md-label="Explore" to="/main/explore"></md-tab>
       </md-tabs>
     </div>
   </div>
