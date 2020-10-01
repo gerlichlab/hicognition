@@ -7,8 +7,7 @@
     <md-card-content>
         <md-field md-clearable>
         <label>Username</label>
-        <label>Username</label>
-        <md-input v-model="initial"></md-input>
+        <md-input v-model="username"></md-input>
         </md-field>
 
         <md-field>
@@ -24,10 +23,31 @@
 
 export default {
     name: 'Login',
-    props: [
-        "initial",
-        "password"
-    ]
+    data: function () {
+        return {
+          username: "",
+          password: ""
+        }
+    },
+    methods: {
+      handleSubmit: function (e) {
+        e.preventDefault();
+        if (this.password.length > 0) {
+                    this.$http.post('http://localhost:5000/login', {
+                        email: this.email,
+                        password: this.password
+                    })
+                    .then(response => {
+                      if (response){
+                        //TODO: check status code
+                      }
+                    })
+                    .catch(function (error) {
+                        console.error(error.response);
+                    });
+          }
+      }
+    }
 }
 </script>
 

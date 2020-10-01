@@ -7,6 +7,11 @@ Vue.config.productionTip = false
 import VueMaterial from 'vue-material'
 import 'vue-material/dist/vue-material.min.css'
 import 'vue-material/dist/theme/default.css'
+import Axios from 'axios'
+
+
+// add convenience methods for requests
+Vue.prototype.$http = Axios;
 
 // Vue.use specifies the use of a plugin, in this case VueMaterial
 Vue.use(VueMaterial)

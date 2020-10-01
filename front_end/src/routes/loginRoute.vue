@@ -17,10 +17,6 @@ import loginForm from "../components/loginForm"
 
 export default {
     name: 'Login',
-    props: [
-        "initial",
-        "password"
-    ],
     components: {
         loginToolbar,
         loginForm
