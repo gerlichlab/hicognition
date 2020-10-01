@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+    # container to build front-end
+    node:
+        container_name: node-dev
+        image: node:latest
+        ports:
+            # only map localhost-port
+            - "8080:8080"
+        volumes:
+            - ${DIR_FRONT_END}:/front_end
+        entrypoint: 
+            - "/bin/bash"
+        command: -c "cd /front_end && npm run dev"
+    
