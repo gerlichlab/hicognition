@@ -11,9 +11,16 @@
       </div>
 
       <div class="md-toolbar-section-end">
-        <md-button class="md-icon-button">
-          <md-icon>more_vert</md-icon>
-        </md-button>
+
+    <md-menu md-size="medium" md-align-trigger>
+      <md-button md-menu-trigger>
+        <md-icon>more_vert</md-icon>
+      </md-button>
+
+        <md-menu-content>
+          <md-menu-item @click="logout">Logout</md-menu-item>
+        </md-menu-content>
+      </md-menu>
       </div>
     </div>
 
@@ -30,6 +37,12 @@
 <script>
 export default {
   name: "toolbar",
+  methods: {
+    logout: function () {
+      localStorage.removeItem("token");
+      this.$router.push("/login");
+    }
+  }
 };
 </script>
 
