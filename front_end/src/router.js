@@ -1,4 +1,5 @@
 import VueRouter from 'vue-router'
+import store from "./store"
 
 // import routes
 
@@ -44,7 +45,7 @@ var router = new VueRouter({routes})
 
 router.beforeEach((to, from, next) => {
     if(to.matched.some(record => record.meta.requiresAuth)) {
-        if (localStorage.getItem('token') == null) {
+        if (store.getters.isTokenEmpty) {
             next({
                 path: '/login',
                 params: { nextUrl: to.fullPath }

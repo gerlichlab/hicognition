@@ -48,15 +48,15 @@ export default {
             if (response.status != 200){
               this.showError = true;
             }else{
-              // success, store token and route to main/predefined
-              localStorage.setItem("token", response.data.token);
+              // success, store token in vuex store and route to main/predefined
+              this.$store.commit("setToken", response.data.token);
               this.$router.push("/main/predefined");
             }
           })
           .catch(error => {
             this.showError = true;
           });
-          }
+        }
       }
     }
 }

@@ -7,7 +7,9 @@ Vue.config.productionTip = false
 import VueMaterial from 'vue-material'
 import 'vue-material/dist/vue-material.min.css'
 import 'vue-material/dist/theme/default.css'
+import store from "./store"
 import Axios from 'axios'
+
 
 
 // add convenience methods for requests
@@ -22,18 +24,9 @@ Vue.use(VueRouter)
 
 new Vue({
   el: '#app',
+  store,
   components: { 
     App
   },
   template: '<App/>'
 })
-
-// instantiate higlass
-/* const hgApi = hglib.viewer(
-  document.getElementById('higlass-browser'),
-  'http://higlass.io/api/v1/viewconfs/?d=default',
-  {
-    bounded: true,
-    editable: false
-  }
-); */

@@ -39,7 +39,7 @@ export default {
   name: "toolbar",
   methods: {
     logout: function () {
-      localStorage.removeItem("token");
+      this.$store.commit("clearToken");
       this.$router.push("/login");
     }
   }
