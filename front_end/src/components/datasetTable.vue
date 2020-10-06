@@ -19,6 +19,7 @@
       <md-table-row slot="md-table-row" slot-scope="{ item }">
         <md-table-cell md-label="ID" md-sort-by="id" md-numeric>{{ item.id }}</md-table-cell>
         <md-table-cell md-label="Name" md-sort-by="dataset_name">{{ item.dataset_name }}</md-table-cell>
+        <md-table-cell md-label="Filepath" md-sort-by="file_path">{{ item.file_path }}</md-table-cell>
         <md-table-cell md-label="Filetype" md-sort-by="filetype">{{ item.filetype }}</md-table-cell>
         <md-table-cell md-label="HiGlass ID" md-sort-by="higlass_uuid">{{ item.higlass_uuid }}</md-table-cell>
       </md-table-row>
@@ -33,7 +34,10 @@
 
   const searchByName = (items, term) => {
     if (term) {
-      return items.filter(item => toLower(item.name).includes(toLower(term)))
+      var filtered_items = items.filter(item => {
+          return toLower(item.dataset_name).includes(toLower(term))
+          });
+      return filtered_items
     }
 
     return items
@@ -50,7 +54,6 @@
         window.alert('Noop')
       },
       searchOnTable () {
-          console.log("called")
         this.searched = searchByName(this.datasets, this.search);
       }
     },
