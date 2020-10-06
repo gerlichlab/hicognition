@@ -117,21 +117,6 @@ class TestGetDatasets(LoginTest):
         db.session.add(dataset3)
         db.session.commit()
 
-    def add_and_authenticate(self, username, password):
-        """adds a user with username and password, authenticates
-        the user and returns a token."""
-         # add new user
-        new_user = User(username=username)
-        new_user.set_password(password)
-        db.session.add(new_user)
-        db.session.commit()
-        # get token
-        headers = self.get_api_headers("test", "asdf")
-        response = self.client.post(
-            "/api/tokens/", headers=headers, content_type="application/json"
-        )
-        return response.get_json()["token"]
-
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
         # protected route
@@ -182,9 +167,7 @@ class TestGetDatasets(LoginTest):
         self.add_test_datasets()
         # get datasets
         response = self.client.get(
-            "/api/datasets/bed",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/datasets/bed", headers=token_headers, content_type="application/json",
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -209,9 +192,7 @@ class TestGetDatasets(LoginTest):
         self.add_test_datasets()
         # get datasets
         response = self.client.get(
-            "/api/datasets/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/datasets/", headers=token_headers, content_type="application/json",
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -239,7 +220,7 @@ class TestGetDatasets(LoginTest):
             },
         ]
         self.assertEqual(response.json, expected)
-    
+
     def test_wrong_path(self):
         """Authenticated user tries to get datasets with wrong
         parameters."""
