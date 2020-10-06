@@ -12,6 +12,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
+    datasets = db.relationship("Dataset", backref="owner", lazy="dynamic")
 
     def set_password(self, password):
         """set password helper."""
@@ -47,6 +48,7 @@ class Dataset(db.Model):
     file_path = db.Column(db.String(128), index=True, unique=True)
     higlass_uuid = db.Column(db.String(64), index=True, unique=True)
     filetype = db.Column(db.String(64), index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     pileup_regions = db.relationship("Pileupregion", backref="source_dataset", lazy="dynamic")
     pileup = db.relationship("Pileup", backref="source_cooler", lazy="dynamic")
 
