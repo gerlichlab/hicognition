@@ -6,11 +6,12 @@
       </md-app-toolbar>
 
       <md-app-drawer :md-active.sync="menuVisible">
-        <drawer></drawer>
+        <drawer @mydataset-click="showDialog=true; menuVisible=false"></drawer>
       </md-app-drawer>
 
       <md-app-content>
         <router-view></router-view>
+        <datasetDialog :dialog="showDialog" @close-dialog="showDialog=false"></datasetDialog>
       </md-app-content>
   </md-app>
 </template>>
@@ -19,15 +20,18 @@
 
 import toolbar from "../components/toolbar";
 import drawer from "../components/drawer";
+import datasetDialog from "../components/myDatasetDialog"
 
 export default {
 name: "mainRoute",
   components: {
     toolbar,
-    drawer
+    drawer,
+    datasetDialog
   },
   data: () => ({
     menuVisible: false,
+    showDialog: false
   }),
 }
 </script>>
