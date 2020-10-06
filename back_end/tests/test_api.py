@@ -139,7 +139,7 @@ class TestGetDatasets(LoginTest):
         self.assertEqual(response.status_code, 401)
 
     def test_get_coolers(self):
-        """Authenticated user gets some datasets."""
+        """Authenticated user gets cooler datasets."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -173,7 +173,7 @@ class TestGetDatasets(LoginTest):
         self.assertEqual(response.json, expected)
 
     def test_get_bedfiles(self):
-        """Authenticated user gets some datasets."""
+        """Authenticated user gets bed datasets."""
         # add new user
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -198,3 +198,61 @@ class TestGetDatasets(LoginTest):
             },
         ]
         self.assertEqual(response.json, expected)
+
+    def test_get_all_datasets(self):
+        """Authenticated user gets cooler and bed datasets"""
+        # add new user
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add new datasets
+        self.add_test_datasets()
+        # get datasets
+        response = self.client.get(
+            "/api/datasets/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        expected = [
+            {
+                "dataset_name": "test1",
+                "file_path": "/test/path/1",
+                "filetype": "cooler",
+                "higlass_uuid": "asdf1234",
+                "id": 1,
+            },
+            {
+                "dataset_name": "test2",
+                "file_path": "/test/path/2",
+                "filetype": "cooler",
+                "higlass_uuid": "fdsa4321",
+                "id": 2,
+            },
+            {
+                "dataset_name": "test3",
+                "file_path": "/test/path/3",
+                "filetype": "bedfile",
+                "higlass_uuid": "fdsa8765",
+                "id": 3,
+            },
+        ]
+        self.assertEqual(response.json, expected)
+    
+    def test_wrong_path(self):
+        """Authenticated user tries to get datasets with wrong
+        parameters."""
+        # add new user
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add new datasets
+        self.add_test_datasets()
+        # get datasets
+        response = self.client.get(
+            "/api/datasets/asdf",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
