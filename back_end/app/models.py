@@ -62,7 +62,8 @@ class Dataset(db.Model):
             "dataset_name": self.dataset_name,
             "file_path": self.file_path,
             "higlass_uuid": self.higlass_uuid,
-            "filetype": self.filetype
+            "filetype": self.filetype,
+            "user_id": self.user_id
         }
         return json_dataset
 

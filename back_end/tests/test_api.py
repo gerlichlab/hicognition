@@ -102,18 +102,21 @@ class TestGetDatasets(LoginTest):
             file_path="/test/path/1",
             higlass_uuid="asdf1234",
             filetype="cooler",
+            user_id=1
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
             higlass_uuid="fdsa4321",
             filetype="cooler",
+            user_id=1
         )
         dataset3 = Dataset(
             dataset_name="test3",
             file_path="/test/path/3",
             higlass_uuid="fdsa8765",
             filetype="bedfile",
+            user_id=1
         )
         db.session.add(dataset1)
         db.session.add(dataset2)
@@ -149,6 +152,7 @@ class TestGetDatasets(LoginTest):
                 "filetype": "cooler",
                 "higlass_uuid": "asdf1234",
                 "id": 1,
+                "user_id": 1
             },
             {
                 "dataset_name": "test2",
@@ -156,6 +160,7 @@ class TestGetDatasets(LoginTest):
                 "filetype": "cooler",
                 "higlass_uuid": "fdsa4321",
                 "id": 2,
+                "user_id": 1
             },
         ]
         self.assertEqual(response.json, expected)
@@ -181,6 +186,7 @@ class TestGetDatasets(LoginTest):
                 "filetype": "bedfile",
                 "higlass_uuid": "fdsa8765",
                 "id": 3,
+                "user_id": 1
             },
         ]
         self.assertEqual(response.json, expected)
@@ -206,6 +212,7 @@ class TestGetDatasets(LoginTest):
                 "filetype": "cooler",
                 "higlass_uuid": "asdf1234",
                 "id": 1,
+                "user_id": 1
             },
             {
                 "dataset_name": "test2",
@@ -213,6 +220,7 @@ class TestGetDatasets(LoginTest):
                 "filetype": "cooler",
                 "higlass_uuid": "fdsa4321",
                 "id": 2,
+                "user_id": 1
             },
             {
                 "dataset_name": "test3",
@@ -220,6 +228,7 @@ class TestGetDatasets(LoginTest):
                 "filetype": "bedfile",
                 "higlass_uuid": "fdsa8765",
                 "id": 3,
+                "user_id": 1
             },
         ]
         self.assertEqual(response.json, expected)
@@ -240,3 +249,4 @@ class TestGetDatasets(LoginTest):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 404)
+

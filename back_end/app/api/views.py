@@ -3,6 +3,7 @@ from .. import db
 from ..models import User, Dataset
 from .authentication import auth
 from flask.json import jsonify
+from flask import g
 
 
 @api.route('/test', methods=["GET"])
@@ -22,7 +23,7 @@ def test_protected():
 @auth.login_required
 def get_all_datasets():
     """Gets all available datasets for a given user."""
-    all_files = Dataset.query.all()
+    all_files = Dataset.query.filter(Dataset.user_id == g.current_user.id).all()
     return jsonify([dfile.to_json() for dfile in all_files])
 
 
