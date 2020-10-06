@@ -1,3 +1,4 @@
+import pdb
 from test_helpers import LoginTest
 # add path to import app
 import sys
@@ -250,3 +251,82 @@ class TestGetDatasets(LoginTest):
         )
         self.assertEqual(response.status_code, 404)
 
+    def test_user_can_get_only_own_datasets(self):
+        """Authenticated user can only get own datasets"""
+        token1 = self.add_and_authenticate("test", "asdf")
+        token2 = self.add_and_authenticate("test2", "fdsa")
+        # add datasets
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            higlass_uuid="asdf1234",
+            filetype="cooler",
+            user_id=1
+        )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/2",
+            higlass_uuid="fdsa4321",
+            filetype="cooler",
+            user_id=2
+        )
+        dataset3 = Dataset(
+            dataset_name="test3",
+            file_path="/test/path/3",
+            higlass_uuid="fdsa8765",
+            filetype="bedfile",
+            user_id=1
+        )
+        dataset4 = Dataset(
+            dataset_name="test4",
+            file_path="/test/path/4",
+            higlass_uuid="fdsa8768",
+            filetype="bedfile",
+            user_id=2
+        )
+        db.session.add(dataset1)
+        db.session.add(dataset2)
+        db.session.add(dataset3)
+        db.session.add(dataset4)
+        db.session.commit()
+        # get datasets with user_token 1
+        token_headers = self.get_token_header(token1)
+        # get datasets
+        response = self.client.get(
+            "/api/datasets/", headers=token_headers, content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        expected = [
+            {
+                "dataset_name": "test1",
+                "file_path": "/test/path/1",
+                "filetype": "cooler",
+                "higlass_uuid": "asdf1234",
+                "id": 1,
+                "user_id": 1
+            },
+            {
+                "dataset_name": "test3",
+                "file_path": "/test/path/3",
+                "filetype": "bedfile",
+                "higlass_uuid": "fdsa8765",
+                "id": 3,
+                "user_id": 1
+            },
+        ]
+        self.assertEqual(response.json, expected)
+        # check response for coolers
+        response = self.client.get(
+            "/api/datasets/cooler", headers=token_headers, content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, [expected[0]])
+        # check response for bedfiles
+        response = self.client.get(
+            "/api/datasets/bed", headers=token_headers, content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, [expected[1]])

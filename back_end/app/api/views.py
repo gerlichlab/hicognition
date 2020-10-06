@@ -32,10 +32,10 @@ def get_all_datasets():
 def get_datasets(dtype):
     """Gets all available datasets for a given user."""
     if dtype == "cooler":
-        cooler_files = Dataset.query.filter(Dataset.filetype == "cooler").all()
+        cooler_files = Dataset.query.filter((Dataset.filetype == "cooler") & (g.current_user.id == Dataset.user_id)).all()
         return jsonify([cfile.to_json() for cfile in cooler_files])
     elif dtype == "bed":
-        bed_files = Dataset.query.filter(Dataset.filetype == "bedfile").all()
+        bed_files = Dataset.query.filter((Dataset.filetype == "bedfile") & (g.current_user.id == Dataset.user_id)).all()
         return jsonify([bfile.to_json() for bfile in bed_files])
     else:
         response = jsonify({"error": f"option: '{dtype}' not understood"})
