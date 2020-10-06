@@ -1,4 +1,7 @@
 from test_helpers import LoginTest
+# add path to import app
+import sys
+sys.path.append("./")
 from app import create_app, db
 from app.models import User, Dataset
 
