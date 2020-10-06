@@ -4,14 +4,14 @@
     <md-list>
       <md-list-item>
         <md-button class="md-icon-button">
-          <md-icon>move_to_inbox</md-icon>
+          <md-icon>add</md-icon>
         </md-button>
         <span class="md-list-item-text">Add Dataset</span>
       </md-list-item>
 
       <md-list-item>
         <md-button class="md-icon-button" @click="handleMyDataset">
-          <md-icon>delete</md-icon>
+          <md-icon>list</md-icon>
         </md-button>
         <span class="md-list-item-text">My Datasets</span>
       </md-list-item>
