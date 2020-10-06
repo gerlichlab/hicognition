@@ -54,6 +54,16 @@ class Dataset(db.Model):
         """Format print output."""
         return f'<Dataset {self.dataset_name}>'
 
+    def to_json(self):
+        json_dataset = {
+            "id": self.id,
+            "dataset_name": self.dataset_name,
+            "file_path": self.file_path,
+            "higlass_uuid": self.higlass_uuid,
+            "filetype": self.filetype
+        }
+        return json_dataset
+
 
 class Pileupregion(db.Model):
     id = db.Column(db.Integer, primary_key=True)

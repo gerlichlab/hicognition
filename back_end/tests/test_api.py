@@ -1,39 +1,10 @@
-import unittest
-from base64 import b64encode
+from test_helpers import LoginTest
 from app import create_app, db
-from app.models import User
+from app.models import User, Dataset
 
 
-class TestAuth(unittest.TestCase):
+class TestAuth(LoginTest):
     """Tests api-authentication"""
-
-    def setUp(self):
-        self.app = create_app("testing")
-        self.app_context = self.app.app_context()
-        self.app_context.push()
-        db.create_all()
-        self.client = self.app.test_client()
-
-    def tearDown(self):
-        db.session.remove()
-        db.drop_all()
-        self.app_context.pop()
-
-    def get_api_headers(self, username, password):
-        return {
-            "Authorization": "Basic "
-            + b64encode((username + ":" + password).encode("utf-8")).decode("utf-8"),
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        }
-
-    def get_token_header(self, token):
-        return {
-            "Authorization": "Basic "
-            + b64encode((token + ":").encode("utf-8")).decode("utf-8"),
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        }
 
     def test_no_auth_allowed(self):
         """tests whether unprotected routes can be
@@ -115,3 +86,115 @@ class TestAuth(unittest.TestCase):
             "/api/tokens/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 403)
+
+
+class TestGetDatasets(LoginTest):
+    """Tests for /api/datasets route to list
+    datasets."""
+
+    def add_test_datasets(self):
+        """adds test datasets to db"""
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            higlass_uuid="asdf1234",
+            filetype="cooler",
+        )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/2",
+            higlass_uuid="fdsa4321",
+            filetype="cooler",
+        )
+        dataset3 = Dataset(
+            dataset_name="test3",
+            file_path="/test/path/3",
+            higlass_uuid="fdsa8765",
+            filetype="bedfile",
+        )
+        db.session.add(dataset1)
+        db.session.add(dataset2)
+        db.session.add(dataset3)
+        db.session.commit()
+
+    def add_and_authenticate(self, username, password):
+        """adds a user with username and password, authenticates
+        the user and returns a token."""
+         # add new user
+        new_user = User(username=username)
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+        # get token
+        headers = self.get_api_headers("test", "asdf")
+        response = self.client.post(
+            "/api/tokens/", headers=headers, content_type="application/json"
+        )
+        return response.get_json()["token"]
+
+    def test_no_auth(self):
+        """No authentication provided, response should be 401"""
+        # protected route
+        response = self.client.get("/api/datasets/", content_type="application/json")
+        self.assertEqual(response.status_code, 401)
+
+    def test_get_coolers(self):
+        """Authenticated user gets some datasets."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add new datasets
+        self.add_test_datasets()
+        # get datasets
+        response = self.client.get(
+            "/api/datasets/cooler",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        expected = [
+            {
+                "dataset_name": "test1",
+                "file_path": "/test/path/1",
+                "filetype": "cooler",
+                "higlass_uuid": "asdf1234",
+                "id": 1,
+            },
+            {
+                "dataset_name": "test2",
+                "file_path": "/test/path/2",
+                "filetype": "cooler",
+                "higlass_uuid": "fdsa4321",
+                "id": 2,
+            },
+        ]
+        self.assertEqual(response.json, expected)
+
+    def test_get_bedfiles(self):
+        """Authenticated user gets some datasets."""
+        # add new user
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add new datasets
+        self.add_test_datasets()
+        # get datasets
+        response = self.client.get(
+            "/api/datasets/bed",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        expected = [
+            {
+                "dataset_name": "test3",
+                "file_path": "/test/path/3",
+                "filetype": "bedfile",
+                "higlass_uuid": "fdsa8765",
+                "id": 3,
+            },
+        ]
+        self.assertEqual(response.json, expected)

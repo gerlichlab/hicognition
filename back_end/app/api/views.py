@@ -1,6 +1,6 @@
 from . import api
 from .. import db
-from ..models import User
+from ..models import User, Dataset
 from .authentication import auth
 from flask.json import jsonify
 
@@ -17,10 +17,35 @@ def test_protected():
     """test api calls"""
     return jsonify({"test": "Hello, world!"})
 
+
+@api.route('/datasets/', methods=["GET"])
+@auth.login_required
+def get_all_datasets():
+    """Gets all available datasets for a given user."""
+    all_files = Dataset.query.all()
+    return jsonify([dfile.to_json() for dfile in all_files])
+
+
+@api.route('/datasets/<dtype>', methods=["GET"])
+@auth.login_required
+def get_datasets(dtype):
+    """Gets all available datasets for a given user."""
+    if dtype == "cooler":
+        cooler_files = Dataset.query.filter(Dataset.filetype == "cooler").all()
+        return jsonify([cfile.to_json() for cfile in cooler_files])
+    elif dtype == "bed":
+        bed_files = Dataset.query.filter(Dataset.filetype == "bedfile").all()
+        return jsonify([bfile.to_json() for bfile in bed_files])
+    else:
+        response = jsonify({"error": f"option: '{dtype}' not understood"})
+        response.status_code = 404
+        return response
+
+
 # fix cross-origin problems. From https://gist.github.com/davidadamojr/465de1f5f66334c91a4c
 @api.after_request
 def after_request(response):
-  response.headers.add('Access-Control-Allow-Origin', '*')
-  response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-  response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
-  return response
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+    return response
