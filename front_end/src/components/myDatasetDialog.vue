@@ -42,6 +42,14 @@
         showDialog: function () {
             return this.dialog
         }
+    },
+    watch: {
+      showDialog: function(val) {
+        if (val){
+          // switched on
+          this.$emit("get-datasets")
+        }
+      }
     }
   }
 </script>

@@ -30,7 +30,6 @@ export default {
         return {
           username: "",
           password: "",
-          duration: 4000,
           showError: false
         }
     },

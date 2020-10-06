@@ -11,7 +11,7 @@
 
       <md-app-content>
         <router-view></router-view>
-        <datasetDialog :dialog="showDialog" @close-dialog="showDialog=false"></datasetDialog>
+        <datasetDialog :dialog="showDialog" @close-dialog="showDialog=false" @get-datasets="getDatasets"></datasetDialog>
       </md-app-content>
   </md-app>
 </template>>
@@ -33,5 +33,27 @@ name: "mainRoute",
     menuVisible: false,
     showDialog: false
   }),
+  methods: {
+    getDatasets: function () {
+        var token = this.$store.state.token;
+        var encodedToken = btoa(token + ":")
+        this.$http.get(process.env.API_URL + "datasets/", {
+          headers: {
+            "Authorization": `Basic ${encodedToken}`
+          }
+        }).then(response => {
+          if (response.status != 200){
+            console.log(`Error: ${response.data}`);
+          }else{
+            // success, store datasets
+            this.$store.commit("setDatasets", response.data)
+          }
+        })
+    }
+  },
+  created: function () {
+    // get datasets when route is created
+    this.getDatasets()
+  }
 }
 </script>>

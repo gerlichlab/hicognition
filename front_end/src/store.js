@@ -7,7 +7,8 @@ Vue.use(Vuex)
 
 const store = new Vuex.Store({
   state: {
-    token: null
+    token: null,
+    datasets: null
   },
   getters: {
       isTokenEmpty: state => {
@@ -20,6 +21,9 @@ const store = new Vuex.Store({
       },
       clearToken (state) {
           state.token = null
+      },
+      setDatasets (state, datasets) {
+        state.datasets = datasets
       }
   }
 })
