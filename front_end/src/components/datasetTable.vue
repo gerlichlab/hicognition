@@ -19,9 +19,13 @@
       <md-table-row slot="md-table-row" slot-scope="{ item }">
         <md-table-cell md-label="ID" md-sort-by="id" md-numeric>{{ item.id }}</md-table-cell>
         <md-table-cell md-label="Name" md-sort-by="dataset_name">{{ item.dataset_name }}</md-table-cell>
-        <md-table-cell md-label="Filepath" md-sort-by="file_path">{{ item.file_path }}</md-table-cell>
+        <md-table-cell md-label="FilePath" md-sort-by="file_path">{{ item.file_path }}</md-table-cell>
         <md-table-cell md-label="Filetype" md-sort-by="filetype">{{ item.filetype }}</md-table-cell>
         <md-table-cell md-label="HiGlass ID" md-sort-by="higlass_uuid">{{ item.higlass_uuid }}</md-table-cell>
+        <md-table-cell md-label="Progress" md-sort-by="completed">
+          <md-icon  v-if="item.completed">done</md-icon>
+          <md-progress-spinner :md-diameter="30" md-mode="indeterminate" v-else></md-progress-spinner>
+        </md-table-cell>
       </md-table-row>
     </md-table>
   </div>
