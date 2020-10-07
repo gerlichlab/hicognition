@@ -1,9 +1,10 @@
+"""API endpoints for hicognition"""
 from . import api
 from .. import db
 from ..models import User, Dataset
 from .authentication import auth
 from flask.json import jsonify
-from flask import g
+from flask import g, request
 
 
 @api.route('/test', methods=["GET"])
