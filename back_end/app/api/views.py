@@ -44,13 +44,20 @@ def get_datasets(dtype):
         return response
 
 @api.route('/datasets/', methods=["POST"])
+@auth.login_required
 def add_dataset():
     """endpoint to add a new dataset"""
     #current_user = g.current_user
     data = request.form
     current_app.logger.info(data)
     # unpack data
-    return jsonify(data)
+    typeDict = {}
+    for key in data:
+        current_app.logger.info(key)
+        current_app.logger.info(type(data[key]))
+        typeDict[key] = type(data[key])
+    current_app.logger.info(request.files)
+    return jsonify({"data": data})
 
 
 # fix cross-origin problems. From https://gist.github.com/davidadamojr/465de1f5f66334c91a4c
