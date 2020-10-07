@@ -27,6 +27,7 @@ services:
             - HIGLASS_USER=${DJANGO_SUPERUSER}
             - HIGLASS_PWD=${DJANGO_SUPERUSER_PASSWORD}
             - REDIS_URL=${REDIS_URL}
+            - UPLOAD_DIR=${UPLOAD_DIR}
         ports:
             # only map localhost-port
             - "5000:5000"

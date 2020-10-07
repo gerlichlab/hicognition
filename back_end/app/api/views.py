@@ -1,6 +1,7 @@
 """API endpoints for hicognition"""
-import logging
+import os
 from flask.json import jsonify
+from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from . import api
 from .. import db
@@ -47,17 +48,34 @@ def get_datasets(dtype):
 @auth.login_required
 def add_dataset():
     """endpoint to add a new dataset"""
-    #current_user = g.current_user
+    current_user = g.current_user
+    # get data from form
     data = request.form
-    current_app.logger.info(data)
-    # unpack data
-    typeDict = {}
-    for key in data:
-        current_app.logger.info(key)
-        current_app.logger.info(type(data[key]))
-        typeDict[key] = type(data[key])
-    current_app.logger.info(request.files)
-    return jsonify({"data": data})
+    fileObject = request.files["file"]
+    # save file in upload directory
+    filename = secure_filename(fileObject.filename)
+    file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
+    fileObject.save(file_path)
+    # add data to Database
+    new_entry = Dataset(
+        dataset_name = data["datasetName"],
+        file_path=file_path,
+        filetype=data["filetype"],
+        user_id=current_user.id
+    )
+    db.session.add(new_entry)
+    db.session.commit()
+    # start preprocessing
+    if data["filetype"] == "bedfile":
+        current_user.launch_task("pipeline_bed", "run bed preprocessing", dataset_id=new_entry.id,
+                                 window_sizes=[200000, 400000, 600000, 800000, 1000000])
+    elif data["filetype"] == "cooler":
+        current_user.launch_task("pipeline_cooler", "run cooler preprocessing", dataset_id=new_entry.id,
+                                 binsizes=[10000, 20000, 50000])
+    else:
+        response = jsonify({"error": "datatype not understood"})
+        response.status_code = 403
+    return jsonify({"message": "success! Preprocessing triggered."})
 
 
 # fix cross-origin problems. From https://gist.github.com/davidadamojr/465de1f5f66334c91a4c

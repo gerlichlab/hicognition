@@ -31,11 +31,11 @@ class User(db.Model, UserMixin):
                        expires_in=expiration)
         return s.dumps({"id": self.id}).decode("utf-8")
 
-    def launch_task(self, name, description, dataset_id=None, *args, **kwargs):
-        rq_job = current_app.task_queue.enqueue('app.tasks.' + name,
+    def launch_task(self, name, description, dataset_id, *args, **kwargs):
+        rq_job = current_app.task_queue.enqueue('app.tasks.' + name, dataset_id,
                                                 *args, **kwargs)
         task = Task(id=rq_job.get_id(), name=name, description=description,
-                    user=self, dataset_id=dataset_id)
+                    user=self, dataset=dataset_id)
         db.session.add(task)
         return task
 
@@ -63,7 +63,7 @@ class User(db.Model, UserMixin):
 class Dataset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     dataset_name = db.Column(db.String(64), index=True)
-    file_path = db.Column(db.String(128), index=True, unique=True)
+    file_path = db.Column(db.String(128), index=True)
     higlass_uuid = db.Column(db.String(64), index=True, unique=True)
     filetype = db.Column(db.String(64), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
