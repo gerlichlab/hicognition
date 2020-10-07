@@ -3,14 +3,14 @@
     <md-toolbar class="md-transparent" md-elevation="0">Manage datasets</md-toolbar>
     <md-list>
       <md-list-item>
-        <md-button class="md-icon-button">
+        <md-button class="md-icon-button" @click="$emit('add-dataset-click')">
           <md-icon>add</md-icon>
         </md-button>
         <span class="md-list-item-text">Add Dataset</span>
       </md-list-item>
 
       <md-list-item>
-        <md-button class="md-icon-button" @click="handleMyDataset">
+        <md-button class="md-icon-button" @click="$emit('mydataset-click')">
           <md-icon>list</md-icon>
         </md-button>
         <span class="md-list-item-text">My Datasets</span>
@@ -21,11 +21,6 @@
 
 <script>
 export default {
-  name: "drawer",
-  methods: {
-    handleMyDataset: function () {
-      this.$emit("mydataset-click");
-    }
-  }
+  name: "drawer"
 };
 </script>

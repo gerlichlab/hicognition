@@ -1,11 +1,11 @@
 """API endpoints for hicognition"""
+import logging
+from flask.json import jsonify
+from flask import g, request, current_app
 from . import api
 from .. import db
 from ..models import User, Dataset
 from .authentication import auth
-from flask.json import jsonify
-from flask import g, request
-
 
 @api.route('/test', methods=["GET"])
 def test():
@@ -43,13 +43,14 @@ def get_datasets(dtype):
         response.status_code = 404
         return response
 
-@api.route('/testQ/',methods=["GET"])
-def test_queue():
-    """endpoint to test queue"""
-    dummy = User.query.get(1)
-    dummy.launch_task('pipeline_cooler', "TEST", 5, [10000, 20000, 50000])
-    db.session.commit()
-    return jsonify({"result": "dispatched"})
+@api.route('/datasets/', methods=["POST"])
+def add_dataset():
+    """endpoint to add a new dataset"""
+    #current_user = g.current_user
+    data = request.form
+    current_app.logger.info(data)
+    # unpack data
+    return jsonify(data)
 
 
 # fix cross-origin problems. From https://gist.github.com/davidadamojr/465de1f5f66334c91a4c

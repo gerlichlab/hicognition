@@ -6,12 +6,14 @@
       </md-app-toolbar>
 
       <md-app-drawer :md-active.sync="menuVisible">
-        <drawer @mydataset-click="showDialog=true; menuVisible=false"></drawer>
+        <drawer @mydataset-click="showMyDatasetDialog=true; menuVisible=false"
+                @add-dataset-click="showAddDatasetDialog=true; menuVisible=false"></drawer>
       </md-app-drawer>
 
       <md-app-content>
         <router-view></router-view>
-        <datasetDialog :dialog="showDialog" @close-dialog="showDialog=false" @get-datasets="getDatasets"></datasetDialog>
+        <addDatasetDialog :dialog="showAddDatasetDialog" @close-dialog="showAddDatasetDialog=false"></addDatasetDialog>
+        <datasetDialog :dialog="showMyDatasetDialog" @close-dialog="showMyDatasetDialog=false" @get-datasets="getDatasets"></datasetDialog>
       </md-app-content>
   </md-app>
 </template>>
@@ -21,17 +23,20 @@
 import toolbar from "../components/toolbar";
 import drawer from "../components/drawer";
 import datasetDialog from "../components/myDatasetDialog"
+import addDatasetDialog from "../components/addDatasetDialog"
 
 export default {
 name: "mainRoute",
   components: {
     toolbar,
     drawer,
-    datasetDialog
+    datasetDialog,
+    addDatasetDialog
   },
   data: () => ({
     menuVisible: false,
-    showDialog: false
+    showMyDatasetDialog: false,
+    showAddDatasetDialog: false
   }),
   methods: {
     getDatasets: function () {
