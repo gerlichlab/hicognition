@@ -32,7 +32,7 @@ class User(db.Model, UserMixin):
         return s.dumps({"id": self.id}).decode("utf-8")
 
     def launch_task(self, name, description, *args, **kwargs):
-        rq_job = current_app.task_queue.enqueue('app.tasks.' + name, self.id,
+        rq_job = current_app.task_queue.enqueue('app.tasks.' + name,
                                                 *args, **kwargs)
         task = Task(id=rq_job.get_id(), name=name, description=description,
                     user=self)

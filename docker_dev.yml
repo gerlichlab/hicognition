@@ -26,6 +26,7 @@ services:
             - FLASK_APP=/code/hicognition_server.py
             - HIGLASS_USER=${DJANGO_SUPERUSER}
             - HIGLASS_PWD=${DJANGO_SUPERUSER_PASSWORD}
+            - REDIS_URL=${REDIS_URL}
         ports:
             # only map localhost-port
             - "5000:5000"
@@ -34,4 +35,47 @@ services:
         image: flask:test2
             # TODO Host this on Dockerhub
         entrypoint: "/bin/bash"
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.2
         command: -c "source activate flask && cd /code && flask db upgrade && flask run --host=0.0.0.0"
+
+    redis-server:
+        container_name: redis-server
+        image: redis:3-alpine
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.3
+        ports:
+            - 6379:6379
+
+    redis-worker:
+        container_name: redis-worker
+        volumes:  
+            - ${HICOGNITION_DIR}:/code # quick and dirty mount of the git repo
+            # TODO fix this, this is horrible
+            # #HICOGNITION_DIR=./workdir/hicognition_dir -> use for path of DB
+        environment:
+            - UPLOAD_ENABLED=true
+            - PUBLIC_UPLOAD_ENABLED=true
+            - FLASK_DEBUG=1
+            - FLASK_APP=/code/hicognition_server.py
+            - HIGLASS_USER=${DJANGO_SUPERUSER}
+            - HIGLASS_PWD=${DJANGO_SUPERUSER_PASSWORD}
+            - REDIS_URL=${REDIS_URL}
+        build:
+            context: "./back_end"
+        image: flask:test2
+            # TODO Host this on Dockerhub
+        entrypoint: "/bin/bash"
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.4
+        command: -c "source activate flask && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
+
+networks:
+    hicognition-net:
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.18.0.0/16

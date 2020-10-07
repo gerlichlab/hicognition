@@ -6,6 +6,9 @@ import hicognition
 from rq import get_current_job
 from . import create_app, db
 
+# get logger
+log = logging.getLogger('rq.worker')
+
 # setup app context
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
@@ -39,9 +42,11 @@ def pipeline_cooler(dataset_id, binsizes):
     - Indicate in Job table in database that job is complete
     """
 
+
 def example(seconds):
-    logging.info('Starting task')
+    log.info(seconds)
+    log.info('Starting task')
     for i in range(seconds):
-        logging.info(f"     {i}")
+        log.info(f"     {i}")
         time.sleep(1)
-    logging.info('Task completed')
+    log.info('Task completed')

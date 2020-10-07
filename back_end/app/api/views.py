@@ -43,6 +43,14 @@ def get_datasets(dtype):
         response.status_code = 404
         return response
 
+@api.route('/testQ/',methods=["GET"])
+def test_queue():
+    """endpoint to test queue"""
+    dummy = User.query.get(1)
+    dummy.launch_task('example', "TEST", 20)
+    db.session.commit()
+    return jsonify({"result": "dispatched"})
+
 
 # fix cross-origin problems. From https://gist.github.com/davidadamojr/465de1f5f66334c91a4c
 @api.after_request
