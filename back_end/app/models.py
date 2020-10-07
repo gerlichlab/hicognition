@@ -62,7 +62,7 @@ class User(db.Model, UserMixin):
 
 class Dataset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    dataset_name = db.Column(db.String(64), index=True, unique=True)
+    dataset_name = db.Column(db.String(64), index=True)
     file_path = db.Column(db.String(128), index=True, unique=True)
     higlass_uuid = db.Column(db.String(64), index=True, unique=True)
     filetype = db.Column(db.String(64), index=True)
@@ -93,7 +93,7 @@ class Dataset(db.Model):
 class Pileupregion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
-    name = db.Column(db.String(64), index=True, unique=True)
+    name = db.Column(db.String(64), index=True)
     file_path = db.Column(db.String(128), index=True)
     higlass_uuid = db.Column(db.String(64), index=True)
     windowsize = db.Column(db.Integer, index=True)
@@ -107,7 +107,7 @@ class Pileupregion(db.Model):
 class Pileup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     binsize = db.Column(db.Integer)
-    name = db.Column(db.String(64), index=True, unique=True)
+    name = db.Column(db.String(64), index=True)
     file_path = db.Column(db.String(128), index=True)
     cooler_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     pileupregion_id = db.Column(db.Integer, db.ForeignKey("pileupregion.id"))
