@@ -11,6 +11,9 @@
 </template>
 
 <script>
+
+import { getDefaultViewConf } from "../functions"
+
 export default {
   name: "higlass-card",
   data: function() {
@@ -25,7 +28,7 @@ export default {
     createHiGlass: function () {
       this.higlass = hglib.viewer(
             document.getElementById('higlass-browser'),
-            'http://higlass.io/api/v1/viewconfs/?d=default',
+            getDefaultViewConf(),
             {
               bounded: true,
               editable: false
