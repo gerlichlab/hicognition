@@ -20,6 +20,7 @@ class Config:
     CORS_SUPPORTS_CREDENTIALS = True
     CORS_ALLOW_HEADERS = True
     CORS_EXPOSE_HEADERS = True
+    REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
 
 
 class DevelopmentConfig(Config):
