@@ -9,7 +9,7 @@ from hicognition import io_helpers, higlass_interface
 from requests.exceptions import HTTPError
 from rq import get_current_job
 from . import create_app, db
-from .models import Dataset, Pileupregion, Pileup
+from .models import Dataset, Pileupregion, Pileup, Task
 
 # get logger
 log = logging.getLogger('rq.worker')
@@ -39,6 +39,7 @@ def pipeline_bed(dataset_id, window_sizes):
     log.info(f"Bed pipeline started for {dataset_id} with {window_sizes}")
     # bed-file preprocessing: sorting, clodius, uploading to higlass
     bed_preprocess_pipeline_step(dataset_id)
+    _set_task_progress(50)
     for window in window_sizes:
         file_path = Dataset.query.get(dataset_id).file_path
         log.info(f"  Converting to bed, windowsize {window}")
@@ -47,7 +48,7 @@ def pipeline_bed(dataset_id, window_sizes):
             file_path, target_file, window
         )
         bedpe_preprocess_pipeline_step(target_file, dataset_id, window)
-    # TODO: set task to complete
+    _set_task_progress(100)
 
 
 def pipeline_cooler(dataset_id, binsizes):
@@ -89,21 +90,14 @@ def pipeline_cooler(dataset_id, binsizes):
     # get arms
     arms = HT.get_arms_hg19()
     # perform pileups
+    counter = 0
     for binsize in binsizes:
         for pileup_region in pileup_regions:
             perform_pileup_iccf(current_dataset, pileup_region, binsize, arms)
-    # TODO: set task to complete
-
-
-
-def example(seconds):
-    log.info(seconds)
-    log.info('Starting task')
-    for i in range(seconds):
-        log.info(f"     {i}")
-        time.sleep(1)
-    log.info('Task completed')
-
+            counter += 1
+            progress = counter/(len(binsizes) * len(pileup_regions)) * 100
+            _set_task_progress(progress)
+    _set_task_progress(100)
 
 # helpers
 
@@ -252,3 +246,14 @@ def perform_pileup_iccf(cooler_dataset, pileup_region, binsize, arms):
     db.session.add(new_entry)
     db.session.commit()
     log.info("      Success!")
+
+
+def _set_task_progress(progress):
+    job = get_current_job()
+    if job:
+        job.meta['progress'] = progress
+        job.save_meta()
+        task = Task.query.get(job.get_id())
+        if progress >= 100:
+            task.complete = True
+        db.session.commit()

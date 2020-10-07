@@ -31,11 +31,11 @@ class User(db.Model, UserMixin):
                        expires_in=expiration)
         return s.dumps({"id": self.id}).decode("utf-8")
 
-    def launch_task(self, name, description, *args, **kwargs):
+    def launch_task(self, name, description, dataset_id=None, *args, **kwargs):
         rq_job = current_app.task_queue.enqueue('app.tasks.' + name,
                                                 *args, **kwargs)
         task = Task(id=rq_job.get_id(), name=name, description=description,
-                    user=self)
+                    user=self, dataset_id=dataset_id)
         db.session.add(task)
         return task
 
@@ -79,13 +79,20 @@ class Dataset(db.Model):
         return f'<Dataset {self.dataset_name}>'
 
     def to_json(self):
+        # check whether there are any uncompleted tasks
+        tasks = self.tasks.filter(Task.complete == False).all()
+        if len(tasks) == 0:
+            completed = 1
+        else:
+            completed = 0
         json_dataset = {
             "id": self.id,
             "dataset_name": self.dataset_name,
             "file_path": self.file_path,
             "higlass_uuid": self.higlass_uuid,
             "filetype": self.filetype,
-            "user_id": self.user_id
+            "user_id": self.user_id,
+            "completed": completed
         }
         return json_dataset
 
