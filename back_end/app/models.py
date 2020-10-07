@@ -138,4 +138,7 @@ class Task(db.Model):
 
 # helpers
 
-user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+@login.user_loader
+def load_user(id):
+    """Helper function to load user."""
+    return User.query.get(int(id))

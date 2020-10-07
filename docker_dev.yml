@@ -37,15 +37,16 @@ services:
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
-                ipv4_address: 172.18.0.2
+                ipv4_address: 172.18.0.3
         command: -c "source activate flask && cd /code && flask db upgrade && flask run --host=0.0.0.0"
+
 
     redis-server:
         container_name: redis-server
         image: redis:3-alpine
         networks:
             hicognition-net:
-                ipv4_address: 172.18.0.3
+                ipv4_address: 172.18.0.4
         ports:
             - 6379:6379
 
@@ -63,6 +64,7 @@ services:
             - HIGLASS_USER=${DJANGO_SUPERUSER}
             - HIGLASS_PWD=${DJANGO_SUPERUSER_PASSWORD}
             - REDIS_URL=${REDIS_URL}
+            - CHROM_SIZES=${CHROM_SIZES}
         build:
             context: "./back_end"
         image: flask:test2
@@ -70,8 +72,25 @@ services:
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
-                ipv4_address: 172.18.0.4
+                ipv4_address: 172.18.0.5
         command: -c "source activate flask && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
+
+
+    # higlass server
+    higlass:
+        container_name: higlass-container
+        image: higlass/higlass-docker
+        environment:
+            - UPLOAD_ENABLED=true
+            - PUBLIC_UPLOAD_ENABLED=true
+        volumes:
+            - ${DATA_DIR}:/data
+            - ${HIGLASS_TMP}:/tmp
+        ports:
+            - "8888:80"
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.2
 
 networks:
     hicognition-net:

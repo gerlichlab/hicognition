@@ -47,7 +47,7 @@ def get_datasets(dtype):
 def test_queue():
     """endpoint to test queue"""
     dummy = User.query.get(1)
-    dummy.launch_task('example', "TEST", 20)
+    dummy.launch_task('bed_preprocess_pipeline_step', "TEST", 4)
     db.session.commit()
     return jsonify({"result": "dispatched"})
 
