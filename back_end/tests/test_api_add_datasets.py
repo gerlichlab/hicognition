@@ -2,14 +2,14 @@ import sys
 import io
 import unittest
 from unittest.mock import patch
-from test_helpers import LoginTest, TempDirTestCase
+from test_helpers import LoginTestCase, TempDirTestCase
 # add path to import app
 sys.path.append("./")
 from app import db
 from app.models import User, Dataset, Task
 
 
-class TestGetDataSets(LoginTest, TempDirTestCase):
+class TestGetDataSets(LoginTestCase, TempDirTestCase):
     """Tests correct launching of
     pipelines after addition of datasets.
     Inherits both from LoginTest and TempDirTestCase

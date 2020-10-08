@@ -29,7 +29,7 @@ class TempDirTestCase(unittest.TestCase):
         shutil.rmtree("./tmp_test")
 
 
-class LoginTest(unittest.TestCase):
+class LoginTestCase(unittest.TestCase):
     """Testcase that implements generating headers
     for HTTPBasicAuth and creating a flask app."""
     def setUp(self):

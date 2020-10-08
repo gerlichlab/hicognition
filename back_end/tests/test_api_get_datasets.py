@@ -1,4 +1,4 @@
-from test_helpers import LoginTest
+from test_helpers import LoginTestCase
 # add path to import app
 import sys
 sys.path.append("./")
@@ -6,7 +6,7 @@ from app import db
 from app.models import User, Dataset, Task
 
 
-class TestGetDatasets(LoginTest):
+class TestGetDatasets(LoginTestCase):
     """Tests for /api/datasets route to list
     datasets."""
 
