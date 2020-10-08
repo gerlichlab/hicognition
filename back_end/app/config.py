@@ -1,5 +1,6 @@
 """Config class for hicognition server."""
 import os
+import json
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -15,12 +16,17 @@ class Config:
     CHROM_SIZES = os.environ.get("CHROM_SIZES") or os.path.join(
         basedir, "data/hg19.chrom.sizes"
     )
+    CHROM_ARMS = os.environ.get("CHROM_ARMS") or os.path.join(
+        basedir, "data/arms.hg19"
+    )
     HIGLASS_USER = os.environ.get("HIGLASS_USER") or "dummy"
     HIGLASS_PWD = os.environ.get("HIGLASS_PWD") or "xnVMhmKF7d^7"
     CORS_SUPPORTS_CREDENTIALS = True
     CORS_ALLOW_HEADERS = True
     CORS_EXPOSE_HEADERS = True
     REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
+    WINDOW_SIZES = [100000, 200000, 400000, 800000]
+    BIN_SIZES = [10000, 20000, 50000]
 
 
 class DevelopmentConfig(Config):

@@ -1,7 +1,9 @@
 """Tasks for the redis-queue"""
 import os
-import time
+import uuid
 import logging
+
+from flask.globals import current_app
 import pandas as pd
 from ngs import HiCTools as HT
 import cooler
@@ -20,7 +22,7 @@ app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 app.app_context().push()
 
 
-def pipeline_bed(dataset_id, window_sizes):
+def pipeline_bed(dataset_id):
     """Starts the pipeline for
     bed-files. Pipeline:
     - sort bedfile associated with dataset_id
@@ -36,24 +38,24 @@ def pipeline_bed(dataset_id, window_sizes):
     Output-folder is not needed for this since the file_path
     of Dataset entry contains it.
     """
+    window_sizes = app.config["WINDOW_SIZES"]
     log.info(f"Bed pipeline started for {dataset_id} with {window_sizes}")
     # bed-file preprocessing: sorting, clodius, uploading to higlass
     bed_preprocess_pipeline_step(dataset_id)
     _set_task_progress(50)
     for window in window_sizes:
         file_path = Dataset.query.get(dataset_id).file_path
-        log.info(f"  Converting to bed, windowsize {window}")
+        log.info(f"  Converting to bedpe, windowsize {window}")
         target_file = file_path + f".{window}" + ".bedpe"
         io_helpers.convert_bed_to_bedpe(
             file_path, target_file, window
         )
         bedpe_preprocess_pipeline_step(target_file, dataset_id, window)
         # do pileup for all coolers
-
     _set_task_progress(100)
 
 
-def pipeline_cooler(dataset_id, binsizes):
+def pipeline_cooler(dataset_id):
     """Starts the pipeline for
     cooler-files. Pipeline:
     - Add to higlass and update uuid
@@ -64,6 +66,7 @@ def pipeline_cooler(dataset_id, binsizes):
             * add to Pileup database table
     - Indicate in Job table in database that job is complete
     """
+    binsizes = app.config["BIN_SIZES"]
     log.info(f"Cooler pipeline started for {dataset_id} with {binsizes}")
     current_dataset = Dataset.query.get(dataset_id)
     # upload to higlass
@@ -90,11 +93,11 @@ def pipeline_cooler(dataset_id, binsizes):
     # get all pileup regions
     pileup_regions = Pileupregion.query.all()
     # get arms
-    arms = HT.get_arms_hg19()
+    arms = pd.read_csv(app.config["CHROM_ARMS"])
     # perform pileups
     counter = 0
     for binsize in binsizes:
-        for pileup_region in pileup_regions:
+        for pileup_region in pileup_regions:  # no need to check if processing is finished, pileup_regions are not processed
             perform_pileup_iccf(current_dataset, pileup_region, binsize, arms)
             counter += 1
             progress = counter/(len(binsizes) * len(pileup_regions)) * 100
@@ -102,6 +105,7 @@ def pipeline_cooler(dataset_id, binsizes):
     _set_task_progress(100)
 
 # helpers
+
 
 def bed_preprocess_pipeline_step(dataset_id):
     """Runs bed-preprocess pipeline step of pipeline_bed:
@@ -111,7 +115,7 @@ def bed_preprocess_pipeline_step(dataset_id):
         - store higlass_uuid in Dataset db entry
         - replace filepath with sorted bedfile
     """
-    log.info(f"Running bed-preprocessing for ID {dataset_id}")
+    log.info(f"  Running bed-preprocessing for ID {dataset_id}")
     # get dataset, this is not sorted, not preprocessed for higlass
     current_dataset = Dataset.query.get(dataset_id)
     # sort dataset
@@ -164,7 +168,7 @@ def bedpe_preprocess_pipeline_step(file_path, dataset_id=None, windowsize=None):
     * upload result to higlass
     * add Pileupregion dataset entry
     """
-    log.info(f"Bedpe-preprocess: {file_path} with {windowsize}")
+    log.info(f"  Bedpe-preprocess: {file_path} with {windowsize}")
     # run clodius
     log.info(f"     Running clodius...")
     clodius_output = file_path + ".bed2ddb"
@@ -200,7 +204,20 @@ def bedpe_preprocess_pipeline_step(file_path, dataset_id=None, windowsize=None):
     )
     db.session.add(new_entry)
     db.session.commit()
-    # TODO: Do pileup on all current cooler files
+    # Pileup on all available coolers
+    log.info(f"     Doing pileup on available coolers")
+    binsizes = app.config["BIN_SIZES"]
+    cooler_datasets = Dataset.query.filter(Dataset.filetype == "cooler").all()
+    arms = pd.read_csv(app.config["CHROM_ARMS"])
+    for cooler_dataset in cooler_datasets:
+        log.info(f"         Cooler {cooler_dataset.id}")
+        # check if this cooler file has finished processing and skip it if didn't
+        tasks = cooler_dataset.tasks.filter(Task.complete == False).all()
+        if len(tasks) != 0:
+            continue
+        for binsize in binsizes:
+            log.info(f"        Binsize {binsize}")
+            perform_pileup_iccf(cooler_dataset, new_entry, binsize, arms)
     log.info("      Success!")
 
 
@@ -236,7 +253,7 @@ def perform_pileup_iccf(cooler_dataset, pileup_region, binsize, arms):
     # stitch together filepath
     basedir = os.path.abspath(os.path.dirname(__file__))
     static_dir = os.path.join(basedir, "static")
-    file_name = file_path.split("/")[-1] + f".{window_size}" + f".{binsize}.csv"
+    file_name = uuid.uuid4().hex + f".{window_size}" + f".{binsize}.csv"
     # write to file
     output_molten.to_csv(os.path.join(static_dir, file_name), index=False)
     # add this to database

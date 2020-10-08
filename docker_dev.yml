@@ -28,6 +28,8 @@ services:
             - HIGLASS_PWD=${DJANGO_SUPERUSER_PASSWORD}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
+            - CHROM_SIZES=${CHROM_SIZES}
+            - CHROM_ARMS=${CHROM_ARMS}
         ports:
             # only map localhost-port
             - "5000:5000"
@@ -66,6 +68,7 @@ services:
             - HIGLASS_PWD=${DJANGO_SUPERUSER_PASSWORD}
             - REDIS_URL=${REDIS_URL}
             - CHROM_SIZES=${CHROM_SIZES}
+            - CHROM_ARMS=${CHROM_ARMS}
         build:
             context: "./back_end"
         image: flask:test2

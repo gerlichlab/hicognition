@@ -23,8 +23,9 @@
         <md-table-cell md-label="Filetype" md-sort-by="filetype">{{ item.filetype }}</md-table-cell>
         <md-table-cell md-label="HiGlass ID" md-sort-by="higlass_uuid">{{ item.higlass_uuid }}</md-table-cell>
         <md-table-cell md-label="Progress" md-sort-by="completed">
-          <md-icon  v-if="item.completed">done</md-icon>
-          <md-progress-spinner :md-diameter="30" md-mode="indeterminate" v-else></md-progress-spinner>
+          <md-icon  v-if="item.completed == 1">done</md-icon>
+          <md-progress-spinner :md-diameter="30" md-mode="indeterminate" v-else-if="item.completed == 0"></md-progress-spinner>
+          <md-icon v-if="item.completed == -1">error</md-icon>
         </md-table-cell>
       </md-table-row>
     </md-table>

@@ -44,6 +44,7 @@ def get_datasets(dtype):
         response.status_code = 404
         return response
 
+
 @api.route('/datasets/', methods=["POST"])
 @auth.login_required
 def add_dataset():
@@ -67,12 +68,10 @@ def add_dataset():
     db.session.commit()
     # start preprocessing
     if data["filetype"] == "bedfile":
-        current_user.launch_task("pipeline_bed", "run bed preprocessing", new_entry.id,
-                                 [200000, 400000, 600000, 800000, 1000000])
+        current_user.launch_task("pipeline_bed", "run bed preprocessing", new_entry.id)
         db.session.commit()
     elif data["filetype"] == "cooler":
-        current_user.launch_task("pipeline_cooler", "run cooler preprocessing", new_entry.id,
-                                 [10000, 20000, 50000])
+        current_user.launch_task("pipeline_cooler", "run cooler preprocessing", new_entry.id)
         db.session.commit()
     else:
         response = jsonify({"error": "datatype not understood"})

@@ -80,12 +80,20 @@ class Dataset(db.Model):
         return f'<Dataset {self.dataset_name}>'
 
     def to_json(self):
-        # check whether there are any uncompleted tasks
+        # check whether there are any uncompleted of failed tasks
         tasks = self.tasks.filter(Task.complete == False).all()
         if len(tasks) == 0:
             completed = 1
         else:
             completed = 0
+            # check whether any job failed
+            for task in tasks:
+                if task.get_rq_job() is None:
+                    # job is not available in rq anymore, finished normally TODO: check in documentation about this
+                    continue
+                else:
+                    if task.get_rq_job().get_status() == "failed":
+                        completed = - 1
         json_dataset = {
             "id": self.id,
             "dataset_name": self.dataset_name,
