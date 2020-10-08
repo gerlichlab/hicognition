@@ -14,12 +14,16 @@ from . import create_app, db
 from .models import Dataset, Pileupregion, Pileup, Task
 
 # get logger
-log = logging.getLogger('rq.worker')
+log = logging.getLogger("rq.worker")
 
 # setup app context
 
-app = create_app(os.getenv('FLASK_CONFIG') or 'default')
+app = create_app(os.getenv("FLASK_CONFIG") or "default")
 app.app_context().push()
+
+# set basedir
+
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 def pipeline_bed(dataset_id):
@@ -47,9 +51,7 @@ def pipeline_bed(dataset_id):
         file_path = Dataset.query.get(dataset_id).file_path
         log.info(f"  Converting to bedpe, windowsize {window}")
         target_file = file_path + f".{window}" + ".bedpe"
-        io_helpers.convert_bed_to_bedpe(
-            file_path, target_file, window
-        )
+        io_helpers.convert_bed_to_bedpe(file_path, target_file, window)
         bedpe_preprocess_pipeline_step(target_file, dataset_id, window)
         # do pileup for all coolers
     _set_task_progress(100)
@@ -72,8 +74,8 @@ def pipeline_cooler(dataset_id):
     # upload to higlass
     log.info("  Uploading to higlass...")
     credentials = {
-            "user": app.config["HIGLASS_USER"],
-            "password": app.config["HIGLASS_PWD"],
+        "user": app.config["HIGLASS_USER"],
+        "password": app.config["HIGLASS_PWD"],
     }
     try:
         result = higlass_interface.add_tileset(
@@ -87,7 +89,7 @@ def pipeline_cooler(dataset_id):
         log.error("Higlass upload of bedfile failed")
         return
     # upload succeeded, add uuid of higlass to dataset
-    uuid = result['uuid']
+    uuid = result["uuid"]
     current_dataset.higlass_uuid = uuid
     db.session.commit()
     # get all pileup regions
@@ -97,12 +99,17 @@ def pipeline_cooler(dataset_id):
     # perform pileups
     counter = 0
     for binsize in binsizes:
-        for pileup_region in pileup_regions:  # no need to check if processing is finished, pileup_regions are not processed
+        for (
+            pileup_region
+        ) in (
+            pileup_regions
+        ):  # no need to check if processing is finished, pileup_regions are not processed
             perform_pileup_iccf(current_dataset, pileup_region, binsize, arms)
             counter += 1
-            progress = counter/(len(binsizes) * len(pileup_regions)) * 100
+            progress = counter / (len(binsizes) * len(pileup_regions)) * 100
             _set_task_progress(progress)
     _set_task_progress(100)
+
 
 # helpers
 
@@ -122,25 +129,21 @@ def bed_preprocess_pipeline_step(dataset_id):
     log.info("      Sorting...")
     dataset_file = current_dataset.file_path
     sorted_file_name = dataset_file.split(".")[0] + "_sorted.bed"
-    io_helpers.sort_bed(
-        dataset_file,
-        sorted_file_name,
-        app.config["CHROM_SIZES"]
-    )
+    io_helpers.sort_bed(dataset_file, sorted_file_name, app.config["CHROM_SIZES"])
     # preprocess with clodius
     log.info("Clodius preprocessing...")
     output_path = sorted_file_name + ".beddb"
     exit_code = higlass_interface.preprocess_dataset(
-                "bedfile", app.config["CHROM_SIZES"], sorted_file_name, output_path
-            )
+        "bedfile", app.config["CHROM_SIZES"], sorted_file_name, output_path
+    )
     if exit_code != 0:
         log.error("Clodius failed!")
         return
     # add to higlass
     log.info("      Add to higlass...")
     credentials = {
-            "user": app.config["HIGLASS_USER"],
-            "password": app.config["HIGLASS_PWD"],
+        "user": app.config["HIGLASS_USER"],
+        "password": app.config["HIGLASS_PWD"],
     }
     try:
         result = higlass_interface.add_tileset(
@@ -154,7 +157,7 @@ def bed_preprocess_pipeline_step(dataset_id):
         log.error("Higlass upload of bedfile failed")
         return
     # upload succeeded, add uuid of higlass to dataset
-    uuid = result['uuid']
+    uuid = result["uuid"]
     current_dataset.higlass_uuid = uuid
     current_dataset.file_path = sorted_file_name
     db.session.commit()
@@ -173,13 +176,13 @@ def bedpe_preprocess_pipeline_step(file_path, dataset_id=None, windowsize=None):
     log.info(f"     Running clodius...")
     clodius_output = file_path + ".bed2ddb"
     higlass_interface.preprocess_dataset(
-            "bedpe", app.config["CHROM_SIZES"], file_path, clodius_output
-        )
+        "bedpe", app.config["CHROM_SIZES"], file_path, clodius_output
+    )
     # add to higlass
     log.info("      Adding to higlass...")
     credentials = {
-            "user": app.config["HIGLASS_USER"],
-            "password": app.config["HIGLASS_PWD"],
+        "user": app.config["HIGLASS_USER"],
+        "password": app.config["HIGLASS_PWD"],
     }
     dataset_name = clodius_output.split("/")[-1]
     try:
@@ -224,7 +227,9 @@ def bedpe_preprocess_pipeline_step(file_path, dataset_id=None, windowsize=None):
 def perform_pileup_iccf(cooler_dataset, pileup_region, binsize, arms):
     """Performs iccf pileup of cooler_dataset on
     pileup_region with resolution binsize."""
-    log.info(f"  Doing pileup on cooler {cooler_dataset.id} with pileupregion {pileup_region.id} on binsize {binsize}")
+    log.info(
+        f"  Doing pileup on cooler {cooler_dataset.id} with pileupregion {pileup_region.id} on binsize {binsize}"
+    )
     # get path to dataset
     file_path = pileup_region.source_dataset.file_path
     # get windowsize
@@ -235,43 +240,62 @@ def perform_pileup_iccf(cooler_dataset, pileup_region, binsize, arms):
     if len(regions.columns) > 2:
         # region definition with start and end
         regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
-        regions.loc[:, "pos"] = (regions["start"] + regions["end"])//2
+        regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
     else:
         # region definition with start
         regions = regions.rename(columns={0: "chrom", 1: "pos"})
     # do pileup
     log.info("      Doing pileup...")
     cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{binsize}")
-    pileup_windows = HT.assign_regions(window_size, int(binsize), regions["chrom"], regions["pos"], arms).dropna()
+    pileup_windows = HT.assign_regions(
+        window_size, int(binsize), regions["chrom"], regions["pos"], arms
+    ).dropna()
     pileup_array = HT.do_pileup_iccf(cooler_file, pileup_windows, proc=2)
     # prepare dataframe for js reading
     log.info("      Writing output...")
-    output_frame = pd.DataFrame(pileup_array)
-    output_molten = output_frame.stack().reset_index().rename(columns={"level_0": "variable", "level_1": "group", 0: "value"})
+    static_dir = os.path.join(basedir, "static")
+    file_name = uuid.uuid4().hex + ".csv"
+    export_df_for_js(pileup_array, static_dir, file_path)
+    # add this to database
+    log.info("      Adding database entry...")
+    add_pileup_db(file_name, binsize, pileup_region.id, cooler_dataset.id)
+    log.info("      Success!")
+
+
+def export_df_for_js(np_array, static_dir, file_name):
+    """exports a pileup dataframe
+    so it can be easily read and used by
+    d3.js"""
+    output_molten = (
+        pd.DataFrame(np_array)
+        .stack()
+        .reset_index()
+        .rename(columns={"level_0": "variable", "level_1": "group", 0: "value"})
+    )
     # scale output so that colormap can be adjusted in integer steps
     output_molten.loc[:, "value"] = output_molten["value"] * 10000
     # stitch together filepath
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    static_dir = os.path.join(basedir, "static")
-    file_name = uuid.uuid4().hex + f".{window_size}" + f".{binsize}.csv"
     # write to file
     output_molten.to_csv(os.path.join(static_dir, file_name), index=False)
-    # add this to database
-    log.info("      Adding database entry...")
-    new_entry = Pileup(binsize=int(binsize),
-                        name=file_name,
-                        file_path=file_name,
-                        pileupregion_id=pileup_region.id,
-                        cooler_id=cooler_dataset.id)
+
+
+def add_pileup_db(file_name, binsize, pileup_region_id, cooler_dataset_id):
+    """Adds pileup region to database"""
+    new_entry = Pileup(
+        binsize=int(binsize),
+        name=file_name,
+        file_path=file_name,
+        pileupregion_id=pileup_region_id,
+        cooler_id=cooler_dataset_id,
+    )
     db.session.add(new_entry)
     db.session.commit()
-    log.info("      Success!")
 
 
 def _set_task_progress(progress):
     job = get_current_job()
     if job:
-        job.meta['progress'] = progress
+        job.meta["progress"] = progress
         job.save_meta()
         task = Task.query.get(job.get_id())
         if progress >= 100:
