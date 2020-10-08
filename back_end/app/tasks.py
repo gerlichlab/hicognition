@@ -247,15 +247,13 @@ def perform_pileup_iccf(cooler_dataset, pileup_region, binsize, arms):
     # do pileup
     log.info("      Doing pileup...")
     cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{binsize}")
-    pileup_windows = HT.assign_regions(
-        window_size, int(binsize), regions["chrom"], regions["pos"], arms
-    ).dropna()
+    pileup_windows = HT.assign_regions(window_size, int(binsize), regions["chrom"], regions["pos"], arms).dropna()
     pileup_array = HT.do_pileup_iccf(cooler_file, pileup_windows, proc=2)
     # prepare dataframe for js reading
     log.info("      Writing output...")
     static_dir = os.path.join(basedir, "static")
     file_name = uuid.uuid4().hex + ".csv"
-    export_df_for_js(pileup_array, static_dir, file_path)
+    export_df_for_js(pileup_array, static_dir, file_name)
     # add this to database
     log.info("      Adding database entry...")
     add_pileup_db(file_name, binsize, pileup_region.id, cooler_dataset.id)
