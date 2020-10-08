@@ -75,6 +75,6 @@
 
 <style lang="scss" scoped>
   .md-field {
-    max-width: 300px;
+    max-width: 200px;
   }
 </style>

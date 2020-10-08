@@ -48,6 +48,8 @@ def pipeline_bed(dataset_id, window_sizes):
             file_path, target_file, window
         )
         bedpe_preprocess_pipeline_step(target_file, dataset_id, window)
+        # do pileup for all coolers
+
     _set_task_progress(100)
 
 
@@ -198,6 +200,7 @@ def bedpe_preprocess_pipeline_step(file_path, dataset_id=None, windowsize=None):
     )
     db.session.add(new_entry)
     db.session.commit()
+    # TODO: Do pileup on all current cooler files
     log.info("      Success!")
 
 

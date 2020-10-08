@@ -67,11 +67,13 @@ def add_dataset():
     db.session.commit()
     # start preprocessing
     if data["filetype"] == "bedfile":
-        current_user.launch_task("pipeline_bed", "run bed preprocessing", dataset_id=new_entry.id,
-                                 window_sizes=[200000, 400000, 600000, 800000, 1000000])
+        current_user.launch_task("pipeline_bed", "run bed preprocessing", new_entry.id,
+                                 [200000, 400000, 600000, 800000, 1000000])
+        db.session.commit()
     elif data["filetype"] == "cooler":
-        current_user.launch_task("pipeline_cooler", "run cooler preprocessing", dataset_id=new_entry.id,
-                                 binsizes=[10000, 20000, 50000])
+        current_user.launch_task("pipeline_cooler", "run cooler preprocessing", new_entry.id,
+                                 [10000, 20000, 50000])
+        db.session.commit()
     else:
         response = jsonify({"error": "datatype not understood"})
         response.status_code = 403

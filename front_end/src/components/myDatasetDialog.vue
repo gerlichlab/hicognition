@@ -42,7 +42,7 @@ export default {
 
 <style lang="scss" scoped>
   .md-dialog /deep/.md-dialog-container {
-    max-width: 1000px;
+    max-width: 80vw;
   }
 
   .content {
