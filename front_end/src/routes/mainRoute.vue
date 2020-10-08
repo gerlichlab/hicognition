@@ -55,10 +55,6 @@ name: "mainRoute",
           }
         })
     }
-  },
-  created: function () {
-    // get datasets when route is created
-    this.getDatasets()
   }
 }
 </script>>
