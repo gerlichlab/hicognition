@@ -214,12 +214,8 @@ def bedpe_preprocess_pipeline_step(file_path, dataset_id=None, windowsize=None):
     arms = pd.read_csv(app.config["CHROM_ARMS"])
     for cooler_dataset in cooler_datasets:
         log.info(f"         Cooler {cooler_dataset.id}")
-        # check if this cooler file has finished processing and skip it if didn't
-        tasks = cooler_dataset.tasks.filter(Task.complete == False).all()
-        if len(tasks) != 0:
-            continue
         for binsize in binsizes:
-            log.info(f"        Binsize {binsize}")
+            log.info(f"         Binsize {binsize}")
             perform_pileup_iccf(cooler_dataset, new_entry, binsize, arms)
     log.info("      Success!")
 
