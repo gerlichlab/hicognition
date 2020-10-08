@@ -39,6 +39,7 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL") or "sqlite://"
+    UPLOAD_DIR = "./tmp_test"
 
 
 class ProductionConfig(Config):

@@ -57,6 +57,10 @@ def add_dataset():
     filename = secure_filename(fileObject.filename)
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     fileObject.save(file_path)
+    if data["filetype"] not in ["cooler", "bedfile"]:
+        response = jsonify({"error": "datatype not understood"})
+        response.status_code = 403
+        return response
     # add data to Database
     new_entry = Dataset(
         dataset_name = data["datasetName"],
@@ -70,12 +74,9 @@ def add_dataset():
     if data["filetype"] == "bedfile":
         current_user.launch_task("pipeline_bed", "run bed preprocessing", new_entry.id)
         db.session.commit()
-    elif data["filetype"] == "cooler":
+    else:
         current_user.launch_task("pipeline_cooler", "run cooler preprocessing", new_entry.id)
         db.session.commit()
-    else:
-        response = jsonify({"error": "datatype not understood"})
-        response.status_code = 403
     return jsonify({"message": "success! Preprocessing triggered."})
 
 

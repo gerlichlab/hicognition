@@ -3,7 +3,7 @@ from test_helpers import LoginTest
 import sys
 sys.path.append("./")
 from app import db
-from app.models import User, Dataset, Task
+from app.models import User
 
 
 class TestAuth(LoginTest):
