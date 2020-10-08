@@ -46,7 +46,8 @@ services:
 
     redis-server:
         container_name: redis-server
-        image: redis:3-alpine
+        build:
+            context: "./redis"
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.4
@@ -69,6 +70,8 @@ services:
             - REDIS_URL=${REDIS_URL}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
+        depends_on:
+                - redis-server
         build:
             context: "./back_end"
         image: flask:test2
@@ -77,7 +80,8 @@ services:
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.5
-        command: -c "source activate flask && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
+        # sleeps to wait for redis-server. TODO: make this check nicer!
+        command: -c "sleep 5 && source activate flask && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
 
 
     # higlass server
