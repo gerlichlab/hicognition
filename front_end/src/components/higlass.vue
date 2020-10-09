@@ -45,13 +45,13 @@
         <md-button
           class="md-dense md-raised button-margin"
           md-menu-trigger
-          @click="showHiglass = !showHiglass"
+          @click="handleDatasetSubmit"
           >Submit</md-button
         >
       </div>
 
       <md-divider></md-divider>
-      <div v-show="!showHiglass">
+      <div v-show="showEmpty">
         <md-empty-state
           md-icon="input"
           md-label="Add a dataset"
@@ -71,14 +71,13 @@
 
 <script>
 import { getDefaultViewConf, getEmptyConf, cunstructViewConf, constructViewConf } from "../functions";
-import Vue from "vue";
 
 export default {
   name: "higlass-card",
   data: function () {
     return {
       higlass: null,
-      showHiglass: false,
+      showEmpty: true,
       higlassClass: [""],
       selectedCoolerID: null,
       selectedRegionID: null,
@@ -109,32 +108,33 @@ export default {
       return null;
     }
   },
-  watch: {
-    showHiglass: function (val) {
-      if (val) {
+  methods: {
+    handleDatasetSubmit () {
+      if (this.higlass){
+        // higlass exists already, destroy and recreate
+        this.higlass.destroy()
+        this.createHiGlass()
+      }else{
+        // higlass does not exist, create it
         // add fill card to higlass class. This is a hack because the
         // react based higlass viewer does not render with the
         // v-if or v-show directives
+        this.showEmpty = false;
         this.higlassClass.push("fill-card");
         // swtiched on, update higlass after DOM update
-        Vue.next(this.createHiGlass());
-      } else {
-        // switched off
-        if (this.higlass) {
-          this.higlass.destroy();
-        }
+        this.createHiGlass();
       }
     },
-  },
-  methods: {
     createHiGlass: function () {
+      var viewconf =  constructViewConf(
+        this.selectedCooler,
+        this.selectedRegion,
+        this.selectedBedPe
+      );
+      console.log(viewconf);
       this.higlass = hglib.viewer(
         document.getElementById("higlass-browser"),
-        constructViewConf(
-          this.selectedCooler,
-          this.selectedRegion,
-          this.selectedBedPe
-        ),
+        viewconf,
         {
           bounded: true,
           editable: false,

@@ -35,7 +35,7 @@ export function constructViewConf(cooler, bed, bedPe) {
     The datasets should be passed objects of this 
     shape: { "datasetName": name, "higlass_uuid": uuid, ... }
     */
-   var returnConfig = emptyConfLocal; // shallow copy
+   var returnConfig = JSON.parse(JSON.stringify(emptyConfLocal)); //deep copy; yes, this is the recommended way in js... https://www.javascripttutorial.net/object/3-ways-to-copy-objects-in-javascript/
     if (cooler){
         var filledCooler = fillCooler(cooler);
         returnConfig["views"][0]["tracks"]["center"].push(filledCooler);
@@ -56,7 +56,7 @@ function fillCooler(cooler){
     // fills cooler file info into coolerView component
     // cooler should be an object like the following:
     // { "datasetName": name, "higlass_uuid": uuid, ...}
-    var localView = coolerView;  //shalllow copy
+    var localView = JSON.parse(JSON.stringify(coolerView)); //deep copy; yes, this is the recommended way in js... https://www.javascripttutorial.net/object/3-ways-to-copy-objects-in-javascript/
     // assign uuid and name from cooler
     localView["contents"][0]["tilesetUid"] = cooler["higlass_uuid"];
     localView["contents"][0]["options"]["name"] = cooler["datasetName"];
@@ -67,7 +67,7 @@ function fillBedPe(bedPe){
     // fills bedPe file info into bedPEView component
     // bedPe should be an object like the following:
     // { "datasetName": name, "higlass_uuid": uuid, ...}
-    var localView = bedPeView;  //shalllow copy
+    var localView = JSON.parse(JSON.stringify(bedPeView)); //deep copy; yes, this is the recommended way in js... https://www.javascripttutorial.net/object/3-ways-to-copy-objects-in-javascript/
     // assign uuid and name from cooler
     localView["tilesetUid"] = bedPe["higlass_uuid"];
     localView["options"]["name"] = bedPe["datasetName"];
@@ -78,7 +78,7 @@ function fillBed(bed){
     // fills bed file info into topView component
     // bed should be an object like the following:
     // { "datasetName": name, "higlass_uuid": uuid, ...}
-    var localView = topView;  //shalllow copy
+    var localView = JSON.parse(JSON.stringify(topView)); //deep copy; yes, this is the recommended way in js... https://www.javascripttutorial.net/object/3-ways-to-copy-objects-in-javascript/
     console.log(localView);
     console.log(bed);
     // assign uuid and name from cooler
