@@ -1,5 +1,6 @@
 'use strict'
 module.exports = {
   NODE_ENV: '"production"',
-  API_URL: '"http://localhost/api/"'
+  API_URL: '"http://localhost/flask/api/"',
+  HIGLASS_URL: '"http://localhost/higlass"'
 }

@@ -137,7 +137,7 @@ export default {
         viewconf,
         {
           bounded: true,
-          editable: false,
+          editable: false
         }
       );
     },
