@@ -6,7 +6,7 @@
           <md-field>
             <label for="cooler">Cooler</label>
             <md-select
-              v-model="selectedCooler"
+              v-model="selectedCoolerID"
               name="cooler"
               id="cooler"
               placeholder="Cooler"
@@ -26,7 +26,7 @@
           <md-field>
             <label for="region">Region</label>
             <md-select
-              v-model="selectedRegion"
+              v-model="selectedRegionID"
               name="region"
               id="region"
               placeholder="Regions"
@@ -70,7 +70,7 @@
 </template>
 
 <script>
-import { getDefaultViewConf, getEmptyConf } from "../functions";
+import { getDefaultViewConf, getEmptyConf, cunstructViewConf, constructViewConf } from "../functions";
 import Vue from "vue";
 
 export default {
@@ -80,11 +80,34 @@ export default {
       higlass: null,
       showHiglass: false,
       higlassClass: [""],
-      selectedCooler: null,
-      selectedRegion: null,
+      selectedCoolerID: null,
+      selectedRegionID: null,
+      selectedBedPeID: null,
       coolers: [],
       bedfiles: [],
     };
+  },
+  computed: {
+    selectedCooler: function () {
+      if (!this.selectedCoolerID){
+        return null;
+      }
+      return this.coolers.filter( element => {
+        return element.id == this.selectedCoolerID
+      })[0] // return only the object at position 0
+    },
+    selectedRegion: function () {
+      if (!this.selectedRegionID){
+        return null;
+      }
+      return this.bedfiles.filter( element => {
+        return element.id == this.selectedRegionID
+      })[0] // return only the object at position 0
+    },
+    selectedBedPe: function () {
+      // TODO: api call for pileupregions
+      return null;
+    }
   },
   watch: {
     showHiglass: function (val) {
@@ -107,7 +130,11 @@ export default {
     createHiGlass: function () {
       this.higlass = hglib.viewer(
         document.getElementById("higlass-browser"),
-        getDefaultViewConf(),
+        constructViewConf(
+          this.selectedCooler,
+          this.selectedRegion,
+          this.selectedBedPe
+        ),
         {
           bounded: true,
           editable: false,

@@ -47,11 +47,17 @@ def pipeline_bed(dataset_id):
     # bed-file preprocessing: sorting, clodius, uploading to higlass
     bed_preprocess_pipeline_step(dataset_id)
     _set_task_progress(50)
+    file_path = Dataset.query.get(dataset_id).file_path
+    # sort dataset
+    log.info("      Sorting...")
+    sorted_file_name = file_path.split(".")[0] + "_sorted.bed"
+    io_helpers.sort_bed(file_path, sorted_file_name, app.config["CHROM_SIZES"])
     for window in window_sizes:
-        file_path = Dataset.query.get(dataset_id).file_path
+        # Convert to bedpe
         log.info(f"  Converting to bedpe, windowsize {window}")
-        target_file = file_path + f".{window}" + ".bedpe"
-        io_helpers.convert_bed_to_bedpe(file_path, target_file, window)
+        target_file = sorted_file_name + f".{window}" + ".bedpe"
+        io_helpers.convert_bed_to_bedpe(sorted_file_name, target_file, window)
+        # preprocessing
         bedpe_preprocess_pipeline_step(target_file, dataset_id, window)
         # do pileup for all coolers
     _set_task_progress(100)
@@ -79,7 +85,7 @@ def pipeline_cooler(dataset_id):
     }
     try:
         result = higlass_interface.add_tileset(
-            "bedfile",
+            "cooler",
             current_dataset.file_path,
             app.config["HIGLASS_API"],
             credentials,
@@ -99,11 +105,8 @@ def pipeline_cooler(dataset_id):
     # perform pileups
     counter = 0
     for binsize in binsizes:
-        for (
-            pileup_region
-        ) in (
-            pileup_regions
-        ):  # no need to check if processing is finished, pileup_regions are not processed
+        for pileup_region in pileup_regions:
+            # no need to check if processing is finished, pileup_regions are not processed
             perform_pileup_iccf(current_dataset, pileup_region, binsize, arms)
             counter += 1
             progress = counter / (len(binsizes) * len(pileup_regions)) * 100
@@ -125,16 +128,12 @@ def bed_preprocess_pipeline_step(dataset_id):
     log.info(f"  Running bed-preprocessing for ID {dataset_id}")
     # get dataset, this is not sorted, not preprocessed for higlass
     current_dataset = Dataset.query.get(dataset_id)
-    # sort dataset
-    log.info("      Sorting...")
-    dataset_file = current_dataset.file_path
-    sorted_file_name = dataset_file.split(".")[0] + "_sorted.bed"
-    io_helpers.sort_bed(dataset_file, sorted_file_name, app.config["CHROM_SIZES"])
     # preprocess with clodius
     log.info("Clodius preprocessing...")
-    output_path = sorted_file_name + ".beddb"
+    dataset_file = current_dataset.file_path
+    output_path = dataset_file + ".beddb"
     exit_code = higlass_interface.preprocess_dataset(
-        "bedfile", app.config["CHROM_SIZES"], sorted_file_name, output_path
+        "bedfile", app.config["CHROM_SIZES"], dataset_file, output_path
     )
     if exit_code != 0:
         log.error("Clodius failed!")
@@ -156,10 +155,9 @@ def bed_preprocess_pipeline_step(dataset_id):
     except HTTPError:
         log.error("Higlass upload of bedfile failed")
         return
-    # upload succeeded, add uuid of higlass to dataset
+    # upload succeeded, add uuid
     uuid = result["uuid"]
     current_dataset.higlass_uuid = uuid
-    current_dataset.file_path = sorted_file_name
     db.session.commit()
     log.info("      Success!")
 

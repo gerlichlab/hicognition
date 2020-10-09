@@ -1,4 +1,4 @@
-import { defaultConf, emptyConfLocal } from "./config_templates"
+import { defaultConf, emptyConfLocal, bedPeView, coolerView, topView } from "./config_templates"
 
 export default function generateData(count, yrange) {
     var i = 0;
@@ -24,4 +24,65 @@ export function getDefaultViewConf() {
 export function getEmptyConf() {
     // Returns empty config file for local Higlass server. URL is defined in config/dev.env.js
     return emptyConfLocal
+}
+
+
+export function constructViewConf(cooler, bed, bedPe) {
+    /*
+    Constructs a view configuration for Higlass from the passed
+    cooler file and bedPe file (go to the center view)
+    and the passed bed file (go to the top view).
+    The datasets should be passed objects of this 
+    shape: { "datasetName": name, "higlass_uuid": uuid, ... }
+    */
+   var returnConfig = emptyConfLocal; // shallow copy
+    if (cooler){
+        var filledCooler = fillCooler(cooler);
+        returnConfig["views"][0]["tracks"]["center"].push(filledCooler);
+    }
+    if (bed) {
+        var filledBed = fillBed(bed);
+        returnConfig["views"][0]["tracks"]["top"].push(filledBed);
+    }
+    if (bedPe) {
+        var filledBedPe = fillBedPe(bedPe);
+        returnConfig["views"][0]["tracks"]["center"].push(filledBedPe);
+    }
+    return returnConfig
+}
+
+
+function fillCooler(cooler){
+    // fills cooler file info into coolerView component
+    // cooler should be an object like the following:
+    // { "datasetName": name, "higlass_uuid": uuid, ...}
+    var localView = coolerView;  //shalllow copy
+    // assign uuid and name from cooler
+    localView["contents"][0]["tilesetUid"] = cooler["higlass_uuid"];
+    localView["contents"][0]["options"]["name"] = cooler["datasetName"];
+    return localView;
+}
+
+function fillBedPe(bedPe){
+    // fills bedPe file info into bedPEView component
+    // bedPe should be an object like the following:
+    // { "datasetName": name, "higlass_uuid": uuid, ...}
+    var localView = bedPeView;  //shalllow copy
+    // assign uuid and name from cooler
+    localView["tilesetUid"] = bedPe["higlass_uuid"];
+    localView["options"]["name"] = bedPe["datasetName"];
+    return localView;
+}
+
+function fillBed(bed){
+    // fills bed file info into topView component
+    // bed should be an object like the following:
+    // { "datasetName": name, "higlass_uuid": uuid, ...}
+    var localView = topView;  //shalllow copy
+    console.log(localView);
+    console.log(bed);
+    // assign uuid and name from cooler
+    localView["tilesetUid"] = bed["higlass_uuid"];
+    localView["options"]["name"] = bed["datasetName"];
+    return localView;
 }
