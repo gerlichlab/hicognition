@@ -27,8 +27,9 @@
     <div class="md-toolbar-row">
       <md-tabs class="md-primary">
         <md-tab id="tab-home" md-label="Predefined" to="/main/predefined"></md-tab>
-        <md-tab id="tab-pages" md-label="Annotate" to="/main/annotate"></md-tab>
-        <md-tab id="tab-posts" md-label="Explore" to="/main/explore"></md-tab>
+        <md-tab id="tab-compare" md-label="Compare" to="/main/compare"></md-tab>
+        <md-tab id="tab-annotate" md-label="Annotate" to="/main/annotate"></md-tab>
+        <md-tab id="tab-eplore" md-label="Explore" to="/main/explore"></md-tab>
       </md-tabs>
     </div>
   </div>

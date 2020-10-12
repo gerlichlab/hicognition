@@ -8,6 +8,7 @@ import loginRoute from "./routes/loginRoute"
 import predefinedRoute from "./routes/predefinedRoute"
 import annotateRoute from "./routes/annotateRoute"
 import exploreRoute from "./routes/exploreRoute"
+import compareRoute from "./routes/compareRoute"
 
 // define routes
 
@@ -22,6 +23,12 @@ const routes = [
          requiresAuth: true
       }
       },
+      {
+        path: "compare", component: compareRoute,
+        meta: {
+           requiresAuth: true
+        }
+        },
       {
       path: "explore", component: exploreRoute,
       meta: {
