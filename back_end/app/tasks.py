@@ -119,11 +119,9 @@ def pipeline_cooler(dataset_id):
 
 def bed_preprocess_pipeline_step(dataset_id):
     """Runs bed-preprocess pipeline step of pipeline_bed:
-        - sort bedfile associated with dataset_id
-        - run clodius on sorted bedfile
+        - run clodius on bedfile
         - upload clodius result to higlass
         - store higlass_uuid in Dataset db entry
-        - replace filepath with sorted bedfile
     """
     log.info(f"  Running bed-preprocessing for ID {dataset_id}")
     # get dataset, this is not sorted, not preprocessed for higlass
