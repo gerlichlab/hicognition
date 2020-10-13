@@ -69,7 +69,7 @@ class LoginTestCase(unittest.TestCase):
         db.session.add(new_user)
         db.session.commit()
         # get token
-        headers = self.get_api_headers("test", "asdf")
+        headers = self.get_api_headers(username, password)
         response = self.client.post(
             "/api/tokens/", headers=headers, content_type="application/json"
         )

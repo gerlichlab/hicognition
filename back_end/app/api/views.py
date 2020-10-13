@@ -1,12 +1,15 @@
 """API endpoints for hicognition"""
 import os
+import pdb
 from flask.json import jsonify
 from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from . import api
 from .. import db
-from ..models import User, Dataset
+from ..models import Pileupregion, User, Dataset
 from .authentication import auth
+
+# GET routes
 
 @api.route('/test', methods=["GET"])
 def test():
@@ -44,6 +47,36 @@ def get_datasets(dtype):
         response.status_code = 404
         return response
 
+
+@api.route('/datasets/<dataset_id>/pileupregions', methods=["GET"])
+@auth.login_required
+def get_pileupregiones_of_dataset(dataset_id):
+    """Gets all available pileupregions for a given dataset, if the user owns the requested dataset."""
+    # check whether dataset exists
+    if Dataset.query.get(dataset_id) is None:
+        response = jsonify({"error": f"Dataset with id '{dataset_id}' does not exist!"})
+        response.status_code = 404
+        return response
+    # check whether user owns the dataset
+    if Dataset.query.get(dataset_id).user_id != g.current_user.id:
+        response = jsonify({"error": f"Dataset with id '{dataset_id}' is not owend by logged in uwer!"})
+        response.status_code = 403
+        return response
+    # SQL join to get all pileupregions that come from the specified dataset
+    all_files = Pileupregion.query.join(Dataset).filter((Dataset.user_id == g.current_user.id) & (Dataset.id == dataset_id)).all()
+    return jsonify([dfile.to_json() for dfile in all_files])
+
+
+@api.route('/pileupregions', methods=["GET"])
+@auth.login_required
+def get_pileupregions():
+    """Gets all available pileupregions for a given user."""
+    # SQL join to get all pileupregions that come from a dataset owned by the respective user
+    all_files = Pileupregion.query.join(Dataset).filter(Dataset.user_id == g.current_user.id).all()
+    return jsonify([dfile.to_json() for dfile in all_files])
+
+
+# POST routes
 
 @api.route('/datasets/', methods=["POST"])
 @auth.login_required
