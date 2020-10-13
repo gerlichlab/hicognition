@@ -1,21 +1,20 @@
-import pdb
 import unittest
 from test_helpers import LoginTestCase
 # add path to import app
 import sys
 sys.path.append("./")
 from app import db
-from app.models import User, Dataset, Task, Pileupregion
+from app.models import Dataset, Pileupregion
 
 
 class TestGetPileupregions(LoginTestCase):
-    """Tests for /api/datasets route to list
-    datasets."""
+    """Tests for /api/pileupregions route to list
+    pileupregions."""
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
         # protected route
-        response = self.client.get("/api/datasets/", content_type="application/json")
+        response = self.client.get("/api/pileupregions/", content_type="application/json")
         self.assertEqual(response.status_code, 401)
 
     def test_correct_pileupregions_single_dataset(self):
@@ -50,7 +49,7 @@ class TestGetPileupregions(LoginTestCase):
         db.session.commit()
         # get pileupregions 
         response = self.client.get(
-            "/api/pileupregions",
+            "/api/pileupregions/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -124,7 +123,7 @@ class TestGetPileupregions(LoginTestCase):
         db.session.commit()
         # get pileupregions
         response = self.client.get(
-            "/api/pileupregions",
+            "/api/pileupregions/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -150,7 +149,7 @@ class TestGetPileupregions(LoginTestCase):
         self.assertEqual(response.json, expected)
         # test other user
         response = self.client.get(
-            "/api/pileupregions",
+            "/api/pileupregions/",
             headers=token_headers2,
             content_type="application/json",
         )
@@ -167,13 +166,14 @@ class TestGetPileupregions(LoginTestCase):
         ]
         self.assertEqual(response.json, expected)
 
+
 class TestGetSpecificPileupregions(LoginTestCase):
     """Tests getting pileupregions of a specific dataset."""
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
         # protected route
-        response = self.client.get("/api/datasets/1/pileupregions", content_type="application/json")
+        response = self.client.get("/api/datasets/1/pileupregions/", content_type="application/json")
         self.assertEqual(response.status_code, 401)
 
     def test_404_if_wrong_id(self):
@@ -185,7 +185,7 @@ class TestGetSpecificPileupregions(LoginTestCase):
         token_headers = self.get_token_header(token)
         # get pileupregions
         response = self.client.get(
-            "/api/datasets/500/pileupregions",
+            "/api/datasets/500/pileupregions/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -218,7 +218,7 @@ class TestGetSpecificPileupregions(LoginTestCase):
         db.session.commit()
         # get pileupregions
         response = self.client.get(
-            "/api/datasets/1/pileupregions",
+            "/api/datasets/1/pileupregions/",
             headers=token_headers2,
             content_type="application/json",
         )
@@ -271,7 +271,7 @@ class TestGetSpecificPileupregions(LoginTestCase):
         db.session.commit()
         # get pileupregions
         response = self.client.get(
-            "/api/datasets/1/pileupregions",
+            "/api/datasets/1/pileupregions/",
             headers=token_headers,
             content_type="application/json",
         )

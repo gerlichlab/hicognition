@@ -48,7 +48,7 @@ def get_datasets(dtype):
         return response
 
 
-@api.route('/datasets/<dataset_id>/pileupregions', methods=["GET"])
+@api.route('/datasets/<dataset_id>/pileupregions/', methods=["GET"])
 @auth.login_required
 def get_pileupregiones_of_dataset(dataset_id):
     """Gets all available pileupregions for a given dataset, if the user owns the requested dataset."""
@@ -67,7 +67,7 @@ def get_pileupregiones_of_dataset(dataset_id):
     return jsonify([dfile.to_json() for dfile in all_files])
 
 
-@api.route('/pileupregions', methods=["GET"])
+@api.route('/pileupregions/', methods=["GET"])
 @auth.login_required
 def get_pileupregions():
     """Gets all available pileupregions for a given user."""
