@@ -144,20 +144,10 @@ export var emptyConfLocal = {
     "exportViewUrl": "/api/v1/viewconfs",
     "views": [
         {
-            "uid": "aa",
-            "initialXDomain": [
+        "initialXDomain": [
                 0,
-                3100000000
+                3000000000
             ],
-            "autocompleteSource": "/api/v1/suggest/?d=OHJakQICQD6gTD7skx4EWA&",
-            "genomePositionSearchBox": {
-                "autocompleteServer": process.env.HIGLASS_URL + "/api/v1",
-                "autocompleteId": "OHJakQICQD6gTD7skx4EWA",
-                "chromInfoServer": process.env.HIGLASS_URL + "/api/v1",
-                "chromInfoId": "hg19",
-                "visible": true
-            },
-            "chromInfoPath": "//s3.amazonaws.com/pkerp/data/hg19/chromSizes.tsv",
             "tracks": {
                 "top": [],
                 "center": []

@@ -106,14 +106,20 @@ export default {
     selectedBedPe: function () {
       // TODO: api call for pileupregions
       return null;
+    },
+    viewConf: function() {
+      return constructViewConf(
+            this.selectedCooler,
+            this.selectedRegion,
+            this.selectedBedPe
+        );
     }
   },
   methods: {
     handleDatasetSubmit () {
       if (this.higlass){
-        // higlass exists already, destroy and recreate
-        this.higlass.destroy()
-        this.createHiGlass()
+        // higlass exists already, update dataset
+        this.higlass.setViewConfig(this.viewConf);
       }else{
         // higlass does not exist, create it
         // add fill card to higlass class. This is a hack because the
@@ -126,15 +132,9 @@ export default {
       }
     },
     createHiGlass: function () {
-      var viewconf =  constructViewConf(
-        this.selectedCooler,
-        this.selectedRegion,
-        this.selectedBedPe
-      );
-      console.log(viewconf);
       this.higlass = hglib.viewer(
         document.getElementById("higlass-browser"),
-        viewconf,
+        this.viewConf,
         {
           bounded: true,
           editable: false

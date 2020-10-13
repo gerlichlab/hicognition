@@ -79,8 +79,6 @@ function fillBed(bed){
     // bed should be an object like the following:
     // { "datasetName": name, "higlass_uuid": uuid, ...}
     var localView = JSON.parse(JSON.stringify(topView)); //deep copy; yes, this is the recommended way in js... https://www.javascripttutorial.net/object/3-ways-to-copy-objects-in-javascript/
-    console.log(localView);
-    console.log(bed);
     // assign uuid and name from cooler
     localView["tilesetUid"] = bed["higlass_uuid"];
     localView["options"]["name"] = bed["datasetName"];
