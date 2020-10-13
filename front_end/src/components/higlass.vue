@@ -1,6 +1,7 @@
 <template>
   <md-card md-with-hover class="higlass-card">
     <md-card-content>
+
       <div class="md-layout md-gutter">
         <div class="md-layout-item md-size-20">
           <md-field>
@@ -37,6 +38,26 @@
                 :value="item.id"
                 :key="item.id"
                 >{{ item.dataset_name }}</md-option
+              >
+            </md-select>
+          </md-field>
+        </div>
+
+        <div class="md-layout-item md-size-20">
+          <md-field>
+            <label for="bedpe">Windowsize</label>
+            <md-select
+              v-model="selectedBedPeID"
+              name="bedpe"
+              id="bedpe"
+              placeholder="Windowsize"
+              @click="updateDatasetSelection"
+            >
+              <md-option
+                v-for="item in bedpeFiles"
+                :value="item.id"
+                :key="item.id"
+                >{{ item.windowsize }}</md-option
               >
             </md-select>
           </md-field>
@@ -84,6 +105,7 @@ export default {
       selectedBedPeID: null,
       coolers: [],
       bedfiles: [],
+      bedpeFiles: []
     };
   },
   computed: {
@@ -104,8 +126,12 @@ export default {
       })[0] // return only the object at position 0
     },
     selectedBedPe: function () {
-      // TODO: api call for pileupregions
-      return null;
+      if (!this.selectedBedPeID) {
+        return null;
+      }
+      return this.bedpeFiles.filter( element => {
+        return element.id == this.selectedBedPeID
+      })[0] // return only the object at position 0
     },
     viewConf: function() {
       return constructViewConf(
@@ -116,7 +142,7 @@ export default {
     }
   },
   methods: {
-    handleDatasetSubmit () {
+    handleDatasetSubmit: function () {
       if (this.higlass){
         // higlass exists already, update dataset
         this.higlass.setViewConfig(this.viewConf);
@@ -130,6 +156,23 @@ export default {
         // swtiched on, update higlass after DOM update
         this.createHiGlass();
       }
+    },
+    fetchPileupregions: function () {
+        var token = this.$store.state.token;
+        var encodedToken = btoa(token + ":")
+        this.$http.get(process.env.API_URL + `datasets/${this.selectedRegionID}/pileupregions/`, {
+          headers: {
+            "Authorization": `Basic ${encodedToken}`
+          }
+        }).then(response => {
+          if (response.status != 200){
+            console.log(`Error: ${response.data}`);
+          }else{
+            // success, store datasets
+            this.$store.commit("setPileupRegions", response.data);
+            this.bedpeFiles = response.data;
+          }
+        })
     },
     createHiGlass: function () {
       this.higlass = hglib.viewer(
@@ -175,6 +218,13 @@ export default {
         (element) => element.filetype == "bedfile" && element.completed
       );
     },
+  },
+  watch: {
+    selectedRegionID: function () {
+      this.fetchPileupregions();
+      // clear selected pileupregions
+      this.selectedBedPeID = null;
+    }
   },
   created: function () {
     this.getDatasets();

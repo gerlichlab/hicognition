@@ -8,7 +8,9 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
   state: {
     token: null,
-    datasets: null
+    datasets: null,
+    pileupRegions: null,
+    pileups: null
   },
   getters: {
       isTokenEmpty: state => {
@@ -24,6 +26,12 @@ const store = new Vuex.Store({
       },
       setDatasets (state, datasets) {
         state.datasets = datasets
+      },
+      setPileupRegions (state, pileupRegions) {
+        state.pileupRegions = pileupRegions
+      },
+      setPileups (state, pileups) {
+        state.pileups = pileups
       }
   }
 })
