@@ -144,6 +144,18 @@ class Pileup(db.Model):
         """Format print output."""
         return f"<Pileup {self.name}>"
 
+    def to_json(self):
+        """Formats json output."""
+        json_pileups = {
+            "id": self.id,
+            "binsize": self.binsize,
+            "name": self.name,
+            "file_path": self.file_path,
+            "cooler_id": self.cooler_id,
+            "pileupregion_id": self.pileupregion_id
+        }
+        return json_pileups
+
 
 class Task(db.Model):
     id = db.Column(db.String(36), primary_key=True)

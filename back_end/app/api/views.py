@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from . import api
 from .. import db
-from ..models import Pileupregion, User, Dataset
+from ..models import Pileupregion, User, Dataset, Pileup
 from .authentication import auth
 
 # GET routes
@@ -59,7 +59,7 @@ def get_pileupregiones_of_dataset(dataset_id):
         return response
     # check whether user owns the dataset
     if Dataset.query.get(dataset_id).user_id != g.current_user.id:
-        response = jsonify({"error": f"Dataset with id '{dataset_id}' is not owend by logged in uwer!"})
+        response = jsonify({"error": f"Dataset with id '{dataset_id}' is not owned by logged in user!"})
         response.status_code = 403
         return response
     # SQL join to get all pileupregions that come from the specified dataset
@@ -74,6 +74,30 @@ def get_pileupregions():
     # SQL join to get all pileupregions that come from a dataset owned by the respective user
     all_files = Pileupregion.query.join(Dataset).filter(Dataset.user_id == g.current_user.id).all()
     return jsonify([dfile.to_json() for dfile in all_files])
+
+
+@api.route('/pileups/<cooler_id>/<pileupregion_id>/', methods=["GET"])
+@auth.login_required
+def get_pileups(cooler_id, pileupregion_id):
+    """Gets all available pileups from a given cooler file
+    for the specified pileupregion_id. Only returns pileup object if
+    user owns the cooler dataset and pileupregion_id"""
+    # Check whether datasets exist
+    cooler_ds = Dataset.query.get(cooler_id)
+    pileupregion_ds = Pileupregion.query.get(pileupregion_id)
+    if (cooler_ds is None) or (pileupregion_ds is None):
+        response = jsonify({"error": f"Cooler dataset or pileupregion dataset do not exist!"})
+        response.status_code = 404
+        return response
+    # Check whether datasets are owned
+    if (cooler_ds.user_id != g.current_user.id) or (pileupregion_ds.source_dataset.user_id != g.current_user.id):
+        response = jsonify({"error": f"Cooler dataset or pileupregion dataset is not owned by logged in user!"})
+        response.status_code = 403
+        return response
+    # return all pileupregions the are derived from the specified selection of cooler and pileupregion
+    all_files = Pileup.query.filter(Pileup.pileupregion_id == pileupregion_id).join(Dataset).filter(Dataset.id == cooler_id).all()
+    return jsonify([dfile.to_json() for dfile in all_files])
+
 
 
 # POST routes
