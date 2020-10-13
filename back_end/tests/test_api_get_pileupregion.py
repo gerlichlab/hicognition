@@ -170,6 +170,12 @@ class TestGetPileupregions(LoginTestCase):
 class TestGetSpecificPileupregions(LoginTestCase):
     """Tests getting pileupregions of a specific dataset."""
 
+    def test_no_auth(self):
+        """No authentication provided, response should be 401"""
+        # protected route
+        response = self.client.get("/api/datasets/1/pileupregions", content_type="application/json")
+        self.assertEqual(response.status_code, 401)
+
     def test_404_if_wrong_id(self):
         """Tests whether status_code 404 is returned
         if id is wrong."""
