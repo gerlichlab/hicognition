@@ -85,9 +85,42 @@ function fillBed(bed){
     return localView;
 }
 
-function read_csv(url){
-    /*
-        Reads a csv-file from the specified url and returns a series array
-        that is suitable for apexcharts heatmaps
-    */
+export function convert_json_to_apex(json){
+        /*
+            Converts pileup data from pandas.DataFrame.to_json to a
+            series object that is readable by apexcharts heatmap.
+
+            input Json: '{"variable":{...},"group":{...},"value":{...}}'
+            output object: [
+                {
+                    name: "Row1",
+                    data: [...]
+                },
+                {
+                    name: "Row2",
+                    data: [...]
+                }
+            ]
+        */
+    var jsonObject = JSON.parse(json);
+    var output = [];
+    var objectLength = Object.keys(jsonObject["variable"]).length;
+    for (var index = 0; index < objectLength; index++){
+        // extract infos for current entry
+        var rowIndex = jsonObject["variable"][index];
+        console.log(`rowIndex: ${rowIndex}`)
+        var columnIndex = jsonObject["group"][index];
+        console.log(`columnIndex: ${columnIndex}`)
+        // check if rowIndex is already in ouput
+        if (output[rowIndex]){
+            output[rowIndex]["data"][columnIndex] = jsonObject["value"][index]
+        }else{
+            // new row
+            output[rowIndex] = {
+                name: rowIndex,
+                data: [jsonObject["value"][index]]
+            }
+        }
+    }
+    return output;
 }
