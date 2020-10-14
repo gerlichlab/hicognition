@@ -1,7 +1,7 @@
 <template>
   <md-card md-with-hover class="pileup-card">
     <md-card-content>
-      <div class="md-layout md-gutter">
+      <div class="md-layout md-gutter" ref="pileup-card-element">
         <div class="md-layout-item md-size-20">
           <md-field>
             <label for="binsize">Binsize</label>
@@ -30,8 +30,8 @@
           >Submit</md-button>
         </div>
     <md-divider></md-divider>
-      <pileup title="ICCF" v-if="showPileup" :width="pileupWidth" :height="pileupHeight" :data="pileupDataICCF" :scaleFactor="scaleFactorICCF"></pileup>
-      <pileup title="ObsExp" v-if="showPileup" :width="pileupWidth" :height="pileupHeight" :data="pileupDataObsExp" :scaleFactor="scaleFactorObsExp"></pileup>
+      <pileup title="ICCF" v-if="showPileup" :width="pileupDim" :height="pileupDim" :data="pileupDataICCF" :scaleFactor="scaleFactorICCF"></pileup>
+      <pileup title="ObsExp" v-if="showPileup" :width="pileupDim" :height="pileupDim" :data="pileupDataObsExp" :scaleFactor="scaleFactorObsExp"></pileup>
         <md-empty-state
           md-icon="input"
           md-label="Add a dataset"
@@ -60,10 +60,9 @@ export default {
       blockSelection: true, // whether to show controls for binsize selection
       pileupDataICCF: null,
       pileupDataObsExp: null,
-      pileupWidth: 200,
-      pileupHeight: 200,
       scaleFactorICCF: 10000,
-      scaleFactorObsExp: 10
+      scaleFactorObsExp: 10,
+      pileupDim: 0
     }
   },
   computed: {
@@ -72,6 +71,10 @@ export default {
     }
   },
   methods: {
+    updatePileupSize: function () {
+      var value = this.$refs["pileup-card-element"].offsetWidth * 0.5;
+      this.pileupDim = value;
+    },
     handleBinsizeSubmit: function () {
       // get ids
       var iccf_id = this.pileups[this.selectedBinsize]["ICCF"];
@@ -153,7 +156,12 @@ export default {
               }
         });
       }
-    }
+    },
+  },
+  mounted: function() {
+    // add resize event listener and seed initial value
+    this.updatePileupSize();
+    window.addEventListener("resize", this.updatePileupSize);
   }
 };
 </script>

@@ -1,13 +1,11 @@
 <template>
-  <md-card class="inner-pileup-card">
-    <md-card-header>
-      <div class="md-title">{{ titleName }}</div>
-    </md-card-header>
+    <div class="md-layout md-gutter md-alignment-center-center">
 
-    <md-card-content>
+    <div class="md-layout-item ">
       <div :id="title" />
-    </md-card-content>
-  </md-card>
+    </div>
+  </div>
+
 </template>
 
 <script>
@@ -19,9 +17,9 @@ export default {
   name: "pileup-card",
   props: {
     title: String,
+    data: Object,
     width: Number,
     height: Number,
-    data: Object,
     scaleFactor: Number
   },
   computed: {
@@ -108,10 +106,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.inner-pileup-card {
-  width: 80%;
-  height: 45%;
-  margin: 4px;
-  display: inline-block;
-}
 </style>
