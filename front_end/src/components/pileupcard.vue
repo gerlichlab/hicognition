@@ -10,7 +10,6 @@
               name="binsize"
               id="binsize"
               placeholder="Binsize"
-              @click="updateDatasetSelection"
               :disabled="blockSelection"
             >
               <md-option
@@ -56,12 +55,45 @@ export default {
     return {
       showPileup: false,
       selectedBinsize: null,
+      pileups: [],
       blockSelection: true // control whether to show controls for binsize selection
     }
   },
   methods: {
     handleBinsizeSubmit: function () {
       return
+    }
+  },
+  watch: {
+    '$store.state.datasetSelectionPredefined': function(value) {
+      // watches storing of dataset selection in store
+      if (value) {
+          // unpack  values
+          var { cooler_id, bedpe_id } = value;
+          // fetch pileup datasets and display binsizes
+          var token = this.$store.state.token;
+          var encodedToken = btoa(token + ":");
+          this.$http
+            .get(process.env.API_URL + `pileups/${cooler_id}/${bedpe_id}/`, {
+              headers: {
+                Authorization: `Basic ${encodedToken}`,
+              },
+            })
+            .then((response) => {
+              if (response.status != 200) {
+                console.log(`Error: ${response.data}`);
+              } else {
+                // success, store datasets
+                this.$store.commit("setPileups", response.data);
+                // update binsizes to show
+                this.pileups = response.data;
+                // show controls
+                this.blockSelection = false;
+                // reset selection
+                this.selectedBinsize = null;
+              }
+        });
+      }
     }
   }
 };
