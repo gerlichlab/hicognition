@@ -63,6 +63,7 @@ export default {
     createHeatMap: function() {
       this.svg = d3.select(`#${this.title}`)
                    .append("svg")
+                   .attr("id", `${this.title}Svg`)
                    .attr("width", this.width)
                    .attr("height", this.height)
                    .append("g")
@@ -95,6 +96,13 @@ export default {
   mounted: function () {
     this.createHeatMap();
     this.fillHeatMap();
+  },
+  watch: {
+    data: function() {
+      d3.select(`#${this.title}Svg`).remove();
+      this.createHeatMap();
+      this.fillHeatMap();
+    }
   }
 };
 </script>
