@@ -137,6 +137,7 @@ class Pileup(db.Model):
     binsize = db.Column(db.Integer)
     name = db.Column(db.String(64), index=True)
     file_path = db.Column(db.String(128), index=True)
+    value_type = db.Column(db.String(64))
     cooler_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     pileupregion_id = db.Column(db.Integer, db.ForeignKey("pileupregion.id"))
 
@@ -152,7 +153,8 @@ class Pileup(db.Model):
             "name": self.name,
             "file_path": self.file_path,
             "cooler_id": self.cooler_id,
-            "pileupregion_id": self.pileupregion_id
+            "pileupregion_id": self.pileupregion_id,
+            "value_type": self.value_type
         }
         return json_pileups
 

@@ -84,3 +84,10 @@ function fillBed(bed){
     localView["options"]["name"] = bed["datasetName"];
     return localView;
 }
+
+function read_csv(url){
+    /*
+        Reads a csv-file from the specified url and returns a series array
+        that is suitable for apexcharts heatmaps
+    */
+}

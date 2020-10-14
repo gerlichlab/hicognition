@@ -99,7 +99,6 @@ def get_pileups(cooler_id, pileupregion_id):
     return jsonify([dfile.to_json() for dfile in all_files])
 
 
-
 # POST routes
 
 @api.route('/datasets/', methods=["POST"])

@@ -35,7 +35,35 @@ export default {
   },
   data: function() {
   return {
-    series: [
+    series: [],
+    chartOptions: {
+      chart: {
+        height: 350,
+        type: "heatmap",
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      colors: ["#008FFB"],
+      title: {
+        text: "HeatMap Chart (Single color)",
+      },
+    },
+  }
+}
+};
+</script>
+
+<style lang="scss" scoped>
+.inner-pileup-card {
+  width: 80%;
+  height: 45%;
+  margin: 4px;
+  display: inline-block;
+}
+</style>
+
+/*  [
       {
         name: "Metric1",
         data: generateData(18, {
@@ -99,30 +127,4 @@ export default {
           max: 90,
         }),
       },
-    ],
-    chartOptions: {
-      chart: {
-        height: 350,
-        type: "heatmap",
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      colors: ["#008FFB"],
-      title: {
-        text: "HeatMap Chart (Single color)",
-      },
-    },
-  }
-}
-};
-</script>
-
-<style lang="scss" scoped>
-.inner-pileup-card {
-  width: 80%;
-  height: 45%;
-  margin: 4px;
-  display: inline-block;
-}
-</style>
+    ] */

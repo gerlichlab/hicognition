@@ -47,6 +47,7 @@ class TestGetPileups(LoginTestCase):
             file_path="testPath1",
             cooler_id=1,
             pileupregion_id=1,
+            value_type="ICCF"
         )
         db.session.add_all([dataset1, pileupregion1, pileup])
         db.session.commit()
@@ -85,6 +86,7 @@ class TestGetPileups(LoginTestCase):
             file_path="testPath1",
             cooler_id=1,
             pileupregion_id=1,
+            value_type="ICCF"
         )
         db.session.add_all([dataset1, pileupregion1, pileup])
         db.session.commit()
@@ -133,6 +135,7 @@ class TestGetPileups(LoginTestCase):
             file_path="testPath1",
             cooler_id=1,
             pileupregion_id=1,
+            value_type="ICCF"
         )
         db.session.add_all([dataset1, dataset2, pileupregion1, pileup])
         db.session.commit()
@@ -185,6 +188,7 @@ class TestGetPileups(LoginTestCase):
             file_path="testPath1",
             cooler_id=1,
             pileupregion_id=1,
+            value_type="ICCF"
         )
         db.session.add_all([dataset1, dataset2, pileupregion1, pileupregion2, pileup])
         db.session.commit()
@@ -235,6 +239,7 @@ class TestGetPileups(LoginTestCase):
             file_path="testPath1",
             cooler_id=1,
             pileupregion_id=1,
+            value_type="ICCF"
         )
         pileup2 = Pileup(
             name="testPileup2",
@@ -242,6 +247,7 @@ class TestGetPileups(LoginTestCase):
             file_path="testPath2",
             cooler_id=1,
             pileupregion_id=2,
+            value_type="ICCF"
         )
         pileup3 = Pileup(
             name="testPileup3",
@@ -249,6 +255,7 @@ class TestGetPileups(LoginTestCase):
             file_path="testPath3",
             cooler_id=2,
             pileupregion_id=1,
+            value_type="ICCF"
         )
         pileup4 = Pileup(
             name="testPileup4",
@@ -256,6 +263,7 @@ class TestGetPileups(LoginTestCase):
             file_path="testPath4",
             cooler_id=2,
             pileupregion_id=2,
+            value_type="ICCF"
         )
         db.session.add_all([dataset1, dataset2, pileupregion1, pileupregion2, pileup1, pileup2, pileup3, pileup4])
         db.session.commit()
