@@ -3,19 +3,13 @@
   <div>
     <md-list class="md-double-line">
       <md-subheader>{{ title }}</md-subheader>
-
       <md-list-item class="md-alignment-top-center">
-        <div :id="title" class="center-horizontal" />
+        <md-content class="center-horizontal md-elevation-10">
+          <div :id="title" class="small-margin" />
+        </md-content>
       </md-list-item>
-
     </md-list>
   </div>
-
-
-<!--     <div class="md-layout md-gutter md-alignment-center-center">
-        <md-subheader>{{ title }}</md-subheader>
-      <div :id="title" class="md-layout-item"/>
-  </div> -->
 
 </template>
 
@@ -124,8 +118,8 @@ export default {
   display: block;
 }
 
-.md-layout-item {
-  margin: 30px;
+.small-margin {
+  margin: 10px;
 }
 
 </style>
