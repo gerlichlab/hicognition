@@ -85,42 +85,31 @@ function fillBed(bed){
     return localView;
 }
 
-export function convert_json_to_apex(json){
+export function convert_json_to_d3(parsed_json, scaleValue=1){
         /*
-            Converts pileup data from pandas.DataFrame.to_json to a
-            series object that is readable by apexcharts heatmap.
+            Converts pileup data from pandas.DataFrame.to_json to an 
+            object that d3 can read
 
             input Json: '{"variable":{...},"group":{...},"value":{...}}'
             output object: [
                 {
-                    name: "Row1",
-                    data: [...]
-                },
-                {
-                    name: "Row2",
-                    data: [...]
+                    variable: 0,
+                    group: 0,
+                    value: 1.23
                 }
             ]
+            Output value is multiplied by scaleValue
         */
-    var jsonObject = JSON.parse(json);
     var output = [];
     var objectLength = Object.keys(jsonObject["variable"]).length;
     for (var index = 0; index < objectLength; index++){
         // extract infos for current entry
-        var rowIndex = jsonObject["variable"][index];
-        console.log(`rowIndex: ${rowIndex}`)
-        var columnIndex = jsonObject["group"][index];
-        console.log(`columnIndex: ${columnIndex}`)
-        // check if rowIndex is already in ouput
-        if (output[rowIndex]){
-            output[rowIndex]["data"][columnIndex] = jsonObject["value"][index]
-        }else{
-            // new row
-            output[rowIndex] = {
-                name: rowIndex,
-                data: [jsonObject["value"][index]]
-            }
-        }
+        currentEntry = {
+            variable: jsonObject["variable"][index],
+            group: jsonObject["group"][index],
+            value: jsonObject["value"][index] * scaleValue
+        };
+        output.push(currentEntry);
     }
     return output;
 }
