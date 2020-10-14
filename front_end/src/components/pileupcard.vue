@@ -31,6 +31,7 @@
         </div>
     <md-divider></md-divider>
       <pileup title="ICCF" v-if="showPileup" :width="pileupDim" :height="pileupDim" :data="pileupDataICCF" :scaleFactor="scaleFactorICCF"></pileup>
+      <md-divider class="md-inset" v-if="showPileup"></md-divider>
       <pileup title="ObsExp" v-if="showPileup" :width="pileupDim" :height="pileupDim" :data="pileupDataObsExp" :scaleFactor="scaleFactorObsExp"></pileup>
         <md-empty-state
           md-icon="input"

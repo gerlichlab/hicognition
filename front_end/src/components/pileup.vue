@@ -1,10 +1,21 @@
 <template>
-    <div class="md-layout md-gutter md-alignment-center-center">
 
-    <div class="md-layout-item ">
-      <div :id="title" />
-    </div>
+  <div>
+    <md-list class="md-double-line">
+      <md-subheader>{{ title }}</md-subheader>
+
+      <md-list-item class="md-alignment-top-center">
+        <div :id="title" class="center-horizontal" />
+      </md-list-item>
+
+    </md-list>
   </div>
+
+
+<!--     <div class="md-layout md-gutter md-alignment-center-center">
+        <md-subheader>{{ title }}</md-subheader>
+      <div :id="title" class="md-layout-item"/>
+  </div> -->
 
 </template>
 
@@ -64,6 +75,7 @@ export default {
                    .attr("id", `${this.title}Svg`)
                    .attr("width", this.width)
                    .attr("height", this.height)
+                   .attr("style", "margin: auto; display: block;") // center element
                    .append("g")
     },
     // fills the heatmap with data
@@ -106,4 +118,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+.center-horizontal {
+  margin: auto;
+  display: block;
+}
+
+.md-layout-item {
+  margin: 30px;
+}
+
 </style>
