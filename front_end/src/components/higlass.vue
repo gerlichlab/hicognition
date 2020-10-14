@@ -68,6 +68,7 @@
           class="md-dense md-raised button-margin"
           md-menu-trigger
           @click="handleDatasetSubmit"
+          :disabled="blockWindowsize"
           >Submit</md-button
         >
       </div>

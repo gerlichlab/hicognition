@@ -17,7 +17,13 @@ import { convert_json_to_d3 } from "../functions.js"
 
 export default {
   name: "pileup-card",
-  props: ["title", "width", "height", "data"],
+  props: {
+    title: String,
+    width: Number,
+    height: Number,
+    data: Object,
+    scaleFactor: Number
+  },
   computed: {
     titleName: function () {
       if (this.title) {
@@ -33,20 +39,23 @@ export default {
     },
     dataVariables: function () {
       if (this.data) {
-        return Object.values(this.data["variable"])
+        var variables = Object.values(this.data["variable"]);
+        // switch them around because otherwise plot will be mirrored
+        var dataRange = new Set(variables).size;
+        var reversedVars = variables.map( (element) => {
+          return dataRange - element;
+        })
+        return reversedVars;
       }
       return null;
     },
     dataHeatMap: function() {
-      return convert_json_to_d3(this.data);
+      return convert_json_to_d3(this.data, this.scaleFactor);
     }
   },
   data: function() {
   return {
     svg: null, // svg of heatmap,
-    margin: {top: 30, right: 30, bottom: 30, left: 30},
-    svgWidth: this.width - this.margin.right - this.margin.left,
-    svgHeight: this.height - this.margin.top - this.margin.bottom
   }
 },
   methods: {
@@ -57,7 +66,6 @@ export default {
                    .attr("width", this.width)
                    .attr("height", this.height)
                    .append("g")
-                   .attr("transofrm", "translate(" + this.margin.left + "," + this.margin.top + ")");
     },
     // fills the heatmap with data
     fillHeatMap: function() {
@@ -67,8 +75,8 @@ export default {
         .domain(this.dataGroups)
         .padding(0.01);
       var y = d3.scaleBand()
-        .range([ height, 0 ])
-        .domain(myVars)
+        .range([ this.height, 0 ])
+        .domain(this.dataVariables)
         .padding(0.01);
       this.svg.append("g").call(d3.axisBottom(x));
       this.svg.append("g").call(d3.axisLeft(y));
@@ -84,6 +92,10 @@ export default {
                   .style("fill", function(d) { return iccfScale(d.value)} )
     }
   },
+  mounted: function () {
+    this.createHeatMap();
+    this.fillHeatMap();
+  }
 };
 </script>
 
@@ -95,69 +107,3 @@ export default {
   display: inline-block;
 }
 </style>
-
-/*  [
-      {
-        name: "Metric1",
-        data: generateData(18, {
-          min: 0,
-          max: 90,
-        }),
-      },
-      {
-        name: "Metric2",
-        data: generateData(18, {
-          min: 0,
-          max: 90,
-        }),
-      },
-      {
-        name: "Metric3",
-        data: generateData(18, {
-          min: 0,
-          max: 90,
-        }),
-      },
-      {
-        name: "Metric4",
-        data: generateData(18, {
-          min: 0,
-          max: 90,
-        }),
-      },
-      {
-        name: "Metric5",
-        data: generateData(18, {
-          min: 0,
-          max: 90,
-        }),
-      },
-      {
-        name: "Metric6",
-        data: generateData(18, {
-          min: 0,
-          max: 90,
-        }),
-      },
-      {
-        name: "Metric7",
-        data: generateData(18, {
-          min: 0,
-          max: 90,
-        }),
-      },
-      {
-        name: "Metric8",
-        data: generateData(18, {
-          min: 0,
-          max: 90,
-        }),
-      },
-      {
-        name: "Metric9",
-        data: generateData(18, {
-          min: 0,
-          max: 90,
-        }),
-      },
-    ] */

@@ -30,8 +30,8 @@
           >Submit</md-button>
         </div>
     <md-divider></md-divider>
-<!--       <pileup title="ICCF" v-show="showPileup" :width="pileupWidth" :height="pileupHeight" :data="pileupDataICCF"></pileup>
-      <pileup title="Obs/Exp" v-show="showPileup" :width="pileupWidth" :height="pileupHeight" :data="pileupDataObsExp"></pileup> -->
+      <pileup title="ICCF" v-if="showPileup" :width="pileupWidth" :height="pileupHeight" :data="pileupDataICCF" :scaleFactor="scaleFactorICCF"></pileup>
+      <pileup title="ObsExp" v-if="showPileup" :width="pileupWidth" :height="pileupHeight" :data="pileupDataObsExp" :scaleFactor="scaleFactorObsExp"></pileup>
         <md-empty-state
           md-icon="input"
           md-label="Add a dataset"
@@ -53,12 +53,22 @@ export default {
   },
   data: function () {
     return {
-      showPileup: false,
+      showPileupICCF: false,
+      showPileupObsExp: false,
       selectedBinsize: null,
       pileups: [],
-      blockSelection: true, // control whether to show controls for binsize selection
+      blockSelection: true, // whether to show controls for binsize selection
       pileupDataICCF: null,
-      pileupDataObsExp: null
+      pileupDataObsExp: null,
+      pileupWidth: 200,
+      pileupHeight: 200,
+      scaleFactorICCF: 10000,
+      scaleFactorObsExp: 10
+    }
+  },
+  computed: {
+    showPileup: function () {
+      return this.pileupDataICCF && this.showPileupObsExp
     }
   },
   methods: {
@@ -80,6 +90,7 @@ export default {
                 console.log(`Error: ${response.data}`);
               } else {
                 this.pileupDataICCF = JSON.parse(response.data);
+                this.showPileupICCF = true;
               }
         });
       // get pileup data obs/exp
@@ -94,6 +105,7 @@ export default {
                 console.log(`Error: ${response.data}`);
               } else {
                 this.pileupDataObsExp = JSON.parse(response.data);
+                this.showPileupObsExp = true;
               }
         });
     }
@@ -120,8 +132,8 @@ export default {
                 // success, store datasets
                 this.$store.commit("setPileups", response.data);
                 // update binsizes to show
-                // Each dataset will have iccf and obs/exp data one needs to 
-                // make a new array with [{ "iccf_id": id, "obs_exp_id": id, "binsize": binsize}]
+                // Each dataset will have iccf and obs/exp data, therefore I  
+                // make a new array with [{ "ICCF": iccf_id, "Obs/Exp": obs_exp_id, "binsize": binsize}]
                 var numberDatasets = response.data.length;
                 var iccfObsExpStratified = {};
                 for (var index = 0; index < numberDatasets; index++){
