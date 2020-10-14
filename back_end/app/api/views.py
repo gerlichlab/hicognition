@@ -1,6 +1,6 @@
 """API endpoints for hicognition"""
 import os
-import pdb
+import pandas as pd
 from flask.json import jsonify
 from werkzeug.utils import secure_filename
 from flask import g, request, current_app
@@ -97,6 +97,30 @@ def get_pileups(cooler_id, pileupregion_id):
     # return all pileupregions the are derived from the specified selection of cooler and pileupregion
     all_files = Pileup.query.filter(Pileup.pileupregion_id == pileupregion_id).join(Dataset).filter(Dataset.id == cooler_id).all()
     return jsonify([dfile.to_json() for dfile in all_files])
+
+
+@api.route('/pileups/data/<pileup_id>/', methods=["GET"])
+@auth.login_required
+def get_pileup_data(pileup_id):
+    """returns pileup data for the specified pileup id if it exists and
+    the user is owner."""
+    # Check for existence
+    if (Pileup.query.get(pileup_id) is None):
+        response = jsonify({"error": f"Pileup does not exist!"})
+        response.status_code = 404
+        return response
+    # Check whether datasets are owned
+    pileup = Pileup.query.get(pileup_id)
+    cooler_ds = pileup.source_cooler
+    bed_ds = pileup.source_pileupregion.source_dataset
+    if ((cooler_ds.user_id != g.current_user.id) or (bed_ds.user_id != g.current_user.id)):
+        response = jsonify({"error": f"Cooler dataset or bed dataset is not owned by logged in user!"})
+        response.status_code = 403
+        return response
+    # dataset is owned, return the data
+    csv_data = pd.read_csv(pileup.file_path)
+    json_data = csv_data.to_json()
+    return jsonify(json_data)
 
 
 # POST routes

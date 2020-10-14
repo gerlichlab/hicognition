@@ -1,6 +1,8 @@
+import os
 import pdb
 import unittest
-from test_helpers import LoginTestCase
+import pandas as pd
+from test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 import sys
@@ -283,6 +285,172 @@ class TestGetPileups(LoginTestCase):
         )
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0]["id"], 2)
+
+
+class TestGetPileupData(LoginTestCase, TempDirTestCase):
+    """Test to check whether retrieving of pileup data
+    works."""
+
+    def test_no_auth(self):
+        """No authentication provided, response should be 401"""
+        # protected route
+        response = self.client.get("/api/pileups/data/1/", content_type="application/json")
+        self.assertEqual(response.status_code, 401)
+
+    def test_pileup_does_not_exist(self):
+        """Test 404 is returned if pileup does not exist."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # make request
+        response = self.client.get(
+            "/api/pileups/data/500/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_cooler_not_owned(self):
+        """Cooler dataset underlying pileup is not owned"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            higlass_uuid="asdf1234",
+            filetype="cooler",
+            user_id=5,
+        )
+        pileupregion1 = Pileupregion(
+            name="testRegion1",
+            dataset_id=1,
+            file_path="test_path_1.bedd2db",
+            higlass_uuid="testHiglass1",
+            windowsize=200000,
+        )
+        pileup = Pileup(
+            name="testPileup1",
+            binsize=10000,
+            file_path="testPath1",
+            cooler_id=1,
+            pileupregion_id=1,
+            value_type="ICCF"
+        )
+        db.session.add_all([dataset1, pileupregion1, pileup])
+        db.session.commit()
+        # make request
+        response = self.client.get(
+            "/api/pileups/data/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_pileupregion_not_owned(self):
+        """Pileupregion dataset underlying pileup is not owned"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            higlass_uuid="asdf1234",
+            filetype="cooler",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            higlass_uuid="asdf12345",
+            filetype="bedfile",
+            user_id=5,
+        )
+        pileupregion1 = Pileupregion(
+            name="testRegion1",
+            dataset_id=2,
+            file_path="test_path_1.bedd2db",
+            higlass_uuid="testHiglass1",
+            windowsize=200000,
+        )
+        pileup = Pileup(
+            name="testPileup1",
+            binsize=10000,
+            file_path="testPath1",
+            cooler_id=1,
+            pileupregion_id=1,
+            value_type="ICCF"
+        )
+        db.session.add_all([dataset1,dataset2 ,pileupregion1, pileup])
+        db.session.commit()
+        # make request
+        response = self.client.get(
+            "/api/pileups/data/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_correct_data_returned(self):
+        """Correct data is returned from an owned pileup"""
+               # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # create datafile
+        test_data = pd.DataFrame({
+            "variable": [0, 0, 0, 0],
+            "group": [0, 1, 2, 3],
+            "value": [1.66, 2.2, 3.8, 4.5]
+        })
+        data_path = os.path.join(self.tempdir, "test.csv")
+        test_data.to_csv(data_path, index=False)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            higlass_uuid="asdf1234",
+            filetype="cooler",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            higlass_uuid="asdf12345",
+            filetype="bedfile",
+            user_id=1,
+        )
+        pileupregion1 = Pileupregion(
+            name="testRegion1",
+            dataset_id=2,
+            file_path="test_path_1.bedd2db",
+            higlass_uuid="testHiglass1",
+            windowsize=200000,
+        )
+        pileup = Pileup(
+            name="testPileup1",
+            binsize=10000,
+            file_path=data_path,
+            cooler_id=1,
+            pileupregion_id=1,
+            value_type="ICCF"
+        )
+        db.session.add_all([dataset1,dataset2 ,pileupregion1, pileup])
+        db.session.commit()
+        # make request
+        response = self.client.get(
+            "/api/pileups/data/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        expected = test_data.to_json()
+        self.assertEqual(response.json, expected)
+
 
 
 if __name__ == "__main__":

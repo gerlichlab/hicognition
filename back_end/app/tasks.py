@@ -243,16 +243,15 @@ def perform_pileup_iccf(cooler_dataset, pileup_region, binsize, arms):
     pileup_array = HT.do_pileup_iccf(cooler_file, pileup_windows, proc=2)
     # prepare dataframe for js reading
     log.info("      Writing output...")
-    static_dir = os.path.join(basedir, "static")
     file_name = uuid.uuid4().hex + ".csv"
-    export_df_for_js(pileup_array, static_dir, file_name)
+    export_df_for_js(pileup_array, current_app.config["UPLOAD_DIR"], file_name)
     # add this to database
     log.info("      Adding database entry...")
-    add_pileup_db(file_name, binsize, pileup_region.id, cooler_dataset.id)
+    add_pileup_db(file_path, binsize, pileup_region.id, cooler_dataset.id)
     log.info("      Success!")
 
 
-def export_df_for_js(np_array, static_dir, file_name):
+def export_df_for_js(np_array, directory, file_name):
     """exports a pileup dataframe
     so it can be easily read and used by
     d3.js"""
@@ -266,15 +265,15 @@ def export_df_for_js(np_array, static_dir, file_name):
     output_molten.loc[:, "value"] = output_molten["value"] * 10000
     # stitch together filepath
     # write to file
-    output_molten.to_csv(os.path.join(static_dir, file_name), index=False)
+    output_molten.to_csv(os.path.join(directory, file_name), index=False)
 
 
-def add_pileup_db(file_name, binsize, pileup_region_id, cooler_dataset_id):
+def add_pileup_db(file_path, binsize, pileup_region_id, cooler_dataset_id):
     """Adds pileup region to database"""
     new_entry = Pileup(
         binsize=int(binsize),
-        name=file_name,
-        file_path=file_name,
+        name=os.path.basename(file_path),
+        file_path=file_path,
         pileupregion_id=pileup_region_id,
         cooler_id=cooler_dataset_id,
     )
