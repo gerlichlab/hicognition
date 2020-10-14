@@ -10,7 +10,8 @@ const store = new Vuex.Store({
     token: null,
     datasets: null,
     pileupRegions: null,
-    pileups: null
+    pileups: null,
+    datasetSelectionPredefined: null // This is the user's dataset selection for the predefined card
   },
   getters: {
       isTokenEmpty: state => {
@@ -32,6 +33,9 @@ const store = new Vuex.Store({
       },
       setPileups (state, pileups) {
         state.pileups = pileups
+      },
+      setDatasetSelectionPredefined (state, selection) {
+        state.datasetSelectionPredefined = selection
       }
   }
 })

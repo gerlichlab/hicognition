@@ -52,6 +52,7 @@
               id="bedpe"
               placeholder="Windowsize"
               @click="updateDatasetSelection"
+              :disabled="blockWindowsize"
             >
               <md-option
                 v-for="item in bedpeFiles"
@@ -105,7 +106,8 @@ export default {
       selectedBedPeID: null,
       coolers: [],
       bedfiles: [],
-      bedpeFiles: []
+      bedpeFiles: [],
+      blockWindowsize: true // only show this after bedperegions are there
     };
   },
   computed: {
@@ -156,6 +158,13 @@ export default {
         // swtiched on, update higlass after DOM update
         this.createHiGlass();
       }
+      // add current selection to vuex-store so other parts of the app have access
+      var selection = {
+        cooler_id: this.selectedCoolerID,
+        region_id: this.selectedRegionID,
+        bedpe_id: this.selectedBedPeID
+      }
+      this.$store.commit("setDatasetSelectionPredefined", selection);
     },
     fetchPileupregions: function () {
         var token = this.$store.state.token;
@@ -171,6 +180,7 @@ export default {
             // success, store datasets
             this.$store.commit("setPileupRegions", response.data);
             this.bedpeFiles = response.data;
+            this.blockWindowsize = false;
           }
         })
     },
