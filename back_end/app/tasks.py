@@ -107,7 +107,8 @@ def pipeline_cooler(dataset_id):
     for binsize in binsizes:
         for pileup_region in pileup_regions:
             # no need to check if processing is finished, pileup_regions are not processed
-            perform_pileup_iccf(current_dataset, pileup_region, binsize, arms)
+            perform_pileup(current_dataset, pileup_region, binsize, arms, "ICCF")
+            perform_pileup(current_dataset, pileup_region, binsize, arms, "Obs/Exp")
             counter += 1
             progress = counter / (len(binsizes) * len(pileup_regions)) * 100
             _set_task_progress(progress)
@@ -212,12 +213,13 @@ def bedpe_preprocess_pipeline_step(file_path, dataset_id=None, windowsize=None):
         log.info(f"         Cooler {cooler_dataset.id}")
         for binsize in binsizes:
             log.info(f"         Binsize {binsize}")
-            perform_pileup_iccf(cooler_dataset, new_entry, binsize, arms)
+            perform_pileup(cooler_dataset, new_entry, binsize, arms, "ICCF")
+            perform_pileup(cooler_dataset, new_entry, binsize, arms, "Obs/Exp")
     log.info("      Success!")
 
 
-def perform_pileup_iccf(cooler_dataset, pileup_region, binsize, arms):
-    """Performs iccf pileup of cooler_dataset on
+def perform_pileup(cooler_dataset, pileup_region, binsize, arms, pileup_type):
+    """Performs pileup [either ICCF or Obs/Exp; parameter passed to pileup_type] of cooler_dataset on
     pileup_region with resolution binsize."""
     log.info(
         f"  Doing pileup on cooler {cooler_dataset.id} with pileupregion {pileup_region.id} on binsize {binsize}"
@@ -240,18 +242,23 @@ def perform_pileup_iccf(cooler_dataset, pileup_region, binsize, arms):
     log.info("      Doing pileup...")
     cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{binsize}")
     pileup_windows = HT.assign_regions(window_size, int(binsize), regions["chrom"], regions["pos"], arms).dropna()
-    pileup_array = HT.do_pileup_iccf(cooler_file, pileup_windows, proc=2)
+    if pileup_type == "Obs/Exp":
+        expected = HT.get_expected(cooler_file, arms, proc=2)
+        pileup_array = HT.do_pileup_obs_exp(cooler_file, expected, pileup_windows, proc=2)
+    else:
+        pileup_array = HT.do_pileup_iccf(cooler_file, pileup_windows, proc=2)
     # prepare dataframe for js reading
     log.info("      Writing output...")
     file_name = uuid.uuid4().hex + ".csv"
-    export_df_for_js(pileup_array, current_app.config["UPLOAD_DIR"], file_name)
+    file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
+    export_df_for_js(pileup_array, file_path)
     # add this to database
     log.info("      Adding database entry...")
-    add_pileup_db(file_path, binsize, pileup_region.id, cooler_dataset.id)
+    add_pileup_db(file_path, binsize, pileup_region.id, cooler_dataset.id, pileup_type)
     log.info("      Success!")
 
 
-def export_df_for_js(np_array, directory, file_name):
+def export_df_for_js(np_array, file_path):
     """exports a pileup dataframe
     so it can be easily read and used by
     d3.js"""
@@ -261,14 +268,11 @@ def export_df_for_js(np_array, directory, file_name):
         .reset_index()
         .rename(columns={"level_0": "variable", "level_1": "group", 0: "value"})
     )
-    # scale output so that colormap can be adjusted in integer steps
-    output_molten.loc[:, "value"] = output_molten["value"] * 10000
-    # stitch together filepath
     # write to file
-    output_molten.to_csv(os.path.join(directory, file_name), index=False)
+    output_molten.to_csv(file_path, index=False)
 
 
-def add_pileup_db(file_path, binsize, pileup_region_id, cooler_dataset_id):
+def add_pileup_db(file_path, binsize, pileup_region_id, cooler_dataset_id, pileup_type):
     """Adds pileup region to database"""
     new_entry = Pileup(
         binsize=int(binsize),
@@ -276,6 +280,7 @@ def add_pileup_db(file_path, binsize, pileup_region_id, cooler_dataset_id):
         file_path=file_path,
         pileupregion_id=pileup_region_id,
         cooler_id=cooler_dataset_id,
+        value_type=pileup_type
     )
     db.session.add(new_entry)
     db.session.commit()

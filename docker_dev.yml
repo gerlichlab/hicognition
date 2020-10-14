@@ -68,6 +68,7 @@ services:
             - HIGLASS_USER=${DJANGO_SUPERUSER}
             - HIGLASS_PWD=${DJANGO_SUPERUSER_PASSWORD}
             - REDIS_URL=${REDIS_URL}
+            - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
         depends_on:
