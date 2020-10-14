@@ -244,10 +244,10 @@ def perform_pileup(cooler_dataset, pileup_region, binsize, arms, pileup_type):
     pileup_windows = HT.assign_regions(window_size, int(binsize), regions["chrom"], regions["pos"], arms).dropna()
     if pileup_type == "Obs/Exp":
         expected = HT.get_expected(cooler_file, arms, proc=2)
-        pileup_array = HT.do_pileup_obs_exp(cooler_file, expected, pileup_windows, proc=2)
+        pileup_array = HT.do_pileup_obs_exp(cooler_file, expected, pileup_windows, proc=1)
     else:
-        pileup_array = HT.do_pileup_iccf(cooler_file, pileup_windows, proc=2)
-    # prepare dataframe for js reading
+        pileup_array = HT.do_pileup_iccf(cooler_file, pileup_windows, proc=1)
+    # prepare dataframe for js reading1
     log.info("      Writing output...")
     file_name = uuid.uuid4().hex + ".csv"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)

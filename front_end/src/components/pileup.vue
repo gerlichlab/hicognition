@@ -4,7 +4,7 @@
     <md-list class="md-double-line">
       <md-subheader>{{ title }}</md-subheader>
       <md-list-item class="md-alignment-top-center">
-        <md-content class="center-horizontal md-elevation-10">
+        <md-content class="center-horizontal md-elevation-3">
           <div :id="title" class="small-margin" />
         </md-content>
       </md-list-item>
