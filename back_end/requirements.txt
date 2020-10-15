@@ -41,4 +41,4 @@ Werkzeug==1.0.1
 wincertstore==0.2
 WTForms==2.3.1
 # clodius
-clodius==0.3.5
+clodius
