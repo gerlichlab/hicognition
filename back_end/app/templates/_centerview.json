@@ -1,6 +1,0 @@
-[
-{{ coolerview }}
-{% if bedpeview %}
-,{{ bedpeview }}
-{% endif %}
-  ]
