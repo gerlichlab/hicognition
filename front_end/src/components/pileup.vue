@@ -9,7 +9,7 @@
         </md-content>
       </md-list-item>
       <md-list-item>
-        <doubleRangeSlider @slider-change="handleSliderChange"/>
+        <doubleRangeSlider @slider-change="handleSliderChange" :sliderMin="sliderMin" :sliderMax="sliderMax"/>
       </md-list-item>
     </md-list>
   </div>
@@ -31,7 +31,9 @@ export default {
     height: Number,
     scaleFactor: Number,
     pileupType: String,
-    pileupID: String
+    pileupID: String,
+    sliderMin: String,
+    sliderMax: String
   },
   components: {
     doubleRangeSlider

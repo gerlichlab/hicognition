@@ -41,6 +41,8 @@
         :height="pileupDim"
         :pileupData="pileupDataICCF"
         :scaleFactor="scaleFactorICCF"
+        sliderMin="0"
+        sliderMax="30"
       ></pileup>
 
       <md-divider
@@ -57,8 +59,10 @@
         :height="pileupDim"
         :pileupData="pileupDataObsExp"
         :scaleFactor="scaleFactorObsExp"
+        sliderMin="0"
+        sliderMax="50"
       ></pileup>
-      
+
       <md-empty-state
         md-icon="input"
         md-label="Add a dataset"
@@ -90,7 +94,7 @@ export default {
       pileupDataObsExp: null,
       scaleFactorICCF: 10000,
       scaleFactorObsExp: 10,
-      pileupDim: 0,
+      pileupDim: 0
     };
   },
   computed: {

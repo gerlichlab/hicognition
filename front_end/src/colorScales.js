@@ -12,7 +12,9 @@ export function getScale(min, max, scaleType) {
                         .range(["white", "orange", "red" ,"black"])
                         .domain(distributeMinMax(min, max));
     }else{
-        throw "Not Implemented!";
+        return d3.scaleLinear()
+                 .range(["blue", "white", "red"])
+                 .domain(distributeMinMax(min, max));
     }
 }
 
