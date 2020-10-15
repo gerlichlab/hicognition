@@ -118,6 +118,7 @@ export default {
         .range([ this.svgHeight, 0 ])
         .domain(this.dataVariables)
         .padding(0.01);
+        // TODO: make axes look nice!
 /*       this.svg.append("g")
               .attr("transform", "translate(0," + this.svgHeight + ")")
               .call(d3.axisBottom(x)); */

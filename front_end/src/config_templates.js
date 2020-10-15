@@ -242,6 +242,7 @@ export var coolerView = {
                 "trackBorderColor": "black",
                 "heatmapValueScaling": "log",
                 "showMousePosition": false,
+                "maxZoom": 9, // TODO: this could be an option in the future
                 "mousePositionColor": "#000000",
                 "showTooltip": false,
                 "extent": "full",
