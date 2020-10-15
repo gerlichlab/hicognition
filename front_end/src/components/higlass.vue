@@ -3,6 +3,11 @@
     <md-card-content>
 
       <div class="md-layout md-gutter">
+
+        <md-button class="md-dense md-raised button-margin md-primary md-icon-button" @click="getDatasets">
+          <md-icon>cached</md-icon>
+        </md-button>
+
         <div class="md-layout-item md-size-20">
           <md-field>
             <label for="cooler">Cooler</label>
