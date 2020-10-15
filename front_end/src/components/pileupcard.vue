@@ -43,6 +43,7 @@
         :scaleFactor="scaleFactorICCF"
         sliderMin="0"
         sliderMax="30"
+        log=""
       ></pileup>
 
       <md-divider
@@ -59,8 +60,9 @@
         :height="pileupDim"
         :pileupData="pileupDataObsExp"
         :scaleFactor="scaleFactorObsExp"
-        sliderMin="0"
-        sliderMax="50"
+        sliderMin="-5"
+        sliderMax="5"
+        log="true"
       ></pileup>
 
       <md-empty-state

@@ -85,7 +85,7 @@ function fillBed(bed){
     return localView;
 }
 
-export function convert_json_to_d3(jsonObject, scaleValue=1){
+export function convert_json_to_d3(jsonObject, scaleValue=1, log=false){
         /*
             Converts pileup data from pandas.DataFrame.to_json to an 
             object that d3 can read
@@ -103,11 +103,22 @@ export function convert_json_to_d3(jsonObject, scaleValue=1){
     var output = [];
     var objectLength = Object.keys(jsonObject["variable"]).length;
     for (var index = 0; index < objectLength; index++){
+        var newValue;
+        if (log) {
+            if (jsonObject["value"][index]){
+                newValue = Math.log2(jsonObject["value"][index]) * scaleValue;
+            }else{
+                newValue = null;
+            }
+        }else{
+            newValue = jsonObject["value"][index] * scaleValue;
+        }
+
         // extract infos for current entry
         var currentEntry = {
             variable: jsonObject["variable"][index],
             group: jsonObject["group"][index],
-            value: jsonObject["value"][index] * scaleValue
+            value: newValue
         };
         output.push(currentEntry);
     }

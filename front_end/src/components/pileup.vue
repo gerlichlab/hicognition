@@ -33,12 +33,16 @@ export default {
     pileupType: String,
     pileupID: String,
     sliderMin: String,
-    sliderMax: String
+    sliderMax: String,
+    log: String
   },
   components: {
     doubleRangeSlider
   },
   computed: {
+    logValue: function () {
+      return Boolean(this.log);
+    },
     pileupDivID: function () {
       // ID for the div containing the pileup
       return this.pileupType + this.pileupID;
@@ -68,14 +72,21 @@ export default {
       return null;
     },
     dataHeatMap: function() {
-      return convert_json_to_d3(this.pileupData, this.scaleFactor);
+      return convert_json_to_d3(this.pileupData, this.scaleFactor, this.logValue);
+    },
+    svgWidth: function () {
+      return this.width - this.margin.left - this.margin.right
+    },
+    svgHeight: function () {
+      return this.height - this.margin.top - this.margin.bottom
     }
   },
   data: function() {
   return {
     svg: null, // svg of heatmap,
     pileupPicture: null, // heatmap object
-    colorScale: null
+    colorScale: null,
+    margin: {top: 0, right: 0, bottom: 0, left: 0}
   }
 },
   methods: {
@@ -94,22 +105,23 @@ export default {
                    .attr("id", `${this.pileupDivID}Svg`)
                    .attr("width", this.width)
                    .attr("height", this.height)
-                   .attr("style", "margin: auto; display: block;") // center element
-                   .append("g")
+                   .attr("style", "transform: translateY(2%);") // center element vertically
     },
     // fills the heatmap with data
     fillHeatMap: function() {
       // Build X/Y scales and axes
       var x = d3.scaleBand()
-        .range([ 0, this.width ])
+        .range([ 0, this.svgWidth ])
         .domain(this.dataGroups)
         .padding(0.01);
       var y = d3.scaleBand()
-        .range([ this.height, 0 ])
+        .range([ this.svgHeight, 0 ])
         .domain(this.dataVariables)
         .padding(0.01);
-      this.svg.append("g").call(d3.axisBottom(x));
-      this.svg.append("g").call(d3.axisLeft(y));
+/*       this.svg.append("g")
+              .attr("transform", "translate(0," + this.svgHeight + ")")
+              .call(d3.axisBottom(x)); */
+/*       this.svg.append("g").call(d3.axisLeft(y)); */
       // Add data
       this.pileupPicture = this.svg.selectAll()
                                   .data(this.dataHeatMap, function(d) {return d.variable+':'+d.group;})
@@ -119,11 +131,17 @@ export default {
                                       .attr("y", function(d) { return y(d.variable) })
                                       .attr("width", x.bandwidth() )
                                       .attr("height", y.bandwidth() )
-                                      .style("fill", (d) => { return this.colorScale(d.value)} )
+                                      .style("fill", (d) => {
+                                          if (d.value){
+                                            return this.colorScale(d.value);
+                                          }else{
+                                            return "#ffffff";
+                                          }
+                                        })
     }
   },
   mounted: function () {
-    this.updateColorScale(0, 30); //initial range
+    this.updateColorScale(this.sliderMin, this.sliderMax); //initial range
     this.createHeatMap();
     this.fillHeatMap();
   },
@@ -152,7 +170,7 @@ export default {
 }
 
 .small-margin {
-  margin: 10px;
+  margin: 5px;
 }
 
 </style>

@@ -4,8 +4,8 @@ From https://stackoverflow.com/questions/48506428/nouislider-double-range-slider
 
 <template>
   <div class="range-slider md-alignment-center-center">
-    <input @change="slider" v-model.number="minValue" :min="sliderMin" :max="sliderMax" step="1" type="range" />
-    <input @change="slider" v-model.number="maxValue" :min="sliderMin" :max="sliderMax" step="1" type="range" />
+    <input @change="slider" v-model.number="minValue" :min="sliderMin" :max="sliderMax" step="0.1" type="range" />
+    <input @change="slider" v-model.number="maxValue" :min="sliderMin" :max="sliderMax" step="0.1" type="range" />
     <svg width="100%" height="24">
                           <line x1="4" y1="0" x2="300" y2="0" stroke="#444" stroke-width="12" stroke-dasharray="1 28"></line>
     </svg>
