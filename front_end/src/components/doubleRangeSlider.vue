@@ -4,8 +4,8 @@ From https://stackoverflow.com/questions/48506428/nouislider-double-range-slider
 
 <template>
   <div class="range-slider md-alignment-center-center">
-    <input @change="slider" v-model.number="minValue" min="0" max="120000" step="500" type="range" />
-    <input @change="slider" v-model.number="maxValue" min="0" max="120000" step="500" type="range" />
+    <input @change="slider" v-model.number="minValue" min="0" max="30" step="1" type="range" />
+    <input @change="slider" v-model.number="maxValue" min="0" max="30" step="1" type="range" />
     <svg width="100%" height="24">
                           <line x1="4" y1="0" x2="300" y2="0" stroke="#444" stroke-width="12" stroke-dasharray="1 28"></line>
     </svg>
@@ -17,12 +17,13 @@ export default {
     name: "dr-Slider",
     data: function () {
         return {
-            minValue: "500",
-            maxValue: "50000"
+            minValue: "0",
+            maxValue: "30"
         }
     },
     methods: {
     slider: function() {
+      this.$emit("slider-change", [this.minValue, this.maxValue])
       if (this.minValue > this.maxValue) {
         var tmp = this.maxValue;
         this.maxValue = this.minValue;
