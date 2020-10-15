@@ -4,8 +4,8 @@ From https://stackoverflow.com/questions/48506428/nouislider-double-range-slider
 
 <template>
   <div class="range-slider md-alignment-center-center">
-    <input @change="slider" v-model.number="minValue" :min="sliderMin" :max="sliderMax" step="0.1" type="range" />
-    <input @change="slider" v-model.number="maxValue" :min="sliderMin" :max="sliderMax" step="0.1" type="range" />
+    <input @change="slider" v-model.number="minValue" :min="sliderMin" :max="sliderMax" step="0.005" type="range" />
+    <input @change="slider" v-model.number="maxValue" :min="sliderMin" :max="sliderMax" step="0.005" type="range" />
     <svg width="100%" height="24">
                           <line x1="4" y1="0" x2="300" y2="0" stroke="#444" stroke-width="12" stroke-dasharray="1 28"></line>
     </svg>
@@ -16,13 +16,13 @@ From https://stackoverflow.com/questions/48506428/nouislider-double-range-slider
 export default {
     name: "dr-Slider",
     props: {
-      sliderMin: String,
-      sliderMax: String
+      sliderMin: Number,
+      sliderMax: Number
     },
     data: function () {
         return {
-            minValue: null,
-            maxValue: null
+            minValue: Number(this.sliderMin),
+            maxValue: Number(this.sliderMax)
         }
     },
     methods: {
@@ -35,9 +35,15 @@ export default {
       }
     }
   },
-  created: function () {
-    this.minValue = Number(this.sliderMin);
-    this.maxValue = Number(this.sliderMax);
+  watch: {
+    sliderMin: function (val) {
+      // update to min position
+      this.minValue = val;
+    },
+    sliderMax: function (val) {
+      // update to max position
+      this.maxValue = val;
+    }
   }
 }
 </script>>

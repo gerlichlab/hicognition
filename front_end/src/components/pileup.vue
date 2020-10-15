@@ -23,7 +23,7 @@ import { convert_json_to_d3 } from "../functions.js"
 import doubleRangeSlider from "./doubleRangeSlider"
 
 export default {
-  name: "pileup-card",
+  name: "pileup",
   props: {
     title: String,
     pileupData: Object,
@@ -32,8 +32,6 @@ export default {
     scaleFactor: Number,
     pileupType: String,
     pileupID: String,
-    sliderMin: String,
-    sliderMax: String,
     log: String
   },
   components: {
@@ -70,6 +68,40 @@ export default {
         return reversedVars;
       }
       return null;
+    },
+    sliderMin: function () {
+      var values = Object.values(this.pileupData["value"]);
+      // filter nans
+      var filtered = values.filter( (element) => {
+        if (element) {
+          return true;
+        }
+        return false;
+      });
+      // apply transformations
+      if (this.logValue) {
+        var finalValues = filtered.map( (element) => Math.log2(element) * this.scaleFactor)
+      }else{
+        var finalValues = filtered.map( (element) => element * this.scaleFactor)
+      }
+      return Math.min(...finalValues);
+    },
+    sliderMax: function () {
+      var values = Object.values(this.pileupData["value"]);
+      // filter nans
+      var filtered = values.filter( (element) => {
+        if (element) {
+          return true;
+        }
+        return false;
+      });
+      // apply transformations
+      if (this.logValue) {
+        var finalValues = filtered.map( (element) => Math.log2(element) * this.scaleFactor)
+      }else{
+        var finalValues = filtered.map( (element) => element * this.scaleFactor)
+      }
+      return Math.max(...finalValues);
     },
     dataHeatMap: function() {
       return convert_json_to_d3(this.pileupData, this.scaleFactor, this.logValue);
@@ -142,6 +174,8 @@ export default {
     }
   },
   mounted: function () {
+    console.log(this.sliderMin);
+    console.log(this.sliderMax);
     this.updateColorScale(this.sliderMin, this.sliderMax); //initial range
     this.createHeatMap();
     this.fillHeatMap();
@@ -149,6 +183,9 @@ export default {
   watch: {
     pileupData: function() {
       d3.select(`#${this.pileupDivID}Svg`).remove();
+      // blank picture to avoid triggering update
+      this.pileupPicture = null;
+      this.updateColorScale(this.sliderMin, this.sliderMax); //initial range
       this.createHeatMap();
       this.fillHeatMap();
     },

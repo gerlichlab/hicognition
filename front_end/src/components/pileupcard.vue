@@ -41,9 +41,7 @@
         :height="pileupDim"
         :pileupData="pileupDataICCF"
         :scaleFactor="scaleFactorICCF"
-        sliderMin="0"
-        sliderMax="30"
-        log=""
+        log="true"
       ></pileup>
 
       <md-divider
@@ -54,14 +52,13 @@
 
       <pileup
         title="Obs/Exp"
+        pileupType="ObsExp"
         v-if="showPileup"
         pileupID="2"
         :width="pileupDim"
         :height="pileupDim"
         :pileupData="pileupDataObsExp"
         :scaleFactor="scaleFactorObsExp"
-        sliderMin="-5"
-        sliderMax="5"
         log="true"
       ></pileup>
 
@@ -95,7 +92,7 @@ export default {
       pileupDataICCF: null,
       pileupDataObsExp: null,
       scaleFactorICCF: 10000,
-      scaleFactorObsExp: 10,
+      scaleFactorObsExp: 1,
       pileupDim: 0
     };
   },

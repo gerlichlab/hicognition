@@ -25,7 +25,7 @@ class Config:
     CORS_ALLOW_HEADERS = True
     CORS_EXPOSE_HEADERS = True
     REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
-    WINDOW_SIZES = [100000, 200000, 400000, 800000]
+    WINDOW_SIZES = [200000, 300000, 400000]
     BIN_SIZES = [20000, 50000]  # In development mode, 10k hogs too much memory
 
 
