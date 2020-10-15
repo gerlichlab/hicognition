@@ -3,17 +3,21 @@
     <md-table v-model="searched" md-sort="dataset_name" md-sort-order="asc" md-card md-fixed-header>
       <md-table-toolbar>
         <div class="md-toolbar-section-start">
+            <md-button class="md-dense md-raised button-margin md-primary md-icon-button" @click="getDatasets">
+              <md-icon>cached</md-icon>
+            </md-button>
         </div>
 
         <md-field md-clearable class="md-toolbar-section-end">
           <md-input placeholder="Search by name..." v-model="search" @input="searchOnTable" />
         </md-field>
+
+
       </md-table-toolbar>
 
       <md-table-empty-state
         md-label="No datasets found"
-        :md-description="`No datasets found for this '${search}' query. Try a different search term or create a new dataset.`">
-        <md-button class="md-primary md-raised" @click="newDataset">Create New User</md-button>
+        :md-description="`No datasets found for this query. Try a different search term or create a new dataset.`">
       </md-table-empty-state>
 
       <md-table-row slot="md-table-row" slot-scope="{ item }">
@@ -55,11 +59,29 @@
       searched: []
     }),
     methods: {
-      newDataset () {
-        window.alert('Noop')
-      },
       searchOnTable () {
         this.searched = searchByName(this.datasets, this.search);
+      },
+      getDatasets() {
+      var token = this.$store.state.token;
+      var encodedToken = btoa(token + ":");
+      this.$http
+        .get(process.env.API_URL + "datasets/", {
+          headers: {
+            Authorization: `Basic ${encodedToken}`,
+          },
+        })
+        .then((response) => {
+          if (response.status != 200) {
+            console.log(`Error: ${response.data}`);
+          } else {
+            // success, store datasets
+            this.$store.commit("setDatasets", response.data);
+            // update datasets
+            this.datasets = response.data;
+            this.searched = this.datasets;
+          }
+        });
       }
     },
     computed: {
