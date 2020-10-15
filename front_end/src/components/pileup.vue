@@ -8,6 +8,9 @@
           <div :id="title" class="small-margin" />
         </md-content>
       </md-list-item>
+      <md-list-item>
+        <doubleRangeSlider />
+      </md-list-item>
     </md-list>
   </div>
 
@@ -17,6 +20,7 @@
 import * as d3 from "d3";
 import { iccfScale } from "../colorScales.js"
 import { convert_json_to_d3 } from "../functions.js"
+import doubleRangeSlider from "./doubleRangeSlider"
 
 export default {
   name: "pileup-card",
@@ -26,6 +30,9 @@ export default {
     width: Number,
     height: Number,
     scaleFactor: Number
+  },
+  components: {
+    doubleRangeSlider
   },
   computed: {
     titleName: function () {

@@ -73,7 +73,7 @@ export default {
   },
   methods: {
     updatePileupSize: function () {
-      var value = this.$refs["pileup-card-element"].offsetWidth * 0.5;
+      var value = this.$refs["pileup-card-element"].offsetWidth * 0.45;
       this.pileupDim = value;
     },
     handleBinsizeSubmit: function () {
