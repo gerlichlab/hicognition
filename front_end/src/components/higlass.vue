@@ -16,7 +16,6 @@
               name="cooler"
               id="cooler"
               placeholder="Cooler"
-              @click="updateDatasetSelection"
             >
               <md-option
                 v-for="item in coolers"
@@ -36,7 +35,6 @@
               name="region"
               id="region"
               placeholder="Regions"
-              @click="updateDatasetSelection"
             >
               <md-option
                 v-for="item in bedfiles"
@@ -56,7 +54,6 @@
               name="bedpe"
               id="bedpe"
               placeholder="Windowsize"
-              @click="updateDatasetSelection"
               :disabled="blockWindowsize"
             >
               <md-option
@@ -224,16 +221,7 @@ export default {
             );
           }
         });
-    },
-    updateDatasetSelection: function () {
-      var datasets = this.$store.state.datasets;
-      this.coolers = datasets.filter(
-        (element) => element.filetype == "cooler" && element.completed
-      );
-      this.bedfiles = datasets.filter(
-        (element) => element.filetype == "bedfile" && element.completed
-      );
-    },
+    }
   },
   watch: {
     selectedRegionID: function () {
