@@ -99,6 +99,7 @@ def get_pileups(cooler_id, pileupregion_id):
     return jsonify([dfile.to_json() for dfile in all_files])
 
 
+#TODO: /pileups/<pileup_id>/data 
 @api.route('/pileups/data/<pileup_id>/', methods=["GET"])
 @auth.login_required
 def get_pileup_data(pileup_id):

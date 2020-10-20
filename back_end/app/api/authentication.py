@@ -36,4 +36,3 @@ def get_token():
             "expiration": 3600,
         }
     )
-

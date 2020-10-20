@@ -294,4 +294,4 @@ def _set_task_progress(progress):
         task = Task.query.get(job.get_id())
         if progress >= 100:
             task.complete = True
-        db.session.commit()
+            db.session.commit()
