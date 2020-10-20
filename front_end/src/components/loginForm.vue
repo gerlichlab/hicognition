@@ -23,9 +23,11 @@
 </template>
 
 <script>
+import { apiMixin } from "../mixins"
 
 export default {
     name: 'Login',
+    mixins: [apiMixin],
     data: function () {
         return {
           username: "",
@@ -34,27 +36,16 @@ export default {
         }
     },
     methods: {
-      handleSubmit: function (e) {
-        e.preventDefault();
+      handleSubmit: function () {
         if (this.password.length > 0) {
-          this.$http.post(process.env.API_URL + "tokens/", {}, {
-            auth: {
-              username: this.username,
-              password: this.password
-            }
+          this.fetchAndStoreToken(this.username, this.password).then( () => {
+            //fetching and storing in store worked, redirect to main/predefined
+            this.$router.push("/main/predefined");
+          }).catch( (error) => {
+            // something went wrong
+            console.log(error);
+            this.showError = true
           })
-          .then(response => {
-            if (response.status != 200){
-              this.showError = true;
-            }else{
-              // success, store token in vuex store and route to main/predefined
-              this.$store.commit("setToken", response.data.token);
-              this.$router.push("/main/predefined");
-            }
-          })
-          .catch(error => {
-            this.showError = true;
-          });
         }
       }
     }
