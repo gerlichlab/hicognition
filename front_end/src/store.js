@@ -23,7 +23,7 @@ const store = new Vuex.Store({
         state.token = tokenValue
       },
       clearToken (state) {
-          state.token = null
+        state.token = null
       },
       setDatasets (state, datasets) {
         state.datasets = datasets

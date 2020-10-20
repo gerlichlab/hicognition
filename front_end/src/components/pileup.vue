@@ -174,8 +174,6 @@ export default {
     }
   },
   mounted: function () {
-    console.log(this.sliderMin);
-    console.log(this.sliderMax);
     this.updateColorScale(this.sliderMin, this.sliderMax); //initial range
     this.createHeatMap();
     this.fillHeatMap();
