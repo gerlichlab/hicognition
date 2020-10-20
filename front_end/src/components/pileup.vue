@@ -29,7 +29,6 @@ export default {
     pileupData: Object,
     width: Number,
     height: Number,
-    scaleFactor: Number,
     pileupType: String,
     pileupID: String,
     log: String
@@ -80,9 +79,9 @@ export default {
       });
       // apply transformations
       if (this.logValue) {
-        var finalValues = filtered.map( (element) => Math.log2(element) * this.scaleFactor)
+        var finalValues = filtered.map( (element) => Math.log2(element) )
       }else{
-        var finalValues = filtered.map( (element) => element * this.scaleFactor)
+        var finalValues = filtered.map( (element) => element )
       }
       return Math.min(...finalValues);
     },
@@ -97,14 +96,14 @@ export default {
       });
       // apply transformations
       if (this.logValue) {
-        var finalValues = filtered.map( (element) => Math.log2(element) * this.scaleFactor)
+        var finalValues = filtered.map( (element) => Math.log2(element) )
       }else{
-        var finalValues = filtered.map( (element) => element * this.scaleFactor)
+        var finalValues = filtered.map( (element) => element )
       }
       return Math.max(...finalValues);
     },
     dataHeatMap: function() {
-      return convert_json_to_d3(this.pileupData, this.scaleFactor, this.logValue);
+      return convert_json_to_d3(this.pileupData, this.logValue);
     },
     svgWidth: function () {
       return this.width - this.margin.left - this.margin.right

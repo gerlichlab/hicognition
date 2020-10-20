@@ -40,7 +40,6 @@
         :width="pileupDim"
         :height="pileupDim"
         :pileupData="pileupDataICCF"
-        :scaleFactor="scaleFactorICCF"
         log="true"
       ></pileup>
 
@@ -58,7 +57,6 @@
         :width="pileupDim"
         :height="pileupDim"
         :pileupData="pileupDataObsExp"
-        :scaleFactor="scaleFactorObsExp"
         log="true"
       ></pileup>
 
@@ -91,8 +89,6 @@ export default {
       blockSelection: true, // whether to show controls for binsize selection
       pileupDataICCF: null,
       pileupDataObsExp: null,
-      scaleFactorICCF: 10000,
-      scaleFactorObsExp: 1,
       pileupDim: 0
     };
   },
