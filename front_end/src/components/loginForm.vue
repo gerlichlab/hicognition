@@ -1,62 +1,65 @@
 <template>
-<div>
+  <div>
     <md-card md-with-hover class="halfwidth center">
-    <md-card-header>
-      <div class="md-title">Login</div>
-    </md-card-header>
+      <md-card-header>
+        <div class="md-title">Login</div>
+      </md-card-header>
 
-    <md-card-content>
+      <md-card-content>
         <md-field md-clearable>
-        <label>Username</label>
-        <md-input v-model="username"></md-input>
+          <label>Username</label>
+          <md-input v-model="username"></md-input>
         </md-field>
 
         <md-field>
-        <label>Password</label>
-        <md-input v-model="password" type="password"></md-input>
+          <label>Password</label>
+          <md-input v-model="password" type="password"></md-input>
         </md-field>
-        <md-button class="md-dense md-raised md-primary" @click="handleSubmit">Submit</md-button>
+        <md-button class="md-dense md-raised md-primary" @click="handleSubmit"
+          >Submit</md-button
+        >
         <div v-if="showError" class="red floatright">Wrong Credentials!</div>
-    </md-card-content>
-  </md-card>
-</div>
+      </md-card-content>
+    </md-card>
+  </div>
 </template>
 
 <script>
-import { apiMixin } from "../mixins"
+import { apiMixin } from "../mixins";
 
 export default {
-    name: 'Login',
-    mixins: [apiMixin],
-    data: function () {
-        return {
-          username: "",
-          password: "",
-          showError: false
-        }
-    },
-    methods: {
-      handleSubmit: function () {
-        if (this.password.length > 0) {
-          this.fetchAndStoreToken(this.username, this.password).then( () => {
+  name: "Login",
+  mixins: [apiMixin],
+  data: function () {
+    return {
+      username: "",
+      password: "",
+      showError: false,
+    };
+  },
+  methods: {
+    handleSubmit: function () {
+      if (this.password.length > 0) {
+        this.fetchAndStoreToken(this.username, this.password)
+          .then(() => {
             //fetching and storing in store worked, redirect to main/predefined
             this.$router.push("/main/predefined");
-          }).catch( (error) => {
+          })
+          .catch((error) => {
             // something went wrong
             console.log(error);
-            this.showError = true
-          })
-        }
+            this.showError = true;
+          });
       }
-    }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>
-
 .halfwidth {
-    width: 20vw;
-    height: 35v;
+  width: 20vw;
+  height: 35v;
 }
 
 .center {
@@ -74,5 +77,4 @@ export default {
 .floatright {
   float: right;
 }
-
 </style>
