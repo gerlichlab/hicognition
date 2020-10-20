@@ -83,20 +83,21 @@ export function convert_json_to_d3(jsonObject, scaleValue=1, log=false){
                     value: 1.23
                 }
             ]
-            Output value is multiplied by scaleValue
+            Output value is multiplied by scaleValue and log2 is taken if log is true
         */
     var output = [];
     var objectLength = Object.keys(jsonObject["variable"]).length;
     for (var index = 0; index < objectLength; index++){
         var newValue;
         if (log) {
+            // first check whether value is undefined
             if (jsonObject["value"][index]){
                 newValue = Math.log2(jsonObject["value"][index]) * scaleValue;
             }else{
                 newValue = null;
             }
         }else{
-            newValue = jsonObject["value"][index] * scaleValue;
+            newValue = jsonObject["value"][index] * scaleValue;  // undefined * number is NaN
         }
 
         // extract infos for current entry

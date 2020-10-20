@@ -1,12 +1,8 @@
 import * as d3 from "d3";
 
-export var iccfScale = d3.scaleLinear()
-    .range(["white", "orange", "red", "black"])
-    .domain([0, 6.6, 13.2, 20])
-
 export function getScale(min, max, scaleType) {
-    // returns a iccf color scale with the specified
-    // min, max and pivot values
+    // returns a iccf color scale or obs/exp color scale with the specified
+    // min, max values
     if (scaleType == "ICCF"){
         return d3.scaleLinear()
                         .range(["white", "orange", "red" ,"black"])
