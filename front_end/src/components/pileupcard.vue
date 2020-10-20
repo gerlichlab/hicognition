@@ -82,19 +82,17 @@ export default {
   },
   data: function () {
     return {
-      showPileupICCF: false,
-      showPileupObsExp: false,
       selectedBinsize: null,
       pileups: [],
       blockSelection: true, // whether to show controls for binsize selection
       pileupDataICCF: null,
       pileupDataObsExp: null,
-      pileupDim: 0
+      pileupDim: 0 // Dimensions of pileup. Side lenght in pixels of the square the pileup is in
     };
   },
   computed: {
     showPileup: function () {
-      return this.pileupDataICCF && this.showPileupObsExp;
+      return this.pileupDataICCF && this.pileupDataObsExp;
     },
   },
   methods: {
@@ -120,7 +118,6 @@ export default {
             console.log(`Error: ${response.data}`);
           } else {
             this.pileupDataICCF = JSON.parse(response.data);
-            this.showPileupICCF = true;
           }
         });
       // get pileup data obs/exp
@@ -135,7 +132,6 @@ export default {
             console.log(`Error: ${response.data}`);
           } else {
             this.pileupDataObsExp = JSON.parse(response.data);
-            this.showPileupObsExp = true;
           }
         });
     },
