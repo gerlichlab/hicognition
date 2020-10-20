@@ -20,11 +20,10 @@ export var apiMixin = {
                     this.$store.commit("setToken", response.data.token);
                 })
         },
-        fetchAndStoreData: function (url, storeTarget) {
-            /* Fetches data at url relative to api url and stores it in vuex via
-            the mutation "storeTarget". e.g. /api/datasets/ could be stored via
-            the mutation setDatasets via `fetchData("datasets/", "setDatasets")`.
+        fetchData: function (url) {
+            /* Fetches data at url relative to api url.
             Function returns a promise. Assumes a token is stored in store.
+            Redirects to login if fetching fails
             */
             // Check whether token exists
             var token = this.$store.state.token;
@@ -39,14 +38,7 @@ export var apiMixin = {
                 headers: {
                     "Authorization": `Basic ${encodedToken}`
                 }
-            }).then(response => {
-                if (response.status != 200) {
-                    console.log(`Error: ${response.data}`);
-                } else {
-                    // success, store datasets
-                    this.$store.commit(storeTarget, response.data)
-                }
-            }).catch(error => {
+            }).catch( error => {
                 // if error is returned, redirect to login page
                 this.$router.push("/login");
             })

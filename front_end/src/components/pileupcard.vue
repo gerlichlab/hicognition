@@ -74,9 +74,11 @@
 
 <script>
 import pileup from "./pileup";
+import { apiMixin } from "../mixins";
 
 export default {
   name: "pileup-card",
+  mixins: [apiMixin],
   components: {
     pileup,
   },
@@ -87,7 +89,7 @@ export default {
       blockSelection: true, // whether to show controls for binsize selection
       pileupDataICCF: null,
       pileupDataObsExp: null,
-      pileupDim: 0 // Dimensions of pileup. Side lenght in pixels of the square the pileup is in
+      pileupDim: 0, // Dimensions of pileup. Side lenght in pixels of the square the pileup is in
     };
   },
   computed: {
@@ -97,6 +99,7 @@ export default {
   },
   methods: {
     updatePileupSize: function () {
+      // rescale pileups upon window resize
       var value = this.$refs["pileup-card-element"].offsetWidth * 0.45;
       this.pileupDim = value;
     },
@@ -104,36 +107,14 @@ export default {
       // get ids
       var iccf_id = this.pileups[this.selectedBinsize]["ICCF"];
       var obs_exp_id = this.pileups[this.selectedBinsize]["Obs/Exp"];
-      var token = this.$store.state.token;
-      var encodedToken = btoa(token + ":");
-      // get pileup data iccf
-      this.$http
-        .get(process.env.API_URL + `pileups/data/${iccf_id}/`, {
-          headers: {
-            Authorization: `Basic ${encodedToken}`,
-          },
-        })
-        .then((response) => {
-          if (response.status != 200) {
-            console.log(`Error: ${response.data}`);
-          } else {
-            this.pileupDataICCF = JSON.parse(response.data);
-          }
-        });
-      // get pileup data obs/exp
-      this.$http
-        .get(process.env.API_URL + `pileups/data/${obs_exp_id}/`, {
-          headers: {
-            Authorization: `Basic ${encodedToken}`,
-          },
-        })
-        .then((response) => {
-          if (response.status != 200) {
-            console.log(`Error: ${response.data}`);
-          } else {
-            this.pileupDataObsExp = JSON.parse(response.data);
-          }
-        });
+      // get pileup iccf; update pileup data upon success
+      this.fetchData(`pileups/data/${iccf_id}/`).then((response) => {
+        this.pileupDataICCF = JSON.parse(response.data);
+      });
+      // get pileup obs/exp; update pileup data upon success
+      this.fetchData(`pileups/data/${obs_exp_id}/`).then((response) => {
+        this.pileupDataObsExp = JSON.parse(response.data);
+      });
     },
   },
   watch: {
@@ -143,46 +124,36 @@ export default {
         // unpack  values
         var { cooler_id, bedpe_id } = value;
         // fetch pileup datasets and display binsizes
-        var token = this.$store.state.token;
-        var encodedToken = btoa(token + ":");
-        this.$http
-          .get(process.env.API_URL + `pileups/${cooler_id}/${bedpe_id}/`, {
-            headers: {
-              Authorization: `Basic ${encodedToken}`,
-            },
-          })
-          .then((response) => {
-            if (response.status != 200) {
-              console.log(`Error: ${response.data}`);
+        this.fetchData(`pileups/${cooler_id}/${bedpe_id}/`).then((response) => {
+          // success, store datasets
+          this.$store.commit("setPileups", response.data);
+          // update binsizes to show
+          // Each dataset will have iccf and obs/exp data, therefore I
+          // make a new array with [{ "ICCF": iccf_id, "Obs/Exp": obs_exp_id, "binsize": binsize}]
+          // TODO: Refactor into a function!
+          var numberDatasets = response.data.length;
+          var iccfObsExpStratified = {};
+          for (var index = 0; index < numberDatasets; index++) {
+            var { id, binsize, value_type } = response.data[index];
+            if (binsize in iccfObsExpStratified) {
+              iccfObsExpStratified[binsize][value_type] = id;
             } else {
-              // success, store datasets
-              this.$store.commit("setPileups", response.data);
-              // update binsizes to show
-              // Each dataset will have iccf and obs/exp data, therefore I
-              // make a new array with [{ "ICCF": iccf_id, "Obs/Exp": obs_exp_id, "binsize": binsize}]
-              var numberDatasets = response.data.length;
-              var iccfObsExpStratified = {};
-              for (var index = 0; index < numberDatasets; index++) {
-                var { id, binsize, value_type } = response.data[index];
-                if (binsize in iccfObsExpStratified) {
-                  iccfObsExpStratified[binsize][value_type] = id;
-                } else {
-                  iccfObsExpStratified[binsize] = { binsize: binsize };
-                  iccfObsExpStratified[binsize][value_type] = id;
-                }
-              }
-              this.pileups = iccfObsExpStratified;
-              // show controls
-              this.blockSelection = false;
-              // reset selection
-              this.selectedBinsize = null;
+              iccfObsExpStratified[binsize] = { binsize: binsize };
+              iccfObsExpStratified[binsize][value_type] = id;
             }
-          });
+          }
+          this.pileups = iccfObsExpStratified;
+          // show controls
+          this.blockSelection = false;
+          // reset selection
+          this.selectedBinsize = null;
+        });
       }
     },
   },
   mounted: function () {
     // add resize event listener and seed initial value
+    // TODO: this does not work, fix it!
     this.updatePileupSize();
     window.addEventListener("resize", this.updatePileupSize);
   },
