@@ -13,7 +13,10 @@ import compareRoute from "./routes/compareRoute"
 // define routes
 
 const routes = [
-  { path: '/main', component: mainRoute,
+  { path: "/",
+    redirect: "/main/predefined"
+  },
+  { path: '/main', component: mainRoute, redirect: "/main/predefined",
     meta: {
       requiresAuth: true
     },
