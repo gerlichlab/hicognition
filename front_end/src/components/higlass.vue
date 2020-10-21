@@ -167,7 +167,7 @@ export default {
         region_id: this.selectedRegionID,
         bedpe_id: this.selectedBedPeID
       }
-      this.$store.commit("setDatasetSelectionPredefined", selection);
+      this.$store.commit("predefined/setDatasetSelection", selection);
     },
     fetchPileupregions: function () {
         var token = this.$store.state.token;
@@ -181,7 +181,7 @@ export default {
             console.log(`Error: ${response.data}`);
           }else{
             // success, store datasets
-            this.$store.commit("setPileupRegions", response.data);
+            this.$store.commit("predefined/setPileupRegions", response.data);
             this.bedpeFiles = response.data;
             this.blockWindowsize = false;
           }

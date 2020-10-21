@@ -1,6 +1,8 @@
 <template>
   <md-card md-with-hover class="pileup-card">
     <md-card-content>
+    
+    <!-- Binsize submission form -->
       <div class="md-layout md-gutter" ref="pileup-card-element">
         <div class="md-layout-item md-size-20">
           <md-field>
@@ -32,6 +34,7 @@
       </div>
       <md-divider></md-divider>
 
+      <!-- Pileup ICCF -->
       <pileup
         title="ICCF"
         pileupType="ICCF"
@@ -49,6 +52,7 @@
         v-if="showPileup"
       ></md-divider>
 
+      <!-- Pileup Obs/Exp -->
       <pileup
         title="Obs/Exp"
         pileupType="ObsExp"
@@ -60,6 +64,8 @@
         log="true"
       ></pileup>
 
+
+      <!-- Placeholder for empty state -->
       <md-empty-state
         md-icon="input"
         md-label="Add a dataset"
@@ -85,11 +91,11 @@ export default {
   data: function () {
     return {
       selectedBinsize: null,
-      pileups: [],
+      pileups: [], // pileups and their binsizes to display at the binsize selection
       blockSelection: true, // whether to show controls for binsize selection
       pileupDataICCF: null,
       pileupDataObsExp: null,
-      pileupDim: 0, // Dimensions of pileup. Side lenght in pixels of the square the pileup is in
+      pileupDim: 0, // Dimensions of pileup. Side lenght in pixels of the square the pileup is in.
     };
   },
   computed: {
@@ -104,7 +110,7 @@ export default {
       this.pileupDim = value;
     },
     handleBinsizeSubmit: function () {
-      // get ids
+      // get ids from user selection
       var iccf_id = this.pileups[this.selectedBinsize]["ICCF"];
       var obs_exp_id = this.pileups[this.selectedBinsize]["Obs/Exp"];
       // get pileup iccf; update pileup data upon success
@@ -118,15 +124,15 @@ export default {
     },
   },
   watch: {
-    "$store.state.datasetSelectionPredefined": function (value) {
+    "$store.state.predefined.datasetSelection": function (value) {
       // watches storing of dataset selection in store
       if (value) {
         // unpack  values
         var { cooler_id, bedpe_id } = value;
         // fetch pileup datasets and display binsizes
         this.fetchData(`pileups/${cooler_id}/${bedpe_id}/`).then((response) => {
-          // success, store datasets
-          this.$store.commit("setPileups", response.data);
+          // success, store datasets in predefined store
+          this.$store.commit("predefined/setPileups", response.data);
           // update binsizes to show
           // Each dataset will have iccf and obs/exp data, therefore I
           // make a new array with [{ "ICCF": iccf_id, "Obs/Exp": obs_exp_id, "binsize": binsize}]

@@ -5,13 +5,39 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
+// Define modules to separate state of tabs
+
+const predefinedModule = {
+  namespaced: true, // otherwise mutations are registered globally, this way mutations are available as "predefined/*"
+  state: function() {
+    return {
+      pileupRegions: null,
+      pileups: null,
+      datasetSelection: null // This is the user's dataset selection for the predefined card
+    }
+  },
+  mutations: {
+      setPileupRegions (state, pileupRegions) {
+        state.pileupRegions = pileupRegions
+      },
+      setPileups (state, pileups) {
+        state.pileups = pileups
+      },
+      setDatasetSelection (state, selection) {
+        state.datasetSelection = selection
+      }
+  }
+}
+
+// create global store
+
 const store = new Vuex.Store({
+  modules: {
+    predefined: predefinedModule
+  },
   state: {
     token: null,
-    datasets: null,
-    pileupRegions: null,
-    pileups: null,
-    datasetSelectionPredefined: null // This is the user's dataset selection for the predefined card
+    datasets: null // datasets are in the global store because they will be shared for all functionalities for a given user throughout a session
   },
   getters: {
       isTokenEmpty: state => {
@@ -27,15 +53,6 @@ const store = new Vuex.Store({
       },
       setDatasets (state, datasets) {
         state.datasets = datasets
-      },
-      setPileupRegions (state, pileupRegions) {
-        state.pileupRegions = pileupRegions
-      },
-      setPileups (state, pileups) {
-        state.pileups = pileups
-      },
-      setDatasetSelectionPredefined (state, selection) {
-        state.datasetSelectionPredefined = selection
       }
   }
 })
