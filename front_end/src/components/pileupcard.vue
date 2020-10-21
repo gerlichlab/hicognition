@@ -1,8 +1,7 @@
 <template>
   <md-card md-with-hover class="pileup-card">
     <md-card-content>
-    
-    <!-- Binsize submission form -->
+      <!-- Binsize submission form -->
       <div class="md-layout md-gutter" ref="pileup-card-element">
         <div class="md-layout-item md-size-20">
           <md-field>
@@ -64,7 +63,6 @@
         log="true"
       ></pileup>
 
-
       <!-- Placeholder for empty state -->
       <md-empty-state
         md-icon="input"
@@ -81,6 +79,7 @@
 <script>
 import pileup from "./pileup";
 import { apiMixin } from "../mixins";
+import { group_iccf_obs_exp } from "../functions";
 
 export default {
   name: "pileup-card",
@@ -125,30 +124,14 @@ export default {
   },
   watch: {
     "$store.state.predefined.datasetSelection": function (value) {
-      // watches storing of dataset selection in store
+      // watches storing of dataset selection in predefined tab store
       if (value) {
-        // unpack  values
-        var { cooler_id, bedpe_id } = value;
+        var { cooler_id, bedpe_id } = value; // value = {cooler_id: x, bedpe_id: y}
         // fetch pileup datasets and display binsizes
         this.fetchData(`pileups/${cooler_id}/${bedpe_id}/`).then((response) => {
-          // success, store datasets in predefined store
           this.$store.commit("predefined/setPileups", response.data);
-          // update binsizes to show
-          // Each dataset will have iccf and obs/exp data, therefore I
-          // make a new array with [{ "ICCF": iccf_id, "Obs/Exp": obs_exp_id, "binsize": binsize}]
-          // TODO: Refactor into a function!
-          var numberDatasets = response.data.length;
-          var iccfObsExpStratified = {};
-          for (var index = 0; index < numberDatasets; index++) {
-            var { id, binsize, value_type } = response.data[index];
-            if (binsize in iccfObsExpStratified) {
-              iccfObsExpStratified[binsize][value_type] = id;
-            } else {
-              iccfObsExpStratified[binsize] = { binsize: binsize };
-              iccfObsExpStratified[binsize][value_type] = id;
-            }
-          }
-          this.pileups = iccfObsExpStratified;
+          // update binsizes to show and group iccf/obsExp data under one binsize
+          this.pileups = group_iccf_obs_exp(response.data);
           // show controls
           this.blockSelection = false;
           // reset selection
