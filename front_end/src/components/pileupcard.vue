@@ -34,6 +34,7 @@
       <md-divider></md-divider>
 
       <!-- Pileup ICCF -->
+      <!-- Note: the v-bind directive :log binds log to the value true, otherwise only strings can be passed -->
       <pileup
         title="ICCF"
         pileupType="ICCF"
@@ -42,7 +43,7 @@
         :width="pileupDim"
         :height="pileupDim"
         :pileupData="pileupDataICCF"
-        log="true"
+        :log="true"
       ></pileup>
 
       <md-divider
@@ -52,6 +53,7 @@
       ></md-divider>
 
       <!-- Pileup Obs/Exp -->
+      <!-- Note: the v-bind directive :log binds log to the value true, otherwise only strings can be passed -->
       <pileup
         title="Obs/Exp"
         pileupType="ObsExp"
@@ -60,7 +62,7 @@
         :width="pileupDim"
         :height="pileupDim"
         :pileupData="pileupDataObsExp"
-        log="true"
+        :log="true"
       ></pileup>
 
       <!-- Placeholder for empty state -->
