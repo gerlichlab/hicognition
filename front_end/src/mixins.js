@@ -38,11 +38,33 @@ export var apiMixin = {
                 headers: {
                     "Authorization": `Basic ${encodedToken}`
                 }
-            }).catch( error => {
+            }).catch(error => {
                 // if error is returned, redirect to login page
                 this.$router.push("/login");
             })
-
+        },
+        postData: function (url, formData) {
+            /*
+                Will post the provided form data to the specified url.
+            */
+            // Check whether token exists
+            var token = this.$store.state.token;
+            if (!token) {
+                // redirect to login page if token does not exist
+                this.$router.push("/login");
+            }
+            // base64 encoding of token
+            var encodedToken = btoa(token + ":");
+            this.$http
+            .post(process.env.API_URL + url, formData, {
+              headers: {
+                "Authorization": `Basic ${encodedToken}`,
+                "Content-Type": "multipart/form-data"
+              },
+            }).catch(error => {
+                // redirect to login upon error
+                this.$router.push("/login");
+            });
         }
     }
 }

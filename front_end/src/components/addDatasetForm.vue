@@ -1,9 +1,13 @@
 <template>
   <div>
+    <!-- Form definition -->
     <form novalidate class="md-layout" @submit.prevent="validateDataset" enctype="multipart/form-data">
       <md-card class="md-layout-item">
+        <!-- Field definitions -->
         <md-card-content>
+          <!-- Dataset name ande genotyp; first row -->
           <div class="md-layout md-gutter">
+            <!-- dataset name -->
             <div class="md-layout-item md-small-size-100">
               <md-field :class="getValidationClass('datasetName')">
                 <label for="dataset-name">Name</label>
@@ -24,7 +28,7 @@
                 >
               </md-field>
             </div>
-
+            <!-- Genotype field -->
             <div class="md-layout-item md-small-size-100">
               <md-field :class="getValidationClass('genotype')">
                 <label for="genotype">Genotype</label>
@@ -37,8 +41,9 @@
               </md-field>
             </div>
           </div>
-
+          <!-- Second row -->
           <div class="md-layout md-gutter">
+            <!-- filetype field -->
             <div class="md-layout-item md-small-size-100">
               <md-field :class="getValidationClass('filetype')">
                 <label for="filetype">Filetype</label>
@@ -57,7 +62,7 @@
                 <span class="md-error">The filetype is required</span>
               </md-field>
             </div>
-
+            <!-- file field -->
             <div class="md-layout-item md-small-size-100">
               <md-field :class="getValidationClass('file')">
                 <label for="file">File</label>
@@ -75,7 +80,7 @@
               </md-field>
             </div>
           </div>
-
+          <!-- Short description field -->
           <md-field :class="getValidationClass('description')">
             <label for="description">Short Description</label>
             <md-textarea
@@ -86,9 +91,9 @@
             />
           </md-field>
         </md-card-content>
-
+        <!-- Progress bar -->
         <md-progress-bar md-mode="indeterminate" v-if="sending" />
-
+        <!-- Buttons for submission and closing -->
         <md-card-actions>
           <md-button type="submit" class="md-primary" :disabled="sending"
             >Submit dataset</md-button
@@ -98,8 +103,8 @@
           >
         </md-card-actions>
       </md-card>
-
-      <md-snackbar :md-active.sync="userSaved"
+      <!-- Submission notification -->
+      <md-snackbar :md-active.sync="datasetSaved"
         >The Dataset was submitted successfully!</md-snackbar
       >
     </form>
@@ -114,10 +119,11 @@ import {
   minLength,
   maxLength,
 } from "vuelidate/lib/validators";
+import { apiMixin } from "../mixins";
 
 export default {
-  name: "FormValidation",
-  mixins: [validationMixin],
+  name: "addDatasetForm",
+  mixins: [validationMixin, apiMixin],
   data: () => ({
     form: {
       datasetName: null,
@@ -126,12 +132,12 @@ export default {
       file: null,
       description: null,
     },
-    userSaved: false,
+    datasetSaved: false,
     sending: false,
-    lastUser: null,
     selectedFile: null
   }),
   validations: {
+    // alidators for the form
     form: {
       datasetName: {
         required,
@@ -151,6 +157,7 @@ export default {
   },
   methods: {
     getValidationClass(fieldName) {
+      // matrial validation class for form field;
       const field = this.$v.form[fieldName];
 
       if (field) {
@@ -160,6 +167,7 @@ export default {
       }
     },
     handleFileChange(event) {
+        // get file IO-stream
         this.selectedFile = event.target.files[0];
     },
     clearForm() {
@@ -171,44 +179,28 @@ export default {
       this.form.description = null;
     },
     saveDataset() {
-      this.sending = true;
-      // get token
-      var token = this.$store.state.token;
-      var encodedToken = btoa(token + ":");
+      this.sending = true; // show progress bar
       // construct form data
       var formData = new FormData();
       for (var key in this.form){
           if (key == "file"){
+              // file data needs to be included like this because the form data only contains the filename at this stage
               formData.append(key, this.selectedFile, this.selectedFile.name);
           }else{
             formData.append(key, this.form[key]);
           }
       }
       // API call including upload is made in the background
-      this.$http
-        .post(process.env.API_URL + "datasets/", formData, {
-          headers: {
-            "Authorization": `Basic ${encodedToken}`,
-            "Content-Type": "multipart/form-data"
-          },
-        })
-        .then((response) => {
-          if (response.status != 200) {
-            console.log(`Error: ${response.data}`);
-          }
-        }).catch(err => {
-            console.log(`Error: ${err}`)
-        });
-
+      this.postData("datasets/", formData);
+      // show progress bar for 1.5 s
       window.setTimeout(() => {
-        this.userSaved = true;
+        this.datasetSaved = true;
         this.sending = false;
         this.clearForm();
       }, 1500);
     },
     validateDataset() {
       this.$v.$touch();
-
       if (!this.$v.$invalid) {
         this.saveDataset();
       }
