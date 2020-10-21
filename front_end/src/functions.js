@@ -141,3 +141,23 @@ export function group_iccf_obs_exp(data) {
   }
   return output;
 }
+
+// Helpers for datasetTable
+
+export function toLower(text) {
+    return text.toString().toLowerCase()
+  }
+
+export function searchByName(items, term) {
+  /*
+  helper to search table fields by name for datasetTable
+  */
+    if (term) {
+      var filtered_items = items.filter(item => {
+          return toLower(item.dataset_name).includes(toLower(term))
+          });
+      return filtered_items
+    }
+
+    return items
+  }
