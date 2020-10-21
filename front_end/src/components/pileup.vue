@@ -84,21 +84,15 @@ export default {
       return Math.max(...heatMapValues);
     },
     dataHeatMap: function () {
+      // data preparation for d3
       return convert_json_to_d3(this.pileupData, this.log);
-    },
-    svgWidth: function () {
-      return this.width - this.margin.left - this.margin.right;
-    },
-    svgHeight: function () {
-      return this.height - this.margin.top - this.margin.bottom;
-    },
+    }
   },
   data: function () {
     return {
       svg: null, // svg of heatmap,
       pileupPicture: null, // heatmap object
-      colorScale: null,
-      margin: { top: 0, right: 0, bottom: 0, left: 0 },
+      colorScale: null
     };
   },
   methods: {
@@ -110,8 +104,8 @@ export default {
     updateColorScale: function (min, max) {
       this.colorScale = getScale(min, max, this.pileupType);
     },
-    // creates the svg object
     createHeatMap: function () {
+      // creates the svg object
       this.svg = d3
         .select(`#${this.pileupDivID}`)
         .append("svg")
@@ -120,25 +114,20 @@ export default {
         .attr("height", this.height)
         .attr("style", "transform: translateY(2%);"); // center element vertically
     },
-    // fills the heatmap with data
     fillHeatMap: function () {
+      // fills the heatmap with data
       // Build X/Y scales and axes
       var x = d3
         .scaleBand()
-        .range([0, this.svgWidth])
+        .range([0, this.width])
         .domain(this.dataGroups)
         .padding(0.01);
       var y = d3
         .scaleBand()
-        .range([this.svgHeight, 0])
+        .range([this.height, 0])
         .domain(this.dataVariables)
         .padding(0.01);
       // TODO: make axes look nice!
-      /*       this.svg.append("g")
-              .attr("transform", "translate(0," + this.svgHeight + ")")
-              .call(d3.axisBottom(x)); */
-      /*       this.svg.append("g").call(d3.axisLeft(y)); */
-      // Add data
       this.pileupPicture = this.svg
         .selectAll()
         .data(this.dataHeatMap, function (d) {
@@ -170,15 +159,16 @@ export default {
   },
   watch: {
     pileupData: function () {
+      // handler for change of data
       d3.select(`#${this.pileupDivID}Svg`).remove();
-      // blank picture to avoid triggering update
+      // blank picture to avoid triggering update in colorScale watcher
       this.pileupPicture = null;
       this.updateColorScale(this.sliderMin, this.sliderMax); //initial range
       this.createHeatMap();
       this.fillHeatMap();
     },
     colorScale: function () {
-      // update plot
+      // update plot with new color scale
       if (this.pileupPicture) {
         this.pileupPicture.style("fill", (d) => {
           return this.colorScale(d.value);
