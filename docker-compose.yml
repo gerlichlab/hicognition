@@ -81,6 +81,7 @@ services:
         volumes:
             - ${DIR_FRONT_END}:/front_end
             - ${DIR_STATIC}:/static
+            - ${KEY_DIR}:/keys
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.4

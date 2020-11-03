@@ -8,6 +8,8 @@ back_end/temp/
 workdir/higlass_data/
 workdir/higlass_temp/
 
+keys/*
+
 .DS_Store
 front_end/node_modules/
 front_end/dist/
