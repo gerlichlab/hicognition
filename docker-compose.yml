@@ -83,8 +83,8 @@ services:
             - ${DIR_STATIC}:/static
             - ${KEY_DIR}:/keys
         networks:
-            hicognition-net:
-                ipv4_address: 172.18.0.4
+            - hicognition-net
+            - default
 
     # container to build front-end
     node:
