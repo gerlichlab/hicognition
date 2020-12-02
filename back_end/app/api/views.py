@@ -1,6 +1,7 @@
 """API endpoints for hicognition"""
 import os
 import pandas as pd
+import json
 from flask.json import jsonify
 from werkzeug.utils import secure_filename
 from flask import g, request, current_app
@@ -160,11 +161,22 @@ def add_dataset():
         db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 
+
 @api.route('/preprocess/', methods=["POST"])
 @auth.login_required
 def preprocess_dataset():
     """Starts preprocessing pipeline
-    for datasets specified in the request body"""
+    for datasets specified in the request body.
+    TODO: should we check whether the user ones a dataset?"""
+    current_user = g.current_user
+    # get data from form
+    data = request.form
+    dataset_id = json.loads(data["dataset_id"])
+    binsizes = json.loads(data["binsizes"])
+    pileup_region_ids = json.loads(data["pileup_region_ids"])
+    current_user.launch_task("pipeline_pileup", "run pileup pipeline", dataset_id, binsizes, pileup_region_ids)
+    return jsonify({"message": "success! Preprocessing triggered."})
+
 
 
 # fix cross-origin problems. From https://gist.github.com/davidadamojr/465de1f5f66334c91a4c
