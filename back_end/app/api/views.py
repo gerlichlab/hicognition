@@ -151,9 +151,12 @@ def add_dataset():
     )
     db.session.add(new_entry)
     db.session.commit()
-    # start preprocessing only for bedfiles. This is not very expensive
+    # start preprocessing 
     if data["filetype"] == "bedfile":
         current_user.launch_task("pipeline_bed", "run bed preprocessing", new_entry.id)
+        db.session.commit()
+    else:
+        current_user.launch_task("pipeline_cooler", "run cooler preprocessing", new_entry.id)
         db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 

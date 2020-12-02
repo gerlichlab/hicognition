@@ -8,7 +8,7 @@ sys.path.append("./")
 from app.models import Dataset
 
 
-class TestGetDataSets(LoginTestCase, TempDirTestCase):
+class TestAddDataSets(LoginTestCase, TempDirTestCase):
     """Tests correct launching of
     pipelines after addition of datasets.
     Inherits both from LoginTest and TempDirTestCase
@@ -115,8 +115,8 @@ class TestGetDataSets(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 403)
 
     @patch("app.models.User.launch_task")
-    def test_cooler_pipeline_not_launched(self, mock_launch):
-        """Adding a dataset should only launch bed preprocessing pipeline"""
+    def test_cooler_pipeline_launched(self, mock_launch):
+        """Tests whether cooler pipeline is launched correctly"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token_header
@@ -137,7 +137,7 @@ class TestGetDataSets(LoginTestCase, TempDirTestCase):
             content_type="multipart/form-data",
         )
         # check whether launch task has been called with the right arguments
-        mock_launch.assert_not_called()
+        mock_launch.assert_called_with("pipeline_cooler", "run cooler preprocessing", 1)
 
     @patch("app.models.User.launch_task")
     def test_bed_pipeline_launched_correctly(self, mock_launch):
