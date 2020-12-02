@@ -67,12 +67,8 @@ def pipeline_cooler(dataset_id):
     """Starts the pipeline for
     cooler-files. Pipeline:
     - Add to higlass and update uuid
-    - For each binsize in binsizes
-        - For each pileupregion
-            * Pileup ICCF and write to csv-file
-            * Pileup Obs/Exp and write to csv-file
-            * add to Pileup database table
     - Indicate in Job table in database that job is complete
+    - Set dataset status to "uploaded" # TODO
     """
     binsizes = app.config["BIN_SIZES"]
     log.info(f"Cooler pipeline started for {dataset_id} with {binsizes}")
@@ -204,18 +200,6 @@ def bedpe_preprocess_pipeline_step(file_path, dataset_id=None, windowsize=None):
     )
     db.session.add(new_entry)
     db.session.commit()
-    # Pileup on all available coolers
-    log.info(f"     Doing pileup on available coolers")
-    binsizes = app.config["BIN_SIZES"]
-    cooler_datasets = Dataset.query.filter(Dataset.filetype == "cooler").all()
-    arms = pd.read_csv(app.config["CHROM_ARMS"])
-    for cooler_dataset in cooler_datasets:
-        log.info(f"         Cooler {cooler_dataset.id}")
-        for binsize in binsizes:
-            log.info(f"         Binsize {binsize}")
-            perform_pileup(cooler_dataset, new_entry, binsize, arms, "ICCF")
-            perform_pileup(cooler_dataset, new_entry, binsize, arms, "Obs/Exp")
-    log.info("      Success!")
 
 
 def perform_pileup(cooler_dataset, pileup_region, binsize, arms, pileup_type):
