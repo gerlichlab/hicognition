@@ -53,13 +53,14 @@ def get_datasets(dtype):
 @auth.login_required
 def get_pileupregiones_of_dataset(dataset_id):
     """Gets all available pileupregions for a given dataset, if the user owns the requested dataset."""
+    dataset = Dataset.query.get(dataset_id)
     # check whether dataset exists
-    if Dataset.query.get(dataset_id) is None:
+    if dataset is None:
         response = jsonify({"error": f"Dataset with id '{dataset_id}' does not exist!"})
         response.status_code = 404
         return response
     # check whether user owns the dataset
-    if Dataset.query.get(dataset_id).user_id != g.current_user.id:
+    if is_access_to_dataset_denied(dataset, g.current_user):
         response = jsonify({"error": f"Dataset with id '{dataset_id}' is not owned by logged in user!"})
         response.status_code = 403
         return response
@@ -91,7 +92,7 @@ def get_pileups(cooler_id, pileupregion_id):
         response.status_code = 404
         return response
     # Check whether datasets are owned
-    if (cooler_ds.user_id != g.current_user.id) or (pileupregion_ds.source_dataset.user_id != g.current_user.id):
+    if is_access_to_dataset_denied(cooler_ds, g.current_user) or is_access_to_dataset_denied(pileupregion_ds.source_dataset, g.current_user):
         response = jsonify({"error": f"Cooler dataset or pileupregion dataset is not owned by logged in user!"})
         response.status_code = 403
         return response
@@ -115,7 +116,7 @@ def get_pileup_data(pileup_id):
     pileup = Pileup.query.get(pileup_id)
     cooler_ds = pileup.source_cooler
     bed_ds = pileup.source_pileupregion.source_dataset
-    if ((cooler_ds.user_id != g.current_user.id) or (bed_ds.user_id != g.current_user.id)):
+    if is_access_to_dataset_denied(cooler_ds, g.current_user) or is_access_to_dataset_denied(bed_ds, g.current_user):
         response = jsonify({"error": f"Cooler dataset or bed dataset is not owned by logged in user!"})
         response.status_code = 403
         return response
@@ -166,18 +167,35 @@ def add_dataset():
 @auth.login_required
 def preprocess_dataset():
     """Starts preprocessing pipeline
-    for datasets specified in the request body.
-    TODO: should we check whether the user owns a dataset?"""
+    for datasets specified in the request body"""
+    def is_form_invalid():
+        if not hasattr(request, "form"):
+            return True
+        if sorted(list(request.form.keys())) != sorted(["dataset_id", "binsizes", "pileup_region_ids"]):
+            return True
+        return False
     current_user = g.current_user
+    # check form
+    if is_form_invalid():
+        response = jsonify({"error": f"Form is not valid!"})
+        response.status_code = 400
+        return response
     # get data from form
     data = request.form
     dataset_id = json.loads(data["dataset_id"])
     binsizes = json.loads(data["binsizes"])
     pileup_region_ids = json.loads(data["pileup_region_ids"])
+    # check whether dataset exists
+    if Dataset.query.get(dataset_id) is None:
+        response = jsonify({"error": f"Dataset does not exist!"})
+        response.status_code = 404
+        return response
+    if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g.current_user):
+        response = jsonify({"error": f"Cooler dataset is not owned by logged in user!"})
+        response.status_code = 403
+        return response
     current_user.launch_task("pipeline_pileup", "run pileup pipeline", dataset_id, binsizes, pileup_region_ids)
     return jsonify({"message": "success! Preprocessing triggered."})
-
-
 
 # fix cross-origin problems. From https://gist.github.com/davidadamojr/465de1f5f66334c91a4c
 @api.after_request
@@ -186,3 +204,11 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
     return response
+
+# helpers
+
+
+def is_access_to_dataset_denied(dataset_id, current_user):
+    """Checks whether access to a certian dataset is denied
+    for a given user."""
+    return dataset_id.user_id != current_user.id
