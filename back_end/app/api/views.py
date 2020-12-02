@@ -167,7 +167,7 @@ def add_dataset():
 def preprocess_dataset():
     """Starts preprocessing pipeline
     for datasets specified in the request body.
-    TODO: should we check whether the user ones a dataset?"""
+    TODO: should we check whether the user owns a dataset?"""
     current_user = g.current_user
     # get data from form
     data = request.form

@@ -59,7 +59,6 @@ def pipeline_bed(dataset_id):
         io_helpers.convert_bed_to_bedpe(sorted_file_name, target_file, window)
         # preprocessing
         bedpe_preprocess_pipeline_step(target_file, dataset_id, window)
-        # do pileup for all coolers
     _set_task_progress(100)
 
 
@@ -106,7 +105,6 @@ def pipeline_pileup(dataset_id, binsizes, pileup_region_ids):
     counter = 0
     for binsize in binsizes:
         for pileup_region in pileup_regions:
-            # no need to check if processing is finished, pileup_regions are not processed
             perform_pileup(current_dataset, pileup_region, binsize, chromosome_arms, "ICCF")
             perform_pileup(current_dataset, pileup_region, binsize, chromosome_arms, "Obs/Exp")
             counter += 1
