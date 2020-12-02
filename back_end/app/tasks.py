@@ -94,22 +94,25 @@ def pipeline_cooler(dataset_id):
     uuid = result["uuid"]
     current_dataset.higlass_uuid = uuid
     db.session.commit()
-    # get all pileup regions
-    pileup_regions = Pileupregion.query.all()
-    # get arms
-    arms = pd.read_csv(app.config["CHROM_ARMS"])
-    # perform pileups
+
+
+def pipeline_pileup(dataset_id, binsizes, pileup_region_ids):
+    """Start pileup pipeline for specified combination of
+    cooler_id, binsizes and pileupregions"""
+    current_dataset = Dataset.query.get(dataset_id)
+    pileup_regions = Pileupregion.query.filter(Pileupregion.id.in_(pileup_region_ids)).all()
+    chromosome_arms = pd.read_csv(app.config["CHROM_ARMS"])
+    # perform pileup
     counter = 0
     for binsize in binsizes:
         for pileup_region in pileup_regions:
             # no need to check if processing is finished, pileup_regions are not processed
-            perform_pileup(current_dataset, pileup_region, binsize, arms, "ICCF")
-            perform_pileup(current_dataset, pileup_region, binsize, arms, "Obs/Exp")
+            perform_pileup(current_dataset, pileup_region, binsize, chromosome_arms, "ICCF")
+            perform_pileup(current_dataset, pileup_region, binsize, chromosome_arms, "Obs/Exp")
             counter += 1
             progress = counter / (len(binsizes) * len(pileup_regions)) * 100
             _set_task_progress(progress)
     _set_task_progress(100)
-
 
 # helpers
 
