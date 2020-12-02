@@ -17,7 +17,7 @@ class TestGetDataSets(LoginTestCase, TempDirTestCase):
 
     @patch("app.models.User.launch_task")
     def test_dataset_added_correctly_cooler(self, mock_launch):
-        """Tests whether a bed dataset is added
+        """Tests whether a cooler dataset is added
         correctly to the Dataset table following
         a post request."""
         # authenticate
@@ -55,7 +55,7 @@ class TestGetDataSets(LoginTestCase, TempDirTestCase):
 
     @patch("app.models.User.launch_task")
     def test_dataset_added_correctly_bed(self, mock_launch):
-        """Tests whether a cooler dataset is added
+        """Tests whether a bed dataset is added
         correctly to the Dataset table following
         a post request."""
         # authenticate
@@ -93,9 +93,7 @@ class TestGetDataSets(LoginTestCase, TempDirTestCase):
 
     @patch("app.models.User.launch_task")
     def test_incorrect_filetype_is_rejected(self, mock_launch):
-        """Tests whether a cooler dataset is added
-        correctly to the Dataset table following
-        a post request."""
+        """Tests whether incorrect filetype is rejected"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token_header
@@ -144,7 +142,7 @@ class TestGetDataSets(LoginTestCase, TempDirTestCase):
 
     @patch("app.models.User.launch_task")
     def test_bed_pipeline_launched_correctly(self, mock_launch):
-        """Tests whether cooler pipeline is called with the right arguments."""
+        """Tests whether bed pipeline is called with the right arguments."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token_header
