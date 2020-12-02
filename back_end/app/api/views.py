@@ -151,7 +151,7 @@ def add_dataset():
     )
     db.session.add(new_entry)
     db.session.commit()
-    # start preprocessing 
+    # start preprocessing
     if data["filetype"] == "bedfile":
         current_user.launch_task("pipeline_bed", "run bed preprocessing", new_entry.id)
         db.session.commit()
