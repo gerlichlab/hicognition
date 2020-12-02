@@ -151,14 +151,17 @@ def add_dataset():
     )
     db.session.add(new_entry)
     db.session.commit()
-    # start preprocessing
+    # start preprocessing only for bedfiles. This is not very expensive
     if data["filetype"] == "bedfile":
         current_user.launch_task("pipeline_bed", "run bed preprocessing", new_entry.id)
         db.session.commit()
-    else:
-        current_user.launch_task("pipeline_cooler", "run cooler preprocessing", new_entry.id)
-        db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
+
+@api.route('/preprocess/', methods=["POST"])
+@auth.login_required
+def preprocess_dataset():
+    """Starts preprocessing pipeline
+    for datasets specified in the request body"""
 
 
 # fix cross-origin problems. From https://gist.github.com/davidadamojr/465de1f5f66334c91a4c

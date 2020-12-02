@@ -116,8 +116,8 @@ class TestGetDataSets(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 403)
 
     @patch("app.models.User.launch_task")
-    def test_cooler_pipeline_launched_correctly(self, mock_launch):
-        """Tests whether cooler pipeline is called with the right arguments."""
+    def test_cooler_pipeline_not_launched(self, mock_launch):
+        """Adding a dataset should only launch bed preprocessing pipeline"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token_header
@@ -138,7 +138,7 @@ class TestGetDataSets(LoginTestCase, TempDirTestCase):
             content_type="multipart/form-data",
         )
         # check whether launch task has been called with the right arguments
-        mock_launch.assert_called_with("pipeline_cooler", "run cooler preprocessing", 1)
+        mock_launch.assert_not_called()
 
     @patch("app.models.User.launch_task")
     def test_bed_pipeline_launched_correctly(self, mock_launch):
