@@ -71,6 +71,7 @@ class Dataset(db.Model):
     pileup_regions = db.relationship("Pileupregion", backref="source_dataset", lazy="dynamic")
     pileup = db.relationship("Pileup", backref="source_cooler", lazy="dynamic")
     tasks = db.relationship('Task', backref='dataset', lazy='dynamic')
+    processing_state = db.Column(db.String(64))
 
     def get_tasks_in_progress(self):
         return Task.query.filter_by(dataset=self, complete=False).all()
@@ -79,13 +80,17 @@ class Dataset(db.Model):
         """Format print output."""
         return f'<Dataset {self.dataset_name}>'
 
-    def to_json(self):
-        # check whether there are any uncompleted of failed tasks
+    def set_processing_state(self, db):
+        """sets the current processing state of the dataset instance.
+        Should be called after dataset has been uploaded."""
+        if (self.processing_state != "uploaded"):
+            return
+        # check if there are any unfinished tasks
         tasks = self.tasks.filter(Task.complete == False).all()
         if len(tasks) == 0:
-            completed = 1
+            self.processing_state = "finished"
         else:
-            completed = 0
+            self.processing_state = "processing"
             # check whether any job failed
             for task in tasks:
                 if task.get_rq_job() is None:
@@ -93,7 +98,11 @@ class Dataset(db.Model):
                     continue
                 else:
                     if task.get_rq_job().get_status() == "failed":
-                        completed = - 1
+                        self.processing_state = "failed"
+        db.session.add(self)
+        db.session.commit()
+
+    def to_json(self):
         json_dataset = {
             "id": self.id,
             "dataset_name": self.dataset_name,
@@ -101,7 +110,7 @@ class Dataset(db.Model):
             "higlass_uuid": self.higlass_uuid,
             "filetype": self.filetype,
             "user_id": self.user_id,
-            "completed": completed
+            "processing_state": self.processing_state
         }
         return json_dataset
 
