@@ -51,8 +51,7 @@ def add_dataset():
         current_user.launch_task(
             "pipeline_cooler", "run cooler preprocessing", new_entry.id
         )
-        # set processing state
-        new_entry.processing_state = "processing"
+        # cooler files stay at processing status upload for the initial higlass addition pipeline
         db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 

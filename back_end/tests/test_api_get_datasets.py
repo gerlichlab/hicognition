@@ -295,7 +295,7 @@ class TestProcessingStateIsUpdated(LoginTestCase):
         # create token header
         token_headers = self.get_token_header(token)
         # add new datasets
-        self.add_test_datasets("uploaded")
+        self.add_test_datasets("processing")
         # add Task
         new_task = Task(id="asdf", name="test", dataset_id=1)
         db.session.add(new_task)
@@ -325,7 +325,7 @@ class TestProcessingStateIsUpdated(LoginTestCase):
         # create token header
         token_headers = self.get_token_header(token)
         # add new datasets
-        self.add_test_datasets("uploaded")
+        self.add_test_datasets("processing")
         # get datasets
         response = self.client.get(
             "/api/datasets/", headers=token_headers, content_type="application/json",

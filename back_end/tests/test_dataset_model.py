@@ -35,7 +35,7 @@ class TestSetProcessingState(LoginTestCase):
         mock_finished.return_value = False
         mock_failed.return_value = False
         # add new datasets
-        self.add_test_datasets("uploaded")
+        self.add_test_datasets("processing")
         # add Task
         new_task = Task(id="asdf", name="test", dataset_id=1)
         db.session.add(new_task)
@@ -48,7 +48,7 @@ class TestSetProcessingState(LoginTestCase):
 
     def test_finished_when_no_task(self):
         # add new datasets
-        self.add_test_datasets("uploaded")
+        self.add_test_datasets("processing")
         # set processing state
         dataset = Dataset.query.get(1)
         dataset.set_processing_state(db)

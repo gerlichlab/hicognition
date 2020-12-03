@@ -82,8 +82,8 @@ class Dataset(db.Model):
 
     def set_processing_state(self, db):
         """sets the current processing state of the dataset instance.
-        Should be called after dataset has been uploaded."""
-        if (self.processing_state == "uploading"):
+        Launching task sets processing state, this sets finished/failed state"""
+        if (self.processing_state != "processing"):
             return
         # check if there are any unfinished tasks
         tasks = self.tasks.filter(Task.complete == False).all()
@@ -194,7 +194,7 @@ def load_user(id):
 def all_tasks_finished(tasks):
     for task in tasks:
         job = task.get_rq_job()
-        if not job.is_finished():
+        if not job.is_finished:
             return False
     return True
 
