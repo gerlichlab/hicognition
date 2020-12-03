@@ -195,6 +195,7 @@ def preprocess_dataset():
         response.status_code = 403
         return response
     current_user.launch_task("pipeline_pileup", "run pileup pipeline", dataset_id, binsizes, pileup_region_ids)
+    db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 
 # fix cross-origin problems. From https://gist.github.com/davidadamojr/465de1f5f66334c91a4c
