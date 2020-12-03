@@ -1,4 +1,5 @@
 from test_helpers import LoginTestCase
+from unittest.mock import patch
 
 # add path to import app
 import sys
@@ -25,9 +26,14 @@ class TestSetProcessingState(LoginTestCase):
         db.session.add(dataset1)
         db.session.commit()
 
-    def test_processing_when_task(self):
+    @patch("app.models.any_tasks_failed")
+    @patch("app.models.all_tasks_finished")
+    def test_processing_when_task(self, mock_finished, mock_failed):
         """Tests whether processing status is set correctly 
         when there is a running task for dataset."""
+        # set return value of mock_finished and mock_failed
+        mock_finished.return_value = False
+        mock_failed.return_value = False
         # add new datasets
         self.add_test_datasets("uploaded")
         # add Task

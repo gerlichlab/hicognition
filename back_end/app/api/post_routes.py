@@ -44,11 +44,15 @@ def add_dataset():
     # start preprocessing
     if data["filetype"] == "bedfile":
         current_user.launch_task("pipeline_bed", "run bed preprocessing", new_entry.id)
+        # set processing state
+        new_entry.processing_state = "processing"
         db.session.commit()
     else:
         current_user.launch_task(
             "pipeline_cooler", "run cooler preprocessing", new_entry.id
         )
+        # set processing state
+        new_entry.processing_state = "processing"
         db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 
@@ -95,5 +99,8 @@ def preprocess_dataset():
         binsizes,
         pileup_region_ids,
     )
+    # set processing state
+    dataset = Dataset.query.get(dataset_id)
+    dataset.processing_state = "processing"
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})

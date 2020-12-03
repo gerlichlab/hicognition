@@ -83,22 +83,19 @@ class Dataset(db.Model):
     def set_processing_state(self, db):
         """sets the current processing state of the dataset instance.
         Should be called after dataset has been uploaded."""
-        if (self.processing_state != "uploaded"):
+        if (self.processing_state == "uploading"):
             return
         # check if there are any unfinished tasks
         tasks = self.tasks.filter(Task.complete == False).all()
         if len(tasks) == 0:
             self.processing_state = "finished"
         else:
-            self.processing_state = "processing"
-            # check whether any job failed
-            for task in tasks:
-                if task.get_rq_job() is None:
-                    # job is not available in rq anymore, finished normally TODO: check in documentation about this
-                    continue
-                else:
-                    if task.get_rq_job().get_status() == "failed":
-                        self.processing_state = "failed"
+            if all_tasks_finished(tasks):
+                self.processing_state = "finished"
+            elif any_tasks_failed(tasks):
+                self.processing_state = "failed"
+            else:
+                self.processing_state = "processing"
         db.session.add(self)
         db.session.commit()
 
@@ -193,3 +190,21 @@ class Task(db.Model):
 def load_user(id):
     """Helper function to load user."""
     return User.query.get(int(id))
+
+def all_tasks_finished(tasks):
+    for task in tasks:
+        job = task.get_rq_job()
+        if not job.is_finished():
+            return False
+    return True
+
+def any_tasks_failed(tasks):
+    # check whether any job failed
+    for task in tasks:
+        if task.get_rq_job() is None:
+            # job is not available in rq anymore, finished normally TODO: check in documentation about this
+            continue
+        else:
+            if task.get_rq_job().get_status() == "failed":
+                return True
+    return False

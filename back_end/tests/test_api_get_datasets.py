@@ -1,6 +1,9 @@
 from test_helpers import LoginTestCase
+from unittest.mock import patch
+
 # add path to import app
 import sys
+
 sys.path.append("./")
 from app import db
 from app.models import Dataset, Task
@@ -18,7 +21,7 @@ class TestGetDatasets(LoginTestCase):
             higlass_uuid="asdf1234",
             filetype="cooler",
             processing_state="finished",
-            user_id=1
+            user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
@@ -26,7 +29,7 @@ class TestGetDatasets(LoginTestCase):
             higlass_uuid="fdsa4321",
             filetype="cooler",
             processing_state="finished",
-            user_id=1
+            user_id=1,
         )
         dataset3 = Dataset(
             dataset_name="test3",
@@ -34,7 +37,7 @@ class TestGetDatasets(LoginTestCase):
             higlass_uuid="fdsa8765",
             filetype="bedfile",
             processing_state="finished",
-            user_id=1
+            user_id=1,
         )
         db.session.add(dataset1)
         db.session.add(dataset2)
@@ -71,7 +74,7 @@ class TestGetDatasets(LoginTestCase):
                 "higlass_uuid": "asdf1234",
                 "id": 1,
                 "user_id": 1,
-                "processing_state": "finished"
+                "processing_state": "finished",
             },
             {
                 "dataset_name": "test2",
@@ -80,7 +83,7 @@ class TestGetDatasets(LoginTestCase):
                 "higlass_uuid": "fdsa4321",
                 "id": 2,
                 "user_id": 1,
-                "processing_state": "finished"
+                "processing_state": "finished",
             },
         ]
         self.assertEqual(response.json, expected)
@@ -107,7 +110,7 @@ class TestGetDatasets(LoginTestCase):
                 "higlass_uuid": "fdsa8765",
                 "id": 3,
                 "user_id": 1,
-                "processing_state": "finished"
+                "processing_state": "finished",
             },
         ]
         self.assertEqual(response.json, expected)
@@ -134,7 +137,7 @@ class TestGetDatasets(LoginTestCase):
                 "higlass_uuid": "asdf1234",
                 "id": 1,
                 "user_id": 1,
-                "processing_state": "finished"
+                "processing_state": "finished",
             },
             {
                 "dataset_name": "test2",
@@ -143,7 +146,7 @@ class TestGetDatasets(LoginTestCase):
                 "higlass_uuid": "fdsa4321",
                 "id": 2,
                 "user_id": 1,
-                "processing_state": "finished"
+                "processing_state": "finished",
             },
             {
                 "dataset_name": "test3",
@@ -152,7 +155,7 @@ class TestGetDatasets(LoginTestCase):
                 "higlass_uuid": "fdsa8765",
                 "id": 3,
                 "user_id": 1,
-                "processing_state": "finished"
+                "processing_state": "finished",
             },
         ]
         self.assertEqual(response.json, expected)
@@ -185,7 +188,7 @@ class TestGetDatasets(LoginTestCase):
             higlass_uuid="asdf1234",
             filetype="cooler",
             processing_state="finished",
-            user_id=1
+            user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
@@ -193,7 +196,7 @@ class TestGetDatasets(LoginTestCase):
             higlass_uuid="fdsa4321",
             filetype="cooler",
             processing_state="finished",
-            user_id=2
+            user_id=2,
         )
         dataset3 = Dataset(
             dataset_name="test3",
@@ -201,7 +204,7 @@ class TestGetDatasets(LoginTestCase):
             higlass_uuid="fdsa8765",
             filetype="bedfile",
             processing_state="finished",
-            user_id=1
+            user_id=1,
         )
         dataset4 = Dataset(
             dataset_name="test4",
@@ -209,7 +212,7 @@ class TestGetDatasets(LoginTestCase):
             higlass_uuid="fdsa8768",
             filetype="bedfile",
             processing_state="finished",
-            user_id=2
+            user_id=2,
         )
         db.session.add(dataset1)
         db.session.add(dataset2)
@@ -232,7 +235,7 @@ class TestGetDatasets(LoginTestCase):
                 "higlass_uuid": "asdf1234",
                 "id": 1,
                 "user_id": 1,
-                "processing_state": "finished"
+                "processing_state": "finished",
             },
             {
                 "dataset_name": "test3",
@@ -241,13 +244,15 @@ class TestGetDatasets(LoginTestCase):
                 "higlass_uuid": "fdsa8765",
                 "id": 3,
                 "user_id": 1,
-                "processing_state": "finished"
+                "processing_state": "finished",
             },
         ]
         self.assertEqual(response.json, expected)
         # check response for coolers
         response = self.client.get(
-            "/api/datasets/cooler", headers=token_headers, content_type="application/json",
+            "/api/datasets/cooler",
+            headers=token_headers,
+            content_type="application/json",
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -277,9 +282,14 @@ class TestProcessingStateIsUpdated(LoginTestCase):
         db.session.add(dataset1)
         db.session.commit()
 
-    def test_processing_when_task(self):
+    @patch("app.models.any_tasks_failed")
+    @patch("app.models.all_tasks_finished")
+    def test_processing_when_task(self, mock_finished, mock_failed):
         """Tests whether processing status is set correctly 
         when there is a running task for dataset."""
+        # set return value of mock_finished and mock_failed
+        mock_finished.return_value = False
+        mock_failed.return_value = False
         # add new user
         token = self.add_and_authenticate("test", "asdf")
         # create token header
