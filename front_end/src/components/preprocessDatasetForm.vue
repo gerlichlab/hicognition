@@ -144,9 +144,9 @@ export default {
       availablePileupRegions: [],
     form: {
       coolerID: null,
-      binsizes: null,
-      bedfileIDs: null,
-      windowsizes: null,
+      binsizes: [],
+      bedfileIDs: [],
+      windowsizes: [],
     },
     datasetSaved: false,
     sending: false,
@@ -181,10 +181,11 @@ export default {
   },
   methods: {
     fetchDatasets: function () {
+        // fetches available datasets (cooler and bedfiles) from server
       this.fetchData("datasets/").then((response) => {
         // success, store datasets
         this.$store.commit("setDatasets", response.data);
-        // update datasets; Only use completed datasets; completed is 1 if completed, 0 if in progress and -1 if failed
+        // update datasets; Also use datasets that are not completed
         this.availableCoolers = response.data.filter(
           (element) => element.filetype == "cooler"
         );
@@ -194,6 +195,7 @@ export default {
       });
     },
     fetchPileupregions: async function (){
+        // fetches available pileupregions or selected bedfiles
         var pileupRegions = [];
         var tempPileupRegions = {}
         for (var regionID of this.form.bedfileIDs){
@@ -203,6 +205,7 @@ export default {
         this.availablePileupRegions = group_pileupregions_on_windowsize(pileupRegions);
     },
     fetchPileupregion: function (regionID) {
+        // fetches pileupregion for one bedfile
       return this.fetchData(`datasets/${regionID}/pileupregions/`)
     },
     getValidationClass(fieldName) {
@@ -217,19 +220,25 @@ export default {
     },
     clearForm() {
       this.$v.$reset();
-      this.form.coolerID = null;
-      this.form.binsizes = null;
-      this.form.bedfileIDs = null;
-      this.form.filetype = null;
-      this.form.windowsizes = null;
+      for (var key in this.form) {
+          // vue introduces a watches into arrays that does not allow blanking
+          if (Array.isArray(this.form[key])){
+              this.form[key] = [];
+          }else{
+            this.form[key] = null;
+          }
+      }
     },
     saveDataset() {
       this.sending = true; // show progress bar
+      // prepare data for form
+      var prepared_data = this.prepare_form_data();
       // construct form data
       var formData = new FormData();
-      for (var key in this.form){
-            formData.append(key, this.form[key]);
+      for (var key in prepared_data){
+            formData.append(key, prepared_data[key]);
       }
+      console.log(formData);
       // API call including upload is made in the background
       this.postData("preprocess/", formData);
       // show progress bar for 1.5 s
@@ -238,6 +247,19 @@ export default {
         this.sending = false;
         this.clearForm();
       }, 1500);
+    },
+    prepare_form_data() {
+        // prepare pileupregions
+        var pileup_region_ids = [];
+        for (var windowsize of this.form["windowsizes"]){
+            pileup_region_ids.push(...this.availablePileupRegions[windowsize].id);
+        }
+        // put data into form
+        var form_data = {};
+        form_data["pileup_region_ids"] = JSON.stringify(pileup_region_ids);
+        form_data["dataset_id"] = JSON.stringify(this.form["coolerID"]);
+        form_data["binsizes"] = JSON.stringify(this.form["binsizes"]);
+        return form_data;
     },
     validateDataset() {
       this.$v.$touch();
