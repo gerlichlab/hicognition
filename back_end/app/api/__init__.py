@@ -2,4 +2,4 @@ from flask import Blueprint
 
 api = Blueprint('api', __name__)
 
-from . import views, errors, authentication
+from . import get_routes, post_routes, cross_origin, errors, authentication
