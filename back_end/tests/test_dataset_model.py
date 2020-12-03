@@ -28,10 +28,6 @@ class TestSetProcessingState(LoginTestCase):
     def test_processing_when_task(self):
         """Tests whether processing status is set correctly 
         when there is a running task for dataset."""
-        # add new user
-        token = self.add_and_authenticate("test", "asdf")
-        # create token header
-        token_headers = self.get_token_header(token)
         # add new datasets
         self.add_test_datasets("uploaded")
         # add Task
@@ -45,10 +41,6 @@ class TestSetProcessingState(LoginTestCase):
         self.assertEqual(dataset.processing_state, "processing")
 
     def test_finished_when_no_task(self):
-        # add new user
-        token = self.add_and_authenticate("test", "asdf")
-        # create token header
-        token_headers = self.get_token_header(token)
         # add new datasets
         self.add_test_datasets("uploaded")
         # set processing state
@@ -57,10 +49,6 @@ class TestSetProcessingState(LoginTestCase):
         self.assertEqual(dataset.processing_state, "finished")
 
     def test_uploaded_no_update_wo_task(self):
-        # add new user
-        token = self.add_and_authenticate("test", "asdf")
-        # create token header
-        token_headers = self.get_token_header(token)
         # add new datasets
         self.add_test_datasets("uploading")
         # set processing state
@@ -69,10 +57,6 @@ class TestSetProcessingState(LoginTestCase):
         self.assertEqual(dataset.processing_state, "uploading")
 
     def test_uploaded_no_update_w_task(self):
-        # add new user
-        token = self.add_and_authenticate("test", "asdf")
-        # create token header
-        token_headers = self.get_token_header(token)
         # add new datasets
         self.add_test_datasets("uploading")
         # add Task
