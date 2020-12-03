@@ -30,6 +30,7 @@ def test_protected():
 def get_all_datasets():
     """Gets all available datasets for a given user."""
     all_files = Dataset.query.filter(Dataset.user_id == g.current_user.id).all()
+    update_processing_state(all_files, db)
     return jsonify([dfile.to_json() for dfile in all_files])
 
 
@@ -39,9 +40,11 @@ def get_datasets(dtype):
     """Gets all available datasets for a given user."""
     if dtype == "cooler":
         cooler_files = Dataset.query.filter((Dataset.filetype == "cooler") & (g.current_user.id == Dataset.user_id)).all()
+        update_processing_state(cooler_files, db)
         return jsonify([cfile.to_json() for cfile in cooler_files])
     elif dtype == "bed":
         bed_files = Dataset.query.filter((Dataset.filetype == "bedfile") & (g.current_user.id == Dataset.user_id)).all()
+        update_processing_state(bed_files, db)
         return jsonify([bfile.to_json() for bfile in bed_files])
     else:
         response = jsonify({"error": f"option: '{dtype}' not understood"})
@@ -136,6 +139,15 @@ def add_dataset():
     # get data from form
     data = request.form
     fileObject = request.files["file"]
+    # add data to Database -> in order to show uploading
+    new_entry = Dataset(
+        dataset_name = data["datasetName"],
+        processing_state = "uploading",
+        filetype=data["filetype"],
+        user_id=current_user.id
+    )
+    db.session.add(new_entry)
+    db.session.commit()
     # save file in upload directory
     filename = secure_filename(fileObject.filename)
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
@@ -144,13 +156,9 @@ def add_dataset():
         response = jsonify({"error": "datatype not understood"})
         response.status_code = 403
         return response
-    # add data to Database
-    new_entry = Dataset(
-        dataset_name = data["datasetName"],
-        file_path=file_path,
-        filetype=data["filetype"],
-        user_id=current_user.id
-    )
+    # add file_path to database entr
+    new_entry.file_path = file_path
+    new_entry.processing_state = "uploaded"
     db.session.add(new_entry)
     db.session.commit()
     # start preprocessing
@@ -213,3 +221,9 @@ def is_access_to_dataset_denied(dataset_id, current_user):
     """Checks whether access to a certian dataset is denied
     for a given user."""
     return dataset_id.user_id != current_user.id
+
+
+def update_processing_state(datasets, db):
+    """updates processing state of all datasets in the supplied iterabel"""
+    for dataset in datasets:
+        dataset.set_processing_state(db)
