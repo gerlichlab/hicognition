@@ -1,9 +1,12 @@
 from test_helpers import LoginTestCase
+
 # add path to import app
 import sys
+
 sys.path.append("./")
 from app import db
 from app.models import Dataset, Task
+
 
 class TestSetProcessingState(LoginTestCase):
     """Tests whether set_processing_state
@@ -17,7 +20,7 @@ class TestSetProcessingState(LoginTestCase):
             higlass_uuid="asdf1234",
             filetype="cooler",
             processing_state=state,
-            user_id=1
+            user_id=1,
         )
         db.session.add(dataset1)
         db.session.commit()
@@ -38,7 +41,7 @@ class TestSetProcessingState(LoginTestCase):
         # set processing state
         dataset = Dataset.query.get(1)
         dataset.set_processing_state(db)
-         # get datasets
+        # get datasets
         response = self.client.get(
             "/api/datasets/", headers=token_headers, content_type="application/json",
         )
@@ -52,7 +55,7 @@ class TestSetProcessingState(LoginTestCase):
                 "higlass_uuid": "asdf1234",
                 "id": 1,
                 "user_id": 1,
-                "processing_state": "processing"
+                "processing_state": "processing",
             }
         ]
         self.assertEqual(response.json, expected)
@@ -67,7 +70,7 @@ class TestSetProcessingState(LoginTestCase):
         # set processing state
         dataset = Dataset.query.get(1)
         dataset.set_processing_state(db)
-         # get datasets
+        # get datasets
         response = self.client.get(
             "/api/datasets/", headers=token_headers, content_type="application/json",
         )
@@ -81,7 +84,7 @@ class TestSetProcessingState(LoginTestCase):
                 "higlass_uuid": "asdf1234",
                 "id": 1,
                 "user_id": 1,
-                "processing_state": "finished"
+                "processing_state": "finished",
             }
         ]
         self.assertEqual(response.json, expected)
@@ -96,7 +99,7 @@ class TestSetProcessingState(LoginTestCase):
         # set processing state
         dataset = Dataset.query.get(1)
         dataset.set_processing_state(db)
-         # get datasets
+        # get datasets
         response = self.client.get(
             "/api/datasets/", headers=token_headers, content_type="application/json",
         )
@@ -110,7 +113,7 @@ class TestSetProcessingState(LoginTestCase):
                 "higlass_uuid": "asdf1234",
                 "id": 1,
                 "user_id": 1,
-                "processing_state": "uploading"
+                "processing_state": "uploading",
             }
         ]
         self.assertEqual(response.json, expected)
@@ -129,7 +132,7 @@ class TestSetProcessingState(LoginTestCase):
         # set processing state
         dataset = Dataset.query.get(1)
         dataset.set_processing_state(db)
-         # get datasets
+        # get datasets
         response = self.client.get(
             "/api/datasets/", headers=token_headers, content_type="application/json",
         )
@@ -143,7 +146,7 @@ class TestSetProcessingState(LoginTestCase):
                 "higlass_uuid": "asdf1234",
                 "id": 1,
                 "user_id": 1,
-                "processing_state": "uploading"
+                "processing_state": "uploading",
             }
         ]
         self.assertEqual(response.json, expected)
