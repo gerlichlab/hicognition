@@ -16,7 +16,7 @@
                   id="coolerID"
                   v-model="form.coolerID"
                   availableCoolers
-                  :disabled="sending"
+                  :disabled="!coolersAvailable"
                   required>
                     <md-option
                     v-for="item in availableCoolers"
@@ -35,7 +35,6 @@
                   name="binsizes"
                   id="binsizes"
                   v-model="form.binsizes"
-                  :disabled="sending"
                   required
                   multiple>
                     <md-option
@@ -61,7 +60,7 @@
                   id="bedfileIDs"
                   v-model="form.bedfileIDs"
                   md-dense
-                  :disabled="sending"
+                  :disabled="!bedFilesAvailable"
                   required
                   multiple>
                     <md-option
@@ -75,23 +74,23 @@
             </div>
             <!-- windwosize -->
             <div class="md-layout-item md-small-size-100">
-              <md-field :class="getValidationClass('pileupRegionIDs')">
-                <label for="pileupRegionIDs">Windowsizes</label>
+              <md-field :class="getValidationClass('windowsizes')">
+                <label for="windowsizes">Windowsizes</label>
                 <md-select
-                  id="pileupRegionIDs"
-                  name="pileupRegionIDs"
-                  v-model="form.pileupRegionIDs"
+                  id="windowsizes"
+                  name="windowsizes"
+                  v-model="form.windowsizes"
                   md-dense
-                  :disabled="sending"
+                  :disabled="!pileupRegionsAvailable"
                   required
                   multiple>
                     <md-option
                     v-for="item in availablePileupRegions"
-                    :value="item.id"
-                    :key="item.id"
+                    :value="item.windowsize"
+                    :key="item.windowsize"
                     >{{ item.windowsize }}</md-option>
                 </md-select>
-                <span class="md-error" v-if="!$v.form.pileupRegionIDs.required"
+                <span class="md-error" v-if="!$v.form.windowsizes.required"
                   >A windowsize is required!</span
                 >
               </md-field>
@@ -102,6 +101,12 @@
         <md-progress-bar md-mode="indeterminate" v-if="sending" />
         <!-- Buttons for submission and closing -->
         <md-card-actions>
+        <md-button
+            class="md-dense md-raised md-primary md-icon-button md-alignment-horizontal-left"
+            @click="fetchDatasets"
+            >
+          <md-icon>cached</md-icon>
+        </md-button>
           <md-button type="submit" class="md-primary" :disabled="sending"
             >Submit dataset</md-button
           >
@@ -127,53 +132,36 @@ import {
   maxLength,
 } from "vuelidate/lib/validators";
 import { apiMixin } from "../mixins";
+import { group_pileupregions_on_windowsize } from "../functions"
 
 export default {
   name: "proprocessDatasetForm",
   mixins: [validationMixin, apiMixin],
   data: () => ({
-      availableCoolers: [
-          {
-            "dataset_name": "test1",
-            "id": 0
-          },
-          {
-            "dataset_name": "test2",
-            "id": 1
-          }
-      ],
+      availableCoolers: [],
       availableBinsizes: [10000, 20000, 50000],
-      availableBedFiles: [
-          {
-            "dataset_name": "bedtest1",
-            "id": 0
-          },
-          {
-            "dataset_name": "bedtest2",
-            "id": 1
-          }
-      ],
-      availablePileupRegions: [
-          {
-            "name": "pileuptest1",
-            "id": 0,
-            "windowsize": 200000
-          },
-          {
-            "name": "pileuptest2",
-            "id": 1,
-            "windowsize": 400000
-          }
-      ],
+      availableBedFiles: [],
+      availablePileupRegions: [],
     form: {
       coolerID: null,
       binsizes: null,
       bedfileIDs: null,
-      pileupRegionIDs: null,
+      windowsizes: null,
     },
     datasetSaved: false,
     sending: false,
   }),
+  computed: {
+      coolersAvailable: function () {
+          return this.availableCoolers.length != 0;
+      },
+      bedFilesAvailable: function () {
+          return this.availableBedFiles.length != 0;
+      },
+      pileupRegionsAvailable: function () {
+          return Object.keys(this.availablePileupRegions).length != 0;
+      }
+  },
   validations: {
     // validators for the form
     form: {
@@ -186,12 +174,37 @@ export default {
       bedfileIDs: {
         required,
       },
-      pileupRegionIDs: {
+      windowsizes: {
         required
       },
     },
   },
   methods: {
+    fetchDatasets: function () {
+      this.fetchData("datasets/").then((response) => {
+        // success, store datasets
+        this.$store.commit("setDatasets", response.data);
+        // update datasets; Only use completed datasets; completed is 1 if completed, 0 if in progress and -1 if failed
+        this.availableCoolers = response.data.filter(
+          (element) => element.filetype == "cooler"
+        );
+        this.availableBedFiles = response.data.filter(
+          (element) => element.filetype == "bedfile"
+        );
+      });
+    },
+    fetchPileupregions: async function (){
+        var pileupRegions = [];
+        var tempPileupRegions = {}
+        for (var regionID of this.form.bedfileIDs){
+            tempPileupRegions = await this.fetchPileupregion(regionID);
+            pileupRegions.push(...tempPileupRegions.data)
+        }
+        this.availablePileupRegions = group_pileupregions_on_windowsize(pileupRegions);
+    },
+    fetchPileupregion: function (regionID) {
+      return this.fetchData(`datasets/${regionID}/pileupregions/`)
+    },
     getValidationClass(fieldName) {
       // matrial validation class for form field;
       const field = this.$v.form[fieldName];
@@ -208,7 +221,7 @@ export default {
       this.form.binsizes = null;
       this.form.bedfileIDs = null;
       this.form.filetype = null;
-      this.form.pileupregionIDs = null;
+      this.form.windowsizes = null;
     },
     saveDataset() {
       this.sending = true; // show progress bar
@@ -233,6 +246,14 @@ export default {
       }
     },
   },
+  watch: {
+      'form.bedfileIDs': function() {
+              this.fetchPileupregions()
+          }
+      },
+  created: function () {
+    this.fetchDatasets();
+  }
 };
 </script>
 

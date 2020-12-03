@@ -142,6 +142,26 @@ export function group_iccf_obs_exp(data) {
   return output;
 }
 
+
+export function group_pileupregions_on_windowsize(pileupRegions){
+  /*
+    data is array pileupregion object [{"id": 1, "windowsize": 20000, ...}]
+    transform data from [{"id", "windowsize"}, ...] to {"windwosize: {"windowsize": 200000, id: [id1, id2,....]}, ...]
+  */
+  var output = {}
+  for (var pileupRegion of pileupRegions){
+      var windowsize = pileupRegion.windowsize;
+      if (windowsize in output){
+          output[windowsize]["id"].push(pileupRegion.id);
+      }
+      else{
+          output[windowsize] = {"windowsize": windowsize, "id": []};
+          output[windowsize]["id"].push(pileupRegion.id);
+      }
+  }
+  return output;
+}
+
 // Helpers for datasetTable
 
 export function toLower(text) {
