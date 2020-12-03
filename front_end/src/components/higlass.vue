@@ -208,10 +208,10 @@ export default {
         this.$store.commit("setDatasets", response.data);
         // update datasets; Only use completed datasets; completed is 1 if completed, 0 if in progress and -1 if failed
         this.coolers = response.data.filter(
-          (element) => element.filetype == "cooler" && (element.completed == 1)
+          (element) => element.filetype == "cooler" && (element.processing_state == "finished")
         );
         this.bedfiles = response.data.filter(
-          (element) => element.filetype == "bedfile" && (element.completed == 1)
+          (element) => element.filetype == "bedfile" && (element.processing_state == "finished")
         );
       });
     },

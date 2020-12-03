@@ -28,10 +28,11 @@
         <md-table-cell md-label="Filetype" md-sort-by="filetype">{{ item.filetype }}</md-table-cell>
         <md-table-cell md-label="HiGlass ID" md-sort-by="higlass_uuid">{{ item.higlass_uuid }}</md-table-cell>
         <md-table-cell md-label="Progress" md-sort-by="completed">
-          <!-- item.completed is 1 if completed, 0 if in progress and -1 if failed -->
-          <md-icon  v-if="item.completed == 1">done</md-icon>
-          <md-progress-spinner :md-diameter="30" md-mode="indeterminate" v-else-if="item.completed == 0"></md-progress-spinner>
-          <md-icon v-if="item.completed == -1">error</md-icon>
+          <md-icon  v-if="item.processing_state == 'finished'">done</md-icon>
+          <md-progress-spinner :md-diameter="30" md-mode="indeterminate" v-else-if="item.processing_state == 'processing'"></md-progress-spinner>
+          <md-icon v-else-if="item.processing_state == 'failed'">error</md-icon>
+          <md-icon v-else-if="item.processing_state == 'uploaded'">cloud_done</md-icon>
+          <md-icon v-else-if="item.processing_state == 'uploading'">cloud_upload</md-icon>
         </md-table-cell>
       </md-table-row>
     </md-table>

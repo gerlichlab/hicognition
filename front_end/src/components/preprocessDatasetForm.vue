@@ -108,7 +108,7 @@
           <md-icon>cached</md-icon>
         </md-button>
           <md-button type="submit" class="md-primary" :disabled="sending"
-            >Submit dataset</md-button
+            >Submit job</md-button
           >
           <md-button class="md-primary" @click="$emit('close-dialog')"
             >Close</md-button
@@ -185,12 +185,12 @@ export default {
       this.fetchData("datasets/").then((response) => {
         // success, store datasets
         this.$store.commit("setDatasets", response.data);
-        // update datasets; Also use datasets that are not completed
+        // update datasets
         this.availableCoolers = response.data.filter(
-          (element) => element.filetype == "cooler"
+          (element) => element.filetype == "cooler" && element.processing_state != "uploading"
         );
         this.availableBedFiles = response.data.filter(
-          (element) => element.filetype == "bedfile"
+          (element) => element.filetype == "bedfile" && element.processing_state == "finished"
         );
       });
     },
