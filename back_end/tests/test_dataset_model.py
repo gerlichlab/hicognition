@@ -42,23 +42,7 @@ class TestSetProcessingState(LoginTestCase):
         dataset = Dataset.query.get(1)
         dataset.set_processing_state(db)
         # get datasets
-        response = self.client.get(
-            "/api/datasets/", headers=token_headers, content_type="application/json",
-        )
-        # check response
-        self.assertEqual(response.status_code, 200)
-        expected = [
-            {
-                "dataset_name": "test1",
-                "file_path": "/test/path/1",
-                "filetype": "cooler",
-                "higlass_uuid": "asdf1234",
-                "id": 1,
-                "user_id": 1,
-                "processing_state": "processing",
-            }
-        ]
-        self.assertEqual(response.json, expected)
+        self.assertEqual(dataset.processing_state, "processing")
 
     def test_finished_when_no_task(self):
         # add new user
@@ -70,24 +54,7 @@ class TestSetProcessingState(LoginTestCase):
         # set processing state
         dataset = Dataset.query.get(1)
         dataset.set_processing_state(db)
-        # get datasets
-        response = self.client.get(
-            "/api/datasets/", headers=token_headers, content_type="application/json",
-        )
-        # check response
-        self.assertEqual(response.status_code, 200)
-        expected = [
-            {
-                "dataset_name": "test1",
-                "file_path": "/test/path/1",
-                "filetype": "cooler",
-                "higlass_uuid": "asdf1234",
-                "id": 1,
-                "user_id": 1,
-                "processing_state": "finished",
-            }
-        ]
-        self.assertEqual(response.json, expected)
+        self.assertEqual(dataset.processing_state, "finished")
 
     def test_uploaded_no_update_wo_task(self):
         # add new user
@@ -99,24 +66,7 @@ class TestSetProcessingState(LoginTestCase):
         # set processing state
         dataset = Dataset.query.get(1)
         dataset.set_processing_state(db)
-        # get datasets
-        response = self.client.get(
-            "/api/datasets/", headers=token_headers, content_type="application/json",
-        )
-        # check response
-        self.assertEqual(response.status_code, 200)
-        expected = [
-            {
-                "dataset_name": "test1",
-                "file_path": "/test/path/1",
-                "filetype": "cooler",
-                "higlass_uuid": "asdf1234",
-                "id": 1,
-                "user_id": 1,
-                "processing_state": "uploading",
-            }
-        ]
-        self.assertEqual(response.json, expected)
+        self.assertEqual(dataset.processing_state, "uploading")
 
     def test_uploaded_no_update_w_task(self):
         # add new user
@@ -132,21 +82,4 @@ class TestSetProcessingState(LoginTestCase):
         # set processing state
         dataset = Dataset.query.get(1)
         dataset.set_processing_state(db)
-        # get datasets
-        response = self.client.get(
-            "/api/datasets/", headers=token_headers, content_type="application/json",
-        )
-        # check response
-        self.assertEqual(response.status_code, 200)
-        expected = [
-            {
-                "dataset_name": "test1",
-                "file_path": "/test/path/1",
-                "filetype": "cooler",
-                "higlass_uuid": "asdf1234",
-                "id": 1,
-                "user_id": 1,
-                "processing_state": "uploading",
-            }
-        ]
-        self.assertEqual(response.json, expected)
+        self.assertEqual(dataset.processing_state, "uploading")
