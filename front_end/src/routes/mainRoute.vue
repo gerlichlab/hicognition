@@ -14,6 +14,10 @@
           showAddDatasetDialog = true;
           menuVisible = false;
         "
+        @preprocess-dataset-click="
+          showPreprocessDatasetDialog = true;
+          menuVisible = false;
+        "
       ></drawer>
     </md-app-drawer>
 
@@ -23,6 +27,10 @@
         :dialog="showAddDatasetDialog"
         @close-dialog="showAddDatasetDialog = false"
       ></addDatasetDialog>
+      <preprocessDatasetDialog
+        :dialog="showPreprocessDatasetDialog"
+        @close-dialog="showPreprocessDatasetDialog = false"
+      ></preprocessDatasetDialog>
       <datasetDialog
         :dialog="showMyDatasetDialog"
         @close-dialog="showMyDatasetDialog = false"
@@ -36,6 +44,7 @@ import toolbar from "../components/toolbar";
 import drawer from "../components/drawer";
 import datasetDialog from "../components/myDatasetDialog";
 import addDatasetDialog from "../components/addDatasetDialog";
+import preprocessDatasetDialog from "../components/preProcessDatasetDialog"
 
 export default {
   name: "mainRoute",
@@ -44,11 +53,13 @@ export default {
     drawer,
     datasetDialog,
     addDatasetDialog,
+    preprocessDatasetDialog
   },
   data: () => ({
     menuVisible: false,
     showMyDatasetDialog: false,
     showAddDatasetDialog: false,
+    showPreprocessDatasetDialog: false
   })
 };
 </script>

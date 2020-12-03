@@ -10,6 +10,14 @@
       </md-list-item>
 
       <md-list-item>
+        <md-button class="md-icon-button" @click="$emit('preprocess-dataset-click')">
+          <md-icon>launch</md-icon>
+        </md-button>
+        <span class="md-list-item-text">Preprocess Dataset</span>
+      </md-list-item>
+
+
+      <md-list-item>
         <md-button class="md-icon-button" @click="$emit('mydataset-click')">
           <md-icon>list</md-icon>
         </md-button>
