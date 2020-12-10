@@ -130,7 +130,7 @@ export default {
       if (value) {
         var { cooler_id, bedpe_id } = value; // value = {cooler_id: x, bedpe_id: y}
         // fetch pileup datasets and display binsizes
-        this.fetchData(`pileups/${cooler_id}/${bedpe_id}/`).then((response) => {
+        this.fetchData(`pileups/?cooler_id=${cooler_id}&pileupregion_id=${bedpe_id}`).then((response) => {
           this.$store.commit("predefined/setPileups", response.data);
           // update binsizes to show and group iccf/obsExp data under one binsize
           this.pileups = group_iccf_obs_exp(response.data);

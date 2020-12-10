@@ -1,7 +1,7 @@
 """GET API endpoints for hicognition"""
 import pandas as pd
 from flask.json import jsonify
-from flask import g
+from flask import g, request
 from .helpers import update_processing_state, is_access_to_dataset_denied
 from . import api
 from .. import db
@@ -92,12 +92,21 @@ def get_pileupregions():
     return jsonify([dfile.to_json() for dfile in all_files])
 
 
-@api.route("/pileups/<cooler_id>/<pileupregion_id>/", methods=["GET"])
+@api.route("/pileups/", methods=["GET"])
 @auth.login_required
-def get_pileups(cooler_id, pileupregion_id):
+def get_pileups():
     """Gets all available pileups from a given cooler file
     for the specified pileupregion_id. Only returns pileup object if
     user owns the cooler dataset and pileupregion_id"""
+    # unpack query string
+    cooler_id = request.args.get("cooler_id")
+    pileupregion_id = request.args.get("pileupregion_id")
+    if cooler_id is None or pileupregion_id is None:
+        response = jsonify(
+            {"error": f"Cooler dataset or pileupregion were not specified!"}
+        )
+        response.status_code = 400
+        return response
     # Check whether datasets exist
     cooler_ds = Dataset.query.get(cooler_id)
     pileupregion_ds = Pileupregion.query.get(pileupregion_id)

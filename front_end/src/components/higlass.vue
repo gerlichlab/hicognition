@@ -73,7 +73,7 @@
           class="md-dense md-raised button-margin"
           md-menu-trigger
           @click="handleDatasetSubmit"
-          :disabled="blockWindowsize"
+          :disabled="blockSubmit"
           >Submit</md-button
         >
       </div>
@@ -125,6 +125,12 @@ export default {
     };
   },
   computed: {
+    blockSubmit: function () {
+      if (this.selectedCoolerID && this.selectedRegionID && this.selectedBedPeID){
+        return false
+      }
+      return true
+    },
     selectedCooler: function () {
       if (!this.selectedCoolerID) {
         return null;
