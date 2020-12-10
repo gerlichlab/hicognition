@@ -1,6 +1,6 @@
 <template>
   <div>
-    <md-table v-model="searched" md-sort="dataset_name" md-sort-order="asc" md-fixed-header @md-selected="onSelect">
+    <md-table v-model="datasets" md-sort="dataset_name" md-sort-order="asc" md-fixed-header @md-selected="onSelect">
 
       <!-- Table toolbar has the update button and the search field -->
       <md-table-toolbar>
@@ -9,12 +9,6 @@
             <md-button class="md-dense md-raised button-margin md-primary md-icon-button" @click="fetchDatasets">
               <md-icon>cached</md-icon>
             </md-button>
-        </div>
-        <!-- Search field -->
-        <div class="md-toolbar-section-end">
-          <md-field md-clearable class="md-toolbar-section-end">
-            <md-input placeholder="Search by name..." v-model="search" @input="searchOnTable" />
-          </md-field>
         </div>
       </md-table-toolbar>
 
@@ -57,9 +51,7 @@ export default {
     name: 'datasetTable',
     mixins: [apiMixin],
     data: () => ({
-      search: null,
-      searched: [],
-      selected: null
+      selected: []
     }),
     methods: {
       getAlternateLabel (count) {
@@ -74,16 +66,11 @@ export default {
       onSelect (item) {
         this.selected = item
       },
-      searchOnTable () {
-        this.searched = searchByName(this.datasets, this.search);
-      },
       fetchDatasets() {
         this.fetchData("datasets/")
             .then(response => {
             // success, store datasets
             this.$store.commit("setDatasets", response.data);
-            // update datasets
-            this.datasets = response.data;
             });
       }
     },
@@ -94,17 +81,9 @@ export default {
         }
         return false;
       },
-      datasets: {
-        get: function() {
+      datasets: function() {
           return this.$store.state.datasets; // initial getting from store
-        },
-        set: function(new_value) {
-          this.searched = new_value; // update the sorted list with new values
-        }
       }
-    },
-    created () {
-        this.searched = this.datasets;
     }
   }
 </script>
@@ -113,8 +92,11 @@ export default {
   .md-field {
     max-width: 200px;
   }
-
   .md-table {
-    max-width: 60vw;
+    max-width: 90vw;
+    min-width: 40vw;
+  }
+  .md-table-cell {
+    text-align: center;
   }
 </style>
