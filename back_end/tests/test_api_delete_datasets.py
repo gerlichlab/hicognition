@@ -28,10 +28,10 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         dataset2 = Dataset(id=2, file_path=file_path_2, filetype="cooler", user_id=2,)
         # create owned data_set bed
         file_path_3 = self.create_empty_file_in_tempdir("test1.bed")
-        dataset3 = Dataset(id=3, file_path=file_path_3, filetype="bed", user_id=1,)
+        dataset3 = Dataset(id=3, file_path=file_path_3, filetype="bedfile", user_id=1,)
         # create not owned data_set bed
         file_path_4 = self.create_empty_file_in_tempdir("test2.bed")
-        dataset4 = Dataset(id=4, file_path=file_path_4, filetype="cooler", user_id=2,)
+        dataset4 = Dataset(id=4, file_path=file_path_4, filetype="bedfile", user_id=2,)
         # create pileupregion for owned data_set
         file_path_pr_1 = self.create_empty_file_in_tempdir("test1.bedpe")
         pileup_region_1 = Pileupregion(id=1, dataset_id=3, file_path=file_path_pr_1)
@@ -107,3 +107,70 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
+
+    def test_delete_owned_cooler_dataset(self):
+        """test delete owned dataset."""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        # add datasets
+        self.add_test_datasets()
+        # delete data set
+        response = self.client.delete(
+            "/api/datasets/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        # check database state
+        dataset_ids = set(entry.id for entry in Dataset.query.all())
+        self.assertEqual(dataset_ids, {2, 3, 4})
+        pileupregion_ids = set(entry.id for entry in Pileupregion.query.all())
+        self.assertEqual(pileupregion_ids, {1, 2})
+        pileup_ids = set(entry.id for entry in Pileup.query.all())
+        self.assertEqual(pileup_ids, {2})
+        # check temp_idr state
+        files_tempdir = set(os.listdir(TempDirTestCase.TEMP_PATH))
+        expected = {
+            "test2.mcool",
+            "test1.bed",
+            "test2.bed",
+            "test1.bedpe",
+            "test2.bedpe",
+            "test2.csv"
+        }
+        self.assertEqual(files_tempdir, expected)
+
+    def test_delete_owned_bed_dataset(self):
+        """test delete owned dataset."""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        # add datasets
+        self.add_test_datasets()
+        # delete data set
+        response = self.client.delete(
+            "/api/datasets/3/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        # check database state
+        dataset_ids = set(entry.id for entry in Dataset.query.all())
+        self.assertEqual(dataset_ids, {1, 2, 4})
+        pileupregion_ids = set(entry.id for entry in Pileupregion.query.all())
+        self.assertEqual(pileupregion_ids, {2})
+        pileup_ids = set(entry.id for entry in Pileup.query.all())
+        self.assertEqual(pileup_ids, {2})
+        # check temp_idr state
+        files_tempdir = set(os.listdir(TempDirTestCase.TEMP_PATH))
+        expected = {
+            "test1.mcool",
+            "test2.mcool",
+            "test2.bed",
+            "test2.bedpe",
+            "test2.csv"
+        }
+        self.assertEqual(files_tempdir, expected)

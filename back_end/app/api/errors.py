@@ -30,6 +30,7 @@ def not_found(message):
     response.status_code = 404
     return response
 
+
 def invalid(message):
     response = jsonify({"error": "invalid request", "message": message})
     response.status_code = 400
