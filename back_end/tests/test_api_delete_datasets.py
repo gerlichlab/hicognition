@@ -28,13 +28,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         dataset2 = Dataset(id=2, file_path=file_path_2, filetype="cooler", user_id=2,)
         # create owned data_set bed
         file_path_3 = self.create_empty_file_in_tempdir("test1.bed")
-        dataset3 = Dataset(
-            id=3,
-            dataset_name="test3",
-            file_path=file_path_3,
-            filetype="bed",
-            user_id=1,
-        )
+        dataset3 = Dataset(id=3, file_path=file_path_3, filetype="bed", user_id=1,)
         # create not owned data_set bed
         file_path_4 = self.create_empty_file_in_tempdir("test2.bed")
         dataset4 = Dataset(id=4, file_path=file_path_4, filetype="cooler", user_id=2,)
@@ -72,5 +66,12 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
         # protected route
-        response = self.client.delete("/api/datasets/", content_type="application/json")
+        response = self.client.delete(
+            "/api/datasets/1/", content_type="application/json"
+        )
         self.assertEqual(response.status_code, 401)
+
+    def test_delete_wo_args(self):
+        """Should return 405 since delete is not allowed for /api/datasets"""
+        response = self.client.delete("/api/datasets/", content_type="application/json")
+        self.assertEqual(response.status_code, 405)
