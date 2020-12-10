@@ -42,7 +42,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # check whether dataset has been added to database
         self.assertEqual(len(Dataset.query.all()), 1)
         dataset = Dataset.query.first()
-        expected = [1, "test", "cooler", 1, "./tmp_test/test.mcool"]
+        expected = [1, "test", "cooler", 1, TempDirTestCase.TEMP_PATH + "test.mcool"]
         actual = [
             dataset.id,
             dataset.dataset_name,
@@ -80,7 +80,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # check whether dataset has been added to database
         self.assertEqual(len(Dataset.query.all()), 1)
         dataset = Dataset.query.first()
-        expected = [1, "test", "bedfile", 1, "./tmp_test/test.bed"]
+        expected = [1, "test", "bedfile", 1, TempDirTestCase.TEMP_PATH + "test.bed"]
         actual = [
             dataset.id,
             dataset.dataset_name,

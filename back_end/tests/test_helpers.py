@@ -17,16 +17,17 @@ class TempDirTestCase(unittest.TestCase):
     self.tempdir. Removes the directory and all content after
     all tests have been run."""
 
+    TEMP_PATH = "./tmp_test/"
+
     @classmethod
     def setUpClass(cls):
         """make test directory."""
-        os.mkdir("./tmp_test")
-        cls.tempdir = "./tmp_test"
+        os.mkdir(cls.TEMP_PATH)
 
     @classmethod
     def tearDownClass(cls):
         """remove test directory"""
-        shutil.rmtree("./tmp_test")
+        shutil.rmtree(cls.TEMP_PATH)
 
 
 class LoginTestCase(unittest.TestCase):

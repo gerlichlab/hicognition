@@ -532,7 +532,7 @@ class TestGetPileupData(LoginTestCase, TempDirTestCase):
                 "value": [1.66, 2.2, 3.8, 4.5],
             }
         )
-        data_path = os.path.join(self.tempdir, "test.csv")
+        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.csv")
         test_data.to_csv(data_path, index=False)
         # add data
         dataset1 = Dataset(

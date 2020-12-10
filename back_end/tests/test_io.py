@@ -18,7 +18,7 @@ class TestConvertBedToBedPE(TempDirTestCase):
         has a bedfile with a single position column."""
         io_helpers.convert_bed_to_bedpe(
             "tests/testfiles/test_small.bed",
-            os.path.join(self.tempdir, "test_small_result.bedpe"),
+            os.path.join(TempDirTestCase.TEMP_PATH, "test_small_result.bedpe"),
             halfwindowsize=300000,
         )
         # load expected data
@@ -27,7 +27,7 @@ class TestConvertBedToBedPE(TempDirTestCase):
         )
         # load result
         result = pd.read_csv(
-            os.path.join(self.tempdir, "test_small_result.bedpe"), sep="\t", header=None
+            os.path.join(TempDirTestCase.TEMP_PATH, "test_small_result.bedpe"), sep="\t", header=None
         )
         # compare
         assert_frame_equal(expected, result)
@@ -38,14 +38,14 @@ class TestConvertBedToBedPE(TempDirTestCase):
         has a bedfile with a two position columns."""
         io_helpers.convert_bed_to_bedpe(
             "tests/testfiles/test2_realData_twocol.bed",
-            os.path.join(self.tempdir, "test2_realData_twocol.bedpe"),
+            os.path.join(TempDirTestCase.TEMP_PATH, "test2_realData_twocol.bedpe"),
             halfwindowsize=300000,
         )
         # load expected data
         expected = pd.read_csv("tests/testfiles/test2_realData_twocol.bedpe", sep="\t")
         # load result
         result = pd.read_csv(
-            os.path.join(self.tempdir, "test2_realData_twocol.bedpe"), sep="\t"
+            os.path.join(TempDirTestCase.TEMP_PATH, "test2_realData_twocol.bedpe"), sep="\t"
         )
         # compare
         assert_frame_equal(expected, result)
@@ -60,7 +60,7 @@ class TestSortBed(TempDirTestCase):
         chromosomes that are named chr${int}"""
         io_helpers.sort_bed(
             "tests/testfiles/test_small.bed",
-            os.path.join(self.tempdir, "test_small_sorted_result.bed"),
+            os.path.join(TempDirTestCase.TEMP_PATH, "test_small_sorted_result.bed"),
             "data/hg19.chrom.sizes",
         )
         # load expected data
@@ -69,7 +69,7 @@ class TestSortBed(TempDirTestCase):
         )
         # load result
         result = pd.read_csv(
-            os.path.join(self.tempdir, "test_small_sorted_result.bed"),
+            os.path.join(TempDirTestCase.TEMP_PATH, "test_small_sorted_result.bed"),
             sep="\t",
             header=None,
         )
@@ -81,7 +81,7 @@ class TestSortBed(TempDirTestCase):
         that comply to chr${int} as well as chrX and chrY"""
         io_helpers.sort_bed(
             "tests/testfiles/test_small_weird_chromos.bed",
-            os.path.join(self.tempdir, "test_small_sorted_weird_chromos_result.bed"),
+            os.path.join(TempDirTestCase.TEMP_PATH, "test_small_sorted_weird_chromos_result.bed"),
             "data/hg19.chrom.sizes",
         )
         # load expected data
@@ -90,7 +90,7 @@ class TestSortBed(TempDirTestCase):
         )
         # load result
         result = pd.read_csv(
-            os.path.join(self.tempdir, "test_small_sorted_weird_chromos_result.bed"),
+            os.path.join(TempDirTestCase.TEMP_PATH, "test_small_sorted_weird_chromos_result.bed"),
             sep="\t",
             header=None,
         )
@@ -103,7 +103,7 @@ class TestSortBed(TempDirTestCase):
         that comply to chr${int} as well as chrX and chrY"""
         io_helpers.sort_bed(
             "tests/testfiles/test_small_bad_chromos.bed",
-            os.path.join(self.tempdir, "test_small_sorted_bad_chromos_result.bed"),
+            os.path.join(TempDirTestCase.TEMP_PATH, "test_small_sorted_bad_chromos_result.bed"),
             "data/hg19.chrom.sizes",
         )
         # load expected data
@@ -112,7 +112,7 @@ class TestSortBed(TempDirTestCase):
         )
         # load result
         result = pd.read_csv(
-            os.path.join(self.tempdir, "test_small_sorted_bad_chromos_result.bed"),
+            os.path.join(TempDirTestCase.TEMP_PATH, "test_small_sorted_bad_chromos_result.bed"),
             sep="\t",
             header=None,
         )
@@ -127,7 +127,7 @@ class TestSortBed(TempDirTestCase):
         """tests sorting of part of a real dataset with positions specified in twocolumns"""
         io_helpers.sort_bed(
             "tests/testfiles/test2_realData_twocol.bed",
-            os.path.join(self.tempdir, "test2_realData_twocol_sorted_result.bed"),
+            os.path.join(TempDirTestCase.TEMP_PATH, "test2_realData_twocol_sorted_result.bed"),
             "data/hg19.chrom.sizes",
         )
         # load expected data
@@ -136,7 +136,7 @@ class TestSortBed(TempDirTestCase):
         )
         # load result
         result = pd.read_csv(
-            os.path.join(self.tempdir, "test2_realData_twocol_sorted_result.bed"),
+            os.path.join(TempDirTestCase.TEMP_PATH, "test2_realData_twocol_sorted_result.bed"),
             sep="\t",
             header=None,
         )
