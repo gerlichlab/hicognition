@@ -71,7 +71,39 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_delete_wo_args(self):
+    def test_delete_wo_dataset_id(self):
         """Should return 405 since delete is not allowed for /api/datasets"""
         response = self.client.delete("/api/datasets/", content_type="application/json")
         self.assertEqual(response.status_code, 405)
+
+    def test_delete_dataset_does_not_exist(self):
+        """test deletion of data set that does not exist."""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        # add datasets
+        self.add_test_datasets()
+        # try deletion of dataset that is not owned, current user is id 1 and dataset id2 is owned
+        # by user id 2
+        response = self.client.delete(
+            "/api/datasets/5/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_dataset_wo_permission(self):
+        """Should return 403 since dataset is not owned."""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        # add datasets
+        self.add_test_datasets()
+        # try deletion of dataset that is not owned, current user is id 1 and dataset id2 is owned
+        # by user id 2
+        response = self.client.delete(
+            "/api/datasets/2/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 401)
