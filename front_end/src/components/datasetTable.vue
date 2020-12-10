@@ -16,8 +16,17 @@
         <div class="md-toolbar-section-start">{{ getAlternateLabel(count) }}</div>
 
         <div class="md-toolbar-section-end">
-          <md-button class="md-icon-button" @click="handleDelete">
+          <md-button class="md-icon-button" @click="deleteClicked" v-if="!clickedDelete">
             <md-icon>delete</md-icon>
+          </md-button>
+          <md-button class="md-raised" v-if="clickedDelete">
+              Are you sure?
+          </md-button>
+          <md-button class="md-raised md-accent" v-if="clickedDelete" @click="handleDelete">
+              Yes
+          </md-button>
+          <md-button class="md-raised md-primary" v-if="clickedDelete" @click="clickedDelete = false">
+              No
           </md-button>
         </div>
       </md-table-toolbar>
@@ -27,7 +36,7 @@
         :md-description="`No datasets found for this query. Try a different search term or create a new dataset.`">
       </md-table-empty-state>
       <!-- Definition of how table should look -->
-      <md-table-row slot="md-table-row" slot-scope="{ item }" md-selectable="multiple" class="md-primary" md-auto-select>
+      <md-table-row slot="md-table-row" slot-scope="{ item }" md-selectable="multiple" class="md-primary" md-auto-select :md-disabled="anyProcessing">
         <md-table-cell md-label="Name" md-sort-by="dataset_name">{{ item.dataset_name }}</md-table-cell>
         <md-table-cell md-label="Filetype" md-sort-by="filetype">{{ item.filetype }}</md-table-cell>
         <md-table-cell md-label="HiGlass ID" md-sort-by="higlass_uuid">{{ item.higlass_uuid }}</md-table-cell>
@@ -56,10 +65,15 @@ export default {
     data: () => ({
       selected: [],
       datasets: [],
+      clickedDelete: false,
       datasetsDeleted: false
     }),
     methods: {
+      deleteClicked: function () {
+        this.clickedDelete = true;
+      },
       handleDelete: async function() {
+        this.clickedDelete = false;
         for (var dataset of this.selected){
           var result = await this.deleteData(`datasets/${dataset.id}/`)
         }
@@ -89,6 +103,14 @@ export default {
       }
     },
     computed: {
+      anyProcessing: function () {
+        for (var dataset of this.datasets){
+          if (dataset.processing_state == "processing"){
+            return true;
+          }
+        }
+        return false;
+      },
       showDelete: function () {
         if (this.selected){
           return true;

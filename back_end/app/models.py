@@ -83,7 +83,7 @@ class Dataset(db.Model):
     def set_processing_state(self, db):
         """sets the current processing state of the dataset instance.
         Launching task sets processing state, this sets finished/failed state"""
-        if (self.processing_state != "processing"):
+        if (self.processing_state not in ["processing", "finished", "failed"]):
             return
         # check if there are any unfinished tasks
         tasks = self.tasks.filter(Task.complete == False).all()
@@ -191,12 +191,13 @@ def load_user(id):
     """Helper function to load user."""
     return User.query.get(int(id))
 
+
 def all_tasks_finished(tasks):
     for task in tasks:
         job = task.get_rq_job()
         if job is None:
             # if job is not in queue anymore, it finished succesfully
-            return True
+            continue
         if not job.is_finished:
             return False
     return True
