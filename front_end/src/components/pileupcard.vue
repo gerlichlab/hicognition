@@ -115,11 +115,11 @@ export default {
       var iccf_id = this.pileups[this.selectedBinsize]["ICCF"];
       var obs_exp_id = this.pileups[this.selectedBinsize]["Obs/Exp"];
       // get pileup iccf; update pileup data upon success
-      this.fetchData(`pileups/data/${iccf_id}/`).then((response) => {
+      this.fetchData(`pileups/${iccf_id}/`).then((response) => {
         this.pileupDataICCF = JSON.parse(response.data);
       });
       // get pileup obs/exp; update pileup data upon success
-      this.fetchData(`pileups/data/${obs_exp_id}/`).then((response) => {
+      this.fetchData(`pileups/${obs_exp_id}/`).then((response) => {
         this.pileupDataObsExp = JSON.parse(response.data);
       });
     },

@@ -344,7 +344,7 @@ class TestGetPileupData(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/pileups/data/1/",
+            "/api/pileups/1/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -390,7 +390,7 @@ class TestGetPileupData(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/pileups/data/1/",
+            "/api/pileups/1/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -444,7 +444,7 @@ class TestGetPileupData(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/pileups/data/1/",
+            "/api/pileups/1/",
             headers=token_headers,
             content_type="application/json",
         )
