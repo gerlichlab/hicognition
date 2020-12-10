@@ -106,4 +106,4 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             headers=token_headers,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 403)

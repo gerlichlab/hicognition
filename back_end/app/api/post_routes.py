@@ -9,6 +9,7 @@ from .. import db
 from ..models import Dataset
 from .authentication import auth
 from .helpers import is_access_to_dataset_denied
+from .errors import forbidden, invalid, not_found
 
 
 @api.route("/datasets/", methods=["POST"])
@@ -33,9 +34,7 @@ def add_dataset():
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     fileObject.save(file_path)
     if data["filetype"] not in ["cooler", "bedfile"]:
-        response = jsonify({"error": "datatype not understood"})
-        response.status_code = 403
-        return response
+        return forbidden("datatype not understood")
     # add file_path to database entr
     new_entry.file_path = file_path
     new_entry.processing_state = "uploaded"
@@ -74,9 +73,7 @@ def preprocess_dataset():
     current_user = g.current_user
     # check form
     if is_form_invalid():
-        response = jsonify({"error": f"Form is not valid!"})
-        response.status_code = 400
-        return response
+        return invalid("Form is not valid!")
     # get data from form
     data = request.form
     dataset_id = json.loads(data["dataset_id"])
@@ -84,13 +81,9 @@ def preprocess_dataset():
     pileup_region_ids = json.loads(data["pileup_region_ids"])
     # check whether dataset exists
     if Dataset.query.get(dataset_id) is None:
-        response = jsonify({"error": f"Dataset does not exist!"})
-        response.status_code = 404
-        return response
+        return not_found("Dataset does not exist!")
     if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g.current_user):
-        response = jsonify({"error": f"Cooler dataset is not owned by logged in user!"})
-        response.status_code = 403
-        return response
+        return forbidden(f"Cooler dataset is not owned by logged in user!")
     current_user.launch_task(
         "pipeline_pileup",
         "run pileup pipeline",

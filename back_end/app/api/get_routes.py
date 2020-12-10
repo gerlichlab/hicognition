@@ -7,6 +7,7 @@ from . import api
 from .. import db
 from ..models import Pileupregion, Dataset, Pileup
 from .authentication import auth
+from .errors import forbidden, not_found, invalid
 
 
 @api.route("/test", methods=["GET"])
@@ -48,9 +49,7 @@ def get_datasets(dtype):
         update_processing_state(bed_files, db)
         return jsonify([bfile.to_json() for bfile in bed_files])
     else:
-        response = jsonify({"error": f"option: '{dtype}' not understood"})
-        response.status_code = 404
-        return response
+        return not_found(f"option: '{dtype}' not understood")
 
 
 @api.route("/datasets/<dataset_id>/pileupregions/", methods=["GET"])
@@ -60,16 +59,10 @@ def get_pileupregiones_of_dataset(dataset_id):
     dataset = Dataset.query.get(dataset_id)
     # check whether dataset exists
     if dataset is None:
-        response = jsonify({"error": f"Dataset with id '{dataset_id}' does not exist!"})
-        response.status_code = 404
-        return response
+        return not_found(f"Dataset with id '{dataset_id}' does not exist!")
     # check whether user owns the dataset
     if is_access_to_dataset_denied(dataset, g.current_user):
-        response = jsonify(
-            {"error": f"Dataset with id '{dataset_id}' is not owned by logged in user!"}
-        )
-        response.status_code = 403
-        return response
+        return forbidden(f"Dataset with id '{dataset_id}' is not owned by logged in user!")
     # SQL join to get all pileupregions that come from the specified dataset
     all_files = (
         Pileupregion.query.join(Dataset)
@@ -102,31 +95,17 @@ def get_pileups():
     cooler_id = request.args.get("cooler_id")
     pileupregion_id = request.args.get("pileupregion_id")
     if cooler_id is None or pileupregion_id is None:
-        response = jsonify(
-            {"error": f"Cooler dataset or pileupregion were not specified!"}
-        )
-        response.status_code = 400
-        return response
+        return invalid("Cooler dataset or pileupregion were not specified!")
     # Check whether datasets exist
     cooler_ds = Dataset.query.get(cooler_id)
     pileupregion_ds = Pileupregion.query.get(pileupregion_id)
     if (cooler_ds is None) or (pileupregion_ds is None):
-        response = jsonify(
-            {"error": f"Cooler dataset or pileupregion dataset do not exist!"}
-        )
-        response.status_code = 404
-        return response
+        return not_found("Cooler dataset or pileupregion dataset do not exist!")
     # Check whether datasets are owned
     if is_access_to_dataset_denied(
         cooler_ds, g.current_user
     ) or is_access_to_dataset_denied(pileupregion_ds.source_dataset, g.current_user):
-        response = jsonify(
-            {
-                "error": f"Cooler dataset or pileupregion dataset is not owned by logged in user!"
-            }
-        )
-        response.status_code = 403
-        return response
+        return forbidden("Cooler dataset or pileupregion dataset is not owned by logged in user!")
     # return all pileupregions the are derived from the specified selection of cooler and pileupregion
     all_files = (
         Pileup.query.filter(Pileup.pileupregion_id == pileupregion_id)
@@ -144,9 +123,7 @@ def get_pileup_data(pileup_id):
     the user is owner."""
     # Check for existence
     if Pileup.query.get(pileup_id) is None:
-        response = jsonify({"error": f"Pileup does not exist!"})
-        response.status_code = 404
-        return response
+        return not_found("Pileup does not exist!")
     # Check whether datasets are owned
     pileup = Pileup.query.get(pileup_id)
     cooler_ds = pileup.source_cooler
@@ -154,11 +131,7 @@ def get_pileup_data(pileup_id):
     if is_access_to_dataset_denied(
         cooler_ds, g.current_user
     ) or is_access_to_dataset_denied(bed_ds, g.current_user):
-        response = jsonify(
-            {"error": f"Cooler dataset or bed dataset is not owned by logged in user!"}
-        )
-        response.status_code = 403
-        return response
+        return forbidden("Cooler dataset or bed dataset is not owned by logged in user!")
     # dataset is owned, return the data
     csv_data = pd.read_csv(pileup.file_path)
     json_data = csv_data.to_json()
