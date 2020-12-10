@@ -16,7 +16,7 @@
         <div class="md-toolbar-section-start">{{ getAlternateLabel(count) }}</div>
 
         <div class="md-toolbar-section-end">
-          <md-button class="md-icon-button">
+          <md-button class="md-icon-button" @click="handleDelete">
             <md-icon>delete</md-icon>
           </md-button>
         </div>
@@ -40,6 +40,9 @@
         </md-table-cell>
       </md-table-row>
     </md-table>
+    <md-snackbar :md-active.sync="datasetsDeleted"
+      >Deletion done!</md-snackbar
+    >
   </div>
 </template>
 
@@ -51,9 +54,18 @@ export default {
     name: 'datasetTable',
     mixins: [apiMixin],
     data: () => ({
-      selected: []
+      selected: [],
+      datasets: [],
+      datasetsDeleted: false
     }),
     methods: {
+      handleDelete: async function() {
+        for (var dataset of this.selected){
+          var result = await this.deleteData(`datasets/${dataset.id}/`)
+        }
+        this.datasetsDeleted = true;
+        this.fetchDatasets();
+      },
       getAlternateLabel (count) {
         let plural = ''
 
@@ -71,6 +83,8 @@ export default {
             .then(response => {
             // success, store datasets
             this.$store.commit("setDatasets", response.data);
+            // update displayed datasets
+            this.datasets = response.data;
             });
       }
     },
@@ -80,10 +94,10 @@ export default {
           return true;
         }
         return false;
-      },
-      datasets: function() {
-          return this.$store.state.datasets; // initial getting from store
       }
+    },
+    created: function () {
+      this.datasets = this.$store.state.datasets;
     }
   }
 </script>

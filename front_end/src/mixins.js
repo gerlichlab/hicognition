@@ -65,6 +65,27 @@ export var apiMixin = {
                 // redirect to login upon error
                 this.$router.push("/login");
             });
+        },
+        deleteData: function(url) {
+            /*
+                Will make a delete call to the specified url.
+            */
+            // Check whether token exists
+            var token = this.$store.state.token;
+            if (!token) {
+                // redirect to login page if token does not exist
+                this.$router.push("/login");
+            }
+            // base64 encoding of token
+            var encodedToken = btoa(token + ":");
+            this.$http.delete(process.env.API_URL + url, {
+                headers: {
+                    "Authorization": `Basic ${encodedToken}`
+                }
+            }).catch(error => {
+                // if error is returned, redirect to login page
+                this.$router.push("/login");
+            });
         }
     }
 }

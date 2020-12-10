@@ -28,16 +28,13 @@ def delete_dataset(dataset_id):
         pileups = Pileup.query.filter(Pileup.cooler_id == dataset_id).all()
     # bedfile needs deletion of pileupregions and pileups
     if dataset.filetype == "bedfile":
-        pileup_regions = Pileupregion.query.filter(
-            Pileupregion.dataset_id == dataset_id
-        ).all()
-        pileups = Pileup.query.filter(
-            Pileup.pileupregion_id.in_([entry.id for entry in pileup_regions])
-        ).all()
+        pileup_regions = Pileupregion.query.filter(Pileupregion.dataset_id == dataset_id).all()
+        pileups = Pileup.query.filter(Pileup.pileupregion_id.in_([entry.id for entry in pileup_regions])).all()
     # delete files and remove from database
     deletion_queue = [dataset] + pileup_regions + pileups
     for entry in deletion_queue:
-        os.remove(entry.file_path)
+        if os.path.exists(entry.file_path):
+            os.remove(entry.file_path)
         db.session.delete(entry)
     db.session.commit()
     response = jsonify({"message": "success"})
