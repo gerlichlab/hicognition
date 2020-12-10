@@ -21,6 +21,9 @@ def delete_dataset(dataset_id):
     # check if data set can be accessed
     if is_access_to_dataset_denied(dataset, g.current_user):
         return forbidden(f"Dataset with id {dataset_id} is not owned by user!")
+    # check if data set is processing
+    if dataset.processing_state == "processing":
+        return forbidden(f"Dataset is in processing state!")
     # cooler only needs deletion of derived pileups
     pileup_regions = []
     pileups = []

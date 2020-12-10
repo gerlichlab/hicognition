@@ -194,6 +194,9 @@ def load_user(id):
 def all_tasks_finished(tasks):
     for task in tasks:
         job = task.get_rq_job()
+        if job is None:
+            # if job is not in queue anymore, it finished succesfully
+            return True
         if not job.is_finished:
             return False
     return True

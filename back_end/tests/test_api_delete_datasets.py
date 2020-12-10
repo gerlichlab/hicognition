@@ -174,3 +174,22 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             "test2.csv"
         }
         self.assertEqual(files_tempdir, expected)
+
+    def test_deletion_of_processing_datasets_does_not_work(self):
+        """tests whether deletion of datasets that are processing does not work."""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        # add dataset that is processing
+        file_path_1 = self.create_empty_file_in_tempdir("test1.mcool")
+        dataset1 = Dataset(id=1, file_path=file_path_1, filetype="cooler", user_id=1, processing_state="processing")
+        db.session.add(dataset1)
+        db.session.commit()
+        # delete data set
+        response = self.client.delete(
+            "/api/datasets/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 403)

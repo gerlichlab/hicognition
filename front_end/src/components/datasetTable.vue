@@ -1,6 +1,6 @@
 <template>
   <div>
-    <md-table v-model="datasets" md-sort="dataset_name" md-sort-order="asc" md-fixed-header @md-selected="onSelect">
+    <md-table v-model="datasets" md-sort="dataset_name" md-sort-order="asc" md-card md-fixed-header @md-selected="onSelect">
 
       <!-- Table toolbar has the update button and the search field -->
       <md-table-toolbar>
