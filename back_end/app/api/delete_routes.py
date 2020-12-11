@@ -1,13 +1,14 @@
 """DELETE API endpoints for hicognition"""
 import os
 from flask.json import jsonify
-from flask import g
+from flask import g, current_app
 from .helpers import is_access_to_dataset_denied
 from . import api
 from .. import db
 from ..models import Pileupregion, Dataset, Pileup
 from .authentication import auth
 from .errors import forbidden, not_found
+
 
 
 @api.route("/datasets/<dataset_id>/", methods=["DELETE"])
@@ -38,6 +39,8 @@ def delete_dataset(dataset_id):
     for entry in deletion_queue:
         if os.path.exists(entry.file_path):
             os.remove(entry.file_path)
+        else:
+            current_app.logger.warning(f"Tried removing {entry.file_path}, but file does not exist!")
         db.session.delete(entry)
     db.session.commit()
     response = jsonify({"message": "success"})

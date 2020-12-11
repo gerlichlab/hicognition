@@ -193,3 +193,26 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         )
         # check response
         self.assertEqual(response.status_code, 403)
+
+    @patch("app.api.delete_routes.current_app.logger.warning")
+    def test_deletion_of_non_existent_file_goes_through(self, mock_log):
+        """tests whether deletion of datasets that are processing does not work."""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        dataset1 = Dataset(id=1, file_path="/code/tmp/bad_file_path", filetype="cooler", user_id=1, processing_state="finished")
+        db.session.add(dataset1)
+        db.session.commit()
+        # delete data set
+        response = self.client.delete(
+            "/api/datasets/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check logger has been called
+        mock_log.assert_called_with(
+            f"Tried removing /code/tmp/bad_file_path, but file does not exist!"
+        )
+        # check_dataset entry
+        datasets = Dataset.query.all()
+        self.assertEqual(len(datasets), 0)

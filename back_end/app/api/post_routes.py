@@ -18,6 +18,7 @@ def add_dataset():
     """endpoint to add a new dataset"""
     current_user = g.current_user
     # get data from form
+    
     data = request.form
     fileObject = request.files["file"]
     # add data to Database -> in order to show uploading
