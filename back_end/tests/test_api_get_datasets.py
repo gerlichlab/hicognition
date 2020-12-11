@@ -69,6 +69,8 @@ class TestGetDatasets(LoginTestCase):
         expected = [
             {
                 "dataset_name": "test1",
+                "genotype": "undefined",
+                "description": "undefined",
                 "file_path": "/test/path/1",
                 "filetype": "cooler",
                 "higlass_uuid": "asdf1234",
@@ -78,6 +80,8 @@ class TestGetDatasets(LoginTestCase):
             },
             {
                 "dataset_name": "test2",
+                "genotype": "undefined",
+                "description": "undefined",
                 "file_path": "/test/path/2",
                 "filetype": "cooler",
                 "higlass_uuid": "fdsa4321",
@@ -106,6 +110,8 @@ class TestGetDatasets(LoginTestCase):
             {
                 "dataset_name": "test3",
                 "file_path": "/test/path/3",
+                "genotype": "undefined",
+                "description": "undefined",
                 "filetype": "bedfile",
                 "higlass_uuid": "fdsa8765",
                 "id": 3,
@@ -133,6 +139,8 @@ class TestGetDatasets(LoginTestCase):
             {
                 "dataset_name": "test1",
                 "file_path": "/test/path/1",
+                "genotype": "undefined",
+                "description": "undefined",
                 "filetype": "cooler",
                 "higlass_uuid": "asdf1234",
                 "id": 1,
@@ -142,6 +150,8 @@ class TestGetDatasets(LoginTestCase):
             {
                 "dataset_name": "test2",
                 "file_path": "/test/path/2",
+                "genotype": "undefined",
+                "description": "undefined",
                 "filetype": "cooler",
                 "higlass_uuid": "fdsa4321",
                 "id": 2,
@@ -151,6 +161,8 @@ class TestGetDatasets(LoginTestCase):
             {
                 "dataset_name": "test3",
                 "file_path": "/test/path/3",
+                "genotype": "undefined",
+                "description": "undefined",
                 "filetype": "bedfile",
                 "higlass_uuid": "fdsa8765",
                 "id": 3,
@@ -231,6 +243,8 @@ class TestGetDatasets(LoginTestCase):
             {
                 "dataset_name": "test1",
                 "file_path": "/test/path/1",
+                "genotype": "undefined",
+                "description": "undefined",
                 "filetype": "cooler",
                 "higlass_uuid": "asdf1234",
                 "id": 1,
@@ -240,6 +254,8 @@ class TestGetDatasets(LoginTestCase):
             {
                 "dataset_name": "test3",
                 "file_path": "/test/path/3",
+                "genotype": "undefined",
+                "description": "undefined",
                 "filetype": "bedfile",
                 "higlass_uuid": "fdsa8765",
                 "id": 3,
@@ -310,6 +326,8 @@ class TestProcessingStateIsUpdated(LoginTestCase):
             {
                 "dataset_name": "test1",
                 "file_path": "/test/path/1",
+                "genotype": "undefined",
+                "description": "undefined",
                 "filetype": "cooler",
                 "higlass_uuid": "asdf1234",
                 "id": 1,
@@ -336,6 +354,8 @@ class TestProcessingStateIsUpdated(LoginTestCase):
             {
                 "dataset_name": "test1",
                 "file_path": "/test/path/1",
+                "genotype": "undefined",
+                "description": "undefined",
                 "filetype": "cooler",
                 "higlass_uuid": "asdf1234",
                 "id": 1,
@@ -362,6 +382,8 @@ class TestProcessingStateIsUpdated(LoginTestCase):
             {
                 "dataset_name": "test1",
                 "file_path": "/test/path/1",
+                "genotype": "undefined",
+                "description": "undefined",
                 "filetype": "cooler",
                 "higlass_uuid": "asdf1234",
                 "id": 1,
@@ -392,6 +414,8 @@ class TestProcessingStateIsUpdated(LoginTestCase):
             {
                 "dataset_name": "test1",
                 "file_path": "/test/path/1",
+                "genotype": "undefined",
+                "description": "undefined",
                 "filetype": "cooler",
                 "higlass_uuid": "asdf1234",
                 "id": 1,

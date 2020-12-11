@@ -3,6 +3,7 @@ import io
 import unittest
 from unittest.mock import patch
 from test_helpers import LoginTestCase, TempDirTestCase
+
 # add path to import app
 sys.path.append("./")
 from app.models import Dataset
@@ -28,8 +29,10 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # construct form data
         data = {
             "datasetName": "test",
+            "description": "test-description",
+            "genotype": "WT",
             "filetype": "cooler",
-            "file": (io.BytesIO(b"abcdef"), 'test.mcool')
+            "file": (io.BytesIO(b"abcdef"), "test.mcool"),
         }
         # dispatch post request
         response = self.client.post(
@@ -42,13 +45,71 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # check whether dataset has been added to database
         self.assertEqual(len(Dataset.query.all()), 1)
         dataset = Dataset.query.first()
-        expected = [1, "test", "cooler", 1, TempDirTestCase.TEMP_PATH + "test.mcool"]
+        expected = [
+            1,
+            "test",
+            "test-description",
+            "WT",
+            "cooler",
+            1,
+            TempDirTestCase.TEMP_PATH + "test.mcool",
+        ]
         actual = [
             dataset.id,
             dataset.dataset_name,
+            dataset.description,
+            dataset.genotype,
             dataset.filetype,
             dataset.user_id,
-            dataset.file_path
+            dataset.file_path,
+        ]
+        self.assertEqual(expected, actual)
+
+    @patch("app.models.User.launch_task")
+    def test_dataset_added_correctly_cooler_wo_description_and_genotype(self, mock_launch):
+        """Tests whether a cooler dataset is added
+        correctly to the Dataset table following
+        a post request."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "datasetName": "test",
+            "filetype": "cooler",
+            "file": (io.BytesIO(b"abcdef"), "test.mcool"),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether dataset has been added to database
+        self.assertEqual(len(Dataset.query.all()), 1)
+        dataset = Dataset.query.first()
+        expected = [
+            1,
+            "test",
+            "undefined",
+            "undefined",
+            "cooler",
+            1,
+            TempDirTestCase.TEMP_PATH + "test.mcool",
+        ]
+        actual = [
+            dataset.id,
+            dataset.dataset_name,
+            dataset.description,
+            dataset.genotype,
+            dataset.filetype,
+            dataset.user_id,
+            dataset.file_path,
         ]
         self.assertEqual(expected, actual)
 
@@ -66,8 +127,10 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # construct form data
         data = {
             "datasetName": "test",
+            "description": "test-description",
+            "genotype": "WT",
             "filetype": "bedfile",
-            "file": (io.BytesIO(b"abcdef"), 'test.bed')
+            "file": (io.BytesIO(b"abcdef"), "test.bed"),
         }
         # dispatch post request
         response = self.client.post(
@@ -80,13 +143,23 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # check whether dataset has been added to database
         self.assertEqual(len(Dataset.query.all()), 1)
         dataset = Dataset.query.first()
-        expected = [1, "test", "bedfile", 1, TempDirTestCase.TEMP_PATH + "test.bed"]
+        expected = [
+            1,
+            "test",
+            "test-description",
+            "WT",
+            "bedfile",
+            1,
+            TempDirTestCase.TEMP_PATH + "test.bed",
+        ]
         actual = [
             dataset.id,
             dataset.dataset_name,
+            dataset.description,
+            dataset.genotype,
             dataset.filetype,
             dataset.user_id,
-            dataset.file_path
+            dataset.file_path,
         ]
         self.assertEqual(expected, actual)
 
@@ -103,7 +176,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         data = {
             "datasetName": "test",
             "filetype": "bad",
-            "file": (io.BytesIO(b"abcdef"), 'test.bed')
+            "file": (io.BytesIO(b"abcdef"), "test.bed"),
         }
         # dispatch post request
         response = self.client.post(
@@ -127,7 +200,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         data = {
             "datasetName": "test",
             "filetype": "cooler",
-            "file": (io.BytesIO(b"abcdef"), 'test.mcool')
+            "file": (io.BytesIO(b"abcdef"), "test.mcool"),
         }
         # dispatch post request
         response = self.client.post(
@@ -152,7 +225,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         data = {
             "datasetName": "test",
             "filetype": "bedfile",
-            "file": (io.BytesIO(b"abcdef"), 'test.bed')
+            "file": (io.BytesIO(b"abcdef"), "test.bed"),
         }
         # dispatch post request
         response = self.client.post(
@@ -163,6 +236,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         )
         # check whether launch task has been called with the right arguments
         mock_launch.assert_called_with("pipeline_bed", "run bed preprocessing", 1)
+
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

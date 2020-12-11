@@ -23,6 +23,8 @@ def add_dataset():
     # add data to Database -> in order to show uploading
     new_entry = Dataset(
         dataset_name=data["datasetName"],
+        genotype=data.get("genotype", "undefined"),
+        description=data.get("description", "undefined"),
         processing_state="uploading",
         filetype=data["filetype"],
         user_id=current_user.id,
