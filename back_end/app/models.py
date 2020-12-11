@@ -64,6 +64,8 @@ class User(db.Model, UserMixin):
 class Dataset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     dataset_name = db.Column(db.String(64), index=True)
+    genotype = db.Column(db.String(64), default="undefined")
+    description = db.Column(db.String(81), default="undefined")
     file_path = db.Column(db.String(128), index=True)
     higlass_uuid = db.Column(db.String(64), index=True, unique=True)
     filetype = db.Column(db.String(64), index=True)
@@ -103,6 +105,8 @@ class Dataset(db.Model):
         json_dataset = {
             "id": self.id,
             "dataset_name": self.dataset_name,
+            "genotype": self.genotype,
+            "description": self.description,
             "file_path": self.file_path,
             "higlass_uuid": self.higlass_uuid,
             "filetype": self.filetype,
