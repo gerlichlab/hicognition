@@ -8,7 +8,7 @@ from . import api
 from .. import db
 from ..models import Dataset
 from .authentication import auth
-from .helpers import is_access_to_dataset_denied
+from .helpers import is_access_to_dataset_denied, parse_description_and_genotype
 from .errors import forbidden, invalid, not_found
 
 
@@ -21,11 +21,13 @@ def add_dataset():
 
     data = request.form
     fileObject = request.files["file"]
+    # check whether description and genotype is there
+    description, genotype = parse_description_and_genotype(data)
     # add data to Database -> in order to show uploading
     new_entry = Dataset(
         dataset_name=data["datasetName"],
-        genotype=data.get("genotype", "No genotype provided"),
-        description=data.get("description", "No description provided"),
+        genotype=genotype,
+        description=description,
         processing_state="uploading",
         filetype=data["filetype"],
         user_id=current_user.id,
