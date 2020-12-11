@@ -38,8 +38,8 @@
       <!-- Definition of how table should look -->
       <md-table-row slot="md-table-row" slot-scope="{ item }" md-selectable="multiple" class="md-primary" md-auto-select :md-disabled="anyProcessing">
         <md-table-cell md-label="Name" md-sort-by="dataset_name">{{ item.dataset_name }}</md-table-cell>
-        <md-table-cell md-label="Filetype" md-sort-by="filetype">{{ item.filetype }}</md-table-cell>
-        <md-table-cell md-label="HiGlass ID" md-sort-by="higlass_uuid">{{ item.higlass_uuid }}</md-table-cell>
+        <md-table-cell md-label="Genotype" md-sort-by="genotype">{{ item.genotype }}</md-table-cell>
+        <md-table-cell md-label="Description" md-sort-by="description">{{ item.description }}</md-table-cell>
         <md-table-cell md-label="Progress" md-sort-by="completed">
           <md-icon  v-if="item.processing_state == 'finished'">done</md-icon>
           <md-progress-spinner :md-diameter="30" md-mode="indeterminate" v-else-if="item.processing_state == 'processing'"></md-progress-spinner>
