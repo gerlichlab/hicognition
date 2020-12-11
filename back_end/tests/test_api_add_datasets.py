@@ -96,8 +96,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         expected = [
             1,
             "test",
-            "undefined",
-            "undefined",
+            "No description provided",
+            "No genotype provided",
             "cooler",
             1,
             TempDirTestCase.TEMP_PATH + "test.mcool",

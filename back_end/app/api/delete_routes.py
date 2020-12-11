@@ -37,9 +37,9 @@ def delete_dataset(dataset_id):
     # delete files and remove from database
     deletion_queue = [dataset] + pileup_regions + pileups
     for entry in deletion_queue:
-        if os.path.exists(entry.file_path):
+        try:
             os.remove(entry.file_path)
-        else:
+        except FileNotFoundError:
             current_app.logger.warning(f"Tried removing {entry.file_path}, but file does not exist!")
         db.session.delete(entry)
     db.session.commit()

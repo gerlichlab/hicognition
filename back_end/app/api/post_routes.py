@@ -18,14 +18,14 @@ def add_dataset():
     """endpoint to add a new dataset"""
     current_user = g.current_user
     # get data from form
-    
+
     data = request.form
     fileObject = request.files["file"]
     # add data to Database -> in order to show uploading
     new_entry = Dataset(
         dataset_name=data["datasetName"],
-        genotype=data.get("genotype", "undefined"),
-        description=data.get("description", "undefined"),
+        genotype=data.get("genotype", "No genotype provided"),
+        description=data.get("description", "No description provided"),
         processing_state="uploading",
         filetype=data["filetype"],
         user_id=current_user.id,
