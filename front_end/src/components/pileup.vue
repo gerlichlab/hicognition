@@ -59,7 +59,7 @@ export default {
         // this.pleupData["variable"] is an object of the form { index0: value0, index1: value1, ... }
         var variables = Object.values(this.pileupData["variable"]);
         // switch them around because otherwise plot will be mirrored
-        var dataRange = new Set(variables).size;
+        var dataRange = new Set(variables).size - 1;
         var reversedVars = variables.map((element) => {
           return dataRange - element;
         });
@@ -96,6 +96,14 @@ export default {
     };
   },
   methods: {
+    redrawHeatMap: function () {
+      d3.select(`#${this.pileupDivID}Svg`).remove();
+      // blank picture to avoid triggering update in colorScale watcher
+      this.pileupPicture = null;
+      this.updateColorScale(this.sliderMin, this.sliderMax); //initial range
+      this.createHeatMap();
+      this.fillHeatMap();
+    },
     handleSliderChange: function (value) {
       var min = Number(value[0]);
       var max = Number(value[1]);
@@ -112,7 +120,7 @@ export default {
         .attr("id", `${this.pileupDivID}Svg`)
         .attr("width", this.width)
         .attr("height", this.height)
-        .attr("style", "transform: translateY(2%);"); // center element vertically
+        .attr("style", "transform: translateY(1%);"); // center element vertically
     },
     fillHeatMap: function () {
       // fills the heatmap with data
@@ -158,14 +166,11 @@ export default {
     this.fillHeatMap();
   },
   watch: {
+    height: function () {
+      this.redrawHeatMap();
+    },
     pileupData: function () {
-      // handler for change of data
-      d3.select(`#${this.pileupDivID}Svg`).remove();
-      // blank picture to avoid triggering update in colorScale watcher
-      this.pileupPicture = null;
-      this.updateColorScale(this.sliderMin, this.sliderMax); //initial range
-      this.createHeatMap();
-      this.fillHeatMap();
+      this.redrawHeatMap();
     },
     colorScale: function () {
       // update plot with new color scale
