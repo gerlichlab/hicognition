@@ -170,6 +170,9 @@ export default {
     height: function () {
       this.redrawHeatMap();
     },
+    width: function () {
+      this.redrawHeatMap();
+    },
     pileupData: function () {
       this.redrawHeatMap();
     },
