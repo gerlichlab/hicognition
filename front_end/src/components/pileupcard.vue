@@ -2,7 +2,7 @@
   <md-card md-with-hover class="pileup-card">
     <md-card-content>
       <!-- Binsize submission form -->
-      <div class="md-layout md-gutter" ref="pileup-card-element">
+      <div class="md-layout md-gutter">
         <div class="md-layout-item md-size-20">
           <md-field>
             <label for="binsize">Binsize</label>
@@ -107,7 +107,9 @@ export default {
   methods: {
     updatePileupSize: function () {
       // rescale pileups upon window resize
-      var value = this.$refs["pileup-card-element"].offsetWidth * 0.45;
+      if (this.$el){
+        var value = this.$el.offsetHeight * 0.30;
+      }
       this.pileupDim = value;
     },
     handleBinsizeSubmit: function () {
@@ -154,7 +156,7 @@ export default {
 <style lang="scss" scoped>
 .pileup-card {
   width: 30vw;
-  height: calc(100vh - 160px);
+  height: calc(100vh - 100px);
   margin: 4px;
   display: inline-block;
 }

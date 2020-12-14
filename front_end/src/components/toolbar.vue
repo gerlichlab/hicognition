@@ -7,31 +7,29 @@
           <md-icon>menu</md-icon>
         </md-button>
 
-        <span class="md-title">HiCognition 0.1</span>
+        <md-tabs class="md-primary md-elevation">
+          <md-tab id="tab-home" md-label="Predefined" to="/main/predefined" class="md-elevation"></md-tab>
+          <md-tab id="tab-compare" md-label="Compare" to="/main/compare"></md-tab>
+          <md-tab id="tab-annotate" md-label="Annotate" to="/main/annotate"></md-tab>
+          <md-tab id="tab-eplore" md-label="Explore" to="/main/explore"></md-tab>
+        </md-tabs>
+
       </div>
 
       <div class="md-toolbar-section-end">
 
-    <md-menu md-size="medium" md-align-trigger>
-      <md-button md-menu-trigger>
-        <md-icon>more_vert</md-icon>
-      </md-button>
+        <md-menu md-size="medium" md-align-trigger>
+        <md-button md-menu-trigger>
+          <md-icon>more_vert</md-icon>
+        </md-button>
 
         <md-menu-content>
-          <md-menu-item @click="logout">Logout</md-menu-item>
-        </md-menu-content>
-      </md-menu>
-      </div>
+            <md-menu-item @click="logout">Logout</md-menu-item>
+          </md-menu-content>
+        </md-menu>
+        </div>
     </div>
 
-    <div class="md-toolbar-row">
-      <md-tabs class="md-primary">
-        <md-tab id="tab-home" md-label="Predefined" to="/main/predefined"></md-tab>
-        <md-tab id="tab-compare" md-label="Compare" to="/main/compare"></md-tab>
-        <md-tab id="tab-annotate" md-label="Annotate" to="/main/annotate"></md-tab>
-        <md-tab id="tab-eplore" md-label="Explore" to="/main/explore"></md-tab>
-      </md-tabs>
-    </div>
   </div>
 </template>
 

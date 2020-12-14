@@ -1,6 +1,6 @@
 <template>
   <md-app>
-    <md-app-toolbar class="md-large md-dense md-primary">
+    <md-app-toolbar class="md-dense md-primary">
       <toolbar @drawer-clicked="menuVisible = !menuVisible"></toolbar>
     </md-app-toolbar>
 

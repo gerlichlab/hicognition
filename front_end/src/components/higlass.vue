@@ -239,7 +239,7 @@ export default {
 <style lang="scss" scoped>
 .higlass-card {
   width: 65vw;
-  height: calc(100vh - 160px);
+  height: calc(100vh - 100px);
   margin: 4px;
   display: inline-block;
   vertical-align: top;
