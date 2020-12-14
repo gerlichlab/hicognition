@@ -154,14 +154,10 @@ export default {
 <style lang="scss" scoped>
 .pileup-card {
   width: 30vw;
-  height: 88vh;
+  height: calc(100vh - 160px);
   margin: 4px;
   display: inline-block;
 }
-
-/* .pileup-content {
-  height: 95%;
-} */
 
 .fill-card {
   width: 100%;
