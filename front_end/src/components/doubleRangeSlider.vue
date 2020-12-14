@@ -3,7 +3,7 @@ From https://stackoverflow.com/questions/48506428/nouislider-double-range-slider
 */
 
 <template>
-  <div class="range-slider md-alignment-center-center">
+  <div class="range-slider md-alignment-center-center" :style="sliderStyle">
     <input
       @change="handleSlider"
       v-model.number="minValue"
@@ -24,7 +24,7 @@ From https://stackoverflow.com/questions/48506428/nouislider-double-range-slider
       <line
         x1="4"
         y1="0"
-        x2="300"
+        :x2="sliderWidth"
         y2="0"
         stroke="#444"
         stroke-width="12"
@@ -40,6 +40,14 @@ export default {
   props: {
     sliderMin: Number,
     sliderMax: Number,
+    sliderWidth: Number
+  },
+  computed: {
+    sliderStyle: function(){
+      return {
+        "width": `${this.sliderWidth}px`
+      }
+    }
   },
   data: function () {
     return {
@@ -74,11 +82,10 @@ export default {
 <style scoped>
 
 .range-slider {
-  width: 300px;
   margin: auto;
   text-align: center;
   position: relative;
-  height: 2em;
+  height: 1vh;
 }
 
 .range-slider svg,
@@ -116,7 +123,7 @@ input[type="range"]:focus {
 
 input[type="range"]:focus::-webkit-slider-runnable-track {
   background: #448aff;
-  border-radius: 2px;
+  border-radius: 1vh;
 }
 
 input[type="range"]:focus::-ms-fill-lower {

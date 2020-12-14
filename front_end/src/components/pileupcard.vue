@@ -108,7 +108,7 @@ export default {
     updatePileupSize: function () {
       // rescale pileups upon window resize
       if (this.$el){
-        var value = this.$el.offsetHeight * 0.30;
+        var value = this.$el.offsetHeight * 0.3;
       }
       this.pileupDim = value;
     },
@@ -156,7 +156,7 @@ export default {
 <style lang="scss" scoped>
 .pileup-card {
   width: 30vw;
-  height: calc(100vh - 100px);
+  height: calc(100vh - 120px);
   margin: 4px;
   display: inline-block;
 }

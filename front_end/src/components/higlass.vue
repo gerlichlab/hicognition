@@ -239,7 +239,7 @@ export default {
 <style lang="scss" scoped>
 .higlass-card {
   width: 65vw;
-  height: calc(100vh - 100px);
+  height: calc(100vh - 120px);
   margin: 4px;
   display: inline-block;
   vertical-align: top;
@@ -247,7 +247,7 @@ export default {
 
 .fill-card {
   width: 100%;
-  height: 78vh;
+  height: calc(87vh - 100px);
 }
 
 .button-margin {

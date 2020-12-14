@@ -14,6 +14,7 @@
           @slider-change="handleSliderChange"
           :sliderMin="sliderMin"
           :sliderMax="sliderMax"
+          :sliderWidth="width"
         />
       </md-list-item>
     </md-list>
