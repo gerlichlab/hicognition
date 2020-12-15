@@ -15,6 +15,9 @@
                       I am in list 1!
                     </md-empty-state>
               </md-card-content>
+              <md-card-actions>
+                <md-button  @click="removeItem(item.id)" class="md-primary md-raised">Close</md-button>
+              </md-card-actions>
       </md-card>
     </div>
   </div>
@@ -33,9 +36,15 @@
                       I am in list 2!
                     </md-empty-state>
                 </md-card-content>
+                <md-card-actions>
+                  <md-button  @click="removeItem(item.id)" class="md-primary md-raised">Close</md-button>
+                </md-card-actions>
           </md-card>
       </div>
     </div>
+<md-button class="md-fab md-primary" @click="addExample">
+        <md-icon>add</md-icon>
+</md-button>
 </div>
 </template>
 
@@ -44,6 +53,7 @@
     name: 'EmptyStateRounded',
     data: function () {
       return {
+        count: 0,
         items : [{
           id: 1,
           header:"Example1",
@@ -63,16 +73,6 @@
             width: "30vw",
             height: "20vh"
           }
-        },
-        {
-          id: 3,
-          header:"Example3",
-          list: 1,
-          children: [],
-          class: {
-            width: "30vw",
-            height: "20vh"
-          }
         }
         ]
       }
@@ -86,6 +86,23 @@
       }
     },
     methods: {
+      removeItem(itemID){
+          this.items = this.items.filter((element) => element.id != itemID);
+      },
+      addExample(){
+        console.log("ran");
+        this.items.push({
+          id: this.count,
+          header: `Example${this.count}`,
+          children: [],
+          class: {
+            width: "30vw",
+            height: "20vh"
+          },
+          list: ((this.count % 2 == 0) ? 1 : 2)
+        });
+        this.count += 1;
+      },
       viewportWidthToPx(viewportString){
           const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
           var viewPortFraction = Number(viewportString.split("vw")[0]) / 100;
@@ -125,7 +142,7 @@
         var currentheight = this.viewportHeightToPx(receivingItem.class.height)
         var droppedOffsetX = evt.offsetX;
         var droppedOffsetY = evt.offsetY;
-        if ( (droppedOffsetX < currentwidth/2) && (droppedOffsetY > currentheight/2)){
+        if ( (droppedOffsetX < currentwidth) && (droppedOffsetY > currentheight/2)){
             var currentHeight = Number(receivingItem.class.height.split("vh")[0]);
             var newHeight = currentHeight + 20;
             receivingItem.class.height = `${newHeight}vh`;
