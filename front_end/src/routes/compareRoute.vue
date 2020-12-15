@@ -4,9 +4,6 @@
     <div class="inline" v-for="item in listOne" :key="item.id" draggable @dragstart="startDrag($event, item)" @drop="dropFuse($event, item)" @dragover.prevent @dragenter.prevent>
       <md-card md-with-hover :style="item.class">
               <md-card-header>
-                  <md-button class="md-icon-button" @click="splitItems(item)" v-if="item.children.length != 0">
-                      <md-icon>dashboard</md-icon>
-                  </md-button>
                   <div class="md-title">{{ item.header }}</div>
               </md-card-header>
 
@@ -16,6 +13,9 @@
                     </md-empty-state>
               </md-card-content>
               <md-card-actions>
+                <md-button class="md-primary md-raised" @click="splitItems(item)" v-if="item.children.length != 0">
+                      Split
+                </md-button>
                 <md-button  @click="removeItem(item.id)" class="md-primary md-raised">Close</md-button>
               </md-card-actions>
       </md-card>
@@ -26,9 +26,6 @@
         <md-card md-with-hover :style="item.class">
                 <md-card-header>
                     <div class="md-title">{{ item.header }}</div>
-                    <md-button class="md-icon-button" @click="splitItems(item)" v-if="item.children.length != 0">
-                      <md-icon>dashboard</md-icon>
-                    </md-button>
                 </md-card-header>
 
                 <md-card-content>
@@ -37,6 +34,9 @@
                     </md-empty-state>
                 </md-card-content>
                 <md-card-actions>
+                    <md-button class="md-primary md-raised" @click="splitItems(item)" v-if="item.children.length != 0">
+                        Split
+                    </md-button>
                   <md-button  @click="removeItem(item.id)" class="md-primary md-raised">Close</md-button>
                 </md-card-actions>
           </md-card>
