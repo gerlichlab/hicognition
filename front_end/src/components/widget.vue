@@ -1,6 +1,10 @@
 <template>
 <div>
-    <md-card :style="cssStyle" class="smallMargin" v-if="!isEmpty"/>
+    <div :style="cssStyle" class="smallMargin testbg" v-if="!isEmpty">
+        <md-card-header>
+            <div class="md-title">I have id {{id}}</div>
+        </md-card-header>
+    </div>
     <div :style="cssStyle" class="smallMargin empty" v-else />
 </div>
 </template>
@@ -11,7 +15,8 @@ export default {
     props: {
         width: Number,
         height: Number,
-        empty: Boolean
+        empty: Boolean,
+        id: Number
     },
     computed:{
         cssStyle: function() {
@@ -33,11 +38,9 @@ export default {
 
 <style scoped>
 
-.testSize {
-    width: 300px;
-    height: 300px;
+.testbg {
+    background-color: red;
 }
-
 .smallMargin {
     margin-left: 2px;
     margin-right: 2px;

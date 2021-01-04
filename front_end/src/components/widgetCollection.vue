@@ -4,8 +4,13 @@
             <widget class="inline"  v-for="item in flattenedElements" :key="item.id"
                                                       :height="item.height"
                                                       :width="item.width"
-                                                      :empty="item.empty" />
+                                                      :empty="item.empty"
+                                                      :id="item.id" />
         </md-card-content>
+        <md-card-actions>
+            <md-button @click="deleteCollection" class="md-primary">Delete</md-button>
+            <md-button class="md-primary">Split</md-button>
+        </md-card-actions>
     </md-card>
 </template>
 
@@ -16,32 +21,27 @@ import Widget from './widget.vue'
 
 export default {
     name: 'widgetCollection',
+    props: {
+        id: Number
+    },
     components: {
         widget
     },
     data: function () {
         return {
             marginSizeWidth: 3,
-            marginSizeHeight: 3,
+            marginSizeHeight: 10,
             paddingWidth: 18,
-            paddingHeight: 20,
-            collectionHeight: 300,
-            collectionWidth: 600,
+            paddingHeight: 60,
+            baseWidth: 300,
+            baseHeight: 300,
+            maxRowNumber: 0,
+            maxColumnNumber: 0,
             children: [
                     {
                         id: 1,
                         rowIndex: 0,
                         colIndex: 0
-                    },
-                    {
-                        id: 2,
-                        rowIndex: 0,
-                        colIndex: 1
-                    },
-                    {
-                        id: 3,
-                        rowIndex: 1,
-                        colIndex: 1
                     }
             ]
         }
@@ -53,19 +53,11 @@ export default {
         elementHeight: function() {
             return (this.collectionHeight/(this.maxRowNumber + 1));
         },
-        maxRowNumber: function() {
-            var rowNumbers = [];
-            for (var child of this.children){
-                rowNumbers.push(child.rowIndex);
-            }
-            return Math.max(...rowNumbers);
+        collectionHeight: function() {
+            return (this.maxRowNumber + 1) * this.baseHeight;
         },
-        maxColumnNumber: function() {
-            var colNumbers = [];
-            for (var child of this.children){
-                colNumbers.push(child.colIndex);
-            }
-            return Math.max(...colNumbers);
+        collectionWidth: function() {
+            return (this.maxColumnNumber + 1) * this.baseWidth;
         },
         elementMatrix: function(){
             // creates element matrix from children that can be flattened to render with v-if
@@ -119,6 +111,11 @@ export default {
                 width: `${this.collectionWidth + this.paddingWidth  + (this.maxColumnNumber + 1) * this.marginSizeWidth}px`
             }
         }
+    },
+    methods: {
+        deleteCollection: function() {
+            this.$emit("deleteCollection", this.id);
+        }
     }
 }
 </script>
@@ -126,7 +123,7 @@ export default {
 <style scoped>
 
 .inline {
-  display: inline-block;
+  float: left;
 }
 
 .halfSize {
