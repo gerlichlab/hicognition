@@ -85,7 +85,6 @@ export default {
                 }
                 matrix.push(emptyRow);
             }
-            console.log(matrix);
             // fill in children
             for (var child of this.children){
                 matrix[child.rowIndex][child.colIndex] = {
@@ -102,7 +101,6 @@ export default {
             for (var child of this.children){
                 ids.push(child.id);
             }
-            console.log(ids);
             return Math.max(...ids)
         },
         flattenedElements: function() {
