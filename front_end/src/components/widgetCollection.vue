@@ -128,6 +128,9 @@ export default {
             this.children = this.children.filter((el) => {
                 return el.id != id
             });
+            // reset indices to new value;
+            this.maxRowNumber = Math.max(...this.children.map((element) => element.rowIndex));
+            this.maxColumnNumber =  Math.max(...this.children.map((element) => element.colIndex));
             // check if collection should be deleted
             if (this.children.length == 0){
                 this.$emit("deleteCollection", this.id);
@@ -142,10 +145,8 @@ export default {
         shrinkCollection: function(e) {
             // check if card is collection card, all child elements trigger leave events
             if (e.toElement == this.$refs["collectionCard"].$el){
-                var maxRowElements = Math.max(...this.children.map((element) => element.rowIndex));
-                var maxColElements = Math.max(...this.children.map((element) => element.colIndex));
-                this.maxRowNumber = maxRowElements;
-                this.maxColumnNumber = maxColElements;
+                this.maxRowNumber = Math.max(...this.children.map((element) => element.rowIndex));
+                this.maxColumnNumber = Math.max(...this.children.map((element) => element.colIndex));
             }
         },
         deleteCollection: function() {
@@ -158,9 +159,9 @@ export default {
                 rowIndex: rowIndex,
                 colIndex: colIndex
             });
-            // reset indices to new value; Note: Rownumber and columnnumber have in increment before
-            this.maxRowNumber = Math.max(this.maxRowNumber - 1, rowIndex);
-            this.maxColumnNumber = Math.max(this.maxColumnNumber - 1, colIndex);
+            // reset indices to new value;
+            this.maxRowNumber = Math.max(...this.children.map((element) => element.rowIndex));
+            this.maxColumnNumber =  Math.max(...this.children.map((element) => element.colIndex));
         }
     }
 }
