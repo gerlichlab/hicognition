@@ -1,6 +1,6 @@
 <template>
-<div @dragenter.prevent="expandCollection" @dragleave.prevent="shrinkCollection" @dragover.prevent :style="dropZoneStyle">
-    <md-card :style="cssStyle">
+<div @dragenter="expandCollection" @dragleave="shrinkCollection">
+    <md-card :style="cssStyle" ref="collectionCard">
         <md-card-content class="nomargin">
             <widget class="inline"  v-for="item in flattenedElements" :key="item.id"
                                                       :height="item.height"
@@ -10,7 +10,8 @@
                                                       :collectionID="id"
                                                       :rowIndex="item.rowIndex"
                                                       :colIndex="item.colIndex"
-                                                      @widgetDrop="handleWidgetDrop" />
+                                                      @widgetDrop="handleWidgetDrop"
+                                                      @deleteWidget="handleWidgetDelete" />
         </md-card-content>
         <md-card-actions>
             <md-button @click="deleteCollection" class="md-primary">Delete</md-button>
@@ -120,29 +121,32 @@ export default {
                 height: `${this.collectionHeight + this.paddingHeight  + (this.maxRowNumber + 1) * this.marginSizeHeight}px`,
                 width: `${this.collectionWidth + this.paddingWidth  + (this.maxColumnNumber + 1) * this.marginSizeWidth}px`
             }
-        },
-        dropZoneStyle: function() {
-            return {
-                height: `${this.collectionHeight + this.elementHeight + this.paddingHeight  + (this.maxRowNumber + 1) * this.marginSizeHeight}px`,
-                width: `${this.collectionWidth + this.elementWidth +  this.paddingWidth  + (this.maxColumnNumber + 1) * this.marginSizeWidth}px`,
-                
-            }
         }
     },
     methods: {
+        handleWidgetDelete: function(id) {
+            this.children = this.children.filter((el) => {
+                return el.id != id
+            });
+            // check if collection should be deleted
+            if (this.children.length == 0){
+                this.$emit("deleteCollection", this.id);
+            }
+        },
         expandCollection: function(){
-            console.log("expansion triggered");
             var maxRowElements = Math.max(...this.children.map((element) => element.rowIndex));
             var maxColElements = Math.max(...this.children.map((element) => element.colIndex));
             this.maxRowNumber = maxRowElements + 1;
             this.maxColumnNumber = maxColElements + 1;
         },
-        shrinkCollection: function() {
-            console.log("shrinking triggered");
-            var maxRowElements = Math.max(...this.children.map((element) => element.rowIndex));
-            var maxColElements = Math.max(...this.children.map((element) => element.colIndex));
-            this.maxRowNumber = maxRowElements;
-            this.maxColumnNumber = maxColElements;
+        shrinkCollection: function(e) {
+            // check if card is collection card, all child elements trigger leave events
+            if (e.toElement == this.$refs["collectionCard"].$el){
+                var maxRowElements = Math.max(...this.children.map((element) => element.rowIndex));
+                var maxColElements = Math.max(...this.children.map((element) => element.colIndex));
+                this.maxRowNumber = maxRowElements;
+                this.maxColumnNumber = maxColElements;
+            }
         },
         deleteCollection: function() {
             this.$emit("deleteCollection", this.id);

@@ -1,11 +1,11 @@
 <template>
 <div>
-    <div :style="cssStyle" class="smallMargin testbg" draggable="true" v-if="!isEmpty" @dragstart="handleDragStart">
+    <div :style="cssStyle" class="smallMargin testbg" draggable="true" v-if="!isEmpty" @dragstart="handleDragStart" @dragend="handleDragEnd">
         <md-card-header>
             <div class="md-title">I have id {{id}}</div>
         </md-card-header>
     </div>
-    <div :style="cssStyle" :class="emptyClass" v-else @dragenter="handleDragEnter" @dragleave="handleDragLeave" @drop="handleDrop"/>
+    <div :style="cssStyle" :class="emptyClass" v-else @dragenter="handleDragEnter" @dragleave="handleDragLeave"  @dragover.prevent @drop="handleDrop"/>
 </div>
 </template>
 
@@ -42,6 +42,12 @@ export default {
         }
     },
     methods: {
+        handleDragEnd: function(e){
+            if (e.dataTransfer.dropEffect != "none"){
+                // successfully moved, delete element at original location
+                this.$emit("deleteWidget", this.id)
+            }
+        },
         handleDragStart: function(e) {
             e.dataTransfer.setData('widget-id', this.id);
             e.dataTransfer.setData("collection-id", this.collectionID);
