@@ -14,8 +14,13 @@
                                                       @deleteWidget="handleWidgetDelete" />
         </md-card-content>
         <md-card-actions>
-            <md-button @click="deleteCollection" class="md-primary">Delete</md-button>
-            <md-button class="md-primary">Split</md-button>
+            <md-button @click="handleZoomIn" class="md-icon-button">
+                <md-icon>zoom_in</md-icon>
+            </md-button>
+            <md-button @click="handleZoomOut" class="md-icon-button">
+                <md-icon>zoom_out</md-icon>
+            </md-button>
+            <md-button @click="deleteCollection" class="md-primary md-raised">Delete</md-button>
         </md-card-actions>
     </md-card>
 </div>
@@ -124,6 +129,14 @@ export default {
         }
     },
     methods: {
+        handleZoomIn: function() {
+            this.baseWidth += 50;
+            this.baseHeight += 50;
+        },
+        handleZoomOut: function() {
+            this.baseWidth -= 50;
+            this.baseHeight -= 50;
+        },
         handleWidgetDelete: function(id) {
             this.children = this.children.filter((el) => {
                 return el.id != id
