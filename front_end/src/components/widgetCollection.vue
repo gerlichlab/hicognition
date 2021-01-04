@@ -1,17 +1,21 @@
 <template>
+<div @dragenter="handleDragOver" @dragleave="handleDragLeave">
     <md-card :style="cssStyle">
         <md-card-content class="nomargin">
             <widget class="inline"  v-for="item in flattenedElements" :key="item.id"
                                                       :height="item.height"
                                                       :width="item.width"
                                                       :empty="item.empty"
-                                                      :id="item.id" />
+                                                      :id="item.id"
+                                                      :rowIndex="item.rowIndex"
+                                                      :colIndex="item.colIndex" />
         </md-card-content>
         <md-card-actions>
             <md-button @click="deleteCollection" class="md-primary">Delete</md-button>
             <md-button class="md-primary">Split</md-button>
         </md-card-actions>
     </md-card>
+</div>
 </template>
 
 <script>
@@ -36,12 +40,17 @@ export default {
             baseWidth: 300,
             baseHeight: 300,
             maxRowNumber: 0,
-            maxColumnNumber: 0,
+            maxColumnNumber: 1,
             children: [
                     {
                         id: 1,
                         rowIndex: 0,
                         colIndex: 0
+                    },
+                    {
+                        id: 2,
+                        rowIndex: 0,
+                        colIndex: 1
                     }
             ]
         }
@@ -71,7 +80,9 @@ export default {
                         id: nextID,
                         height: this.elementHeight,
                         width: this.elementWidth,
-                        empty: true
+                        empty: true,
+                        rowIndex: rowIndex,
+                        colIndex: colIndex
                     }
                     nextID += 1;
                 }
@@ -83,7 +94,9 @@ export default {
                     id: child.id,
                         height: this.elementHeight,
                         width: this.elementWidth,
-                        empty: false
+                        empty: false,
+                        rowIndex: child.rowIndex,
+                        colIndex: child.colIndex
                 }
             }
             return matrix;
@@ -115,6 +128,15 @@ export default {
     methods: {
         deleteCollection: function() {
             this.$emit("deleteCollection", this.id);
+        },
+        handleDragOver: function() {
+            console.log("triggered");
+            this.maxRowNumber += 1;
+            this.maxColumnNumber += 1;
+        },
+        handleDragLeave: function() {
+            this.maxRowNumber -= 1;
+            this.maxColumnNumber -= 1;
         }
     }
 }

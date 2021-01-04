@@ -1,17 +1,22 @@
 <template>
 <div>
-    <div :style="cssStyle" class="smallMargin testbg" v-if="!isEmpty">
+    <div :style="cssStyle" class="smallMargin testbg" draggable="true" v-if="!isEmpty" @dragstart="handleDragStart">
         <md-card-header>
             <div class="md-title">I have id {{id}}</div>
         </md-card-header>
     </div>
-    <div :style="cssStyle" class="smallMargin empty" v-else />
+    <div :style="cssStyle" :class="emptyClass" v-else @dragenter="handleDragEnter" @dragleave="handleDragLeave"/>
 </div>
 </template>
 
 <script>
 export default {
     name: 'widget',
+    data: function () {
+        return {
+            emptyClass: ["smallMargin", "empty"]
+        }
+    },
     props: {
         width: Number,
         height: Number,
@@ -32,6 +37,18 @@ export default {
                 return false;
             }
         }
+    },
+    methods: {
+        handleDragStart: function(e) {
+            console.log("started!");
+            e.dataTransfer.setData('text/plain', 'dummy');
+        },
+        handleDragEnter: function() {
+            this.emptyClass.push("dark-background")
+        },
+        handleDragLeave: function() {
+            this.emptyClass.pop();
+        }
     }
 }
 </script>
@@ -48,11 +65,9 @@ export default {
     margin-bottom: 1px;
 }
 
-.empty:hover{
+.dark-background {
     background-color: grey;
     opacity: 0.5;
 }
-
-
 
 </style>

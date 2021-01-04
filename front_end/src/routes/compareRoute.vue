@@ -1,6 +1,6 @@
 <template>
   <div>
-    <widget-collection class="inline top-margin" v-for="item in collections" :key="item.id" :id="item.id" @deleteCollection="handleDelete" />
+    <widget-collection class="inline top-margin" v-for="item in collections" :key="item.id" :id="item.id" @deleteCollection="handleDelete"/>
     <div class="bottom-right">
       <md-button class="md-fab md-primary" @click="addCollection">
           <md-icon>add</md-icon>
