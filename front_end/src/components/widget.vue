@@ -5,7 +5,7 @@
             <div class="md-title">I have id {{id}}</div>
         </md-card-header>
     </div>
-    <div :style="cssStyle" :class="emptyClass" v-else @dragenter="handleDragEnter" @dragleave="handleDragLeave"/>
+    <div :style="cssStyle" :class="emptyClass" v-else @dragenter="handleDragEnter" @dragleave="handleDragLeave" @drop="handleDrop"/>
 </div>
 </template>
 
@@ -21,7 +21,10 @@ export default {
         width: Number,
         height: Number,
         empty: Boolean,
-        id: Number
+        id: Number,
+        collectionID: Number,
+        rowIndex: Number,
+        colIndex: Number
     },
     computed:{
         cssStyle: function() {
@@ -40,14 +43,20 @@ export default {
     },
     methods: {
         handleDragStart: function(e) {
-            console.log("started!");
-            e.dataTransfer.setData('text/plain', 'dummy');
+            e.dataTransfer.setData('widget-id', this.id);
+            e.dataTransfer.setData("collection-id", this.collectionID);
         },
-        handleDragEnter: function() {
+        handleDragEnter: function(e) {
             this.emptyClass.push("dark-background")
         },
-        handleDragLeave: function() {
+        handleDragLeave: function(e) {
             this.emptyClass.pop();
+        },
+        handleDrop: function(event) {
+            var sourceWidgetID = event.dataTransfer.getData("widget-id");
+            var sourceColletionID = event.dataTransfer.getData("collection-id");
+            this.emptyClass.pop();
+            this.$emit("widgetDrop", Number(sourceColletionID), Number(sourceWidgetID), this.rowIndex, this.colIndex);
         }
     }
 }

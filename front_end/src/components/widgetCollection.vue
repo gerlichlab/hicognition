@@ -1,5 +1,5 @@
 <template>
-<div @dragenter="handleDragOver" @dragleave="handleDragLeave">
+<div @dragenter.prevent="expandCollection" @dragleave.prevent="shrinkCollection" @dragover.prevent :style="dropZoneStyle">
     <md-card :style="cssStyle">
         <md-card-content class="nomargin">
             <widget class="inline"  v-for="item in flattenedElements" :key="item.id"
@@ -7,8 +7,10 @@
                                                       :width="item.width"
                                                       :empty="item.empty"
                                                       :id="item.id"
+                                                      :collectionID="id"
                                                       :rowIndex="item.rowIndex"
-                                                      :colIndex="item.colIndex" />
+                                                      :colIndex="item.colIndex"
+                                                      @widgetDrop="handleWidgetDrop" />
         </md-card-content>
         <md-card-actions>
             <md-button @click="deleteCollection" class="md-primary">Delete</md-button>
@@ -40,17 +42,12 @@ export default {
             baseWidth: 300,
             baseHeight: 300,
             maxRowNumber: 0,
-            maxColumnNumber: 1,
+            maxColumnNumber: 0,
             children: [
                     {
                         id: 1,
                         rowIndex: 0,
                         colIndex: 0
-                    },
-                    {
-                        id: 2,
-                        rowIndex: 0,
-                        colIndex: 1
                     }
             ]
         }
@@ -123,20 +120,43 @@ export default {
                 height: `${this.collectionHeight + this.paddingHeight  + (this.maxRowNumber + 1) * this.marginSizeHeight}px`,
                 width: `${this.collectionWidth + this.paddingWidth  + (this.maxColumnNumber + 1) * this.marginSizeWidth}px`
             }
+        },
+        dropZoneStyle: function() {
+            return {
+                height: `${this.collectionHeight + this.elementHeight + this.paddingHeight  + (this.maxRowNumber + 1) * this.marginSizeHeight}px`,
+                width: `${this.collectionWidth + this.elementWidth +  this.paddingWidth  + (this.maxColumnNumber + 1) * this.marginSizeWidth}px`,
+                
+            }
         }
     },
     methods: {
+        expandCollection: function(){
+            console.log("expansion triggered");
+            var maxRowElements = Math.max(...this.children.map((element) => element.rowIndex));
+            var maxColElements = Math.max(...this.children.map((element) => element.colIndex));
+            this.maxRowNumber = maxRowElements + 1;
+            this.maxColumnNumber = maxColElements + 1;
+        },
+        shrinkCollection: function() {
+            console.log("shrinking triggered");
+            var maxRowElements = Math.max(...this.children.map((element) => element.rowIndex));
+            var maxColElements = Math.max(...this.children.map((element) => element.colIndex));
+            this.maxRowNumber = maxRowElements;
+            this.maxColumnNumber = maxColElements;
+        },
         deleteCollection: function() {
             this.$emit("deleteCollection", this.id);
         },
-        handleDragOver: function() {
-            console.log("triggered");
-            this.maxRowNumber += 1;
-            this.maxColumnNumber += 1;
-        },
-        handleDragLeave: function() {
-            this.maxRowNumber -= 1;
-            this.maxColumnNumber -= 1;
+        handleWidgetDrop: function(sourceColletionID, sourceWidgetID, rowIndex, colIndex) {
+            // here, data from widget needs to be obtained from store. TODO
+            this.children.push({
+                id: this.maxIDChildren + 1,
+                rowIndex: rowIndex,
+                colIndex: colIndex
+            });
+            // reset indices to new value; Note: Rownumber and columnnumber have in increment before
+            this.maxRowNumber = Math.max(this.maxRowNumber - 1, rowIndex);
+            this.maxColumnNumber = Math.max(this.maxColumnNumber - 1, colIndex);
         }
     }
 }
