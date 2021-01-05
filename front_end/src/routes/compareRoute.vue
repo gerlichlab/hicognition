@@ -19,25 +19,9 @@ export default {
   },
   data: function () {
     return {
-      collections: [
-        {
-          id: 1,
-        }
-      ],
+      currentID: 0,
+      collections: [],
     };
-  },
-  computed: {
-    maxID: function() {
-      // check if there is an element in the collection
-      if (this.collections.length == 0){
-        return 0;
-      }
-      var ids = [];
-      for (var collection of this.collections){
-        ids.push(collection.id);
-      }
-      return Math.max(...ids);
-    }
   },
   methods: {
     handleDelete: function(removeID) {
@@ -46,12 +30,17 @@ export default {
       });
     },
     addCollection: function() {
+      this.currentID += 1;
       this.collections.push(
         {
-          id: this.maxID + 1
+          id: this.currentID
         }
       )
     }
+  },
+  created: function() {
+    // clear widgetCollections
+    this.$store.commit("compare/clearWidgetCollections");
   }
 };
 </script>

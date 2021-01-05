@@ -1,7 +1,7 @@
 <template>
 <div>
     <div :style="cssStyle" class="smallMargin testbg" draggable="true" v-if="!isEmpty" @dragstart="handleDragStart" @dragend="handleDragEnd">
-            <div class="md-title text">I have id {{text}}</div>
+            <div class="md-title text">I have text {{text}} and id {{id}}</div>
     </div>
     <div :style="cssStyle" :class="emptyClass" v-else @dragenter="handleDragEnter" @dragleave="handleDragLeave"  @dragover.prevent @drop="handleDrop"/>
 </div>
@@ -44,7 +44,13 @@ export default {
         handleDragEnd: function(e){
             if (e.dataTransfer.dropEffect != "none"){
                 // successfully moved, delete element at original location
-                this.$emit("deleteWidget", this.id)
+                this.$emit("deleteWidget", this.id);
+                var payload = {
+                    parentID: this.collectionID,
+                    id: this.id
+                }
+                // delete widget
+                this.$store.commit("compare/deleteWidget", payload);
             }
         },
         handleDragStart: function(e) {

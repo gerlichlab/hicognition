@@ -33,25 +33,37 @@ const compareModule = {
   namespaced: true, // otherwise mutations are registered globally, this way mutations are available as "compare/*"
   state: function() {
     return {
-      widgetCollections: {}, // collections of widgets that are currently displayed. Has structure {id: {children: {id: childProperties}}}
+      widgetCollections: {}, // collections of widgets that are currently displayed. Has structure {id: {children: {child_id: childProperties}}}
 
     }
   },
+  getters: {
+      getWidgetProperties: (state) => (payload) => {
+        var returnObject = Object.assign({}, state.widgetCollections[payload.parentID]["children"][payload.id]);
+        return returnObject;
+      },
+      collectionExists: (state) => (id) => {
+        return id in state.widgetCollections;
+      }
+  },
   mutations: {
-      setWidgetCollection (state, id, child_id, child_properties) {
-        state.widgetCollections[id] = {children: {[child_id]: child_properties}}
+      clearWidgetCollections (state) {
+        state.widgetCollections = {};
       },
-      setWidget (state, collection_id, child_id, child_properties) {
-        state.widgetCollections[collection_id]["children"][child_id] = child_properties
+      setWidgetCollection (state, payload) {
+        state.widgetCollections[payload.parentID] = {children: {[payload.id]: payload}};
       },
-      getWidgetProperties (state, collection_id, child_id) {
-        return state.widgetCollections[collection_id]["children"][child_id]
+      setWidget (state, payload) {
+        state.widgetCollections[payload.parentID]["children"][payload.id] = payload;
       },
       deleteWidgetCollection (state, id) {
         delete state.widgetCollections[id];
       },
-      deleteWidget (state, id, child_id) {
-        delete state.widgetCollections[id]["children"][child_id];
+      deleteWidget (state, payload) {
+        // check whether widget exists before deletion
+        if (payload.parentID in state.widgetCollections){
+          delete state.widgetCollections[payload.parentID]["children"][payload.id];
+        }
       }
   }
 }
