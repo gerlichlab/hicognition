@@ -1,6 +1,14 @@
 <template>
 <div @dragenter="expandCollection" @dragleave="shrinkCollection">
     <md-card :style="cssStyle" ref="collectionCard">
+        <md-card-header>
+            <md-button @click="handleZoomIn" class="md-icon-button">
+                <md-icon>zoom_in</md-icon>
+            </md-button>
+            <md-button @click="handleZoomOut" class="md-icon-button">
+                <md-icon>zoom_out</md-icon>
+            </md-button>
+        </md-card-header>
         <md-card-content class="nomargin">
             <widget class="inline"  v-for="item in flattenedElements" :key="item.id"
                                                       :height="item.height"
@@ -14,12 +22,6 @@
                                                       @deleteWidget="handleWidgetDelete" />
         </md-card-content>
         <md-card-actions>
-            <md-button @click="handleZoomIn" class="md-icon-button">
-                <md-icon>zoom_in</md-icon>
-            </md-button>
-            <md-button @click="handleZoomOut" class="md-icon-button">
-                <md-icon>zoom_out</md-icon>
-            </md-button>
             <md-button @click="deleteCollection" class="md-primary md-raised">Delete</md-button>
         </md-card-actions>
     </md-card>
@@ -44,7 +46,7 @@ export default {
             marginSizeWidth: 3,
             marginSizeHeight: 10,
             paddingWidth: 18,
-            paddingHeight: 60,
+            paddingHeight: 90,
             baseWidth: 300,
             baseHeight: 300,
             maxRowNumber: 0,
@@ -59,12 +61,6 @@ export default {
         }
     },
     computed: {
-        elementWidth: function() {
-            return (this.collectionWidth/(this.maxColumnNumber + 1));
-        },
-        elementHeight: function() {
-            return (this.collectionHeight/(this.maxRowNumber + 1));
-        },
         collectionHeight: function() {
             return (this.maxRowNumber + 1) * this.baseHeight;
         },
@@ -81,8 +77,8 @@ export default {
                 for(var colIndex = 0; colIndex <= this.maxColumnNumber; colIndex++){
                     emptyRow[colIndex] = {
                         id: nextID,
-                        height: this.elementHeight,
-                        width: this.elementWidth,
+                        height: this.baseHeight,
+                        width: this.baseWidth,
                         empty: true,
                         rowIndex: rowIndex,
                         colIndex: colIndex
@@ -95,8 +91,8 @@ export default {
             for (var child of this.children){
                 matrix[child.rowIndex][child.colIndex] = {
                     id: child.id,
-                        height: this.elementHeight,
-                        width: this.elementWidth,
+                        height: this.baseHeight,
+                        width: this.baseWidth,
                         empty: false,
                         rowIndex: child.rowIndex,
                         colIndex: child.colIndex
@@ -183,9 +179,14 @@ export default {
 <style scoped>
 
 .inline {
-  float: left;
+  display: inline-block;
+  vertical-align: top;
 }
 
+/* .md-card-header {
+    height: 3vh;
+}
+ */
 .halfSize {
   width: 50vw;
   height: 50vh;

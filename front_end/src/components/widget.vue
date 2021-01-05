@@ -1,9 +1,7 @@
 <template>
 <div>
     <div :style="cssStyle" class="smallMargin testbg" draggable="true" v-if="!isEmpty" @dragstart="handleDragStart" @dragend="handleDragEnd">
-        <md-card-header>
-            <div class="md-title">I have id {{id}}</div>
-        </md-card-header>
+            <div class="md-title text">I have id {{id}}</div>
     </div>
     <div :style="cssStyle" :class="emptyClass" v-else @dragenter="handleDragEnter" @dragleave="handleDragLeave"  @dragover.prevent @drop="handleDrop"/>
 </div>
@@ -73,6 +71,15 @@ export default {
 .testbg {
     background-color: red;
 }
+
+
+.text {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    padding: 10px;
+}
+
 .smallMargin {
     margin-left: 2px;
     margin-right: 2px;
