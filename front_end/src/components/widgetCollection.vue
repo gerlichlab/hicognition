@@ -230,12 +230,6 @@ export default {
                     id: sourceWidgetID
                 };
                 var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
-                // DEBUG
-                if (!widgetData){
-                    console.log(`Got undefined for ${queryObject}`);
-                    return
-                }
-                //DEBUG
                 // update changed data in the collection
                 widgetData["id"] = this.maxIDChildren + 1;
                 widgetData["rowIndex"] = rowIndex;
