@@ -191,7 +191,7 @@ export default {
         },
         shrinkCollection: function(e) {
             // check if card is collection card, all child elements trigger leave events
-            if (e.toElement == this.$refs["collectionCard"].$el){
+            if ((e.toElement == this.$refs["collectionCard"].$el) || (e.toElement.contains(this.$refs["collectionCard"].$el))){
                 this.maxRowNumber = Math.max(...this.children.map((element) => element.rowIndex));
                 this.maxColumnNumber = Math.max(...this.children.map((element) => element.colIndex));
             }
