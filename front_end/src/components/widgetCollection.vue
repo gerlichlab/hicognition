@@ -2,12 +2,38 @@
 <div @dragenter="expandCollection" @dragleave="shrinkCollection">
     <md-card :style="cssStyle" ref="collectionCard">
         <md-card-header>
-            <md-button @click="handleZoomIn" class="md-icon-button">
-                <md-icon>zoom_in</md-icon>
-            </md-button>
-            <md-button @click="handleZoomOut" class="md-icon-button">
-                <md-icon>zoom_out</md-icon>
-            </md-button>
+            <div class="md-layout md-gutter">
+                <div class="md-layout-item md-size-40">
+                    <div class="menu-button">
+                        <md-button @click="handleZoomIn" class="md-icon-button">
+                            <md-icon>zoom_in</md-icon>
+                        </md-button>
+                    </div>
+                    <div class="menu-button">
+                        <md-button @click="handleZoomOut" class="md-icon-button">
+                            <md-icon>zoom_out</md-icon>
+                        </md-button>
+                    </div>
+                </div>
+                <div class="md-layout-item md-size-45">
+                    <md-field>
+                    <label for="region">Region</label>
+                        <md-select
+                        v-model="selectedRegionID"
+                        name="region"
+                        id="region"
+                        placeholder="Region"
+                        >
+                        <md-option
+                            v-for="item in regions"
+                            :value="item.id"
+                            :key="item.id"
+                            >{{ item.dataset_name }}</md-option
+                        >
+                        </md-select>
+                    </md-field>
+                </div>
+            </div>
         </md-card-header>
         <md-card-content class="nomargin">
             <widget class="inline"  v-for="item in flattenedElements" :key="item.id"
@@ -43,10 +69,22 @@ export default {
     },
     data: function () {
         return {
+            regions: [
+                {
+                    id: 0,
+                    dataset_name: "test1"
+                },
+                {
+                    id: 1,
+                    dataset_name: "test2"
+                }
+            ]
+            ,
+            selectedRegionID: null,
             marginSizeWidth: 3,
             marginSizeHeight: 10,
             paddingWidth: 18,
-            paddingHeight: 90,
+            paddingHeight: 130,
             baseWidth: 300,
             baseHeight: 300,
             maxRowNumber: 0,
@@ -183,10 +221,28 @@ export default {
   vertical-align: top;
 }
 
-/* .md-card-header {
-    height: 3vh;
+.menu-button {
+    padding-top: 16px;
+    padding-right: 0px;
+    padding-left: 0px;
+    display: inline-block;
+    vertical-align: top;
 }
- */
+
+.md-card-header {
+    padding: 0px;
+}
+
+.md-layout-item {
+    padding-right: 2px;
+    padding-left: 2px;
+}
+
+.md-layout-gutter {
+    padding-right: 2px;
+    padding-left: 2px;
+}
+
 .halfSize {
   width: 50vw;
   height: 50vh;
