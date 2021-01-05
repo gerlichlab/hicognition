@@ -29,11 +29,40 @@ const predefinedModule = {
   }
 }
 
+const compareModule = {
+  namespaced: true, // otherwise mutations are registered globally, this way mutations are available as "compare/*"
+  state: function() {
+    return {
+      widgetCollections: {}, // collections of widgets that are currently displayed. Has structure {id: {children: {id: childProperties}}}
+
+    }
+  },
+  mutations: {
+      setWidgetCollection (state, id, child_id, child_properties) {
+        state.widgetCollections[id] = {children: {[child_id]: child_properties}}
+      },
+      setWidget (state, collection_id, child_id, child_properties) {
+        state.widgetCollections[collection_id]["children"][child_id] = child_properties
+      },
+      getWidgetProperties (state, collection_id, child_id) {
+        return state.widgetCollections[collection_id]["children"][child_id]
+      },
+      deleteWidgetCollection (state, id) {
+        delete state.widgetCollections[id];
+      },
+      deleteWidget (state, id, child_id) {
+        delete state.widgetCollections[id]["children"][child_id];
+      }
+  }
+}
+
+
 // create global store
 
 const store = new Vuex.Store({
   modules: {
-    predefined: predefinedModule
+    predefined: predefinedModule,
+    compare: compareModule
   },
   state: {
     token: null,

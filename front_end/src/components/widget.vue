@@ -1,7 +1,7 @@
 <template>
 <div>
     <div :style="cssStyle" class="smallMargin testbg" draggable="true" v-if="!isEmpty" @dragstart="handleDragStart" @dragend="handleDragEnd">
-            <div class="md-title text">I have id {{id}}</div>
+            <div class="md-title text">I have id {{text}}</div>
     </div>
     <div :style="cssStyle" :class="emptyClass" v-else @dragenter="handleDragEnter" @dragleave="handleDragLeave"  @dragover.prevent @drop="handleDrop"/>
 </div>
@@ -22,7 +22,8 @@ export default {
         id: Number,
         collectionID: Number,
         rowIndex: Number,
-        colIndex: Number
+        colIndex: Number,
+        text: Number
     },
     computed:{
         cssStyle: function() {

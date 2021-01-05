@@ -45,7 +45,8 @@
                                                       :rowIndex="item.rowIndex"
                                                       :colIndex="item.colIndex"
                                                       @widgetDrop="handleWidgetDrop"
-                                                      @deleteWidget="handleWidgetDelete" />
+                                                      @deleteWidget="handleWidgetDelete"
+                                                      :text="item.text" />
         </md-card-content>
         <md-card-actions>
             <md-button @click="deleteCollection" class="md-primary md-raised">Delete</md-button>
@@ -93,7 +94,8 @@ export default {
                     {
                         id: 1,
                         rowIndex: 0,
-                        colIndex: 0
+                        colIndex: 0,
+                        text: Math.floor(Math.random() * 100)
                     }
             ]
         }
@@ -133,7 +135,8 @@ export default {
                         width: this.baseWidth,
                         empty: false,
                         rowIndex: child.rowIndex,
-                        colIndex: child.colIndex
+                        colIndex: child.colIndex,
+                        text: child.text
                 }
             }
             return matrix;
