@@ -10,7 +10,7 @@
                         </md-button>
                     </div>
                     <div class="menu-button">
-                        <md-button @click="handleZoomOut" class="md-icon-button">
+                        <md-button @click="handleZoomOut" class="md-icon-button" :disabled="blockZoomOut">
                             <md-icon>zoom_out</md-icon>
                         </md-button>
                     </div>
@@ -32,13 +32,13 @@
                         </md-select>
                     </md-field>
                 </div>
-                <div class="md-layout-item md-size-30">
+                <div class="md-layout-item md-size-25">
                     <md-field class="padding-top">
                         <md-select
                         v-model="selectedWindowSize"
                         name="region"
                         id="region"
-                        placeholder="Window"
+                        placeholder="Size"
                         >
                         <md-option
                             v-for="item in windowSizes"
@@ -48,6 +48,13 @@
                         >
                         </md-select>
                     </md-field>
+                </div>
+                <div class="md-layout-item md-size-10 padding-left">
+                    <div class="menu-button">
+                        <md-button class="md-icon-button md-dense md-raised button-margin md-primary md-icon-button">
+                            <md-icon>cached</md-icon>
+                        </md-button>
+                    </div>
                 </div>
             </div>
         <md-divider></md-divider>
@@ -120,6 +127,12 @@ export default {
         }
     },
     computed: {
+        blockZoomOut: function() {
+            if (this.baseWidth <= 300){
+                return true
+            }
+            return false
+        },
         collectionHeight: function() {
             return (this.maxRowNumber + 1) * this.baseHeight;
         },
@@ -271,7 +284,11 @@ export default {
 }
 
 .padding-right {
-    padding-right: 15px;
+    padding-right: 10px;
+}
+
+.padding-left {
+    padding-left: 10px;
 }
 
 .padding-bottom {
