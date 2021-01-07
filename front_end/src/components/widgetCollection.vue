@@ -44,14 +44,14 @@
                             v-for="item in windowSizes"
                             :value="item.id"
                             :key="item.id"
-                            >{{ item.dataset_name }}</md-option
+                            >{{ item.windowsize }}</md-option
                         >
                         </md-select>
                     </md-field>
                 </div>
                 <div class="md-layout-item md-size-10 padding-left">
                     <div class="menu-button">
-                        <md-button class="md-icon-button md-dense md-raised button-margin md-primary md-icon-button">
+                        <md-button @click="fetchDatasets" class="md-icon-button md-dense md-raised button-margin md-primary md-icon-button">
                             <md-icon>cached</md-icon>
                         </md-button>
                     </div>
@@ -81,9 +81,11 @@
 
 import widget from "./widget"
 import Widget from './widget.vue'
+import { apiMixin } from "../mixins";
 
 export default {
     name: 'widgetCollection',
+    mixins: [apiMixin],
     props: {
         id: Number
     },
@@ -92,27 +94,8 @@ export default {
     },
     data: function () {
         return {
-            regions: [
-                {
-                    id: 0,
-                    dataset_name: "test1"
-                },
-                {
-                    id: 1,
-                    dataset_name: "test2"
-                }
-            ]
-            ,
-            windowSizes: [
-                {
-                    id: 0,
-                    dataset_name: "test1"
-                },
-                {
-                    id: 1,
-                    dataset_name: "test2"
-                }
-            ],
+            regions: [],
+            windowSizes: [],
             selectedRegionID: null,
             selectedWindowSize: null,
             marginSizeWidth: 4,
@@ -200,6 +183,16 @@ export default {
         }
     },
     methods: {
+        fetchDatasets: function() {
+        this.fetchData("datasets/").then((response) => {
+                // success, store datasets
+                this.$store.commit("setDatasets", response.data);
+                // update datasets; Only use completed datasets; completed is 1 if completed, 0 if in progress and -1 if failed
+                this.regions = response.data.filter(
+                (element) => element.filetype == "bedfile" && (element.processing_state == "finished")
+                );
+            });
+        },
         handleZoomIn: function() {
             this.baseWidth += 50;
             this.baseHeight += 50;
@@ -264,7 +257,14 @@ export default {
                         this.maxColumnNumber =  Math.max(...this.children.map((element) => element.colIndex));
                         }
 
-                     }
+                     },
+        },
+        selectedRegionID: function () {
+            // fetch pileup regions and assing to windowsizes
+            this.fetchData(`datasets/${this.selectedRegionID}/pileupregions/`).then((response) => {
+                this.windowSizes = response.data;
+                console.log(response.data)
+            });
         }
     },
     mounted: function() {
@@ -273,6 +273,8 @@ export default {
         for (var child of Object.values(collectionData.children)){
             this.children.push(child)
         }
+        // get datasets
+        this.fetchDatasets();
     }
 }
 </script>
