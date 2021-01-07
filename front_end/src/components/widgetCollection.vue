@@ -181,7 +181,6 @@ export default {
             }
         },
         deleteCollection: function() {
-            this.$emit("deleteCollection", this.id); // notify compare view to remove this collection
             this.$store.commit("compare/deleteWidgetCollection", this.id);
         },
         handleWidgetDrop: function(sourceColletionID, sourceWidgetID, rowIndex, colIndex) {
@@ -191,6 +190,8 @@ export default {
                 id: sourceWidgetID
             };
             var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
+            // delete original widget in store
+            this.$store.commit("compare/deleteWidget", queryObject);
             // update changed data in the collection
             widgetData["id"] = this.maxIDChildren + 1;
             widgetData["rowIndex"] = rowIndex;
@@ -198,8 +199,6 @@ export default {
             widgetData["parentID"] = this.id;
             // update changed data in store
             this.$store.commit("compare/setWidget", widgetData);
-            // delete original widget in store
-            this.$store.commit("compare/deleteWidget", queryObject);
         }
     },
     watch: {
@@ -217,7 +216,7 @@ export default {
                             }
                         // check if collection should be deleted
                         if (this.children.length == 0){
-                            this.$emit("deleteCollection", this.id);
+                            this.deleteCollection();
                         }
                         // reset collection to new size;
                         this.maxRowNumber = Math.max(...this.children.map((element) => element.rowIndex));
@@ -228,17 +227,11 @@ export default {
         }
     },
     mounted: function() {
-        // add newEntry to store. 
-        var initialChild = {
-                        id: 1,
-                        rowIndex: 0,
-                        colIndex: 0,
-                        text: Math.floor(Math.random() * 100),
-                        parentID: this.id,
-                        isCooler: true,
-                        dataset: null
-                    };
-        this.$store.commit("compare/setWidgetCollection", initialChild);
+        // initialize from store
+        var collectionData = this.$store.getters["compare/getCollectionProperties"](this.id);
+        for (var child of Object.values(collectionData.children)){
+            this.children.push(child)
+        }
     }
 }
 </script>

@@ -128,7 +128,20 @@ export default {
             var sourceColletionID = event.dataTransfer.getData("collection-id");
             this.emptyClass.pop();
             this.$emit("widgetDrop", Number(sourceColletionID), Number(sourceWidgetID), this.rowIndex, this.colIndex);
-        }
+        },
+        initializeWidget: function() {
+            // initialize widget from store
+            if (!this.empty){
+                var queryObject = {
+                    parentID: this.collectionID,
+                    id: this.id
+                };
+                var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
+                this.isCooler = widgetData["isCooler"];
+                this.dataset = widgetData["dataset"];
+                this.text = widgetData["text"];
+                }
+            }
     },
     watch: {
         isCooler: function() {
@@ -138,17 +151,10 @@ export default {
         }
     },
     mounted: function() {
-        // initialize widget from store
-        if (!this.empty){
-            var queryObject = {
-                parentID: this.collectionID,
-                id: this.id
-            };
-            var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
-            this.isCooler = widgetData["isCooler"];
-            this.dataset = widgetData["dataset"];
-            this.text = widgetData["text"];
-        }
+        this.initializeWidget()
+    },
+    updated: function(){
+        this.initializeWidget()
     }
 }
 </script>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <widget-collection class="inline top-margin" v-for="item in collections" :key="item.id" :id="item.id" @deleteCollection="handleDelete"/>
+    <widget-collection class="inline top-margin" v-for="item in collections" :key="item.id" :id="item.id" />
     <div class="bottom-right">
       <md-button class="md-fab md-primary" @click="addCollection">
           <md-icon>add</md-icon>
@@ -24,19 +24,36 @@ export default {
     };
   },
   methods: {
-    handleDelete: function(removeID) {
-      this.collections = this.collections.filter((element) => {
-        return element.id != removeID;
-      });
-    },
     addCollection: function() {
+      // add newEntry to store for collection with a single child
+      var initialChild = {
+                      id: 1,
+                      rowIndex: 0,
+                      colIndex: 0,
+                      text: Math.floor(Math.random() * 100),
+                      parentID: this.currentID,
+                      isCooler: true,
+                      dataset: null
+                  };
+        this.$store.commit("compare/setWidgetCollection", initialChild);
       this.currentID += 1;
-      this.collections.push(
-        {
-          id: this.currentID
-        }
-      )
     }
+  },
+  watch: {
+      // watch for changes in store -> compare route only needs to check which collections to render
+      "$store.state.compare.widgetCollections": {
+            deep: true,
+            handler: function(newValue, oldValue) {
+                        // check if own entry changed
+                        var newEntry = Object.keys(newValue);
+                        var oldEntry = Object.keys(oldValue);
+                        if (newEntry != oldEntry){
+                            this.collections = newEntry.map((elem) => {
+                              return {id: Number(elem)}
+                            });
+                          }
+                        }
+                     }
   },
   created: function() {
     // clear widgetCollections

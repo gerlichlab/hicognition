@@ -39,11 +39,13 @@ const compareModule = {
   },
   getters: {
       getWidgetProperties: (state) => (payload) => {
-        var returnObject = Object.assign({}, state.widgetCollections[payload.parentID]["children"][payload.id]);
-        return returnObject;
+        return Object.assign({}, state.widgetCollections[payload.parentID]["children"][payload.id])
+      },
+      getCollectionProperties: (state) => (collectionID) => {
+        return Object.assign({}, state.widgetCollections[collectionID])
       },
       collectionExists: (state) => (id) => {
-        return id in state.widgetCollections;
+        return id in state.widgetCollections
       }
   },
   mutations: {
