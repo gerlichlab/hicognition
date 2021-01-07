@@ -1,11 +1,25 @@
 <template>
 <div>
     <div :style="cssStyle" class="smallMargin testbg" draggable="true" v-if="!isEmpty" @dragstart="handleDragStart">
-        <div class="md-layout md-gutter">
-            <div class="md-layout-item md-size-35 md-horizontal-alignmment-center">
-                <md-switch v-model="isCooler" class="md-primary padding-top padding-left">{{ widgetState }}</md-switch>
+        <div class="md-layout">
+            <div class="md-layout-item md-size-35 padding-left padding-right">
+                <md-field class="padding-top">
+                        <md-select
+                        v-model="selectedBinsize"
+                        name="binsize"
+                        id="binsze"
+                        placeholder="Binsize"
+                        >
+                        <md-option
+                            v-for="item in binsizes"
+                            :value="item.id"
+                            :key="item.id"
+                            >{{ item.dataset_name }}</md-option
+                        >
+                        </md-select>
+                </md-field>
             </div>
-            <div class="md-layout-item md-size-40">
+            <div class="md-layout-item md-size-40 padding-left padding-right">
                 <md-field class="padding-top">
                         <md-select
                         v-model="selectedDataset"
@@ -48,7 +62,12 @@ export default {
             isCooler: true,
             text: null,
             selectedDataset: null,
+            selectedBinsize: null,
             emptyClass: ["smallMargin", "empty"],
+            binsizes: [
+                {"id": 1, "dataset_name": 10000},
+                {"id": 2, "dataset_name": 20000}
+            ],
             datasets: [
                 {
                     "dataset_name": "test1",
@@ -101,7 +120,7 @@ export default {
                 parentID: this.collectionID,
                 text: this.text,
                 dataset: this.selectedDataset,
-                isCooler: this.isCooler
+                binsize: this.selectedBinsize
             }
         },
         deleteWidget: function(){
@@ -140,6 +159,7 @@ export default {
                 
                 this.isCooler = widgetData["isCooler"];
                 this.selectedDataset = widgetData["dataset"];
+                this.selectedBinsize = widgetData["binsize"];
                 this.text = widgetData["text"];
                 }
             }
@@ -151,6 +171,11 @@ export default {
             this.$store.commit("compare/setWidget", newObject);
         },
         selectedDataset: function() {
+            // dataset changed, signal to store
+            var newObject = this.toStoreObject();
+            this.$store.commit("compare/setWidget", newObject);
+        },
+        selectedBinsize: function() {
             // dataset changed, signal to store
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
@@ -174,6 +199,10 @@ export default {
 
 .no-padding-right {
     padding-right: 0px;
+}
+
+.padding-right {
+    padding-right: 15px;
 }
 
 .padding-left {

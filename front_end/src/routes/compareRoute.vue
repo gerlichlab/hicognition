@@ -33,7 +33,8 @@ export default {
                       text: Math.floor(Math.random() * 100),
                       parentID: this.currentID,
                       isCooler: true,
-                      dataset: null
+                      dataset: null,
+                      binsize: null
                   };
         this.$store.commit("compare/setWidgetCollection", initialChild);
       this.currentID += 1;
