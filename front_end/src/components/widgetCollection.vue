@@ -2,8 +2,8 @@
 <div @dragenter="expandCollection" @dragleave="shrinkCollection">
     <md-card :style="cssStyle" ref="collectionCard">
         <md-card-header>
-            <div class="md-layout md-gutter">
-                <div class="md-layout-item md-size-40">
+            <div class="md-layout">
+                <div class="md-layout-item md-size-30 padding-right">
                     <div class="menu-button">
                         <md-button @click="handleZoomIn" class="md-icon-button">
                             <md-icon>zoom_in</md-icon>
@@ -15,7 +15,7 @@
                         </md-button>
                     </div>
                 </div>
-                <div class="md-layout-item md-size-45">
+                <div class="md-layout-item md-size-30 padding-right">
                     <md-field class="padding-top">
                         <md-select
                         v-model="selectedRegionID"
@@ -25,6 +25,23 @@
                         >
                         <md-option
                             v-for="item in regions"
+                            :value="item.id"
+                            :key="item.id"
+                            >{{ item.dataset_name }}</md-option
+                        >
+                        </md-select>
+                    </md-field>
+                </div>
+                <div class="md-layout-item md-size-30">
+                    <md-field class="padding-top">
+                        <md-select
+                        v-model="selectedWindowSize"
+                        name="region"
+                        id="region"
+                        placeholder="Window"
+                        >
+                        <md-option
+                            v-for="item in windowSizes"
                             :value="item.id"
                             :key="item.id"
                             >{{ item.dataset_name }}</md-option
@@ -79,10 +96,21 @@ export default {
                 }
             ]
             ,
+            windowSizes: [
+                {
+                    id: 0,
+                    dataset_name: "test1"
+                },
+                {
+                    id: 1,
+                    dataset_name: "test2"
+                }
+            ],
             selectedRegionID: null,
-            marginSizeWidth: 3,
+            selectedWindowSize: null,
+            marginSizeWidth: 4,
             marginSizeHeight: 10,
-            paddingWidth: 18,
+            paddingWidth: 11,
             paddingHeight: 130,
             baseWidth: 300,
             baseHeight: 300,
@@ -242,6 +270,10 @@ export default {
     padding-top: 2px;
 }
 
+.padding-right {
+    padding-right: 15px;
+}
+
 .padding-bottom {
     padding-bottom: 10px;
 }
@@ -263,15 +295,6 @@ export default {
     padding: 0px;
 }
 
-.md-layout-item {
-    padding-right: 2px;
-    padding-left: 2px;
-}
-
-.md-layout-gutter {
-    padding-right: 2px;
-    padding-left: 2px;
-}
 
 .halfSize {
   width: 50vw;

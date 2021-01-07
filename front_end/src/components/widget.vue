@@ -1,6 +1,6 @@
 <template>
 <div>
-    <div :style="cssStyle" class="smallMargin testbg" draggable="true" v-if="!isEmpty" @dragstart="handleDragStart">
+    <div :style="cssStyle" class="smallMargin md-elevation-1 bg" draggable="true" v-if="!isEmpty" @dragstart="handleDragStart">
         <div class="md-layout">
             <div class="md-layout-item md-size-35 padding-left padding-right">
                 <md-field class="padding-top">
@@ -192,7 +192,7 @@ export default {
 
 <style scoped>
 
-.testbg {
+.bg {
     background-color: rgba(211, 211, 211, 0.2);
 }
 
