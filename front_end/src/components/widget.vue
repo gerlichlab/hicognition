@@ -1,7 +1,7 @@
 <template>
 <div>
     <div :style="cssStyle" class="smallMargin testbg" draggable="true" v-if="!isEmpty" @dragstart="handleDragStart" @dragend="handleDragEnd">
-            <div class="md-title text">I have text {{text}} and id {{id}}</div>
+            <div class="md-title text">I have text {{text}}</div>
     </div>
     <div :style="cssStyle" :class="emptyClass" v-else @dragenter="handleDragEnter" @dragleave="handleDragLeave"  @dragover.prevent @drop="handleDrop"/>
 </div>
@@ -76,7 +76,7 @@ export default {
 <style scoped>
 
 .testbg {
-    background-color: red;
+    background-color: darkgray;
 }
 
 
