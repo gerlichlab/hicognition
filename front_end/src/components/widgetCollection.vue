@@ -44,9 +44,7 @@
                                                       :collectionID="id"
                                                       :rowIndex="item.rowIndex"
                                                       :colIndex="item.colIndex"
-                                                      @widgetDrop="handleWidgetDrop"
-                                                      @deleteWidget="handleWidgetDelete"
-                                                      :text="item.text" />
+                                                      @widgetDrop="handleWidgetDrop" />
         </md-card-content>
         <md-card-actions>
             <md-button @click="deleteCollection" class="md-primary md-raised">Delete</md-button>
@@ -90,15 +88,7 @@ export default {
             baseHeight: 300,
             maxRowNumber: 0,
             maxColumnNumber: 0,
-            children: [
-                    {
-                        id: 1,
-                        rowIndex: 0,
-                        colIndex: 0,
-                        text: Math.floor(Math.random() * 100),
-                        parentID: this.id
-                    }
-            ]
+            children: []
         }
     },
     computed: {
@@ -123,7 +113,7 @@ export default {
                         empty: true,
                         rowIndex: rowIndex,
                         colIndex: colIndex,
-                        parentID: this.id
+                        parentID: this.id,
                     }
                     nextID += 1;
                 }
@@ -177,19 +167,6 @@ export default {
             this.baseWidth -= 50;
             this.baseHeight -= 50;
         },
-        handleWidgetDelete: function(id) {
-            this.children = this.children.filter((el) => {
-                return el.id != id
-            });
-            // reset indices to new value;
-            this.maxRowNumber = Math.max(...this.children.map((element) => element.rowIndex));
-            this.maxColumnNumber =  Math.max(...this.children.map((element) => element.colIndex));
-            // check if collection should be deleted
-            if (this.children.length == 0){
-                this.$emit("deleteCollection", this.id);
-                //this.$store.commit("compare/deleteWidgetCollection", this.id);
-            }
-        },
         expandCollection: function(){
             var maxRowElements = Math.max(...this.children.map((element) => element.rowIndex));
             var maxColElements = Math.max(...this.children.map((element) => element.colIndex));
@@ -208,47 +185,60 @@ export default {
             this.$store.commit("compare/deleteWidgetCollection", this.id);
         },
         handleWidgetDrop: function(sourceColletionID, sourceWidgetID, rowIndex, colIndex) {
-            // if parentID was same as source ID, just update row and columns. This cannot be handled by events since the receiving element of dragend vanishes.
-            if (sourceColletionID == this.id){
-                var currentChild = this.children.find((el) => el.id == sourceWidgetID);
-                // delete old entry from store
-                this.$store.commit("compare/deleteWidget", {"id": currentChild.id, "parentID": this.id});
-                // increment id and update row and columns
-                currentChild["id"] = this.maxIDChildren + 1;
-                currentChild["rowIndex"] = rowIndex;
-                currentChild["colIndex"] = colIndex;
-                // update store with new properties
-                var payload = Object.assign({}, currentChild);
-                this.$store.commit("compare/setWidget", payload);
-                // restore size of collection
-                this.maxRowNumber = Math.max(...this.children.map((element) => element.rowIndex));
-                this.maxColumnNumber =  Math.max(...this.children.map((element) => element.colIndex));
-            }else{
-                // obtain data from store
-                var queryObject = {
-                    parentID: sourceColletionID,
-                    id: sourceWidgetID
-                };
-                var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
-                // update changed data in the collection
-                widgetData["id"] = this.maxIDChildren + 1;
-                widgetData["rowIndex"] = rowIndex;
-                widgetData["colIndex"] = colIndex;
-                widgetData["parentID"] = this.id;
-                this.children.push(widgetData);
-                // update changed data in store
-                this.$store.commit("compare/setWidget", widgetData);
-                // reset indices to new value;
-                this.maxRowNumber = Math.max(...this.children.map((element) => element.rowIndex));
-                this.maxColumnNumber =  Math.max(...this.children.map((element) => element.colIndex));
-            }
+            // obtain data from store
+            var queryObject = {
+                parentID: sourceColletionID,
+                id: sourceWidgetID
+            };
+            var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
+            // update changed data in the collection
+            widgetData["id"] = this.maxIDChildren + 1;
+            widgetData["rowIndex"] = rowIndex;
+            widgetData["colIndex"] = colIndex;
+            widgetData["parentID"] = this.id;
+            // update changed data in store
+            this.$store.commit("compare/setWidget", widgetData);
+            // delete original widget in store
+            this.$store.commit("compare/deleteWidget", queryObject);
+        }
+    },
+    watch: {
+        // watch for changes in store
+        "$store.state.compare.widgetCollections": {
+            deep: true,
+            handler: function(newValue, oldValue) {
+                        // check if own entry changed
+                        var newEntry = Object.assign({}, newValue[this.id]);
+                        var oldEntry = Object.assign({}, oldValue[this.id]);
+                        if (newEntry != oldEntry){
+                            this.children = [];
+                            for (var child of Object.values(newEntry.children)){
+                                this.children.push(child)
+                            }
+                        // check if collection should be deleted
+                        if (this.children.length == 0){
+                            this.$emit("deleteCollection", this.id);
+                        }
+                        // reset collection to new size;
+                        this.maxRowNumber = Math.max(...this.children.map((element) => element.rowIndex));
+                        this.maxColumnNumber =  Math.max(...this.children.map((element) => element.colIndex));
+                        }
+
+                     }
         }
     },
     mounted: function() {
-        // add self to store. Has only one child at init
-        var payload = Object.assign({}, this.children[0]);
-        payload["parentID"] = this.id;
-        this.$store.commit("compare/setWidgetCollection", payload);
+        // add newEntry to store. 
+        var initialChild = {
+                        id: 1,
+                        rowIndex: 0,
+                        colIndex: 0,
+                        text: Math.floor(Math.random() * 100),
+                        parentID: this.id,
+                        isCooler: true,
+                        dataset: null
+                    };
+        this.$store.commit("compare/setWidgetCollection", initialChild);
     }
 }
 </script>

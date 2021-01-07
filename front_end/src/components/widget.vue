@@ -1,8 +1,8 @@
 <template>
 <div>
-    <div :style="cssStyle" class="smallMargin testbg" draggable="true" v-if="!isEmpty" @dragstart="handleDragStart" @dragend="handleDragEnd">
+    <div :style="cssStyle" class="smallMargin testbg" draggable="true" v-if="!isEmpty" @dragstart="handleDragStart">
         <div class="md-layout md-gutter">
-            <div class="md-layout-item md-size-30 md-horizontal-alignmment-center">
+            <div class="md-layout-item md-size-35 md-horizontal-alignmment-center">
                 <md-switch v-model="isCooler" class="md-primary padding-top padding-left">{{ widgetState }}</md-switch>
             </div>
             <div class="md-layout-item md-size-40">
@@ -14,7 +14,7 @@
                         placeholder="Dataset"
                         >
                         <md-option
-                            v-for="item in dataset"
+                            v-for="item in datasets"
                             :value="item.id"
                             :key="item.id"
                             >{{ item.dataset_name }}</md-option
@@ -30,6 +30,11 @@
                 </div>
             </div>
         </div>
+        <div class="md-layout md-gutter">
+            <div class="md-layout-item">
+            <div class="padding-left">I am {{ text }}.</div>
+            </div>
+        </div>
     </div>
     <div :style="cssStyle" :class="emptyClass" v-else @dragenter="handleDragEnter" @dragleave="handleDragLeave"  @dragover.prevent @drop="handleDrop"/>
 </div>
@@ -41,9 +46,10 @@ export default {
     data: function () {
         return {
             isCooler: true,
+            text: null,
             selectedDataset: null,
             emptyClass: ["smallMargin", "empty"],
-            dataset: [
+            datasets: [
                 {
                     "dataset_name": "test1",
                     "id": 1
@@ -63,7 +69,6 @@ export default {
         collectionID: Number,
         rowIndex: Number,
         colIndex: Number,
-        text: Number
     },
     computed:{
         widgetState: function(){
@@ -87,22 +92,26 @@ export default {
         }
     },
     methods: {
+        toStoreObject: function(){
+            // serialize object for storing its state in the store
+            return {
+                colIndex: this.colIndex,
+                rowIndex: this.rowIndex,
+                id: this.id,
+                parentID: this.collectionID,
+                text: this.text,
+                dataset: this.selectedDataset,
+                isCooler: this.isCooler
+            }
+        },
         deleteWidget: function(){
-            console.log("triggered");
-            // delete widget from upstream collection
-            this.$emit("deleteWidget", this.id);
+            // delete widget from store
             var payload = {
                 parentID: this.collectionID,
                 id: this.id
             }
             // delete widget from store
             this.$store.commit("compare/deleteWidget", payload);
-        },
-        handleDragEnd: function(e){
-            if (e.dataTransfer.dropEffect != "none"){
-                // successfully moved, delete element at original location
-                this.deleteWidget()
-            }
         },
         handleDragStart: function(e) {
             e.dataTransfer.setData('widget-id', this.id);
@@ -119,6 +128,26 @@ export default {
             var sourceColletionID = event.dataTransfer.getData("collection-id");
             this.emptyClass.pop();
             this.$emit("widgetDrop", Number(sourceColletionID), Number(sourceWidgetID), this.rowIndex, this.colIndex);
+        }
+    },
+    watch: {
+        isCooler: function() {
+            // is Cooler changed, signal to store
+            var newObject = this.toStoreObject();
+            this.$store.commit("compare/setWidget", newObject);
+        }
+    },
+    mounted: function() {
+        // initialize widget from store
+        if (!this.empty){
+            var queryObject = {
+                parentID: this.collectionID,
+                id: this.id
+            };
+            var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
+            this.isCooler = widgetData["isCooler"];
+            this.dataset = widgetData["dataset"];
+            this.text = widgetData["text"];
         }
     }
 }

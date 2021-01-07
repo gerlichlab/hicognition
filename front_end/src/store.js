@@ -51,18 +51,22 @@ const compareModule = {
         state.widgetCollections = {};
       },
       setWidgetCollection (state, payload) {
-        state.widgetCollections[payload.parentID] = {children: {[payload.id]: payload}};
+        // Vue.set is needed to preserve reactivity
+        Vue.set(state.widgetCollections, payload.parentID, {children: {[payload.id]: payload}});
       },
       setWidget (state, payload) {
-        state.widgetCollections[payload.parentID]["children"][payload.id] = payload;
+        // Vue.set is needed to preserve reactivity
+        Vue.set(state.widgetCollections[payload.parentID]["children"], payload.id, payload);
       },
       deleteWidgetCollection (state, id) {
-        delete state.widgetCollections[id];
+        // vue delete is needed to preserve reactivity
+        Vue.delete(state.widgetCollections, id);
       },
       deleteWidget (state, payload) {
         // check whether widget exists before deletion
         if (payload.parentID in state.widgetCollections){
-          delete state.widgetCollections[payload.parentID]["children"][payload.id];
+          // vue delete is needed to preserve reactivity
+          Vue.delete(state.widgetCollections[payload.parentID]["children"], payload.id);
         }
       }
   }
