@@ -2,23 +2,6 @@
 <div>
     <div :style="cssStyle" class="smallMargin md-elevation-1 bg" draggable="true" v-if="!isEmpty" @dragstart="handleDragStart">
         <div class="md-layout">
-            <div class="md-layout-item md-size-35 padding-left padding-right">
-                <md-field class="padding-top">
-                        <md-select
-                        v-model="selectedBinsize"
-                        name="binsize"
-                        id="binsze"
-                        placeholder="Binsize"
-                        >
-                        <md-option
-                            v-for="item in binsizes"
-                            :value="item.id"
-                            :key="item.id"
-                            >{{ item.dataset_name }}</md-option
-                        >
-                        </md-select>
-                </md-field>
-            </div>
             <div class="md-layout-item md-size-40 padding-left padding-right">
                 <md-field class="padding-top">
                         <md-select
@@ -26,9 +9,28 @@
                         name="dataset"
                         id="dataset"
                         placeholder="Dataset"
+                        :disabled="!allowDatasetSelection"
                         >
                         <md-option
                             v-for="item in datasets"
+                            :value="item.id"
+                            :key="item.id"
+                            >{{ item.dataset_name }}</md-option
+                        >
+                        </md-select>
+                </md-field>
+            </div>
+            <div class="md-layout-item md-size-35 padding-left padding-right">
+                <md-field class="padding-top">
+                        <md-select
+                        v-model="selectedBinsize"
+                        name="binsize"
+                        id="binsze"
+                        placeholder="Binsize"
+                        :disabled="!allowBinsizeSelection"
+                        >
+                        <md-option
+                            v-for="item in binsizes"
                             :value="item.id"
                             :key="item.id"
                             >{{ item.dataset_name }}</md-option
@@ -63,21 +65,10 @@ export default {
             text: null,
             selectedDataset: null,
             selectedBinsize: null,
+            pileupregionID: null,
             emptyClass: ["smallMargin", "empty"],
-            binsizes: [
-                {"id": 1, "dataset_name": 10000},
-                {"id": 2, "dataset_name": 20000}
-            ],
-            datasets: [
-                {
-                    "dataset_name": "test1",
-                    "id": 1
-                },
-                {
-                    "dataset_name": "test2",
-                    "id": 2
-                }
-            ]
+            binsizes: [],
+            datasets: []
         }
     },
     props: {
@@ -90,6 +81,15 @@ export default {
         colIndex: Number,
     },
     computed:{
+        allowDatasetSelection: function() {
+            if (this.pileupregionID){
+                return true
+            }
+            return false
+        },
+        allowBinsizeSelection: function() {
+            return this.binsizes.length != 0
+        },
         widgetState: function(){
             if (this.isCooler){
                 return "HiC"
@@ -156,15 +156,33 @@ export default {
                     id: this.id
                 };
                 var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
-                
                 this.isCooler = widgetData["isCooler"];
                 this.selectedDataset = widgetData["dataset"];
                 this.selectedBinsize = widgetData["binsize"];
+                this.pileupregionID = this.$store.getters["compare/getCollectionProperties"](this.collectionID)["pileupregionID"];
                 this.text = widgetData["text"];
+                // assign available datasets
+                this.datasets = this.$store.getters.getCoolers
                 }
             }
     },
     watch: {
+        "$store.state.datasets": function() {
+            // updates datasets if they change
+            this.datasets = this.$store.getters.getCoolers
+        },
+        // watch for changes in store to be able to update pileupregion
+        "$store.state.compare.widgetCollections": {
+            deep: true,
+            handler: function(newValue) {
+                        // check if pileupregion has changed
+                        var newEntry = newValue[this.collectionID]["pileupregionID"];
+                        if (newEntry != this.pileupregionID){
+                            this.pileupregionID = newEntry;
+                        }
+
+                     },
+        },
         isCooler: function() {
             // is Cooler changed, signal to store
             var newObject = this.toStoreObject();

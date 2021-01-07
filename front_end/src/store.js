@@ -56,6 +56,9 @@ const compareModule = {
         // Vue.set is needed to preserve reactivity
         Vue.set(state.widgetCollections, payload.parentID, {children: {[payload.id]: payload}});
       },
+      setCollectionPileupRegion (state, payload){
+        Vue.set(state.widgetCollections[payload.id], "pileupregionID", payload.pileupregionID)
+      },
       setWidget (state, payload) {
         // Vue.set is needed to preserve reactivity
         Vue.set(state.widgetCollections[payload.parentID]["children"], payload.id, payload);
@@ -89,6 +92,11 @@ const store = new Vuex.Store({
   getters: {
       isTokenEmpty: state => {
           return state.token == null
+      },
+      getCoolers: state => {
+        return state.datasets.filter(
+          (element) => element.filetype == "cooler" && (element.processing_state == "finished")
+        );
       }
   },
   mutations: {

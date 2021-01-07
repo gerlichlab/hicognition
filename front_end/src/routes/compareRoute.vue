@@ -11,9 +11,11 @@
 
 <script>
 import widgetCollection from "../components/widgetCollection.vue";
+import { apiMixin } from "../mixins";
 
 export default {
   name: "CompareRoute",
+  mixins: [apiMixin],
   components: {
     widgetCollection,
   },
@@ -24,6 +26,12 @@ export default {
     };
   },
   methods: {
+      fetchDatasets: function() {
+        this.fetchData("datasets/").then((response) => {
+                // success, store datasets
+                this.$store.commit("setDatasets", response.data);
+            });
+        },
     addCollection: function() {
       // add newEntry to store for collection with a single child
       var initialChild = {
@@ -60,6 +68,7 @@ export default {
   created: function() {
     // clear widgetCollections
     this.$store.commit("compare/clearWidgetCollections");
+    this.fetchDatasets();
   }
 };
 </script>

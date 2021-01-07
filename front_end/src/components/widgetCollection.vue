@@ -276,13 +276,9 @@ export default {
             this.selectedWindowSize = null;
         },
         selectedWindowSize: function() {
-            console.log("entered");
-            // set new pileupregion for all children
-            for (var child of this.children){
-                var newData = Object.assign({}, child);
-                newData["pileupregionID"] = this.selectedWindowSize;
-                this.$store.commit("compare/setWidget", newData);
-            }
+            // set new pileupregion
+            var payload = {"id": this.id, "pileupregionID": this.selectedWindowSize};
+            this.$store.commit("compare/setCollectionPileupRegion", payload);
         }
     },
     mounted: function() {
