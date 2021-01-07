@@ -137,8 +137,9 @@ export default {
                     id: this.id
                 };
                 var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
+                
                 this.isCooler = widgetData["isCooler"];
-                this.dataset = widgetData["dataset"];
+                this.selectedDataset = widgetData["dataset"];
                 this.text = widgetData["text"];
                 }
             }
@@ -146,6 +147,11 @@ export default {
     watch: {
         isCooler: function() {
             // is Cooler changed, signal to store
+            var newObject = this.toStoreObject();
+            this.$store.commit("compare/setWidget", newObject);
+        },
+        selectedDataset: function() {
+            // dataset changed, signal to store
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
         }
