@@ -12,6 +12,7 @@
   "dependencies": {
     "axios": "^0.20.0",
     "d3": "^6.2.0",
+    "sass": "^1.32.2",
     "vue": "^2.5.2",
     "vue-apexcharts": "^1.6.0",
     "vue-material": "latest",
