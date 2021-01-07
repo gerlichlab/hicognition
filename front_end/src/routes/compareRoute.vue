@@ -34,7 +34,8 @@ export default {
                       parentID: this.currentID,
                       isCooler: true,
                       dataset: null,
-                      binsize: null
+                      binsize: null,
+                      pileupregionID: null
                   };
         this.$store.commit("compare/setWidgetCollection", initialChild);
       this.currentID += 1;

@@ -39,6 +39,7 @@
                         name="region"
                         id="region"
                         placeholder="Size"
+                        :disabled="!windowSizesAvailable"
                         >
                         <md-option
                             v-for="item in windowSizes"
@@ -110,6 +111,12 @@ export default {
         }
     },
     computed: {
+        windowSizesAvailable: function() {
+            if (this.windowSizes.length != 0){
+                return true
+            }
+            return false
+        },
         blockZoomOut: function() {
             if (this.baseWidth <= 300){
                 return true
@@ -265,6 +272,17 @@ export default {
                 this.windowSizes = response.data;
                 console.log(response.data)
             });
+            // clear region
+            this.selectedWindowSize = null;
+        },
+        selectedWindowSize: function() {
+            console.log("entered");
+            // set new pileupregion for all children
+            for (var child of this.children){
+                var newData = Object.assign({}, child);
+                newData["pileupregionID"] = this.selectedWindowSize;
+                this.$store.commit("compare/setWidget", newData);
+            }
         }
     },
     mounted: function() {
