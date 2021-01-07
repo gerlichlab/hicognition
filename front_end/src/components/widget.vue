@@ -1,7 +1,35 @@
 <template>
 <div>
     <div :style="cssStyle" class="smallMargin testbg" draggable="true" v-if="!isEmpty" @dragstart="handleDragStart" @dragend="handleDragEnd">
-            <div class="md-title text">I have text {{text}}</div>
+        <div class="md-layout md-gutter">
+            <div class="md-layout-item md-size-30 md-horizontal-alignmment-center">
+                <md-switch v-model="isCooler" class="md-primary padding-top padding-left">{{ widgetState }}</md-switch>
+            </div>
+            <div class="md-layout-item md-size-40">
+                <md-field class="padding-top">
+                        <md-select
+                        v-model="selectedDataset"
+                        name="dataset"
+                        id="dataset"
+                        placeholder="Dataset"
+                        >
+                        <md-option
+                            v-for="item in dataset"
+                            :value="item.id"
+                            :key="item.id"
+                            >{{ item.dataset_name }}</md-option
+                        >
+                        </md-select>
+                </md-field>
+            </div>
+            <div class="md-layout-item md-size-20">
+                <div class="padding-top-large">
+                  <md-button  @click="deleteWidget"  class="md-icon-button md-accent">
+                    <md-icon>delete</md-icon>
+                 </md-button>
+                </div>
+            </div>
+        </div>
     </div>
     <div :style="cssStyle" :class="emptyClass" v-else @dragenter="handleDragEnter" @dragleave="handleDragLeave"  @dragover.prevent @drop="handleDrop"/>
 </div>
@@ -12,7 +40,19 @@ export default {
     name: 'widget',
     data: function () {
         return {
-            emptyClass: ["smallMargin", "empty"]
+            isCooler: true,
+            selectedDataset: null,
+            emptyClass: ["smallMargin", "empty"],
+            dataset: [
+                {
+                    "dataset_name": "test1",
+                    "id": 1
+                },
+                {
+                    "dataset_name": "test2",
+                    "id": 2
+                }
+            ]
         }
     },
     props: {
@@ -26,6 +66,12 @@ export default {
         text: Number
     },
     computed:{
+        widgetState: function(){
+            if (this.isCooler){
+                return "HiC"
+            }
+            return "BigWig"
+        },
         cssStyle: function() {
             return {
                 height: `${this.height}px`,
@@ -41,16 +87,21 @@ export default {
         }
     },
     methods: {
+        deleteWidget: function(){
+            console.log("triggered");
+            // delete widget from upstream collection
+            this.$emit("deleteWidget", this.id);
+            var payload = {
+                parentID: this.collectionID,
+                id: this.id
+            }
+            // delete widget from store
+            this.$store.commit("compare/deleteWidget", payload);
+        },
         handleDragEnd: function(e){
             if (e.dataTransfer.dropEffect != "none"){
                 // successfully moved, delete element at original location
-                this.$emit("deleteWidget", this.id);
-                var payload = {
-                    parentID: this.collectionID,
-                    id: this.id
-                }
-                // delete widget
-                this.$store.commit("compare/deleteWidget", payload);
+                this.deleteWidget()
             }
         },
         handleDragStart: function(e) {
@@ -76,9 +127,25 @@ export default {
 <style scoped>
 
 .testbg {
-    background-color: darkgray;
+    background-color: rgba(211, 211, 211, 0.2);
 }
 
+
+.no-padding-right {
+    padding-right: 0px;
+}
+
+.padding-left {
+    padding-left: 10px;
+}
+
+.padding-top {
+    padding-top: 2px;
+}
+
+.padding-top-large {
+    padding-top: 10px;
+}
 
 .text {
     display: flex;

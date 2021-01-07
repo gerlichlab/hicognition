@@ -16,8 +16,7 @@
                     </div>
                 </div>
                 <div class="md-layout-item md-size-45">
-                    <md-field>
-                    <label for="region">Region</label>
+                    <md-field class="padding-top">
                         <md-select
                         v-model="selectedRegionID"
                         name="region"
@@ -34,6 +33,7 @@
                     </md-field>
                 </div>
             </div>
+        <md-divider></md-divider>
         </md-card-header>
         <md-card-content class="nomargin">
             <widget class="inline"  v-for="item in flattenedElements" :key="item.id"
@@ -255,13 +255,21 @@ export default {
 
 <style scoped>
 
+.padding-top {
+    padding-top: 2px;
+}
+
+.padding-bottom {
+    padding-bottom: 10px;
+}
+
 .inline {
   display: inline-block;
   vertical-align: top;
 }
 
 .menu-button {
-    padding-top: 16px;
+    padding-top: 10px;
     padding-right: 0px;
     padding-left: 0px;
     display: inline-block;
