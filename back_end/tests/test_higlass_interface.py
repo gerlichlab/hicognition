@@ -25,6 +25,17 @@ class TestPreprocessDataset(TempDirTestCase):
         # test exit code
         self.assertEqual(exit_code, 0)
 
+    def test_preprocess_bed_bad_file(self):
+        """File has bad format"""
+        exit_code = higlass_interface.preprocess_dataset(
+            file_type="bedfile",
+            chromsizes_path="./data/hg19.chrom.sizes",
+            file_path="./tests/testfiles/test_bad_file_format.bed",
+            output_path=os.path.join(TempDirTestCase.TEMP_PATH, "test_bad_file_format.beddb"),
+        )
+        # test exit code
+        self.assertNotEqual(exit_code, 0)
+
     def test_wrong_parameters(self):
         """Test failure of clodius if the wrong parameters
         were passed."""
