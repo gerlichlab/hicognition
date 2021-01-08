@@ -51,8 +51,8 @@
             pileupType="ObsExp"
             v-if="showData"
             :pileupID="id"
-            :width="200"
-            :height="200"
+            :width="250"
+            :height="250"
             :pileupData="widgetData['Obs/Exp']"
             :log="true" >
         </pileup>
@@ -197,7 +197,7 @@ export default {
                 pileupregionID: collectionData["pileupregionID"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
-                datasets: widgetData["datasets"]
+                datasets: this.$store.getters.getCoolers
             }
         }
     },
@@ -212,22 +212,32 @@ export default {
             handler: function(newValue) {
                         // check if pileupregion has changed
                         var newEntry = newValue[this.collectionID]["pileupregionID"];
+                        console.log(`watcher for pileupregionID triggered: ${newEntry}`);
                         if (newEntry != this.pileupregionID){
                             this.pileupregionID = newEntry;
+                            // reset state
+                            this.widgetData = null,
+                            this.binsizes = [],
+                            this.selectedDataset = null,
+                            this.selectedBinsize = null
                         }
 
                      },
         },
         selectedDataset: function() {
-                console.log("handle dataset seleciton called");
-                // dataset changed, signal to store
-                var newObject = this.toStoreObject();
-                this.$store.commit("compare/setWidget", newObject);
-                // fetch binsizes for the current combination of dataset and pileupregion
-                this.fetchData(`pileups/?cooler_id=${this.selectedDataset}&pileupregion_id=${this.pileupregionID}`).then((response) => {
-                    // update binsizes to show and group iccf/obsExp data under one binsize
-                    this.binsizes = group_iccf_obs_exp(response.data);
-                    });
+            if (!this.selectedDataset){
+                // do not dispatch call if there is no id --> can happend when reset
+                return
+            }
+            console.log("handle dataset seleciton called");
+            // dataset changed, signal to store
+            var newObject = this.toStoreObject();
+            this.$store.commit("compare/setWidget", newObject);
+            // fetch binsizes for the current combination of dataset and pileupregion
+            this.fetchData(`pileups/?cooler_id=${this.selectedDataset}&pileupregion_id=${this.pileupregionID}`).then((response) => {
+                // update binsizes to show and group iccf/obsExp data under one binsize
+                this.binsizes = group_iccf_obs_exp(response.data);
+                });
         },
         selectedBinsize: async function() {
                 console.log("handle binsize selection called");

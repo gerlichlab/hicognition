@@ -35,7 +35,7 @@ export default {
     addCollection: function() {
       // add newEntry to store for collection with a single child
       var initialChild = {
-                      id: 1,
+                      id: 0,
                       rowIndex: 0,
                       colIndex: 0,
                       text: Math.floor(Math.random() * 100),

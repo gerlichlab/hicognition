@@ -132,13 +132,12 @@ export default {
         elementMatrix: function(){
             // creates element matrix from children filled up with empty elements
             var matrix = [];
-            var nextID = this.maxIDChildren + 1;
             // create empty matrix
             for (var rowIndex = 0; rowIndex <= this.maxRowNumber; rowIndex++){
                 var emptyRow = [];
                 for(var colIndex = 0; colIndex <= this.maxColumnNumber; colIndex++){
                     emptyRow[colIndex] = {
-                        id: nextID,
+                        id: this.getNextID(),
                         height: this.baseHeight,
                         width: this.baseWidth,
                         empty: true,
@@ -146,7 +145,6 @@ export default {
                         colIndex: colIndex,
                         parentID: this.id,
                     }
-                    nextID += 1;
                 }
                 matrix.push(emptyRow);
             }
@@ -190,6 +188,9 @@ export default {
         }
     },
     methods: {
+        getNextID: function() {
+            return Math.floor(Math.random() * 1000000000);
+        },
         fetchDatasets: function() {
         this.fetchData("datasets/").then((response) => {
                 // success, store datasets
@@ -234,7 +235,7 @@ export default {
             // delete original widget in store
             this.$store.commit("compare/deleteWidget", queryObject);
             // update changed data in the collection
-            widgetData["id"] = this.maxIDChildren + 1;
+            widgetData["id"] = this.getNextID();
             widgetData["rowIndex"] = rowIndex;
             widgetData["colIndex"] = colIndex;
             widgetData["parentID"] = this.id;
