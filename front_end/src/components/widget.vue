@@ -179,7 +179,6 @@ export default {
             this.$emit("widgetDrop", Number(sourceColletionID), Number(sourceWidgetID), this.rowIndex, this.colIndex);
         },
         initializeWidget: function() {
-            console.log("   initialize called")
             // initialize widget from store
             var queryObject = {
                 parentID: this.collectionID,
@@ -187,7 +186,6 @@ export default {
             };
             var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
             var collectionData = this.$store.getters["compare/getCollectionProperties"](this.collectionID);
-            console.log(widgetData);
             return {
                 widgetData: widgetData["widgetData"],
                 isCooler: widgetData["isCoolder"],
@@ -212,14 +210,13 @@ export default {
             handler: function(newValue) {
                         // check if pileupregion has changed
                         var newEntry = newValue[this.collectionID]["pileupregionID"];
-                        console.log(`watcher for pileupregionID triggered: ${newEntry}`);
-                        if (newEntry != this.pileupregionID){
+                        if ( newEntry != this.pileupregionID ){
                             this.pileupregionID = newEntry;
                             // reset state
-                            this.widgetData = null,
-                            this.binsizes = [],
-                            this.selectedDataset = null,
-                            this.selectedBinsize = null
+                            this.selectedBinsize = undefined,
+                            this.selectedDataset = undefined,
+                            this.widgetData = undefined,
+                            this.binsizes = []
                         }
 
                      },
@@ -229,7 +226,6 @@ export default {
                 // do not dispatch call if there is no id --> can happend when reset
                 return
             }
-            console.log("handle dataset seleciton called");
             // dataset changed, signal to store
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
@@ -240,32 +236,28 @@ export default {
                 });
         },
         selectedBinsize: async function() {
-                console.log("handle binsize selection called");
-                // fetch widget data
-                var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"];
-                var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
-                    // get pileup iccf; update pileup data upon success
-                var iccfresponse = await this.fetchData(`pileups/${iccf_id}/`);
-                // get pileup obs/exp; update pileup data upon success
-                var obsExpresponse = await this.fetchData(`pileups/${obs_exp_id}/`);
-                this.widgetData = {
-                    "ICCF": JSON.parse(iccfresponse.data),
-                    "Obs/Exp": JSON.parse(obsExpresponse.data)
-                };
-                // dataset changed, signal to store
-                var newObject = this.toStoreObject();
-                this.$store.commit("compare/setWidget", newObject);
+            if (!this.selectedBinsize){
+                return
+            }
+            // fetch widget data
+            var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"];
+            var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
+                // get pileup iccf; update pileup data upon success
+            var iccfresponse = await this.fetchData(`pileups/${iccf_id}/`);
+            // get pileup obs/exp; update pileup data upon success
+            var obsExpresponse = await this.fetchData(`pileups/${obs_exp_id}/`);
+            this.widgetData = {
+                "ICCF": JSON.parse(iccfresponse.data),
+                "Obs/Exp": JSON.parse(obsExpresponse.data)
+            };
+            // dataset changed, signal to store
+            var newObject = this.toStoreObject();
+            this.$store.commit("compare/setWidget", newObject);
         },
         isCooler: function() {
             // is Cooler changed, signal to store
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
-        }
-    },
-    created: function() {
-        if (!this.empty){
-            //console.log("Created hook!")
-            //this.initializeWidget()
         }
     }
 }

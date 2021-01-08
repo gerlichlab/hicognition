@@ -232,6 +232,10 @@ export default {
                 id: sourceWidgetID
             };
             var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
+            // get collection Data of current collection to signal it to widget
+            var newPileupregionID = this.$store.getters["compare/getCollectionProperties"](this.id)["pileupregionID"];
+            var oldPileupregionID = this.$store.getters["compare/getCollectionProperties"](sourceColletionID)["pileupregionID"];
+            var updateWidgetContent = newPileupregionID != oldPileupregionID;
             // delete original widget in store
             this.$store.commit("compare/deleteWidget", queryObject);
             // update changed data in the collection
@@ -239,6 +243,13 @@ export default {
             widgetData["rowIndex"] = rowIndex;
             widgetData["colIndex"] = colIndex;
             widgetData["parentID"] = this.id;
+            if (updateWidgetContent) {
+                widgetData["dataset"] = undefined;
+                widgetData["pileupregionID"] = newPileupregionID;
+                widgetData["widgetData"] = undefined;
+                widgetData["binsizes"] = [];
+                widgetData["binsize"] = null;
+            }
             // update changed data in store
             this.$store.commit("compare/setWidget", widgetData);
         }
@@ -271,7 +282,6 @@ export default {
             // fetch pileup regions and assing to windowsizes
             this.fetchData(`datasets/${this.selectedRegionID}/pileupregions/`).then((response) => {
                 this.windowSizes = response.data;
-                console.log(response.data)
             });
             // clear region
             this.selectedWindowSize = null;
