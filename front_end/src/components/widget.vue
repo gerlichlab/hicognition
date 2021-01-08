@@ -31,9 +31,9 @@
                         >
                         <md-option
                             v-for="item in binsizes"
-                            :value="item.id"
-                            :key="item.id"
-                            >{{ item.dataset_name }}</md-option
+                            :value="item.binsize"
+                            :key="item.binsize"
+                            >{{ item.binsize }}</md-option
                         >
                         </md-select>
                 </md-field>
@@ -46,10 +46,18 @@
                 </div>
             </div>
         </div>
-        <div class="md-layout md-gutter">
-            <div class="md-layout-item">
-            <div class="padding-left">I am {{ text }}.</div>
-            </div>
+        <pileup
+            title="Obs/Exp"
+            pileupType="ObsExp"
+            v-if="showData"
+            :pileupID="id"
+            :width="200"
+            :height="200"
+            :pileupData="widgetData['Obs/Exp']"
+            :log="true" >
+        </pileup>
+        <div v-if="!showData" class="md-layout md-alignment-center-center" style="height: 70%;">
+                <md-icon class="md-layout-item md-size-50 md-size-5x">input</md-icon>
         </div>
     </div>
     <div :style="cssStyle" :class="emptyClass" v-else @dragenter="handleDragEnter" @dragleave="handleDragLeave"  @dragover.prevent @drop="handleDrop"/>
@@ -57,18 +65,31 @@
 </template>
 
 <script>
+import pileup from "./pileup";
+import { apiMixin } from "../mixins";
+import { group_iccf_obs_exp } from "../functions";
+
 export default {
     name: 'widget',
+    mixins: [apiMixin],
+    components: {
+        pileup
+    },
     data: function () {
+        // get widget data from store for initialization
+        if (!this.empty){
+            return this.initializeWidget()
+        }
         return {
-            isCooler: true,
-            text: null,
-            selectedDataset: null,
-            selectedBinsize: null,
-            pileupregionID: null,
-            emptyClass: ["smallMargin", "empty"],
-            binsizes: [],
-            datasets: []
+                widgetData: null,
+                isCooler: null,
+                text: null,
+                selectedDataset: null,
+                selectedBinsize: null,
+                pileupregionID: null,
+                emptyClass: ["smallMargin", "empty"],
+                binsizes: [],
+                datasets: []
         }
     },
     props: {
@@ -81,6 +102,12 @@ export default {
         colIndex: Number,
     },
     computed:{
+        showData: function() {
+            if (this.widgetData){
+                return true
+            }
+            return false
+        },
         allowDatasetSelection: function() {
             if (this.pileupregionID){
                 return true
@@ -120,7 +147,10 @@ export default {
                 parentID: this.collectionID,
                 text: this.text,
                 dataset: this.selectedDataset,
-                binsize: this.selectedBinsize
+                datasets: this.datasets,
+                binsizes: this.binsizes,
+                binsize: this.selectedBinsize,
+                widgetData: this.widgetData
             }
         },
         deleteWidget: function(){
@@ -149,22 +179,27 @@ export default {
             this.$emit("widgetDrop", Number(sourceColletionID), Number(sourceWidgetID), this.rowIndex, this.colIndex);
         },
         initializeWidget: function() {
+            console.log("   initialize called")
             // initialize widget from store
-            if (!this.empty){
-                var queryObject = {
-                    parentID: this.collectionID,
-                    id: this.id
-                };
-                var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
-                this.isCooler = widgetData["isCooler"];
-                this.selectedDataset = widgetData["dataset"];
-                this.selectedBinsize = widgetData["binsize"];
-                this.pileupregionID = this.$store.getters["compare/getCollectionProperties"](this.collectionID)["pileupregionID"];
-                this.text = widgetData["text"];
-                // assign available datasets
-                this.datasets = this.$store.getters.getCoolers
-                }
+            var queryObject = {
+                parentID: this.collectionID,
+                id: this.id
+            };
+            var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
+            var collectionData = this.$store.getters["compare/getCollectionProperties"](this.collectionID);
+            console.log(widgetData);
+            return {
+                widgetData: widgetData["widgetData"],
+                isCooler: widgetData["isCoolder"],
+                text: widgetData["text"],
+                selectedDataset: widgetData["dataset"],
+                selectedBinsize: widgetData["binsize"],
+                pileupregionID: collectionData["pileupregionID"],
+                emptyClass: ["smallMargin", "empty"],
+                binsizes: widgetData["binsizes"],
+                datasets: widgetData["datasets"]
             }
+        }
     },
     watch: {
         "$store.state.datasets": function() {
@@ -183,27 +218,45 @@ export default {
 
                      },
         },
+        selectedDataset: function() {
+                console.log("handle dataset seleciton called");
+                // dataset changed, signal to store
+                var newObject = this.toStoreObject();
+                this.$store.commit("compare/setWidget", newObject);
+                // fetch binsizes for the current combination of dataset and pileupregion
+                this.fetchData(`pileups/?cooler_id=${this.selectedDataset}&pileupregion_id=${this.pileupregionID}`).then((response) => {
+                    // update binsizes to show and group iccf/obsExp data under one binsize
+                    this.binsizes = group_iccf_obs_exp(response.data);
+                    });
+        },
+        selectedBinsize: async function() {
+                console.log("handle binsize selection called");
+                // fetch widget data
+                var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"];
+                var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
+                    // get pileup iccf; update pileup data upon success
+                var iccfresponse = await this.fetchData(`pileups/${iccf_id}/`);
+                // get pileup obs/exp; update pileup data upon success
+                var obsExpresponse = await this.fetchData(`pileups/${obs_exp_id}/`);
+                this.widgetData = {
+                    "ICCF": JSON.parse(iccfresponse.data),
+                    "Obs/Exp": JSON.parse(obsExpresponse.data)
+                };
+                // dataset changed, signal to store
+                var newObject = this.toStoreObject();
+                this.$store.commit("compare/setWidget", newObject);
+        },
         isCooler: function() {
             // is Cooler changed, signal to store
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
-        },
-        selectedDataset: function() {
-            // dataset changed, signal to store
-            var newObject = this.toStoreObject();
-            this.$store.commit("compare/setWidget", newObject);
-        },
-        selectedBinsize: function() {
-            // dataset changed, signal to store
-            var newObject = this.toStoreObject();
-            this.$store.commit("compare/setWidget", newObject);
         }
     },
-    mounted: function() {
-        this.initializeWidget()
-    },
-    updated: function(){
-        this.initializeWidget()
+    created: function() {
+        if (!this.empty){
+            //console.log("Created hook!")
+            //this.initializeWidget()
+        }
     }
 }
 </script>

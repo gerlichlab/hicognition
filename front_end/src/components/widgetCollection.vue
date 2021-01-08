@@ -103,8 +103,8 @@ export default {
             marginSizeHeight: 10,
             paddingWidth: 11,
             paddingHeight: 130,
-            baseWidth: 300,
-            baseHeight: 300,
+            baseWidth: 350,
+            baseHeight: 350,
             maxRowNumber: 0,
             maxColumnNumber: 0,
             children: []
@@ -118,7 +118,7 @@ export default {
             return false
         },
         blockZoomOut: function() {
-            if (this.baseWidth <= 300){
+            if (this.baseWidth <= 350){
                 return true
             }
             return false

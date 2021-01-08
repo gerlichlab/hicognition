@@ -1,7 +1,6 @@
 <template>
   <div>
     <md-list class="md-double-line">
-      <md-subheader>{{ title }}</md-subheader>
       <md-list-item class="md-alignment-top-center">
         <!-- Pileup display -->
         <md-content class="center-horizontal md-elevation-3">
@@ -35,7 +34,7 @@ export default {
     width: Number,
     height: Number,
     pileupType: String,
-    pileupID: String, // pileup ID is needed because I am accessing the div of the pileup via id and they must be different for different pilups
+    pileupID: Number, // pileup ID is needed because I am accessing the div of the pileup via id and they must be different for different pilups
     log: Boolean,
   },
   components: {
