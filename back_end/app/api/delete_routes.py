@@ -41,7 +41,7 @@ def delete_dataset(dataset_id):
             os.remove(entry.file_path)
         except FileNotFoundError:
             current_app.logger.warning(f"Tried removing {entry.file_path}, but file does not exist!")
-        db.session.delete(entry)
+        db.session.delete(entry) # TODO: this leaves the session invalid for a short time for some reason -> fix!
     db.session.commit()
     response = jsonify({"message": "success"})
     response.status_code = 200

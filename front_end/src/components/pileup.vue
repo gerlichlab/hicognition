@@ -3,7 +3,7 @@
     <md-list class="md-double-line">
       <md-list-item class="md-alignment-top-center">
         <!-- Pileup display -->
-        <md-content class="center-horizontal md-elevation-3">
+        <md-content class="center-horizontal md-elevation-1">
           <div :id="pileupDivID" class="small-margin" />
         </md-content>
       </md-list-item>

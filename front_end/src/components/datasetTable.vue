@@ -76,9 +76,10 @@ export default {
       handleDelete: async function() {
         this.clickedDelete = false;
         for (var dataset of this.selected){
-          var result = await this.deleteData(`datasets/${dataset.id}/`)
+          var result = await this.deleteData(`datasets/${dataset.id}/`);
         }
         this.datasetsDeleted = true;
+        this.selected = [];
         this.fetchDatasets();
       },
       getAlternateLabel (count) {
