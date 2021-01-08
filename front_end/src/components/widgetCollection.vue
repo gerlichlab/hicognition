@@ -249,6 +249,7 @@ export default {
                 widgetData["widgetData"] = undefined;
                 widgetData["binsizes"] = [];
                 widgetData["binsize"] = null;
+                widgetData["isICCF"] = true
             }
             // update changed data in store
             this.$store.commit("compare/setWidget", widgetData);

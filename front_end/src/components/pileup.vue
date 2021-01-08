@@ -43,7 +43,7 @@ export default {
   computed: {
     pileupDivID: function () {
       // ID for the div containing the pileup
-      return this.pileupType + this.pileupID;
+      return "pileup_" + this.pileupID;
     },
     dataGroups: function () {
       // Nomenclature: groups is first column of tidy data

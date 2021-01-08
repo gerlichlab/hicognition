@@ -45,7 +45,8 @@ export default {
                       binsize: null,
                       pileupregionID: null,
                       binsizes: [],
-                      datasets: []
+                      datasets: [],
+                      isICCF: true
                   };
         this.$store.commit("compare/setWidgetCollection", initialChild);
       this.currentID += 1;

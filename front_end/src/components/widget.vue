@@ -2,7 +2,7 @@
 <div>
     <div :style="cssStyle" class="smallMargin md-elevation-1 bg" draggable="true" v-if="!isEmpty" @dragstart="handleDragStart">
         <div class="md-layout">
-            <div class="md-layout-item md-size-40 padding-left padding-right">
+            <div class="md-layout-item md-size-30 padding-left padding-right">
                 <md-field class="padding-top">
                         <md-select
                         v-model="selectedDataset"
@@ -20,7 +20,7 @@
                         </md-select>
                 </md-field>
             </div>
-            <div class="md-layout-item md-size-35 padding-left padding-right">
+            <div class="md-layout-item md-size-30 padding-left padding-right">
                 <md-field class="padding-top">
                         <md-select
                         v-model="selectedBinsize"
@@ -38,8 +38,13 @@
                         </md-select>
                 </md-field>
             </div>
-            <div class="md-layout-item md-size-20">
-                <div class="padding-top-large">
+            <div class="md-layout-item md-size-25">
+                <div class="padding-top">
+                    <md-switch v-model="isICCF">{{ pileupType }}</md-switch>
+                </div>
+            </div>
+            <div class="md-layout-item md-size-10">
+                <div class="padding-top-large padding-right">
                   <md-button  @click="deleteWidget"  class="md-icon-button md-accent">
                     <md-icon>delete</md-icon>
                  </md-button>
@@ -48,12 +53,12 @@
         </div>
         <pileup
             title="Obs/Exp"
-            pileupType="ObsExp"
+            :pileupType="pileupType"
             v-if="showData"
             :pileupID="id"
-            :width="250"
-            :height="250"
-            :pileupData="widgetData['Obs/Exp']"
+            :width="225"
+            :height="225"
+            :pileupData="widgetData[pileupType]"
             :log="true" >
         </pileup>
         <div v-if="!showData" class="md-layout md-alignment-center-center" style="height: 70%;">
@@ -102,6 +107,13 @@ export default {
         colIndex: Number,
     },
     computed:{
+        pileupType: function() {
+            if (this.isICCF){
+                return "ICCF"
+            }else{
+                return "ObsExp"
+            }
+        },
         showData: function() {
             if (this.widgetData){
                 return true
@@ -150,7 +162,8 @@ export default {
                 datasets: this.datasets,
                 binsizes: this.binsizes,
                 binsize: this.selectedBinsize,
-                widgetData: this.widgetData
+                widgetData: this.widgetData,
+                isICCF: this.isICCF
             }
         },
         deleteWidget: function(){
@@ -163,6 +176,10 @@ export default {
             this.$store.commit("compare/deleteWidget", payload);
         },
         handleDragStart: function(e) {
+            // commit to store once drag starts
+            var newObject = this.toStoreObject();
+            this.$store.commit("compare/setWidget", newObject);
+            // create data transfer object
             e.dataTransfer.setData('widget-id', this.id);
             e.dataTransfer.setData("collection-id", this.collectionID);
         },
@@ -195,7 +212,8 @@ export default {
                 pileupregionID: collectionData["pileupregionID"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
-                datasets: this.$store.getters.getCoolers
+                datasets: this.$store.getters.getCoolers,
+                isICCF: widgetData["isICCF"]
             }
         }
     },
@@ -226,9 +244,6 @@ export default {
                 // do not dispatch call if there is no id --> can happend when reset
                 return
             }
-            // dataset changed, signal to store
-            var newObject = this.toStoreObject();
-            this.$store.commit("compare/setWidget", newObject);
             // fetch binsizes for the current combination of dataset and pileupregion
             this.fetchData(`pileups/?cooler_id=${this.selectedDataset}&pileupregion_id=${this.pileupregionID}`).then((response) => {
                 // update binsizes to show and group iccf/obsExp data under one binsize
@@ -248,16 +263,8 @@ export default {
             var obsExpresponse = await this.fetchData(`pileups/${obs_exp_id}/`);
             this.widgetData = {
                 "ICCF": JSON.parse(iccfresponse.data),
-                "Obs/Exp": JSON.parse(obsExpresponse.data)
+                "ObsExp": JSON.parse(obsExpresponse.data)
             };
-            // dataset changed, signal to store
-            var newObject = this.toStoreObject();
-            this.$store.commit("compare/setWidget", newObject);
-        },
-        isCooler: function() {
-            // is Cooler changed, signal to store
-            var newObject = this.toStoreObject();
-            this.$store.commit("compare/setWidget", newObject);
         }
     }
 }
