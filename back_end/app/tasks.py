@@ -133,7 +133,7 @@ def bed_preprocess_pipeline_step(dataset_id):
     )
     if exit_code != 0:
         log.error("Clodius failed!")
-        return
+        raise ValueError("Clodius failed!")
     # add to higlass
     log.info("      Add to higlass...")
     credentials = {
