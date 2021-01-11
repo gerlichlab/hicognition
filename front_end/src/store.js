@@ -56,8 +56,8 @@ const compareModule = {
         // Vue.set is needed to preserve reactivity
         Vue.set(state.widgetCollections, payload.parentID, {children: {[payload.id]: payload}});
       },
-      setCollectionPileupRegion (state, payload){
-        Vue.set(state.widgetCollections[payload.id], "intervalsID", payload.intervalsID)
+      setCollectionIntervals (state, payload){
+        Vue.set(state.widgetCollections[payload.id], "intervalID", payload.intervalID)
       },
       setWidget (state, payload) {
         // Vue.set is needed to preserve reactivity

@@ -233,9 +233,9 @@ export default {
             };
             var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
             // get collection Data of current collection to signal it to widget
-            var newIntervalsID = this.$store.getters["compare/getCollectionProperties"](this.id)["intervalID"];
-            var oldIntervalsID = this.$store.getters["compare/getCollectionProperties"](sourceColletionID)["intervalsID"];
-            var updateWidgetContent = newIntervalsID != oldIntervalsID;
+            var newIntervalID = this.$store.getters["compare/getCollectionProperties"](this.id)["intervalID"];
+            var oldIntervalID = this.$store.getters["compare/getCollectionProperties"](sourceColletionID)["intervalID"];
+            var updateWidgetContent = newIntervalID != oldIntervalID;
             // delete original widget in store
             this.$store.commit("compare/deleteWidget", queryObject);
             // update changed data in the collection
@@ -245,7 +245,7 @@ export default {
             widgetData["parentID"] = this.id;
             if (updateWidgetContent) {
                 widgetData["dataset"] = undefined;
-                widgetData["intervalsID"] = newIntervalsID;
+                widgetData["intervalID"] = newIntervalID;
                 widgetData["widgetData"] = undefined;
                 widgetData["binsizes"] = [];
                 widgetData["binsize"] = null;
@@ -289,7 +289,7 @@ export default {
         },
         selectedWindowSize: function() {
             // set new intervals
-            var payload = {"id": this.id, "intervalsID": this.selectedWindowSize};
+            var payload = {"id": this.id, "intervalID": this.selectedWindowSize};
             this.$store.commit("compare/setCollectionIntervals", payload);
         }
     },

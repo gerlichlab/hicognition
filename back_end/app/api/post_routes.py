@@ -65,6 +65,7 @@ def add_dataset():
 def preprocess_dataset():
     """Starts preprocessing pipeline
     for datasets specified in the request body"""
+    #TODO: Reset processing state of job -> delete all tasks that are in progress when new submission
 
     def is_form_invalid():
         if not hasattr(request, "form"):

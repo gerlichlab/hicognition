@@ -91,7 +91,7 @@ export default {
                 text: null,
                 selectedDataset: null,
                 selectedBinsize: null,
-                intervalsID: null,
+                intervalID: null,
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
                 datasets: []
