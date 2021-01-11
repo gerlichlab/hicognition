@@ -99,16 +99,16 @@ def pipeline_pileup(dataset_id, binsizes, interval_ids):
     """Start pileup pipeline for specified combination of
     cooler_id, binsizes and pileupregions"""
     current_dataset = Dataset.query.get(dataset_id)
-    intervals = Intervals.query.filter(Intervals.id.in_(interval_ids)).all()
+    interval_datasets = Intervals.query.filter(Intervals.id.in_(interval_ids)).all()
     chromosome_arms = pd.read_csv(app.config["CHROM_ARMS"])
     # perform pileup
     counter = 0
     for binsize in binsizes:
-        for intervals in intervals:
+        for intervals in interval_datasets:
             perform_pileup(current_dataset, intervals, binsize, chromosome_arms, "ICCF")
             perform_pileup(current_dataset, intervals, binsize, chromosome_arms, "Obs/Exp")
             counter += 1
-            progress = counter / (len(binsizes) * len(intervals)) * 100
+            progress = counter / (len(binsizes) * len(interval_datasets)) * 100
             _set_task_progress(progress)
     _set_task_progress(100)
 

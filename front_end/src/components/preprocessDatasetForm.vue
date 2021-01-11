@@ -135,7 +135,7 @@ import { apiMixin } from "../mixins";
 import { group_intervals_on_windowsize } from "../functions"
 
 export default {
-  name: "proprocessDatasetForm",
+  name: "preprocessDatasetForm",
   mixins: [validationMixin, apiMixin],
   data: () => ({
       availableCoolers: [],
@@ -250,13 +250,13 @@ export default {
     },
     prepare_form_data() {
         // prepare intervals
-        var interval_ids = [];
+        var intervals_ids = [];
         for (var windowsize of this.form["windowsizes"]){
             intervals_ids.push(...this.availableIntervals[windowsize].id);
         }
         // put data into form
         var form_data = {};
-        form_data["interval_ids"] = JSON.stringify(interval_ids);
+        form_data["interval_ids"] = JSON.stringify(intervals_ids);
         form_data["dataset_id"] = JSON.stringify(this.form["coolerID"]);
         form_data["binsizes"] = JSON.stringify(this.form["binsizes"]);
         return form_data;
