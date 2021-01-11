@@ -188,11 +188,11 @@ export default {
       };
       this.$store.commit("predefined/setDatasetSelection", selection);
     },
-    fetchPileupregions: function () {
-      this.fetchData(`datasets/${this.selectedRegionID}/pileupregions/`).then(
+    fetchIntervals: function () {
+      this.fetchData(`datasets/${this.selectedRegionID}/intervals/`).then(
         (response) => {
           // success, store datasets
-          this.$store.commit("predefined/setPileupRegions", response.data);
+          this.$store.commit("predefined/setIntervals", response.data);
           this.bedpeFiles = response.data;
           this.blockWindowsize = false;
         }
@@ -224,8 +224,8 @@ export default {
   },
   watch: {
     selectedRegionID: function () {
-      this.fetchPileupregions();
-      // clear selected pileupregions
+      this.fetchIntervals();
+      // clear selected intervals
       this.selectedBedPeID = null;
     },
   },

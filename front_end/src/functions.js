@@ -113,15 +113,15 @@ export function convert_json_to_d3(jsonObject, log = false) {
 
 export function group_iccf_obs_exp(data) {
   /*
-  Takes as input an array of json objects that are returned by the pileup route (e.g.
+  Takes as input an array of json objects that are returned by the averageIntervalData route (e.g.
 
   [{id:1, binsize:50000, value_type: "obs/exp"}...]
 
   and groups iccf and obs_exp per binsize such that the result is an object of the form
 
-  {binsize: {iccf: pileup_id, Obs/Exp: pileup_id, binsize: 400000}, ...}
+  {binsize: {iccf: averageIntervalData_id, Obs/Exp: averageIntervalData_id, binsize: 400000}, ...}
   
-  The binsize key is duplicated for convenience because then iccf and obs/exp pileups
+  The binsize key is duplicated for convenience because then iccf and obs/exp averageIntervalData
   can be selected by object[binsize] and when iterating over the result one can
   access binsize as item.binsize.
   )
@@ -143,20 +143,20 @@ export function group_iccf_obs_exp(data) {
 }
 
 
-export function group_pileupregions_on_windowsize(pileupRegions){
+export function group_intervals_on_windowsize(intervals){
   /*
-    data is array pileupregion object [{"id": 1, "windowsize": 20000, ...}]
+    data is array intervals object [{"id": 1, "windowsize": 20000, ...}]
     transform data from [{"id", "windowsize"}, ...] to {"windwosize: {"windowsize": 200000, id: [id1, id2,....]}, ...]
   */
   var output = {}
-  for (var pileupRegion of pileupRegions){
-      var windowsize = pileupRegion.windowsize;
+  for (var interval of intervals){
+      var windowsize = interval.windowsize;
       if (windowsize in output){
-          output[windowsize]["id"].push(pileupRegion.id);
+          output[windowsize]["id"].push(interval.id);
       }
       else{
           output[windowsize] = {"windowsize": windowsize, "id": []};
-          output[windowsize]["id"].push(pileupRegion.id);
+          output[windowsize]["id"].push(interval.id);
       }
   }
   return output;

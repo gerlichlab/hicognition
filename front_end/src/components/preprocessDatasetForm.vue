@@ -81,11 +81,11 @@
                   name="windowsizes"
                   v-model="form.windowsizes"
                   md-dense
-                  :disabled="!pileupRegionsAvailable"
+                  :disabled="!intervalsAvailable"
                   required
                   multiple>
                     <md-option
-                    v-for="item in availablePileupRegions"
+                    v-for="item in availableIntervals"
                     :value="item.windowsize"
                     :key="item.windowsize"
                     >{{ item.windowsize }}</md-option>
@@ -132,7 +132,7 @@ import {
   maxLength,
 } from "vuelidate/lib/validators";
 import { apiMixin } from "../mixins";
-import { group_pileupregions_on_windowsize } from "../functions"
+import { group_intervals_on_windowsize } from "../functions"
 
 export default {
   name: "proprocessDatasetForm",
@@ -141,7 +141,7 @@ export default {
       availableCoolers: [],
       availableBinsizes: [10000, 20000, 50000],
       availableBedFiles: [],
-      availablePileupRegions: [],
+      availableIntervals: [],
     form: {
       coolerID: null,
       binsizes: [],
@@ -158,8 +158,8 @@ export default {
       bedFilesAvailable: function () {
           return this.availableBedFiles.length != 0;
       },
-      pileupRegionsAvailable: function () {
-          return Object.keys(this.availablePileupRegions).length != 0;
+      intervalsAvailable: function () {
+          return Object.keys(this.availableIntervals).length != 0;
       }
   },
   validations: {
@@ -195,18 +195,18 @@ export default {
       });
     },
     fetchPileupregions: async function (){
-        // fetches available pileupregions or selected bedfiles
-        var pileupRegions = [];
+        // fetches available intervals or selected bedfiles
+        var intervals = [];
         var tempPileupRegions = {}
         for (var regionID of this.form.bedfileIDs){
             tempPileupRegions = await this.fetchPileupregion(regionID);
-            pileupRegions.push(...tempPileupRegions.data)
+            intervals.push(...tempPileupRegions.data)
         }
-        this.availablePileupRegions = group_pileupregions_on_windowsize(pileupRegions);
+        this.availableIntervals = group_intervals_on_windowsize(intervals);
     },
     fetchPileupregion: function (regionID) {
-        // fetches pileupregion for one bedfile
-      return this.fetchData(`datasets/${regionID}/pileupregions/`)
+        // fetches intervals for one bedfile
+      return this.fetchData(`datasets/${regionID}/intervals/`)
     },
     getValidationClass(fieldName) {
       // matrial validation class for form field;
@@ -249,14 +249,14 @@ export default {
       }, 1500);
     },
     prepare_form_data() {
-        // prepare pileupregions
-        var pileup_region_ids = [];
+        // prepare intervals
+        var interval_ids = [];
         for (var windowsize of this.form["windowsizes"]){
-            pileup_region_ids.push(...this.availablePileupRegions[windowsize].id);
+            intervals_ids.push(...this.availableIntervals[windowsize].id);
         }
         // put data into form
         var form_data = {};
-        form_data["pileup_region_ids"] = JSON.stringify(pileup_region_ids);
+        form_data["interval_ids"] = JSON.stringify(interval_ids);
         form_data["dataset_id"] = JSON.stringify(this.form["coolerID"]);
         form_data["binsizes"] = JSON.stringify(this.form["binsizes"]);
         return form_data;

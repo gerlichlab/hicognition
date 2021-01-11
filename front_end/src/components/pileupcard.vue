@@ -117,11 +117,11 @@ export default {
       var iccf_id = this.pileups[this.selectedBinsize]["ICCF"];
       var obs_exp_id = this.pileups[this.selectedBinsize]["Obs/Exp"];
       // get pileup iccf; update pileup data upon success
-      this.fetchData(`pileups/${iccf_id}/`).then((response) => {
+      this.fetchData(`averageIntervalData/${iccf_id}/`).then((response) => {
         this.pileupDataICCF = JSON.parse(response.data);
       });
       // get pileup obs/exp; update pileup data upon success
-      this.fetchData(`pileups/${obs_exp_id}/`).then((response) => {
+      this.fetchData(`averageIntervalData/${obs_exp_id}/`).then((response) => {
         this.pileupDataObsExp = JSON.parse(response.data);
       });
     },
@@ -132,8 +132,8 @@ export default {
       if (value) {
         var { cooler_id, bedpe_id } = value; // value = {cooler_id: x, bedpe_id: y}
         // fetch pileup datasets and display binsizes
-        this.fetchData(`pileups/?cooler_id=${cooler_id}&pileupregion_id=${bedpe_id}`).then((response) => {
-          this.$store.commit("predefined/setPileups", response.data);
+        this.fetchData(`averageIntervalData/?cooler_id=${cooler_id}&intervals_id=${bedpe_id}`).then((response) => {
+          this.$store.commit("predefined/setAverageIntervalData", response.data);
           // update binsizes to show and group iccf/obsExp data under one binsize
           this.pileups = group_iccf_obs_exp(response.data);
           // show controls

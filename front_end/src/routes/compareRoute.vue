@@ -43,7 +43,7 @@ export default {
                       isCooler: true,
                       dataset: null,
                       binsize: null,
-                      pileupregionID: null,
+                      intervalsID: null,
                       binsizes: [],
                       datasets: [],
                       isICCF: true

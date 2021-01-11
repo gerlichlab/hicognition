@@ -11,17 +11,17 @@ const predefinedModule = {
   namespaced: true, // otherwise mutations are registered globally, this way mutations are available as "predefined/*"
   state: function() {
     return {
-      pileupRegions: null,
-      pileups: null,
+      Intervals: null,
+      averageIntervalData: null,
       datasetSelection: null // This is the user's dataset selection for the predefined card
     }
   },
   mutations: {
-      setPileupRegions (state, pileupRegions) {
-        state.pileupRegions = pileupRegions
+      setIntervals (state, Intervals) {
+        state.Intervals = Intervals
       },
-      setPileups (state, pileups) {
-        state.pileups = pileups
+      setAverageIntervalData (state, averageIntervalData) {
+        state.averageIntervalData = averageIntervalData
       },
       setDatasetSelection (state, selection) {
         state.datasetSelection = selection
@@ -57,7 +57,7 @@ const compareModule = {
         Vue.set(state.widgetCollections, payload.parentID, {children: {[payload.id]: payload}});
       },
       setCollectionPileupRegion (state, payload){
-        Vue.set(state.widgetCollections[payload.id], "pileupregionID", payload.pileupregionID)
+        Vue.set(state.widgetCollections[payload.id], "intervalsID", payload.intervalsID)
       },
       setWidget (state, payload) {
         // Vue.set is needed to preserve reactivity

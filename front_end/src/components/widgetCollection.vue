@@ -233,9 +233,9 @@ export default {
             };
             var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
             // get collection Data of current collection to signal it to widget
-            var newPileupregionID = this.$store.getters["compare/getCollectionProperties"](this.id)["pileupregionID"];
-            var oldPileupregionID = this.$store.getters["compare/getCollectionProperties"](sourceColletionID)["pileupregionID"];
-            var updateWidgetContent = newPileupregionID != oldPileupregionID;
+            var newIntervalsID = this.$store.getters["compare/getCollectionProperties"](this.id)["intervalID"];
+            var oldIntervalsID = this.$store.getters["compare/getCollectionProperties"](sourceColletionID)["intervalsID"];
+            var updateWidgetContent = newIntervalsID != oldIntervalsID;
             // delete original widget in store
             this.$store.commit("compare/deleteWidget", queryObject);
             // update changed data in the collection
@@ -245,7 +245,7 @@ export default {
             widgetData["parentID"] = this.id;
             if (updateWidgetContent) {
                 widgetData["dataset"] = undefined;
-                widgetData["pileupregionID"] = newPileupregionID;
+                widgetData["intervalsID"] = newIntervalsID;
                 widgetData["widgetData"] = undefined;
                 widgetData["binsizes"] = [];
                 widgetData["binsize"] = null;
@@ -280,17 +280,17 @@ export default {
                      },
         },
         selectedRegionID: function () {
-            // fetch pileup regions and assing to windowsizes
-            this.fetchData(`datasets/${this.selectedRegionID}/pileupregions/`).then((response) => {
+            // fetch intervals and assing to windowsizes
+            this.fetchData(`datasets/${this.selectedRegionID}/intervals/`).then((response) => {
                 this.windowSizes = response.data;
             });
             // clear region
             this.selectedWindowSize = null;
         },
         selectedWindowSize: function() {
-            // set new pileupregion
-            var payload = {"id": this.id, "pileupregionID": this.selectedWindowSize};
-            this.$store.commit("compare/setCollectionPileupRegion", payload);
+            // set new intervals
+            var payload = {"id": this.id, "intervalsID": this.selectedWindowSize};
+            this.$store.commit("compare/setCollectionIntervals", payload);
         }
     },
     mounted: function() {

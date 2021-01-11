@@ -91,7 +91,7 @@ export default {
                 text: null,
                 selectedDataset: null,
                 selectedBinsize: null,
-                pileupregionID: null,
+                intervalsID: null,
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
                 datasets: []
@@ -121,7 +121,7 @@ export default {
             return false
         },
         allowDatasetSelection: function() {
-            if (this.pileupregionID){
+            if (this.intervalID){
                 return true
             }
             return false
@@ -209,7 +209,7 @@ export default {
                 text: widgetData["text"],
                 selectedDataset: widgetData["dataset"],
                 selectedBinsize: widgetData["binsize"],
-                pileupregionID: collectionData["pileupregionID"],
+                intervalID: collectionData["intervalID"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
                 datasets: this.$store.getters.getCoolers,
@@ -222,14 +222,14 @@ export default {
             // updates datasets if they change
             this.datasets = this.$store.getters.getCoolers
         },
-        // watch for changes in store to be able to update pileupregion
+        // watch for changes in store to be able to update intervals
         "$store.state.compare.widgetCollections": {
             deep: true,
             handler: function(newValue) {
-                        // check if pileupregion has changed
-                        var newEntry = newValue[this.collectionID]["pileupregionID"];
-                        if ( newEntry != this.pileupregionID ){
-                            this.pileupregionID = newEntry;
+                        // check if intervals has changed
+                        var newEntry = newValue[this.collectionID]["intervalID"];
+                        if ( newEntry != this.intervalID ){
+                            this.intervalID = newEntry;
                             // reset state
                             this.selectedBinsize = undefined,
                             this.selectedDataset = undefined,
@@ -244,8 +244,8 @@ export default {
                 // do not dispatch call if there is no id --> can happend when reset
                 return
             }
-            // fetch binsizes for the current combination of dataset and pileupregion
-            this.fetchData(`pileups/?cooler_id=${this.selectedDataset}&pileupregion_id=${this.pileupregionID}`).then((response) => {
+            // fetch binsizes for the current combination of dataset and intervals
+            this.fetchData(`averageIntervalData/?cooler_id=${this.selectedDataset}&intervals_id=${this.intervalID}`).then((response) => {
                 // update binsizes to show and group iccf/obsExp data under one binsize
                 this.binsizes = group_iccf_obs_exp(response.data);
                 });
@@ -258,9 +258,9 @@ export default {
             var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"];
             var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
                 // get pileup iccf; update pileup data upon success
-            var iccfresponse = await this.fetchData(`pileups/${iccf_id}/`);
+            var iccfresponse = await this.fetchData(`averageIntervalData/${iccf_id}/`);
             // get pileup obs/exp; update pileup data upon success
-            var obsExpresponse = await this.fetchData(`pileups/${obs_exp_id}/`);
+            var obsExpresponse = await this.fetchData(`averageIntervalData/${obs_exp_id}/`);
             this.widgetData = {
                 "ICCF": JSON.parse(iccfresponse.data),
                 "ObsExp": JSON.parse(obsExpresponse.data)
