@@ -7,7 +7,7 @@ import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Pileupregion, Pileup
+from app.models import Dataset, Intervals, Pileup
 
 
 class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
@@ -32,21 +32,21 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         # create not owned data_set bed
         file_path_4 = self.create_empty_file_in_tempdir("test2.bed")
         dataset4 = Dataset(id=4, file_path=file_path_4, filetype="bedfile", user_id=2,)
-        # create pileupregion for owned data_set
+        # create Intervals for owned data_set
         file_path_pr_1 = self.create_empty_file_in_tempdir("test1.bedpe")
-        pileup_region_1 = Pileupregion(id=1, dataset_id=3, file_path=file_path_pr_1)
-        # create pileupregion for not owned data_set
+        pileup_region_1 = Intervals(id=1, dataset_id=3, file_path=file_path_pr_1)
+        # create Intervals for not owned data_set
         file_path_pr_2 = self.create_empty_file_in_tempdir("test2.bedpe")
-        pileup_region_2 = Pileupregion(id=2, dataset_id=4, file_path=file_path_pr_2)
+        pileup_region_2 = Intervals(id=2, dataset_id=4, file_path=file_path_pr_2)
         # create pileup for owned data_sets
         file_path_pu_1 = self.create_empty_file_in_tempdir("test1.csv")
         pileup_1 = Pileup(
-            id=1, file_path=file_path_pu_1, cooler_id=1, pileupregion_id=1
+            id=1, file_path=file_path_pu_1, cooler_id=1, intervals_id=1
         )
         # create pileup for not owned data_set
         file_path_pu_2 = self.create_empty_file_in_tempdir("test2.csv")
         pileup_2 = Pileup(
-            id=2, file_path=file_path_pu_2, cooler_id=2, pileupregion_id=2
+            id=2, file_path=file_path_pu_2, cooler_id=2, intervals_id=2
         )
         # add to database
         db.session.add_all(
@@ -126,8 +126,8 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         # check database state
         dataset_ids = set(entry.id for entry in Dataset.query.all())
         self.assertEqual(dataset_ids, {2, 3, 4})
-        pileupregion_ids = set(entry.id for entry in Pileupregion.query.all())
-        self.assertEqual(pileupregion_ids, {1, 2})
+        intervals_ids = set(entry.id for entry in Intervals.query.all())
+        self.assertEqual(intervals_ids, {1, 2})
         pileup_ids = set(entry.id for entry in Pileup.query.all())
         self.assertEqual(pileup_ids, {2})
         # check temp_idr state
@@ -160,8 +160,8 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         # check database state
         dataset_ids = set(entry.id for entry in Dataset.query.all())
         self.assertEqual(dataset_ids, {1, 2, 4})
-        pileupregion_ids = set(entry.id for entry in Pileupregion.query.all())
-        self.assertEqual(pileupregion_ids, {2})
+        intervals_ids = set(entry.id for entry in Intervals.query.all())
+        self.assertEqual(intervals_ids, {2})
         pileup_ids = set(entry.id for entry in Pileup.query.all())
         self.assertEqual(pileup_ids, {2})
         # check temp_idr state

@@ -9,7 +9,7 @@ import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Pileupregion, Pileup
+from app.models import Dataset, Intervals, Pileup
 
 
 class TestGetPileups(LoginTestCase):
@@ -20,7 +20,7 @@ class TestGetPileups(LoginTestCase):
         """No authentication provided, response should be 401"""
         # protected route
         response = self.client.get(
-            "/api/pileups/?cooler_id=1&pileupregion_id=2",
+            "/api/pileups/?cooler_id=1&intervals_id=2",
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 401)
@@ -39,7 +39,7 @@ class TestGetPileups(LoginTestCase):
             filetype="cooler",
             user_id=1,
         )
-        pileupregion1 = Pileupregion(
+        intervals1 = Intervals(
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
@@ -51,21 +51,21 @@ class TestGetPileups(LoginTestCase):
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
-            pileupregion_id=1,
+            intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, pileupregion1, pileup])
+        db.session.add_all([dataset1, intervals1, pileup])
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/pileups/?cooler_id=500&pileupregion_id=1",
+            "/api/pileups/?cooler_id=500&intervals_id=1",
             headers=token_headers,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 404)
 
-    def test_pileupregion_does_not_exist(self):
-        """Test whether 404 if pileupregion dataset does not exist"""
+    def test_intervals_does_not_exist(self):
+        """Test whether 404 if intervals dataset does not exist"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -78,7 +78,7 @@ class TestGetPileups(LoginTestCase):
             filetype="cooler",
             user_id=1,
         )
-        pileupregion1 = Pileupregion(
+        intervals1 = Intervals(
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
@@ -90,14 +90,14 @@ class TestGetPileups(LoginTestCase):
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
-            pileupregion_id=1,
+            intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, pileupregion1, pileup])
+        db.session.add_all([dataset1, intervals1, pileup])
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/pileups/?cooler_id=1&pileupregion_id=500",
+            "/api/pileups/?cooler_id=1&intervals_id=500",
             headers=token_headers,
             content_type="application/json",
         )
@@ -116,7 +116,7 @@ class TestGetPileups(LoginTestCase):
             filetype="cooler",
             user_id=1,
         )
-        pileupregion1 = Pileupregion(
+        intervals1 = Intervals(
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
@@ -128,10 +128,10 @@ class TestGetPileups(LoginTestCase):
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
-            pileupregion_id=1,
+            intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, pileupregion1, pileup])
+        db.session.add_all([dataset1, intervals1, pileup])
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
@@ -152,7 +152,7 @@ class TestGetPileups(LoginTestCase):
             filetype="cooler",
             user_id=1,
         )
-        pileupregion1 = Pileupregion(
+        intervals1 = Intervals(
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
@@ -164,20 +164,20 @@ class TestGetPileups(LoginTestCase):
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
-            pileupregion_id=1,
+            intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, pileupregion1, pileup])
+        db.session.add_all([dataset1, intervals1, pileup])
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/pileups/?pileupregion_id=1",
+            "/api/pileups/?intervals_id=1",
             headers=token_headers,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_no_pileupregion_provided(self):
+    def test_no_intervals_provided(self):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -190,7 +190,7 @@ class TestGetPileups(LoginTestCase):
             filetype="cooler",
             user_id=1,
         )
-        pileupregion1 = Pileupregion(
+        intervals1 = Intervals(
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
@@ -202,10 +202,10 @@ class TestGetPileups(LoginTestCase):
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
-            pileupregion_id=1,
+            intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, pileupregion1, pileup])
+        db.session.add_all([dataset1, intervals1, pileup])
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
@@ -239,7 +239,7 @@ class TestGetPileups(LoginTestCase):
             filetype="cooler",
             user_id=2,
         )
-        pileupregion1 = Pileupregion(
+        intervals1 = Intervals(
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
@@ -251,21 +251,21 @@ class TestGetPileups(LoginTestCase):
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
-            pileupregion_id=1,
+            intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, pileupregion1, pileup])
+        db.session.add_all([dataset1, dataset2, intervals1, pileup])
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/pileups/?cooler_id=2&pileupregion_id=1",
+            "/api/pileups/?cooler_id=2&intervals_id=1",
             headers=token_headers,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_forbidden_pileupregion_not_owned(self):
-        """Test whether 403 is sent if pileupregions are not owned."""
+    def test_forbidden_intervals_not_owned(self):
+        """Test whether 403 is sent if intervals are not owned."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token2 = self.add_and_authenticate("test2", "fdsa")
@@ -287,14 +287,14 @@ class TestGetPileups(LoginTestCase):
             filetype="cooler",
             user_id=2,
         )
-        pileupregion1 = Pileupregion(
+        intervals1 = Intervals(
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
             higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        pileupregion2 = Pileupregion(
+        intervals2 = Intervals(
             name="testRegion2",
             dataset_id=2,
             file_path="test_path_2.bedd2db",
@@ -306,14 +306,14 @@ class TestGetPileups(LoginTestCase):
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
-            pileupregion_id=1,
+            intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, pileupregion1, pileupregion2, pileup])
+        db.session.add_all([dataset1, dataset2, intervals1, intervals2, pileup])
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/pileups/?cooler_id=1&pileupregion_id=2", headers=token_headers, content_type="application/json",
+            "/api/pileups/?cooler_id=1&intervals_id=2", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
@@ -338,14 +338,14 @@ class TestGetPileups(LoginTestCase):
             filetype="cooler",
             user_id=1,
         )
-        pileupregion1 = Pileupregion(
+        intervals1 = Intervals(
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
             higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        pileupregion2 = Pileupregion(
+        intervals2 = Intervals(
             name="testRegion2",
             dataset_id=2,
             file_path="test_path_2.bedd2db",
@@ -357,7 +357,7 @@ class TestGetPileups(LoginTestCase):
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
-            pileupregion_id=1,
+            intervals_id=1,
             value_type="ICCF",
         )
         pileup2 = Pileup(
@@ -365,7 +365,7 @@ class TestGetPileups(LoginTestCase):
             binsize=10000,
             file_path="testPath2",
             cooler_id=1,
-            pileupregion_id=2,
+            intervals_id=2,
             value_type="ICCF",
         )
         pileup3 = Pileup(
@@ -373,7 +373,7 @@ class TestGetPileups(LoginTestCase):
             binsize=10000,
             file_path="testPath3",
             cooler_id=2,
-            pileupregion_id=1,
+            intervals_id=1,
             value_type="ICCF",
         )
         pileup4 = Pileup(
@@ -381,15 +381,15 @@ class TestGetPileups(LoginTestCase):
             binsize=10000,
             file_path="testPath4",
             cooler_id=2,
-            pileupregion_id=2,
+            intervals_id=2,
             value_type="ICCF",
         )
         db.session.add_all(
             [
                 dataset1,
                 dataset2,
-                pileupregion1,
-                pileupregion2,
+                intervals1,
+                intervals2,
                 pileup1,
                 pileup2,
                 pileup3,
@@ -399,13 +399,13 @@ class TestGetPileups(LoginTestCase):
         db.session.commit()
         # make query 1
         response = self.client.get(
-            "/api/pileups/?cooler_id=1&pileupregion_id=1", headers=token_headers, content_type="application/json",
+            "/api/pileups/?cooler_id=1&intervals_id=1", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0]["id"], 1)
         # make query 2
         response = self.client.get(
-            "/api/pileups/?cooler_id=1&pileupregion_id=2", headers=token_headers, content_type="application/json",
+            "/api/pileups/?cooler_id=1&intervals_id=2", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0]["id"], 2)
@@ -451,7 +451,7 @@ class TestGetPileupData(LoginTestCase, TempDirTestCase):
             filetype="cooler",
             user_id=5,
         )
-        pileupregion1 = Pileupregion(
+        intervals1 = Intervals(
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
@@ -463,10 +463,10 @@ class TestGetPileupData(LoginTestCase, TempDirTestCase):
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
-            pileupregion_id=1,
+            intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, pileupregion1, pileup])
+        db.session.add_all([dataset1, intervals1, pileup])
         db.session.commit()
         # make request
         response = self.client.get(
@@ -474,8 +474,8 @@ class TestGetPileupData(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_pileupregion_not_owned(self):
-        """Pileupregion dataset underlying pileup is not owned"""
+    def test_intervals_not_owned(self):
+        """Intervals dataset underlying pileup is not owned"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -495,7 +495,7 @@ class TestGetPileupData(LoginTestCase, TempDirTestCase):
             filetype="bedfile",
             user_id=5,
         )
-        pileupregion1 = Pileupregion(
+        intervals1 = Intervals(
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
@@ -507,10 +507,10 @@ class TestGetPileupData(LoginTestCase, TempDirTestCase):
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
-            pileupregion_id=1,
+            intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, pileupregion1, pileup])
+        db.session.add_all([dataset1, dataset2, intervals1, pileup])
         db.session.commit()
         # make request
         response = self.client.get(
@@ -549,7 +549,7 @@ class TestGetPileupData(LoginTestCase, TempDirTestCase):
             filetype="bedfile",
             user_id=1,
         )
-        pileupregion1 = Pileupregion(
+        intervals1 = Intervals(
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
@@ -561,10 +561,10 @@ class TestGetPileupData(LoginTestCase, TempDirTestCase):
             binsize=10000,
             file_path=data_path,
             cooler_id=1,
-            pileupregion_id=1,
+            intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, pileupregion1, pileup])
+        db.session.add_all([dataset1, dataset2, intervals1, pileup])
         db.session.commit()
         # make request
         response = self.client.get(

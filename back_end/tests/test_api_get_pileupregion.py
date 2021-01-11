@@ -4,21 +4,21 @@ from test_helpers import LoginTestCase
 import sys
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Pileupregion
+from app.models import Dataset, Intervals
 
 
-class TestGetPileupregions(LoginTestCase):
-    """Tests for /api/pileupregions route to list
-    pileupregions."""
+class TestGetIntervals(LoginTestCase):
+    """Tests for /api/intervals route to list
+    intervals."""
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
         # protected route
-        response = self.client.get("/api/pileupregions/", content_type="application/json")
+        response = self.client.get("/api/intervals/", content_type="application/json")
         self.assertEqual(response.status_code, 401)
 
-    def test_correct_pileupregions_single_dataset(self):
-        """Correct pileupregions are returned for single dataset."""
+    def test_correct_intervals_single_dataset(self):
+        """Correct intervals are returned for single dataset."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -31,25 +31,25 @@ class TestGetPileupregions(LoginTestCase):
             filetype="cooler",
             user_id=1
         )
-        pileupregion1 = Pileupregion(
+        intervals1 = Intervals(
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
             higlass_uuid="testHiglass1",
             windowsize=200000
         )
-        pileupregion2 = Pileupregion(
+        intervals2 = Intervals(
             name="testRegion2",
             dataset_id=1,
             file_path="test_path_2.bedd2db",
             higlass_uuid="testHiglass2",
             windowsize=400000
         )
-        db.session.add_all([dataset1, pileupregion1, pileupregion2])
+        db.session.add_all([dataset1, intervals1, intervals2])
         db.session.commit()
-        # get pileupregions 
+        # get intervals 
         response = self.client.get(
-            "/api/pileupregions/",
+            "/api/intervals/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -74,8 +74,8 @@ class TestGetPileupregions(LoginTestCase):
         ]
         self.assertEqual(response.json, expected)
 
-    def test_correct_pileupregions_two_datasets(self):
-        """Tests whether correct pileupregions are returned if
+    def test_correct_intervals_two_datasets(self):
+        """Tests whether correct intervals are returned if
         there are multiple datasets from different users."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -98,32 +98,32 @@ class TestGetPileupregions(LoginTestCase):
             filetype="cooler",
             user_id=2
         )
-        pileupregion1 = Pileupregion(
+        intervals1 = Intervals(
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
             higlass_uuid="testHiglass1",
             windowsize=200000
         )
-        pileupregion2 = Pileupregion(
+        intervals2 = Intervals(
             name="testRegion2",
             dataset_id=1,
             file_path="test_path_2.bedd2db",
             higlass_uuid="testHiglass2",
             windowsize=400000
         )
-        pileupregion3 = Pileupregion(
+        intervals3 = Intervals(
             name="testRegion3",
             dataset_id=2,
             file_path="test_path_3.bedd2db",
             higlass_uuid="testHiglass3",
             windowsize=400000
         )
-        db.session.add_all([dataset1, dataset2, pileupregion1, pileupregion2, pileupregion3])
+        db.session.add_all([dataset1, dataset2, intervals1, intervals2, intervals3])
         db.session.commit()
-        # get pileupregions
+        # get intervals
         response = self.client.get(
-            "/api/pileupregions/",
+            "/api/intervals/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -149,7 +149,7 @@ class TestGetPileupregions(LoginTestCase):
         self.assertEqual(response.json, expected)
         # test other user
         response = self.client.get(
-            "/api/pileupregions/",
+            "/api/intervals/",
             headers=token_headers2,
             content_type="application/json",
         )
@@ -167,13 +167,13 @@ class TestGetPileupregions(LoginTestCase):
         self.assertEqual(response.json, expected)
 
 
-class TestGetSpecificPileupregions(LoginTestCase):
-    """Tests getting pileupregions of a specific dataset."""
+class TestGetSpecificIntervals(LoginTestCase):
+    """Tests getting intervals of a specific dataset."""
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
         # protected route
-        response = self.client.get("/api/datasets/1/pileupregions/", content_type="application/json")
+        response = self.client.get("/api/datasets/1/intervals/", content_type="application/json")
         self.assertEqual(response.status_code, 401)
 
     def test_404_if_wrong_id(self):
@@ -183,9 +183,9 @@ class TestGetSpecificPileupregions(LoginTestCase):
         token = self.add_and_authenticate("test", "asdf")
         # create token header
         token_headers = self.get_token_header(token)
-        # get pileupregions
+        # get intervals
         response = self.client.get(
-            "/api/datasets/500/pileupregions/",
+            "/api/datasets/500/intervals/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -207,25 +207,25 @@ class TestGetSpecificPileupregions(LoginTestCase):
             filetype="cooler",
             user_id=1
         )
-        pileupregion1 = Pileupregion(
+        intervals1 = Intervals(
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
             higlass_uuid="testHiglass1",
             windowsize=200000
         )
-        db.session.add_all([dataset1, pileupregion1])
+        db.session.add_all([dataset1, intervals1])
         db.session.commit()
-        # get pileupregions
+        # get intervals
         response = self.client.get(
-            "/api/datasets/1/pileupregions/",
+            "/api/datasets/1/intervals/",
             headers=token_headers2,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_correct_pileupregions_returned(self):
-        """Test whether only pileupregions belonging
+    def test_correct_intervals_returned(self):
+        """Test whether only intervals belonging
         to a particular dataset are returned."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -246,32 +246,32 @@ class TestGetSpecificPileupregions(LoginTestCase):
             filetype="cooler",
             user_id=1
         )
-        pileupregion1 = Pileupregion(
+        intervals1 = Intervals(
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
             higlass_uuid="testHiglass1",
             windowsize=200000
         )
-        pileupregion2 = Pileupregion(
+        intervals2 = Intervals(
             name="testRegion2",
             dataset_id=1,
             file_path="test_path_2.bedd2db",
             higlass_uuid="testHiglass2",
             windowsize=400000
         )
-        pileupregion3 = Pileupregion(
+        intervals3 = Intervals(
             name="testRegion3",
             dataset_id=2,
             file_path="test_path_3.bedd2db",
             higlass_uuid="testHiglass3",
             windowsize=400000
         )
-        db.session.add_all([dataset1, dataset2, pileupregion1, pileupregion2, pileupregion3])
+        db.session.add_all([dataset1, dataset2, intervals1, intervals2, intervals3])
         db.session.commit()
-        # get pileupregions
+        # get intervals
         response = self.client.get(
-            "/api/datasets/1/pileupregions/",
+            "/api/datasets/1/intervals/",
             headers=token_headers,
             content_type="application/json",
         )

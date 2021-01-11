@@ -70,7 +70,7 @@ class Dataset(db.Model):
     higlass_uuid = db.Column(db.String(64), index=True, unique=True)
     filetype = db.Column(db.String(64), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    pileup_regions = db.relationship("Pileupregion", backref="source_dataset", lazy="dynamic")
+    pileup_regions = db.relationship("Intervals", backref="source_dataset", lazy="dynamic")
     pileup = db.relationship("Pileup", backref="source_cooler", lazy="dynamic")
     tasks = db.relationship('Task', backref='dataset', lazy='dynamic')
     processing_state = db.Column(db.String(64))
@@ -116,22 +116,22 @@ class Dataset(db.Model):
         return json_dataset
 
 
-class Pileupregion(db.Model):
+class Intervals(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     name = db.Column(db.String(64), index=True)
     file_path = db.Column(db.String(128), index=True)
     higlass_uuid = db.Column(db.String(64), index=True)
     windowsize = db.Column(db.Integer, index=True)
-    pileups = db.relationship("Pileup", backref="source_pileupregion", lazy="dynamic")
+    pileups = db.relationship("Pileup", backref="source_intervals", lazy="dynamic")
 
     def __repr__(self):
         """Format print output."""
-        return f'<Pileupregion {self.name}>'
+        return f'<Intervals {self.name}>'
 
     def to_json(self):
         """Formats json output."""
-        json_pileupregion = {
+        json_intervals = {
             "id": self.id,
             "source_dataset": self.dataset_id,
             "dataset_name": self.name,
@@ -139,7 +139,7 @@ class Pileupregion(db.Model):
             "higlass_uuid": self.higlass_uuid,
             "windowsize": self.windowsize
         }
-        return json_pileupregion
+        return json_intervals
 
 
 class Pileup(db.Model):
@@ -149,7 +149,7 @@ class Pileup(db.Model):
     file_path = db.Column(db.String(128), index=True)
     value_type = db.Column(db.String(64))
     cooler_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
-    pileupregion_id = db.Column(db.Integer, db.ForeignKey("pileupregion.id"))
+    intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
 
     def __repr__(self):
         """Format print output."""
@@ -163,7 +163,7 @@ class Pileup(db.Model):
             "name": self.name,
             "file_path": self.file_path,
             "cooler_id": self.cooler_id,
-            "pileupregion_id": self.pileupregion_id,
+            "intervals_id": self.intervals_id,
             "value_type": self.value_type
         }
         return json_pileups

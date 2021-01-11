@@ -11,7 +11,7 @@ from hicognition import io_helpers, higlass_interface
 from requests.exceptions import HTTPError
 from rq import get_current_job
 from . import create_app, db
-from .models import Dataset, Pileupregion, Pileup, Task
+from .models import Dataset, Intervals, Pileup, Task
 
 # get logger
 log = logging.getLogger("rq.worker")
@@ -99,7 +99,7 @@ def pipeline_pileup(dataset_id, binsizes, pileup_region_ids):
     """Start pileup pipeline for specified combination of
     cooler_id, binsizes and pileupregions"""
     current_dataset = Dataset.query.get(dataset_id)
-    pileup_regions = Pileupregion.query.filter(Pileupregion.id.in_(pileup_region_ids)).all()
+    pileup_regions = Intervals.query.filter(Intervals.id.in_(pileup_region_ids)).all()
     chromosome_arms = pd.read_csv(app.config["CHROM_ARMS"])
     # perform pileup
     counter = 0
@@ -192,7 +192,7 @@ def bedpe_preprocess_pipeline_step(file_path, dataset_id=None, windowsize=None):
         return
     # upload succeeded, add things to database
     uuid = result["uuid"]
-    new_entry = Pileupregion(
+    new_entry = Intervals(
         dataset_id=dataset_id,
         name=dataset_name,
         file_path=clodius_output,
