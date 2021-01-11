@@ -70,7 +70,7 @@ def preprocess_dataset():
         if not hasattr(request, "form"):
             return True
         if sorted(list(request.form.keys())) != sorted(
-            ["dataset_id", "binsizes", "pileup_region_ids"]
+            ["dataset_id", "binsizes", "interval_ids"]
         ):
             return True
         return False
@@ -83,7 +83,7 @@ def preprocess_dataset():
     data = request.form
     dataset_id = json.loads(data["dataset_id"])
     binsizes = json.loads(data["binsizes"])
-    pileup_region_ids = json.loads(data["pileup_region_ids"])
+    interval_ids = json.loads(data["interval_ids"])
     # check whether dataset exists
     if Dataset.query.get(dataset_id) is None:
         return not_found("Dataset does not exist!")
@@ -94,7 +94,7 @@ def preprocess_dataset():
         "run pileup pipeline",
         dataset_id,
         binsizes,
-        pileup_region_ids,
+        interval_ids,
     )
     # set processing state
     dataset = Dataset.query.get(dataset_id)

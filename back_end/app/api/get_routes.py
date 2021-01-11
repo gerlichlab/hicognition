@@ -5,7 +5,7 @@ from flask import g, request
 from .helpers import update_processing_state, is_access_to_dataset_denied
 from . import api
 from .. import db
-from ..models import Intervals, Dataset, Pileup
+from ..models import Intervals, Dataset, AverageIntervalData
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
 
@@ -85,10 +85,10 @@ def get_intervals():
     return jsonify([dfile.to_json() for dfile in all_files])
 
 
-@api.route("/pileups/", methods=["GET"])
+@api.route("/averageIntervalData/", methods=["GET"])
 @auth.login_required
-def get_pileups():
-    """Gets all available pileups from a given cooler file
+def get_averageIntervalData():
+    """Gets all available averageIntervalData from a given cooler file
     for the specified intervals_id. Only returns pileup object if
     user owns the cooler dataset and intervals_id"""
     # unpack query string
@@ -108,7 +108,7 @@ def get_pileups():
         return forbidden("Cooler dataset or intervals dataset is not owned by logged in user!")
     # return all intervals the are derived from the specified selection of cooler and intervals
     all_files = (
-        Pileup.query.filter(Pileup.intervals_id == intervals_id)
+        AverageIntervalData.query.filter(AverageIntervalData.intervals_id == intervals_id)
         .join(Dataset)
         .filter(Dataset.id == cooler_id)
         .all()
@@ -116,16 +116,16 @@ def get_pileups():
     return jsonify([dfile.to_json() for dfile in all_files])
 
 
-@api.route("/pileups/<pileup_id>/", methods=["GET"])
+@api.route("/averageIntervalData/<pileup_id>/", methods=["GET"])
 @auth.login_required
 def get_pileup_data(pileup_id):
     """returns pileup data for the specified pileup id if it exists and
     the user is owner."""
     # Check for existence
-    if Pileup.query.get(pileup_id) is None:
+    if AverageIntervalData.query.get(pileup_id) is None:
         return not_found("Pileup does not exist!")
     # Check whether datasets are owned
-    pileup = Pileup.query.get(pileup_id)
+    pileup = AverageIntervalData.query.get(pileup_id)
     cooler_ds = pileup.source_cooler
     bed_ds = pileup.source_intervals.source_dataset
     if is_access_to_dataset_denied(

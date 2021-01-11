@@ -9,18 +9,18 @@ import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, Pileup
+from app.models import Dataset, Intervals, AverageIntervalData
 
 
-class TestGetPileups(LoginTestCase):
-    """Tests for /api/pileups route to list
-    pileups."""
+class TestGetAverageIntervalDatas(LoginTestCase):
+    """Tests for /api/averageIntervalData route to list
+    averageIntervalData."""
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
         # protected route
         response = self.client.get(
-            "/api/pileups/?cooler_id=1&intervals_id=2",
+            "/api/averageIntervalData/?cooler_id=1&intervals_id=2",
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 401)
@@ -46,19 +46,19 @@ class TestGetPileups(LoginTestCase):
             higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        pileup = Pileup(
-            name="testPileup1",
+        averageIntervalData = AverageIntervalData(
+            name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, intervals1, pileup])
+        db.session.add_all([dataset1, intervals1, averageIntervalData])
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/pileups/?cooler_id=500&intervals_id=1",
+            "/api/averageIntervalData/?cooler_id=500&intervals_id=1",
             headers=token_headers,
             content_type="application/json",
         )
@@ -85,19 +85,19 @@ class TestGetPileups(LoginTestCase):
             higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        pileup = Pileup(
-            name="testPileup1",
+        averageIntervalData = AverageIntervalData(
+            name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, intervals1, pileup])
+        db.session.add_all([dataset1, intervals1, averageIntervalData])
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/pileups/?cooler_id=1&intervals_id=500",
+            "/api/averageIntervalData/?cooler_id=1&intervals_id=500",
             headers=token_headers,
             content_type="application/json",
         )
@@ -123,19 +123,19 @@ class TestGetPileups(LoginTestCase):
             higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        pileup = Pileup(
-            name="testPileup1",
+        averageIntervalData = AverageIntervalData(
+            name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, intervals1, pileup])
+        db.session.add_all([dataset1, intervals1, averageIntervalData])
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/pileups/", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
@@ -159,19 +159,19 @@ class TestGetPileups(LoginTestCase):
             higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        pileup = Pileup(
-            name="testPileup1",
+        averageIntervalData = AverageIntervalData(
+            name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, intervals1, pileup])
+        db.session.add_all([dataset1, intervals1, averageIntervalData])
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/pileups/?intervals_id=1",
+            "/api/averageIntervalData/?intervals_id=1",
             headers=token_headers,
             content_type="application/json",
         )
@@ -197,19 +197,19 @@ class TestGetPileups(LoginTestCase):
             higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        pileup = Pileup(
-            name="testPileup1",
+        averageIntervalData = AverageIntervalData(
+            name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, intervals1, pileup])
+        db.session.add_all([dataset1, intervals1, averageIntervalData])
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/pileups/?cooler_id=1",
+            "/api/averageIntervalData/?cooler_id=1",
             headers=token_headers,
             content_type="application/json",
         )
@@ -246,19 +246,19 @@ class TestGetPileups(LoginTestCase):
             higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        pileup = Pileup(
-            name="testPileup1",
+        averageIntervalData = AverageIntervalData(
+            name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, intervals1, pileup])
+        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/pileups/?cooler_id=2&intervals_id=1",
+            "/api/averageIntervalData/?cooler_id=2&intervals_id=1",
             headers=token_headers,
             content_type="application/json",
         )
@@ -301,24 +301,24 @@ class TestGetPileups(LoginTestCase):
             higlass_uuid="testHiglass2",
             windowsize=200000,
         )
-        pileup = Pileup(
-            name="testPileup1",
+        averageIntervalData = AverageIntervalData(
+            name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, intervals1, intervals2, pileup])
+        db.session.add_all([dataset1, dataset2, intervals1, intervals2, averageIntervalData])
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/pileups/?cooler_id=1&intervals_id=2", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/?cooler_id=1&intervals_id=2", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_get_pileups_allowed(self):
-        """Correct call for pileups results in correct pileups returned."""
+    def test_get_averageIntervalData_allowed(self):
+        """Correct call for averageIntervalData results in correct averageIntervalData returned."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -352,32 +352,32 @@ class TestGetPileups(LoginTestCase):
             higlass_uuid="testHiglass2",
             windowsize=200000,
         )
-        pileup1 = Pileup(
-            name="testPileup1",
+        averageIntervalData1 = AverageIntervalData(
+            name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
-        pileup2 = Pileup(
-            name="testPileup2",
+        averageIntervalData2 = AverageIntervalData(
+            name="testAverageIntervalData2",
             binsize=10000,
             file_path="testPath2",
             cooler_id=1,
             intervals_id=2,
             value_type="ICCF",
         )
-        pileup3 = Pileup(
-            name="testPileup3",
+        averageIntervalData3 = AverageIntervalData(
+            name="testAverageIntervalData3",
             binsize=10000,
             file_path="testPath3",
             cooler_id=2,
             intervals_id=1,
             value_type="ICCF",
         )
-        pileup4 = Pileup(
-            name="testPileup4",
+        averageIntervalData4 = AverageIntervalData(
+            name="testAverageIntervalData4",
             binsize=10000,
             file_path="testPath4",
             cooler_id=2,
@@ -390,55 +390,55 @@ class TestGetPileups(LoginTestCase):
                 dataset2,
                 intervals1,
                 intervals2,
-                pileup1,
-                pileup2,
-                pileup3,
-                pileup4,
+                averageIntervalData1,
+                averageIntervalData2,
+                averageIntervalData3,
+                averageIntervalData4,
             ]
         )
         db.session.commit()
         # make query 1
         response = self.client.get(
-            "/api/pileups/?cooler_id=1&intervals_id=1", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/?cooler_id=1&intervals_id=1", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0]["id"], 1)
         # make query 2
         response = self.client.get(
-            "/api/pileups/?cooler_id=1&intervals_id=2", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/?cooler_id=1&intervals_id=2", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0]["id"], 2)
 
 
-class TestGetPileupData(LoginTestCase, TempDirTestCase):
-    """Test to check whether retrieving of pileup data
+class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
+    """Test to check whether retrieving of averageIntervalData data
     works."""
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
         # protected route
         response = self.client.get(
-            "/api/pileups/1/", content_type="application/json"
+            "/api/averageIntervalData/1/", content_type="application/json"
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_pileup_does_not_exist(self):
-        """Test 404 is returned if pileup does not exist."""
+    def test_averageIntervalData_does_not_exist(self):
+        """Test 404 is returned if averageIntervalData does not exist."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
         token_headers = self.get_token_header(token)
         # make request
         response = self.client.get(
-            "/api/pileups/500/",
+            "/api/averageIntervalData/500/",
             headers=token_headers,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 404)
 
     def test_cooler_not_owned(self):
-        """Cooler dataset underlying pileup is not owned"""
+        """Cooler dataset underlying averageIntervalData is not owned"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -458,24 +458,24 @@ class TestGetPileupData(LoginTestCase, TempDirTestCase):
             higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        pileup = Pileup(
-            name="testPileup1",
+        averageIntervalData = AverageIntervalData(
+            name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, intervals1, pileup])
+        db.session.add_all([dataset1, intervals1, averageIntervalData])
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/pileups/1/", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/1/", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
     def test_intervals_not_owned(self):
-        """Intervals dataset underlying pileup is not owned"""
+        """Intervals dataset underlying averageIntervalData is not owned"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -502,24 +502,24 @@ class TestGetPileupData(LoginTestCase, TempDirTestCase):
             higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        pileup = Pileup(
-            name="testPileup1",
+        averageIntervalData = AverageIntervalData(
+            name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
             cooler_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, intervals1, pileup])
+        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/pileups/1/", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/1/", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
     def test_correct_data_returned(self):
-        """Correct data is returned from an owned pileup"""
+        """Correct data is returned from an owned averageIntervalData"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -556,19 +556,19 @@ class TestGetPileupData(LoginTestCase, TempDirTestCase):
             higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        pileup = Pileup(
-            name="testPileup1",
+        averageIntervalData = AverageIntervalData(
+            name="testAverageIntervalData1",
             binsize=10000,
             file_path=data_path,
             cooler_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, intervals1, pileup])
+        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/pileups/1/", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/1/", headers=token_headers, content_type="application/json",
         )
         expected = test_data.to_json()
         self.assertEqual(response.json, expected)

@@ -7,7 +7,7 @@ import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, Pileup
+from app.models import Dataset, Intervals, AverageIntervalData
 
 
 class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
@@ -34,18 +34,18 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         dataset4 = Dataset(id=4, file_path=file_path_4, filetype="bedfile", user_id=2,)
         # create Intervals for owned data_set
         file_path_pr_1 = self.create_empty_file_in_tempdir("test1.bedpe")
-        pileup_region_1 = Intervals(id=1, dataset_id=3, file_path=file_path_pr_1)
+        intervals_1 = Intervals(id=1, dataset_id=3, file_path=file_path_pr_1)
         # create Intervals for not owned data_set
         file_path_pr_2 = self.create_empty_file_in_tempdir("test2.bedpe")
-        pileup_region_2 = Intervals(id=2, dataset_id=4, file_path=file_path_pr_2)
-        # create pileup for owned data_sets
+        intervals_2 = Intervals(id=2, dataset_id=4, file_path=file_path_pr_2)
+        # create averageIntervalData for owned data_sets
         file_path_pu_1 = self.create_empty_file_in_tempdir("test1.csv")
-        pileup_1 = Pileup(
+        averageIntervalData_1 = AverageIntervalData(
             id=1, file_path=file_path_pu_1, cooler_id=1, intervals_id=1
         )
-        # create pileup for not owned data_set
+        # create averageIntervalData for not owned data_set
         file_path_pu_2 = self.create_empty_file_in_tempdir("test2.csv")
-        pileup_2 = Pileup(
+        averageIntervalData_2 = AverageIntervalData(
             id=2, file_path=file_path_pu_2, cooler_id=2, intervals_id=2
         )
         # add to database
@@ -55,10 +55,10 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
                 dataset2,
                 dataset3,
                 dataset4,
-                pileup_region_1,
-                pileup_region_2,
-                pileup_1,
-                pileup_2,
+                intervals_1,
+                intervals_2,
+                averageIntervalData_1,
+                averageIntervalData_2,
             ]
         )
         db.session.commit()
@@ -128,8 +128,8 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset_ids, {2, 3, 4})
         intervals_ids = set(entry.id for entry in Intervals.query.all())
         self.assertEqual(intervals_ids, {1, 2})
-        pileup_ids = set(entry.id for entry in Pileup.query.all())
-        self.assertEqual(pileup_ids, {2})
+        averageIntervalData_ids = set(entry.id for entry in AverageIntervalData.query.all())
+        self.assertEqual(averageIntervalData_ids, {2})
         # check temp_idr state
         files_tempdir = set(os.listdir(TempDirTestCase.TEMP_PATH))
         expected = {
@@ -162,8 +162,8 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset_ids, {1, 2, 4})
         intervals_ids = set(entry.id for entry in Intervals.query.all())
         self.assertEqual(intervals_ids, {2})
-        pileup_ids = set(entry.id for entry in Pileup.query.all())
-        self.assertEqual(pileup_ids, {2})
+        averageIntervalData_ids = set(entry.id for entry in AverageIntervalData.query.all())
+        self.assertEqual(averageIntervalData_ids, {2})
         # check temp_idr state
         files_tempdir = set(os.listdir(TempDirTestCase.TEMP_PATH))
         expected = {

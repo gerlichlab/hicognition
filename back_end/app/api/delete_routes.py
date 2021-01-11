@@ -5,7 +5,7 @@ from flask import g, current_app
 from .helpers import is_access_to_dataset_denied
 from . import api
 from .. import db
-from ..models import Intervals, Dataset, Pileup
+from ..models import Intervals, Dataset, AverageIntervalData
 from .authentication import auth
 from .errors import forbidden, not_found
 
@@ -25,17 +25,17 @@ def delete_dataset(dataset_id):
     # check if data set is processing
     if dataset.processing_state == "processing":
         return forbidden(f"Dataset is in processing state!")
-    # cooler only needs deletion of derived pileups
-    pileup_regions = []
-    pileups = []
+    # cooler only needs deletion of derived averageIntervalData
+    intervals = []
+    averageIntervalData = []
     if dataset.filetype == "cooler":
-        pileups = Pileup.query.filter(Pileup.cooler_id == dataset_id).all()
-    # bedfile needs deletion of intervals and pileups
+        averageIntervalData = AverageIntervalData.query.filter(AverageIntervalData.cooler_id == dataset_id).all()
+    # bedfile needs deletion of intervals and averageIntervalData
     if dataset.filetype == "bedfile":
-        pileup_regions = Intervals.query.filter(Intervals.dataset_id == dataset_id).all()
-        pileups = Pileup.query.filter(Pileup.intervals_id.in_([entry.id for entry in pileup_regions])).all()
+        intervals = Intervals.query.filter(Intervals.dataset_id == dataset_id).all()
+        averageIntervalData = AverageIntervalData.query.filter(AverageIntervalData.intervals_id.in_([entry.id for entry in intervals])).all()
     # delete files and remove from database
-    deletion_queue = [dataset] + pileup_regions + pileups
+    deletion_queue = [dataset] + intervals + averageIntervalData
     for entry in deletion_queue:
         try:
             os.remove(entry.file_path)

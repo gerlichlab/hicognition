@@ -70,8 +70,8 @@ class Dataset(db.Model):
     higlass_uuid = db.Column(db.String(64), index=True, unique=True)
     filetype = db.Column(db.String(64), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    pileup_regions = db.relationship("Intervals", backref="source_dataset", lazy="dynamic")
-    pileup = db.relationship("Pileup", backref="source_cooler", lazy="dynamic")
+    intervals = db.relationship("Intervals", backref="source_dataset", lazy="dynamic")
+    averageIntervalData = db.relationship("AverageIntervalData", backref="source_cooler", lazy="dynamic")
     tasks = db.relationship('Task', backref='dataset', lazy='dynamic')
     processing_state = db.Column(db.String(64))
 
@@ -123,7 +123,7 @@ class Intervals(db.Model):
     file_path = db.Column(db.String(128), index=True)
     higlass_uuid = db.Column(db.String(64), index=True)
     windowsize = db.Column(db.Integer, index=True)
-    pileups = db.relationship("Pileup", backref="source_intervals", lazy="dynamic")
+    averageIntervalData = db.relationship("AverageIntervalData", backref="source_intervals", lazy="dynamic")
 
     def __repr__(self):
         """Format print output."""
@@ -142,7 +142,7 @@ class Intervals(db.Model):
         return json_intervals
 
 
-class Pileup(db.Model):
+class AverageIntervalData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     binsize = db.Column(db.Integer)
     name = db.Column(db.String(64), index=True)
@@ -153,11 +153,11 @@ class Pileup(db.Model):
 
     def __repr__(self):
         """Format print output."""
-        return f"<Pileup {self.name}>"
+        return f"<AverageIntervalData {self.name}>"
 
     def to_json(self):
         """Formats json output."""
-        json_pileups = {
+        json_averageIntervalData = {
             "id": self.id,
             "binsize": self.binsize,
             "name": self.name,
@@ -166,7 +166,7 @@ class Pileup(db.Model):
             "intervals_id": self.intervals_id,
             "value_type": self.value_type
         }
-        return json_pileups
+        return json_averageIntervalData
 
 
 class Task(db.Model):

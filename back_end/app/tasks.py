@@ -11,7 +11,7 @@ from hicognition import io_helpers, higlass_interface
 from requests.exceptions import HTTPError
 from rq import get_current_job
 from . import create_app, db
-from .models import Dataset, Intervals, Pileup, Task
+from .models import Dataset, Intervals, AverageIntervalData, Task
 
 # get logger
 log = logging.getLogger("rq.worker")
@@ -37,7 +37,7 @@ def pipeline_bed(dataset_id):
         * convert bed to bedpe
         * run clodius on bedpe
         * upload result to higlass
-        * Add PileupRegion dataset entry
+        * Add Intervals dataset entry
     - Indicate in Job table in database that job is complete.
     Output-folder is not needed for this since the file_path
     of Dataset entry contains it.
@@ -95,20 +95,20 @@ def pipeline_cooler(dataset_id):
     db.session.commit()
 
 
-def pipeline_pileup(dataset_id, binsizes, pileup_region_ids):
+def pipeline_pileup(dataset_id, binsizes, interval_ids):
     """Start pileup pipeline for specified combination of
     cooler_id, binsizes and pileupregions"""
     current_dataset = Dataset.query.get(dataset_id)
-    pileup_regions = Intervals.query.filter(Intervals.id.in_(pileup_region_ids)).all()
+    intervals = Intervals.query.filter(Intervals.id.in_(interval_ids)).all()
     chromosome_arms = pd.read_csv(app.config["CHROM_ARMS"])
     # perform pileup
     counter = 0
     for binsize in binsizes:
-        for pileup_region in pileup_regions:
-            perform_pileup(current_dataset, pileup_region, binsize, chromosome_arms, "ICCF")
-            perform_pileup(current_dataset, pileup_region, binsize, chromosome_arms, "Obs/Exp")
+        for intervals in intervals:
+            perform_pileup(current_dataset, intervals, binsize, chromosome_arms, "ICCF")
+            perform_pileup(current_dataset, intervals, binsize, chromosome_arms, "Obs/Exp")
             counter += 1
-            progress = counter / (len(binsizes) * len(pileup_regions)) * 100
+            progress = counter / (len(binsizes) * len(intervals)) * 100
             _set_task_progress(progress)
     _set_task_progress(100)
 
@@ -163,7 +163,7 @@ def bedpe_preprocess_pipeline_step(file_path, dataset_id=None, windowsize=None):
     Performs bedpe preprocessing pipeline step:
     * run clodius on bedpe file
     * upload result to higlass
-    * add Pileupregion dataset entry
+    * add Intervals dataset entry
     """
     log.info(f"  Bedpe-preprocess: {file_path} with {windowsize}")
     # run clodius
@@ -203,16 +203,16 @@ def bedpe_preprocess_pipeline_step(file_path, dataset_id=None, windowsize=None):
     db.session.commit()
 
 
-def perform_pileup(cooler_dataset, pileup_region, binsize, arms, pileup_type):
+def perform_pileup(cooler_dataset, intervals, binsize, arms, pileup_type):
     """Performs pileup [either ICCF or Obs/Exp; parameter passed to pileup_type] of cooler_dataset on
-    pileup_region with resolution binsize."""
+    intervals with resolution binsize."""
     log.info(
-        f"  Doing pileup on cooler {cooler_dataset.id} with pileupregion {pileup_region.id} on binsize {binsize}"
+        f"  Doing pileup on cooler {cooler_dataset.id} with intervals {intervals.id} on binsize {binsize}"
     )
     # get path to dataset
-    file_path = pileup_region.source_dataset.file_path
+    file_path = intervals.source_dataset.file_path
     # get windowsize
-    window_size = pileup_region.windowsize
+    window_size = intervals.windowsize
     # load bedfile
     log.info("      Loading regions...")
     regions = pd.read_csv(file_path, sep="\t", header=None)
@@ -239,7 +239,7 @@ def perform_pileup(cooler_dataset, pileup_region, binsize, arms, pileup_type):
     export_df_for_js(pileup_array, file_path)
     # add this to database
     log.info("      Adding database entry...")
-    add_pileup_db(file_path, binsize, pileup_region.id, cooler_dataset.id, pileup_type)
+    add_pileup_db(file_path, binsize, intervals.id, cooler_dataset.id, pileup_type)
     log.info("      Success!")
 
 
@@ -257,13 +257,13 @@ def export_df_for_js(np_array, file_path):
     output_molten.to_csv(file_path, index=False)
 
 
-def add_pileup_db(file_path, binsize, pileup_region_id, cooler_dataset_id, pileup_type):
+def add_pileup_db(file_path, binsize, intervals_id, cooler_dataset_id, pileup_type):
     """Adds pileup region to database"""
-    new_entry = Pileup(
+    new_entry = AverageIntervalData(
         binsize=int(binsize),
         name=os.path.basename(file_path),
         file_path=file_path,
-        pileupregion_id=pileup_region_id,
+        intervals_id=intervals_id,
         cooler_id=cooler_dataset_id,
         value_type=pileup_type
     )

@@ -54,7 +54,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         self.add_test_datasets()
         data = {
             "dataset_id": "1",
-            "pileup_region_ids": "[1, 2, 3, 4]",
+            "interval_ids": "[1, 2, 3, 4]",
             "binsizes": "[10000, 20000, 40000]",
         }
         # dispatch post request
@@ -84,7 +84,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         self.add_test_datasets()
         data = {
             "dataset_id": "3",
-            "pileup_region_ids": "[1, 2, 3, 4]",
+            "interval_ids": "[1, 2, 3, 4]",
             "binsizes": "[10000, 20000, 40000]",
         }
         # dispatch post request
@@ -106,7 +106,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         self.add_test_datasets()
         data = {
             "dataset_id": "4",
-            "pileup_region_ids": "[1, 2, 3, 4]",
+            "interval_ids": "[1, 2, 3, 4]",
             "binsizes": "[10000, 20000, 40000]",
         }
         # dispatch post request
@@ -127,7 +127,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # add datasets
         self.add_test_datasets()
         data = {
-            "pileup_region_ids": "[1, 2, 3, 4]",
+            "interval_ids": "[1, 2, 3, 4]",
             "binsizes": "[10000, 20000, 40000]",
         }
         # dispatch post request
@@ -139,3 +139,6 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
+
+if __name__ == "__main__":
+    res = unittest.main(verbosity=3, exit=False)
