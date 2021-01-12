@@ -163,13 +163,6 @@ export default {
             }
             return matrix;
         },
-        maxIDChildren: function(){
-            var ids = [];
-            for (var child of this.children){
-                ids.push(child.id);
-            }
-            return Math.max(...ids)
-        },
         flattenedElements: function() {
             // gives a flattened representation of elements
             var output = [];
