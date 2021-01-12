@@ -126,6 +126,8 @@ export default {
         toStoreObject: function(){
             // serialize object for storing its state in the store
             return {
+                // collection Data is needed if widget is dropped on new collection
+                collectionData: this.$store.getters["compare/getCollectionProperties"](this.collectionID),
                 colIndex: this.colIndex,
                 rowIndex: this.rowIndex,
                 id: this.id,
@@ -155,20 +157,30 @@ export default {
             e.dataTransfer.setData('widget-id', this.id);
             e.dataTransfer.setData("collection-id", this.collectionID);
         },
-        initializeWidget: function() {
-            // initialize widget from store
-            var queryObject = {
-                parentID: this.collectionID,
-                id: this.id
-            };
-            console.log(queryObject);
-            var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
-            console.log(widgetData);
-            var collectionData = this.$store.getters["compare/getCollectionProperties"](this.collectionID);
-            console.log(collectionData);
+        sameCollectionConfig: function(newCollectionData, oldCollectionData) {
+            if (!oldCollectionData){
+                return false;
+            }
+            if (newCollectionData["intervalID"] != oldCollectionData["intervalID"]){
+                return false;
+            }
+            return true;
+        },
+        initializeAtNewCollection: function(widgetData, collectionData) {
+            return {
+                widgetData: undefined,
+                selectedDataset: undefined,
+                selectedBinsize: undefined,
+                intervalID: collectionData["intervalID"],
+                emptyClass: ["smallMargin", "empty"],
+                binsizes: [],
+                datasets: this.$store.getters.getCoolers,
+                isICCF: true
+            }
+        },
+        initializeAtSameCollection: function(widgetData, collectionData) {
             return {
                 widgetData: widgetData["widgetData"],
-                isCooler: widgetData["isCoolder"],
                 selectedDataset: widgetData["dataset"],
                 selectedBinsize: widgetData["binsize"],
                 intervalID: collectionData["intervalID"],
@@ -177,6 +189,22 @@ export default {
                 datasets: this.$store.getters.getCoolers,
                 isICCF: widgetData["isICCF"]
             }
+        },
+        initializeWidget: function() {
+            // initialize widget from store
+            var queryObject = {
+                parentID: this.collectionID,
+                id: this.id
+            };
+            var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
+            // the collection config at the current collection
+            var collectionData = this.$store.getters["compare/getCollectionProperties"](this.collectionID);
+            // the collection config the widget comes from
+            var oldCollectionData = widgetData["collectionData"];
+            if (this.sameCollectionConfig(collectionData, oldCollectionData)){
+                return this.initializeAtSameCollection(widgetData, collectionData)
+            }
+            return this.initializeAtNewCollection(widgetData, collectionData)
         }
     },
     watch: {

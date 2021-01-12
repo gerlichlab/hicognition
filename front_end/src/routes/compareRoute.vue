@@ -43,7 +43,7 @@ export default {
                       isCooler: true,
                       dataset: null,
                       binsize: null,
-                      intervalsID: null,
+                      intervalID: null,
                       binsizes: [],
                       datasets: [],
                       isICCF: true

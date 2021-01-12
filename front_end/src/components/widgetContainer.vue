@@ -49,6 +49,7 @@ export default {
     methods: {
         propagateDrop: function() {
             // propagates widgetDrop up to widgetCollection
+            // Vue events are not automatically passed on to parents https://stackoverflow.com/questions/43559561/how-to-propagate-a-vue-js-event-up-the-components-chain
            this.$emit("widgetDrop", ...arguments);
         }
     },
