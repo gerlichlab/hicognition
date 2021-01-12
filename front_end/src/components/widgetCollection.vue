@@ -188,7 +188,7 @@ export default {
         this.fetchData("datasets/").then((response) => {
                 // success, store datasets
                 this.$store.commit("setDatasets", response.data);
-                // update datasets; Only use completed datasets; completed is 1 if completed, 0 if in progress and -1 if failed
+                // update datasets; Only use completed datasets
                 this.regions = response.data.filter(
                 (element) => element.filetype == "bedfile" && (element.processing_state == "finished")
                 );
@@ -203,17 +203,23 @@ export default {
             this.baseHeight -= 50;
         },
         expandCollection: function(){
+            // needed for showing region before widgetdrop
             var maxRowElements = Math.max(...this.children.map((element) => element.rowIndex));
             var maxColElements = Math.max(...this.children.map((element) => element.colIndex));
             this.maxRowNumber = maxRowElements + 1;
             this.maxColumnNumber = maxColElements + 1;
         },
-        shrinkCollection: function(e) {
+        handleDragLeave: function(e){
             // check if card is collection card, all child elements trigger leave events
             if ((e.toElement == this.$refs["collectionCard"].$el) || (e.toElement.contains(this.$refs["collectionCard"].$el))){
-                this.maxRowNumber = Math.max(...this.children.map((element) => element.rowIndex));
-                this.maxColumnNumber = Math.max(...this.children.map((element) => element.colIndex));
+                // if dragleave on collection card -> shrink collection
+                this.setTightBoundingArea()
             }
+        },
+        setTightBoundingArea: function(e) {
+            // resizes drawn widgetmatrix to to largest element in children
+            this.maxRowNumber = Math.max(...this.children.map((element) => element.rowIndex));
+            this.maxColumnNumber = Math.max(...this.children.map((element) => element.colIndex));
         },
         deleteCollection: function() {
             this.$store.commit("compare/deleteWidgetCollection", this.id);
@@ -225,18 +231,18 @@ export default {
                 id: sourceWidgetID
             };
             var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
-            // get collection Data of current collection to signal it to widget
+            // check if interval needs to be updated. Compares old interval of source widget collection and this collection
             var newIntervalID = this.$store.getters["compare/getCollectionProperties"](this.id)["intervalID"];
             var oldIntervalID = this.$store.getters["compare/getCollectionProperties"](sourceColletionID)["intervalID"];
-            var updateWidgetContent = newIntervalID != oldIntervalID;
             // delete original widget in store
             this.$store.commit("compare/deleteWidget", queryObject);
-            // update changed data in the collection
+            // update widget data that changed upon drop
             widgetData["id"] = this.getNextID();
             widgetData["rowIndex"] = rowIndex;
             widgetData["colIndex"] = colIndex;
             widgetData["parentID"] = this.id;
-            if (updateWidgetContent) {
+            if (newIntervalID != oldIntervalID) {
+                // interval of source collection is different from this collection, reset datasets
                 widgetData["dataset"] = undefined;
                 widgetData["intervalID"] = newIntervalID;
                 widgetData["widgetData"] = undefined;
@@ -257,6 +263,7 @@ export default {
                         var newEntry = Object.assign({}, newValue[this.id]);
                         var oldEntry = Object.assign({}, oldValue[this.id]);
                         if (newEntry != oldEntry){
+                            // entry changed, assign new child-widgets to draw
                             this.children = [];
                             for (var child of Object.values(newEntry.children)){
                                 this.children.push(child)
@@ -266,8 +273,7 @@ export default {
                             this.deleteCollection();
                         }
                         // reset collection to new size;
-                        this.maxRowNumber = Math.max(...this.children.map((element) => element.rowIndex));
-                        this.maxColumnNumber =  Math.max(...this.children.map((element) => element.colIndex));
+                        this.setTightBoundingArea()
                         }
 
                      },
