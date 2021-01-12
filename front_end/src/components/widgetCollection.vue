@@ -1,5 +1,5 @@
 <template>
-<div @dragenter="expandCollection" @dragleave="shrinkCollection">
+<div @dragenter="expandCollection" @dragleave="handleDragLeave">
     <md-card :style="cssStyle" ref="collectionCard">
         <md-card-header>
             <div class="md-layout">
