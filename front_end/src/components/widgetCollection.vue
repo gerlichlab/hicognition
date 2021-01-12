@@ -224,6 +224,7 @@ export default {
             this.$store.commit("compare/deleteWidgetCollection", this.id);
         },
         handleWidgetDrop: function(sourceColletionID, sourceWidgetID, rowIndex, colIndex) {
+            console.log("widget drop handler called");
             // obtain data from store
             var queryObject = {
                 parentID: sourceColletionID,
