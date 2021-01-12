@@ -137,7 +137,8 @@ export default {
                 binsizes: this.binsizes,
                 binsize: this.selectedBinsize,
                 widgetData: this.widgetData,
-                isICCF: this.isICCF
+                isICCF: this.isICCF,
+                widgetType: "Hi-C"
             }
         },
         deleteWidget: function(){
@@ -158,7 +159,8 @@ export default {
             e.dataTransfer.setData("collection-id", this.collectionID);
         },
         sameCollectionConfig: function(newCollectionData, oldCollectionData) {
-            if (!oldCollectionData){
+            if ( !oldCollectionData ){
+                // no old data -> the widget needs to be freshly initialized
                 return false;
             }
             if (newCollectionData["intervalID"] != oldCollectionData["intervalID"]){

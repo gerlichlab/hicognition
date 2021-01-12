@@ -230,9 +230,6 @@ export default {
                 id: sourceWidgetID
             };
             var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
-            // check if interval needs to be updated. Compares old interval of source widget collection and this collection
-            //var newIntervalID = this.$store.getters["compare/getCollectionProperties"](this.id)["intervalID"];
-            //var oldIntervalID = this.$store.getters["compare/getCollectionProperties"](sourceColletionID)["intervalID"];
             // delete original widget in store
             this.$store.commit("compare/deleteWidget", queryObject);
             // update widget data that changed upon drop
@@ -240,15 +237,6 @@ export default {
             widgetData["rowIndex"] = rowIndex;
             widgetData["colIndex"] = colIndex;
             widgetData["parentID"] = this.id;
-            //if (newIntervalID != oldIntervalID) {
-            //    // interval of source collection is different from this collection, reset datasets
-            //    widgetData["dataset"] = undefined;
-            //   widgetData["intervalID"] = newIntervalID;
-            //    widgetData["widgetData"] = undefined;
-            //    widgetData["binsizes"] = [];
-            //    widgetData["binsize"] = null;
-            //    widgetData["isICCF"] = true
-            //}
             // update changed data in store
             this.$store.commit("compare/setWidget", widgetData);
         }

@@ -38,15 +38,8 @@ export default {
                       id: Math.floor(Math.random() * 1000000000),
                       rowIndex: 0,
                       colIndex: 0,
-                      text: Math.floor(Math.random() * 100),
                       parentID: this.currentID,
-                      isCooler: true,
-                      dataset: null,
-                      binsize: null,
-                      intervalID: null,
-                      binsizes: [],
-                      datasets: [],
-                      isICCF: true
+                      widgetType: undefined
                   };
         this.$store.commit("compare/setWidgetCollection", initialChild);
       this.currentID += 1;

@@ -1,7 +1,18 @@
 <template>
     <div>
         <div v-if="!isEmpty">
-            <hicWidget v-if="this.widgetType == 'HiC'"
+            <div v-if="noWidgetType" :style="cssStyle" class="md-elevation-1 bg">
+                <div class="md-layout md-gutter md-alignment-bottom-center fill-half-height">
+                    <div class="md-layout-item md-size-90 align-text-center">
+                        <span class="md-display-1">Select a widget type</span>
+                    </div>
+                </div>
+                <div class="md-layout md-gutter md-alignment-top-center fill-half-height">
+                    <md-button @click="setHiC" class="md-raised md-accent">Hi-C</md-button>
+                    <md-button class="md-raised md-accent" @click="setBigWig">BigWig</md-button>
+                </div>
+            </div>
+            <hicWidget v-else-if="this.widgetType == 'Hi-C'"
                 :height="height"
                 :width="width"
                 :empty="empty"
@@ -33,8 +44,16 @@ export default {
         hicWidget
     },
     data: function () {
+        // get widget type from store
+        var queryObject = {
+                parentID: this.collectionID,
+                id: this.id
+            };
+        var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
         return {
-            widgetType: "HiC"
+            widgetType: widgetData["widgetType"],
+            selectedType: undefined,
+            widgetTypes: ["Hi-C", "Chip-seq"]
         }
     },
     props: {
@@ -47,6 +66,22 @@ export default {
         colIndex: Number,
     },
     methods: {
+        setHiC: function(){
+            // get widget data from store
+            var queryObject = {
+                    parentID: this.collectionID,
+                    id: this.id
+                };
+            var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
+            // set widgetType in store
+            widgetData["widgetType"] = "Hi-C"
+            this.$store.commit("compare/setWidget", widgetData);
+            // set widget Type in this container
+            this.widgetType = "Hi-C";
+        },
+        setBigWig: function() {
+            console.log("Not implemented!");
+        },
         propagateDrop: function() {
             // propagates widgetDrop up to widgetCollection
             // Vue events are not automatically passed on to parents https://stackoverflow.com/questions/43559561/how-to-propagate-a-vue-js-event-up-the-components-chain
@@ -54,6 +89,18 @@ export default {
         }
     },
     computed:{
+        cssStyle: function() {
+            return {
+                height: `${this.height}px`,
+                width: `${this.width}px`
+            }
+        },
+        noWidgetType: function() {
+            if(this.widgetType){
+                return false
+            }
+            return true
+        },
         isEmpty: function() {
             if (this.empty == true){
                 return true;
@@ -66,5 +113,17 @@ export default {
 </script>
 
 <style scoped>
+
+.bg {
+    background-color: rgba(211, 211, 211, 0.2);
+}
+
+.align-text-center {
+    text-align: center;
+}
+
+.fill-half-height {
+    height: 50%;
+}
 
 </style>
