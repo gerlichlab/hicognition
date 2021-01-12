@@ -17,6 +17,7 @@
                 </div>
                 <div class="md-layout-item md-size-30 padding-right">
                     <md-field class="padding-top">
+                        <label class="md-primary" for="region">Region</label>
                         <md-select
                         v-model="selectedRegionID"
                         name="region"
@@ -34,10 +35,11 @@
                 </div>
                 <div class="md-layout-item md-size-25">
                     <md-field class="padding-top">
+                        <label class="md-primary" for="Size">Size</label>
                         <md-select
                         v-model="selectedWindowSize"
-                        name="region"
-                        id="region"
+                        name="size"
+                        id="size"
                         placeholder="Size"
                         :disabled="!windowSizesAvailable"
                         >
@@ -294,7 +296,7 @@ export default {
 <style scoped>
 
 .padding-top {
-    padding-top: 2px;
+    padding-top: 10px;
 }
 
 .padding-right {
@@ -335,6 +337,10 @@ export default {
 .nomargin {
     margin: 0px;
     padding: 5px;
+}
+
+.md-field {
+    min-height: 30px;
 }
 
 </style>

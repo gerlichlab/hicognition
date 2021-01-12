@@ -4,6 +4,7 @@
         <div class="md-layout">
             <div class="md-layout-item md-size-30 padding-left padding-right">
                 <md-field class="padding-top">
+                        <label class="md-primary">Dataset</label>
                         <md-select
                         v-model="selectedDataset"
                         name="dataset"
@@ -22,6 +23,7 @@
             </div>
             <div class="md-layout-item md-size-30 padding-left padding-right">
                 <md-field class="padding-top">
+                        <label class="md-primary">Binsize</label>
                         <md-select
                         v-model="selectedBinsize"
                         name="binsize"
@@ -282,11 +284,11 @@ export default {
 }
 
 .padding-top {
-    padding-top: 2px;
+    padding-top: 12px;
 }
 
 .padding-top-large {
-    padding-top: 10px;
+    padding-top: 17px;
 }
 
 .smallMargin {
@@ -296,5 +298,8 @@ export default {
     margin-bottom: 1px;
 }
 
+.md-field {
+    min-height: 30px;
+}
 
 </style>
