@@ -75,7 +75,7 @@ import { apiMixin } from "../mixins";
 import { group_iccf_obs_exp } from "../functions";
 
 export default {
-    name: 'widget',
+    name: 'widgetContainer',
     mixins: [apiMixin],
     components: {
         pileup

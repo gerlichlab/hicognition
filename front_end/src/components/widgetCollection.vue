@@ -61,7 +61,7 @@
         <md-divider></md-divider>
         </md-card-header>
         <md-card-content class="nomargin">
-            <widget class="inline"  v-for="item in flattenedElements" :key="item.id"
+            <widgetContainer class="inline"  v-for="item in flattenedElements" :key="item.id"
                                                       :height="item.height"
                                                       :width="item.width"
                                                       :empty="item.empty"
@@ -80,8 +80,7 @@
 
 <script>
 
-import widget from "./widget"
-import Widget from './widget.vue'
+import widgetContainer from "./widgetContainer"
 import { apiMixin } from "../mixins";
 
 export default {
@@ -91,7 +90,7 @@ export default {
         id: Number
     },
     components: {
-        widget
+        widgetContainer
     },
     data: function () {
         return {
