@@ -115,6 +115,10 @@ export default {
       this.initMatrixRenderer(properties);
       this.initPiling(this.pileupDivID, this.matrixRenderer, this.dataHeatMapPiling)
   },
+  beforeDestroy: function() {
+        // destroy piling
+        this.piling.destroy()
+  },
   watch: {
     pileupData: function () {
       this.changeData()

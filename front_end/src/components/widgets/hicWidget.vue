@@ -170,6 +170,22 @@ export default {
             }
             return true;
         },
+        initializeForFirstTime: function(widgetData, collectionData){
+            var data = {
+                    widgetData: undefined,
+                    selectedDataset: undefined,
+                    selectedBinsize: undefined,
+                    intervalID: collectionData["intervalID"],
+                    emptyClass: ["smallMargin", "empty"],
+                    binsizes: [],
+                    datasets: this.$store.getters.getCoolers,
+                    isICCF: true
+            }
+            // write properties to store
+            var newObject = this.toStoreObject();
+            this.$store.commit("compare/setWidget", newObject);
+            return data;
+        },
         initializeAtNewCollection: function(widgetData, collectionData) {
             return {
                 widgetData: undefined,
@@ -205,6 +221,9 @@ export default {
             var collectionData = this.$store.getters["compare/getCollectionProperties"](this.collectionID);
             // the collection config the widget comes from
             var oldCollectionData = widgetData["collectionData"];
+            if (!oldCollectionData){
+                return this.initializeForFirstTime(widgetData, collectionData)
+            }
             if (this.sameCollectionConfig(collectionData, oldCollectionData)){
                 return this.initializeAtSameCollection(widgetData, collectionData)
             }
