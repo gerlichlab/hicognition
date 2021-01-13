@@ -21,7 +21,6 @@ import { createColorMap } from "../colorScales"
 export default {
   name: "pileup",
   props: {
-    title: String,
     pileupData: Object,
     width: Number,
     height: Number,
@@ -54,9 +53,6 @@ export default {
   },
   data: function () {
     return {
-      svg: null, // svg of heatmap,
-      pileupPicture: null, // heatmap object
-      colorScale: null,
       colorMap: undefined,
       matrixRenderer: undefined,
       piling: undefined,

@@ -54,7 +54,6 @@
             </div>
         </div>
         <pileup
-            title="Obs/Exp"
             :pileupType="pileupType"
             v-if="showData"
             :pileupID="id"

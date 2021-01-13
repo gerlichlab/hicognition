@@ -42,16 +42,19 @@ const rgbStr2rgba = (rgbStr, alpha = 1) => {
   ];
 };
 
-export function createColorMap (interpolator, numColors = 512, invert = false) {
+export function createColorMap (interpolator, numColors = 512) {
   let interpolatorFn;
+  let invert;
 
   switch (interpolator) {
     case 'ICCF':
       interpolatorFn = interpolateOrRd;
+      invert = false;
       break;
 
     case "ObsExp":
         interpolatorFn = interpolateRdBu;
+        invert = true;
         break
 
     case 'purple':
