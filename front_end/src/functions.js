@@ -70,6 +70,53 @@ function fillBed(bed) {
   return localView;
 }
 
+export function convert_json_to_pilingJS(jsonObject, log = false) {
+  /*
+    Converts pileup data from pandas.DataFrame.to_json to an
+    object that pilingJS can read
+
+    input Json: '{"variable":{...},"group":{...},"value":{...}}'
+    output Object: [
+      {
+        data: [flattenedArrayOfData],
+        shape: [rowNumber, colNumber],
+        dtype: "datatype"
+      }
+    ]
+  */
+  var rowNumber = Math.max(...Object.values(jsonObject["variable"])) + 1;
+  var colNumber = Math.max(...Object.values(jsonObject["group"])) + 1;
+  var objectLength = Object.keys(jsonObject["variable"]).length;
+  var data = [];
+  for (var index = 0; index < objectLength; index++) {
+    var newValue;
+    if (log) {
+      // first check whether value is undefined
+      if (jsonObject["value"][index]) {
+        newValue = Math.log2(jsonObject["value"][index]);
+      } else {
+        newValue = null;
+      }
+    } else {
+      newValue = jsonObject["value"][index];
+    }
+    // check where in the data object value should be put
+    var rowIndex = jsonObject["variable"][index];
+    var colIndex = jsonObject["group"][index];
+    var flattenedIndex = rowIndex * colNumber + colIndex;
+    data[flattenedIndex] = newValue;
+  }
+  return [{
+      src: {
+      data: data,
+      shape: [rowNumber, colNumber],
+      dtype: "float32"
+    }
+  }
+  ]
+}
+
+
 export function convert_json_to_d3(jsonObject, log = false) {
   /*
       Converts pileup data from pandas.DataFrame.to_json to an 

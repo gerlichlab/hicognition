@@ -1,4 +1,9 @@
 import * as d3 from "d3";
+import {
+  interpolateOrRd,
+  interpolateRdPu,
+  interpolateRdBu
+} from 'd3-scale-chromatic';
 
 export function getScale(min, max, scaleType) {
     // returns a iccf color scale or obs/exp color scale with the specified
@@ -25,3 +30,45 @@ function distributeMinMax(min, max) {
    return [min, min + range/3, min + 2*range/3, max]
 }
 
+// these functions are from https://github.com/flekschas/piling.js/blob/master/examples/matrices.js
+
+const rgbStr2rgba = (rgbStr, alpha = 1) => {
+  return [
+    ...rgbStr
+      .match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/)
+      .slice(1, 4)
+      .map((x) => parseInt(x, 10) / 256),
+    alpha,
+  ];
+};
+
+export function createColorMap (interpolator, numColors = 512, invert = false) {
+  let interpolatorFn;
+
+  switch (interpolator) {
+    case 'ICCF':
+      interpolatorFn = interpolateOrRd;
+      break;
+
+    case "ObsExp":
+        interpolatorFn = interpolateRdBu;
+        break
+
+    case 'purple':
+    default:
+      interpolatorFn = interpolateRdPu;
+      break;
+  }
+
+  const colorMap = new Array(numColors)
+    .fill(0)
+    .map((x, i) =>
+      rgbStr2rgba(
+        interpolatorFn(Math.abs((invert * numColors - i) / numColors))
+      )
+    );
+
+  colorMap[0] = [0, 0, 0, 0]; // Transparent
+
+  return colorMap;
+};
