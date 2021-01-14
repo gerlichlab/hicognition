@@ -169,9 +169,12 @@ def bedpe_preprocess_pipeline_step(file_path, dataset_id=None, windowsize=None):
     # run clodius
     log.info(f"     Running clodius...")
     clodius_output = file_path + ".bed2ddb"
-    higlass_interface.preprocess_dataset(
+    exit_code = higlass_interface.preprocess_dataset(
         "bedpe", app.config["CHROM_SIZES"], file_path, clodius_output
     )
+    if exit_code != 0:
+        log.error("Clodius failed!")
+        raise ValueError("Clodius failed!")
     # add to higlass
     log.info("      Adding to higlass...")
     credentials = {
