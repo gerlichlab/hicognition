@@ -95,7 +95,7 @@ export function convert_json_to_pilingJS(jsonObject, log = false) {
       if (jsonObject["value"][index]) {
         newValue = Math.log2(jsonObject["value"][index]);
       } else {
-        newValue = null;
+        newValue = undefined;
       }
     } else {
       newValue = jsonObject["value"][index];
