@@ -277,8 +277,8 @@ export default {
         },
         selectedWindowSize: function() {
             // set new intervals
-            var payload = {"id": this.id, "intervalID": this.selectedWindowSize};
-            this.$store.commit("compare/setCollectionIntervals", payload);
+            var payload = {"id": this.id, "collectionConfig": {"intervalID": this.selectedWindowSize}};
+            this.$store.commit("compare/setCollectionConfig", payload);
         }
     },
     mounted: function() {

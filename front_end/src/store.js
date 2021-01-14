@@ -46,6 +46,12 @@ const compareModule = {
       },
       collectionExists: (state) => (id) => {
         return id in state.widgetCollections
+      },
+      getCollectionConfig: (state) => (collectionID) => {
+        if (!("collectionConfig") in state.widgetCollections[collectionID]){
+          return {};
+        }
+        return Object.assign({}, state.widgetCollections[collectionID]["collectionConfig"]);
       }
   },
   mutations: {
@@ -56,8 +62,9 @@ const compareModule = {
         // Vue.set is needed to preserve reactivity
         Vue.set(state.widgetCollections, payload.parentID, {children: {[payload.id]: payload}});
       },
-      setCollectionIntervals (state, payload){
-        Vue.set(state.widgetCollections[payload.id], "intervalID", payload.intervalID)
+      setCollectionConfig (state, payload){
+        // This holds all the information that is specific to the collection and not the children
+        Vue.set(state.widgetCollections[payload.id], "collectionConfig", payload.collectionConfig)
       },
       setWidget (state, payload) {
         // Vue.set is needed to preserve reactivity

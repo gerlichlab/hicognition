@@ -128,7 +128,7 @@ export default {
             // serialize object for storing its state in the store
             return {
                 // collection Data is needed if widget is dropped on new collection
-                collectionData: this.$store.getters["compare/getCollectionProperties"](this.collectionID),
+                collectionConfig: this.$store.getters["compare/getCollectionConfig"](this.collectionID),
                 colIndex: this.colIndex,
                 rowIndex: this.rowIndex,
                 id: this.id,
@@ -185,24 +185,24 @@ export default {
             this.$store.commit("compare/setWidget", newObject);
             return data;
         },
-        initializeAtNewCollection: function(widgetData, collectionData) {
+        initializeAtNewCollection: function(widgetData, collectionConfig) {
             return {
                 widgetData: undefined,
                 selectedDataset: undefined,
                 selectedBinsize: undefined,
-                intervalID: collectionData["intervalID"],
+                intervalID: collectionConfig["intervalID"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
                 datasets: this.$store.getters.getCoolers,
                 isICCF: true
             }
         },
-        initializeAtSameCollection: function(widgetData, collectionData) {
+        initializeAtSameCollection: function(widgetData, collectionConfig) {
             return {
                 widgetData: widgetData["widgetData"],
                 selectedDataset: widgetData["dataset"],
                 selectedBinsize: widgetData["binsize"],
-                intervalID: collectionData["intervalID"],
+                intervalID: collectionConfig["intervalID"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
                 datasets: this.$store.getters.getCoolers,
@@ -217,16 +217,16 @@ export default {
             };
             var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
             // the collection config at the current collection
-            var collectionData = this.$store.getters["compare/getCollectionProperties"](this.collectionID);
+            var collectionConfig = this.$store.getters["compare/getCollectionConfig"](this.collectionID);
             // the collection config the widget comes from
-            var oldCollectionData = widgetData["collectionData"];
-            if (!oldCollectionData){
-                return this.initializeForFirstTime(widgetData, collectionData)
+            var oldCollectionConfig = widgetData["collectionConfig"];
+            if (!oldCollectionConfig){
+                return this.initializeForFirstTime(widgetData, collectionConfig)
             }
-            if (this.sameCollectionConfig(collectionData, oldCollectionData)){
-                return this.initializeAtSameCollection(widgetData, collectionData)
+            if (this.sameCollectionConfig(collectionConfig, oldCollectionConfig)){
+                return this.initializeAtSameCollection(widgetData, collectionConfig)
             }
-            return this.initializeAtNewCollection(widgetData, collectionData)
+            return this.initializeAtNewCollection(widgetData, collectionConfig)
         }
     },
     watch: {
@@ -238,17 +238,19 @@ export default {
         "$store.state.compare.widgetCollections": {
             deep: true,
             handler: function(newValue) {
-                        // check if intervals has changed
-                        var newEntry = newValue[this.collectionID]["intervalID"];
-                        if ( newEntry != this.intervalID ){
-                            this.intervalID = newEntry;
-                            // reset state
-                            this.selectedBinsize = undefined,
-                            this.selectedDataset = undefined,
-                            this.widgetData = undefined,
-                            this.binsizes = []
+                        // check if collecitonConfig is defined
+                        if ("collectionConfig" in newValue[this.collectionID]){
+                            // check if intervals has changed
+                            var newEntry = newValue[this.collectionID]["collectionConfig"]["intervalID"];
+                            if ( newEntry != this.intervalID ){
+                                this.intervalID = newEntry;
+                                // reset state
+                                this.selectedBinsize = undefined,
+                                this.selectedDataset = undefined,
+                                this.widgetData = undefined,
+                                this.binsizes = []
+                            }
                         }
-
                      },
         },
         selectedDataset: function() {
