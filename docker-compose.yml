@@ -84,7 +84,6 @@ services:
             - ${KEY_DIR}:/keys
         networks:
             - hicognition-net
-            - default
 
     # container to build front-end
     node:
