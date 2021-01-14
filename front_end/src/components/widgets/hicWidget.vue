@@ -189,6 +189,7 @@ export default {
         initializeAtNewCollection: function(widgetData, collectionConfig) {
             return {
                 widgetDataRef: undefined,
+                widgetData: undefined,
                 selectedDataset: undefined,
                 selectedBinsize: undefined,
                 intervalID: collectionConfig["intervalID"],
