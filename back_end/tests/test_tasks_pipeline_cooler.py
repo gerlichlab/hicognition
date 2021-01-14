@@ -1,4 +1,3 @@
-from functools import partial
 import sys
 import unittest
 from unittest.mock import patch
@@ -7,7 +6,7 @@ from test_helpers import LoginTestCase, TempDirTestCase
 # add path to import app
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals
+from app.models import Dataset
 from app.tasks import pipeline_cooler
 
 
