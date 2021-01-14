@@ -137,7 +137,7 @@ export default {
                 datasets: this.datasets,
                 binsizes: this.binsizes,
                 binsize: this.selectedBinsize,
-                widgetData: this.widgetData,
+                widgetDataRef: this.widgetDataRef,
                 isICCF: this.isICCF,
                 widgetType: "Hi-C"
             }
@@ -171,6 +171,7 @@ export default {
         },
         initializeForFirstTime: function(widgetData, collectionData){
             var data = {
+                    widgetDataRef: undefined,
                     widgetData: undefined,
                     selectedDataset: undefined,
                     selectedBinsize: undefined,
@@ -187,7 +188,7 @@ export default {
         },
         initializeAtNewCollection: function(widgetData, collectionConfig) {
             return {
-                widgetData: undefined,
+                widgetDataRef: undefined,
                 selectedDataset: undefined,
                 selectedBinsize: undefined,
                 intervalID: collectionConfig["intervalID"],
@@ -198,8 +199,30 @@ export default {
             }
         },
         initializeAtSameCollection: function(widgetData, collectionConfig) {
+            var widgetDataValues;
+            if (widgetData["widgetDataRef"]){
+                // check if widgetDataRef is defined -> if so, widgetdata is in store
+                var widgetDataRef = widgetData["widgetDataRef"]
+                // deinfe store queries
+                var queryICCF = {
+                    pileupType: "ICCF",
+                    id: widgetDataRef["ICCF"]
+                }
+                var queryObsExp = {
+                    pileupType: "ObsExp",
+                    id: widgetDataRef["ObsExp"]
+                }
+                // get widget data from store
+                widgetDataValues = {
+                                    "ICCF": this.$store.getters["compare/getWidgetDataPileup"](queryICCF),
+                                    "ObsExp": this.$store.getters["compare/getWidgetDataPileup"](queryObsExp)
+                                }
+            }else{
+                widgetDataValues = undefined
+            }
             return {
-                widgetData: widgetData["widgetData"],
+                widgetDataRef: widgetData["widgetDataRef"],
+                widgetData: widgetDataValues,
                 selectedDataset: widgetData["dataset"],
                 selectedBinsize: widgetData["binsize"],
                 intervalID: collectionConfig["intervalID"],
@@ -227,6 +250,29 @@ export default {
                 return this.initializeAtSameCollection(widgetData, collectionConfig)
             }
             return this.initializeAtNewCollection(widgetData, collectionConfig)
+        },
+        getPileupData: async function(pileupType, id) {
+            // checks whether pileup data is in store and fetches it if it is not
+            var queryObject = {
+                pileupType: pileupType,
+                id: id
+            }
+            if (this.$store.getters["compare/pileupExists"](queryObject)){
+                return this.$store.getters["compare/getWidgetDataPileup"](queryObject)
+            }
+            // pileup does not exists in store, fetch it
+            var response = await this.fetchData(`averageIntervalData/${id}/`);
+            var parsed = JSON.parse(response.data);
+            // save it in store
+            var mutationObject = {
+                pileupType: pileupType,
+                id: id,
+                data: parsed
+            }
+            this.$store.commit("compare/setWidgetDataPileup", mutationObject);
+            // return it
+            return parsed
+
         }
     },
     watch: {
@@ -271,13 +317,17 @@ export default {
             // fetch widget data
             var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"];
             var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
-                // get pileup iccf; update pileup data upon success
-            var iccfresponse = await this.fetchData(`averageIntervalData/${iccf_id}/`);
-            // get pileup obs/exp; update pileup data upon success
-            var obsExpresponse = await this.fetchData(`averageIntervalData/${obs_exp_id}/`);
+            // store widget data ref
+            this.widgetDataRef = {
+                "ICCF": iccf_id,
+                "ObsExp": obs_exp_id
+            }
+            // get pileup iccf; update pileup data upon success
+            var iccf_data = await this.getPileupData("ICCF", iccf_id);
+            var obs_exp_data = await this.getPileupData("ObsExp", obs_exp_id);
             this.widgetData = {
-                "ICCF": JSON.parse(iccfresponse.data),
-                "ObsExp": JSON.parse(obsExpresponse.data)
+                "ICCF": iccf_data,
+                "ObsExp": obs_exp_data
             };
         }
     }

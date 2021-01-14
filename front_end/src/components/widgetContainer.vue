@@ -45,13 +45,18 @@ export default {
     },
     data: function () {
         // get widget type from store
-        var queryObject = {
-                parentID: this.collectionID,
-                id: this.id
-            };
-        var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
+        var widgetType;
+        if (!this.empty){
+            var queryObject = {
+                    parentID: this.collectionID,
+                    id: this.id
+                };
+            widgetType = this.$store.getters["compare/getWidgetType"](queryObject);
+        }else{
+            widgetType = undefined;
+        }
         return {
-            widgetType: widgetData["widgetType"],
+            widgetType: widgetType,
             selectedType: undefined,
             widgetTypes: ["Hi-C", "Chip-seq"]
         }
@@ -67,15 +72,13 @@ export default {
     },
     methods: {
         setHiC: function(){
-            // get widget data from store
-            var queryObject = {
-                    parentID: this.collectionID,
-                    id: this.id
-                };
-            var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
             // set widgetType in store
-            widgetData["widgetType"] = "Hi-C"
-            this.$store.commit("compare/setWidget", widgetData);
+            var mutationObject = {
+                    parentID: this.collectionID,
+                    id: this.id,
+                    widgetType: "Hi-C"
+                };
+            this.$store.commit("compare/setWidgetType", mutationObject);
             // set widget Type in this container
             this.widgetType = "Hi-C";
         },

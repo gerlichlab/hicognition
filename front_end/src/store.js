@@ -34,6 +34,7 @@ const compareModule = {
   state: function() {
     return {
       widgetCollections: {}, // collections of widgets that are currently displayed. Has structure {id: {children: {child_id: childProperties}}}
+      widgetData: {} // data that is displayed by the widgets, is referenced by widgetCollections -> separate for performance reasons
 
     }
   },
@@ -52,6 +53,24 @@ const compareModule = {
           return {};
         }
         return Object.assign({}, state.widgetCollections[collectionID]["collectionConfig"]);
+      },
+      getWidgetDataPileup: (state) => (payload) => {
+        if (!("pileup" in state.widgetData)){
+          return undefined
+        }
+        return state.widgetData["pileup"][payload.pileupType][payload.id]
+      },
+      pileupExists: (state) => (payload) => {
+        if (!("pileup" in state.widgetData)){
+          return false;
+        }
+        return payload.id in state.widgetData["pileup"][payload.pileupType]
+      },
+      getWidgetType: (state) => (payload) => {
+        if (payload.id in state.widgetCollections[payload.parentID]["children"]){
+          return state.widgetCollections[payload.parentID]["children"][payload.id]["widgetType"]
+        }
+        return undefined;
       }
   },
   mutations: {
@@ -80,6 +99,19 @@ const compareModule = {
           // vue delete is needed to preserve reactivity
           Vue.delete(state.widgetCollections[payload.parentID]["children"], payload.id);
         }
+      },
+      setWidgetDataPileup (state, payload) {
+        if (!("pileup" in state.widgetData)){
+          // initialize pileup
+          state.widgetData["pileup"] = {
+            "ICCF": {},
+            "ObsExp": {}
+          }
+        }
+        state.widgetData["pileup"][payload.pileupType][payload.id] = payload.data
+      },
+      setWidgetType (state, payload) {
+        Vue.set(state.widgetCollections[payload.parentID]["children"][payload.id], "widgetType", payload.widgetType);
       }
   }
 }
