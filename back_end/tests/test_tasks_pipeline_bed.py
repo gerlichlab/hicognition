@@ -8,7 +8,7 @@ from test_helpers import LoginTestCase, TempDirTestCase
 sys.path.append("./")
 from app import db
 from app.models import Dataset
-from app.tasks import pipeline_bed
+from app.tasks import pipeline_bed, bed_preprocess_pipeline_step
 
 
 class TestPipelineBed(LoginTestCase, TempDirTestCase):
@@ -20,7 +20,7 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
     @patch("app.tasks.io_helpers.sort_bed")
     @patch("app.tasks._set_task_progress")
     @patch("app.tasks.bed_preprocess_pipeline_step")
-    def test_preprocess_bed_pipeline_step_called_correctly(
+    def test_helper_calls_dispatched_correctly(
         self,
         mock_bed_pipeline_step,
         mock_set_progress,
@@ -28,7 +28,8 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
         mock_convert_bed,
         mock_bedpe_preprocess,
     ):
-        """Tests whether preprocess_bed_pipeline_is_called_correctly"""
+        """Tests whether the functions that execute the different pipeline steps are called
+        correctly."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token_header
@@ -67,6 +68,60 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
             mock_bedpe_preprocess.assert_any_call(*[target_file, 1, window])
         # check whether set_progress was called with 100 last
         mock_set_progress.assert_called_with(100)
+
+    @patch("app.tasks.higlass_interface.add_tileset")
+    @patch("app.tasks.higlass_interface.preprocess_dataset")
+    def test_bed_preprocess_pipline_step(
+        self, mock_preprocess_higlass, mock_add_tileset
+    ):
+        """Test whether components of bed_preprocess_pipline_step are called correctly."""
+        mock_preprocess_higlass.return_value = 0
+        mock_add_tileset.return_value = {"uuid": "higlass_uuid"}
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # add dataset
+        dataset = Dataset(
+            dataset_name="test3",
+            file_path="/test/path/test3.bed",
+            higlass_uuid="fdsa8765",
+            filetype="bedfile",
+            processing_state="finished",
+            user_id=1,
+        )
+        db.session.add(dataset)
+        db.session.commit()
+        # call function
+        bed_preprocess_pipeline_step(1)
+        # check whether preprocess dataset was called correctly
+        mock_preprocess_higlass.assert_called_with(
+            *[
+                "bedfile",
+                self.app.config["CHROM_SIZES"],
+                "/test/path/test3.bed",
+                "/test/path/test3.bed.beddb",
+            ]
+        )
+        # check whether add tileset was called correctly
+        credentials = {
+            "user": self.app.config["HIGLASS_USER"],
+            "password": self.app.config["HIGLASS_PWD"],
+        }
+        mock_add_tileset.assert_called_with(
+            *[
+                "bedfile",
+                "/test/path/test3.bed.beddb",
+                self.app.config["HIGLASS_API"],
+                credentials,
+                "test3",
+            ]
+        )
+        # check whether uuid was added to bedfile
+        check_dataset = Dataset.query.get(1)
+        self.assertEqual(check_dataset.higlass_uuid, "higlass_uuid")
 
 
 if __name__ == "__main__":
