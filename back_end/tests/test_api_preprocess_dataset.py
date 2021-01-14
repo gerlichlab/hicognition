@@ -1,5 +1,4 @@
 import sys
-import io
 import unittest
 from unittest.mock import patch
 from test_helpers import LoginTestCase, TempDirTestCase
