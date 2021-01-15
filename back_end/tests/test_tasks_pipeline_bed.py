@@ -26,7 +26,7 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
         # add content-type
         token_headers["Content-Type"] = "multipart/form-data"
         # add dataset
-        dataset = Dataset(
+        self.dataset = Dataset(
             dataset_name="test3",
             file_path="/test/path/test3.bed",
             higlass_uuid="fdsa8765",
@@ -34,7 +34,7 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
             processing_state="finished",
             user_id=1,
         )
-        db.session.add(dataset)
+        db.session.add(self.dataset)
         db.session.commit()
 
     @patch("app.tasks.bedpe_preprocess_pipeline_step")
@@ -54,6 +54,8 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
         correctly."""
         # launch task
         pipeline_bed(1)
+        # check whether dataset file_path is now sorted file_path
+        self.assertEqual(self.dataset.file_path, "/test/path/test3_sorted.bed")
         # check whether bed_preprocess was called correctly
         mock_bed_pipeline_step.assert_called_with(1)
         # check whether sort_bed was called correctly

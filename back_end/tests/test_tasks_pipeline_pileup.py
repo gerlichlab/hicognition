@@ -76,12 +76,13 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
                     continue
                 current_call_list.append(call[0][index])
             call_args.append(current_call_list)
+        # compare expected call arguments with actual call arguments
         for binsize in binsizes:
             for pileup_type in pileup_types:
                 for intervals in intervals_objects:
                     # check whether the current combination is in call args list
-                    current_call_args = [self.dataset, intervals, binsize, pileup_type]
-                    self.assertTrue(current_call_args in call_args)
+                    expected_call_args = [self.dataset, intervals, binsize, pileup_type]
+                    self.assertTrue(expected_call_args in call_args)
         # check whether number of calls was as expected
         self.assertEqual(len(call_args), len(binsizes) * len(pileup_types) * len(intervals_objects))
         # check whether last call to set task progress was 100
