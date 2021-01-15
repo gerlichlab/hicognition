@@ -10,7 +10,8 @@ from test_helpers import LoginTestCase, TempDirTestCase
 sys.path.append("./")
 from app import db
 from app.models import Dataset, Intervals
-from app.tasks import pipeline_pileup, perform_pileup
+from app.tasks import pipeline_pileup
+from app.pipeline_steps import perform_pileup
 
 
 class TestPipelinePileup(LoginTestCase, TempDirTestCase):
@@ -56,8 +57,8 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         db.session.add(self.intervals2)
         db.session.commit()
 
-    @patch("app.tasks._set_task_progress")
-    @patch("app.tasks.perform_pileup")
+    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.perform_pileup")
     def test_pipeline_pileup_calls_steps_correctly(
         self, mock_perform_pileup, mock_set_progress
     ):
@@ -144,14 +145,14 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         db.session.add(self.intervals2)
         db.session.commit()
 
-    @patch("app.tasks.add_pileup_db")
-    @patch("app.tasks.export_df_for_js")
-    @patch("app.tasks.HT.do_pileup_iccf")
-    @patch("app.tasks.HT.do_pileup_obs_exp")
-    @patch("app.tasks.HT.get_expected")
-    @patch("app.tasks.HT.assign_regions")
-    @patch("app.tasks.cooler.Cooler")
-    @patch("app.tasks.pd.read_csv")
+    @patch("app.pipeline_steps.add_pileup_db")
+    @patch("app.pipeline_steps.export_df_for_js")
+    @patch("app.pipeline_steps.HT.do_pileup_iccf")
+    @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
+    @patch("app.pipeline_steps.HT.get_expected")
+    @patch("app.pipeline_steps.HT.assign_regions")
+    @patch("app.pipeline_steps.cooler.Cooler")
+    @patch("app.pipeline_steps.pd.read_csv")
     def test_assign_regions_start_end_regions_handled_correctly(
         self,
         mock_read_csv,
@@ -181,14 +182,14 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         assert_series_equal(chrom_called, expected_df["chrom"])
         assert_series_equal(pos_called, expected_df["pos"])
 
-    @patch("app.tasks.add_pileup_db")
-    @patch("app.tasks.export_df_for_js")
-    @patch("app.tasks.HT.do_pileup_iccf")
-    @patch("app.tasks.HT.do_pileup_obs_exp")
-    @patch("app.tasks.HT.get_expected")
-    @patch("app.tasks.HT.assign_regions")
-    @patch("app.tasks.cooler.Cooler")
-    @patch("app.tasks.pd.read_csv")
+    @patch("app.pipeline_steps.add_pileup_db")
+    @patch("app.pipeline_steps.export_df_for_js")
+    @patch("app.pipeline_steps.HT.do_pileup_iccf")
+    @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
+    @patch("app.pipeline_steps.HT.get_expected")
+    @patch("app.pipeline_steps.HT.assign_regions")
+    @patch("app.pipeline_steps.cooler.Cooler")
+    @patch("app.pipeline_steps.pd.read_csv")
     def test_assign_regions_pos_regions_handled_correctly(
         self,
         mock_read_csv,
@@ -216,14 +217,14 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         assert_series_equal(chrom_called, expected_df["chrom"])
         assert_series_equal(pos_called, expected_df["pos"])
 
-    @patch("app.tasks.add_pileup_db")
-    @patch("app.tasks.export_df_for_js")
-    @patch("app.tasks.HT.do_pileup_iccf")
-    @patch("app.tasks.HT.do_pileup_obs_exp")
-    @patch("app.tasks.HT.get_expected")
-    @patch("app.tasks.HT.assign_regions")
-    @patch("app.tasks.cooler.Cooler")
-    @patch("app.tasks.pd.read_csv")
+    @patch("app.pipeline_steps.add_pileup_db")
+    @patch("app.pipeline_steps.export_df_for_js")
+    @patch("app.pipeline_steps.HT.do_pileup_iccf")
+    @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
+    @patch("app.pipeline_steps.HT.get_expected")
+    @patch("app.pipeline_steps.HT.assign_regions")
+    @patch("app.pipeline_steps.cooler.Cooler")
+    @patch("app.pipeline_steps.pd.read_csv")
     def test_correct_cooler_used(
         self,
         mock_read_csv,
@@ -245,14 +246,14 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         expected_call = self.dataset.file_path + "::/resolutions/10000"
         mock_Cooler.assert_called_with(expected_call)
 
-    @patch("app.tasks.add_pileup_db")
-    @patch("app.tasks.export_df_for_js")
-    @patch("app.tasks.HT.do_pileup_iccf")
-    @patch("app.tasks.HT.do_pileup_obs_exp")
-    @patch("app.tasks.HT.get_expected")
-    @patch("app.tasks.HT.assign_regions")
-    @patch("app.tasks.cooler.Cooler")
-    @patch("app.tasks.pd.read_csv")
+    @patch("app.pipeline_steps.add_pileup_db")
+    @patch("app.pipeline_steps.export_df_for_js")
+    @patch("app.pipeline_steps.HT.do_pileup_iccf")
+    @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
+    @patch("app.pipeline_steps.HT.get_expected")
+    @patch("app.pipeline_steps.HT.assign_regions")
+    @patch("app.pipeline_steps.cooler.Cooler")
+    @patch("app.pipeline_steps.pd.read_csv")
     def test_correct_functions_called_whenObsExp(
         self,
         mock_read_csv,
@@ -281,14 +282,14 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         # check whether iccf pileup is not called
         mock_pileup_iccf.assert_not_called()
 
-    @patch("app.tasks.add_pileup_db")
-    @patch("app.tasks.export_df_for_js")
-    @patch("app.tasks.HT.do_pileup_iccf")
-    @patch("app.tasks.HT.do_pileup_obs_exp")
-    @patch("app.tasks.HT.get_expected")
-    @patch("app.tasks.HT.assign_regions")
-    @patch("app.tasks.cooler.Cooler")
-    @patch("app.tasks.pd.read_csv")
+    @patch("app.pipeline_steps.add_pileup_db")
+    @patch("app.pipeline_steps.export_df_for_js")
+    @patch("app.pipeline_steps.HT.do_pileup_iccf")
+    @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
+    @patch("app.pipeline_steps.HT.get_expected")
+    @patch("app.pipeline_steps.HT.assign_regions")
+    @patch("app.pipeline_steps.cooler.Cooler")
+    @patch("app.pipeline_steps.pd.read_csv")
     def test_correct_functions_called_whenICCF(
         self,
         mock_read_csv,
@@ -316,15 +317,15 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_get_expected.assert_not_called()
         mock_pileup_obs_exp.assert_not_called()
 
-    @patch("app.tasks.uuid.uuid4")
-    @patch("app.tasks.add_pileup_db")
-    @patch("app.tasks.export_df_for_js")
-    @patch("app.tasks.HT.do_pileup_iccf")
-    @patch("app.tasks.HT.do_pileup_obs_exp")
-    @patch("app.tasks.HT.get_expected")
-    @patch("app.tasks.HT.assign_regions")
-    @patch("app.tasks.cooler.Cooler")
-    @patch("app.tasks.pd.read_csv")
+    @patch("app.pipeline_steps.uuid.uuid4")
+    @patch("app.pipeline_steps.add_pileup_db")
+    @patch("app.pipeline_steps.export_df_for_js")
+    @patch("app.pipeline_steps.HT.do_pileup_iccf")
+    @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
+    @patch("app.pipeline_steps.HT.get_expected")
+    @patch("app.pipeline_steps.HT.assign_regions")
+    @patch("app.pipeline_steps.cooler.Cooler")
+    @patch("app.pipeline_steps.pd.read_csv")
     def test_conversion_function_called_correctly(
         self,
         mock_read_csv,
@@ -351,15 +352,15 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_export.assert_called_with("testCooler", self.app.config["UPLOAD_DIR"] + "/asdf.csv")
 
 
-    @patch("app.tasks.uuid.uuid4")
-    @patch("app.tasks.add_pileup_db")
-    @patch("app.tasks.export_df_for_js")
-    @patch("app.tasks.HT.do_pileup_iccf")
-    @patch("app.tasks.HT.do_pileup_obs_exp")
-    @patch("app.tasks.HT.get_expected")
-    @patch("app.tasks.HT.assign_regions")
-    @patch("app.tasks.cooler.Cooler")
-    @patch("app.tasks.pd.read_csv")
+    @patch("app.pipeline_steps.uuid.uuid4")
+    @patch("app.pipeline_steps.add_pileup_db")
+    @patch("app.pipeline_steps.export_df_for_js")
+    @patch("app.pipeline_steps.HT.do_pileup_iccf")
+    @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
+    @patch("app.pipeline_steps.HT.get_expected")
+    @patch("app.pipeline_steps.HT.assign_regions")
+    @patch("app.pipeline_steps.cooler.Cooler")
+    @patch("app.pipeline_steps.pd.read_csv")
     def test_adding_to_db_called_correctly(
         self,
         mock_read_csv,

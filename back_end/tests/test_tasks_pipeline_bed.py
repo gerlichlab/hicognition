@@ -8,7 +8,8 @@ from test_helpers import LoginTestCase, TempDirTestCase
 sys.path.append("./")
 from app import db
 from app.models import Dataset, Intervals
-from app.tasks import pipeline_bed, bed_preprocess_pipeline_step, bedpe_preprocess_pipeline_step
+from app.tasks import pipeline_bed
+from app.pipeline_steps import bed_preprocess_pipeline_step, bedpe_preprocess_pipeline_step
 
 
 class TestPipelineBed(LoginTestCase, TempDirTestCase):
@@ -37,11 +38,11 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
         db.session.add(self.dataset)
         db.session.commit()
 
-    @patch("app.tasks.bedpe_preprocess_pipeline_step")
+    @patch("app.pipeline_steps.bedpe_preprocess_pipeline_step")
     @patch("app.tasks.io_helpers.convert_bed_to_bedpe")
     @patch("app.tasks.io_helpers.sort_bed")
-    @patch("app.tasks._set_task_progress")
-    @patch("app.tasks.bed_preprocess_pipeline_step")
+    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.bed_preprocess_pipeline_step")
     def test_helper_calls_dispatched_correctly(
         self,
         mock_bed_pipeline_step,
@@ -76,8 +77,8 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
         # check whether set_progress was called with 100 last
         mock_set_progress.assert_called_with(100)
 
-    @patch("app.tasks.higlass_interface.add_tileset")
-    @patch("app.tasks.higlass_interface.preprocess_dataset")
+    @patch("app.pipeline_steps.higlass_interface.add_tileset")
+    @patch("app.pipeline_steps.higlass_interface.preprocess_dataset")
     def test_bed_preprocess_pipline_step(
         self, mock_preprocess_higlass, mock_add_tileset
     ):
