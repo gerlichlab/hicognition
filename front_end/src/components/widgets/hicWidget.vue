@@ -158,13 +158,14 @@ export default {
             // create data transfer object
             e.dataTransfer.setData('widget-id', this.id);
             e.dataTransfer.setData("collection-id", this.collectionID);
-            // set dragimage
+            // set dragimage. Dragimage dom element needs to be present before it can be passed
+            // to setDragImage. Div is positioned outside of visible area for this
             this.dragImage = document.createElement("div");
             this.dragImage.style.backgroundColor = "grey";
             this.dragImage.style.height = `${this.height}px`;
             this.dragImage.style.width = `${this.width}px`;
             this.dragImage.style.position = "absolute";
-            this.dragImage.style.top = `-${this.width}px`;
+            this.dragImage.style.top = `-${this.width}px`; // positioning outside of visible area
             document.body.appendChild(this.dragImage);
             e.dataTransfer.setDragImage(this.dragImage, this.height/2, this.width/2);
         },
