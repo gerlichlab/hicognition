@@ -78,15 +78,6 @@ export default {
     initMatrixRenderer: function(properties) {
           this.matrixRenderer = createMatrixRenderer(properties)
     },
-    rgbStrToRgba: function(rgbStr, alpha = 1) {
-            return [
-                ...rgbStr
-                .match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/)
-                .slice(1, 4)
-                .map((x) => parseInt(x, 10)/256),
-                alpha,
-            ];
-      },
     initColormap: function(colorMapType) {
          this.colorMap = createColorMap(colorMapType)
       },
