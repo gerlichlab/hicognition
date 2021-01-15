@@ -1,6 +1,6 @@
 <template>
 <div>
-    <div :style="cssStyle" class="smallMargin md-elevation-1 bg" draggable="true" @dragstart="handleDragStart">
+    <div :style="cssStyle" class="smallMargin md-elevation-1 bg" draggable="true" @dragstart="handleDragStart" @dragend="handleDragEnd">
         <div class="md-layout">
             <div class="md-layout-item md-size-30 padding-left padding-right">
                 <md-field class="padding-top">
@@ -158,6 +158,21 @@ export default {
             // create data transfer object
             e.dataTransfer.setData('widget-id', this.id);
             e.dataTransfer.setData("collection-id", this.collectionID);
+            // set dragimage
+            this.dragImage = document.createElement("div");
+            this.dragImage.style.backgroundColor = "grey";
+            this.dragImage.style.height = `${this.height}px`;
+            this.dragImage.style.width = `${this.width}px`;
+            this.dragImage.style.position = "absolute";
+            this.dragImage.style.top = `-${this.width}px`;
+            document.body.appendChild(this.dragImage);
+            e.dataTransfer.setDragImage(this.dragImage, this.height/2, this.width/2);
+        },
+        handleDragEnd: function(e) {
+            // remove dragImage from document
+            if (this.dragImage){
+                this.dragImage.remove();
+            }
         },
         sameCollectionConfig: function(newCollectionData, oldCollectionData) {
             if ( !oldCollectionData ){
@@ -172,6 +187,7 @@ export default {
         initializeForFirstTime: function(widgetData, collectionData){
             var data = {
                     widgetDataRef: undefined,
+                    dragImage: undefined,
                     widgetData: undefined,
                     selectedDataset: undefined,
                     selectedBinsize: undefined,
@@ -189,6 +205,7 @@ export default {
         initializeAtNewCollection: function(widgetData, collectionConfig) {
             return {
                 widgetDataRef: undefined,
+                dragImage: undefined,
                 widgetData: undefined,
                 selectedDataset: undefined,
                 selectedBinsize: undefined,
@@ -223,6 +240,7 @@ export default {
             }
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
+                dragImage: undefined,
                 widgetData: widgetDataValues,
                 selectedDataset: widgetData["dataset"],
                 selectedBinsize: widgetData["binsize"],
