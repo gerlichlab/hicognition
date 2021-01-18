@@ -11,7 +11,7 @@ services:
             - ${DIR_FRONT_END}:/front_end
         entrypoint: 
             - "/bin/bash"
-        command: -c "cd /front_end && npm run dev"
+        command: -c "cd /front_end && npm install && npm run dev"
 
     hicognition:
         container_name: flask-dev
