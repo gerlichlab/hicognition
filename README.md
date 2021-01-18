@@ -10,7 +10,7 @@ HiCognition runs on [docker](https://www.docker.com/) and therefore needs docker
 
 Clone this repo into a local folder:
 
-```git clone https://github.com/gerlichlab/HiCognition_flask```
+```git clone git@github.com:gerlichlab/HiCognition_flask.git```
 
 and you are ready to got!
 
