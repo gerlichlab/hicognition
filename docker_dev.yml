@@ -3,7 +3,7 @@ version: "3"
 services:
     node:
         container_name: node-dev
-        image: node:latest
+        image: node:14-buster
         ports:
             # only map localhost-port
             - "8080:8080"

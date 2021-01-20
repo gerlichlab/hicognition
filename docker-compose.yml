@@ -88,7 +88,7 @@ services:
     # container to build front-end
     node:
         container_name: node-builder
-        image: node:latest
+        image: node:14-buster
         volumes:
             - ${DIR_FRONT_END}:/front_end
         entrypoint: 
