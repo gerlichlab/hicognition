@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import { toLower, searchByName } from "../functions";
+
 import { apiMixin } from "../mixins";
 
 export default {
@@ -80,7 +80,7 @@ export default {
         }
         this.datasetsDeleted = true;
         this.selected = [];
-        this.fetchDatasets();
+        setTimeout(() => this.fetchDatasets(), 1000);
       },
       getAlternateLabel (count) {
         let plural = ''
@@ -97,10 +97,12 @@ export default {
       fetchDatasets() {
         this.fetchData("datasets/")
             .then(response => {
-            // success, store datasets
-            this.$store.commit("setDatasets", response.data);
-            // update displayed datasets
-            this.datasets = response.data;
+              if (response){
+                // success, store datasets
+                this.$store.commit("setDatasets", response.data);
+                // update displayed datasets
+                this.datasets = response.data;
+              }
             });
       }
     },
@@ -114,7 +116,7 @@ export default {
         return false;
       },
       showDelete: function () {
-        if (this.selected){
+        if (this.selected.length != 0){
           return true;
         }
         return false;
