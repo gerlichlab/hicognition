@@ -16,10 +16,35 @@ from .errors import forbidden, invalid, not_found
 @auth.login_required
 def add_dataset():
     """endpoint to add a new dataset"""
-    current_user = g.current_user
-    # get data from form
 
+    def is_form_invalid():
+        if not hasattr(request, "form"):
+            return True
+        # check attributes
+        if "datasetName" not in request.form.keys():
+            return True
+        if "filetype" not in request.form.keys():
+            return True
+        # check whether fileObject is there
+        if len(request.files) == 0:
+            return True
+        # check filename
+        fileEnding = request.files["file"].filename.split(".")[-1]
+        correctFileEndings = {"bedfile": "bed", "cooler": "mcool"}
+        if request.form["filetype"] not in correctFileEndings:
+            return True
+        if correctFileEndings[request.form["filetype"]] != fileEnding:
+            return True
+        return False
+
+
+    current_user = g.current_user
+    # check form
+    if is_form_invalid():
+        return invalid("Form is not valid!")
+    # get data from form
     data = request.form
+    # check form
     fileObject = request.files["file"]
     # check whether description and genotype is there
     description, genotype = parse_description_and_genotype(data)
@@ -39,7 +64,7 @@ def add_dataset():
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     fileObject.save(file_path)
     if data["filetype"] not in ["cooler", "bedfile"]:
-        return forbidden("datatype not understood")
+        return invalid("datatype not understood")
     # add file_path to database entr
     new_entry.file_path = file_path
     new_entry.processing_state = "uploaded"
