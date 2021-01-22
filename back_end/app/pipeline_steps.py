@@ -152,6 +152,10 @@ def perform_pileup(cooler_dataset, intervals, binsize, arms, pileup_type):
     log.info("      Success!")
 
 
+def perform_stackup(biwig_dataset, intervals, binsize):
+    """Performs stackup"""
+
+
 def export_df_for_js(np_array, file_path):
     """exports a pileup dataframe
     so it can be easily read and used by

@@ -15,7 +15,7 @@ from app.pipeline_steps import perform_pileup
 
 
 class TestPipelinePileup(LoginTestCase, TempDirTestCase):
-    """Tests whether pipelin_bed task calls
+    """Tests whether pipelin_pileup task calls
     the pipeline steps correctly"""
 
     def setUp(self):
