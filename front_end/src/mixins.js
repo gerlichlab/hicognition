@@ -69,8 +69,15 @@ export var apiMixin = {
                 "Content-Type": "multipart/form-data"
               },
             }).catch(error => {
-                // redirect to login upon error
-                this.$router.push("/login");
+                if (!error.response){
+                    alert(`HTTP error: ${error}`)
+                }
+                else if (error.response.status == 403){
+                    // if forbidden error is returned, redirect to login page
+                    this.$router.push("/login");
+                }else{
+                    alert(`HTTP error: ${error.response.status} - ${error.response}`)
+                }
             });
         },
         deleteData: function(url) {
@@ -90,8 +97,15 @@ export var apiMixin = {
                     "Authorization": `Basic ${encodedToken}`
                 }
             }).catch(error => {
-                // if error is returned, redirect to login page
-                this.$router.push("/login");
+                if (!error.response){
+                    alert(`HTTP error: ${error}`)
+                }
+                else if (error.response.status == 403){
+                    // if forbidden error is returned, redirect to login page
+                    this.$router.push("/login");
+                }else{
+                    alert(`HTTP error: ${error.response.status} - ${error.response}`)
+                }
             });
         }
     }

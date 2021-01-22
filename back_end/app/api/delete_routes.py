@@ -41,7 +41,7 @@ def delete_dataset(dataset_id):
             if entry.file_path is not None:
                 os.remove(entry.file_path)
             else:
-                current_app.logger.warning(f"Tried removing {entry.file_path}, but there was no filepath!")
+                current_app.logger.warning(f"Tried removing {entry}, but there was no filepath!")
         except FileNotFoundError:
             current_app.logger.warning(f"Tried removing {entry.file_path}, but file does not exist!")
         db.session.delete(entry) # TODO: this leaves the session invalid for a short time for some reason -> fix!
