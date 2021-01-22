@@ -72,6 +72,7 @@ class Dataset(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     intervals = db.relationship("Intervals", backref="source_dataset", lazy="dynamic")
     averageIntervalData = db.relationship("AverageIntervalData", backref="source_cooler", lazy="dynamic")
+    individualIntervalData = db.relationship("IndividualIntervalData", backref="source_values", lazy="dynamic")
     tasks = db.relationship('Task', backref='dataset', lazy='dynamic')
     processing_state = db.Column(db.String(64))
 
@@ -124,6 +125,7 @@ class Intervals(db.Model):
     higlass_uuid = db.Column(db.String(64), index=True)
     windowsize = db.Column(db.Integer, index=True)
     averageIntervalData = db.relationship("AverageIntervalData", backref="source_intervals", lazy="dynamic")
+    individualIntervalData = db.relationship("IndividualIntervalData", backref="source_intervals", lazy="dynamic")
 
     def __repr__(self):
         """Format print output."""
@@ -165,6 +167,34 @@ class AverageIntervalData(db.Model):
             "cooler_id": self.cooler_id,
             "intervals_id": self.intervals_id,
             "value_type": self.value_type
+        }
+        return json_averageIntervalData
+
+
+class IndividualIntervalData(db.Model):
+    """Table to hold information and pointers to data for
+    values extracted at each instance held in the linked interals dataset.
+    E.g. for bigwig stack-ups or displaying snipped Hi-C matrices."""
+    id = db.Column(db.Integer, primary_key=True)
+    binsize = db.Column(db.Integer)
+    name = db.Column(db.String(64), index=True)
+    file_path = db.Column(db.String(128), index=True)
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id")) # dataset, which was used for value extraction
+    intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id")) # intervals over which the values were extracted
+
+    def __repr__(self):
+        """Format print output."""
+        return f"<IndividualIntervalData {self.name}>"
+
+    def to_json(self):
+        """Formats json output."""
+        json_averageIntervalData = {
+            "id": self.id,
+            "binsize": self.binsize,
+            "name": self.name,
+            "file_path": self.file_path,
+            "dataset_id": self.cooler_id,
+            "intervals_id": self.intervals_id,
         }
         return json_averageIntervalData
 
