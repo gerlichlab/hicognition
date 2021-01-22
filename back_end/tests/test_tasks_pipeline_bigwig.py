@@ -7,17 +7,17 @@ from test_helpers import LoginTestCase, TempDirTestCase
 sys.path.append("./")
 from app import db
 from app.models import Dataset
-from app.tasks import pipeline_cooler
+from app.tasks import pipeline_bigwig
 
 
-class TestPipelineCooler(LoginTestCase, TempDirTestCase):
-    """Tests whether pipelin_bed task calls
+class TestPipelineBigwig(LoginTestCase, TempDirTestCase):
+    """Tests whether pipelin_cooler task calls
     the pipeline steps correctly"""
 
     def setUp(self):
         """Add test dataset"""
         # call setUp of LoginTestCase to initialize app
-        super(TestPipelineCooler, self).setUp()
+        super(TestPipelineBigwig, self).setUp()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token_header
@@ -27,9 +27,9 @@ class TestPipelineCooler(LoginTestCase, TempDirTestCase):
         # add dataset
         dataset = Dataset(
             dataset_name="test3",
-            file_path="/test/path/test3.mcool",
+            file_path="/test/path/test3.bw",
             higlass_uuid="fdsa8765",
-            filetype="cooler",
+            filetype="bigwig",
             processing_state="finished",
             user_id=1,
         )
@@ -37,12 +37,12 @@ class TestPipelineCooler(LoginTestCase, TempDirTestCase):
         db.session.commit()
 
     @patch("app.tasks.higlass_interface.add_tileset")
-    def test_cooler_added_correctly_to_higlass(self, mock_add_tileset):
+    def test_bigwig_added_correctly_to_higlass(self, mock_add_tileset):
         """Tests whether the functions that execute the different pipeline steps are called
         correctly."""
         mock_add_tileset.return_value = {"uuid": "higlass_uuid"}
         # launch task
-        pipeline_cooler(1)
+        pipeline_bigwig(1)
         # check whether add_tileset was called correctly
         credentials = {
             "user": self.app.config["HIGLASS_USER"],
@@ -50,8 +50,8 @@ class TestPipelineCooler(LoginTestCase, TempDirTestCase):
         }
         mock_add_tileset.assert_called_with(
             *[
-                "cooler",
-                "/test/path/test3.mcool",
+                "bigwig",
+                "/test/path/test3.bw",
                 self.app.config["HIGLASS_API"],
                 credentials,
                 "test3"
