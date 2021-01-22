@@ -92,7 +92,7 @@ export var apiMixin = {
             }
             // base64 encoding of token
             var encodedToken = btoa(token + ":");
-            this.$http.delete(process.env.API_URL + url, {
+            return this.$http.delete(process.env.API_URL + url, {
                 headers: {
                     "Authorization": `Basic ${encodedToken}`
                 }

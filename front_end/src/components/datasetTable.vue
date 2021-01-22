@@ -80,7 +80,7 @@ export default {
         }
         this.datasetsDeleted = true;
         this.selected = [];
-        setTimeout(() => this.fetchDatasets(), 1000);
+        this.fetchDatasets();
       },
       getAlternateLabel (count) {
         let plural = ''
