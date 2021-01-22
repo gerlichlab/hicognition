@@ -27,7 +27,8 @@ DATATYPES = {
 FILETYPE = {
     "bedfile": "beddb",
     "cooler": "cooler",
-    "bedpe": "bed2ddb"
+    "bedpe": "bed2ddb",
+    "bigwig": "bigwig"
 }
 
 

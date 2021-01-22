@@ -28,7 +28,6 @@ def test_protected():
 @auth.login_required
 def get_all_datasets():
     """Gets all available datasets for a given user."""
-    current_app.logger.warn("Get datasets called!")
     all_files = Dataset.query.filter(Dataset.user_id == g.current_user.id).all()
     update_processing_state(all_files, db)
     return jsonify([dfile.to_json() for dfile in all_files])

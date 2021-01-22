@@ -76,7 +76,7 @@ class TestPreprocessDataset(TempDirTestCase):
         self.assertEqual(exit_code, 0)
 
 
-class TestAddData(unittest.TestCase):
+class TestAddData(TempDirTestCase):
     """Test addition of data to higlass server.
 
     Logic of tests is to monkeypatch requests.post
@@ -84,7 +84,7 @@ class TestAddData(unittest.TestCase):
     dispatched correctly.
     """
 
-    def test_upload(self):
+    def test_upload_bedfile(self):
         """Test to upload a beddb file."""
         # monkeypatch requests.post
         higlass_interface.requests.post = fake_post
@@ -96,6 +96,40 @@ class TestAddData(unittest.TestCase):
         file_type = "bedfile"
         result = higlass_interface.add_tileset(file_type, file_path, server, fake_credentials, name)
         self.assertEqual({'url': 'test.com', 'data': {'filetype': 'beddb', 'datatype': 'bedlike', 'coordSystem': 'hg19', 'name': 'test1'}},
+                         result)
+
+    def test_upload_coolerFile(self):
+        """Test to upload a mcool file."""
+        # monkeypatch requests.post
+        higlass_interface.requests.post = fake_post
+        # create fake file
+        example_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test3.mcool")
+        with open(example_file_path, "w") as f:
+            print('test', file=f)
+        fake_credentials = {"user": "asdf",
+                            "password": "1234"}
+        server = "test.com"
+        name = "test1"
+        file_type = "cooler"
+        result = higlass_interface.add_tileset(file_type, example_file_path, server, fake_credentials, name)
+        self.assertEqual({'url': 'test.com', 'data': {'filetype': 'cooler', 'datatype': 'matrix', 'coordSystem': 'hg19', 'name': 'test1'}},
+                         result)
+
+    def test_upload_bigwigFile(self):
+        """Test to upload a mcool file."""
+        # monkeypatch requests.post
+        higlass_interface.requests.post = fake_post
+        # create fake file
+        example_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test3.bw")
+        with open(example_file_path, "w") as f:
+            print('test', file=f)
+        fake_credentials = {"user": "asdf",
+                            "password": "1234"}
+        server = "test.com"
+        name = "test1"
+        file_type = "bigwig"
+        result = higlass_interface.add_tileset(file_type, example_file_path, server, fake_credentials, name)
+        self.assertEqual({'url': 'test.com', 'data': {'filetype': 'bigwig', 'datatype': 'vector', 'coordSystem': 'hg19', 'name': 'test1'}},
                          result)
 
     def test_bad_response(self):

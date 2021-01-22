@@ -68,10 +68,9 @@ def pipeline_cooler(dataset_id):
     cooler-files. Pipeline:
     - Add to higlass and update uuid
     - Indicate in Job table in database that job is complete
-    - Set dataset status to "uploaded" # TODO
+    - Set dataset status to "uploaded"
     """
-    binsizes = app.config["BIN_SIZES"]
-    log.info(f"Cooler pipeline started for {dataset_id} with {binsizes}")
+    log.info(f"Cooler pipeline started for {dataset_id}")
     current_dataset = Dataset.query.get(dataset_id)
     # upload to higlass
     log.info("  Uploading to higlass...")
@@ -82,6 +81,37 @@ def pipeline_cooler(dataset_id):
     try:
         result = higlass_interface.add_tileset(
             "cooler",
+            current_dataset.file_path,
+            app.config["HIGLASS_API"],
+            credentials,
+            current_dataset.dataset_name,
+        )
+    except HTTPError:
+        log.error(f"Higlass upload of cooler with it {dataset_id} failed")
+        return
+    # upload succeeded, add uuid of higlass to dataset
+    uuid = result["uuid"]
+    current_dataset.higlass_uuid = uuid
+    db.session.commit()
+
+def pipeline_bigwig(dataset_id):
+    """Starts the pipeline for
+    bigwig-files. Pipeline:
+    - Add to higlass and update uuid
+    - Indicate in Job table in database that job is complete
+    - Set dataset status to "uploaded"
+    """
+    log.info(f"Bigwig pipeline started for {dataset_id}")
+    current_dataset = Dataset.query.get(dataset_id)
+    # upload to higlass
+    log.info("  Uploading to higlass...")
+    credentials = {
+        "user": app.config["HIGLASS_USER"],
+        "password": app.config["HIGLASS_PWD"],
+    }
+    try:
+        result = higlass_interface.add_tileset(
+            "bigwig",
             current_dataset.file_path,
             app.config["HIGLASS_API"],
             credentials,
