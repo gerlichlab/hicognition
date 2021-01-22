@@ -241,27 +241,5 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         datasets = Dataset.query.all()
         self.assertEqual(len(datasets), 0)
 
-    @patch("app.api.delete_routes.current_app.logger.warning")
-    def test_get_after_delete_works(self, mock_log):
-        """tests whether fetching of datasets works immediately after deletion."""
-        token = self.add_and_authenticate("test", "asdf")
-        # create token_headers
-        token_headers = self.get_token_header(token)
-        # add datasets
-        self.add_test_datasets()
-        # delete data set
-        response = self.client.delete(
-            "/api/datasets/1/",
-            headers=token_headers,
-            content_type="application/json",
-        )
-        # dispatch get
-        response = self.client.get(
-            "/api/datasets/",
-            headers=token_headers,
-            content_type="application/json",
-        )
-
-
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)
