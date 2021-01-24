@@ -213,7 +213,9 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
         file_path_small = os.path.join(current_app.config["UPLOAD_DIR"], file_name_small)
         np.save(file_path_small, downsampled_array)
     # add to database
+    log.info("      Adding database entry...")
     add_stackup_db(file_path, file_path_small, binsize, intervals.id, bigwig_dataset.id)
+    log.info("      Success!")
 
 
 def export_df_for_js(np_array, file_path):
