@@ -5,13 +5,15 @@ import logging
 
 from flask.globals import current_app
 import pandas as pd
+import numpy as np
 from ngs import HiCTools as HT
 import cooler
 from hicognition import higlass_interface
+import pybbi
 from requests.exceptions import HTTPError
 from rq import get_current_job
 from . import db
-from .models import Dataset, Intervals, AverageIntervalData, Task
+from .models import Dataset, Intervals, AverageIntervalData, Task, IndividualIntervalData
 
 # get logger
 log = logging.getLogger("rq.worker")
@@ -19,9 +21,9 @@ log = logging.getLogger("rq.worker")
 
 def bed_preprocess_pipeline_step(dataset_id):
     """Runs bed-preprocess pipeline step of pipeline_bed:
-        - run clodius on bedfile
-        - upload clodius result to higlass
-        - store higlass_uuid in Dataset db entry
+    - run clodius on bedfile
+    - upload clodius result to higlass
+    - store higlass_uuid in Dataset db entry
     """
     log.info(f"  Running bed-preprocessing for ID {dataset_id}")
     # get dataset, this is not sorted, not preprocessed for higlass
@@ -152,8 +154,66 @@ def perform_pileup(cooler_dataset, intervals, binsize, arms, pileup_type):
     log.info("      Success!")
 
 
-def perform_stackup(biwig_dataset, intervals, binsize):
-    """Performs stackup"""
+def perform_stackup(bigwig_dataset, intervals, binsize):
+    """Performs stackup of bigwig dataset over the intervals provided with the indicated binsize.
+    Stores result and adds it to database."""
+    log.info(
+        f"  Doing pileup on cooler {bigwig_dataset.id} with intervals {intervals.id} on binsize {binsize}"
+    )
+    # get path to dataset
+    file_path = intervals.source_dataset.file_path
+    # get windowsize
+    window_size = intervals.windowsize
+    # load bedfile
+    log.info("      Loading regions...")
+    regions = pd.read_csv(file_path, sep="\t", header=None)
+    if len(regions.columns) > 2:
+        # region definition with start and end
+        regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
+        regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
+    else:
+        # region definition with start
+        regions = regions.rename(columns={0: "chrom", 1: "pos"})
+    # construct stackup-regions: positions - windowsize until position + windowsize
+    stackup_regions = pd.DataFrame(
+        {
+            "chrom": regions["chrom"],
+            "start": regions["pos"] - window_size, # regions outside of chromosomes will be filled with NaN by pybbi
+            "end": regions["end"] + window_size,
+        }
+    )
+    # calculate number of bins
+    bin_number = int(window_size / binsize) * 2
+    # extract data
+    stackup_array = pybbi.stackup(
+        bigwig_dataset.file_path,
+        chroms=stackup_regions["chroms"],
+        starts=stackup_regions["starts"],
+        ends=stackup_regions["ends"],
+        bins=bin_number,
+        missing=np.nan
+    )
+    # save full length array to file
+    log.info("      Writing output...")
+    file_name = uuid.uuid4().hex + ".npy"
+    file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
+    np.save(file_path, stackup_array)
+    # save downsampled array to file
+    if stackup_array.shape[0] < 1000:
+        # if there are less than 1000 examples, small file is the same as large file
+        file_path_small = file_path
+    else:
+        # set random seed
+        np.random.seed(42)
+        # subsmple
+        index = np.arange(stackup_array.shape[0])
+        sub_sample_index = np.random.choice(index, 1000)
+        downsampled_array = stackup_array[sub_sample_index, :]
+        file_name_small = uuid.uuid4().hex + ".npy"
+        file_path_small = os.path.join(current_app.config["UPLOAD_DIR"], file_name_small)
+        np.save(file_path_small, downsampled_array)
+    # add to database
+    add_stackup_db(file_path, file_path_small, binsize, intervals.id, bigwig_dataset.id)
 
 
 def export_df_for_js(np_array, file_path):
@@ -169,6 +229,19 @@ def export_df_for_js(np_array, file_path):
     # write to file
     output_molten.to_csv(file_path, index=False)
 
+
+def add_stackup_db(file_path, file_path_small ,binsize, intervals_id, bigwig_dataset_id):
+    """Adds stackup to database"""
+    new_entry = IndividualIntervalData(
+        binsize=int(binsize),
+        name=os.path.basename(file_path),
+        file_path=file_path,
+        file_path_small=file_path_small,
+        intervals_id=intervals_id,
+        dataset_id=bigwig_dataset_id
+    )
+    db.session.add(new_entry)
+    db.session.commit()
 
 def add_pileup_db(file_path, binsize, intervals_id, cooler_dataset_id, pileup_type):
     """Adds pileup region to database"""
