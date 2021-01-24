@@ -9,7 +9,7 @@ import numpy as np
 from ngs import HiCTools as HT
 import cooler
 from hicognition import higlass_interface
-import pybbi
+import bbi
 from requests.exceptions import HTTPError
 from rq import get_current_job
 from . import db
@@ -185,7 +185,7 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
     # calculate number of bins
     bin_number = int(window_size / binsize) * 2
     # extract data
-    stackup_array = pybbi.stackup(
+    stackup_array = bbi.stackup(
         bigwig_dataset.file_path,
         chroms=stackup_regions["chroms"],
         starts=stackup_regions["starts"],
