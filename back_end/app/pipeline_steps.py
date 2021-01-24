@@ -179,7 +179,7 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
         {
             "chrom": regions["chrom"],
             "start": regions["pos"] - window_size, # regions outside of chromosomes will be filled with NaN by pybbi
-            "end": regions["end"] + window_size,
+            "end": regions["pos"] + window_size,
         }
     )
     # calculate number of bins
@@ -187,9 +187,9 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
     # extract data
     stackup_array = bbi.stackup(
         bigwig_dataset.file_path,
-        chroms=stackup_regions["chroms"],
-        starts=stackup_regions["starts"],
-        ends=stackup_regions["ends"],
+        chroms=stackup_regions["chrom"].to_list(),
+        starts=stackup_regions["start"].to_list(),
+        ends=stackup_regions["end"].to_list(),
         bins=bin_number,
         missing=np.nan
     )
@@ -199,15 +199,15 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
     np.save(file_path, stackup_array)
     # save downsampled array to file
-    if stackup_array.shape[0] < 1000:
+    if len(stackup_regions) < current_app.config["STACKUP_THRESHOLD"]:
         # if there are less than 1000 examples, small file is the same as large file
         file_path_small = file_path
     else:
         # set random seed
         np.random.seed(42)
         # subsmple
-        index = np.arange(stackup_array.shape[0])
-        sub_sample_index = np.random.choice(index, 1000)
+        index = np.arange(len(stackup_regions))
+        sub_sample_index = np.random.choice(index, current_app.config["STACKUP_THRESHOLD"])
         downsampled_array = stackup_array[sub_sample_index, :]
         file_name_small = uuid.uuid4().hex + ".npy"
         file_path_small = os.path.join(current_app.config["UPLOAD_DIR"], file_name_small)

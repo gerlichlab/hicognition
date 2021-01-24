@@ -3,15 +3,16 @@ import unittest
 from unittest.mock import patch
 from unittest.mock import MagicMock, PropertyMock
 import pandas as pd
+import numpy as np
 from pandas.testing import assert_series_equal
 from test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals
+from app.models import Dataset, Intervals, IndividualIntervalData
 from app.tasks import pipeline_stackup
-from app.pipeline_steps import perform_pileup
+from app.pipeline_steps import perform_stackup
 
 
 class TestPipelineStackup(LoginTestCase, TempDirTestCase):
@@ -72,10 +73,10 @@ class TestPipelineStackup(LoginTestCase, TempDirTestCase):
         pipeline_stackup(dataset_id, binsizes, intervals_id)
         # compare expected call arguments with actual call arguments
         for binsize in binsizes:
-                for intervals in intervals_objects:
-                    # check whether the current combination is in call args list
-                    expected_call_args = [self.dataset, intervals, binsize]
-                    mock_perform_stackup.assert_any_call(*expected_call_args)
+            for intervals in intervals_objects:
+                # check whether the current combination is in call args list
+                expected_call_args = [self.dataset, intervals, binsize]
+                mock_perform_stackup.assert_any_call(*expected_call_args)
         # check whether number of calls was as expected
         self.assertEqual(
             mock_perform_stackup.call_count, len(binsizes) * len(intervals_objects)
@@ -106,7 +107,7 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
         )
         self.dataset2 = Dataset(
             dataset_name="test4",
-            file_path="/test/path/test4.bw",
+            file_path="./tests/testfiles/test.bw",
             higlass_uuid="fdsa87615",
             filetype="bigwig",
             processing_state="finished",
@@ -122,16 +123,143 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
         )
         self.intervals2 = Intervals(
             name="testRegion2",
-            dataset_id=1,
+            dataset_id=2,
             file_path="test_path_2.bedd2db",
             higlass_uuid="testHiglass2",
-            windowsize=300000,
+            windowsize=50000,
         )
         db.session.add(self.dataset)
         db.session.add(self.dataset2)
         db.session.add(self.intervals1)
         db.session.add(self.intervals2)
         db.session.commit()
+
+    @patch("app.pipeline_steps.bbi.stackup")
+    @patch("app.pipeline_steps.pd.read_csv")
+    def test_stackup_called_correctly_regions_start_end(
+        self,
+        mock_read_csv,
+        mock_stackup,
+    ):
+        """Tests whether regions that are defined as chrom, start, end are handled correctly."""
+        test_df_interval = pd.DataFrame(
+            {0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000]}
+        )
+        mock_read_csv.return_value = test_df_interval
+        # dispatch call
+        perform_stackup(self.dataset, self.intervals1, 10000)
+        # check whether stackup was called correctly
+        mock_stackup.assert_called_with(
+            self.dataset.file_path,
+            chroms=["chr1", "chr1"],
+            starts=[-199500, -198500],
+            ends=[200500, 201500],
+            bins=40,
+            missing=np.nan,
+        )
+
+    @patch("app.pipeline_steps.bbi.stackup")
+    @patch("app.pipeline_steps.pd.read_csv")
+    def test_stackup_called_correctly_regions_pos(self, mock_read_csv, mock_stackup):
+        """Tests whether regions that are defined as chrom, start, end are handled correctly."""
+        test_df_interval = pd.DataFrame({0: ["chr1", "chr1"], 1: [500, 1500]})
+        mock_read_csv.return_value = test_df_interval
+        # dispatch call
+        perform_stackup(self.dataset, self.intervals1, 10000)
+        # check whether stackup was called correctly
+        mock_stackup.assert_called_with(
+            self.dataset.file_path,
+            chroms=["chr1", "chr1"],
+            starts=[-199500, -198500],
+            ends=[200500, 201500],
+            bins=40,
+            missing=np.nan,
+        )
+
+    @patch("app.pipeline_steps.pd.read_csv")
+    def test_small_example_processed_correctly(
+        self,
+        mock_read_csv,
+    ):
+        """Tests whether small example stackup is calculated correctly"""
+        test_df_interval = pd.DataFrame(
+            {
+                "chrom": ["chr1", "chr1"],
+                "start": [100000, 500000],
+                "end": [200000, 600000],
+            }
+        )
+        mock_read_csv.return_value = test_df_interval
+        # dispatch call
+        perform_stackup(
+            self.dataset2, self.intervals2, 50000
+        )  # interfls2 has a windowsize of 50kb, with binsize of 50kb, this will produce 2 values per example
+        # check whether example is correct
+        file_path = IndividualIntervalData.query.get(
+            1
+        ).file_path  # filepath of stackup file
+        loaded_dataset = np.load(file_path)
+        expected_dataset = np.array([[5.0, 0.0], [6.0, 0.0]])
+        self.assertTrue(np.all(np.isclose(loaded_dataset, expected_dataset)))
+
+    @patch("app.pipeline_steps.pd.read_csv")
+    def test_small_example_not_downsampled(
+        self,
+        mock_read_csv,
+    ):
+        """Tests whether small example is not downsampled"""
+        test_df_interval = pd.DataFrame(
+            {
+                "chrom": ["chr1", "chr1"],
+                "start": [100000, 500000],
+                "end": [200000, 600000],
+            }
+        )
+        mock_read_csv.return_value = test_df_interval
+        # dispatch call
+        perform_stackup(
+            self.dataset2, self.intervals2, 50000
+        )  # interfls2 has a windowsize of 50kb, with binsize of 50kb, this will produce 2 values per example
+        # check whether example is correct
+        file_path = IndividualIntervalData.query.get(
+            1
+        ).file_path  # filepath of stackup file
+        file_path_small = IndividualIntervalData.query.get(
+            1
+        ).file_path_small 
+        loaded_dataset_full = np.load(file_path)
+        loaded_dataset_small = np.load(file_path_small)
+        self.assertTrue(np.all(np.isclose(loaded_dataset_full, loaded_dataset_small)))
+
+    @patch("app.pipeline_steps.pd.read_csv")
+    def test_large_example_downampled(
+        self,
+        mock_read_csv,
+    ):
+        """Tests whether large example (testing threshold is 10) is downsampled"""
+        test_df_interval = pd.DataFrame(
+            {
+                "chrom": ["chr1"]*20,
+                "start": [100000]*20,
+                "end": [200000]*20,
+            }
+        )
+        mock_read_csv.return_value = test_df_interval
+        # dispatch call
+        perform_stackup(
+            self.dataset2, self.intervals2, 50000
+        )  # interfls2 has a windowsize of 50kb, with binsize of 50kb, this will produce 2 values per example
+        # check whether example is correct
+        file_path = IndividualIntervalData.query.get(
+            1
+        ).file_path  # filepath of stackup file
+        file_path_small = IndividualIntervalData.query.get(
+            1
+        ).file_path_small 
+        loaded_dataset_full = np.load(file_path)
+        loaded_dataset_small = np.load(file_path_small)
+        self.assertEqual(loaded_dataset_full.shape[0], 20)
+        self.assertEqual(loaded_dataset_small.shape[0], 10)
 
 
 if __name__ == "__main__":
