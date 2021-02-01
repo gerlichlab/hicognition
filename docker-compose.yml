@@ -75,6 +75,8 @@ services:
         ports:
             - "80:80"
         # map front-end files
+        environment: 
+            - DISABLE_OPENCOLLECTIVE=true
         depends_on:
             - node
             - hicognition
