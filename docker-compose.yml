@@ -75,8 +75,6 @@ services:
         ports:
             - "80:80"
         # map front-end files
-        environment: 
-            - DISABLE_OPENCOLLECTIVE=true
         depends_on:
             - node
             - hicognition
@@ -91,6 +89,8 @@ services:
     node:
         container_name: node-builder
         image: node:14-buster
+        environment: 
+            - DISABLE_OPENCOLLECTIVE=true
         volumes:
             - ${DIR_FRONT_END}:/front_end
         entrypoint: 
