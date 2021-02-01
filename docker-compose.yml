@@ -89,13 +89,11 @@ services:
     node:
         container_name: node-builder
         image: node:14-buster
-        environment: 
-            - DISABLE_OPENCOLLECTIVE=true
         volumes:
             - ${DIR_FRONT_END}:/front_end
         entrypoint: 
             - "/bin/bash"
-        command: -c "cd /front_end && npm config set unsafe-perm true && npm install && npm run build"
+        command: -c "cd /front_end && npm install && npm run build"
 
     redis-server:
         container_name: redis-server
