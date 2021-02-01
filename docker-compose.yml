@@ -95,7 +95,7 @@ services:
             - ${DIR_FRONT_END}:/front_end
         entrypoint: 
             - "/bin/bash"
-        command: -c "cd /front_end && npm install && npm run build"
+        command: -c "cd /front_end && npm config set unsafe-perm true && npm install && npm run build"
 
     redis-server:
         container_name: redis-server
