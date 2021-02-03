@@ -18,6 +18,7 @@ export var apiMixin = {
                 .then(response => {
                     // success, store token in vuex store
                     this.$store.commit("setToken", response.data.token);
+                    this.$store.commit("setUserId", response.data.user_id);
                 })
         },
         fetchData: function (url) {

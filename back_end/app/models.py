@@ -113,7 +113,8 @@ class Dataset(db.Model):
             "higlass_uuid": self.higlass_uuid,
             "filetype": self.filetype,
             "user_id": self.user_id,
-            "processing_state": self.processing_state
+            "processing_state": self.processing_state,
+            "public": self.public
         }
         return json_dataset
 

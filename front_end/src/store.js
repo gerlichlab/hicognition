@@ -126,11 +126,15 @@ const store = new Vuex.Store({
   },
   state: {
     token: null,
+    user_id: null,
     datasets: null // datasets are in the global store because they will be shared for all functionalities for a given user throughout a session
   },
   getters: {
       isTokenEmpty: state => {
           return state.token == null
+      },
+      getUserId: state => {
+        return state.user_id
       },
       getCoolers: state => {
         return state.datasets.filter(
@@ -142,8 +146,12 @@ const store = new Vuex.Store({
       setToken (state, tokenValue) {
         state.token = tokenValue
       },
+      setUserId (state, id) {
+        state.user_id = id
+      },
       clearToken (state) {
         state.token = null
+        state.user_id = null
       },
       setDatasets (state, datasets) {
         state.datasets = datasets

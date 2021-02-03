@@ -36,10 +36,11 @@
         :md-description="`No datasets found for this query. Try a different search term or create a new dataset.`">
       </md-table-empty-state>
       <!-- Definition of how table should look -->
-      <md-table-row slot="md-table-row" slot-scope="{ item }" md-selectable="multiple" class="md-primary" md-auto-select :md-disabled="anyProcessing">
+      <md-table-row slot="md-table-row" slot-scope="{ item }" md-selectable="multiple" class="md-primary" md-auto-select :md-disabled="isSelectionDisabled(item)">
         <md-table-cell md-label="Name" md-sort-by="dataset_name">{{ item.dataset_name }}</md-table-cell>
         <md-table-cell md-label="Filetype" md-sort-by="filetype">{{ item.filetype }}</md-table-cell>
         <md-table-cell md-label="Genotype" md-sort-by="genotype">{{ item.genotype }}</md-table-cell>
+        <md-table-cell md-label="Public" md-sort-by="public">{{ item.public }}</md-table-cell>
         <md-table-cell md-label="Description" md-sort-by="description">{{ item.description }}</md-table-cell>
         <md-table-cell md-label="Progress" md-sort-by="processing_state">
           <md-icon  v-if="item.processing_state == 'finished'">done</md-icon>
@@ -70,6 +71,17 @@ export default {
       datasetsDeleted: false
     }),
     methods: {
+      isSelectionDisabled: function(item) {
+        if (this.anyProcessing){
+          return true
+        }
+        // check if dataset is owned
+        var user_id = this.$store.getters.getUserId;
+        if (user_id == item.user_id){
+          return false;
+        }
+        return true;
+      },
       deleteClicked: function () {
         this.clickedDelete = true;
       },
