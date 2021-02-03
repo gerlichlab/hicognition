@@ -5,39 +5,26 @@ import store from "./store"
 
 import mainRoute from "./routes/mainRoute"
 import loginRoute from "./routes/loginRoute"
-import predefinedRoute from "./routes/predefinedRoute"
 import annotateRoute from "./routes/annotateRoute"
-import exploreRoute from "./routes/exploreRoute"
 import compareRoute from "./routes/compareRoute"
 
 // define routes
 
 const routes = [
   { path: "/",
-    redirect: "/main/predefined"
+    redirect: "/main/compare"
   },
-  { path: '/main', component: mainRoute, redirect: "/main/predefined",
+  { path: '/main', component: mainRoute, redirect: "/main/compare",
     meta: {
       requiresAuth: true
     },
-    children : [{
-      path: "predefined", component: predefinedRoute,
-      meta: {
-         requiresAuth: true
-      }
-      },
+    children : [
       {
         path: "compare", component: compareRoute,
         meta: {
            requiresAuth: true
         }
         },
-      {
-      path: "explore", component: exploreRoute,
-      meta: {
-         requiresAuth: true
-      }
-      },
       {
       path: "annotate", component: annotateRoute,
       meta: {

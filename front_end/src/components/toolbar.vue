@@ -8,10 +8,8 @@
         </md-button>
 
         <md-tabs class="md-primary md-elevation">
-          <md-tab id="tab-home" md-label="Predefined" to="/main/predefined" class="md-elevation"></md-tab>
           <md-tab id="tab-compare" md-label="Compare" to="/main/compare"></md-tab>
           <md-tab id="tab-annotate" md-label="Annotate" to="/main/annotate"></md-tab>
-          <md-tab id="tab-eplore" md-label="Explore" to="/main/explore"></md-tab>
         </md-tabs>
 
       </div>

@@ -5,12 +5,6 @@
       <div class="md-toolbar-section-start">
         <span class="md-title">HiCognition 0.2</span>
       </div>
-
-      <div class="md-toolbar-section-end">
-        <md-button class="md-icon-button">
-          <md-icon>more_vert</md-icon>
-        </md-button>
-      </div>
     </div>
   </div>
 </template>

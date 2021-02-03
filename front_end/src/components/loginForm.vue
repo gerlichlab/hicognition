@@ -43,7 +43,7 @@ export default {
         this.fetchAndStoreToken(this.username, this.password)
           .then(() => {
             //fetching and storing in store worked, redirect to main/predefined
-            this.$router.push("/main/predefined");
+            this.$router.push("/main/compare");
           })
           .catch((error) => {
             // something went wrong
