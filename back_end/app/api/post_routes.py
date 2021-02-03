@@ -50,7 +50,7 @@ def add_dataset():
     # check whether dataset should be public
     setPublic = False
     if "public" in data:
-        if data["public"] == "True":
+        if data["public"].lower() == "true":
             setPublic = True
     # add data to Database -> in order to show uploading
     new_entry = Dataset(

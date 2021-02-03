@@ -43,6 +43,10 @@
           </div>
           <!-- Second row -->
           <div class="md-layout md-gutter">
+            <!-- public checkbox -->
+            <div class="md-layout-item md-small-size-100">
+                <md-checkbox v-model="form.public" class="top-margin">Public</md-checkbox>
+            </div>
             <!-- file field -->
             <div class="md-layout-item md-small-size-100">
               <md-field :class="getValidationClass('file')">
@@ -112,6 +116,7 @@ export default {
     },
     form: {
       datasetName: null,
+      public: false,
       genotype: null,
       file: null,
       description: null,
@@ -127,6 +132,7 @@ export default {
         required,
         minLength: minLength(3),
       },
+      public: {},
       genotype: {},
       file: {
         required,
@@ -172,6 +178,7 @@ export default {
       this.form.genotype = null;
       this.form.file = null;
       this.form.description = null;
+      this.form.public = false;
     },
     saveDataset() {
       this.sending = true; // show progress bar
@@ -212,5 +219,8 @@ export default {
   top: 0;
   right: 0;
   left: 0;
+}
+.top-margin {
+  margin-top: 24px;
 }
 </style>
