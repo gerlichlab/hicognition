@@ -28,9 +28,9 @@ def test_protected():
 @auth.login_required
 def get_all_datasets():
     """Gets all available datasets for a given user."""
-    all_files = Dataset.query.filter(Dataset.user_id == g.current_user.id).all()
-    update_processing_state(all_files, db)
-    return jsonify([dfile.to_json() for dfile in all_files])
+    all_available_datasets = Dataset.query.filter( (Dataset.user_id == g.current_user.id) | (Dataset.public)).all()
+    update_processing_state(all_available_datasets, db)
+    return jsonify([dfile.to_json() for dfile in all_available_datasets])
 
 
 @api.route("/datasets/<dtype>", methods=["GET"])
@@ -39,13 +39,13 @@ def get_datasets(dtype):
     """Gets all available datasets for a given user."""
     if dtype == "cooler":
         cooler_files = Dataset.query.filter(
-            (Dataset.filetype == "cooler") & (g.current_user.id == Dataset.user_id)
+            (Dataset.filetype == "cooler") & ( (g.current_user.id == Dataset.user_id) |( Dataset.public))
         ).all()
         update_processing_state(cooler_files, db)
         return jsonify([cfile.to_json() for cfile in cooler_files])
     elif dtype == "bed":
         bed_files = Dataset.query.filter(
-            (Dataset.filetype == "bedfile") & (g.current_user.id == Dataset.user_id)
+            (Dataset.filetype == "bedfile") & ((g.current_user.id == Dataset.user_id) |( Dataset.public))
         ).all()
         update_processing_state(bed_files, db)
         return jsonify([bfile.to_json() for bfile in bed_files])

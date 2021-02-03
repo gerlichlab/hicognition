@@ -241,5 +241,38 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         datasets = Dataset.query.all()
         self.assertEqual(len(datasets), 0)
 
+    def test_user_cannot_delete_public_but_unowned_dataset(self):
+        """Deletion of public dataset does not work."""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        dataset1 = Dataset(id=1, file_path=None, filetype="cooler", user_id=2, processing_state="finished", public=True)
+        db.session.add(dataset1)
+        db.session.commit()
+        # delete data set
+        response = self.client.delete(
+            "/api/datasets/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_can_delete_public_but_owned_dataset(self):
+        """Deletion of public dataset does not work."""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        dataset1 = Dataset(id=1, file_path=None, filetype="cooler", user_id=1, processing_state="finished", public=True)
+        db.session.add(dataset1)
+        db.session.commit()
+        # delete data set
+        response = self.client.delete(
+            "/api/datasets/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

@@ -351,5 +351,59 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
+    def test_public_flag_set_correctly_if_true(self):
+        """Tests whether form with file without ending is rejected."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "datasetName": "test",
+            "filetype": "bedfile",
+            "public": "True",
+            "file": (io.BytesIO(b"abcdef"), "test.bed"),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 200)
+        # check if public flag is set correctly
+        dataset = Dataset.query.get(1)
+        self.assertTrue(dataset.public)
+
+    def test_public_flag_set_correctly_if_false(self):
+        """Tests whether form with file without ending is rejected."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "datasetName": "test",
+            "filetype": "bedfile",
+            "public": "False",
+            "file": (io.BytesIO(b"abcdef"), "test.bed"),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 200)
+        # check if public flag is set correctly
+        dataset = Dataset.query.get(1)
+        self.assertFalse(dataset.public)
+
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

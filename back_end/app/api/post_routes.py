@@ -44,15 +44,20 @@ def add_dataset():
         return invalid("Form is not valid!")
     # get data from form
     data = request.form
-    # check form
     fileObject = request.files["file"]
     # check whether description and genotype is there
     description, genotype = parse_description_and_genotype(data)
+    # check whether dataset should be public
+    setPublic = False
+    if "public" in data:
+        if data["public"] == "True":
+            setPublic = True
     # add data to Database -> in order to show uploading
     new_entry = Dataset(
         dataset_name=data["datasetName"],
         genotype=genotype,
         description=description,
+        public=setPublic,
         processing_state="uploading",
         filetype=data["filetype"],
         user_id=current_user.id,
