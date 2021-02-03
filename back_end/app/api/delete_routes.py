@@ -2,7 +2,7 @@
 import os
 from flask.json import jsonify
 from flask import g, current_app
-from .helpers import is_access_to_dataset_denied
+from .helpers import is_dataset_deletion_denied
 from . import api
 from .. import db
 from ..models import Intervals, Dataset, AverageIntervalData
@@ -20,7 +20,7 @@ def delete_dataset(dataset_id):
     if dataset is None:
         return not_found(f"Dataset id {dataset_id} does not exist!")
     # check if data set can be accessed
-    if is_access_to_dataset_denied(dataset, g.current_user):
+    if is_dataset_deletion_denied(dataset, g.current_user):
         return forbidden(f"Dataset with id {dataset_id} is not owned by user!")
     # check if data set is processing
     if dataset.processing_state == "processing":
