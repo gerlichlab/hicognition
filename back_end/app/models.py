@@ -68,6 +68,7 @@ class Dataset(db.Model):
     description = db.Column(db.String(81), default="undefined")
     file_path = db.Column(db.String(128), index=True)
     higlass_uuid = db.Column(db.String(64), index=True, unique=True)
+    public = db.Column(db.Boolean, default=False)
     filetype = db.Column(db.String(64), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     intervals = db.relationship("Intervals", backref="source_dataset", lazy="dynamic")
