@@ -136,6 +136,12 @@ const store = new Vuex.Store({
       getUserId: state => {
         return state.user_id
       },
+      getCoolersDirty: state => {
+        // gets cooler files that can be in the state of processing -> for compare view
+        return state.datasets.filter(
+          (element) => element.filetype == "cooler"
+        );
+      },
       getCoolers: state => {
         return state.datasets.filter(
           (element) => element.filetype == "cooler" && (element.processing_state == "finished")
