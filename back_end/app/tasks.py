@@ -118,7 +118,7 @@ def pipeline_bigwig(dataset_id):
             current_dataset.dataset_name,
         )
     except HTTPError:
-        log.error("Higlass upload of bedfile failed")
+        log.error("Higlass upload of bigwig failed")
         return
     # upload succeeded, add uuid of higlass to dataset
     uuid = result["uuid"]

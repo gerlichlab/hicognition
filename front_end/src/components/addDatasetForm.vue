@@ -112,7 +112,8 @@ export default {
   data: () => ({
     fileTypeMapping: {
       "bed": "bedfile",
-      "mcool": "cooler"
+      "mcool": "cooler",
+      "bw": "bigwig"
     },
     form: {
       datasetName: null,

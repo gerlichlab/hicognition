@@ -30,7 +30,7 @@ def add_dataset():
             return True
         # check filename
         fileEnding = request.files["file"].filename.split(".")[-1]
-        correctFileEndings = {"bedfile": "bed", "cooler": "mcool"}
+        correctFileEndings = {"bedfile": "bed", "cooler": "mcool", "bigwig": "bw"}
         if request.form["filetype"] not in correctFileEndings:
             return True
         if correctFileEndings[request.form["filetype"]] != fileEnding:
@@ -68,7 +68,7 @@ def add_dataset():
     filename = secure_filename(fileObject.filename)
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     fileObject.save(file_path)
-    if data["filetype"] not in ["cooler", "bedfile"]:
+    if data["filetype"] not in ["cooler", "bedfile", "bigwig"]:
         return invalid("datatype not understood")
     # add file_path to database entr
     new_entry.file_path = file_path
@@ -81,11 +81,17 @@ def add_dataset():
         # set processing state
         new_entry.processing_state = "processing"
         db.session.commit()
-    else:
+    elif data["filetype"] == "cooler":
         current_user.launch_task(
             "pipeline_cooler", "run cooler preprocessing", new_entry.id
         )
         # cooler files stay at processing status upload for the initial higlass addition pipeline
+        db.session.commit()
+    else:
+        current_user.launch_task(
+            "pipeline_bigwig", "run bigwig preprocessing", new_entry.id
+        )
+        # bigwig files stay at processing status upload for the initial higlass addition pipeline
         db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 

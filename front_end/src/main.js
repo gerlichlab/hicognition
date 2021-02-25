@@ -10,8 +10,6 @@ import './themes/default.scss'
 import store from "./store"
 import Axios from 'axios'
 
-
-
 // add convenience methods for requests
 Vue.prototype.$http = Axios;
 

@@ -8,6 +8,7 @@ back_end/temp/*.csv
 back_end/temp/*.mcool
 back_end/temp/*.bedpe
 back_end/temp/*.bed2ddb
+back_end/temp/*.bw
 .vscode/*
 *.csv
 workdir/higlass_data/

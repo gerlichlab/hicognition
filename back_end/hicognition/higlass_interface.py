@@ -28,7 +28,7 @@ FILETYPE = {
     "bedfile": "beddb",
     "cooler": "cooler",
     "bedpe": "bed2ddb",
-    "bigwig": "bigwig"
+    "bigwig": "bigwig",
 }
 
 
