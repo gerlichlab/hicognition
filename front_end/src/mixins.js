@@ -47,7 +47,7 @@ export var apiMixin = {
                     // if forbidden error is returned, redirect to login page
                     this.$router.push("/login");
                 }else{
-                    alert(`HTTP error: ${error.response.status} - ${error.response}`)
+                    alert(`HTTP error: ${error.response.status} - Error: ${error.response.data.error} - ${error.response.data.message}`)
                 }
             })
         },
@@ -77,7 +77,8 @@ export var apiMixin = {
                     // if forbidden error is returned, redirect to login page
                     this.$router.push("/login");
                 }else{
-                    alert(`HTTP error: ${error.response.status} - ${error.response}`)
+                    // this helps to look into [object Object] errors: ${JSON.stringify(error.response)}
+                    alert(`HTTP error: ${error.response.status} - Error: ${error.response.data.error} - ${error.response.data.message}`)
                 }
             });
         },
@@ -105,7 +106,7 @@ export var apiMixin = {
                     // if forbidden error is returned, redirect to login page
                     this.$router.push("/login");
                 }else{
-                    alert(`HTTP error: ${error.response.status} - ${error.response}`)
+                    alert(`HTTP error: ${error.response.status} - Error: ${error.response.data.error} - ${error.response.data.message}`)
                 }
             });
         }
