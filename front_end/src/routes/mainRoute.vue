@@ -18,6 +18,10 @@
           showPreprocessDatasetDialog = true;
           menuVisible = false;
         "
+        @preprocess-bigwig-click="
+          showPreprocessBigwigDialog = true;
+          menuVisible = false;
+        "
       ></drawer>
     </md-app-drawer>
 
@@ -31,6 +35,10 @@
         :dialog="showPreprocessDatasetDialog"
         @close-dialog="showPreprocessDatasetDialog = false"
       ></preprocessDatasetDialog>
+      <preprocessBigwigDialog
+        :dialog="showPreprocessBigwigDialog"
+        @close-dialog="showPreprocessBigwigDialog = false"
+      ></preprocessBigwigDialog>
       <datasetDialog
         :dialog="showMyDatasetDialog"
         @close-dialog="showMyDatasetDialog = false"
@@ -45,6 +53,7 @@ import drawer from "../components/drawer";
 import datasetDialog from "../components/myDatasetDialog";
 import addDatasetDialog from "../components/addDatasetDialog";
 import preprocessDatasetDialog from "../components/preProcessDatasetDialog"
+import preprocessBigwigDialog from "../components/preProcessBigwigDialog"
 
 export default {
   name: "mainRoute",
@@ -53,13 +62,15 @@ export default {
     drawer,
     datasetDialog,
     addDatasetDialog,
-    preprocessDatasetDialog
+    preprocessDatasetDialog,
+    preprocessBigwigDialog
   },
   data: () => ({
     menuVisible: false,
     showMyDatasetDialog: false,
     showAddDatasetDialog: false,
-    showPreprocessDatasetDialog: false
+    showPreprocessDatasetDialog: false,
+    showPreprocessBigwigDialog: false
   })
 };
 </script>

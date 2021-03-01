@@ -49,6 +49,7 @@ export var apiMixin = {
                 }else{
                     alert(`HTTP error: ${error.response.status} - Error: ${error.response.data.error} - ${error.response.data.message}`)
                 }
+                // TODO: 401 error writes unknown - unknown make and else for data.error os unknown
             })
         },
         postData: function (url, formData) {

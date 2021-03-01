@@ -158,7 +158,7 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
     """Performs stackup of bigwig dataset over the intervals provided with the indicated binsize.
     Stores result and adds it to database."""
     log.info(
-        f"  Doing pileup on cooler {bigwig_dataset.id} with intervals {intervals.id} on binsize {binsize}"
+        f"  Doing pileup on bigwig {bigwig_dataset.id} with intervals {intervals.id} on binsize {binsize}"
     )
     # get path to dataset
     file_path = intervals.source_dataset.file_path

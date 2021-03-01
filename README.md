@@ -88,11 +88,11 @@ If you need to access log-files, can do so via
 ```
 docker-compose -logs
 ```
+execute the command above in the root directory of this repo.
 
 ## Project architecture and design decisions
 
 For a detailed description of the project architecture and development design decisions see our [dev-git](https://github.com/gerlichlab/HiCognition_devgit).
 
 ## Fullsize test data
-A .mcool, .bw and .bed file can be found on this dropbox location:
-[dev-git](https://www.dropbox.com/sh/czlbr69tjdgo45r/AACloms-wrEbxFqQHbQFMY7va?dl=0)
+A .mcool, .bw and .bed file can be found ar this [dropbox](https://www.dropbox.com/sh/czlbr69tjdgo45r/AACloms-wrEbxFqQHbQFMY7va?dl=0) location.
