@@ -1,7 +1,7 @@
 {
-  "name": "test-project",
-  "version": "1.0.0",
-  "description": "SPA test",
+  "name": "hicognition-project",
+  "version": "0.2.0",
+  "description": "hicognition test",
   "author": "mmitter",
   "private": true,
   "scripts": {
