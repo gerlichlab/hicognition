@@ -2,7 +2,7 @@
   "name": "hicognition-project",
   "version": "0.2.0",
   "description": "hicognition test",
-  "author": "mmitter",
+  "author": "mmitter, cchlanger",
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js --host 0.0.0.0",

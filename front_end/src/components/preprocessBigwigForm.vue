@@ -5,26 +5,26 @@
       <md-card class="md-layout-item">
         <!-- Field definitions -->
         <md-card-content>
-          <!-- Cooler file and binsizes; first row -->
+          <!-- Bigwig file and binsizes; first row -->
           <div class="md-layout md-gutter">
-            <!-- cooler file -->
+            <!-- bigwig file -->
             <div class="md-layout-item md-small-size-100">
-              <md-field :class="getValidationClass('coolerID')">
-                <label for="coolerID">Cooler</label>
+              <md-field :class="getValidationClass('bigwigID')">
+                <label for="bigwigID">Bigwig</label>
                 <md-select
-                  name="coolerID"
-                  id="coolerID"
-                  v-model="form.coolerID"
-                  availableCoolers
-                  :disabled="!coolersAvailable"
+                  name="bigwigID"
+                  id="bigwigID"
+                  v-model="form.bigwigID"
+                  availableBigwigs
+                  :disabled="!bigwigsAvailable"
                   required>
                     <md-option
-                    v-for="item in availableCoolers"
+                    v-for="item in availableBigwigs"
                     :value="item.id"
                     :key="item.id"
                     >{{ item.dataset_name }}</md-option>
                 </md-select>
-                <span class="md-error" v-if="!$v.form.coolerID.required">A dataset name is required</span>
+                <span class="md-error" v-if="!$v.form.bigwigID.required">A dataset name is required</span>
               </md-field>
             </div>
             <!-- Binsizes field -->
@@ -135,15 +135,15 @@ import { apiMixin } from "../mixins";
 import { group_intervals_on_windowsize } from "../functions"
 
 export default {
-  name: "preprocessDatasetForm",
+  name: "preprocessBigWigForm",
   mixins: [validationMixin, apiMixin],
   data: () => ({
-      availableCoolers: [],
+      availableBigwigs: [],
       availableBinsizes: [10000, 20000, 50000],
       availableBedFiles: [],
       availableIntervals: [],
     form: {
-      coolerID: null,
+      bigwigID: null,
       binsizes: [],
       bedfileIDs: [],
       windowsizes: [],
@@ -152,8 +152,8 @@ export default {
     sending: false,
   }),
   computed: {
-      coolersAvailable: function () {
-          return this.availableCoolers.length != 0;
+      bigwigsAvailable: function () {
+          return this.availableBigwigs.length != 0;
       },
       bedFilesAvailable: function () {
           return this.availableBedFiles.length != 0;
@@ -165,7 +165,7 @@ export default {
   validations: {
     // validators for the form
     form: {
-      coolerID: {
+      bigwigID: {
         required
       },
       binsizes: {
@@ -181,13 +181,14 @@ export default {
   },
   methods: {
     fetchDatasets: function () {
-        // fetches available datasets (cooler and bedfiles) from server
+        // fetches available datasets (bigwigs and bedfiles) from server
       this.fetchData("datasets/").then((response) => {
         // success, store datasets
         this.$store.commit("setDatasets", response.data);
+        console.log(response.data)
         // update datasets
-        this.availableCoolers = response.data.filter(
-          (element) => element.filetype == "cooler" && element.processing_state != "uploading"
+        this.availableBigwigs = response.data.filter(
+          (element) => element.filetype == "bigwig" && element.processing_state != "uploading"
         );
         this.availableBedFiles = response.data.filter(
           (element) => element.filetype == "bedfile" && element.processing_state == "finished"
@@ -240,8 +241,7 @@ export default {
       }
       console.log(formData);
       // API call including upload is made in the background
-      this.postData("preprocess/", formData);
-      //TODO: make conditional on promise
+      this.postData("preprocessbigwig/", formData);
       // show progress bar for 1.5 s
       window.setTimeout(() => {
         this.datasetSaved = true;
@@ -258,7 +258,7 @@ export default {
         // put data into form
         var form_data = {};
         form_data["interval_ids"] = JSON.stringify(intervals_ids);
-        form_data["dataset_id"] = JSON.stringify(this.form["coolerID"]);
+        form_data["dataset_id"] = JSON.stringify(this.form["bigwigID"]);
         form_data["binsizes"] = JSON.stringify(this.form["binsizes"]);
         return form_data;
     },

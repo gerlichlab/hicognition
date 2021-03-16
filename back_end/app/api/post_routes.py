@@ -138,3 +138,47 @@ def preprocess_dataset():
     dataset.processing_state = "processing"
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
+
+@api.route("/preprocessbigwig/", methods=["POST"])
+#TODO: post this on main preprocessroute
+@auth.login_required
+def preprocess_bigwig_dataset():
+    """Starts preprocessing pipeline
+    for datasets specified in the request body"""
+    #TODO: Reset processing state of job -> delete all tasks that are in progress when new submission
+
+    def is_form_invalid():
+        if not hasattr(request, "form"):
+            return True
+        if sorted(list(request.form.keys())) != sorted(
+            ["dataset_id", "binsizes", "interval_ids"]
+        ):
+            return True
+        return False
+
+    current_user = g.current_user
+    # check form
+    if is_form_invalid():
+        return invalid("Form is not valid!")
+    # get data from form
+    data = request.form
+    dataset_id = json.loads(data["dataset_id"])
+    binsizes = json.loads(data["binsizes"])
+    interval_ids = json.loads(data["interval_ids"])
+    # check whether dataset exists
+    if Dataset.query.get(dataset_id) is None:
+        return not_found("Dataset does not exist!")
+    if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g.current_user):
+        return forbidden(f"Cooler dataset is not owned by logged in user!")
+    current_user.launch_task(
+        "pipeline_stackup",
+        "run stackup pipeline",
+        dataset_id,
+        binsizes,
+        interval_ids,
+    )
+    # set processing state
+    dataset = Dataset.query.get(dataset_id)
+    dataset.processing_state = "processing"
+    db.session.commit()
+    return jsonify({"message": "success! Preprocessing triggered."})

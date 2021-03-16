@@ -43,7 +43,7 @@ export var apiMixin = {
                 if (!error.response){
                     alert(`HTTP error: ${error}`)
                 }
-                else if (error.response.status == 403){
+                else if ((error.response.status == 403) || (error.response.status == 401)){
                     // if forbidden error is returned, redirect to login page
                     this.$router.push("/login");
                 }else{
@@ -74,7 +74,7 @@ export var apiMixin = {
                 if (!error.response){
                     alert(`HTTP error: ${error}`)
                 }
-                else if (error.response.status == 403){
+                else if ((error.response.status == 403) || (error.response.status == 401)){
                     // if forbidden error is returned, redirect to login page
                     this.$router.push("/login");
                 }else{
@@ -103,7 +103,7 @@ export var apiMixin = {
                 if (!error.response){
                     alert(`HTTP error: ${error}`)
                 }
-                else if (error.response.status == 403){
+                else if ((error.response.status == 403) || (error.response.status == 401)){
                     // if forbidden error is returned, redirect to login page
                     this.$router.push("/login");
                 }else{
