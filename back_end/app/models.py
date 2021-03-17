@@ -191,15 +191,15 @@ class IndividualIntervalData(db.Model):
 
     def to_json(self):
         """Formats json output."""
-        json_averageIntervalData = {
+        json_individualIntervalData = {
             "id": self.id,
             "binsize": self.binsize,
             "name": self.name,
             "file_path": self.file_path,
-            "dataset_id": self.cooler_id,
+            "dataset_id": self.dataset_id,
             "intervals_id": self.intervals_id,
         }
-        return json_averageIntervalData
+        return json_individualIntervalData
 
 
 class Task(db.Model):
@@ -233,7 +233,7 @@ def all_tasks_finished(tasks):
     for task in tasks:
         job = task.get_rq_job()
         if job is None:
-            # if job is not in queue anymore, it finished succesfully
+            # if job is not in queue anymore, it finished successfully
             continue
         if not job.is_finished:
             return False
