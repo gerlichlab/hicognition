@@ -1,12 +1,13 @@
 """GET API endpoints for hicognition"""
 from flask.globals import current_app
 import pandas as pd
+import numpy as np
 from flask.json import jsonify
 from flask import g, request
 from .helpers import update_processing_state, is_access_to_dataset_denied
 from . import api
 from .. import db
-from ..models import Intervals, Dataset, AverageIntervalData
+from ..models import Intervals, Dataset, AverageIntervalData, IndividualIntervalData
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
 
@@ -116,6 +117,36 @@ def get_averageIntervalData():
     )
     return jsonify([dfile.to_json() for dfile in all_files])
 
+@api.route("/individualIntervalData/", methods=["GET"])
+@auth.login_required
+def get_individualIntervalData():
+    """Gets all available averageIntervalData from a given bigwig file
+    for the specified intervals_id. Only returns stackup object if
+    user owns the bigwig dataset and intervals_id"""
+    # unpack query string
+    bigwig_id = request.args.get("dataset_id")
+    intervals_id = request.args.get("intervals_id")
+    if bigwig_id is None or intervals_id is None:
+        return invalid("Bigwig dataset or intervals were not specified!")
+    # Check whether datasets exist
+    bigwig_ds = Dataset.query.get(bigwig_id)
+    intervals_ds = Intervals.query.get(intervals_id)
+    if (bigwig_ds is None) or (intervals_ds is None):
+        return not_found("Bigwig dataset or intervals dataset do not exist!")
+    # Check whether datasets are owned
+    if is_access_to_dataset_denied(
+        bigwig_ds, g.current_user
+    ) or is_access_to_dataset_denied(intervals_ds.source_dataset, g.current_user):
+        return forbidden("Bigwig dataset or intervals dataset is not owned by logged in user!")
+    # return all intervals the are derived from the specified selection of bigwig and intervals
+    all_files = (
+        IndividualIntervalData.query.filter(IndividualIntervalData.intervals_id == intervals_id)
+        .join(Dataset)
+        .filter(Dataset.id == bigwig_id)
+        .all()
+    )
+    return jsonify([dfile.to_json() for dfile in all_files])
+
 
 @api.route("/averageIntervalData/<pileup_id>/", methods=["GET"])
 @auth.login_required
@@ -136,4 +167,28 @@ def get_pileup_data(pileup_id):
     # dataset is owned, return the data
     csv_data = pd.read_csv(pileup.file_path)
     json_data = csv_data.to_json()
+    return jsonify(json_data)
+
+@api.route("/individualIntervalData/<stackup_id>/", methods=["GET"])
+@auth.login_required
+def get_stackup_data(stackup_id):
+    """returns stackup data for the specified stackup id if it exists and
+    the user is owner."""
+    stackup_id = 1
+    # Check for existence
+    if IndividualIntervalData.query.get(stackup_id) is None:
+        return not_found("Stackup does not exist!")
+    # Check whether datasets are owned
+    stackup = IndividualIntervalData.query.get(stackup_id)
+    #bigwig_ds = stackup.source_dataset
+    #bed_ds = pileup.source_intervals.source_dataset
+    #if is_access_to_dataset_denied(
+    #    bigwig_ds, g.current_user
+    #) or is_access_to_dataset_denied(bed_ds, g.current_user):
+    #    return forbidden("Bigwig dataset or bed dataset is not owned by logged in user!")
+    # dataset is owned, return the data
+    np_data = np.load(stackup.file_path)
+    csv_data = pd.DataFrame(np_data)
+    json_data = csv_data.to_json()
+    #FIXME: is numpy not JSON
     return jsonify(json_data)
