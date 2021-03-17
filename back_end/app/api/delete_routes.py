@@ -5,7 +5,7 @@ from flask import g, current_app
 from .helpers import is_dataset_deletion_denied
 from . import api
 from .. import db
-from ..models import Intervals, Dataset, AverageIntervalData
+from ..models import Intervals, Dataset, AverageIntervalData, IndividualIntervalData
 from .authentication import auth
 from .errors import forbidden, not_found
 
@@ -28,16 +28,22 @@ def delete_dataset(dataset_id):
     # cooler only needs deletion of derived averageIntervalData
     intervals = []
     averageIntervalData = []
+    individualIntervalData = []
     if dataset.filetype == "cooler":
         averageIntervalData = AverageIntervalData.query.filter(AverageIntervalData.cooler_id == dataset_id).all()
     # bedfile needs deletion of intervals and averageIntervalData
     if dataset.filetype == "bedfile":
         intervals = Intervals.query.filter(Intervals.dataset_id == dataset_id).all()
         averageIntervalData = AverageIntervalData.query.filter(AverageIntervalData.intervals_id.in_([entry.id for entry in intervals])).all()
+        individualIntervalData = IndividualIntervalData.query.filter(IndividualIntervalData.intervals_id.in_([entry.id for entry in intervals])).all()
+    if dataset.filetype == "bigwig":
+        individualIntervalData = IndividualIntervalData.query.filter(IndividualIntervalData.dataset_id == dataset_id).all()
     # delete files and remove from database
-    deletion_queue = [dataset] + intervals + averageIntervalData
+    deletion_queue = [dataset] + intervals + averageIntervalData + individualIntervalData
     for entry in deletion_queue:
         try:
+            if hasattr(entry, 'file_path_small'):
+                os.remove(entry.file_path_small)
             if entry.file_path is not None:
                 os.remove(entry.file_path)
             else:
