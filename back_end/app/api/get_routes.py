@@ -178,7 +178,7 @@ def get_stackup_data(stackup_id):
     # Check for existence
     if IndividualIntervalData.query.get(stackup_id) is None:
         return not_found("Stackup does not exist!")
-    # Check whether datasets are owned
+    #TODO: Check whether datasets are owned
     stackup = IndividualIntervalData.query.get(stackup_id)
     #bigwig_ds = stackup.source_dataset
     #bed_ds = pileup.source_intervals.source_dataset
@@ -187,8 +187,17 @@ def get_stackup_data(stackup_id):
     #) or is_access_to_dataset_denied(bed_ds, g.current_user):
     #    return forbidden("Bigwig dataset or bed dataset is not owned by logged in user!")
     # dataset is owned, return the data
-    np_data = np.load(stackup.file_path)
-    csv_data = pd.DataFrame(np_data)
+    np_data = np.load(stackup.file_path_small)
+    #csv_data = pd.DataFrame(np_data)
+    variable = []
+    group = []
+    value = []
+    for var,row in enumerate(np_data):
+        for grp, item in enumerate(row): 
+            variable.append(var)
+            group.append(grp)
+            value.append(item)
+    csv_data = pd.DataFrame(list(zip(variable,group,value)), columns=["variable", "group", "value"])
     json_data = csv_data.to_json()
     #FIXME: is numpy not JSON
     return jsonify(json_data)

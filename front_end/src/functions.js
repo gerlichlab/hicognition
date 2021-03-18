@@ -215,7 +215,7 @@ export function group_stackups(data) {
         output[binsize][value_type] = id;
       }
     }
-    console.log(output)
+    //console.log(output)
     return output;
   }
 

@@ -68,7 +68,7 @@ const compareModule = {
         if (!("stackup" in state.widgetData)){
           return undefined
         }
-        return state.widgetData["stackup"][payload.pileupType][payload.id]
+        return state.widgetData["stackup"][payload.stackupType][payload.id]
       },
       pileupExists: (state) => (payload) => {
         if (!("pileup" in state.widgetData)){

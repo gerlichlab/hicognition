@@ -42,7 +42,7 @@
             </div>
             <div class="md-layout-item md-size-25">
                 <div class="padding-top">
-                    <md-switch v-model="isnormal">{{ stackupType }}</md-switch>
+                    <md-switch v-model="isDefault">{{ stackupType }}</md-switch>
                 </div>
             </div>
             <div class="md-layout-item md-size-10">
@@ -53,10 +53,9 @@
                 </div>
             </div>
         </div>
-        <a>
-       WidgetData: {{ this.widgetData }}
-        </a>
-        <!--
+        <!-- <a>
+        WidgetData: {{ this.widgetData }}
+        </a> -->
         <stackup
             :stackupType="stackupType"
             v-if="showData"
@@ -66,7 +65,6 @@
             :stackupData="widgetData[stackupType]"
             :log="true" >
         </stackup>
-        -->
         <div v-if="!showData" class="md-layout md-alignment-center-center" style="height: 70%;">
                 <md-icon class="md-layout-item md-size-50 md-size-5x">input</md-icon>
         </div>
@@ -100,9 +98,10 @@ export default {
         colIndex: Number,
     },
     computed:{
+        //TODO: fix
         stackupType: function() {
-            if (this.isdefault){
-                return "default"
+            if (this.isDefault){
+                return "normal"
             }else{
                 return "problem"
             }
@@ -144,7 +143,8 @@ export default {
                 binsizes: this.binsizes,
                 binsize: this.selectedBinsize,
                 widgetDataRef: this.widgetDataRef,
-                widgetType: "bigwig"
+                isDefault: this.isDefault,
+                widgetType: "BigWig"
             }
         },
         deleteWidget: function(){
@@ -201,6 +201,7 @@ export default {
                     emptyClass: ["smallMargin", "empty"],
                     binsizes: [],
                     datasets: this.$store.getters.getBigwigs,
+                    isDefault: true
             }
             // write properties to store
             var newObject = this.toStoreObject();
@@ -217,7 +218,8 @@ export default {
                 intervalID: collectionConfig["intervalID"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
-                datasets: this.$store.getters.getBigwigs
+                datasets: this.$store.getters.getBigwigs,
+                isDefault: true
             }
         },
         initializeAtSameCollection: function(widgetData, collectionConfig) {
@@ -247,6 +249,7 @@ export default {
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
                 datasets: this.$store.getters.getBigwigs,
+                isDefault: widgetData["isDefault"]
             }
         },
         initializeWidget: function() {
