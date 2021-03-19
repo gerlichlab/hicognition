@@ -188,7 +188,8 @@ def get_stackup_data(stackup_id):
     #    return forbidden("Bigwig dataset or bed dataset is not owned by logged in user!")
     # dataset is owned, return the data
     np_data = np.load(stackup.file_path_small)
-    #csv_data = pd.DataFrame(np_data)
+    #sort by middle column
+    np_data = np_data[np.argsort(np_data[:,int(np_data.shape[1]/2)])]
     variable = []
     group = []
     value = []

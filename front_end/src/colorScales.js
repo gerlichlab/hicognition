@@ -8,7 +8,7 @@ import {
 export function getScale(min, max, scaleType) {
     // returns a iccf color scale or obs/exp color scale with the specified
     // min, max values
-    if (scaleType == "ICCF"){
+    if (scaleType == "ICCF" || scaleType == "normal"){
         return d3.scaleLinear()
                         .range(["white", "orange", "red" ,"black"])
                         .domain(distributeMinMax(min, max));
