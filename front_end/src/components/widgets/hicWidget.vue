@@ -331,7 +331,7 @@ export default {
                 return
             }
             // fetch binsizes for the current combination of dataset and intervals
-            this.fetchData(`averageIntervalData/?cooler_id=${this.selectedDataset}&intervals_id=${this.intervalID}`).then((response) => {
+            this.fetchData(`averageIntervalData/?dataset_id=${this.selectedDataset}&intervals_id=${this.intervalID}`).then((response) => {
                 // update binsizes to show and group iccf/obsExp data under one binsize
                 this.binsizes = group_iccf_obs_exp(response.data);
                 });

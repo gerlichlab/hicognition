@@ -63,6 +63,21 @@ Attention, if you test changes run first:
 pip install .
 ```
 
+## Changing Database
+
+```
+docker exec -it flask-dev bash
+```
+Then
+
+```
+source activate flask
+cd /code
+flask db migrate -m "rename fields"
+flask db upgrade
+```
+
+
 ## Installation
 
 Clone this repo into a local folder:
