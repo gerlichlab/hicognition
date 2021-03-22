@@ -174,19 +174,17 @@ def get_pileup_data(pileup_id):
 def get_stackup_data(stackup_id):
     """returns stackup data for the specified stackup id if it exists and
     the user is owner."""
-    stackup_id = 1
     # Check for existence
     if IndividualIntervalData.query.get(stackup_id) is None:
         return not_found("Stackup does not exist!")
-    #TODO: Check whether datasets are owned
     stackup = IndividualIntervalData.query.get(stackup_id)
-    #bigwig_ds = stackup.source_dataset
-    #bed_ds = pileup.source_intervals.source_dataset
-    #if is_access_to_dataset_denied(
-    #    bigwig_ds, g.current_user
-    #) or is_access_to_dataset_denied(bed_ds, g.current_user):
-    #    return forbidden("Bigwig dataset or bed dataset is not owned by logged in user!")
-    # dataset is owned, return the data
+    bigwig_ds = stackup.source_values
+    bed_ds = stackup.source_intervals.source_dataset
+    if is_access_to_dataset_denied(
+        bigwig_ds, g.current_user
+    ) or is_access_to_dataset_denied(bed_ds, g.current_user):
+        return forbidden("Bigwig dataset or bed dataset is not owned by logged in user!")
+    # dataset is owned, return the smalldata
     np_data = np.load(stackup.file_path_small)
     #sort by middle column
     np_data = np_data[np.argsort(np_data[:,int(np_data.shape[1]/2)])]
@@ -200,5 +198,5 @@ def get_stackup_data(stackup_id):
             value.append(item)
     csv_data = pd.DataFrame(list(zip(variable,group,value)), columns=["variable", "group", "value"])
     json_data = csv_data.to_json()
-    #FIXME: is numpy not JSON
+    #TODO: return array instead of tidy dataframe.
     return jsonify(json_data)
