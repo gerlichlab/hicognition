@@ -94,12 +94,12 @@ def get_averageIntervalData():
     for the specified intervals_id. Only returns pileup object if
     user owns the cooler dataset and intervals_id"""
     # unpack query string
-    cooler_id = request.args.get("cooler_id")
+    dataset_id = request.args.get("dataset_id")
     intervals_id = request.args.get("intervals_id")
-    if cooler_id is None or intervals_id is None:
+    if dataset_id is None or intervals_id is None:
         return invalid("Cooler dataset or intervals were not specified!")
     # Check whether datasets exist
-    cooler_ds = Dataset.query.get(cooler_id)
+    cooler_ds = Dataset.query.get(dataset_id)
     intervals_ds = Intervals.query.get(intervals_id)
     if (cooler_ds is None) or (intervals_ds is None):
         return not_found("Cooler dataset or intervals dataset do not exist!")
@@ -112,7 +112,7 @@ def get_averageIntervalData():
     all_files = (
         AverageIntervalData.query.filter(AverageIntervalData.intervals_id == intervals_id)
         .join(Dataset)
-        .filter(Dataset.id == cooler_id)
+        .filter(Dataset.id == dataset_id)
         .all()
     )
     return jsonify([dfile.to_json() for dfile in all_files])

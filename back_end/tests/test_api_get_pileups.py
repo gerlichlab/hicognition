@@ -20,7 +20,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         """No authentication provided, response should be 401"""
         # protected route
         response = self.client.get(
-            "/api/averageIntervalData/?cooler_id=1&intervals_id=2",
+            "/api/averageIntervalData/?dataset_id=1&intervals_id=2",
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 401)
@@ -50,7 +50,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
-            cooler_id=1,
+            dataset_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
@@ -58,7 +58,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/averageIntervalData/?cooler_id=500&intervals_id=1",
+            "/api/averageIntervalData/?dataset_id=500&intervals_id=1",
             headers=token_headers,
             content_type="application/json",
         )
@@ -89,7 +89,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
-            cooler_id=1,
+            dataset_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
@@ -97,7 +97,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/averageIntervalData/?cooler_id=1&intervals_id=500",
+            "/api/averageIntervalData/?dataset_id=1&intervals_id=500",
             headers=token_headers,
             content_type="application/json",
         )
@@ -127,7 +127,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
-            cooler_id=1,
+            dataset_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
@@ -163,7 +163,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
-            cooler_id=1,
+            dataset_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
@@ -201,7 +201,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
-            cooler_id=1,
+            dataset_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
@@ -209,7 +209,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/averageIntervalData/?cooler_id=1",
+            "/api/averageIntervalData/?dataset_id=1",
             headers=token_headers,
             content_type="application/json",
         )
@@ -250,7 +250,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
-            cooler_id=1,
+            dataset_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
@@ -258,7 +258,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/averageIntervalData/?cooler_id=2&intervals_id=1",
+            "/api/averageIntervalData/?dataset_id=2&intervals_id=1",
             headers=token_headers,
             content_type="application/json",
         )
@@ -305,7 +305,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
-            cooler_id=1,
+            dataset_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
@@ -313,7 +313,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/averageIntervalData/?cooler_id=1&intervals_id=2", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/?dataset_id=1&intervals_id=2", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
@@ -358,7 +358,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
-            cooler_id=1,
+            dataset_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
@@ -366,7 +366,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testAverageIntervalData2",
             binsize=10000,
             file_path="testPath2",
-            cooler_id=1,
+            dataset_id=1,
             intervals_id=2,
             value_type="ICCF",
         )
@@ -374,7 +374,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testAverageIntervalData3",
             binsize=10000,
             file_path="testPath3",
-            cooler_id=2,
+            dataset_id=2,
             intervals_id=1,
             value_type="ICCF",
         )
@@ -382,7 +382,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testAverageIntervalData4",
             binsize=10000,
             file_path="testPath4",
-            cooler_id=2,
+            dataset_id=2,
             intervals_id=2,
             value_type="ICCF",
         )
@@ -401,13 +401,13 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         db.session.commit()
         # make query 1
         response = self.client.get(
-            "/api/averageIntervalData/?cooler_id=1&intervals_id=1", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/?dataset_id=1&intervals_id=1", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0]["id"], 1)
         # make query 2
         response = self.client.get(
-            "/api/averageIntervalData/?cooler_id=1&intervals_id=2", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/?dataset_id=1&intervals_id=2", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0]["id"], 2)
@@ -464,7 +464,7 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
-            cooler_id=1,
+            dataset_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
@@ -508,7 +508,7 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testAverageIntervalData1",
             binsize=10000,
             file_path="testPath1",
-            cooler_id=1,
+            dataset_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
@@ -562,7 +562,7 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testAverageIntervalData1",
             binsize=10000,
             file_path=data_path,
-            cooler_id=1,
+            dataset_id=1,
             intervals_id=1,
             value_type="ICCF",
         )
@@ -619,7 +619,7 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testAverageIntervalData1",
             binsize=10000,
             file_path=data_path,
-            cooler_id=1,
+            dataset_id=1,
             intervals_id=1,
             value_type="ICCF",
         )

@@ -30,7 +30,7 @@ def delete_dataset(dataset_id):
     averageIntervalData = []
     individualIntervalData = []
     if dataset.filetype == "cooler":
-        averageIntervalData = AverageIntervalData.query.filter(AverageIntervalData.cooler_id == dataset_id).all()
+        averageIntervalData = AverageIntervalData.query.filter(AverageIntervalData.dataset_id == dataset_id).all()
     # bedfile needs deletion of intervals and averageIntervalData
     if dataset.filetype == "bedfile":
         intervals = Intervals.query.filter(Intervals.dataset_id == dataset_id).all()

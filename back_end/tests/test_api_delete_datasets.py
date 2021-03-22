@@ -42,12 +42,12 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         # create averageIntervalData for owned data_sets
         file_path_pu_1 = self.create_empty_file_in_tempdir("test1.csv")
         averageIntervalData_1 = AverageIntervalData(
-            id=1, file_path=file_path_pu_1, cooler_id=1, intervals_id=1
+            id=1, file_path=file_path_pu_1, dataset_id=1, intervals_id=1
         )
         # create averageIntervalData for not owned data_set
         file_path_pu_2 = self.create_empty_file_in_tempdir("test2.csv")
         averageIntervalData_2 = AverageIntervalData(
-            id=2, file_path=file_path_pu_2, cooler_id=2, intervals_id=2
+            id=2, file_path=file_path_pu_2, dataset_id=2, intervals_id=2
         )
         # add to database
         db.session.add_all(

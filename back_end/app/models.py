@@ -166,7 +166,7 @@ class AverageIntervalData(db.Model):
             "binsize": self.binsize,
             "name": self.name,
             "file_path": self.file_path,
-            "dataset_id": self.cooler_id,
+            "dataset_id": self.dataset_id,
             "intervals_id": self.intervals_id,
             "value_type": self.value_type
         }
