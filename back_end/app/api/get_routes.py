@@ -158,7 +158,7 @@ def get_pileup_data(pileup_id):
         return not_found("Pileup does not exist!")
     # Check whether datasets are owned
     pileup = AverageIntervalData.query.get(pileup_id)
-    cooler_ds = pileup.source_cooler
+    cooler_ds = pileup.source_dataset
     bed_ds = pileup.source_intervals.source_dataset
     if is_access_to_dataset_denied(
         cooler_ds, g.current_user
@@ -178,7 +178,7 @@ def get_stackup_data(stackup_id):
     if IndividualIntervalData.query.get(stackup_id) is None:
         return not_found("Stackup does not exist!")
     stackup = IndividualIntervalData.query.get(stackup_id)
-    bigwig_ds = stackup.source_values
+    bigwig_ds = stackup.source_dataset
     bed_ds = stackup.source_intervals.source_dataset
     if is_access_to_dataset_denied(
         bigwig_ds, g.current_user

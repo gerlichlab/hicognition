@@ -169,7 +169,7 @@ def preprocess_bigwig_dataset():
     if Dataset.query.get(dataset_id) is None:
         return not_found("Dataset does not exist!")
     if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g.current_user):
-        return forbidden(f"Cooler dataset is not owned by logged in user!")
+        return forbidden(f"Bigwig dataset is not owned by logged in user!")
     current_user.launch_task(
         "pipeline_stackup",
         "run stackup pipeline",

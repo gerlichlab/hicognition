@@ -252,7 +252,7 @@ def add_pileup_db(file_path, binsize, intervals_id, cooler_dataset_id, pileup_ty
         name=os.path.basename(file_path),
         file_path=file_path,
         intervals_id=intervals_id,
-        cooler_id=cooler_dataset_id,
+        dataset_id=cooler_dataset_id,
         value_type=pileup_type,
     )
     db.session.add(new_entry)

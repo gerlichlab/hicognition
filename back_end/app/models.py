@@ -72,8 +72,8 @@ class Dataset(db.Model):
     filetype = db.Column(db.String(64), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     intervals = db.relationship("Intervals", backref="source_dataset", lazy="dynamic")
-    averageIntervalData = db.relationship("AverageIntervalData", backref="source_cooler", lazy="dynamic")
-    individualIntervalData = db.relationship("IndividualIntervalData", backref="source_values", lazy="dynamic")
+    averageIntervalData = db.relationship("AverageIntervalData", backref="source_dataset", lazy="dynamic")
+    individualIntervalData = db.relationship("IndividualIntervalData", backref="source_dataset", lazy="dynamic")
     tasks = db.relationship('Task', backref='dataset', lazy='dynamic')
     processing_state = db.Column(db.String(64))
 
@@ -152,7 +152,7 @@ class AverageIntervalData(db.Model):
     name = db.Column(db.String(64), index=True)
     file_path = db.Column(db.String(128), index=True)
     value_type = db.Column(db.String(64))
-    cooler_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
 
     def __repr__(self):
@@ -166,7 +166,7 @@ class AverageIntervalData(db.Model):
             "binsize": self.binsize,
             "name": self.name,
             "file_path": self.file_path,
-            "cooler_id": self.cooler_id,
+            "dataset_id": self.cooler_id,
             "intervals_id": self.intervals_id,
             "value_type": self.value_type
         }
@@ -175,7 +175,7 @@ class AverageIntervalData(db.Model):
 
 class IndividualIntervalData(db.Model):
     """Table to hold information and pointers to data for
-    values extracted at each instance held in the linked interals dataset.
+    values extracted at each instance held in the linked intervals dataset.
     E.g. for bigwig stack-ups or displaying snipped Hi-C matrices."""
     id = db.Column(db.Integer, primary_key=True)
     binsize = db.Column(db.Integer)
