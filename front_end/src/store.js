@@ -13,6 +13,7 @@ const predefinedModule = {
     return {
       Intervals: null,
       averageIntervalData: null,
+      individualIntervalData: null,
       datasetSelection: null // This is the user's dataset selection for the predefined card
     }
   },
@@ -22,6 +23,9 @@ const predefinedModule = {
       },
       setAverageIntervalData (state, averageIntervalData) {
         state.averageIntervalData = averageIntervalData
+      },
+      setIndividualIntervalData (state, individualIntervalData) {
+        state.individualIntervalData = individualIntervalData
       },
       setDatasetSelection (state, selection) {
         state.datasetSelection = selection
@@ -60,11 +64,23 @@ const compareModule = {
         }
         return state.widgetData["pileup"][payload.pileupType][payload.id]
       },
+      getWidgetDataStackup: (state) => (payload) => {
+        if (!("stackup" in state.widgetData)){
+          return undefined
+        }
+        return state.widgetData["stackup"][payload.stackupType][payload.id]
+      },
       pileupExists: (state) => (payload) => {
         if (!("pileup" in state.widgetData)){
           return false;
         }
         return payload.id in state.widgetData["pileup"][payload.pileupType]
+      },
+      stackupExists: (state) => (payload) => {
+        if (!("stackup" in state.widgetData)){
+          return false;
+        }
+        return payload.id in state.widgetData["stackup"][payload.stackupType]
       },
       getWidgetType: (state) => (payload) => {
         if (payload.id in state.widgetCollections[payload.parentID]["children"]){
@@ -110,6 +126,15 @@ const compareModule = {
         }
         state.widgetData["pileup"][payload.pileupType][payload.id] = payload.data
       },
+      setWidgetDataStackup (state, payload) {
+        if (!("stackup" in state.widgetData)){
+          // initialize pileup
+          state.widgetData["stackup"] = {
+            "normal": {}
+          }
+        }
+        state.widgetData["stackup"][payload.stackupType][payload.id] = payload.data
+      },
       setWidgetType (state, payload) {
         Vue.set(state.widgetCollections[payload.parentID]["children"][payload.id], "widgetType", payload.widgetType);
       }
@@ -126,15 +151,30 @@ const store = new Vuex.Store({
   },
   state: {
     token: null,
+    user_id: null,
     datasets: null // datasets are in the global store because they will be shared for all functionalities for a given user throughout a session
   },
   getters: {
       isTokenEmpty: state => {
           return state.token == null
       },
+      getUserId: state => {
+        return state.user_id
+      },
+      getCoolersDirty: state => {
+        // gets cooler files that can be in the state of processing -> for compare view TODO: still needed?
+        return state.datasets.filter(
+          (element) => element.filetype == "cooler"
+        );
+      },
       getCoolers: state => {
         return state.datasets.filter(
           (element) => element.filetype == "cooler" && (element.processing_state == "finished")
+        );
+      },
+      getBigwigs: state => {
+        return state.datasets.filter(
+          (element) => element.filetype == "bigwig" && (element.processing_state == "finished")
         );
       }
   },
@@ -142,8 +182,12 @@ const store = new Vuex.Store({
       setToken (state, tokenValue) {
         state.token = tokenValue
       },
+      setUserId (state, id) {
+        state.user_id = id
+      },
       clearToken (state) {
         state.token = null
+        state.user_id = null
       },
       setDatasets (state, datasets) {
         state.datasets = datasets

@@ -2,10 +2,10 @@
 import os
 from flask.json import jsonify
 from flask import g, current_app
-from .helpers import is_access_to_dataset_denied
+from .helpers import is_dataset_deletion_denied
 from . import api
 from .. import db
-from ..models import Intervals, Dataset, AverageIntervalData
+from ..models import Intervals, Dataset, AverageIntervalData, IndividualIntervalData
 from .authentication import auth
 from .errors import forbidden, not_found
 
@@ -20,7 +20,7 @@ def delete_dataset(dataset_id):
     if dataset is None:
         return not_found(f"Dataset id {dataset_id} does not exist!")
     # check if data set can be accessed
-    if is_access_to_dataset_denied(dataset, g.current_user):
+    if is_dataset_deletion_denied(dataset, g.current_user):
         return forbidden(f"Dataset with id {dataset_id} is not owned by user!")
     # check if data set is processing
     if dataset.processing_state == "processing":
@@ -28,17 +28,26 @@ def delete_dataset(dataset_id):
     # cooler only needs deletion of derived averageIntervalData
     intervals = []
     averageIntervalData = []
+    individualIntervalData = []
     if dataset.filetype == "cooler":
-        averageIntervalData = AverageIntervalData.query.filter(AverageIntervalData.cooler_id == dataset_id).all()
+        averageIntervalData = AverageIntervalData.query.filter(AverageIntervalData.dataset_id == dataset_id).all()
     # bedfile needs deletion of intervals and averageIntervalData
     if dataset.filetype == "bedfile":
         intervals = Intervals.query.filter(Intervals.dataset_id == dataset_id).all()
         averageIntervalData = AverageIntervalData.query.filter(AverageIntervalData.intervals_id.in_([entry.id for entry in intervals])).all()
+        individualIntervalData = IndividualIntervalData.query.filter(IndividualIntervalData.intervals_id.in_([entry.id for entry in intervals])).all()
+    if dataset.filetype == "bigwig":
+        individualIntervalData = IndividualIntervalData.query.filter(IndividualIntervalData.dataset_id == dataset_id).all()
     # delete files and remove from database
-    deletion_queue = [dataset] + intervals + averageIntervalData
+    deletion_queue = [dataset] + intervals + averageIntervalData + individualIntervalData
     for entry in deletion_queue:
         try:
-            os.remove(entry.file_path)
+            if hasattr(entry, 'file_path_small'):
+                os.remove(entry.file_path_small)
+            if entry.file_path is not None:
+                os.remove(entry.file_path)
+            else:
+                current_app.logger.warning(f"Tried removing {entry}, but there was no filepath!")
         except FileNotFoundError:
             current_app.logger.warning(f"Tried removing {entry.file_path}, but file does not exist!")
         db.session.delete(entry) # TODO: this leaves the session invalid for a short time for some reason -> fix!

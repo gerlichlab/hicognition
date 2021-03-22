@@ -1,5 +1,6 @@
 import os
 from test_helpers import LoginTestCase, TempDirTestCase
+import unittest
 from unittest.mock import patch
 
 # add path to import app
@@ -41,12 +42,12 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         # create averageIntervalData for owned data_sets
         file_path_pu_1 = self.create_empty_file_in_tempdir("test1.csv")
         averageIntervalData_1 = AverageIntervalData(
-            id=1, file_path=file_path_pu_1, cooler_id=1, intervals_id=1
+            id=1, file_path=file_path_pu_1, dataset_id=1, intervals_id=1
         )
         # create averageIntervalData for not owned data_set
         file_path_pu_2 = self.create_empty_file_in_tempdir("test2.csv")
         averageIntervalData_2 = AverageIntervalData(
-            id=2, file_path=file_path_pu_2, cooler_id=2, intervals_id=2
+            id=2, file_path=file_path_pu_2, dataset_id=2, intervals_id=2
         )
         # add to database
         db.session.add_all(
@@ -216,3 +217,62 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         # check_dataset entry
         datasets = Dataset.query.all()
         self.assertEqual(len(datasets), 0)
+
+    @patch("app.api.delete_routes.current_app.logger.warning")
+    def test_deletion_of_entry_without_filename_goes_through(self, mock_log):
+        """tests whether deletion of datasets that are processing does not work."""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        dataset1 = Dataset(id=1, file_path=None, filetype="cooler", user_id=1, processing_state="finished")
+        db.session.add(dataset1)
+        db.session.commit()
+        # delete data set
+        response = self.client.delete(
+            "/api/datasets/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check logger has been called
+        mock_log.assert_called_with(
+            f"Tried removing <Dataset None>, but there was no filepath!"
+        )
+        # check_dataset entry
+        datasets = Dataset.query.all()
+        self.assertEqual(len(datasets), 0)
+
+    def test_user_cannot_delete_public_but_unowned_dataset(self):
+        """Deletion of public dataset does not work."""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        dataset1 = Dataset(id=1, file_path=None, filetype="cooler", user_id=2, processing_state="finished", public=True)
+        db.session.add(dataset1)
+        db.session.commit()
+        # delete data set
+        response = self.client.delete(
+            "/api/datasets/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_can_delete_public_but_owned_dataset(self):
+        """Deletion of public dataset does not work."""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        dataset1 = Dataset(id=1, file_path=None, filetype="cooler", user_id=1, processing_state="finished", public=True)
+        db.session.add(dataset1)
+        db.session.commit()
+        # delete data set
+        response = self.client.delete(
+            "/api/datasets/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+
+if __name__ == "__main__":
+    res = unittest.main(verbosity=3, exit=False)

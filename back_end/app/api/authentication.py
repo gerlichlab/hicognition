@@ -34,5 +34,6 @@ def get_token():
         {
             "token": g.current_user.generate_auth_token(expiration=3600),
             "expiration": 3600,
+            "user_id": g.current_user.id
         }
     )

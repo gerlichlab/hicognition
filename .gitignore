@@ -2,7 +2,14 @@ __pycache__/*
 app.db
 *.pyc
 helper_scripts/
-back_end/temp/
+back_end/temp/*.bed
+back_end/temp/*.beddb
+back_end/temp/*.csv
+back_end/temp/*.mcool
+back_end/temp/*.bedpe
+back_end/temp/*.bed2ddb
+back_end/temp/*.bw
+back_end/temp/*.npy
 .vscode/*
 *.csv
 workdir/higlass_data/

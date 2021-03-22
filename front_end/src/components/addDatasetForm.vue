@@ -43,24 +43,9 @@
           </div>
           <!-- Second row -->
           <div class="md-layout md-gutter">
-            <!-- filetype field -->
+            <!-- public checkbox -->
             <div class="md-layout-item md-small-size-100">
-              <md-field :class="getValidationClass('filetype')">
-                <label for="filetype">Filetype</label>
-                <md-select
-                  name="filetype"
-                  id="filetype"
-                  v-model="form.filetype"
-                  md-dense
-                  :disabled="sending"
-                  required
-                >
-                  <md-option></md-option>
-                  <md-option value="cooler">Cooler</md-option>
-                  <md-option value="bedfile">Bedfile</md-option>
-                </md-select>
-                <span class="md-error">The filetype is required</span>
-              </md-field>
+                <md-checkbox v-model="form.public" class="top-margin">Public</md-checkbox>
             </div>
             <!-- file field -->
             <div class="md-layout-item md-small-size-100">
@@ -125,10 +110,15 @@ export default {
   name: "addDatasetForm",
   mixins: [validationMixin, apiMixin],
   data: () => ({
+    fileTypeMapping: {
+      "bed": "bedfile",
+      "mcool": "cooler",
+      "bw": "bigwig"
+    },
     form: {
       datasetName: null,
+      public: false,
       genotype: null,
-      filetype: null,
       file: null,
       description: null,
     },
@@ -137,23 +127,36 @@ export default {
     selectedFile: null
   }),
   validations: {
-    // alidators for the form
+    // validators for the form
     form: {
       datasetName: {
         required,
         minLength: minLength(3),
       },
+      public: {},
       genotype: {},
       file: {
-        required,
-      },
-      filetype: {
         required,
       },
       description: {
         maxLength: maxLength(80),
       },
     },
+  },
+  computed: {
+    selectedFileType: function() {
+      if (this.fileEnding){
+        return this.fileTypeMapping[this.fileEnding]
+      }
+      return undefined
+    },
+    fileEnding: function() {
+      if (this.form.file){
+        var splitFileName = this.form.file.split(".");
+        return splitFileName[splitFileName.length - 1]
+      }
+      return undefined
+    }
   },
   methods: {
     getValidationClass(fieldName) {
@@ -175,8 +178,8 @@ export default {
       this.form.datasetName = null;
       this.form.genotype = null;
       this.form.file = null;
-      this.form.filetype = null;
       this.form.description = null;
+      this.form.public = false;
     },
     saveDataset() {
       this.sending = true; // show progress bar
@@ -190,6 +193,8 @@ export default {
             formData.append(key, this.form[key]);
           }
       }
+      // add filetype
+      formData.append("filetype", this.selectedFileType)
       // API call including upload is made in the background
       this.postData("datasets/", formData);
       // show progress bar for 1.5 s
@@ -215,5 +220,8 @@ export default {
   top: 0;
   right: 0;
   left: 0;
+}
+.top-margin {
+  margin-top: 24px;
 }
 </style>

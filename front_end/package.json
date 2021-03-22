@@ -1,8 +1,8 @@
 {
-  "name": "test-project",
-  "version": "1.0.0",
-  "description": "SPA test",
-  "author": "mmitter",
+  "name": "hicognition-project",
+  "version": "0.2.0",
+  "description": "hicognition test",
+  "author": "mmitter, cchlanger",
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js --host 0.0.0.0",
@@ -10,6 +10,8 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "ajv": "^6.9.1",
+    "apexcharts": "^3.6.6",
     "axios": "^0.20.0",
     "d3": "^6.2.0",
     "piling.js": "^0.7.12",
@@ -20,6 +22,9 @@
     "vue-router": "^3.4.5",
     "vuelidate": "^0.7.5",
     "vuex": "^3.5.1"
+  },
+  "optionalDependencies": {
+    "fsevents": "2.3.1"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

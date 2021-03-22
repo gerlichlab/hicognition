@@ -25,6 +25,7 @@ class Config:
     REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
     WINDOW_SIZES = [200000, 300000, 400000]
     BIN_SIZES = [20000, 50000]  # In development mode, 10k hogs too much memory
+    STACKUP_THRESHOLD = 100 # Threshold of when stackup is downsampled
 
 
 class DevelopmentConfig(Config):
@@ -38,6 +39,7 @@ class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL") or "sqlite://"
     UPLOAD_DIR = "./tmp_test"
+    STACKUP_THRESHOLD = 10 # Threshold of when stackup is downsampled
 
 
 class ProductionConfig(Config):

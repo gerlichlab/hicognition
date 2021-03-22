@@ -68,10 +68,12 @@ class Dataset(db.Model):
     description = db.Column(db.String(81), default="undefined")
     file_path = db.Column(db.String(128), index=True)
     higlass_uuid = db.Column(db.String(64), index=True, unique=True)
+    public = db.Column(db.Boolean, default=False)
     filetype = db.Column(db.String(64), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     intervals = db.relationship("Intervals", backref="source_dataset", lazy="dynamic")
-    averageIntervalData = db.relationship("AverageIntervalData", backref="source_cooler", lazy="dynamic")
+    averageIntervalData = db.relationship("AverageIntervalData", backref="source_dataset", lazy="dynamic")
+    individualIntervalData = db.relationship("IndividualIntervalData", backref="source_dataset", lazy="dynamic")
     tasks = db.relationship('Task', backref='dataset', lazy='dynamic')
     processing_state = db.Column(db.String(64))
 
@@ -111,7 +113,8 @@ class Dataset(db.Model):
             "higlass_uuid": self.higlass_uuid,
             "filetype": self.filetype,
             "user_id": self.user_id,
-            "processing_state": self.processing_state
+            "processing_state": self.processing_state,
+            "public": self.public
         }
         return json_dataset
 
@@ -124,6 +127,7 @@ class Intervals(db.Model):
     higlass_uuid = db.Column(db.String(64), index=True)
     windowsize = db.Column(db.Integer, index=True)
     averageIntervalData = db.relationship("AverageIntervalData", backref="source_intervals", lazy="dynamic")
+    individualIntervalData = db.relationship("IndividualIntervalData", backref="source_intervals", lazy="dynamic")
 
     def __repr__(self):
         """Format print output."""
@@ -148,7 +152,7 @@ class AverageIntervalData(db.Model):
     name = db.Column(db.String(64), index=True)
     file_path = db.Column(db.String(128), index=True)
     value_type = db.Column(db.String(64))
-    cooler_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
 
     def __repr__(self):
@@ -162,11 +166,40 @@ class AverageIntervalData(db.Model):
             "binsize": self.binsize,
             "name": self.name,
             "file_path": self.file_path,
-            "cooler_id": self.cooler_id,
+            "dataset_id": self.dataset_id,
             "intervals_id": self.intervals_id,
             "value_type": self.value_type
         }
         return json_averageIntervalData
+
+
+class IndividualIntervalData(db.Model):
+    """Table to hold information and pointers to data for
+    values extracted at each instance held in the linked intervals dataset.
+    E.g. for bigwig stack-ups or displaying snipped Hi-C matrices."""
+    id = db.Column(db.Integer, primary_key=True)
+    binsize = db.Column(db.Integer)
+    name = db.Column(db.String(64), index=True)
+    file_path = db.Column(db.String(128), index=True)
+    file_path_small = db.Column(db.String(128), index=True) # location of downsampled file
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id")) # dataset, which was used for value extraction
+    intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id")) # intervals over which the values were extracted
+
+    def __repr__(self):
+        """Format print output."""
+        return f"<IndividualIntervalData {self.name}>"
+
+    def to_json(self):
+        """Formats json output."""
+        json_individualIntervalData = {
+            "id": self.id,
+            "binsize": self.binsize,
+            "name": self.name,
+            "file_path": self.file_path,
+            "dataset_id": self.dataset_id,
+            "intervals_id": self.intervals_id,
+        }
+        return json_individualIntervalData
 
 
 class Task(db.Model):
@@ -200,7 +233,7 @@ def all_tasks_finished(tasks):
     for task in tasks:
         job = task.get_rq_job()
         if job is None:
-            # if job is not in queue anymore, it finished succesfully
+            # if job is not in queue anymore, it finished successfully
             continue
         if not job.is_finished:
             return False

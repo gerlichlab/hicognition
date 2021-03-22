@@ -1,4 +1,5 @@
 from test_helpers import LoginTestCase
+import unittest
 from unittest.mock import patch
 
 # add path to import app
@@ -76,6 +77,7 @@ class TestGetDatasets(LoginTestCase):
                 "higlass_uuid": "asdf1234",
                 "id": 1,
                 "user_id": 1,
+                "public": False,
                 "processing_state": "finished",
             },
             {
@@ -87,6 +89,7 @@ class TestGetDatasets(LoginTestCase):
                 "higlass_uuid": "fdsa4321",
                 "id": 2,
                 "user_id": 1,
+                "public": False,
                 "processing_state": "finished",
             },
         ]
@@ -114,6 +117,7 @@ class TestGetDatasets(LoginTestCase):
                 "description": "undefined",
                 "filetype": "bedfile",
                 "higlass_uuid": "fdsa8765",
+                "public": False,
                 "id": 3,
                 "user_id": 1,
                 "processing_state": "finished",
@@ -145,6 +149,7 @@ class TestGetDatasets(LoginTestCase):
                 "higlass_uuid": "asdf1234",
                 "id": 1,
                 "user_id": 1,
+                "public": False,
                 "processing_state": "finished",
             },
             {
@@ -155,6 +160,7 @@ class TestGetDatasets(LoginTestCase):
                 "filetype": "cooler",
                 "higlass_uuid": "fdsa4321",
                 "id": 2,
+                "public": False,
                 "user_id": 1,
                 "processing_state": "finished",
             },
@@ -167,6 +173,7 @@ class TestGetDatasets(LoginTestCase):
                 "higlass_uuid": "fdsa8765",
                 "id": 3,
                 "user_id": 1,
+                "public": False,
                 "processing_state": "finished",
             },
         ]
@@ -248,6 +255,7 @@ class TestGetDatasets(LoginTestCase):
                 "filetype": "cooler",
                 "higlass_uuid": "asdf1234",
                 "id": 1,
+                "public": False,
                 "user_id": 1,
                 "processing_state": "finished",
             },
@@ -259,6 +267,7 @@ class TestGetDatasets(LoginTestCase):
                 "filetype": "bedfile",
                 "higlass_uuid": "fdsa8765",
                 "id": 3,
+                "public": False,
                 "user_id": 1,
                 "processing_state": "finished",
             },
@@ -280,6 +289,113 @@ class TestGetDatasets(LoginTestCase):
         # check response
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, [expected[1]])
+
+    def test_user_gets_public_dataset(self):
+        """Tests whether user is able to access public dataset."""
+        token1 = self.add_and_authenticate("test", "asdf")
+        token2 = self.add_and_authenticate("test2", "fdsa")
+        # add datasets
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            higlass_uuid="asdf1234",
+            filetype="cooler",
+            processing_state="finished",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/2",
+            higlass_uuid="fdsa4321",
+            filetype="cooler",
+            processing_state="finished",
+            user_id=2,
+        )
+        dataset3 = Dataset(
+            dataset_name="test3",
+            file_path="/test/path/3",
+            higlass_uuid="fdsa8765",
+            filetype="bedfile",
+            processing_state="finished",
+            user_id=1,
+        )
+        dataset4 = Dataset(
+            dataset_name="test4",
+            file_path="/test/path/4",
+            higlass_uuid="fdsa8768",
+            filetype="bedfile",
+            processing_state="finished",
+            public=True,
+            user_id=2,
+        )
+        db.session.add(dataset1)
+        db.session.add(dataset2)
+        db.session.add(dataset3)
+        db.session.add(dataset4)
+        db.session.commit()
+        # get datasets with user_token 1
+        token_headers = self.get_token_header(token1)
+        # get datasets
+        response = self.client.get(
+            "/api/datasets/", headers=token_headers, content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        expected = [
+            {
+                "dataset_name": "test1",
+                "file_path": "/test/path/1",
+                "genotype": "undefined",
+                "description": "undefined",
+                "filetype": "cooler",
+                "higlass_uuid": "asdf1234",
+                "id": 1,
+                "user_id": 1,
+                "public": False,
+                "processing_state": "finished",
+            },
+            {
+                "dataset_name": "test3",
+                "file_path": "/test/path/3",
+                "genotype": "undefined",
+                "description": "undefined",
+                "filetype": "bedfile",
+                "higlass_uuid": "fdsa8765",
+                "id": 3,
+                "user_id": 1,
+                "public": False,
+                "processing_state": "finished",
+            },
+            {
+                "dataset_name": "test4",
+                "file_path": "/test/path/4",
+                "genotype": "undefined",
+                "description": "undefined",
+                "filetype": "bedfile",
+                "higlass_uuid": "fdsa8768",
+                "id": 4,
+                "user_id": 2,
+                "public": True,
+                "processing_state": "finished",
+            },
+        ]
+        self.assertEqual(response.json, expected)
+        # check response for coolers
+        response = self.client.get(
+            "/api/datasets/cooler",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, [expected[0]])
+        # check response for bedfiles
+        response = self.client.get(
+            "/api/datasets/bed", headers=token_headers, content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, [expected[1], expected[2]])
 
 
 class TestProcessingStateIsUpdated(LoginTestCase):
@@ -330,6 +446,7 @@ class TestProcessingStateIsUpdated(LoginTestCase):
                 "description": "undefined",
                 "filetype": "cooler",
                 "higlass_uuid": "asdf1234",
+                "public": False,
                 "id": 1,
                 "user_id": 1,
                 "processing_state": "processing",
@@ -358,6 +475,7 @@ class TestProcessingStateIsUpdated(LoginTestCase):
                 "description": "undefined",
                 "filetype": "cooler",
                 "higlass_uuid": "asdf1234",
+                "public": False,
                 "id": 1,
                 "user_id": 1,
                 "processing_state": "finished",
@@ -386,6 +504,7 @@ class TestProcessingStateIsUpdated(LoginTestCase):
                 "description": "undefined",
                 "filetype": "cooler",
                 "higlass_uuid": "asdf1234",
+                "public": False,
                 "id": 1,
                 "user_id": 1,
                 "processing_state": "uploading",
@@ -418,9 +537,14 @@ class TestProcessingStateIsUpdated(LoginTestCase):
                 "description": "undefined",
                 "filetype": "cooler",
                 "higlass_uuid": "asdf1234",
+                "public": False,
                 "id": 1,
                 "user_id": 1,
                 "processing_state": "uploading",
             }
         ]
         self.assertEqual(response.json, expected)
+
+
+if __name__ == "__main__":
+    res = unittest.main(verbosity=3, exit=False)

@@ -12,6 +12,14 @@
                     <md-button class="md-raised md-accent" @click="setBigWig">BigWig</md-button>
                 </div>
             </div>
+            <bigwigWidget v-if="this.widgetType == 'BigWig'"
+                :height="height"
+                :width="width"
+                :empty="empty"
+                :id="id"
+                :collectionID="collectionID"
+                :rowIndex="rowIndex"
+                :colIndex="colIndex" />
             <hicWidget v-else-if="this.widgetType == 'Hi-C'"
                 :height="height"
                 :width="width"
@@ -36,11 +44,13 @@
 <script>
 import emptyWidget from "./widgets/emptyWidget"
 import hicWidget from "./widgets/hicWidget"
+import bigwigWidget from "./widgets/bigwigWidget"
 
 export default {
     name: 'widgetContainer',
     components: {
         emptyWidget,
+        bigwigWidget,
         hicWidget
     },
     data: function () {
@@ -58,7 +68,7 @@ export default {
         return {
             widgetType: widgetType,
             selectedType: undefined,
-            widgetTypes: ["Hi-C", "Chip-seq"]
+            widgetTypes: ["Hi-C", "BigWig"]
         }
     },
     props: {
@@ -81,9 +91,20 @@ export default {
             this.$store.commit("compare/setWidgetType", mutationObject);
             // set widget Type in this container
             this.widgetType = "Hi-C";
+            // TODO rename to something more concrete PileUp Widget?
         },
         setBigWig: function() {
-            console.log("Not implemented!");
+            // set widgetType in store
+            var mutationObject = {
+                    parentID: this.collectionID,
+                    id: this.id,
+                    widgetType: "BigWig"
+                };
+            this.$store.commit("compare/setWidgetType", mutationObject);
+            // set widget Type in this container
+            this.widgetType = "BigWig";
+            // TODO rename to something more concrete Stackup Widget?
+            //console.log("Not implemented!");
         },
         propagateDrop: function() {
             // propagates widgetDrop up to widgetCollection

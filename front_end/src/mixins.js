@@ -18,6 +18,7 @@ export var apiMixin = {
                 .then(response => {
                     // success, store token in vuex store
                     this.$store.commit("setToken", response.data.token);
+                    this.$store.commit("setUserId", response.data.user_id);
                 })
         },
         fetchData: function (url) {
@@ -39,8 +40,16 @@ export var apiMixin = {
                     "Authorization": `Basic ${encodedToken}`
                 }
             }).catch(error => {
-                // if error is returned, redirect to login page
-                this.$router.push("/login");
+                if (!error.response){
+                    alert(`HTTP error: ${error}`)
+                }
+                else if ((error.response.status == 403) || (error.response.status == 401)){
+                    // if forbidden error is returned, redirect to login page
+                    this.$router.push("/login");
+                }else{
+                    alert(`HTTP error: ${error.response.status} - Error: ${error.response.data.error} - ${error.response.data.message}`)
+                }
+                // TODO: 401 error writes unknown - unknown make and else for data.error os unknown
             })
         },
         postData: function (url, formData) {
@@ -62,8 +71,16 @@ export var apiMixin = {
                 "Content-Type": "multipart/form-data"
               },
             }).catch(error => {
-                // redirect to login upon error
-                this.$router.push("/login");
+                if (!error.response){
+                    alert(`HTTP error: ${error}`)
+                }
+                else if ((error.response.status == 403) || (error.response.status == 401)){
+                    // if forbidden error is returned, redirect to login page
+                    this.$router.push("/login");
+                }else{
+                    // this helps to look into [object Object] errors: ${JSON.stringify(error.response)}
+                    alert(`HTTP error: ${error.response.status} - Error: ${error.response.data.error} - ${error.response.data.message}`)
+                }
             });
         },
         deleteData: function(url) {
@@ -78,13 +95,20 @@ export var apiMixin = {
             }
             // base64 encoding of token
             var encodedToken = btoa(token + ":");
-            this.$http.delete(process.env.API_URL + url, {
+            return this.$http.delete(process.env.API_URL + url, {
                 headers: {
                     "Authorization": `Basic ${encodedToken}`
                 }
             }).catch(error => {
-                // if error is returned, redirect to login page
-                this.$router.push("/login");
+                if (!error.response){
+                    alert(`HTTP error: ${error}`)
+                }
+                else if ((error.response.status == 403) || (error.response.status == 401)){
+                    // if forbidden error is returned, redirect to login page
+                    this.$router.push("/login");
+                }else{
+                    alert(`HTTP error: ${error.response.status} - Error: ${error.response.data.error} - ${error.response.data.message}`)
+                }
             });
         }
     }

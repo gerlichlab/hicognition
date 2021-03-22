@@ -1,21 +1,21 @@
 <template>
   <div>
     <md-dialog :md-active.sync="showDialog">
-      <md-dialog-title>Preprocess Hi-C Dataset
+      <md-dialog-title>Preprocess BigWig Dataset
       </md-dialog-title>
-        <preprocessDatasetForm @close-dialog="$emit('close-dialog')"></preprocessDatasetForm>
+        <preprocessBigwigForm @close-dialog="$emit('close-dialog')"></preprocessBigwigForm>
     </md-dialog>
 
   </div>
 </template>
 
 <script>
-import preprocessDatasetForm from "./preprocessDatasetForm"
+import preprocessBigwigForm from "./preprocessBigwigForm"
 
 export default {
     name: 'DialogCustom',
     components: {
-       preprocessDatasetForm
+       preprocessBigwigForm
     },
     props: {
         dialog: Boolean

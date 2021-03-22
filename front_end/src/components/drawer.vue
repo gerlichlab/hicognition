@@ -13,7 +13,14 @@
         <md-button class="md-icon-button" @click="$emit('preprocess-dataset-click')">
           <md-icon>launch</md-icon>
         </md-button>
-        <span class="md-list-item-text">Preprocess Dataset</span>
+        <span class="md-list-item-text">Preprocess Hi-C</span>
+      </md-list-item>
+
+      <md-list-item>
+        <md-button class="md-icon-button" @click="$emit('preprocess-bigwig-click')">
+          <md-icon>launch</md-icon>
+        </md-button>
+        <span class="md-list-item-text">Preprocess BigWig</span>
       </md-list-item>
 
 

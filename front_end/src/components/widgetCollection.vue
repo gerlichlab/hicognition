@@ -189,9 +189,9 @@ export default {
         this.fetchData("datasets/").then((response) => {
                 // success, store datasets
                 this.$store.commit("setDatasets", response.data);
-                // update datasets; Only use completed datasets
+                // update datasets
                 this.regions = response.data.filter(
-                (element) => element.filetype == "bedfile" && (element.processing_state == "finished")
+                (element) => element.filetype == "bedfile"
                 );
             });
         },

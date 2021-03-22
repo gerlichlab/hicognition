@@ -185,7 +185,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             headers=token_headers,
             content_type="multipart/form-data",
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 400)
 
     @patch("app.models.User.launch_task")
     def test_cooler_pipeline_launched(self, mock_launch):
@@ -237,6 +237,173 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # check whether launch task has been called with the right arguments
         mock_launch.assert_called_with("pipeline_bed", "run bed preprocessing", 1)
 
+    def test_badform_no_datasetName(self):
+        """Tests whether form without datasetName is rejected"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "filetype": "bedfile",
+            "file": (io.BytesIO(b"abcdef"), "test.bed"),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 400)
+
+
+    def test_badform_no_fileObject(self):
+        """Tests whether form without file is rejected"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "datasetName": "test",
+            "filetype": "bedfile"
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_badform_bed_file_cooler_filetype(self):
+        """Tests whether form with bedfile, but cooler file-ending is rejected"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "datasetName": "test",
+            "filetype": "bedfile",
+            "file": (io.BytesIO(b"abcdef"), "test.mcool"),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_badform_cooler_file_bed_filetype(self):
+        """Tests whether form with cooler, but bed file-ending is rejected"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "datasetName": "test",
+            "filetype": "cooler",
+            "file": (io.BytesIO(b"abcdef"), "test.bed"),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_badform_not_fileending_rejected(self):
+        """Tests whether form with file without ending is rejected."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "datasetName": "test",
+            "filetype": "cooler",
+            "file": (io.BytesIO(b"abcdef"), "test"),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_public_flag_set_correctly_if_true(self):
+        """Tests whether form with file without ending is rejected."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "datasetName": "test",
+            "filetype": "bedfile",
+            "public": "True",
+            "file": (io.BytesIO(b"abcdef"), "test.bed"),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 200)
+        # check if public flag is set correctly
+        dataset = Dataset.query.get(1)
+        self.assertTrue(dataset.public)
+
+    def test_public_flag_set_correctly_if_false(self):
+        """Tests whether form with file without ending is rejected."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "datasetName": "test",
+            "filetype": "bedfile",
+            "public": "False",
+            "file": (io.BytesIO(b"abcdef"), "test.bed"),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 200)
+        # check if public flag is set correctly
+        dataset = Dataset.query.get(1)
+        self.assertFalse(dataset.public)
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)
