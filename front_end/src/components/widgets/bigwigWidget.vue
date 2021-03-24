@@ -53,9 +53,6 @@
                 </div>
             </div>
         </div>
-        <!-- <a>
-        WidgetData: {{ this.widgetData }}
-        </a> -->
         <stackup
             :stackupType="stackupType"
             v-if="showData"
@@ -75,7 +72,6 @@
 <script>
 import stackup from "../stackup";
 import { apiMixin } from "../../mixins";
-// import { group_iccf_obs_exp } from '../../functions';
 import { group_stackups } from "../../functions";
 
 export default {
