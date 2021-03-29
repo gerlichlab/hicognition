@@ -7,6 +7,7 @@ from requests.exceptions import HTTPError
 from test_helpers import TempDirTestCase
 from hicognition import higlass_interface
 
+
 class TestPreprocessDataset(TempDirTestCase):
     """Tests for preprocess_datasets function."""
 
@@ -20,7 +21,9 @@ class TestPreprocessDataset(TempDirTestCase):
             file_type="bedfile",
             chromsizes_path="./data/hg19.chrom.sizes",
             file_path="./tests/testfiles/test3_realData_large.bed",
-            output_path=os.path.join(TempDirTestCase.TEMP_PATH, "test3_realData_large.beddb"),
+            output_path=os.path.join(
+                TempDirTestCase.TEMP_PATH, "test3_realData_large.beddb"
+            ),
         )
         # test exit code
         self.assertEqual(exit_code, 0)
@@ -31,7 +34,9 @@ class TestPreprocessDataset(TempDirTestCase):
             file_type="bedfile",
             chromsizes_path="./data/hg19.chrom.sizes",
             file_path="./tests/testfiles/test_bad_file_format.bed",
-            output_path=os.path.join(TempDirTestCase.TEMP_PATH, "test_bad_file_format.beddb"),
+            output_path=os.path.join(
+                TempDirTestCase.TEMP_PATH, "test_bad_file_format.beddb"
+            ),
         )
         # test exit code
         self.assertNotEqual(exit_code, 0)
@@ -44,7 +49,9 @@ class TestPreprocessDataset(TempDirTestCase):
             file_type="bedfile",
             chromsizes_path="./data/hg19.chrom.sizes",
             file_path="./tests/testfiles/test3_realData_large_false.bed",
-            output_path=os.path.join(TempDirTestCase.TEMP_PATH, "test3_realData_large.beddb"),
+            output_path=os.path.join(
+                TempDirTestCase.TEMP_PATH, "test3_realData_large.beddb"
+            ),
         )
         self.assertNotEqual(exit_code, 0)
 
@@ -56,7 +63,9 @@ class TestPreprocessDataset(TempDirTestCase):
             file_type="awesomefile",
             chromsizes_path="./data/hg19.chrom.sizes",
             file_path="./tests/testfiles/test3_realData_large_false.bed",
-            output_path=os.path.join(TempDirTestCase.TEMP_PATH, "test3_realData_large.beddb"),
+            output_path=os.path.join(
+                TempDirTestCase.TEMP_PATH, "test3_realData_large.beddb"
+            ),
         )
         self.assertRaises(ValueError, badcall)
 
@@ -70,7 +79,9 @@ class TestPreprocessDataset(TempDirTestCase):
             file_type="bedpe",
             chromsizes_path="./data/hg19.chrom.sizes",
             file_path="./tests/testfiles/test2_realData_twocol.bedpe",
-            output_path=os.path.join(TempDirTestCase.TEMP_PATH, "test2_realData_twocol.bed2ddb")
+            output_path=os.path.join(
+                TempDirTestCase.TEMP_PATH, "test2_realData_twocol.bed2ddb"
+            ),
         )
         # test exit code
         self.assertEqual(exit_code, 0)
@@ -88,15 +99,26 @@ class TestAddData(TempDirTestCase):
         """Test to upload a beddb file."""
         # monkeypatch requests.post
         higlass_interface.requests.post = fake_post
-        fake_credentials = {"user": "asdf",
-                            "password": "1234"}
+        fake_credentials = {"user": "asdf", "password": "1234"}
         server = "test.com"
         file_path = "./tests/testfiles/test3_realData_large.beddb"
         name = "test1"
         file_type = "bedfile"
-        result = higlass_interface.add_tileset(file_type, file_path, server, fake_credentials, name)
-        self.assertEqual({'url': 'test.com', 'data': {'filetype': 'beddb', 'datatype': 'bedlike', 'coordSystem': 'hg19', 'name': 'test1'}},
-                         result)
+        result = higlass_interface.add_tileset(
+            file_type, file_path, server, fake_credentials, name
+        )
+        self.assertEqual(
+            {
+                "url": "test.com",
+                "data": {
+                    "filetype": "beddb",
+                    "datatype": "bedlike",
+                    "coordSystem": "hg19",
+                    "name": "test1",
+                },
+            },
+            result,
+        )
 
     def test_upload_coolerFile(self):
         """Test to upload a mcool file."""
@@ -105,15 +127,26 @@ class TestAddData(TempDirTestCase):
         # create fake file
         example_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test3.mcool")
         with open(example_file_path, "w") as f:
-            print('test', file=f)
-        fake_credentials = {"user": "asdf",
-                            "password": "1234"}
+            print("test", file=f)
+        fake_credentials = {"user": "asdf", "password": "1234"}
         server = "test.com"
         name = "test1"
         file_type = "cooler"
-        result = higlass_interface.add_tileset(file_type, example_file_path, server, fake_credentials, name)
-        self.assertEqual({'url': 'test.com', 'data': {'filetype': 'cooler', 'datatype': 'matrix', 'coordSystem': 'hg19', 'name': 'test1'}},
-                         result)
+        result = higlass_interface.add_tileset(
+            file_type, example_file_path, server, fake_credentials, name
+        )
+        self.assertEqual(
+            {
+                "url": "test.com",
+                "data": {
+                    "filetype": "cooler",
+                    "datatype": "matrix",
+                    "coordSystem": "hg19",
+                    "name": "test1",
+                },
+            },
+            result,
+        )
 
     def test_upload_bigwigFile(self):
         """Test to upload a mcool file."""
@@ -122,35 +155,53 @@ class TestAddData(TempDirTestCase):
         # create fake file
         example_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test3.bw")
         with open(example_file_path, "w") as f:
-            print('test', file=f)
-        fake_credentials = {"user": "asdf",
-                            "password": "1234"}
+            print("test", file=f)
+        fake_credentials = {"user": "asdf", "password": "1234"}
         server = "test.com"
         name = "test1"
         file_type = "bigwig"
-        result = higlass_interface.add_tileset(file_type, example_file_path, server, fake_credentials, name)
-        self.assertEqual({'url': 'test.com', 'data': {'filetype': 'bigwig', 'datatype': 'vector', 'coordSystem': 'hg19', 'name': 'test1'}},
-                         result)
+        result = higlass_interface.add_tileset(
+            file_type, example_file_path, server, fake_credentials, name
+        )
+        self.assertEqual(
+            {
+                "url": "test.com",
+                "data": {
+                    "filetype": "bigwig",
+                    "datatype": "vector",
+                    "coordSystem": "hg19",
+                    "name": "test1",
+                },
+            },
+            result,
+        )
 
     def test_bad_response(self):
         """Test correct response to bad request."""
         # monkeypatch requests.post
         higlass_interface.requests.post = raising_post
-        fake_credentials = {"user": "asdf",
-                            "password": "1234"}
+        fake_credentials = {"user": "asdf", "password": "1234"}
         server = "test.com"
         file_path = "./tests/testfiles/test3_realData_large.beddb"
         name = "test1"
         file_type = "bedfile"
-        bad_call = partial(higlass_interface.add_tileset, file_type, file_path, server, fake_credentials, name)
+        bad_call = partial(
+            higlass_interface.add_tileset,
+            file_type,
+            file_path,
+            server,
+            fake_credentials,
+            name,
+        )
         self.assertRaises(HTTPError, bad_call)
 
 
 # helper classes/functions
 
 
-class FakeRespone():
+class FakeRespone:
     """Fake response class to test add tileset"""
+
     def __init__(self, status_code, text):
         """Constructor of fake respone class"""
         self.status_code = status_code

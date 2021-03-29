@@ -329,7 +329,7 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_pileup_iccf,
         mock_export,
         mock_add_db,
-        mock_uuid
+        mock_uuid,
     ):
         """Tests whether conversion function as df for java script is called correctly"""
         test_df_interval = pd.DataFrame({0: ["chr1", "chr1"], 1: [500, 1500]})
@@ -342,8 +342,9 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
         perform_pileup(self.dataset, self.intervals1, 10000, arms, "ICCF")
         # check whether get_expected was called
-        mock_export.assert_called_with("testCooler", self.app.config["UPLOAD_DIR"] + "/asdf.csv")
-
+        mock_export.assert_called_with(
+            "testCooler", self.app.config["UPLOAD_DIR"] + "/asdf.csv"
+        )
 
     @patch("app.pipeline_steps.uuid.uuid4")
     @patch("app.pipeline_steps.add_pileup_db")
@@ -364,7 +365,7 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_pileup_iccf,
         mock_export,
         mock_add_db,
-        mock_uuid
+        mock_uuid,
     ):
         """Tests whether conversion function as df for java script is called correctly"""
         test_df_interval = pd.DataFrame({0: ["chr1", "chr1"], 1: [500, 1500]})
@@ -377,7 +378,13 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
         perform_pileup(self.dataset, self.intervals1, 10000, arms, "ICCF")
         # check whether get_expected was called
-        mock_add_db.assert_called_with(self.app.config["UPLOAD_DIR"] + "/asdf.csv", 10000, self.intervals1.id, self.dataset.id, "ICCF")
+        mock_add_db.assert_called_with(
+            self.app.config["UPLOAD_DIR"] + "/asdf.csv",
+            10000,
+            self.intervals1.id,
+            self.dataset.id,
+            "ICCF",
+        )
 
 
 if __name__ == "__main__":

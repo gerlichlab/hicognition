@@ -66,7 +66,9 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         self.assertEqual(expected, actual)
 
     @patch("app.models.User.launch_task")
-    def test_dataset_added_correctly_cooler_wo_description_and_genotype(self, mock_launch):
+    def test_dataset_added_correctly_cooler_wo_description_and_genotype(
+        self, mock_launch
+    ):
         """Tests whether a cooler dataset is added
         correctly to the Dataset table following
         a post request."""
@@ -234,7 +236,6 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-
     def test_badform_no_fileObject(self):
         """Tests whether form without file is rejected"""
         # authenticate
@@ -244,10 +245,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # add content-type
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
-        data = {
-            "datasetName": "test",
-            "filetype": "bedfile"
-        }
+        data = {"datasetName": "test", "filetype": "bedfile"}
         # dispatch post request
         response = self.client.post(
             "/api/datasets/",
@@ -379,6 +377,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # check if public flag is set correctly
         dataset = Dataset.query.get(1)
         self.assertFalse(dataset.public)
+
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

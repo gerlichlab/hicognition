@@ -3,17 +3,18 @@ import unittest
 import os
 import shutil
 from base64 import b64encode
+
 # add path to import app
 import sys
+
 sys.path.append("./")
 from app import create_app, db
 from app.models import User
 
 
-
 class TempDirTestCase(unittest.TestCase):
-    """Will create a temporary directory in the current working 
-    directory once before all tests are run that is available via 
+    """Will create a temporary directory in the current working
+    directory once before all tests are run that is available via
     self.tempdir. Removes the directory and all content after
     all tests have been run."""
 
@@ -33,6 +34,7 @@ class TempDirTestCase(unittest.TestCase):
 class LoginTestCase(unittest.TestCase):
     """Testcase that implements generating headers
     for HTTPBasicAuth and creating a flask app."""
+
     def setUp(self):
         self.app = create_app("testing")
         self.app_context = self.app.app_context()

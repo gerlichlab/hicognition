@@ -315,6 +315,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
             test_dataframe, payload_data.drop("string_column", axis="columns")
         )
 
+
 class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
     """Tests whether setting relevant metadata fields with key-value-pairs
     where key is a valid metadata columns and the value is the wanted display name
@@ -390,7 +391,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_non_existing_field(self):
-        """Tests whether invalid error is raised if 
+        """Tests whether invalid error is raised if
         field specified does not exist in the metadata."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -469,6 +470,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         actual = metadata.metadata_fields
         expected = json.dumps({"size": "Size", "start": "Start"})
         self.assertEqual(actual, expected)
+
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

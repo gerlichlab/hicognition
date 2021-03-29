@@ -95,7 +95,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1,dataset2, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
         db.session.commit()
         # make query for non-existent intervals
         response = self.client.get(
@@ -273,7 +273,9 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, dataset3, intervals1, averageIntervalData])
+        db.session.add_all(
+            [dataset1, dataset2, dataset3, intervals1, averageIntervalData]
+        )
         db.session.commit()
         # make query for forbidden cooler
         response = self.client.get(
@@ -330,7 +332,9 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, dataset3, intervals1, intervals2, averageIntervalData])
+        db.session.add_all(
+            [dataset1, dataset2, dataset3, intervals1, intervals2, averageIntervalData]
+        )
         db.session.commit()
         # make query for forbidden intervals
         response = self.client.get(

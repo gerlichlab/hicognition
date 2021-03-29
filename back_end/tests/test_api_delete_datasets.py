@@ -23,16 +23,36 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         """adds test datasets to db"""
         # create owned data_set cooler
         file_path_1 = self.create_empty_file_in_tempdir("test1.mcool")
-        dataset1 = Dataset(id=1, file_path=file_path_1, filetype="cooler", user_id=1,)
+        dataset1 = Dataset(
+            id=1,
+            file_path=file_path_1,
+            filetype="cooler",
+            user_id=1,
+        )
         # create not owned data_set
         file_path_2 = self.create_empty_file_in_tempdir("test2.mcool")
-        dataset2 = Dataset(id=2, file_path=file_path_2, filetype="cooler", user_id=2,)
+        dataset2 = Dataset(
+            id=2,
+            file_path=file_path_2,
+            filetype="cooler",
+            user_id=2,
+        )
         # create owned data_set bed
         file_path_3 = self.create_empty_file_in_tempdir("test1.bed")
-        dataset3 = Dataset(id=3, file_path=file_path_3, filetype="bedfile", user_id=1,)
+        dataset3 = Dataset(
+            id=3,
+            file_path=file_path_3,
+            filetype="bedfile",
+            user_id=1,
+        )
         # create not owned data_set bed
         file_path_4 = self.create_empty_file_in_tempdir("test2.bed")
-        dataset4 = Dataset(id=4, file_path=file_path_4, filetype="bedfile", user_id=2,)
+        dataset4 = Dataset(
+            id=4,
+            file_path=file_path_4,
+            filetype="bedfile",
+            user_id=2,
+        )
         # create Intervals for owned data_set
         file_path_pr_1 = self.create_empty_file_in_tempdir("test1.bedpe")
         intervals_1 = Intervals(id=1, dataset_id=3, file_path=file_path_pr_1)
@@ -129,7 +149,9 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset_ids, {2, 3, 4})
         intervals_ids = set(entry.id for entry in Intervals.query.all())
         self.assertEqual(intervals_ids, {1, 2})
-        averageIntervalData_ids = set(entry.id for entry in AverageIntervalData.query.all())
+        averageIntervalData_ids = set(
+            entry.id for entry in AverageIntervalData.query.all()
+        )
         self.assertEqual(averageIntervalData_ids, {2})
         # check temp_idr state
         files_tempdir = set(os.listdir(TempDirTestCase.TEMP_PATH))
@@ -139,7 +161,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             "test2.bed",
             "test1.bedpe",
             "test2.bedpe",
-            "test2.csv"
+            "test2.csv",
         }
         self.assertEqual(files_tempdir, expected)
 
@@ -163,7 +185,9 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset_ids, {1, 2, 4})
         intervals_ids = set(entry.id for entry in Intervals.query.all())
         self.assertEqual(intervals_ids, {2})
-        averageIntervalData_ids = set(entry.id for entry in AverageIntervalData.query.all())
+        averageIntervalData_ids = set(
+            entry.id for entry in AverageIntervalData.query.all()
+        )
         self.assertEqual(averageIntervalData_ids, {2})
         # check temp_idr state
         files_tempdir = set(os.listdir(TempDirTestCase.TEMP_PATH))
@@ -172,7 +196,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             "test2.mcool",
             "test2.bed",
             "test2.bedpe",
-            "test2.csv"
+            "test2.csv",
         }
         self.assertEqual(files_tempdir, expected)
 
@@ -183,7 +207,13 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         token_headers = self.get_token_header(token)
         # add dataset that is processing
         file_path_1 = self.create_empty_file_in_tempdir("test1.mcool")
-        dataset1 = Dataset(id=1, file_path=file_path_1, filetype="cooler", user_id=1, processing_state="processing")
+        dataset1 = Dataset(
+            id=1,
+            file_path=file_path_1,
+            filetype="cooler",
+            user_id=1,
+            processing_state="processing",
+        )
         db.session.add(dataset1)
         db.session.commit()
         # delete data set
@@ -201,7 +231,13 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         # create token_headers
         token_headers = self.get_token_header(token)
-        dataset1 = Dataset(id=1, file_path="/code/tmp/bad_file_path", filetype="cooler", user_id=1, processing_state="finished")
+        dataset1 = Dataset(
+            id=1,
+            file_path="/code/tmp/bad_file_path",
+            filetype="cooler",
+            user_id=1,
+            processing_state="finished",
+        )
         db.session.add(dataset1)
         db.session.commit()
         # delete data set
@@ -224,7 +260,13 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         # create token_headers
         token_headers = self.get_token_header(token)
-        dataset1 = Dataset(id=1, file_path=None, filetype="cooler", user_id=1, processing_state="finished")
+        dataset1 = Dataset(
+            id=1,
+            file_path=None,
+            filetype="cooler",
+            user_id=1,
+            processing_state="finished",
+        )
         db.session.add(dataset1)
         db.session.commit()
         # delete data set
@@ -246,7 +288,14 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         # create token_headers
         token_headers = self.get_token_header(token)
-        dataset1 = Dataset(id=1, file_path=None, filetype="cooler", user_id=2, processing_state="finished", public=True)
+        dataset1 = Dataset(
+            id=1,
+            file_path=None,
+            filetype="cooler",
+            user_id=2,
+            processing_state="finished",
+            public=True,
+        )
         db.session.add(dataset1)
         db.session.commit()
         # delete data set
@@ -262,7 +311,14 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         # create token_headers
         token_headers = self.get_token_header(token)
-        dataset1 = Dataset(id=1, file_path=None, filetype="cooler", user_id=1, processing_state="finished", public=True)
+        dataset1 = Dataset(
+            id=1,
+            file_path=None,
+            filetype="cooler",
+            user_id=1,
+            processing_state="finished",
+            public=True,
+        )
         db.session.add(dataset1)
         db.session.commit()
         # delete data set

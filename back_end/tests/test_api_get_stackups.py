@@ -36,14 +36,12 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf12345",
             filetype="bigwig",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            higlass_uuid="asdf123456",
             filetype="bedfile",
             user_id=1,
         )
@@ -51,7 +49,6 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         individualIntervalData = IndividualIntervalData(
@@ -60,7 +57,7 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
             file_path="testPath1",
             file_path_small="testPath1_small",
             dataset_id=1,
-            intervals_id=1
+            intervals_id=1,
         )
         db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
@@ -82,14 +79,12 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="bigwig",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=1,
         )
@@ -97,7 +92,6 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         individualIntervalData = IndividualIntervalData(
@@ -106,7 +100,7 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
             file_path="testPath1",
             file_path_small="testPath1_small",
             dataset_id=1,
-            intervals_id=1
+            intervals_id=1,
         )
         db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
@@ -127,14 +121,12 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="bigwig",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=1,
         )
@@ -142,7 +134,7 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
+
             windowsize=200000,
         )
         individualIntervalData = IndividualIntervalData(
@@ -151,13 +143,15 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
             file_path="testPath1",
             file_path_small="testPath1_small",
             dataset_id=1,
-            intervals_id=1
+            intervals_id=1,
         )
         db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
         # make query with no parameters
         response = self.client.get(
-            "/api/individualIntervalData/", headers=token_headers, content_type="application/json",
+            "/api/individualIntervalData/",
+            headers=token_headers,
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
@@ -170,14 +164,12 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="bigwig",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=1,
         )
@@ -185,7 +177,6 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         individualIntervalData = IndividualIntervalData(
@@ -194,7 +185,7 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
             file_path="testPath1",
             file_path_small="testPath1_small",
             dataset_id=1,
-            intervals_id=1
+            intervals_id=1,
         )
         db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
@@ -215,14 +206,12 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="bigwig",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=1,
         )
@@ -230,7 +219,6 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         individualIntervalData = IndividualIntervalData(
@@ -239,7 +227,7 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
             file_path="testPath1",
             file_path_small="testPath1_small",
             dataset_id=1,
-            intervals_id=1
+            intervals_id=1,
         )
         db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
@@ -264,14 +252,12 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="bigwig",
             user_id=2,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=1,
         )
@@ -279,7 +265,6 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         individualIntervalData = IndividualIntervalData(
@@ -312,21 +297,18 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="bigwig",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=2,
         )
         dataset3 = Dataset(
             dataset_name="test3",
             file_path="/test/path/3",
-            higlass_uuid="asdf123456",
             filetype="bedfile",
             user_id=1,
         )
@@ -334,14 +316,12 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         intervals2 = Intervals(
             name="testRegion2",
             dataset_id=3,
             file_path="test_path_2.bedd2db",
-            higlass_uuid="testHiglass2",
             windowsize=200000,
         )
         individualIntervalData = IndividualIntervalData(
@@ -350,13 +330,24 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
             file_path="testPath1",
             file_path_small="testPath1_small",
             dataset_id=1,
-            intervals_id=1
+            intervals_id=1,
         )
-        db.session.add_all([dataset1, dataset2, dataset3, intervals1, intervals2, individualIntervalData])
+        db.session.add_all(
+            [
+                dataset1,
+                dataset2,
+                dataset3,
+                intervals1,
+                intervals2,
+                individualIntervalData,
+            ]
+        )
         db.session.commit()
         # make query with forbidden interval
         response = self.client.get(
-            "/api/individualIntervalData/?dataset_id=1&intervals_id=1", headers=token_headers, content_type="application/json",
+            "/api/individualIntervalData/?dataset_id=1&intervals_id=1",
+            headers=token_headers,
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
@@ -370,7 +361,6 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="bigwig",
             public=True,
             user_id=2,
@@ -378,7 +368,6 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            higlass_uuid="asdf12342",
             filetype="bigwig",
             public=True,
             user_id=2,
@@ -386,7 +375,6 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
         dataset3 = Dataset(
             dataset_name="test3",
             file_path="/test/path/3",
-            higlass_uuid="asdf123453",
             filetype="bedfile",
             public=True,
             user_id=2,
@@ -394,7 +382,6 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
         dataset4 = Dataset(
             dataset_name="test4",
             file_path="/test/path/4",
-            higlass_uuid="asdf123454",
             filetype="bedfile",
             public=True,
             user_id=2,
@@ -403,14 +390,12 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=3,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         intervals2 = Intervals(
             name="testRegion2",
             dataset_id=4,
             file_path="test_path_2.bedd2db",
-            higlass_uuid="testHiglass2",
             windowsize=200000,
         )
         individualIntervalData1 = IndividualIntervalData(
@@ -462,13 +447,17 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
         db.session.commit()
         # make query 1
         response = self.client.get(
-            "/api/individualIntervalData/?dataset_id=1&intervals_id=1", headers=token_headers, content_type="application/json",
+            "/api/individualIntervalData/?dataset_id=1&intervals_id=1",
+            headers=token_headers,
+            content_type="application/json",
         )
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0]["id"], 1)
         # make query 2
         response = self.client.get(
-            "/api/individualIntervalData/?dataset_id=1&intervals_id=2", headers=token_headers, content_type="application/json",
+            "/api/individualIntervalData/?dataset_id=1&intervals_id=2",
+            headers=token_headers,
+            content_type="application/json",
         )
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0]["id"], 2)
@@ -510,14 +499,12 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="bigwig",
             user_id=5,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=1,
         )
@@ -525,7 +512,6 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         individualIntervalData = IndividualIntervalData(
@@ -540,7 +526,9 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/individualIntervalData/1/", headers=token_headers, content_type="application/json",
+            "/api/individualIntervalData/1/",
+            headers=token_headers,
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
@@ -554,14 +542,12 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="bigwig",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/1",
-            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=5,
         )
@@ -569,7 +555,6 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         individualIntervalData = IndividualIntervalData(
@@ -584,10 +569,13 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make request for bigwig with forbidden interval
         response = self.client.get(
-            "/api/individualIntervalData/1/", headers=token_headers, content_type="application/json",
+            "/api/individualIntervalData/1/",
+            headers=token_headers,
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
-#TODO:
+
+    # TODO:
     def test_correct_data_returned(self):
         """Correct data is returned from an owned individualIntervalData"""
         # authenticate
@@ -604,20 +592,18 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
         )
         arr = np.array([[1.66, 2.2, 3.8, 4.5]])
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
-        np.save(data_path,arr)
+        np.save(data_path, arr)
 
         # add data
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="bigwig",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=1,
         )
@@ -625,22 +611,23 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         individualIntervalData = IndividualIntervalData(
             name="testIndividualIntervalData1",
             binsize=10000,
-            file_path= "data_path_big",
-            file_path_small= data_path,
+            file_path="data_path_big",
+            file_path_small=data_path,
             dataset_id=1,
-            intervals_id=1
+            intervals_id=1,
         )
         db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/individualIntervalData/1/", headers=token_headers, content_type="application/json",
+            "/api/individualIntervalData/1/",
+            headers=token_headers,
+            content_type="application/json",
         )
         expected = test_data.to_json()
         self.assertEqual(response.json, expected)
@@ -661,13 +648,12 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
         )
         arr = np.array([[1.66, 2.2, 3.8, 4.5]])
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
-        np.save(data_path,arr)
+        np.save(data_path, arr)
 
         # add data
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="bigwig",
             public=True,
             user_id=2,
@@ -675,7 +661,6 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
         dataset2 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf12345",
             filetype="bedfile",
             public=True,
             user_id=2,
@@ -684,7 +669,6 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         individualIntervalData = IndividualIntervalData(
@@ -693,13 +677,15 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
             file_path="data_path_big",
             file_path_small=data_path,
             dataset_id=1,
-            intervals_id=1
+            intervals_id=1,
         )
         db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/individualIntervalData/1/", headers=token_headers, content_type="application/json",
+            "/api/individualIntervalData/1/",
+            headers=token_headers,
+            content_type="application/json",
         )
         expected = test_data.to_json()
         self.assertEqual(response.json, expected)

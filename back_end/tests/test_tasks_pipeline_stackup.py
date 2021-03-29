@@ -217,9 +217,7 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
         file_path = IndividualIntervalData.query.get(
             1
         ).file_path  # filepath of stackup file
-        file_path_small = IndividualIntervalData.query.get(
-            1
-        ).file_path_small 
+        file_path_small = IndividualIntervalData.query.get(1).file_path_small
         loaded_dataset_full = np.load(file_path)
         loaded_dataset_small = np.load(file_path_small)
         self.assertTrue(np.all(np.isclose(loaded_dataset_full, loaded_dataset_small)))
@@ -232,9 +230,9 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
         """Tests whether large example (testing threshold is 10) is downsampled"""
         test_df_interval = pd.DataFrame(
             {
-                "chrom": ["chr1"]*20,
-                "start": [100000]*20,
-                "end": [200000]*20,
+                "chrom": ["chr1"] * 20,
+                "start": [100000] * 20,
+                "end": [200000] * 20,
             }
         )
         mock_read_csv.return_value = test_df_interval
@@ -246,9 +244,7 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
         file_path = IndividualIntervalData.query.get(
             1
         ).file_path  # filepath of stackup file
-        file_path_small = IndividualIntervalData.query.get(
-            1
-        ).file_path_small 
+        file_path_small = IndividualIntervalData.query.get(1).file_path_small
         loaded_dataset_full = np.load(file_path)
         loaded_dataset_small = np.load(file_path_small)
         self.assertEqual(loaded_dataset_full.shape[0], 20)

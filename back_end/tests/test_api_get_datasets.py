@@ -100,7 +100,9 @@ class TestGetDatasets(LoginTestCase):
         self.add_test_datasets()
         # get datasets
         response = self.client.get(
-            "/api/datasets/bed", headers=token_headers, content_type="application/json",
+            "/api/datasets/bed",
+            headers=token_headers,
+            content_type="application/json",
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -129,7 +131,9 @@ class TestGetDatasets(LoginTestCase):
         self.add_test_datasets()
         # get datasets
         response = self.client.get(
-            "/api/datasets/", headers=token_headers, content_type="application/json",
+            "/api/datasets/",
+            headers=token_headers,
+            content_type="application/json",
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -229,7 +233,9 @@ class TestGetDatasets(LoginTestCase):
         token_headers = self.get_token_header(token1)
         # get datasets
         response = self.client.get(
-            "/api/datasets/", headers=token_headers, content_type="application/json",
+            "/api/datasets/",
+            headers=token_headers,
+            content_type="application/json",
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -269,7 +275,9 @@ class TestGetDatasets(LoginTestCase):
         self.assertEqual(response.json, [expected[0]])
         # check response for bedfiles
         response = self.client.get(
-            "/api/datasets/bed", headers=token_headers, content_type="application/json",
+            "/api/datasets/bed",
+            headers=token_headers,
+            content_type="application/json",
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -318,7 +326,9 @@ class TestGetDatasets(LoginTestCase):
         token_headers = self.get_token_header(token1)
         # get datasets
         response = self.client.get(
-            "/api/datasets/", headers=token_headers, content_type="application/json",
+            "/api/datasets/",
+            headers=token_headers,
+            content_type="application/json",
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -369,7 +379,9 @@ class TestGetDatasets(LoginTestCase):
         self.assertEqual(response.json, [expected[0]])
         # check response for bedfiles
         response = self.client.get(
-            "/api/datasets/bed", headers=token_headers, content_type="application/json",
+            "/api/datasets/bed",
+            headers=token_headers,
+            content_type="application/json",
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -394,7 +406,7 @@ class TestProcessingStateIsUpdated(LoginTestCase):
     @patch("app.models.any_tasks_failed")
     @patch("app.models.all_tasks_finished")
     def test_processing_when_task(self, mock_finished, mock_failed):
-        """Tests whether processing status is set correctly 
+        """Tests whether processing status is set correctly
         when there is a running task for dataset."""
         # set return value of mock_finished and mock_failed
         mock_finished.return_value = False
@@ -411,7 +423,9 @@ class TestProcessingStateIsUpdated(LoginTestCase):
         db.session.commit()
         # get datasets
         response = self.client.get(
-            "/api/datasets/", headers=token_headers, content_type="application/json",
+            "/api/datasets/",
+            headers=token_headers,
+            content_type="application/json",
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -439,7 +453,9 @@ class TestProcessingStateIsUpdated(LoginTestCase):
         self.add_test_datasets("processing")
         # get datasets
         response = self.client.get(
-            "/api/datasets/", headers=token_headers, content_type="application/json",
+            "/api/datasets/",
+            headers=token_headers,
+            content_type="application/json",
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -467,7 +483,9 @@ class TestProcessingStateIsUpdated(LoginTestCase):
         self.add_test_datasets("uploading")
         # get datasets
         response = self.client.get(
-            "/api/datasets/", headers=token_headers, content_type="application/json",
+            "/api/datasets/",
+            headers=token_headers,
+            content_type="application/json",
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -499,7 +517,9 @@ class TestProcessingStateIsUpdated(LoginTestCase):
         db.session.commit()
         # get datasets
         response = self.client.get(
-            "/api/datasets/", headers=token_headers, content_type="application/json",
+            "/api/datasets/",
+            headers=token_headers,
+            content_type="application/json",
         )
         # check response
         self.assertEqual(response.status_code, 200)
