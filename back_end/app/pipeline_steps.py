@@ -8,102 +8,42 @@ import pandas as pd
 import numpy as np
 from ngs import HiCTools as HT
 import cooler
-from hicognition import higlass_interface
+from hicognition import io_helpers
 import bbi
 from requests.exceptions import HTTPError
 from rq import get_current_job
 from . import db
-from .models import Dataset, Intervals, AverageIntervalData, Task, IndividualIntervalData
+from .models import (
+    Dataset,
+    Intervals,
+    AverageIntervalData,
+    Task,
+    IndividualIntervalData,
+)
 
 # get logger
 log = logging.getLogger("rq.worker")
 
 
-def bed_preprocess_pipeline_step(dataset_id):
-    """Runs bed-preprocess pipeline step of pipeline_bed:
-    - run clodius on bedfile
-    - upload clodius result to higlass
-    - store higlass_uuid in Dataset db entry
-    """
-    log.info(f"  Running bed-preprocessing for ID {dataset_id}")
-    # get dataset, this is not sorted, not preprocessed for higlass
-    current_dataset = Dataset.query.get(dataset_id)
-    # preprocess with clodius
-    log.info("Clodius preprocessing...")
-    dataset_file = current_dataset.file_path
-    output_path = dataset_file + ".beddb"
-    exit_code = higlass_interface.preprocess_dataset(
-        "bedfile", current_app.config["CHROM_SIZES"], dataset_file, output_path
-    )
-    if exit_code != 0:
-        log.error("Clodius failed!")
-        raise ValueError("Clodius failed!")
-    # add to higlass
-    log.info("      Add to higlass...")
-    credentials = {
-        "user": current_app.config["HIGLASS_USER"],
-        "password": current_app.config["HIGLASS_PWD"],
-    }
-    try:
-        result = higlass_interface.add_tileset(
-            "bedfile",
-            output_path,
-            current_app.config["HIGLASS_API"],
-            credentials,
-            current_dataset.dataset_name,
-        )
-    except HTTPError:
-        log.error("Higlass upload of bedfile failed")
-        return
-    # upload succeeded, add uuid
-    uuid = result["uuid"]
-    current_dataset.higlass_uuid = uuid
-    db.session.commit()
-    log.info("      Success!")
-
-
-def bedpe_preprocess_pipeline_step(file_path, dataset_id=None, windowsize=None):
+def bed_preprocess_pipeline_step(dataset_id, windowsize):
     """
     Performs bedpe preprocessing pipeline step:
     * run clodius on bedpe file
     * upload result to higlass
     * add Intervals dataset entry
     """
-    log.info(f"  Bedpe-preprocess: {file_path} with {windowsize}")
-    # run clodius
-    log.info(f"     Running clodius...")
-    clodius_output = file_path + ".bed2ddb"
-    exit_code = higlass_interface.preprocess_dataset(
-        "bedpe", current_app.config["CHROM_SIZES"], file_path, clodius_output
-    )
-    if exit_code != 0:
-        log.error("Clodius failed!")
-        raise ValueError("Clodius failed!")
-    # add to higlass
-    log.info("      Adding to higlass...")
-    credentials = {
-        "user": current_app.config["HIGLASS_USER"],
-        "password": current_app.config["HIGLASS_PWD"],
-    }
-    dataset_name = clodius_output.split("/")[-1]
-    try:
-        result = higlass_interface.add_tileset(
-            "bedpe",
-            clodius_output,
-            current_app.config["HIGLASS_API"],
-            credentials,
-            dataset_name,
-        )
-    except HTTPError:
-        log.error("Higlass upload failed!")
-        return
-    # upload succeeded, add things to database
-    uuid = result["uuid"]
+    log.info(f"  Converting to bedpe: {dataset_id} with {windowsize}")
+    # get database object
+    dataset = Dataset.query.get(dataset_id)
+    file_path = dataset.file_path
+    # generate bedpe file
+    bedpe_file = file_path + f".{windowsize}" + ".bedpe"
+    io_helpers.convert_bed_to_bedpe(file_path, bedpe_file, windowsize)
+    # interval generation succeeded, commit to database
     new_entry = Intervals(
         dataset_id=dataset_id,
-        name=dataset_name,
-        file_path=clodius_output,
-        higlass_uuid=uuid,
+        name=bedpe_file.split(os.sep)[-1],
+        file_path=bedpe_file,
         windowsize=windowsize,
     )
     db.session.add(new_entry)
@@ -178,7 +118,8 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
     stackup_regions = pd.DataFrame(
         {
             "chrom": regions["chrom"],
-            "start": regions["pos"] - window_size, # regions outside of chromosomes will be filled with NaN by pybbi
+            "start": regions["pos"]
+            - window_size,  # regions outside of chromosomes will be filled with NaN by pybbi
             "end": regions["pos"] + window_size,
         }
     )
@@ -191,7 +132,7 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
         starts=stackup_regions["start"].to_list(),
         ends=stackup_regions["end"].to_list(),
         bins=bin_number,
-        missing=np.nan
+        missing=np.nan,
     )
     # save full length array to file
     log.info("      Writing output...")
@@ -207,10 +148,14 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
         np.random.seed(42)
         # subsmple
         index = np.arange(len(stackup_regions))
-        sub_sample_index = np.random.choice(index, current_app.config["STACKUP_THRESHOLD"])
+        sub_sample_index = np.random.choice(
+            index, current_app.config["STACKUP_THRESHOLD"]
+        )
         downsampled_array = stackup_array[sub_sample_index, :]
         file_name_small = uuid.uuid4().hex + ".npy"
-        file_path_small = os.path.join(current_app.config["UPLOAD_DIR"], file_name_small)
+        file_path_small = os.path.join(
+            current_app.config["UPLOAD_DIR"], file_name_small
+        )
         np.save(file_path_small, downsampled_array)
     # add to database
     log.info("      Adding database entry...")
@@ -232,7 +177,9 @@ def export_df_for_js(np_array, file_path):
     output_molten.to_csv(file_path, index=False)
 
 
-def add_stackup_db(file_path, file_path_small ,binsize, intervals_id, bigwig_dataset_id):
+def add_stackup_db(
+    file_path, file_path_small, binsize, intervals_id, bigwig_dataset_id
+):
     """Adds stackup to database"""
     new_entry = IndividualIntervalData(
         binsize=int(binsize),
@@ -240,10 +187,11 @@ def add_stackup_db(file_path, file_path_small ,binsize, intervals_id, bigwig_dat
         file_path=file_path,
         file_path_small=file_path_small,
         intervals_id=intervals_id,
-        dataset_id=bigwig_dataset_id
+        dataset_id=bigwig_dataset_id,
     )
     db.session.add(new_entry)
     db.session.commit()
+
 
 def add_pileup_db(file_path, binsize, intervals_id, cooler_dataset_id, pileup_type):
     """Adds pileup region to database"""

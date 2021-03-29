@@ -1,8 +1,8 @@
-"""reset db
+"""reset database
 
-Revision ID: f211ab01e081
+Revision ID: cc7a9f5681bc
 Revises: 
-Create Date: 2021-03-22 14:24:54.778972
+Create Date: 2021-03-29 09:54:02.833969
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'f211ab01e081'
+revision = 'cc7a9f5681bc'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -33,7 +33,6 @@ def upgrade():
     sa.Column('genotype', sa.String(length=64), nullable=True),
     sa.Column('description', sa.String(length=81), nullable=True),
     sa.Column('file_path', sa.String(length=128), nullable=True),
-    sa.Column('higlass_uuid', sa.String(length=64), nullable=True),
     sa.Column('public', sa.Boolean(), nullable=True),
     sa.Column('filetype', sa.String(length=64), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
@@ -44,19 +43,16 @@ def upgrade():
     op.create_index(op.f('ix_dataset_dataset_name'), 'dataset', ['dataset_name'], unique=False)
     op.create_index(op.f('ix_dataset_file_path'), 'dataset', ['file_path'], unique=False)
     op.create_index(op.f('ix_dataset_filetype'), 'dataset', ['filetype'], unique=False)
-    op.create_index(op.f('ix_dataset_higlass_uuid'), 'dataset', ['higlass_uuid'], unique=True)
     op.create_table('intervals',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('dataset_id', sa.Integer(), nullable=True),
     sa.Column('name', sa.String(length=64), nullable=True),
     sa.Column('file_path', sa.String(length=128), nullable=True),
-    sa.Column('higlass_uuid', sa.String(length=64), nullable=True),
     sa.Column('windowsize', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['dataset_id'], ['dataset.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_intervals_file_path'), 'intervals', ['file_path'], unique=False)
-    op.create_index(op.f('ix_intervals_higlass_uuid'), 'intervals', ['higlass_uuid'], unique=False)
     op.create_index(op.f('ix_intervals_name'), 'intervals', ['name'], unique=False)
     op.create_index(op.f('ix_intervals_windowsize'), 'intervals', ['windowsize'], unique=False)
     op.create_table('task',
@@ -116,10 +112,8 @@ def downgrade():
     op.drop_table('task')
     op.drop_index(op.f('ix_intervals_windowsize'), table_name='intervals')
     op.drop_index(op.f('ix_intervals_name'), table_name='intervals')
-    op.drop_index(op.f('ix_intervals_higlass_uuid'), table_name='intervals')
     op.drop_index(op.f('ix_intervals_file_path'), table_name='intervals')
     op.drop_table('intervals')
-    op.drop_index(op.f('ix_dataset_higlass_uuid'), table_name='dataset')
     op.drop_index(op.f('ix_dataset_filetype'), table_name='dataset')
     op.drop_index(op.f('ix_dataset_file_path'), table_name='dataset')
     op.drop_index(op.f('ix_dataset_dataset_name'), table_name='dataset')

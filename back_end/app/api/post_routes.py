@@ -75,23 +75,11 @@ def add_dataset():
     new_entry.processing_state = "uploaded"
     db.session.add(new_entry)
     db.session.commit()
-    # start preprocessing
+    # start preprocessing of bedfile, the other filetypes do not need preprocessing
     if data["filetype"] == "bedfile":
         current_user.launch_task("pipeline_bed", "run bed preprocessing", new_entry.id)
         # set processing state
         new_entry.processing_state = "processing"
-        db.session.commit()
-    elif data["filetype"] == "cooler":
-        current_user.launch_task(
-            "pipeline_cooler", "run cooler preprocessing", new_entry.id
-        )
-        # cooler files stay at processing status upload for the initial higlass addition pipeline
-        db.session.commit()
-    else:
-        current_user.launch_task(
-            "pipeline_bigwig", "run bigwig preprocessing", new_entry.id
-        )
-        # bigwig files stay at processing status upload for the initial higlass addition pipeline
         db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 

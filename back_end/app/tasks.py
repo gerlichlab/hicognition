@@ -4,8 +4,7 @@ import logging
 
 
 import pandas as pd
-from hicognition import io_helpers, higlass_interface
-from requests.exceptions import HTTPError
+from hicognition import io_helpers
 from . import create_app, db
 from .models import Dataset, Intervals
 from . import pipeline_steps
@@ -51,79 +50,10 @@ def pipeline_bed(dataset_id):
     dataset_object = Dataset.query.get(dataset_id)
     dataset_object.file_path = sorted_file_name
     db.session.commit()
-    pipeline_steps.bed_preprocess_pipeline_step(dataset_id)
-    pipeline_steps._set_task_progress(50)
     for window in window_sizes:
-        # Convert to bedpe
-        log.info(f"  Converting to bedpe, windowsize {window}")
-        target_file = sorted_file_name + f".{window}" + ".bedpe"
-        io_helpers.convert_bed_to_bedpe(sorted_file_name, target_file, window)
         # preprocessing
-        pipeline_steps.bedpe_preprocess_pipeline_step(target_file, dataset_id, window)
+        pipeline_steps.bed_preprocess_pipeline_step(dataset_id, window)
     pipeline_steps._set_task_progress(100)
-
-
-def pipeline_cooler(dataset_id):
-    """Starts the pipeline for
-    cooler-files. Pipeline:
-    - Add to higlass and update uuid
-    - Indicate in Job table in database that job is complete
-    - Set dataset status to "uploaded"
-    """
-    log.info(f"Cooler pipeline started for {dataset_id}")
-    current_dataset = Dataset.query.get(dataset_id)
-    # upload to higlass
-    log.info("  Uploading to higlass...")
-    credentials = {
-        "user": app.config["HIGLASS_USER"],
-        "password": app.config["HIGLASS_PWD"],
-    }
-    try:
-        result = higlass_interface.add_tileset(
-            "cooler",
-            current_dataset.file_path,
-            app.config["HIGLASS_API"],
-            credentials,
-            current_dataset.dataset_name,
-        )
-    except HTTPError:
-        log.error(f"Higlass upload of cooler with it {dataset_id} failed")
-        return
-    # upload succeeded, add uuid of higlass to dataset
-    uuid = result["uuid"]
-    current_dataset.higlass_uuid = uuid
-    db.session.commit()
-
-def pipeline_bigwig(dataset_id):
-    """Starts the pipeline for
-    bigwig-files. Pipeline:
-    - Add to higlass and update uuid
-    - Indicate in Job table in database that job is complete
-    - Set dataset status to "uploaded"
-    """
-    log.info(f"Bigwig pipeline started for {dataset_id}")
-    current_dataset = Dataset.query.get(dataset_id)
-    # upload to higlass
-    log.info("  Uploading to higlass...")
-    credentials = {
-        "user": app.config["HIGLASS_USER"],
-        "password": app.config["HIGLASS_PWD"],
-    }
-    try:
-        result = higlass_interface.add_tileset(
-            "bigwig",
-            current_dataset.file_path,
-            app.config["HIGLASS_API"],
-            credentials,
-            current_dataset.dataset_name,
-        )
-    except HTTPError:
-        log.error("Higlass upload of bigwig failed")
-        return
-    # upload succeeded, add uuid of higlass to dataset
-    uuid = result["uuid"]
-    current_dataset.higlass_uuid = uuid
-    db.session.commit()
 
 
 def pipeline_pileup(dataset_id, binsizes, interval_ids):

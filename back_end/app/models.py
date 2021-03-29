@@ -109,7 +109,6 @@ class Dataset(db.Model):
             "genotype": self.genotype,
             "description": self.description,
             "file_path": self.file_path,
-            "higlass_uuid": self.higlass_uuid,
             "filetype": self.filetype,
             "user_id": self.user_id,
             "processing_state": self.processing_state,
@@ -138,7 +137,6 @@ class Intervals(db.Model):
             "source_dataset": self.dataset_id,
             "dataset_name": self.name,
             "file_path": self.file_path,
-            "higlass_uuid": self.higlass_uuid,
             "windowsize": self.windowsize
         }
         return json_intervals
