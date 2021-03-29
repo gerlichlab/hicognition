@@ -35,7 +35,7 @@
                             v-for="item in binsizes"
                             :value="item.binsize"
                             :key="item.binsize"
-                            >{{ item.binsize }}</md-option
+                            >{{ convertBasePairsToReadable(item.binsize) }}</md-option
                         >
                         </md-select>
                 </md-field>
@@ -53,11 +53,6 @@
                 </div>
             </div>
         </div>
-<!--
-        <a>
-            WidgetData: {{ this.widgetData }}
-        </a>
--->
         <pileup
             :pileupType="pileupType"
             v-if="showData"
@@ -76,12 +71,12 @@
 
 <script>
 import pileup from "../pileup";
-import { apiMixin } from "../../mixins";
+import { apiMixin, formattingMixin } from "../../mixins";
 import { group_iccf_obs_exp } from "../../functions";
 
 export default {
     name: 'hiCWidget',
-    mixins: [apiMixin],
+    mixins: [apiMixin, formattingMixin],
     components: {
         pileup
     },

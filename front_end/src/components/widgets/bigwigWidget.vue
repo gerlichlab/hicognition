@@ -35,7 +35,7 @@
                             v-for="item in binsizes"
                             :value="item.binsize"
                             :key="item.binsize"
-                            >{{ item.binsize }}</md-option
+                            >{{ convertBasePairsToReadable(item.binsize) }}</md-option
                         >
                         </md-select>
                 </md-field>
@@ -71,12 +71,12 @@
 
 <script>
 import stackup from "../stackup";
-import { apiMixin } from "../../mixins";
+import { apiMixin, formattingMixin } from "../../mixins";
 import { group_stackups } from "../../functions";
 
 export default {
     name: 'bigwigWidget',
-    mixins: [apiMixin],
+    mixins: [apiMixin, formattingMixin],
     components: {
         stackup
     },

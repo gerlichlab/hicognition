@@ -41,7 +41,7 @@
                     v-for="item in availableBinsizes"
                     :value="item"
                     :key="item"
-                    >{{ item }}</md-option>
+                    >{{ convertBasePairsToReadable(item) }}</md-option>
                 </md-select>
                 <span class="md-error" v-if="!$v.form.binsizes.required"
                   >Binsize selection is required</span
@@ -88,7 +88,7 @@
                     v-for="item in availableIntervals"
                     :value="item.windowsize"
                     :key="item.windowsize"
-                    >{{ item.windowsize }}</md-option>
+                    >{{  convertBasePairsToReadable(item.windowsize) }}</md-option>
                 </md-select>
                 <span class="md-error" v-if="!$v.form.windowsizes.required"
                   >A windowsize is required!</span
@@ -126,17 +126,14 @@
 <script>
 import { validationMixin } from "vuelidate";
 import {
-  required,
-  email,
-  minLength,
-  maxLength,
+  required
 } from "vuelidate/lib/validators";
-import { apiMixin } from "../mixins";
+import { apiMixin, formattingMixin } from "../mixins";
 import { group_intervals_on_windowsize } from "../functions"
 
 export default {
   name: "preprocessDatasetForm",
-  mixins: [validationMixin, apiMixin],
+  mixins: [validationMixin, apiMixin, formattingMixin],
   data: () => ({
       availableCoolers: [],
       availableBinsizes: [10000, 20000, 50000],
