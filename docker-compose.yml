@@ -9,16 +9,12 @@ services:
             # TODO fix this, this is horrible
             # #HICOGNITION_DIR=./workdir/hicognition_dir -> use for path of DB
         environment:
-            - UPLOAD_ENABLED=true # TODO: I think this can be removed
-            - PUBLIC_UPLOAD_ENABLED=true # TODO: I think this can be removed
             - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
-        depends_on:
-            - higlass
         ports:
             # only map localhost-port
             - "5000:5000"
@@ -31,7 +27,7 @@ services:
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.3
-                                                                                                                                                                       '${DJANGO_SUPERUSER_PASSWORD}')"
+
     # nginx server to serve front-end and redirect requests to flask-api
     nginx:
         container_name: hicognition-nginx
@@ -79,8 +75,6 @@ services:
             # TODO fix this, this is horrible
             # #HICOGNITION_DIR=./workdir/hicognition_dir -> use for path of DB
         environment:
-            - UPLOAD_ENABLED=true
-            - PUBLIC_UPLOAD_ENABLED=true
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
             - REDIS_URL=${REDIS_URL}
