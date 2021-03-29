@@ -78,9 +78,16 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             filetype="cooler",
             user_id=1,
         )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/2",
+            higlass_uuid="asdf12345",
+            filetype="bedfile",
+            user_id=1,
+        )
         intervals1 = Intervals(
             name="testRegion1",
-            dataset_id=1,
+            dataset_id=2,
             file_path="test_path_1.bedd2db",
             higlass_uuid="testHiglass1",
             windowsize=200000,
@@ -93,9 +100,9 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, intervals1, averageIntervalData])
+        db.session.add_all([dataset1,dataset2, intervals1, averageIntervalData])
         db.session.commit()
-        # make query for non-existent cooler
+        # make query for non-existent intervals
         response = self.client.get(
             "/api/averageIntervalData/?dataset_id=1&intervals_id=500",
             headers=token_headers,
@@ -116,9 +123,16 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             filetype="cooler",
             user_id=1,
         )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/2",
+            higlass_uuid="asdf12345",
+            filetype="bedfile",
+            user_id=1,
+        )
         intervals1 = Intervals(
             name="testRegion1",
-            dataset_id=1,
+            dataset_id=2,
             file_path="test_path_1.bedd2db",
             higlass_uuid="testHiglass1",
             windowsize=200000,
@@ -131,9 +145,9 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
         db.session.commit()
-        # make query for non-existent cooler
+        # make query without parameters
         response = self.client.get(
             "/api/averageIntervalData/", headers=token_headers, content_type="application/json",
         )
@@ -152,9 +166,16 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             filetype="cooler",
             user_id=1,
         )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/2",
+            higlass_uuid="asdf12345",
+            filetype="bedfile",
+            user_id=1,
+        )
         intervals1 = Intervals(
             name="testRegion1",
-            dataset_id=1,
+            dataset_id=2,
             file_path="test_path_1.bedd2db",
             higlass_uuid="testHiglass1",
             windowsize=200000,
@@ -167,9 +188,9 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
         db.session.commit()
-        # make query for non-existent cooler
+        # make query without specifying cooler
         response = self.client.get(
             "/api/averageIntervalData/?intervals_id=1",
             headers=token_headers,
@@ -190,9 +211,16 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             filetype="cooler",
             user_id=1,
         )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/2",
+            higlass_uuid="asdf12345",
+            filetype="bedfile",
+            user_id=1,
+        )
         intervals1 = Intervals(
             name="testRegion1",
-            dataset_id=1,
+            dataset_id=2,
             file_path="test_path_1.bedd2db",
             higlass_uuid="testHiglass1",
             windowsize=200000,
@@ -205,9 +233,9 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
         db.session.commit()
-        # make query for non-existent cooler
+        # make query without specifying intervals
         response = self.client.get(
             "/api/averageIntervalData/?dataset_id=1",
             headers=token_headers,
@@ -239,9 +267,16 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             filetype="cooler",
             user_id=2,
         )
+        dataset3 = Dataset(
+            dataset_name="test3",
+            file_path="/test/path/3",
+            higlass_uuid="asdf123456",
+            filetype="bedfile",
+            user_id=1,
+        )
         intervals1 = Intervals(
             name="testRegion1",
-            dataset_id=1,
+            dataset_id=3,
             file_path="test_path_1.bedd2db",
             higlass_uuid="testHiglass1",
             windowsize=200000,
@@ -254,9 +289,9 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, dataset3, intervals1, averageIntervalData])
         db.session.commit()
-        # make query for non-existent cooler
+        # make query for forbidden cooler
         response = self.client.get(
             "/api/averageIntervalData/?dataset_id=2&intervals_id=1",
             headers=token_headers,
@@ -287,6 +322,13 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             filetype="cooler",
             user_id=2,
         )
+        dataset3 = Dataset(
+            dataset_name="test3",
+            file_path="/test/path/3",
+            higlass_uuid="asdf123456",
+            filetype="bedfile",
+            user_id=2,
+        )
         intervals1 = Intervals(
             name="testRegion1",
             dataset_id=1,
@@ -296,7 +338,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         )
         intervals2 = Intervals(
             name="testRegion2",
-            dataset_id=2,
+            dataset_id=3,
             file_path="test_path_2.bedd2db",
             higlass_uuid="testHiglass2",
             windowsize=200000,
@@ -309,9 +351,9 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, intervals1, intervals2, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, dataset3, intervals1, intervals2, averageIntervalData])
         db.session.commit()
-        # make query for non-existent cooler
+        # make query for forbidden intervals
         response = self.client.get(
             "/api/averageIntervalData/?dataset_id=1&intervals_id=2", headers=token_headers, content_type="application/json",
         )
@@ -340,16 +382,32 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             public=True,
             user_id=2,
         )
+        dataset3 = Dataset(
+            dataset_name="test3",
+            file_path="/test/path/3",
+            higlass_uuid="asdf123456",
+            filetype="bedfile",
+            public=True,
+            user_id=2,
+        )
+        dataset4 = Dataset(
+            dataset_name="test4",
+            file_path="/test/path/4",
+            higlass_uuid="asdf123457",
+            filetype="bedfile",
+            public=True,
+            user_id=2,
+        )
         intervals1 = Intervals(
             name="testRegion1",
-            dataset_id=1,
+            dataset_id=3,
             file_path="test_path_1.bedd2db",
             higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         intervals2 = Intervals(
             name="testRegion2",
-            dataset_id=2,
+            dataset_id=4,
             file_path="test_path_2.bedd2db",
             higlass_uuid="testHiglass2",
             windowsize=200000,
@@ -390,6 +448,8 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             [
                 dataset1,
                 dataset2,
+                dataset3,
+                dataset4,
                 intervals1,
                 intervals2,
                 averageIntervalData1,
@@ -453,9 +513,16 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             filetype="cooler",
             user_id=5,
         )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/2",
+            higlass_uuid="asdf12345",
+            filetype="bedfile",
+            user_id=1,
+        )
         intervals1 = Intervals(
             name="testRegion1",
-            dataset_id=1,
+            dataset_id=2,
             file_path="test_path_1.bedd2db",
             higlass_uuid="testHiglass1",
             windowsize=200000,
@@ -468,9 +535,9 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
         db.session.commit()
-        # make request
+        # make request for forbidden cooler
         response = self.client.get(
             "/api/averageIntervalData/1/", headers=token_headers, content_type="application/json",
         )
@@ -491,8 +558,8 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             user_id=1,
         )
         dataset2 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
+            dataset_name="test2",
+            file_path="/test/path/2",
             higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=5,
@@ -514,7 +581,7 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         )
         db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
         db.session.commit()
-        # make request
+        # make request with forbidden intervall
         response = self.client.get(
             "/api/averageIntervalData/1/", headers=token_headers, content_type="application/json",
         )
