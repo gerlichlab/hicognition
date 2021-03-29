@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 import io
 import unittest
 import pandas as pd
@@ -314,6 +315,160 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
             test_dataframe, payload_data.drop("string_column", axis="columns")
         )
 
+class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
+    """Tests whether setting relevant metadata fields with key-value-pairs
+    where key is a valid metadata columns and the value is the wanted display name
+     works."""
+
+    def test_access_denied_without_token(self):
+        """Test whether post request results in 401 error
+        if no token is provided."""
+        # dispatch post request
+        response = self.client.post(
+            "/api/bedFileMetadata/1/setFields",
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_access_denied_not_owned_metadata(self):
+        """Tests whether access is denied for posting to
+        metadata associated with not owned dataset"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        token2 = self.add_and_authenticate(
+            "test2", "fdsa"
+        )  # second user that is not used
+        # add dataset and metadata
+        dataset = Dataset(id=1, user_id=2)
+        metadata = BedFileMetadata(id=1, dataset_id=1)
+        db.session.add(dataset)
+        db.session.add(metadata)
+        db.session.commit()
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "fields": json.dumps({"asdf": "fdsa"}),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/bedFileMetadata/1/setFields",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_non_existing_metadata(self):
+        """Tests whether 404 error is returned for non-exisitng
+        metadata."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # add dataset and metadata
+        dataset = Dataset(id=1, user_id=1)
+        metadata = BedFileMetadata(id=1, dataset_id=1)
+        db.session.add(dataset)
+        db.session.add(metadata)
+        db.session.commit()
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "fields": json.dumps({"asdf": "fdsa"}),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/bedFileMetadata/500/setFields",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_non_existing_field(self):
+        """Tests whether invalid error is raised if 
+        field specified does not exist in the metadata."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # generate metadata file
+        metadata_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "metadata.txt")
+        metadata_data = pd.DataFrame(
+            {
+                "size": [0, 1, 2, 3, 4, 5],
+                "start": [0] * 6,
+                "end": [10] * 6,
+            }
+        )
+        metadata_data.to_csv(metadata_filepath, index=False)
+        # add dataset and metadata
+        dataset = Dataset(id=1, user_id=1)
+        metadata = BedFileMetadata(id=1, dataset_id=1, file_path=metadata_filepath)
+        db.session.add(dataset)
+        db.session.add(metadata)
+        db.session.commit()
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "fields": json.dumps({"asdf": "fdsa"}),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/bedFileMetadata/1/setFields",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_field_map_added_correclty(self):
+        """Tests whether correct field_name specification is
+        added correctly."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # generate metadata file
+        metadata_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "metadata.txt")
+        metadata_data = pd.DataFrame(
+            {
+                "size": [0, 1, 2, 3, 4, 5],
+                "start": [0] * 6,
+                "end": [10] * 6,
+            }
+        )
+        metadata_data.to_csv(metadata_filepath, index=False)
+        # add dataset and metadata
+        dataset = Dataset(id=1, user_id=1)
+        metadata = BedFileMetadata(id=1, dataset_id=1, file_path=metadata_filepath)
+        db.session.add(dataset)
+        db.session.add(metadata)
+        db.session.commit()
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "fields": json.dumps({"size": "Size", "start": "Start"}),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/bedFileMetadata/1/setFields",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether fields were added correctly
+        metadata = BedFileMetadata.query.get(1)
+        actual = metadata.metadata_fields
+        expected = json.dumps({"size": "Size", "start": "Start"})
+        self.assertEqual(actual, expected)
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

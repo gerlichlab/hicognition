@@ -210,7 +210,7 @@ def add_bedfile_metadata():
     if Dataset.query.get(dataset_id) is None:
         return not_found("Dataset does not exist!")
     if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g.current_user):
-        return forbidden(f"Bigwig dataset is not owned by logged in user!")
+        return forbidden(f"Dataset is not owned by logged in user!")
     # check whether row-number is correct
     dataset = Dataset.query.get(dataset_id)
     dataset_file = pd.read_csv(dataset.file_path, sep="\t")
@@ -234,5 +234,44 @@ def add_bedfile_metadata():
         {
             "message": "success! Preprocessing triggered.",
             "field_names": list(sorted(only_numeric.columns)),
+        }
+    )
+
+
+@api.route("/bedFileMetadata/<metadata_id>/setFields", methods=["POST"])
+@auth.login_required
+def add_bedfile_metadata_fields(metadata_id):
+    """Add relevant metadatafields of the corresponding metadatafile."""
+
+    def is_form_invalid():
+        if not hasattr(request, "form"):
+            return True
+        # check attributes
+        if "fields" not in request.form.keys():
+            return True
+        return False
+
+    # check form
+    if is_form_invalid():
+        return invalid("Form is not valid!")
+    # get data from form
+    data = request.form
+    field_map = json.loads(data["fields"])
+    # check whether dataset exists and user is allowed to access
+    if BedFileMetadata.query.get(metadata_id) is None:
+        return not_found("Metadataset does not exist!")
+    if is_access_to_dataset_denied(BedFileMetadata.query.get(metadata_id).associated_dataset, g.current_user):
+        return forbidden(f"Associated dataset is not owned by logged in user!")
+    # check whether field_names are correct
+    metadata = BedFileMetadata.query.get(metadata_id)
+    metadata_file = pd.read_csv(metadata.file_path)
+    if not all(key in metadata_file.columns for key in field_map.keys()):
+        return invalid("Field names not understood!")
+    # store field_map in database
+    metadata.metadata_fields = json.dumps(field_map)
+    db.session.commit()
+    return jsonify(
+        {
+            "message": "Success! Field map added."
         }
     )
