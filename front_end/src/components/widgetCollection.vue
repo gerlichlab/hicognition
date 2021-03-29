@@ -47,7 +47,7 @@
                             v-for="item in windowSizes"
                             :value="item.id"
                             :key="item.id"
-                            >{{ item.windowsize }}</md-option
+                            >{{ convertBasePairsToReadable(item.windowsize) }}</md-option
                         >
                         </md-select>
                     </md-field>
@@ -83,11 +83,11 @@
 <script>
 
 import widgetContainer from "./widgetContainer"
-import { apiMixin } from "../mixins";
+import { apiMixin, formattingMixin } from "../mixins";
 
 export default {
     name: 'widgetCollection',
-    mixins: [apiMixin],
+    mixins: [apiMixin, formattingMixin],
     props: {
         id: Number
     },

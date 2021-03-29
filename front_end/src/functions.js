@@ -107,7 +107,7 @@ export function convert_json_to_pilingJS(jsonObject, log = false) {
     data[flattenedIndex] = newValue;
   }
   return [{
-      src: {
+    src: {
       data: data,
       shape: [rowNumber, colNumber],
       dtype: "float32"
@@ -190,52 +190,52 @@ export function group_iccf_obs_exp(data) {
 }
 
 export function group_stackups(data) {
-    /*
-    Takes as input an array of json objects that are returned by the averageIntervalData route (e.g.
-  
-    [{id:1, binsize:50000, value_type: "obs/exp"}...]
-  
-    and groups iccf and obs_exp per binsize such that the result is an object of the form
-  
-    {binsize: {iccf: averageIntervalData_id, Obs/Exp: averageIntervalData_id, binsize: 400000}, ...}
-    FIXME: Probably this can be removed.
-    */
-    var numberDatasets = data.length;
-    console.log(data)
-    var output = {};
-    for (var index = 0; index < numberDatasets; index++) {
-      var { id, binsize } = data[index];
-      var value_type = "normal"
-      if (binsize in output) {
-        // binsize is already in output, must be the other type of pileup
-        output[binsize][value_type] = id;
-      } else {
-        // binsize is not in output, must be the first type of pileup
-        output[binsize] = { binsize: binsize };
-        output[binsize][value_type] = id;
-      }
+  /*
+  Takes as input an array of json objects that are returned by the averageIntervalData route (e.g.
+ 
+  [{id:1, binsize:50000, value_type: "obs/exp"}...]
+ 
+  and groups iccf and obs_exp per binsize such that the result is an object of the form
+ 
+  {binsize: {iccf: averageIntervalData_id, Obs/Exp: averageIntervalData_id, binsize: 400000}, ...}
+  FIXME: Probably this can be removed.
+  */
+  var numberDatasets = data.length;
+  console.log(data)
+  var output = {};
+  for (var index = 0; index < numberDatasets; index++) {
+    var { id, binsize } = data[index];
+    var value_type = "normal"
+    if (binsize in output) {
+      // binsize is already in output, must be the other type of pileup
+      output[binsize][value_type] = id;
+    } else {
+      // binsize is not in output, must be the first type of pileup
+      output[binsize] = { binsize: binsize };
+      output[binsize][value_type] = id;
     }
-    //console.log(output)
-    return output;
   }
+  //console.log(output)
+  return output;
+}
 
 
 
-export function group_intervals_on_windowsize(intervals){
+export function group_intervals_on_windowsize(intervals) {
   /*
     data is array intervals object [{"id": 1, "windowsize": 20000, ...}]
     transform data from [{"id", "windowsize"}, ...] to {"windwosize: {"windowsize": 200000, id: [id1, id2,....]}, ...]
   */
   var output = {}
-  for (var interval of intervals){
-      var windowsize = interval.windowsize;
-      if (windowsize in output){
-          output[windowsize]["id"].push(interval.id);
-      }
-      else{
-          output[windowsize] = {"windowsize": windowsize, "id": []};
-          output[windowsize]["id"].push(interval.id);
-      }
+  for (var interval of intervals) {
+    var windowsize = interval.windowsize;
+    if (windowsize in output) {
+      output[windowsize]["id"].push(interval.id);
+    }
+    else {
+      output[windowsize] = { "windowsize": windowsize, "id": [] };
+      output[windowsize]["id"].push(interval.id);
+    }
   }
   return output;
 }
@@ -243,19 +243,19 @@ export function group_intervals_on_windowsize(intervals){
 // Helpers for datasetTable
 
 export function toLower(text) {
-    return text.toString().toLowerCase()
-  }
+  return text.toString().toLowerCase()
+}
 
 export function searchByName(items, term) {
   /*
   helper to search table fields by name for datasetTable
   */
-    if (term) {
-      var filtered_items = items.filter(item => {
-          return toLower(item.dataset_name).includes(toLower(term))
-          });
-      return filtered_items
-    }
-
-    return items
+  if (term) {
+    var filtered_items = items.filter(item => {
+      return toLower(item.dataset_name).includes(toLower(term))
+    });
+    return filtered_items
   }
+
+  return items
+}

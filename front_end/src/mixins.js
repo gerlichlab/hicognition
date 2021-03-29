@@ -40,13 +40,13 @@ export var apiMixin = {
                     "Authorization": `Basic ${encodedToken}`
                 }
             }).catch(error => {
-                if (!error.response){
+                if (!error.response) {
                     alert(`HTTP error: ${error}`)
                 }
-                else if ((error.response.status == 403) || (error.response.status == 401)){
+                else if ((error.response.status == 403) || (error.response.status == 401)) {
                     // if forbidden error is returned, redirect to login page
                     this.$router.push("/login");
-                }else{
+                } else {
                     alert(`HTTP error: ${error.response.status} - Error: ${error.response.data.error} - ${error.response.data.message}`)
                 }
                 // TODO: 401 error writes unknown - unknown make and else for data.error os unknown
@@ -65,25 +65,25 @@ export var apiMixin = {
             // base64 encoding of token
             var encodedToken = btoa(token + ":");
             this.$http
-            .post(process.env.API_URL + url, formData, {
-              headers: {
-                "Authorization": `Basic ${encodedToken}`,
-                "Content-Type": "multipart/form-data"
-              },
-            }).catch(error => {
-                if (!error.response){
-                    alert(`HTTP error: ${error}`)
-                }
-                else if ((error.response.status == 403) || (error.response.status == 401)){
-                    // if forbidden error is returned, redirect to login page
-                    this.$router.push("/login");
-                }else{
-                    // this helps to look into [object Object] errors: ${JSON.stringify(error.response)}
-                    alert(`HTTP error: ${error.response.status} - Error: ${error.response.data.error} - ${error.response.data.message}`)
-                }
-            });
+                .post(process.env.API_URL + url, formData, {
+                    headers: {
+                        "Authorization": `Basic ${encodedToken}`,
+                        "Content-Type": "multipart/form-data"
+                    },
+                }).catch(error => {
+                    if (!error.response) {
+                        alert(`HTTP error: ${error}`)
+                    }
+                    else if ((error.response.status == 403) || (error.response.status == 401)) {
+                        // if forbidden error is returned, redirect to login page
+                        this.$router.push("/login");
+                    } else {
+                        // this helps to look into [object Object] errors: ${JSON.stringify(error.response)}
+                        alert(`HTTP error: ${error.response.status} - Error: ${error.response.data.error} - ${error.response.data.message}`)
+                    }
+                });
         },
-        deleteData: function(url) {
+        deleteData: function (url) {
             /*
                 Will make a delete call to the specified url.
             */
@@ -100,16 +100,29 @@ export var apiMixin = {
                     "Authorization": `Basic ${encodedToken}`
                 }
             }).catch(error => {
-                if (!error.response){
+                if (!error.response) {
                     alert(`HTTP error: ${error}`)
                 }
-                else if ((error.response.status == 403) || (error.response.status == 401)){
+                else if ((error.response.status == 403) || (error.response.status == 401)) {
                     // if forbidden error is returned, redirect to login page
                     this.$router.push("/login");
-                }else{
+                } else {
                     alert(`HTTP error: ${error.response.status} - Error: ${error.response.data.error} - ${error.response.data.message}`)
                 }
             });
+        }
+    }
+}
+
+export var formattingMixin = {
+    methods: {
+        convertBasePairsToReadable: function (baseString) {
+            var basePairs = Number(baseString);
+            if (basePairs < 1000000) {
+                return Math.round(basePairs / 1000) + " kb"
+            } else {
+                return Math.round(basePairs / 1000000) + " Mb"
+            }
         }
     }
 }
