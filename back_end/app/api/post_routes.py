@@ -211,19 +211,17 @@ def add_bedfile_metadata():
         return not_found("Dataset does not exist!")
     if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g.current_user):
         return forbidden(f"Bigwig dataset is not owned by logged in user!")
-    # save file in upload directory
-    filename = secure_filename(fileObject.filename)
-    file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
-    fileObject.save(file_path)
-    # check if row_count of uploaded file is equal to row_count of bedfile in database
+    # check whether row-number is correct
     dataset = Dataset.query.get(dataset_id)
     dataset_file = pd.read_csv(dataset.file_path, sep="\t")
-    uploaded_file = pd.read_csv(file_path, sep=data["separator"])
+    uploaded_file = pd.read_csv(fileObject, sep=data["separator"]) # generate uploaded dataframe from io-stream in memory
     if len(dataset_file) != len(uploaded_file):
         return jsonify({"ValidationError": "Dataset length missmatch!"})
     # detect numeric columns
     only_numeric = uploaded_file.select_dtypes(include=np.number)
     # save with standard separator
+    filename = secure_filename(fileObject.filename)
+    file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     only_numeric.to_csv(file_path, index=False)
     # add to database
     new_metadata = BedFileMetadata(
