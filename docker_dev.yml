@@ -20,12 +20,10 @@ services:
             # TODO fix this, this is horrible
             # #HICOGNITION_DIR=./workdir/hicognition_dir -> use for path of DB
         environment:
-            - UPLOAD_ENABLED=true
-            - PUBLIC_UPLOAD_ENABLED=true
+            - UPLOAD_ENABLED=true # TODO: I think this can be removed
+            - PUBLIC_UPLOAD_ENABLED=true # TODO: I think this can be removed
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
-            - HIGLASS_USER=${DJANGO_SUPERUSER}
-            - HIGLASS_PWD=${DJANGO_SUPERUSER_PASSWORD}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -61,12 +59,10 @@ services:
             # TODO fix this, this is horrible
             # #HICOGNITION_DIR=./workdir/hicognition_dir -> use for path of DB
         environment:
-            - UPLOAD_ENABLED=true
-            - PUBLIC_UPLOAD_ENABLED=true
+            - UPLOAD_ENABLED=true # TODO: I think this can be removed
+            - PUBLIC_UPLOAD_ENABLED=true # TODO: I think this can be removed
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
-            - HIGLASS_USER=${DJANGO_SUPERUSER}
-            - HIGLASS_PWD=${DJANGO_SUPERUSER_PASSWORD}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
