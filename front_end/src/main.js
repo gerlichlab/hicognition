@@ -3,6 +3,12 @@ import VueRouter from 'vue-router'
 import App from './App'
 
 Vue.config.productionTip = false
+Vue.config.errorHandler = function(err, vm, info){
+  if (vm.$el.classList.contains("md-select")){
+    return
+  }
+  throw err;
+}
 
 import VueMaterial from 'vue-material'
 import 'vue-material/dist/vue-material.min.css'

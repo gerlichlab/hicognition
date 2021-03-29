@@ -21,8 +21,15 @@ export default {
         dialog: Boolean
     },
     computed: {
-        showDialog: function () {
+        showDialog: {
+          set: function(value){
+            if (!value){
+              this.$emit('close-dialog')
+            }
+          },
+          get: function() {
             return this.dialog
+          }
         }
     }
   }
