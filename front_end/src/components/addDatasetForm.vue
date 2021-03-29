@@ -90,7 +90,7 @@
       </md-card>
       <!-- Submission notification -->
       <md-snackbar :md-active.sync="datasetSaved"
-        >The Dataset was submitted successfully!</md-snackbar
+        >The Dataset was added successfully and is ready for preprocessing!</md-snackbar
       >
     </form>
   </div>
