@@ -73,6 +73,7 @@ class Dataset(db.Model):
     intervals = db.relationship("Intervals", backref="source_dataset", lazy="dynamic")
     averageIntervalData = db.relationship("AverageIntervalData", backref="source_dataset", lazy="dynamic")
     individualIntervalData = db.relationship("IndividualIntervalData", backref="source_dataset", lazy="dynamic")
+    bedFileMetadata = db.relationship("BedFileMetadata", backref="associated_dataset", lazy="dynamic")
     tasks = db.relationship('Task', backref='dataset', lazy='dynamic')
     processing_state = db.Column(db.String(64))
 
@@ -216,6 +217,18 @@ class Task(db.Model):
     def get_progress(self):
         job = self.get_rq_job()
         return job.meta.get('progress', 0) if job is not None else 100
+
+
+class BedFileMetadata(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128))
+    file_path = db.Column(db.String(128))
+    metadata_fields = db.Column(db.String(1024))
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id")) # intervals over which the values were extracted
+
+    def __repr__(self):
+        """Format print output."""
+        return f"<Metadata {self.name}>"
 
 # helpers
 

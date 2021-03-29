@@ -1,7 +1,7 @@
 """Start hicognition server."""
 import os
 from app import create_app, db
-from app.models import User, Dataset, Intervals, Task, AverageIntervalData
+from app.models import User, Dataset, Intervals, Task, AverageIntervalData, BedFileMetadata
 from flask_migrate import Migrate
 
 app = create_app(os.getenv("FLASK_CONFIG") or "default")
@@ -17,5 +17,6 @@ def make_shell_context():
         "Dataset": Dataset,
         "Intervals": Intervals,
         "Task": Task,
-        "AverageIntervalData": AverageIntervalData
+        "AverageIntervalData": AverageIntervalData,
+        "BedFileMetadata": BedFileMetadata
     }
