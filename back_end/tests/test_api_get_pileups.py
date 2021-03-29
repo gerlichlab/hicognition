@@ -35,7 +35,6 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="cooler",
             user_id=1,
         )
@@ -43,7 +42,6 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         averageIntervalData = AverageIntervalData(
@@ -74,7 +72,6 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="cooler",
             user_id=1,
         )
@@ -82,7 +79,6 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         averageIntervalData = AverageIntervalData(
@@ -112,7 +108,6 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="cooler",
             user_id=1,
         )
@@ -120,7 +115,6 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         averageIntervalData = AverageIntervalData(
@@ -135,7 +129,9 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/averageIntervalData/", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/",
+            headers=token_headers,
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
@@ -148,7 +144,6 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="cooler",
             user_id=1,
         )
@@ -156,7 +151,6 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         averageIntervalData = AverageIntervalData(
@@ -186,7 +180,6 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="cooler",
             user_id=1,
         )
@@ -194,7 +187,6 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         averageIntervalData = AverageIntervalData(
@@ -228,14 +220,12 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="cooler",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            higlass_uuid="asdf12345",
             filetype="cooler",
             user_id=2,
         )
@@ -243,7 +233,6 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         averageIntervalData = AverageIntervalData(
@@ -276,14 +265,12 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="cooler",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            higlass_uuid="asdf12345",
             filetype="cooler",
             user_id=2,
         )
@@ -291,14 +278,12 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         intervals2 = Intervals(
             name="testRegion2",
             dataset_id=2,
             file_path="test_path_2.bedd2db",
-            higlass_uuid="testHiglass2",
             windowsize=200000,
         )
         averageIntervalData = AverageIntervalData(
@@ -309,11 +294,15 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             intervals_id=1,
             value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, intervals1, intervals2, averageIntervalData])
+        db.session.add_all(
+            [dataset1, dataset2, intervals1, intervals2, averageIntervalData]
+        )
         db.session.commit()
         # make query for non-existent cooler
         response = self.client.get(
-            "/api/averageIntervalData/?dataset_id=1&intervals_id=2", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/?dataset_id=1&intervals_id=2",
+            headers=token_headers,
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
@@ -327,7 +316,6 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="cooler",
             public=True,
             user_id=2,
@@ -335,7 +323,6 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            higlass_uuid="asdf12345",
             filetype="cooler",
             public=True,
             user_id=2,
@@ -344,14 +331,12 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         intervals2 = Intervals(
             name="testRegion2",
             dataset_id=2,
             file_path="test_path_2.bedd2db",
-            higlass_uuid="testHiglass2",
             windowsize=200000,
         )
         averageIntervalData1 = AverageIntervalData(
@@ -401,13 +386,17 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         db.session.commit()
         # make query 1
         response = self.client.get(
-            "/api/averageIntervalData/?dataset_id=1&intervals_id=1", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/?dataset_id=1&intervals_id=1",
+            headers=token_headers,
+            content_type="application/json",
         )
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0]["id"], 1)
         # make query 2
         response = self.client.get(
-            "/api/averageIntervalData/?dataset_id=1&intervals_id=2", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/?dataset_id=1&intervals_id=2",
+            headers=token_headers,
+            content_type="application/json",
         )
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0]["id"], 2)
@@ -449,7 +438,6 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="cooler",
             user_id=5,
         )
@@ -457,7 +445,6 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         averageIntervalData = AverageIntervalData(
@@ -472,7 +459,9 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/averageIntervalData/1/", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/1/",
+            headers=token_headers,
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
@@ -486,14 +475,12 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="cooler",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=5,
         )
@@ -501,7 +488,6 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         averageIntervalData = AverageIntervalData(
@@ -516,7 +502,9 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/averageIntervalData/1/", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/1/",
+            headers=token_headers,
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
@@ -540,14 +528,12 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="cooler",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=1,
         )
@@ -555,7 +541,6 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         averageIntervalData = AverageIntervalData(
@@ -570,7 +555,9 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/averageIntervalData/1/", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/1/",
+            headers=token_headers,
+            content_type="application/json",
         )
         expected = test_data.to_json()
         self.assertEqual(response.json, expected)
@@ -595,7 +582,6 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="cooler",
             public=True,
             user_id=2,
@@ -603,7 +589,6 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         dataset2 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf12345",
             filetype="bedfile",
             public=True,
             user_id=2,
@@ -612,7 +597,6 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         averageIntervalData = AverageIntervalData(
@@ -627,7 +611,9 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/averageIntervalData/1/", headers=token_headers, content_type="application/json",
+            "/api/averageIntervalData/1/",
+            headers=token_headers,
+            content_type="application/json",
         )
         expected = test_data.to_json()
         self.assertEqual(response.json, expected)

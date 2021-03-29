@@ -188,31 +188,6 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 400)
 
     @patch("app.models.User.launch_task")
-    def test_cooler_pipeline_launched(self, mock_launch):
-        """Tests whether cooler pipeline is launched correctly"""
-        # authenticate
-        token = self.add_and_authenticate("test", "asdf")
-        # create token_header
-        token_headers = self.get_token_header(token)
-        # add content-type
-        token_headers["Content-Type"] = "multipart/form-data"
-        # construct form data
-        data = {
-            "datasetName": "test",
-            "filetype": "cooler",
-            "file": (io.BytesIO(b"abcdef"), "test.mcool"),
-        }
-        # dispatch post request
-        response = self.client.post(
-            "/api/datasets/",
-            data=data,
-            headers=token_headers,
-            content_type="multipart/form-data",
-        )
-        # check whether launch task has been called with the right arguments
-        mock_launch.assert_called_with("pipeline_cooler", "run cooler preprocessing", 1)
-
-    @patch("app.models.User.launch_task")
     def test_bed_pipeline_launched_correctly(self, mock_launch):
         """Tests whether bed pipeline is called with the right arguments."""
         # authenticate

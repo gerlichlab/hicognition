@@ -18,25 +18,16 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
     def add_test_datasets(self):
         """adds test datasets to db"""
         dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            higlass_uuid="asdf1234",
-            filetype="cooler",
-            user_id=1
+            dataset_name="test1", file_path="/test/path/1", filetype="cooler", user_id=1
         )
         dataset2 = Dataset(
-            dataset_name="test2",
-            file_path="/test/path/2",
-            higlass_uuid="fdsa4321",
-            filetype="cooler",
-            user_id=1
+            dataset_name="test2", file_path="/test/path/2", filetype="cooler", user_id=1
         )
         dataset3 = Dataset(
             dataset_name="test3",
             file_path="/test/path/3",
-            higlass_uuid="fdsa8765",
             filetype="bedfile",
-            user_id=2
+            user_id=2,
         )
         db.session.add(dataset1)
         db.session.add(dataset2)
@@ -139,7 +130,9 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 400)
 
     @patch("app.models.User.launch_task")
-    def test_pipeline_pileup_is_called_correctly_for_public_unowned_dataset(self, mock_launch):
+    def test_pipeline_pileup_is_called_correctly_for_public_unowned_dataset(
+        self, mock_launch
+    ):
         """Tests whether cooler pipeline to do pileups is called correctly."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -148,25 +141,22 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="cooler",
             public=True,
-            user_id=2
+            user_id=2,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            higlass_uuid="fdsa4321",
             filetype="cooler",
             public=True,
-            user_id=2
+            user_id=2,
         )
         dataset3 = Dataset(
             dataset_name="test3",
             file_path="/test/path/3",
-            higlass_uuid="fdsa8765",
             filetype="bedfile",
-            user_id=2
+            user_id=2,
         )
         db.session.add(dataset1)
         db.session.add(dataset2)

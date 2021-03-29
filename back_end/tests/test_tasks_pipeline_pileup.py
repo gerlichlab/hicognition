@@ -32,7 +32,6 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         self.dataset = Dataset(
             dataset_name="test3",
             file_path="/test/path/test3.mcool",
-            higlass_uuid="fdsa8765",
             filetype="cooler",
             processing_state="finished",
             user_id=1,
@@ -42,14 +41,12 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         self.intervals2 = Intervals(
             name="testRegion2",
             dataset_id=1,
             file_path="test_path_2.bedd2db",
-            higlass_uuid="testHiglass2",
             windowsize=200000,
         )
         db.session.add(self.dataset)
@@ -111,7 +108,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         self.dataset = Dataset(
             dataset_name="test3",
             file_path="/test/path/test3.mcool",
-            higlass_uuid="fdsa8765",
             filetype="cooler",
             processing_state="finished",
             user_id=1,
@@ -119,7 +115,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         self.dataset2 = Dataset(
             dataset_name="test4",
             file_path="/test/path/test4.mcool",
-            higlass_uuid="fdsa87615",
             filetype="cooler",
             processing_state="finished",
             user_id=1,
@@ -129,14 +124,12 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
-            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         self.intervals2 = Intervals(
             name="testRegion2",
             dataset_id=1,
             file_path="test_path_2.bedd2db",
-            higlass_uuid="testHiglass2",
             windowsize=300000,
         )
         db.session.add(self.dataset)

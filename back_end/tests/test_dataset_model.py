@@ -18,7 +18,6 @@ class TestSetProcessingState(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            higlass_uuid="asdf1234",
             filetype="cooler",
             processing_state=state,
             user_id=1,
