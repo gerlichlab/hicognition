@@ -1,12 +1,14 @@
 """API endpoints for hicognition"""
 import os
 import json
+import pandas as pd
+import numpy as np
 from flask.json import jsonify
 from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from . import api
 from .. import db
-from ..models import Dataset
+from ..models import Dataset, BedFileMetadata
 from .authentication import auth
 from .helpers import is_access_to_dataset_denied, parse_description_and_genotype
 from .errors import forbidden, invalid, not_found
@@ -36,7 +38,6 @@ def add_dataset():
         if correctFileEndings[request.form["filetype"]] != fileEnding:
             return True
         return False
-
 
     current_user = g.current_user
     # check form
@@ -89,7 +90,7 @@ def add_dataset():
 def preprocess_dataset():
     """Starts preprocessing pipeline
     for datasets specified in the request body"""
-    #TODO: Reset processing state of job -> delete all tasks that are in progress when new submission
+    # TODO: Reset processing state of job -> delete all tasks that are in progress when new submission
 
     def is_form_invalid():
         if not hasattr(request, "form"):
@@ -127,13 +128,14 @@ def preprocess_dataset():
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 
+
 @api.route("/preprocessbigwig/", methods=["POST"])
-#TODO: post this on main preprocessroute
+# TODO: post this on main preprocessroute
 @auth.login_required
 def preprocess_bigwig_dataset():
     """Starts preprocessing pipeline
     for datasets specified in the request body"""
-    #TODO: Reset processing state of job -> delete all tasks that are in progress when new submission
+    # TODO: Reset processing state of job -> delete all tasks that are in progress when new submission
 
     def is_form_invalid():
         if not hasattr(request, "form"):
@@ -170,3 +172,69 @@ def preprocess_bigwig_dataset():
     dataset.processing_state = "processing"
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
+
+
+@api.route("/bedFileMetadata/", methods=["POST"])
+@auth.login_required
+def add_bedfile_metadata():
+    """Add metadata file to metadata table.
+    If uploaded metadatafile has different row-number than original bedfile ->
+    return error."""
+
+    def is_form_invalid():
+        if not hasattr(request, "form"):
+            return True
+        # check attributes
+        if "dataset_id" not in request.form.keys():
+            return True
+        if "separator" not in request.form.keys():
+            return True
+        # check whether fileObject is there
+        if len(request.files) == 0:
+            return True
+        # check filename
+        fileEnding = request.files["file"].filename.split(".")[-1]
+        correctFileEndings = ["csv", "txt", "bed"]  # textfiles and bedfiles supported
+        if fileEnding not in correctFileEndings:
+            return True
+        return False
+
+    # check form
+    if is_form_invalid():
+        return invalid("Form is not valid!")
+    # get data from form
+    data = request.form
+    fileObject = request.files["file"]
+    dataset_id = json.loads(data["dataset_id"])
+    # check whether dataset exists and user is allowed to access
+    if Dataset.query.get(dataset_id) is None:
+        return not_found("Dataset does not exist!")
+    if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g.current_user):
+        return forbidden(f"Bigwig dataset is not owned by logged in user!")
+    # save file in upload directory
+    filename = secure_filename(fileObject.filename)
+    file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
+    fileObject.save(file_path)
+    # check if row_count of uploaded file is equal to row_count of bedfile in database
+    dataset = Dataset.query.get(dataset_id)
+    dataset_file = pd.read_csv(dataset.file_path, sep="\t")
+    uploaded_file = pd.read_csv(file_path, sep=data["separator"])
+    if len(dataset_file) != len(uploaded_file):
+        return jsonify({"ValidationError": "Dataset length missmatch!"})
+    # detect numeric columns
+    only_numeric = uploaded_file.select_dtypes(include=np.number)
+    # save with standard separator
+    only_numeric.to_csv(file_path, index=False)
+    # add to database
+    new_metadata = BedFileMetadata(
+        name=file_path.split(os.sep)[-1], file_path=file_path, dataset_id=dataset_id
+    )
+    db.session.add(new_metadata)
+    db.session.commit()
+    # return field_names to include for metadata
+    return jsonify(
+        {
+            "message": "success! Preprocessing triggered.",
+            "field_names": list(sorted(only_numeric.columns)),
+        }
+    )
