@@ -2,6 +2,7 @@ import os
 import pdb
 import unittest
 import pandas as pd
+import numpy as np
 from test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
@@ -9,24 +10,24 @@ import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, AverageIntervalData
+from app.models import Dataset, Intervals, IndividualIntervalData
 
 
-class TestGetAverageIntervalDatas(LoginTestCase):
-    """Tests for /api/averageIntervalData route to list
-    averageIntervalData."""
+class TestGetIndividualIntervalDatas(LoginTestCase):
+    """Tests for /api/individualIntervalData route to list
+    individualIntervalData."""
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
         # protected route
         response = self.client.get(
-            "/api/averageIntervalData/?dataset_id=1&intervals_id=2",
+            "/api/individualIntervalData/?dataset_id=1&intervals_id=2",
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_cooler_dataset_does_not_exist(self):
-        """Test whether 404 if cooler dataset does not exist"""
+    def test_bigwig_dataset_does_not_exist(self):
+        """Test whether 404 if bigwig dataset does not exist"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -35,28 +36,37 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            filetype="cooler",
+            higlass_uuid="asdf12345",
+            filetype="bigwig",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/2",
+            higlass_uuid="asdf123456",
+            filetype="bedfile",
             user_id=1,
         )
         intervals1 = Intervals(
             name="testRegion1",
-            dataset_id=1,
+            dataset_id=2,
             file_path="test_path_1.bedd2db",
+            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
             binsize=10000,
             file_path="testPath1",
+            file_path_small="testPath1_small",
             dataset_id=1,
-            intervals_id=1,
-            value_type="ICCF",
+            intervals_id=1
         )
-        db.session.add_all([dataset1, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
-        # make query for non-existent cooler
+        # make query for non-existent bigwig
         response = self.client.get(
-            "/api/averageIntervalData/?dataset_id=500&intervals_id=1",
+            "/api/individualIntervalData/?dataset_id=500&intervals_id=1",
             headers=token_headers,
             content_type="application/json",
         )
@@ -72,12 +82,14 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            filetype="cooler",
+            higlass_uuid="asdf1234",
+            filetype="bigwig",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
+            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=1,
         )
@@ -85,21 +97,22 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
+            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
             binsize=10000,
             file_path="testPath1",
+            file_path_small="testPath1_small",
             dataset_id=1,
-            intervals_id=1,
-            value_type="ICCF",
+            intervals_id=1
         )
-        db.session.add_all([dataset1,dataset2, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
         # make query for non-existent intervals
         response = self.client.get(
-            "/api/averageIntervalData/?dataset_id=1&intervals_id=500",
+            "/api/individualIntervalData/?dataset_id=1&intervals_id=500",
             headers=token_headers,
             content_type="application/json",
         )
@@ -114,12 +127,14 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            filetype="cooler",
+            higlass_uuid="asdf1234",
+            filetype="bigwig",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
+            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=1,
         )
@@ -127,27 +142,26 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
+            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
             binsize=10000,
             file_path="testPath1",
+            file_path_small="testPath1_small",
             dataset_id=1,
-            intervals_id=1,
-            value_type="ICCF",
+            intervals_id=1
         )
-        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
-        # make query without parameters
+        # make query with no parameters
         response = self.client.get(
-            "/api/averageIntervalData/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/individualIntervalData/", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_no_cooler_provided(self):
+    def test_no_bigwig_provided(self):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -156,12 +170,14 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            filetype="cooler",
+            higlass_uuid="asdf1234",
+            filetype="bigwig",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
+            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=1,
         )
@@ -169,21 +185,22 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
+            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
             binsize=10000,
             file_path="testPath1",
+            file_path_small="testPath1_small",
             dataset_id=1,
-            intervals_id=1,
-            value_type="ICCF",
+            intervals_id=1
         )
-        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
-        # make query without specifying cooler
+        # make query with no bigwig provided
         response = self.client.get(
-            "/api/averageIntervalData/?intervals_id=1",
+            "/api/individualIntervalData/?intervals_id=1",
             headers=token_headers,
             content_type="application/json",
         )
@@ -198,12 +215,14 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            filetype="cooler",
+            higlass_uuid="asdf1234",
+            filetype="bigwig",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
+            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=1,
         )
@@ -211,29 +230,30 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
+            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
             binsize=10000,
             file_path="testPath1",
+            file_path_small="testPath1_small",
             dataset_id=1,
-            intervals_id=1,
-            value_type="ICCF",
+            intervals_id=1
         )
-        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
-        # make query without specifying intervals
+        # make query with no intervall provided
         response = self.client.get(
-            "/api/averageIntervalData/?dataset_id=1",
+            "/api/individualIntervalData/?dataset_id=1",
             headers=token_headers,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_forbidden_cooler_not_owned(self):
+    def test_forbidden_bigwig_not_owned(self):
         """Tests whether 403 response is sent if
-        cooler file is not owned by user in token."""
+        bigwig file is not owned by user in token."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token2 = self.add_and_authenticate("test2", "fdsa")
@@ -244,40 +264,37 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            filetype="cooler",
-            user_id=1,
+            higlass_uuid="asdf1234",
+            filetype="bigwig",
+            user_id=2,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            filetype="cooler",
-            user_id=2,
-        )
-        dataset3 = Dataset(
-            dataset_name="test3",
-            file_path="/test/path/3",
+            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=1,
         )
         intervals1 = Intervals(
             name="testRegion1",
-            dataset_id=3,
+            dataset_id=2,
             file_path="test_path_1.bedd2db",
+            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
             binsize=10000,
             file_path="testPath1",
+            file_path_small="testPath1_small",
             dataset_id=1,
             intervals_id=1,
-            value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, dataset3, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
-        # make query for forbidden cooler
+        # make query with forbidden bigwig
         response = self.client.get(
-            "/api/averageIntervalData/?dataset_id=2&intervals_id=1",
+            "/api/individualIntervalData/?dataset_id=1&intervals_id=1",
             headers=token_headers,
             content_type="application/json",
         )
@@ -295,53 +312,56 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            filetype="cooler",
+            higlass_uuid="asdf1234",
+            filetype="bigwig",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            filetype="cooler",
+            higlass_uuid="asdf12345",
+            filetype="bedfile",
             user_id=2,
         )
         dataset3 = Dataset(
             dataset_name="test3",
             file_path="/test/path/3",
+            higlass_uuid="asdf123456",
             filetype="bedfile",
-            user_id=2,
+            user_id=1,
         )
         intervals1 = Intervals(
             name="testRegion1",
-            dataset_id=1,
+            dataset_id=2,
             file_path="test_path_1.bedd2db",
+            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         intervals2 = Intervals(
             name="testRegion2",
             dataset_id=3,
             file_path="test_path_2.bedd2db",
+            higlass_uuid="testHiglass2",
             windowsize=200000,
         )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
             binsize=10000,
             file_path="testPath1",
+            file_path_small="testPath1_small",
             dataset_id=1,
-            intervals_id=1,
-            value_type="ICCF",
+            intervals_id=1
         )
-        db.session.add_all([dataset1, dataset2, dataset3, intervals1, intervals2, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, dataset3, intervals1, intervals2, individualIntervalData])
         db.session.commit()
-        # make query for forbidden intervals
+        # make query with forbidden interval
         response = self.client.get(
-            "/api/averageIntervalData/?dataset_id=1&intervals_id=2",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/individualIntervalData/?dataset_id=1&intervals_id=1", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_get_averageIntervalData_allowed_for_public_unowned(self):
-        """Tests whether listing averageIntervalData is allowed for an unowned but public dataset."""
+    def test_get_individualIntervalData_allowed_for_public_unowned(self):
+        """Tests whether listing individualIntervalData is allowed for an unowned but public dataset."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -350,20 +370,23 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            filetype="cooler",
+            higlass_uuid="asdf1234",
+            filetype="bigwig",
             public=True,
             user_id=2,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
-            filetype="cooler",
+            higlass_uuid="asdf12342",
+            filetype="bigwig",
             public=True,
             user_id=2,
         )
         dataset3 = Dataset(
             dataset_name="test3",
             file_path="/test/path/3",
+            higlass_uuid="asdf123453",
             filetype="bedfile",
             public=True,
             user_id=2,
@@ -371,6 +394,7 @@ class TestGetAverageIntervalDatas(LoginTestCase):
         dataset4 = Dataset(
             dataset_name="test4",
             file_path="/test/path/4",
+            higlass_uuid="asdf123454",
             filetype="bedfile",
             public=True,
             user_id=2,
@@ -379,45 +403,47 @@ class TestGetAverageIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=3,
             file_path="test_path_1.bedd2db",
+            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
         intervals2 = Intervals(
             name="testRegion2",
             dataset_id=4,
             file_path="test_path_2.bedd2db",
+            higlass_uuid="testHiglass2",
             windowsize=200000,
         )
-        averageIntervalData1 = AverageIntervalData(
-            name="testAverageIntervalData1",
+        individualIntervalData1 = IndividualIntervalData(
+            name="testIndividualIntervalData1",
             binsize=10000,
             file_path="testPath1",
+            file_path_small="testPath1_small",
             dataset_id=1,
             intervals_id=1,
-            value_type="ICCF",
         )
-        averageIntervalData2 = AverageIntervalData(
-            name="testAverageIntervalData2",
+        individualIntervalData2 = IndividualIntervalData(
+            name="testIndividualIntervalData2",
             binsize=10000,
             file_path="testPath2",
+            file_path_small="testPath2_small",
             dataset_id=1,
             intervals_id=2,
-            value_type="ICCF",
         )
-        averageIntervalData3 = AverageIntervalData(
-            name="testAverageIntervalData3",
+        individualIntervalData3 = IndividualIntervalData(
+            name="testIndividualIntervalData3",
             binsize=10000,
             file_path="testPath3",
+            file_path_small="testPath3_small",
             dataset_id=2,
             intervals_id=1,
-            value_type="ICCF",
         )
-        averageIntervalData4 = AverageIntervalData(
-            name="testAverageIntervalData4",
+        individualIntervalData4 = IndividualIntervalData(
+            name="testIndividualIntervalData4",
             binsize=10000,
             file_path="testPath4",
+            file_path_small="testPath4_small",
             dataset_id=2,
             intervals_id=2,
-            value_type="ICCF",
         )
         db.session.add_all(
             [
@@ -427,59 +453,55 @@ class TestGetAverageIntervalDatas(LoginTestCase):
                 dataset4,
                 intervals1,
                 intervals2,
-                averageIntervalData1,
-                averageIntervalData2,
-                averageIntervalData3,
-                averageIntervalData4,
+                individualIntervalData1,
+                individualIntervalData2,
+                individualIntervalData3,
+                individualIntervalData4,
             ]
         )
         db.session.commit()
         # make query 1
         response = self.client.get(
-            "/api/averageIntervalData/?dataset_id=1&intervals_id=1",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/individualIntervalData/?dataset_id=1&intervals_id=1", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0]["id"], 1)
         # make query 2
         response = self.client.get(
-            "/api/averageIntervalData/?dataset_id=1&intervals_id=2",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/individualIntervalData/?dataset_id=1&intervals_id=2", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0]["id"], 2)
 
 
-class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
-    """Test to check whether retrieving of averageIntervalData data
+class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
+    """Test to check whether retrieving of individualIntervalData data
     works."""
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
         # protected route
         response = self.client.get(
-            "/api/averageIntervalData/1/", content_type="application/json"
+            "/api/individualIntervalData/1/", content_type="application/json"
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_averageIntervalData_does_not_exist(self):
-        """Test 404 is returned if averageIntervalData does not exist."""
+    def test_individualIntervalData_does_not_exist(self):
+        """Test 404 is returned if individualIntervalData does not exist."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
         token_headers = self.get_token_header(token)
         # make request
         response = self.client.get(
-            "/api/averageIntervalData/500/",
+            "/api/individualIntervalData/500/",
             headers=token_headers,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 404)
 
-    def test_cooler_not_owned(self):
-        """Cooler dataset underlying averageIntervalData is not owned"""
+    def test_bigwig_not_owned(self):
+        """Bigwig dataset underlying individualIntervalData is not owned"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -488,12 +510,14 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            filetype="cooler",
+            higlass_uuid="asdf1234",
+            filetype="bigwig",
             user_id=5,
         )
         dataset2 = Dataset(
             dataset_name="test2",
             file_path="/test/path/2",
+            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=1,
         )
@@ -501,28 +525,27 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
+            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
             binsize=10000,
             file_path="testPath1",
+            file_path_small="testPath1_small",
             dataset_id=1,
             intervals_id=1,
-            value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
-        # make request for forbidden cooler
+        # make request
         response = self.client.get(
-            "/api/averageIntervalData/1/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/individualIntervalData/1/", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
     def test_intervals_not_owned(self):
-        """Intervals dataset underlying averageIntervalData is not owned"""
+        """Intervals dataset underlying individualIntervalData is not owned"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -531,12 +554,14 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            filetype="cooler",
+            higlass_uuid="asdf1234",
+            filetype="bigwig",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test2",
-            file_path="/test/path/2",
+            file_path="/test/path/1",
+            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=5,
         )
@@ -544,28 +569,27 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
+            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
             binsize=10000,
             file_path="testPath1",
+            file_path_small="testPath1_small",
             dataset_id=1,
             intervals_id=1,
-            value_type="ICCF",
         )
-        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
-        # make request with forbidden intervall
+        # make request for bigwig with forbidden interval
         response = self.client.get(
-            "/api/averageIntervalData/1/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/individualIntervalData/1/", headers=token_headers, content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
-
+#TODO:
     def test_correct_data_returned(self):
-        """Correct data is returned from an owned averageIntervalData"""
+        """Correct data is returned from an owned individualIntervalData"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -578,18 +602,22 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
                 "value": [1.66, 2.2, 3.8, 4.5],
             }
         )
-        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.csv")
-        test_data.to_csv(data_path, index=False)
+        arr = np.array([[1.66, 2.2, 3.8, 4.5]])
+        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
+        np.save(data_path,arr)
+
         # add data
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            filetype="cooler",
+            higlass_uuid="asdf1234",
+            filetype="bigwig",
             user_id=1,
         )
         dataset2 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
+            higlass_uuid="asdf12345",
             filetype="bedfile",
             user_id=1,
         )
@@ -597,23 +625,22 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
+            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
             binsize=10000,
-            file_path=data_path,
+            file_path= "data_path_big",
+            file_path_small= data_path,
             dataset_id=1,
-            intervals_id=1,
-            value_type="ICCF",
+            intervals_id=1
         )
-        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/averageIntervalData/1/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/individualIntervalData/1/", headers=token_headers, content_type="application/json",
         )
         expected = test_data.to_json()
         self.assertEqual(response.json, expected)
@@ -632,19 +659,23 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
                 "value": [1.66, 2.2, 3.8, 4.5],
             }
         )
-        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.csv")
-        test_data.to_csv(data_path, index=False)
+        arr = np.array([[1.66, 2.2, 3.8, 4.5]])
+        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
+        np.save(data_path,arr)
+
         # add data
         dataset1 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
-            filetype="cooler",
+            higlass_uuid="asdf1234",
+            filetype="bigwig",
             public=True,
             user_id=2,
         )
         dataset2 = Dataset(
             dataset_name="test1",
             file_path="/test/path/1",
+            higlass_uuid="asdf12345",
             filetype="bedfile",
             public=True,
             user_id=2,
@@ -653,23 +684,22 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
+            higlass_uuid="testHiglass1",
             windowsize=200000,
         )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
             binsize=10000,
-            file_path=data_path,
+            file_path="data_path_big",
+            file_path_small=data_path,
             dataset_id=1,
-            intervals_id=1,
-            value_type="ICCF",
+            intervals_id=1
         )
-        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/averageIntervalData/1/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/individualIntervalData/1/", headers=token_headers, content_type="application/json",
         )
         expected = test_data.to_json()
         self.assertEqual(response.json, expected)

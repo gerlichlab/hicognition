@@ -120,7 +120,7 @@ def get_averageIntervalData():
 @api.route("/individualIntervalData/", methods=["GET"])
 @auth.login_required
 def get_individualIntervalData():
-    """Gets all available averageIntervalData from a given bigwig file
+    """Gets all available individualIntervalData from a given bigwig file
     for the specified intervals_id. Only returns stackup object if
     user owns the bigwig dataset and intervals_id"""
     # unpack query string
