@@ -33,40 +33,7 @@ services:
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.3
-
-    # higlass server
-    higlass:
-        container_name: higlass-container
-        image: higlass/higlass-docker
-        environment:
-            - UPLOAD_ENABLED=true
-            - PUBLIC_UPLOAD_ENABLED=true
-        volumes:
-            - ${DATA_DIR}:/data
-            - ${HIGLASS_TMP}:/tmp
-        ports:
-            - "8888:80"
-        depends_on:
-            - higlass-usercreation
-        networks:
-            hicognition-net:
-                ipv4_address: 172.18.0.2
-
-    # dummy higlass container to create superuser if it does not exist yet
-    higlass-usercreation:
-        container_name: higlass-container-usercreation
-        image: higlass/higlass-docker
-        environment:
-            - UPLOAD_ENABLED=true
-            - PUBLIC_UPLOAD_ENABLED=true
-        volumes:
-            - ${DATA_DIR}:/data
-            - ${HIGLASS_TMP}:/tmp
-            # this depends on the path to manage.py
-        command: python /home/higlass/projects/higlass-server/manage.py shell -c "from django.contrib.auth.models import User;
-                                                                                  User.objects.filter(username='${DJANGO_SUPERUSER}').exists() or User.objects.create_superuser('${DJANGO_SUPERUSER}',
-                                                                                                                                                                                'admin1@example.com',
-                                                                                                                                                                                '${DJANGO_SUPERUSER_PASSWORD}')"
+                                                                                                                                                                       '${DJANGO_SUPERUSER_PASSWORD}')"
     # nginx server to serve front-end and redirect requests to flask-api
     nginx:
         container_name: hicognition-nginx

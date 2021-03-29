@@ -84,23 +84,6 @@ services:
         # sleeps to wait for redis-server. TODO: make this check nicer!
         command: -c "sleep 5 && source activate flask && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
 
-
-    # higlass server
-    higlass:
-        container_name: higlass-container
-        image: higlass/higlass-docker
-        environment:
-            - UPLOAD_ENABLED=true
-            - PUBLIC_UPLOAD_ENABLED=true
-        volumes:
-            - ${DATA_DIR}:/data
-            - ${HIGLASS_TMP}:/tmp
-        ports:
-            - "8888:80"
-        networks:
-            hicognition-net:
-                ipv4_address: 172.18.0.2
-
 networks:
     hicognition-net:
         ipam:
