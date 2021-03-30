@@ -52,7 +52,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "WT",
             "cooler",
             1,
-            TempDirTestCase.TEMP_PATH + "test.mcool",
+            TempDirTestCase.TEMP_PATH + f"{dataset.id}_test.mcool",
         ]
         actual = [
             dataset.id,
@@ -102,7 +102,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "No genotype provided",
             "cooler",
             1,
-            TempDirTestCase.TEMP_PATH + "test.mcool",
+            TempDirTestCase.TEMP_PATH + f"{dataset.id}_test.mcool",
         ]
         actual = [
             dataset.id,
@@ -152,7 +152,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "WT",
             "bedfile",
             1,
-            TempDirTestCase.TEMP_PATH + "test.bed",
+            TempDirTestCase.TEMP_PATH + f"{dataset.id}_test.bed",
         ]
         actual = [
             dataset.id,

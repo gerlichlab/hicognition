@@ -2,7 +2,9 @@ import os
 import pdb
 import unittest
 import pandas as pd
+import numpy as np
 from test_helpers import LoginTestCase, TempDirTestCase
+
 
 # add path to import app
 import sys
@@ -575,15 +577,17 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         # create token header
         token_headers = self.get_token_header(token)
         # create datafile
-        test_data = pd.DataFrame(
+        test_data_return = pd.DataFrame(
             {
                 "variable": [0, 0, 0, 0],
                 "group": [0, 1, 2, 3],
                 "value": [1.66, 2.2, 3.8, 4.5],
             }
         )
-        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.csv")
-        test_data.to_csv(data_path, index=False)
+        test_data = np.array([[1.66, 2.2, 3.8, 4.5]])
+        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
+        np.save(data_path, test_data)
+
         # add data
         dataset1 = Dataset(
             dataset_name="test1",
@@ -592,8 +596,8 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             user_id=1,
         )
         dataset2 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
+            dataset_name="test2",
+            file_path="/test/path/2",
             filetype="bedfile",
             user_id=1,
         )
@@ -619,7 +623,7 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             headers=token_headers,
             content_type="application/json",
         )
-        expected = test_data.to_json()
+        expected = test_data_return.to_json()
         self.assertEqual(response.json, expected)
 
     def test_public_unowned_data_returned(self):
@@ -629,15 +633,16 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         # create token header
         token_headers = self.get_token_header(token)
         # create datafile
-        test_data = pd.DataFrame(
+        test_data_back = pd.DataFrame(
             {
                 "variable": [0, 0, 0, 0],
                 "group": [0, 1, 2, 3],
                 "value": [1.66, 2.2, 3.8, 4.5],
             }
         )
-        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.csv")
-        test_data.to_csv(data_path, index=False)
+        test_data = np.array([[1.66, 2.2, 3.8, 4.5]])
+        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
+        np.save(data_path, test_data)
         # add data
         dataset1 = Dataset(
             dataset_name="test1",
@@ -675,7 +680,7 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             headers=token_headers,
             content_type="application/json",
         )
-        expected = test_data.to_json()
+        expected = test_data_back.to_json()
         self.assertEqual(response.json, expected)
 
 

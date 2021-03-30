@@ -43,7 +43,11 @@ def pipeline_bed(dataset_id):
     dataset_object.file_path = sorted_file_name
     # delete old file
     log.info("      Delete Unsorted...")
-    os.remove(file_path)
+    try:
+        os.remove(file_path)
+    except FileNotFoundError:
+        log.warning(f"Tried removing {file_path}, but file does not exist!")
+    
     db.session.commit()
     for window in window_sizes:
         # preprocessing

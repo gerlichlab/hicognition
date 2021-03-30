@@ -343,7 +343,7 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         perform_pileup(self.dataset, self.intervals1, 10000, arms, "ICCF")
         # check whether get_expected was called
         mock_export.assert_called_with(
-            "testCooler", self.app.config["UPLOAD_DIR"] + "/asdf.csv"
+            "testCooler", self.app.config["UPLOAD_DIR"] + "/asdf.npy"
         )
 
     @patch("app.pipeline_steps.uuid.uuid4")
@@ -379,7 +379,7 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         perform_pileup(self.dataset, self.intervals1, 10000, arms, "ICCF")
         # check whether get_expected was called
         mock_add_db.assert_called_with(
-            self.app.config["UPLOAD_DIR"] + "/asdf.csv",
+            self.app.config["UPLOAD_DIR"] + "/asdf.npy",
             10000,
             self.intervals1.id,
             self.dataset.id,
