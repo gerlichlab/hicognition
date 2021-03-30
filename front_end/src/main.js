@@ -7,7 +7,7 @@ Vue.config.errorHandler = function(err, vm, info){
   /*
     This eats the select error from vue-matrial input select dropdowns
   */
-  if (vm.$el.classList.contains("md-select")){
+  if (vm.$el.classList.contains("md-select") || vm.$el.classList.contains("md-file")){
     return
   }
   throw err;

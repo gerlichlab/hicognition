@@ -1,52 +1,44 @@
 <template>
   <div>
     <!-- Form definition -->
-    <form novalidate class="md-layout" @submit.prevent="validateDataset" enctype="multipart/form-data">
+    <form
+      novalidate
+      class="md-layout"
+      @submit.prevent="validateDataset"
+      enctype="multipart/form-data"
+    >
       <md-card class="md-layout-item">
         <!-- Field definitions -->
         <md-card-content>
-          <!-- Dataset name ande genotyp; first row -->
+          <!-- Intervals for which annotations are added; first row -->
           <div class="md-layout md-gutter">
-            <!-- dataset name -->
+            <!-- Regions -->
             <div class="md-layout-item md-small-size-100">
-              <md-field :class="getValidationClass('datasetName')">
-                <label for="dataset-name">Name</label>
-                <md-input
-                  name="dataset-name"
-                  id="dataset-name"
-                  v-model="form.datasetName"
-                  :disabled="sending"
+              <md-field :class="getValidationClass('datasetID')">
+                <label for="datasetID">Regions</label>
+                <md-select
+                  name="datasetID"
+                  id="datasetID"
+                  v-model="form.datasetID"
+                  md-dense
+                  :disabled="!bedFilesAvailable"
                   required
-                />
-                <span class="md-error" v-if="!$v.form.datasetName.required"
-                  >A dataset name is required</span
                 >
-                <span
-                  class="md-error"
-                  v-else-if="!$v.form.datasetName.minlength"
-                  >Invalid dataset name</span
+                  <md-option
+                    v-for="item in availableBedFiles"
+                    :value="item.id"
+                    :key="item.id"
+                    >{{ item.dataset_name }}</md-option
+                  >
+                </md-select>
+                <span class="md-error" v-if="!$v.form.datasetID.required"
+                  >Regions are required</span
                 >
-              </md-field>
-            </div>
-            <!-- Genotype field -->
-            <div class="md-layout-item md-small-size-100">
-              <md-field :class="getValidationClass('genotype')">
-                <label for="genotype">Genotype</label>
-                <md-input
-                  name="genotype"
-                  id="genotype"
-                  v-model="form.genotype"
-                  :disabled="sending"
-                />
               </md-field>
             </div>
           </div>
-          <!-- Second row -->
+          <!-- Target file and separator; Second row -->
           <div class="md-layout md-gutter">
-            <!-- public checkbox -->
-            <div class="md-layout-item md-small-size-100">
-                <md-checkbox v-model="form.public" class="top-margin">Public</md-checkbox>
-            </div>
             <!-- file field -->
             <div class="md-layout-item md-small-size-100">
               <md-field :class="getValidationClass('file')">
@@ -65,15 +57,23 @@
               </md-field>
             </div>
           </div>
-          <!-- Short description field -->
-          <md-field :class="getValidationClass('description')">
-            <label for="description">Short Description</label>
-            <md-textarea
-              v-model="form.description"
-              md-counter="80"
-              maxlength="80"
-              :disabled="sending"
-            />
+          <!-- Separator Fields -->
+          <md-field :class="getValidationClass('separator')">
+            <label for="separator">Text-file separator</label>
+            <md-select
+              name="separator"
+              id="separator"
+              v-model="form.separator"
+              md-dense
+              required
+            >
+              <md-option v-for="item in separators" :value="item.value" :key="item.value">{{
+                item.name
+              }}</md-option>
+            </md-select>
+            <span class="md-error" v-if="!$v.form.separator.required"
+              >A separator is required</span
+            >
           </md-field>
         </md-card-content>
         <!-- Progress bar -->
@@ -90,7 +90,7 @@
       </md-card>
       <!-- Submission notification -->
       <md-snackbar :md-active.sync="datasetSaved"
-        >The Dataset was added successfully and is ready for preprocessing!</md-snackbar
+        >Metadata was added succesfully</md-snackbar
       >
     </form>
   </div>
@@ -100,28 +100,24 @@
 import { validationMixin } from "vuelidate";
 import {
   required,
-  email,
-  minLength,
-  maxLength,
 } from "vuelidate/lib/validators";
 import { apiMixin } from "../mixins";
 
 export default {
-  name: "addDatasetForm",
+  name: "addMetadataForm",
   mixins: [validationMixin, apiMixin],
   data: () => ({
-    fileTypeMapping: {
-      "bed": "bedfile",
-      "mcool": "cooler",
-      "bw": "bigwig"
-    },
     form: {
-      datasetName: null,
-      public: false,
-      genotype: null,
+      datasetID: null,
       file: null,
-      description: null,
+      separator: null,
     },
+    availableBedFiles: [],
+    separators: [
+      {"name": "Comma", "value": ","},
+      {"name": "Semicolon", "value": ";"},
+      {"name": "Tab", "value": "tab"}
+    ],
     datasetSaved: false,
     sending: false,
     selectedFile: null
@@ -129,36 +125,34 @@ export default {
   validations: {
     // validators for the form
     form: {
-      datasetName: {
+      datasetID: {
         required,
-        minLength: minLength(3),
       },
-      public: {},
-      genotype: {},
       file: {
         required,
       },
-      description: {
-        maxLength: maxLength(80),
+      separator: {
+        required,
       },
     },
   },
   computed: {
-    selectedFileType: function() {
-      if (this.fileEnding){
-        return this.fileTypeMapping[this.fileEnding]
-      }
-      return undefined
-    },
-    fileEnding: function() {
-      if (this.form.file){
-        var splitFileName = this.form.file.split(".");
-        return splitFileName[splitFileName.length - 1]
-      }
-      return undefined
-    }
+      bedFilesAvailable: function () {
+          return this.availableBedFiles.length != 0;
+      },
   },
   methods: {
+    fetchDatasets: function () {
+        // fetches available datasets (cooler and bedfiles) from server
+      this.fetchData("datasets/").then((response) => {
+        // success, store datasets
+        this.$store.commit("setDatasets", response.data);
+        // update datasets
+        this.availableBedFiles = response.data.filter(
+          (element) => element.filetype == "bedfile" && element.processing_state == "finished"
+        );
+      });
+    },
     getValidationClass(fieldName) {
       // matrial validation class for form field;
       const field = this.$v.form[fieldName];
@@ -175,11 +169,9 @@ export default {
     },
     clearForm() {
       this.$v.$reset();
-      this.form.datasetName = null;
-      this.form.genotype = null;
+      this.form.datasetID = null;
       this.form.file = null;
-      this.form.description = null;
-      this.form.public = false;
+      this.form.separator = null;
     },
     saveDataset() {
       this.sending = true; // show progress bar
@@ -193,10 +185,8 @@ export default {
             formData.append(key, this.form[key]);
           }
       }
-      // add filetype
-      formData.append("filetype", this.selectedFileType)
       // API call including upload is made in the background
-      this.postData("datasets/", formData);
+      //this.postData("datasets/", formData);
       // show progress bar for 1.5 s
       window.setTimeout(() => {
         this.datasetSaved = true;
@@ -211,6 +201,9 @@ export default {
       }
     },
   },
+  created: function () {
+    this.fetchDatasets();
+  }
 };
 </script>
 

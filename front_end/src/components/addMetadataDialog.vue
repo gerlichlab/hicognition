@@ -3,26 +3,33 @@
     <md-dialog :md-active.sync="showDialog">
       <md-dialog-title>Add Metadata
       </md-dialog-title>
-        <addMetadataForm @close-dialog="$emit('close-dialog')"></addMetadataForm>
+        <addMetadataStepper @close-dialog="$emit('close-dialog')"></addMetadataStepper>
     </md-dialog>
 
   </div>
 </template>
 
 <script>
-import addMetadataForm from "./addMetadataForm"
+import addMetadataStepper from "./addMetadataStepper"
 
 export default {
     name: 'DialogCustom',
     components: {
-      addMetadataForm
+      addMetadataStepper
     },
     props: {
         dialog: Boolean
     },
     computed: {
-        showDialog: function () {
+        showDialog: {
+          set: function(value){
+            if (!value){
+              this.$emit('close-dialog')
+            }
+          },
+          get: function() {
             return this.dialog
+          }
         }
     }
   }
