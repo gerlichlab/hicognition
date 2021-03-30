@@ -191,7 +191,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         data = {
             "dataset_id": 1,
             "file": (open(payload_filepath, "rb"), "test.csv"),
-            "separator": "\t",
+            "separator": "tab",
         }
         # dispatch post request
         response = self.client.post(
@@ -233,7 +233,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         data = {
             "dataset_id": 1,
             "file": (open(payload_filepath, "rb"), "test.csv"),
-            "separator": "\t",
+            "separator": "tab",
         }
         # dispatch post request
         response = self.client.post(
@@ -285,7 +285,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         data = {
             "dataset_id": 1,
             "file": (open(payload_filepath, "rb"), "test.csv"),
-            "separator": "\t",
+            "separator": "tab",
         }
         # dispatch post request
         response = self.client.post(

@@ -181,6 +181,12 @@ def add_bedfile_metadata():
     If uploaded metadatafile has different row-number than original bedfile ->
     return error."""
 
+    SEPARATOR_MAP = {
+        ",": ",",
+        ";": ";",
+        "tab": "\t"
+    }
+
     def is_form_invalid():
         if not hasattr(request, "form"):
             return True
@@ -214,7 +220,7 @@ def add_bedfile_metadata():
     # check whether row-number is correct
     dataset = Dataset.query.get(dataset_id)
     dataset_file = pd.read_csv(dataset.file_path, sep="\t")
-    uploaded_file = pd.read_csv(fileObject, sep=data["separator"]) # generate uploaded dataframe from io-stream in memory
+    uploaded_file = pd.read_csv(fileObject, sep=SEPARATOR_MAP[data["separator"]]) # generate uploaded dataframe from io-stream in memory
     if len(dataset_file) != len(uploaded_file):
         return jsonify({"ValidationError": "Dataset length missmatch!"})
     # detect numeric columns
