@@ -115,13 +115,23 @@ def preprocess_dataset():
         return not_found("Dataset does not exist!")
     if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g.current_user):
         return forbidden(f"Cooler dataset is not owned by logged in user!")
-    current_user.launch_task(
-        "pipeline_pileup",
-        "run pileup pipeline",
-        dataset_id,
-        binsizes,
-        interval_ids,
-    )
+    if Dataset.query.get(dataset_id).filetype == "cooler":
+        current_user.launch_task(
+            "pipeline_pileup",
+            "run pileup pipeline",
+            dataset_id,
+            binsizes,
+            interval_ids,
+        )
+    if Dataset.query.get(dataset_id).filetype == "bigwig":
+        current_user.launch_task(
+            "pipeline_stackup",
+            "run stackup pipeline",
+            dataset_id,
+            binsizes,
+            interval_ids,
+        )
+
     # set processing state
     dataset = Dataset.query.get(dataset_id)
     dataset.processing_state = "processing"

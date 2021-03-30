@@ -1,7 +1,7 @@
 <template>
   <div>
     <md-dialog :md-active.sync="showDialog">
-      <md-dialog-title>Preprocess Hi-C Dataset
+      <md-dialog-title>Preprocess Dataset
       </md-dialog-title>
         <preprocessDatasetForm @close-dialog="$emit('close-dialog')"></preprocessDatasetForm>
     </md-dialog>
