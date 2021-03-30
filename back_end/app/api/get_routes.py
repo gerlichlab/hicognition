@@ -165,7 +165,17 @@ def get_pileup_data(pileup_id):
     ) or is_access_to_dataset_denied(bed_ds, g.current_user):
         return forbidden("Cooler dataset or bed dataset is not owned by logged in user!")
     # dataset is owned, return the data
-    csv_data = pd.read_csv(pileup.file_path)
+    np_data = np.load(pileup.file_path)
+    #TODO: send as array
+    variable = []
+    group = []
+    value = []
+    for var,row in enumerate(np_data):
+        for grp, item in enumerate(row): 
+            variable.append(var)
+            group.append(grp)
+            value.append(item)
+    csv_data = pd.DataFrame(list(zip(variable,group,value)), columns=["variable", "group", "value"])
     json_data = csv_data.to_json()
     return jsonify(json_data)
 
@@ -188,6 +198,7 @@ def get_stackup_data(stackup_id):
     np_data = np.load(stackup.file_path_small)
     #sort by middle column
     np_data = np_data[np.argsort(np_data[:,int(np_data.shape[1]/2)])]
+    #TODO: send as array
     variable = []
     group = []
     value = []

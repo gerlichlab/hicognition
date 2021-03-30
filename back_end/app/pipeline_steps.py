@@ -85,9 +85,10 @@ def perform_pileup(cooler_dataset, intervals, binsize, arms, pileup_type):
         pileup_array = HT.do_pileup_iccf(cooler_file, pileup_windows, proc=1)
     # prepare dataframe for js reading1
     log.info("      Writing output...")
-    file_name = uuid.uuid4().hex + ".csv"
+    file_name = uuid.uuid4().hex + ".npy"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
-    export_df_for_js(pileup_array, file_path)
+    #export_df_for_js(pileup_array, file_path)
+    np.save(file_path, pileup_array)
     # add this to database
     log.info("      Adding database entry...")
     add_pileup_db(file_path, binsize, intervals.id, cooler_dataset.id, pileup_type)
