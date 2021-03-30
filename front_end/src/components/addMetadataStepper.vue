@@ -69,7 +69,7 @@ export default {
 <style lang="scss" scoped>
 
 .half-width {
-    width: 25vw;
+    width: 50vw;
 }
 
 
