@@ -18,7 +18,7 @@
                 <md-select
                   name="metadataFields"
                   id="metadataFields"
-                  v-model="form.metadataFields"
+                  v-model="form.fields"
                   md-dense
                   :disabled="!fieldsAvailable"
                   required
@@ -31,7 +31,7 @@
                     >{{ item }}</md-option
                   >
                 </md-select>
-                <span class="md-error" v-if="!$v.form.metadataFields.required"
+                <span class="md-error" v-if="!$v.form.fields.required"
                   >Field selection is required</span
                 >
               </md-field>
@@ -68,18 +68,21 @@ import { apiMixin } from "../mixins";
 export default {
   name: "addMetadataFields",
   mixins: [validationMixin, apiMixin],
+  props: {
+      availableFields: Array,
+      metadataID: Number
+  },
   data: () => ({
     form: {
-      metadataFields: null,
+      fields: null,
     },
-    availableFields: ["test1", "test2", "test3"],
     datasetSaved: false,
     sending: false
   }),
   validations: {
     // validators for the form
     form: {
-      metadataFields: {
+      fields: {
         required,
       }
     },
@@ -102,23 +105,24 @@ export default {
     },
     clearForm() {
       this.$v.$reset();
-      this.form.metadataFields = null
+      this.form.fields = null
     },
     saveDataset() {
       this.sending = true; // show progress bar
       // construct form data
       var formData = new FormData();
-      for (var key in this.form){
-            formData.append(key, this.form[key]);
-      }
-      // API call including upload is made in the background
-      //this.postData("datasets/", formData);
-      // show progress bar for 1.5 s
-      window.setTimeout(() => {
-        this.datasetSaved = true;
-        this.sending = false;
-        this.clearForm();
-      }, 1500);
+      formData.append("fields", JSON.stringify(this.form["fields"]));
+      // API call
+      this.postData(`bedFileMetadata/${this.metadataID}/setFields`, formData).then(response => {
+            if (!response){
+                // error was caught and detected
+                this.sending = false;
+                this.clearForm();
+            }else{
+                this.datasetSaved = true;
+                this.sending = false;
+            }
+      });
     },
     validateDataset() {
       this.$v.$touch();

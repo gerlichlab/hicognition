@@ -186,13 +186,18 @@ export default {
           }
       }
       // API call including upload is made in the background
-      //this.postData("datasets/", formData);
-      // show progress bar for 1.5 s
-      window.setTimeout(() => {
-        this.datasetSaved = true;
-        this.sending = false;
-        this.clearForm();
-      }, 1500);
+      this.postData("bedFileMetadata/", formData).then(response => {
+        if ("ValidationError" in response.data){
+          this.$emit("form-error");
+          this.sending = false;
+          this.clearForm();
+        }else{
+          this.datasetSaved = true;
+          this.sending = false;
+          this.clearForm();
+          this.$emit("success", response.data);
+        }
+      });
     },
     validateDataset() {
       this.$v.$touch();

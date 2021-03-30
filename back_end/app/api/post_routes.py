@@ -272,7 +272,7 @@ def add_bedfile_metadata_fields(metadata_id):
     # check whether field_names are correct
     metadata = BedFileMetadata.query.get(metadata_id)
     metadata_file = pd.read_csv(metadata.file_path)
-    if not all(key in metadata_file.columns for key in field_map.keys()):
+    if not all(key in metadata_file.columns for key in field_map):
         return invalid("Field names not understood!")
     # store field_map in database
     metadata.metadata_fields = json.dumps(field_map)

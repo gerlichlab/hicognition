@@ -352,7 +352,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "fields": json.dumps({"asdf": "fdsa"}),
+            "fields": json.dumps(["asdf"]),
         }
         # dispatch post request
         response = self.client.post(
@@ -380,7 +380,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "fields": json.dumps({"asdf": "fdsa"}),
+            "fields": json.dumps(["asdf"]),
         }
         # dispatch post request
         response = self.client.post(
@@ -418,7 +418,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "fields": json.dumps({"asdf": "fdsa"}),
+            "fields": json.dumps(["asdf"]),
         }
         # dispatch post request
         response = self.client.post(
@@ -456,7 +456,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "fields": json.dumps({"size": "Size", "start": "Start"}),
+            "fields": json.dumps(["size", "start"]),
         }
         # dispatch post request
         response = self.client.post(
@@ -469,7 +469,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         # check whether fields were added correctly
         metadata = BedFileMetadata.query.get(1)
         actual = metadata.metadata_fields
-        expected = json.dumps({"size": "Size", "start": "Start"})
+        expected = json.dumps(["size", "start"])
         self.assertEqual(actual, expected)
 
 

@@ -64,7 +64,7 @@ export var apiMixin = {
             }
             // base64 encoding of token
             var encodedToken = btoa(token + ":");
-            this.$http
+            return this.$http
                 .post(process.env.API_URL + url, formData, {
                     headers: {
                         "Authorization": `Basic ${encodedToken}`,
