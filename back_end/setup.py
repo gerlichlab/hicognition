@@ -1,5 +1,4 @@
 import setuptools
-import os
 
 with open('VERSION') as version_file:
    version_number = version_file.read().strip()
