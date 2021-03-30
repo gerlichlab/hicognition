@@ -17,9 +17,6 @@ export default {
     return {
       appversion: process.env.VERSION
     }
-  },
-  created () {
-    console.log(process.env);
   }
 };
 </script>
