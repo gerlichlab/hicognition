@@ -137,9 +137,14 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
     )
     # save full length array to file
     log.info("      Writing output...")
-    file_name = uuid.uuid4().hex + ".npy"
+    file_uuid = uuid.uuid4().hex
+    file_name = file_uuid + ".npy"
+    file_name_line = file_uuid + "_line.npy"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
+    file_path_line = os.path.join(current_app.config["UPLOAD_DIR"], file_name_line)
     np.save(file_path, stackup_array)
+    line_array = np.mean(stackup_array, axis=0)
+    np.save(file_path_line, line_array)
     # save downsampled array to file
     if len(stackup_regions) < current_app.config["STACKUP_THRESHOLD"]:
         # if there are less than 1000 examples, small file is the same as large file
@@ -147,13 +152,13 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
     else:
         # set random seed
         np.random.seed(42)
-        # subsmple
+        # subsample
         index = np.arange(len(stackup_regions))
         sub_sample_index = np.random.choice(
             index, current_app.config["STACKUP_THRESHOLD"]
         )
         downsampled_array = stackup_array[sub_sample_index, :]
-        file_name_small = uuid.uuid4().hex + ".npy"
+        file_name_small = file_uuid + "_small.npy"
         file_path_small = os.path.join(
             current_app.config["UPLOAD_DIR"], file_name_small
         )
@@ -161,6 +166,7 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
     # add to database
     log.info("      Adding database entry...")
     add_stackup_db(file_path, file_path_small, binsize, intervals.id, bigwig_dataset.id)
+    add_line_db(file_path_line, binsize, intervals.id, bigwig_dataset.id)
     log.info("      Success!")
 
 
@@ -189,6 +195,19 @@ def add_stackup_db(
         file_path_small=file_path_small,
         intervals_id=intervals_id,
         dataset_id=bigwig_dataset_id,
+    )
+    db.session.add(new_entry)
+    db.session.commit()
+
+def add_line_db(file_path, binsize, intervals_id, bigwig_dataset_id):
+    """Adds pileup region to database"""
+    new_entry = AverageIntervalData(
+        binsize=int(binsize),
+        name=os.path.basename(file_path),
+        file_path=file_path,
+        intervals_id=intervals_id,
+        dataset_id=bigwig_dataset_id,
+        value_type="line",
     )
     db.session.add(new_entry)
     db.session.commit()
