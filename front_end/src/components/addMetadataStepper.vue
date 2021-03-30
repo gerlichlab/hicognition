@@ -3,13 +3,14 @@
   <div class="half-width">
     <md-steppers :md-active-step.sync="active" md-linear>
       <md-step id="first" md-label="Upload Metadata file" :md-error="firstStepError" :md-editable="false" :md-done.sync="first">
-        <addMetadataForm @close-dialog="$emit('close-dialog')" @success="handleMetadataAdditionSuccessful" @form-error="setError()"></addMetadataForm>
+        <addMetadataForm @success="handleMetadataAdditionSuccessful" @form-error="setError()"></addMetadataForm>
         <md-button class="md-raised md-primary" @click="setDone('first', 'second')" :disabled="blockSecondStep">Continue</md-button>
+        <md-button class="md-raised md-primary" @click="$emit('close-dialog')">Close</md-button>
       </md-step>
 
       <md-step id="second" md-label="Specify Metadata fields" :md-editable="false" :md-done.sync="second">
-        <addMetadataFieldsForm @close-dialog="$emit('close-dialog')" :availableFields="fields" :metadataID="metadataID"></addMetadataFieldsForm>
-        <md-button class="md-raised md-primary" @click="setDone('second'); $emit('close-dialog')">Done</md-button>
+        <addMetadataFieldsForm :availableFields="fields" :metadataID="metadataID" @success="handleFieldAdditionSuccessful"></addMetadataFieldsForm>
+        <md-button class="md-raised md-primary" @click="$emit('close-dialog')">Close</md-button>
       </md-step>
 
     </md-steppers>
@@ -43,6 +44,9 @@ export default {
         if (index) {
           this.active = index
         }
+      },
+      handleFieldAdditionSuccessful(event){
+        this.second = true;
       },
       handleMetadataAdditionSuccessful(event) {
         this.fields = event["field_names"]

@@ -13,7 +13,7 @@
           <div class="md-layout md-gutter">
             <!-- Possible metadata fields -->
             <div class="md-layout-item md-small-size-100">
-              <md-field :class="getValidationClass('metadataFields')">
+              <md-field :class="getValidationClass('fields')">
                 <label for="metadataFields">Metadata Fields</label>
                 <md-select
                   name="metadataFields"
@@ -44,9 +44,6 @@
         <md-card-actions>
           <md-button type="submit" class="md-primary" :disabled="sending"
             >Set Metadata Fields</md-button
-          >
-          <md-button class="md-primary" @click="$emit('close-dialog')"
-            >Close</md-button
           >
         </md-card-actions>
       </md-card>
@@ -121,6 +118,7 @@ export default {
             }else{
                 this.datasetSaved = true;
                 this.sending = false;
+                this.$emit("success");
             }
       });
     },

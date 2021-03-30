@@ -172,7 +172,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         test_data = pd.DataFrame(
             {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
         )
-        test_data.to_csv(test_filepath, sep="\t")
+        test_data.to_csv(test_filepath, sep="\t", header=None)
         # create paylod_file
         payload_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "payload.bed")
         payload_data = pd.DataFrame(
@@ -214,7 +214,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         test_data = pd.DataFrame(
             {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
         )
-        test_data.to_csv(test_filepath, sep="\t", index=False)
+        test_data.to_csv(test_filepath, sep="\t", index=False, header=None)
         # create paylod_file
         payload_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "payload.bed")
         payload_data = pd.DataFrame(
@@ -261,7 +261,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         test_data = pd.DataFrame(
             {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
         )
-        test_data.to_csv(test_filepath, sep="\t", index=False)
+        test_data.to_csv(test_filepath, sep="\t", index=False, header=None)
         # create paylod_file
         payload_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "payload.bed")
         payload_data = pd.DataFrame(

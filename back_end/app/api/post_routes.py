@@ -219,7 +219,7 @@ def add_bedfile_metadata():
         return forbidden(f"Dataset is not owned by logged in user!")
     # check whether row-number is correct
     dataset = Dataset.query.get(dataset_id)
-    dataset_file = pd.read_csv(dataset.file_path, sep="\t")
+    dataset_file = pd.read_csv(dataset.file_path, sep="\t", header=None) # during upload process, the header of bedfiles is removed
     uploaded_file = pd.read_csv(fileObject, sep=SEPARATOR_MAP[data["separator"]]) # generate uploaded dataframe from io-stream in memory
     if len(dataset_file) != len(uploaded_file):
         return jsonify({"ValidationError": "Dataset length missmatch!"})

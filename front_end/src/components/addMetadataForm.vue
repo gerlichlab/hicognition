@@ -83,9 +83,6 @@
           <md-button type="submit" class="md-primary" :disabled="sending"
             >Submit dataset</md-button
           >
-          <md-button class="md-primary" @click="$emit('close-dialog')"
-            >Close</md-button
-          >
         </md-card-actions>
       </md-card>
       <!-- Submission notification -->
