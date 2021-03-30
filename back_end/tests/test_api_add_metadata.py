@@ -46,7 +46,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "dataset_id": "1",
+            "datasetID": "1",
             "file": (io.BytesIO(b"abcdef"), "test.csv"),
             "separator": ",",
         }
@@ -97,7 +97,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         # add content-type
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
-        data = {"dataset_id": 1, "file": (io.BytesIO(b"abcdef"), "test.csv")}
+        data = {"datasetID": 1, "file": (io.BytesIO(b"abcdef"), "test.csv")}
         # dispatch post request
         response = self.client.post(
             "/api/bedFileMetadata/",
@@ -122,7 +122,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "dataset_id": 1,
+            "datasetID": 1,
             "file": (io.BytesIO(b"abcdef"), "test.cool"),
             "separator": ",",
         }
@@ -149,7 +149,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "dataset_id": 500,
+            "datasetID": 500,
             "file": (io.BytesIO(b"abcdef"), "test.csv"),
             "separator": ",",
         }
@@ -189,7 +189,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "dataset_id": 1,
+            "datasetID": 1,
             "file": (open(payload_filepath, "rb"), "test.csv"),
             "separator": "tab",
         }
@@ -231,7 +231,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "dataset_id": 1,
+            "datasetID": 1,
             "file": (open(payload_filepath, "rb"), "test.csv"),
             "separator": "tab",
         }
@@ -283,7 +283,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "dataset_id": 1,
+            "datasetID": 1,
             "file": (open(payload_filepath, "rb"), "test.csv"),
             "separator": "tab",
         }
@@ -303,6 +303,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
                 "field_names": list(
                     sorted(payload_data.drop("string_column", axis="columns"))
                 ),
+                "id": 1
             },
         )
         # check whether metadata database entry was created and links to correct dataset
