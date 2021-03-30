@@ -162,7 +162,7 @@ const store = new Vuex.Store({
         return state.user_id
       },
       getCoolersDirty: state => {
-        // gets cooler files that can be in the state of processing -> for compare view TODO: still needed?
+        // gets cooler files that can be in the state of processing -> for compare view
         return state.datasets.filter(
           (element) => element.filetype == "cooler"
         );
@@ -170,6 +170,12 @@ const store = new Vuex.Store({
       getCoolers: state => {
         return state.datasets.filter(
           (element) => element.filetype == "cooler" && (element.processing_state == "finished")
+        );
+      },
+      getBigwigsDirty: state => {
+        // gets bigwig files that can be in the state of processing -> for compare view
+        return state.datasets.filter(
+          (element) => element.filetype == "bigwig"
         );
       },
       getBigwigs: state => {

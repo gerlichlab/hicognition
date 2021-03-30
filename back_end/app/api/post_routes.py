@@ -75,13 +75,12 @@ def add_dataset():
     new_entry.file_path = file_path
     new_entry.processing_state = "uploaded"
     db.session.add(new_entry)
-    db.session.commit()
     # start preprocessing of bedfile, the other filetypes do not need preprocessing
     if data["filetype"] == "bedfile":
         current_user.launch_task("pipeline_bed", "run bed preprocessing", new_entry.id)
         # set processing state
         new_entry.processing_state = "processing"
-        db.session.commit()
+    db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 
 

@@ -196,7 +196,7 @@ export default {
                     intervalID: collectionData["intervalID"],
                     emptyClass: ["smallMargin", "empty"],
                     binsizes: [],
-                    datasets: this.$store.getters.getBigwigs,
+                    datasets: this.$store.getters.getBigwigsDirty,
                     isDefault: true
             }
             // write properties to store
@@ -214,7 +214,7 @@ export default {
                 intervalID: collectionConfig["intervalID"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
-                datasets: this.$store.getters.getBigwigs,
+                datasets: this.$store.getters.getBigwigsDirty,
                 isDefault: true
             }
         },
@@ -244,7 +244,7 @@ export default {
                 intervalID: collectionConfig["intervalID"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
-                datasets: this.$store.getters.getBigwigs,
+                datasets: this.$store.getters.getBigwigsDirty,
                 isDefault: widgetData["isDefault"]
             }
         },
@@ -295,7 +295,7 @@ export default {
     watch: {
         "$store.state.datasets": function() {
             // updates datasets if they change -> get coolers that may be in the status of processing
-            this.datasets = this.$store.getters.getBigwigs
+            this.datasets = this.$store.getters.getBigwigsDirty
         },
         // watch for changes in store to be able to update intervals
         "$store.state.compare.widgetCollections": {

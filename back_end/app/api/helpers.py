@@ -12,7 +12,7 @@ def is_dataset_deletion_denied(dataset_id, current_user):
 
 
 def update_processing_state(datasets, db):
-    """updates processing state of all datasets in the supplied iterabel"""
+    """updates processing state of all datasets in the supplied iterable"""
     for dataset in datasets:
         dataset.set_processing_state(db)
 
