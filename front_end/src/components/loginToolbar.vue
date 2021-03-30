@@ -10,12 +10,18 @@
 </template>
 
 <script>
-import {version} from '../../package.json'
+
 export default {
   name: "loginToolbar",
-  appversion: version,
+  data: function () {
+    return {
+      appversion: process.env.VERSION
+    }
+  },
+  created () {
+    console.log(process.env);
+  }
 };
-//TODO: Version is not working.
 </script>
 
 <style>
