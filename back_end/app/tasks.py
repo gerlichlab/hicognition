@@ -26,14 +26,6 @@ def pipeline_bed(dataset_id):
     """Starts the pipeline for
     bed-files. Pipeline:
     - sort bedfile associated with dataset_id
-    - run clodius on sorted bedfile
-    - upload clodius result to higlass
-    - store higlass_uuid in Dataset db entry
-    - For each windowsize in window_sizes, do:
-        * convert bed to bedpe
-        * run clodius on bedpe
-        * upload result to higlass
-        * Add Intervals dataset entry
     - Indicate in Job table in database that job is complete.
     Output-folder is not needed for this since the file_path
     of Dataset entry contains it.
@@ -49,6 +41,9 @@ def pipeline_bed(dataset_id):
     # set sorted_file_name as file_name
     dataset_object = Dataset.query.get(dataset_id)
     dataset_object.file_path = sorted_file_name
+    # delete old file
+    log.info("      Delete Unsorted...")
+    os.remove(file_path)
     db.session.commit()
     for window in window_sizes:
         # preprocessing

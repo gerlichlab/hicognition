@@ -65,13 +65,13 @@ def add_dataset():
     )
     db.session.add(new_entry)
     db.session.commit()
-    # save file in upload directory
-    filename = secure_filename(fileObject.filename)
+    # save file in upload directory with database_id as prefix
+    filename = f"{new_entry.id}_{secure_filename(fileObject.filename)}" 
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     fileObject.save(file_path)
     if data["filetype"] not in ["cooler", "bedfile", "bigwig"]:
         return invalid("datatype not understood")
-    # add file_path to database entr
+    # add file_path to database entry
     new_entry.file_path = file_path
     new_entry.processing_state = "uploaded"
     db.session.add(new_entry)
