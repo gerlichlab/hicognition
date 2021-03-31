@@ -124,6 +124,9 @@ def get_interval_metadata(interval_id):
     # load all metadata_files as dataframes
     temp_frames = []
     for metadata_entry in metadata_entries:
+        if metadata_entry.metadata_fields is None:
+            # skip metadata if there are no fields defined
+            continue
         columns_retained = json.loads(metadata_entry.metadata_fields)
         temp_frame = pd.read_csv(
             metadata_entry.file_path, usecols=columns_retained

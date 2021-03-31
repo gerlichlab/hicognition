@@ -575,7 +575,7 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
             dataset_id=1,
         )
         metadata2 = BedFileMetadata(
-            file_path=metadata_file_path, metadata_fields='["end"]', dataset_id=1
+            file_path=metadata_file_path_2, metadata_fields='["end"]', dataset_id=1
         )
         db.session.add_all([dataset1, intervals1, metadata1, metadata2])
         db.session.commit()
@@ -587,6 +587,63 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json(), metadata_df.to_dict(orient="list"))
+
+    def test_entries_with_no_fields_specified_are_not_returned(self):
+        """Tests whether associated metadata fiels with no field names
+        specified are not returned"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers2 = self.get_token_header(token)
+        # generate mock intervals in temp-directory
+        intervals_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.bedpe")
+        intervals_df = pd.DataFrame(
+            {
+                "chrom": ["chr1"] * 6,
+                "start": [0] * 6,
+                "end": [10] * 6,
+                "bed_row_id": range(6),
+            }
+        )
+        intervals_df.to_csv(intervals_file_path, index=False, header=None, sep="\t")
+        # generate mock datasets in temp-directory
+        metadata_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test1.csv")
+        metadata_df = pd.DataFrame(
+            {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
+        )
+        metadata_df.to_csv(metadata_file_path, index=False)
+        metadata_file_path_2 = os.path.join(TempDirTestCase.TEMP_PATH, "test2.csv")
+        metadata_df_2 = pd.DataFrame({"end": [10] * 6})
+        metadata_df_2.to_csv(metadata_file_path_2, index=False)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1", file_path="/test/path/1", filetype="cooler", user_id=1
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=1,
+            file_path=intervals_file_path,
+            windowsize=200000,
+        )
+        metadata1 = BedFileMetadata(
+            file_path=metadata_file_path,
+            metadata_fields='["id", "start"]',
+            dataset_id=1,
+        )
+        metadata2 = BedFileMetadata(
+            file_path=metadata_file_path_2, dataset_id=1
+        )
+        db.session.add_all([dataset1, intervals1, metadata1, metadata2])
+        db.session.commit()
+        # make apicall
+        response = self.client.get(
+            "/api/intervals/1/metadata",
+            headers=token_headers2,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), metadata_df.drop(labels="end", axis="columns").to_dict(orient="list"))
+
 
     def test_metadata_entries_with_overlapping_fieldname_are_returned_correctly(self):
         """Tests whether multiple associated metadata entries to
