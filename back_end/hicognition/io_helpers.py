@@ -65,8 +65,7 @@ def sort_bed(input_file, output_file, chromsizes):
     def chromo_sort_function(element, data_unsorted, chromsizes):
         return chromsizes.index(data_unsorted.iloc[element, 0])
 
-    # open inputfile and chromosome sizes # TODO: remove header here, otherwise this file fail for malformed badfiles
-    data_unsorted = pd.read_csv(input_file, sep="\t", header=None)
+    data_unsorted = pd.read_csv(input_file, sep="\t", header=None, comment="#")
     chromsizes = pd.read_csv(chromsizes, sep="\t", header=None)
     # extract chromsizes order as a list for later searching
     chrom_order = chromsizes[0].to_list()

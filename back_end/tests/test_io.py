@@ -196,6 +196,31 @@ class TestSortBed(TempDirTestCase):
         # compare
         assert_frame_equal(expected, result)
 
+    def test_real_data_tricky_header(self):
+        """tests sorting of part of a real dataset with positions specified in twocolumns
+        with comments in header."""
+        io_helpers.sort_bed(
+            "tests/testfiles/real_data_tricky_header.bed",
+            os.path.join(
+                TempDirTestCase.TEMP_PATH, "real_data_tricky_header_sorted_result.bed"
+            ),
+            "data/hg19.chrom.sizes",
+        )
+        # load expected data
+        expected = pd.read_csv(
+            "tests/testfiles/real_data_tricky_header_sorted.bed", sep="\t", header=None
+        )
+        # load result
+        result = pd.read_csv(
+            os.path.join(
+                TempDirTestCase.TEMP_PATH, "real_data_tricky_header_sorted_result.bed"
+            ),
+            sep="\t",
+            header=None,
+        )
+        # compare
+        assert_frame_equal(expected, result)
+
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)
