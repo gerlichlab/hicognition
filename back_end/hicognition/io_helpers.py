@@ -41,9 +41,11 @@ def convert_bed_to_bedpe(input_file, target_file, halfwindowsize):
     )
     half_frame_chromo = pd.merge(half_frame, chrom_sizes, on="chrom")
     # generate filter expression
-    retained_rows =  (half_frame_chromo["start1"] > 0) & (half_frame_chromo["end1"] < half_frame_chromo["length"])
+    retained_rows = (half_frame_chromo["start1"] > 0) & (
+        half_frame_chromo["end1"] < half_frame_chromo["length"]
+    )
     # filter dataframe
-    filtered = half_frame_chromo.loc[retained_rows,:].drop(columns=["length"])
+    filtered = half_frame_chromo.loc[retained_rows, :].drop(columns=["length"])
     # select row_ids of the original bed-file that are retained
     bed_row_index = np.arange(len(half_frame_chromo))[retained_rows]
     # construct final dataframe and write it to file

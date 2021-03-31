@@ -10,7 +10,6 @@ from .authentication import auth
 from .errors import forbidden, not_found
 
 
-
 @api.route("/datasets/<dataset_id>/", methods=["DELETE"])
 @auth.login_required
 def delete_dataset(dataset_id):
@@ -30,27 +29,43 @@ def delete_dataset(dataset_id):
     averageIntervalData = []
     individualIntervalData = []
     if dataset.filetype == "cooler":
-        averageIntervalData = AverageIntervalData.query.filter(AverageIntervalData.dataset_id == dataset_id).all()
+        averageIntervalData = AverageIntervalData.query.filter(
+            AverageIntervalData.dataset_id == dataset_id
+        ).all()
     # bedfile needs deletion of intervals and averageIntervalData
     if dataset.filetype == "bedfile":
         intervals = Intervals.query.filter(Intervals.dataset_id == dataset_id).all()
-        averageIntervalData = AverageIntervalData.query.filter(AverageIntervalData.intervals_id.in_([entry.id for entry in intervals])).all()
-        individualIntervalData = IndividualIntervalData.query.filter(IndividualIntervalData.intervals_id.in_([entry.id for entry in intervals])).all()
+        averageIntervalData = AverageIntervalData.query.filter(
+            AverageIntervalData.intervals_id.in_([entry.id for entry in intervals])
+        ).all()
+        individualIntervalData = IndividualIntervalData.query.filter(
+            IndividualIntervalData.intervals_id.in_([entry.id for entry in intervals])
+        ).all()
     if dataset.filetype == "bigwig":
-        individualIntervalData = IndividualIntervalData.query.filter(IndividualIntervalData.dataset_id == dataset_id).all()
+        individualIntervalData = IndividualIntervalData.query.filter(
+            IndividualIntervalData.dataset_id == dataset_id
+        ).all()
     # delete files and remove from database
-    deletion_queue = [dataset] + intervals + averageIntervalData + individualIntervalData
+    deletion_queue = (
+        [dataset] + intervals + averageIntervalData + individualIntervalData
+    )
     for entry in deletion_queue:
         try:
-            if hasattr(entry, 'file_path_small'):
+            if hasattr(entry, "file_path_small"):
                 os.remove(entry.file_path_small)
             if entry.file_path is not None:
                 os.remove(entry.file_path)
             else:
-                current_app.logger.warning(f"Tried removing {entry}, but there was no filepath!")
+                current_app.logger.warning(
+                    f"Tried removing {entry}, but there was no filepath!"
+                )
         except FileNotFoundError:
-            current_app.logger.warning(f"Tried removing {entry.file_path}, but file does not exist!")
-        db.session.delete(entry) # TODO: this leaves the session invalid for a short time for some reason -> fix!
+            current_app.logger.warning(
+                f"Tried removing {entry.file_path}, but file does not exist!"
+            )
+        db.session.delete(
+            entry
+        )  # TODO: this leaves the session invalid for a short time for some reason -> fix!
     db.session.commit()
     response = jsonify({"message": "success"})
     response.status_code = 200

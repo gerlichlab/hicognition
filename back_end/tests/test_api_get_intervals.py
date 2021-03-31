@@ -387,18 +387,21 @@ class TestGetSpecificIntervals(LoginTestCase):
         ]
         self.assertEqual(response.json, expected)
 
+
 class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
     """Test-suite to test getting associated metadata."""
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
         # protected route
-        response = self.client.get("/api/intervals/1/metadata", content_type="application/json")
+        response = self.client.get(
+            "/api/intervals/1/metadata", content_type="application/json"
+        )
         self.assertEqual(response.status_code, 401)
 
     def test_interval_dataset_not_owned(self):
         """Tests whether intervals associated with not owned dataset returns 403 error"""
-                # authenticate
+        # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token2 = self.add_and_authenticate("test2", "fdsa")
         # create token header
@@ -425,7 +428,7 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
 
     def test_interval_id_does_not_exist(self):
         """Tests whether interval id that does not exist returns 404 error"""
-                # authenticate
+        # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
         token_headers2 = self.get_token_header(token)
@@ -486,7 +489,12 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
         # generate mock intervals in temp-directory
         intervals_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.bedpe")
         intervals_df = pd.DataFrame(
-            {"chrom": ["chr1"]*6, "start": [0] * 6, "end": [10] * 6, "bed_row_id": range(6)}
+            {
+                "chrom": ["chr1"] * 6,
+                "start": [0] * 6,
+                "end": [10] * 6,
+                "bed_row_id": range(6),
+            }
         )
         intervals_df.to_csv(intervals_file_path, index=False, header=None, sep="\t")
         # generate mock datasets in temp-directory
@@ -506,9 +514,9 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
             windowsize=200000,
         )
         metadata1 = BedFileMetadata(
-            file_path = metadata_file_path,
-            metadata_fields = '["id", "start"]',
-            dataset_id = 1
+            file_path=metadata_file_path,
+            metadata_fields='["id", "start"]',
+            dataset_id=1,
         )
         db.session.add_all([dataset1, intervals1, metadata1])
         db.session.commit()
@@ -519,7 +527,10 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json(), metadata_df.drop("end", axis="columns").to_dict(orient='list'))
+        self.assertEqual(
+            response.get_json(),
+            metadata_df.drop("end", axis="columns").to_dict(orient="list"),
+        )
 
     def test_good_metadata_entries_are_returned_correctly(self):
         """Tests whether multiple associated metadata entries to
@@ -531,7 +542,12 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
         # generate mock intervals in temp-directory
         intervals_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.bedpe")
         intervals_df = pd.DataFrame(
-            {"chrom": ["chr1"]*6, "start": [0] * 6, "end": [10] * 6, "bed_row_id": range(6)}
+            {
+                "chrom": ["chr1"] * 6,
+                "start": [0] * 6,
+                "end": [10] * 6,
+                "bed_row_id": range(6),
+            }
         )
         intervals_df.to_csv(intervals_file_path, index=False, header=None, sep="\t")
         # generate mock datasets in temp-directory
@@ -541,9 +557,7 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
         )
         metadata_df.to_csv(metadata_file_path, index=False)
         metadata_file_path_2 = os.path.join(TempDirTestCase.TEMP_PATH, "test2.csv")
-        metadata_df_2 = pd.DataFrame(
-            {"end": [10] * 6}
-        )
+        metadata_df_2 = pd.DataFrame({"end": [10] * 6})
         metadata_df_2.to_csv(metadata_file_path_2, index=False)
         # add data
         dataset1 = Dataset(
@@ -556,14 +570,12 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
             windowsize=200000,
         )
         metadata1 = BedFileMetadata(
-            file_path = metadata_file_path,
-            metadata_fields = '["id", "start"]',
-            dataset_id = 1
+            file_path=metadata_file_path,
+            metadata_fields='["id", "start"]',
+            dataset_id=1,
         )
         metadata2 = BedFileMetadata(
-            file_path = metadata_file_path,
-            metadata_fields = '["end"]',
-            dataset_id = 1
+            file_path=metadata_file_path, metadata_fields='["end"]', dataset_id=1
         )
         db.session.add_all([dataset1, intervals1, metadata1, metadata2])
         db.session.commit()
@@ -574,7 +586,7 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json(), metadata_df.to_dict(orient='list'))
+        self.assertEqual(response.get_json(), metadata_df.to_dict(orient="list"))
 
     def test_metadata_entries_with_overlapping_fieldname_are_returned_correctly(self):
         """Tests whether multiple associated metadata entries to
@@ -586,7 +598,12 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
         # generate mock intervals in temp-directory
         intervals_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.bedpe")
         intervals_df = pd.DataFrame(
-            {"chrom": ["chr1"]*6, "start": [0] * 6, "end": [10] * 6, "bed_row_id": range(6)}
+            {
+                "chrom": ["chr1"] * 6,
+                "start": [0] * 6,
+                "end": [10] * 6,
+                "bed_row_id": range(6),
+            }
         )
         intervals_df.to_csv(intervals_file_path, index=False, header=None, sep="\t")
         # generate mock datasets in temp-directory
@@ -596,9 +613,7 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
         )
         metadata_df.to_csv(metadata_file_path, index=False)
         metadata_file_path_2 = os.path.join(TempDirTestCase.TEMP_PATH, "test2.csv")
-        metadata_df_2 = pd.DataFrame(
-            {"end": [12] * 6}
-        )
+        metadata_df_2 = pd.DataFrame({"end": [12] * 6})
         metadata_df_2.to_csv(metadata_file_path_2, index=False)
         # add data
         dataset1 = Dataset(
@@ -612,15 +627,15 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
         )
         metadata1 = BedFileMetadata(
             id=1,
-            file_path = metadata_file_path_2,
-            metadata_fields = '["end"]',
-            dataset_id = 1
+            file_path=metadata_file_path_2,
+            metadata_fields='["end"]',
+            dataset_id=1,
         )
         metadata2 = BedFileMetadata(
             id=2,
-            file_path = metadata_file_path,
-            metadata_fields = '["id", "start", "end"]',
-            dataset_id = 1
+            file_path=metadata_file_path,
+            metadata_fields='["id", "start", "end"]',
+            dataset_id=1,
         )
         db.session.add_all([dataset1, intervals1, metadata1, metadata2])
         db.session.commit()
@@ -631,7 +646,7 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json(), metadata_df.to_dict(orient='list'))
+        self.assertEqual(response.get_json(), metadata_df.to_dict(orient="list"))
 
     def test_metadata_entry_with_rows_differing_from_intervals_returned_correctly(self):
         """Context: A metadata file is associated with the bedfile and has an equal number
@@ -645,7 +660,12 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
         # generate mock intervals in temp-directory
         intervals_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.bedpe")
         intervals_df = pd.DataFrame(
-            {"chrom": ["chr1"]*6, "start": [0] * 6, "end": [10] * 6, "bed_row_id": [0, 2, 4, 6, 8, 10]}
+            {
+                "chrom": ["chr1"] * 6,
+                "start": [0] * 6,
+                "end": [10] * 6,
+                "bed_row_id": [0, 2, 4, 6, 8, 10],
+            }
         )
         intervals_df.to_csv(intervals_file_path, index=False, header=None, sep="\t")
         # generate mock metadata in temp-directory
@@ -665,9 +685,9 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
             windowsize=200000,
         )
         metadata1 = BedFileMetadata(
-            file_path = metadata_file_path,
-            metadata_fields = '["id", "start", "end"]',
-            dataset_id = 1
+            file_path=metadata_file_path,
+            metadata_fields='["id", "start", "end"]',
+            dataset_id=1,
         )
         db.session.add_all([dataset1, intervals1, metadata1])
         db.session.commit()
@@ -678,7 +698,10 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json(), metadata_df.iloc[intervals_df["bed_row_id"], :].to_dict(orient='list'))
+        self.assertEqual(
+            response.get_json(),
+            metadata_df.iloc[intervals_df["bed_row_id"], :].to_dict(orient="list"),
+        )
 
 
 if __name__ == "__main__":

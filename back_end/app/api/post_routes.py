@@ -66,7 +66,7 @@ def add_dataset():
     db.session.add(new_entry)
     db.session.commit()
     # save file in upload directory with database_id as prefix
-    filename = f"{new_entry.id}_{secure_filename(fileObject.filename)}" 
+    filename = f"{new_entry.id}_{secure_filename(fileObject.filename)}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     fileObject.save(file_path)
     if data["filetype"] not in ["cooler", "bedfile", "bigwig"]:
@@ -144,11 +144,7 @@ def add_bedfile_metadata():
     If uploaded metadatafile has different row-number than original bedfile ->
     return error."""
 
-    SEPARATOR_MAP = {
-        ",": ",",
-        ";": ";",
-        "tab": "\t"
-    }
+    SEPARATOR_MAP = {",": ",", ";": ";", "tab": "\t"}
 
     def is_form_invalid():
         if not hasattr(request, "form"):
@@ -182,8 +178,12 @@ def add_bedfile_metadata():
         return forbidden(f"Dataset is not owned by logged in user!")
     # check whether row-number is correct
     dataset = Dataset.query.get(dataset_id)
-    dataset_file = pd.read_csv(dataset.file_path, sep="\t", header=None) # during upload process, the header of bedfiles is removed
-    uploaded_file = pd.read_csv(fileObject, sep=SEPARATOR_MAP[data["separator"]]) # generate uploaded dataframe from io-stream in memory
+    dataset_file = pd.read_csv(
+        dataset.file_path, sep="\t", header=None
+    )  # during upload process, the header of bedfiles is removed
+    uploaded_file = pd.read_csv(
+        fileObject, sep=SEPARATOR_MAP[data["separator"]]
+    )  # generate uploaded dataframe from io-stream in memory
     if len(dataset_file) != len(uploaded_file):
         return jsonify({"ValidationError": "Dataset length missmatch!"})
     # detect numeric columns
@@ -203,7 +203,7 @@ def add_bedfile_metadata():
         {
             "message": "success! Preprocessing triggered.",
             "field_names": list(sorted(only_numeric.columns)),
-            "id": new_metadata.id
+            "id": new_metadata.id,
         }
     )
 
@@ -230,7 +230,9 @@ def add_bedfile_metadata_fields(metadata_id):
     # check whether dataset exists and user is allowed to access
     if BedFileMetadata.query.get(metadata_id) is None:
         return not_found("Metadataset does not exist!")
-    if is_access_to_dataset_denied(BedFileMetadata.query.get(metadata_id).associated_dataset, g.current_user):
+    if is_access_to_dataset_denied(
+        BedFileMetadata.query.get(metadata_id).associated_dataset, g.current_user
+    ):
         return forbidden(f"Associated dataset is not owned by logged in user!")
     # check whether field_names are correct
     metadata = BedFileMetadata.query.get(metadata_id)
@@ -240,8 +242,4 @@ def add_bedfile_metadata_fields(metadata_id):
     # store field_map in database
     metadata.metadata_fields = json.dumps(field_map)
     db.session.commit()
-    return jsonify(
-        {
-            "message": "Success! Field map added."
-        }
-    )
+    return jsonify({"message": "Success! Field map added."})

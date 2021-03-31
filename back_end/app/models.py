@@ -10,12 +10,13 @@ from app import db, login
 
 class User(db.Model, UserMixin):
     """User database model"""
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
     datasets = db.relationship("Dataset", backref="owner", lazy="dynamic")
-    tasks = db.relationship('Task', backref='user', lazy='dynamic')
+    tasks = db.relationship("Task", backref="user", lazy="dynamic")
 
     def set_password(self, password):
         """set password helper."""
@@ -27,16 +28,20 @@ class User(db.Model, UserMixin):
 
     def generate_auth_token(self, expiration):
         """generates authentication token"""
-        s = Serializer(current_app.config["SECRET_KEY"],
-                       expires_in=expiration)
+        s = Serializer(current_app.config["SECRET_KEY"], expires_in=expiration)
         return s.dumps({"id": self.id}).decode("utf-8")
 
     def launch_task(self, name, description, dataset_id, *args, **kwargs):
-        rq_job = current_app.task_queue.enqueue('app.tasks.' + name, dataset_id,
-                                                job_timeout="10h",
-                                                *args, **kwargs)
-        task = Task(id=rq_job.get_id(), name=name, description=description,
-                    user_id=self.id, dataset_id=dataset_id)
+        rq_job = current_app.task_queue.enqueue(
+            "app.tasks." + name, dataset_id, job_timeout="10h", *args, **kwargs
+        )
+        task = Task(
+            id=rq_job.get_id(),
+            name=name,
+            description=description,
+            user_id=self.id,
+            dataset_id=dataset_id,
+        )
         db.session.add(task)
         return task
 
@@ -44,8 +49,7 @@ class User(db.Model, UserMixin):
         return Task.query.filter_by(user=self, complete=False).all()
 
     def get_task_in_progress(self, name):
-        return Task.query.filter_by(name=name, user=self,
-                                    complete=False).first()
+        return Task.query.filter_by(name=name, user=self, complete=False).first()
 
     @staticmethod
     def verify_auth_token(token):
@@ -58,7 +62,7 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         """Format print output."""
-        return '<User {}>'.format(self.username)
+        return "<User {}>".format(self.username)
 
 
 class Dataset(db.Model):
@@ -71,10 +75,16 @@ class Dataset(db.Model):
     filetype = db.Column(db.String(64), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     intervals = db.relationship("Intervals", backref="source_dataset", lazy="dynamic")
-    averageIntervalData = db.relationship("AverageIntervalData", backref="source_dataset", lazy="dynamic")
-    individualIntervalData = db.relationship("IndividualIntervalData", backref="source_dataset", lazy="dynamic")
-    bedFileMetadata = db.relationship("BedFileMetadata", backref="associated_dataset", lazy="dynamic")
-    tasks = db.relationship('Task', backref='dataset', lazy='dynamic')
+    averageIntervalData = db.relationship(
+        "AverageIntervalData", backref="source_dataset", lazy="dynamic"
+    )
+    individualIntervalData = db.relationship(
+        "IndividualIntervalData", backref="source_dataset", lazy="dynamic"
+    )
+    bedFileMetadata = db.relationship(
+        "BedFileMetadata", backref="associated_dataset", lazy="dynamic"
+    )
+    tasks = db.relationship("Task", backref="dataset", lazy="dynamic")
     processing_state = db.Column(db.String(64))
 
     def get_tasks_in_progress(self):
@@ -82,12 +92,12 @@ class Dataset(db.Model):
 
     def __repr__(self):
         """Format print output."""
-        return f'<Dataset {self.dataset_name}>'
+        return f"<Dataset {self.dataset_name}>"
 
     def set_processing_state(self, db):
         """sets the current processing state of the dataset instance.
         Launching task sets processing state, this sets finished/failed state"""
-        if (self.processing_state not in ["processing", "finished", "failed"]):
+        if self.processing_state not in ["processing", "finished", "failed"]:
             return
         # check if there are any unfinished tasks
         tasks = self.tasks.filter(Task.complete == False).all()
@@ -113,7 +123,7 @@ class Dataset(db.Model):
             "filetype": self.filetype,
             "user_id": self.user_id,
             "processing_state": self.processing_state,
-            "public": self.public
+            "public": self.public,
         }
         return json_dataset
 
@@ -124,12 +134,16 @@ class Intervals(db.Model):
     name = db.Column(db.String(64), index=True)
     file_path = db.Column(db.String(128), index=True)
     windowsize = db.Column(db.Integer, index=True)
-    averageIntervalData = db.relationship("AverageIntervalData", backref="source_intervals", lazy="dynamic")
-    individualIntervalData = db.relationship("IndividualIntervalData", backref="source_intervals", lazy="dynamic")
+    averageIntervalData = db.relationship(
+        "AverageIntervalData", backref="source_intervals", lazy="dynamic"
+    )
+    individualIntervalData = db.relationship(
+        "IndividualIntervalData", backref="source_intervals", lazy="dynamic"
+    )
 
     def __repr__(self):
         """Format print output."""
-        return f'<Intervals {self.name}>'
+        return f"<Intervals {self.name}>"
 
     def to_json(self):
         """Formats json output."""
@@ -138,7 +152,7 @@ class Intervals(db.Model):
             "source_dataset": self.dataset_id,
             "dataset_name": self.name,
             "file_path": self.file_path,
-            "windowsize": self.windowsize
+            "windowsize": self.windowsize,
         }
         return json_intervals
 
@@ -165,7 +179,7 @@ class AverageIntervalData(db.Model):
             "file_path": self.file_path,
             "dataset_id": self.dataset_id,
             "intervals_id": self.intervals_id,
-            "value_type": self.value_type
+            "value_type": self.value_type,
         }
         return json_averageIntervalData
 
@@ -174,13 +188,20 @@ class IndividualIntervalData(db.Model):
     """Table to hold information and pointers to data for
     values extracted at each instance held in the linked intervals dataset.
     E.g. for bigwig stack-ups or displaying snipped Hi-C matrices."""
+
     id = db.Column(db.Integer, primary_key=True)
     binsize = db.Column(db.Integer)
     name = db.Column(db.String(64), index=True)
     file_path = db.Column(db.String(128), index=True)
-    file_path_small = db.Column(db.String(128), index=True) # location of downsampled file
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id")) # dataset, which was used for value extraction
-    intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id")) # intervals over which the values were extracted
+    file_path_small = db.Column(
+        db.String(128), index=True
+    )  # location of downsampled file
+    dataset_id = db.Column(
+        db.Integer, db.ForeignKey("dataset.id")
+    )  # dataset, which was used for value extraction
+    intervals_id = db.Column(
+        db.Integer, db.ForeignKey("intervals.id")
+    )  # intervals over which the values were extracted
 
     def __repr__(self):
         """Format print output."""
@@ -203,8 +224,8 @@ class Task(db.Model):
     id = db.Column(db.String(36), primary_key=True)
     name = db.Column(db.String(128), index=True)
     description = db.Column(db.String(128))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    dataset_id = db.Column(db.Integer, db.ForeignKey('dataset.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     complete = db.Column(db.Boolean, default=False)
 
     def get_rq_job(self):
@@ -216,7 +237,7 @@ class Task(db.Model):
 
     def get_progress(self):
         job = self.get_rq_job()
-        return job.meta.get('progress', 0) if job is not None else 100
+        return job.meta.get("progress", 0) if job is not None else 100
 
 
 class BedFileMetadata(db.Model):
@@ -224,13 +245,17 @@ class BedFileMetadata(db.Model):
     name = db.Column(db.String(128))
     file_path = db.Column(db.String(128))
     metadata_fields = db.Column(db.String(1024))
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id")) # intervals over which the values were extracted
+    dataset_id = db.Column(
+        db.Integer, db.ForeignKey("dataset.id")
+    )  # intervals over which the values were extracted
 
     def __repr__(self):
         """Format print output."""
         return f"<Metadata {self.name}>"
 
+
 # helpers
+
 
 @login.user_loader
 def load_user(id):
@@ -247,6 +272,7 @@ def all_tasks_finished(tasks):
         if not job.is_finished:
             return False
     return True
+
 
 def any_tasks_failed(tasks):
     # check whether any job failed

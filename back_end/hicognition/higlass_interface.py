@@ -47,7 +47,10 @@ def add_tileset(file_type, file_path, higlass_url, credentials, name):
     }
     # dispatch request
     request = requests.post(
-        url=higlass_url, files=files, data=data, auth=HTTPBasicAuth(credentials["user"], credentials["password"])
+        url=higlass_url,
+        files=files,
+        data=data,
+        auth=HTTPBasicAuth(credentials["user"], credentials["password"]),
     )
     # check whether return code was okay
     if request.status_code != 201:
@@ -72,6 +75,8 @@ def preprocess_dataset(file_type, chromsizes_path, file_path, output_path):
     # dispatch command
     process = subprocess.run(shlex.split(command), check=False, capture_output=True)
     # return exit code
-    if len(process.stderr) != 0: # some errors are considered "input errors" and don't change exit code
+    if (
+        len(process.stderr) != 0
+    ):  # some errors are considered "input errors" and don't change exit code
         return 1
     return process.returncode

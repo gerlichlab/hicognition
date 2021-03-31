@@ -303,7 +303,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
                 "field_names": list(
                     sorted(payload_data.drop("string_column", axis="columns"))
                 ),
-                "id": 1
+                "id": 1,
             },
         )
         # check whether metadata database entry was created and links to correct dataset

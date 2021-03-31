@@ -8,7 +8,13 @@ from flask import g, request
 from .helpers import update_processing_state, is_access_to_dataset_denied
 from . import api
 from .. import db
-from ..models import BedFileMetadata, Intervals, Dataset, AverageIntervalData, IndividualIntervalData
+from ..models import (
+    BedFileMetadata,
+    Intervals,
+    Dataset,
+    AverageIntervalData,
+    IndividualIntervalData,
+)
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
 
@@ -30,7 +36,9 @@ def test_protected():
 @auth.login_required
 def get_all_datasets():
     """Gets all available datasets for a given user."""
-    all_available_datasets = Dataset.query.filter( (Dataset.user_id == g.current_user.id) | (Dataset.public)).all()
+    all_available_datasets = Dataset.query.filter(
+        (Dataset.user_id == g.current_user.id) | (Dataset.public)
+    ).all()
     update_processing_state(all_available_datasets, db)
     return jsonify([dfile.to_json() for dfile in all_available_datasets])
 
@@ -41,13 +49,15 @@ def get_datasets(dtype):
     """Gets all available datasets for a given user."""
     if dtype == "cooler":
         cooler_files = Dataset.query.filter(
-            (Dataset.filetype == "cooler") & ( (g.current_user.id == Dataset.user_id) |( Dataset.public))
+            (Dataset.filetype == "cooler")
+            & ((g.current_user.id == Dataset.user_id) | (Dataset.public))
         ).all()
         update_processing_state(cooler_files, db)
         return jsonify([cfile.to_json() for cfile in cooler_files])
     elif dtype == "bed":
         bed_files = Dataset.query.filter(
-            (Dataset.filetype == "bedfile") & ((g.current_user.id == Dataset.user_id) |( Dataset.public))
+            (Dataset.filetype == "bedfile")
+            & ((g.current_user.id == Dataset.user_id) | (Dataset.public))
         ).all()
         update_processing_state(bed_files, db)
         return jsonify([bfile.to_json() for bfile in bed_files])
@@ -65,13 +75,11 @@ def get_intervals_of_dataset(dataset_id):
         return not_found(f"Dataset with id '{dataset_id}' does not exist!")
     # check whether user owns the dataset
     if is_access_to_dataset_denied(dataset, g.current_user):
-        return forbidden(f"Dataset with id '{dataset_id}' is not owned by logged in user!")
+        return forbidden(
+            f"Dataset with id '{dataset_id}' is not owned by logged in user!"
+        )
     # SQL join to get all intervals that come from the specified dataset
-    all_files = (
-        Intervals.query.join(Dataset)
-        .filter(Dataset.id == dataset_id)
-        .all()
-    )
+    all_files = Intervals.query.join(Dataset).filter(Dataset.id == dataset_id).all()
     return jsonify([dfile.to_json() for dfile in all_files])
 
 
@@ -82,10 +90,11 @@ def get_intervals():
     # SQL join to get all intervals that come from a dataset owned by the respective user
     all_files = (
         Intervals.query.join(Dataset)
-        .filter( (Dataset.user_id == g.current_user.id) | (Dataset.public))
+        .filter((Dataset.user_id == g.current_user.id) | (Dataset.public))
         .all()
     )
     return jsonify([dfile.to_json() for dfile in all_files])
+
 
 @api.route("/intervals/<interval_id>/metadata", methods=["GET"])
 @auth.login_required
@@ -93,12 +102,20 @@ def get_interval_metadata(interval_id):
     """returns available metadata for given intervals."""
     interval = Intervals.query.get(interval_id)
     if interval is None:
-        return not_found(f'Intervals with id {interval_id} do not exist!')
+        return not_found(f"Intervals with id {interval_id} do not exist!")
     # check if associated dataset is owned
-    if is_access_to_dataset_denied(interval.source_dataset.query.first(), g.current_user):
-        return forbidden(f"Dataset associated with interval id {interval.id} is not owned by logged in user!")
+    if is_access_to_dataset_denied(
+        interval.source_dataset.query.first(), g.current_user
+    ):
+        return forbidden(
+            f"Dataset associated with interval id {interval.id} is not owned by logged in user!"
+        )
     # get associated metadata entries sorted by id; id sorting is necessary for newer metadata to win in field names
-    metadata_entries = interval.source_dataset.query.first().bedFileMetadata.order_by(BedFileMetadata.id).all()
+    metadata_entries = (
+        interval.source_dataset.query.first()
+        .bedFileMetadata.order_by(BedFileMetadata.id)
+        .all()
+    )
     # check if list is empty
     if len(metadata_entries) == 0:
         return jsonify({})
@@ -108,7 +125,9 @@ def get_interval_metadata(interval_id):
     temp_frames = []
     for metadata_entry in metadata_entries:
         columns_retained = json.loads(metadata_entry.metadata_fields)
-        temp_frame = pd.read_csv(metadata_entry.file_path, usecols=columns_retained).iloc[bed_row_index, :]
+        temp_frame = pd.read_csv(
+            metadata_entry.file_path, usecols=columns_retained
+        ).iloc[bed_row_index, :]
         temp_frames.append(temp_frame)
     output_frame = pd.concat(temp_frames, axis=1)
     return jsonify(output_frame.to_dict(orient="list"))
@@ -134,15 +153,20 @@ def get_averageIntervalData():
     if is_access_to_dataset_denied(
         cooler_ds, g.current_user
     ) or is_access_to_dataset_denied(intervals_ds.source_dataset, g.current_user):
-        return forbidden("Cooler dataset or intervals dataset is not owned by logged in user!")
+        return forbidden(
+            "Cooler dataset or intervals dataset is not owned by logged in user!"
+        )
     # return all intervals the are derived from the specified selection of cooler and intervals
     all_files = (
-        AverageIntervalData.query.filter(AverageIntervalData.intervals_id == intervals_id)
+        AverageIntervalData.query.filter(
+            AverageIntervalData.intervals_id == intervals_id
+        )
         .join(Dataset)
         .filter(Dataset.id == dataset_id)
         .all()
     )
     return jsonify([dfile.to_json() for dfile in all_files])
+
 
 @api.route("/individualIntervalData/", methods=["GET"])
 @auth.login_required
@@ -164,10 +188,14 @@ def get_individualIntervalData():
     if is_access_to_dataset_denied(
         bigwig_ds, g.current_user
     ) or is_access_to_dataset_denied(intervals_ds.source_dataset, g.current_user):
-        return forbidden("Bigwig dataset or intervals dataset is not owned by logged in user!")
+        return forbidden(
+            "Bigwig dataset or intervals dataset is not owned by logged in user!"
+        )
     # return all intervals the are derived from the specified selection of bigwig and intervals
     all_files = (
-        IndividualIntervalData.query.filter(IndividualIntervalData.intervals_id == intervals_id)
+        IndividualIntervalData.query.filter(
+            IndividualIntervalData.intervals_id == intervals_id
+        )
         .join(Dataset)
         .filter(Dataset.id == bigwig_id)
         .all()
@@ -190,21 +218,26 @@ def get_pileup_data(pileup_id):
     if is_access_to_dataset_denied(
         cooler_ds, g.current_user
     ) or is_access_to_dataset_denied(bed_ds, g.current_user):
-        return forbidden("Cooler dataset or bed dataset is not owned by logged in user!")
+        return forbidden(
+            "Cooler dataset or bed dataset is not owned by logged in user!"
+        )
     # dataset is owned, return the data
     np_data = np.load(pileup.file_path)
-    #TODO: send as array
+    # TODO: send as array
     variable = []
     group = []
     value = []
-    for var,row in enumerate(np_data):
-        for grp, item in enumerate(row): 
+    for var, row in enumerate(np_data):
+        for grp, item in enumerate(row):
             variable.append(var)
             group.append(grp)
             value.append(item)
-    csv_data = pd.DataFrame(list(zip(variable,group,value)), columns=["variable", "group", "value"])
+    csv_data = pd.DataFrame(
+        list(zip(variable, group, value)), columns=["variable", "group", "value"]
+    )
     json_data = csv_data.to_json()
     return jsonify(json_data)
+
 
 @api.route("/individualIntervalData/<stackup_id>/", methods=["GET"])
 @auth.login_required
@@ -220,21 +253,25 @@ def get_stackup_data(stackup_id):
     if is_access_to_dataset_denied(
         bigwig_ds, g.current_user
     ) or is_access_to_dataset_denied(bed_ds, g.current_user):
-        return forbidden("Bigwig dataset or bed dataset is not owned by logged in user!")
+        return forbidden(
+            "Bigwig dataset or bed dataset is not owned by logged in user!"
+        )
     # dataset is owned, return the smalldata
     np_data = np.load(stackup.file_path_small)
-    #sort by middle column
-    np_data = np_data[np.argsort(np_data[:,int(np_data.shape[1]/2)])]
-    #TODO: send as array
+    # sort by middle column
+    np_data = np_data[np.argsort(np_data[:, int(np_data.shape[1] / 2)])]
+    # TODO: send as array
     variable = []
     group = []
     value = []
-    for var,row in enumerate(np_data):
-        for grp, item in enumerate(row): 
+    for var, row in enumerate(np_data):
+        for grp, item in enumerate(row):
             variable.append(var)
             group.append(grp)
             value.append(item)
-    csv_data = pd.DataFrame(list(zip(variable,group,value)), columns=["variable", "group", "value"])
+    csv_data = pd.DataFrame(
+        list(zip(variable, group, value)), columns=["variable", "group", "value"]
+    )
     json_data = csv_data.to_json()
-    #TODO: return array instead of tidy dataframe.
+    # TODO: return array instead of tidy dataframe.
     return jsonify(json_data)

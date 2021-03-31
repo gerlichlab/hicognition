@@ -44,12 +44,14 @@ class TestConvertBedToBedPE(TempDirTestCase):
             halfwindowsize=300000,
         )
         # load expected data
-        expected = pd.read_csv("tests/testfiles/test2_realData_twocol.bedpe", sep="\t", header=None)
+        expected = pd.read_csv(
+            "tests/testfiles/test2_realData_twocol.bedpe", sep="\t", header=None
+        )
         # load result
         result = pd.read_csv(
             os.path.join(TempDirTestCase.TEMP_PATH, "test2_realData_twocol.bedpe"),
             sep="\t",
-            header=None
+            header=None,
         )
         # compare -> don't equate last column, this is bed_row_index and will be checked in later test
         assert_frame_equal(expected, result.iloc[:, :-1])
@@ -58,11 +60,19 @@ class TestConvertBedToBedPE(TempDirTestCase):
         """Tests whether the retained rows are mapped correctly to original bedfile by bed_row_index"""
         # generate mock bed_file that will be filtered out for certain rows
         test_bed_path = os.path.join(TempDirTestCase.TEMP_PATH, "original.bed")
-        test_bed_df = pd.DataFrame({
-            "chrom": ["chr1", "chr1", "chr1", "chr1", "chr1"],
-            "start": [0, 400000, 10, 600000, 249250600], # row 0, 2 and 4 should be filtered
-            "end": [10, 400010, 20, 600010, 249250610]
-        })
+        test_bed_df = pd.DataFrame(
+            {
+                "chrom": ["chr1", "chr1", "chr1", "chr1", "chr1"],
+                "start": [
+                    0,
+                    400000,
+                    10,
+                    600000,
+                    249250600,
+                ],  # row 0, 2 and 4 should be filtered
+                "end": [10, 400010, 20, 600010, 249250610],
+            }
+        )
         test_bed_df.to_csv(test_bed_path, sep="\t", index=False, header=None)
         # dispatch call
         io_helpers.convert_bed_to_bedpe(
@@ -74,13 +84,12 @@ class TestConvertBedToBedPE(TempDirTestCase):
         result = pd.read_csv(
             os.path.join(TempDirTestCase.TEMP_PATH, "filter_output.bedpe"),
             sep="\t",
-            header=None
+            header=None,
         )
         # check whether result has expected length
         self.assertEqual(len(result), 2)
         # check whether last column is indicate of bed_row_index
         self.assertEqual([1, 3], result.iloc[:, -1].to_list())
-
 
 
 class TestSortBed(TempDirTestCase):
