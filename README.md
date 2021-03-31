@@ -110,4 +110,4 @@ execute the command above in the root directory of this repo.
 For a detailed description of the project architecture and development design decisions see our [dev-git](https://github.com/gerlichlab/HiCognition_devgit).
 
 ## Fullsize test data
-A .mcool, .bw and .bed file can be found ar this [dropbox](https://www.dropbox.com/sh/czlbr69tjdgo45r/AACloms-wrEbxFqQHbQFMY7va?dl=0) location.
+A .mcool, .bw and .bed file can be found ar this [dropbox](https://www.dropbox.com/sh/zjfc6sgkbdp3ksh/AAAWrbgKt8hz4npNxSfh-RBja?dl=0) location.
