@@ -3,7 +3,7 @@
   <div class="half-width">
     <md-steppers :md-active-step.sync="active" md-linear>
       <md-step id="first" md-label="Upload Metadata file" :md-error="firstStepError" :md-editable="false" :md-done.sync="first">
-        <addMetadataForm @success="handleMetadataAdditionSuccessful" @form-error="setError()"></addMetadataForm>
+        <addMetadataForm @success="handleMetadataAdditionSuccessful" @form-error="handleMetadataAdditionError"></addMetadataForm>
         <md-button class="md-raised md-primary" @click="setDone('first', 'second')" :disabled="blockSecondStep">Continue</md-button>
         <md-button class="md-raised md-primary" @click="$emit('close-dialog')">Close</md-button>
       </md-step>
@@ -48,15 +48,18 @@ export default {
       handleFieldAdditionSuccessful(event){
         this.second = true;
       },
+      handleMetadataAdditionError(event){
+        this.setError(event)
+      },
       handleMetadataAdditionSuccessful(event) {
         this.fields = event["field_names"]
-        this.metadataID = event["id"]
-        this.blockSecondStep = false;
-        this.first = true;
-        this.clearError();
+          this.metadataID = event["id"]
+          this.blockSecondStep = false;
+          this.first = true;
+          this.clearError();
       },
-      setError () {
-        this.firstStepError = 'Rownumber is not compatible!'
+      setError (message) {
+        this.firstStepError = message
       },
       clearError() {
         this.firstStepError = null

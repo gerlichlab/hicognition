@@ -185,7 +185,11 @@ export default {
       // API call including upload is made in the background
       this.postData("bedFileMetadata/", formData).then(response => {
         if ("ValidationError" in response.data){
-          this.$emit("form-error");
+          this.$emit("form-error", 'Rownumber is not compatible!');
+          this.sending = false;
+          this.clearForm();
+        }else if (response.data["field_names"].length == 0){
+          this.$emit("form-error", 'File contains no numeric columns!');
           this.sending = false;
           this.clearForm();
         }else{
