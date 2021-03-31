@@ -1,6 +1,7 @@
 """Helper functions to read and convert common
 data formats."""
 import pandas as pd
+import numpy as np
 import bioframe
 import logging
 from functools import partial
@@ -39,13 +40,16 @@ def convert_bed_to_bedpe(input_file, target_file, halfwindowsize):
         .rename(columns={"index": "chrom"})
     )
     half_frame_chromo = pd.merge(half_frame, chrom_sizes, on="chrom")
-    filtered = half_frame_chromo.loc[
-        (half_frame_chromo["start1"] > 0)
-        & (half_frame_chromo["end1"] < half_frame_chromo["length"]),
-        :,
-    ].drop(columns=["length"])
+    # generate filter expression
+    retained_rows =  (half_frame_chromo["start1"] > 0) & (half_frame_chromo["end1"] < half_frame_chromo["length"])
+    # filter dataframe
+    filtered = half_frame_chromo.loc[retained_rows,:].drop(columns=["length"])
+    # select row_ids of the original bed-file that are retained
+    bed_row_index = np.arange(len(half_frame_chromo))[retained_rows]
     # construct final dataframe and write it to file
     final = pd.concat((filtered, filtered), axis=1)
+    # add bed_row_index as final column
+    final.loc[:, "bed_row_index"] = bed_row_index
     final.to_csv(target_file, sep="\t", header=None, index=False)
 
 
