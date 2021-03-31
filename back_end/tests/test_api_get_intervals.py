@@ -1,12 +1,14 @@
 import unittest
-from test_helpers import LoginTestCase
+import os
+import pandas as pd
+from test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals
+from app.models import Dataset, Intervals, BedFileMetadata
 
 
 class TestGetIntervals(LoginTestCase):
@@ -384,6 +386,322 @@ class TestGetSpecificIntervals(LoginTestCase):
             }
         ]
         self.assertEqual(response.json, expected)
+
+
+class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
+    """Test-suite to test getting associated metadata."""
+
+    def test_no_auth(self):
+        """No authentication provided, response should be 401"""
+        # protected route
+        response = self.client.get(
+            "/api/intervals/1/metadata", content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_interval_dataset_not_owned(self):
+        """Tests whether intervals associated with not owned dataset returns 403 error"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        token2 = self.add_and_authenticate("test2", "fdsa")
+        # create token header
+        token_headers2 = self.get_token_header(token2)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1", file_path="/test/path/1", filetype="cooler", user_id=1
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=1,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        db.session.add_all([dataset1, intervals1])
+        db.session.commit()
+        # get intervals
+        response = self.client.get(
+            "/api/intervals/1/metadata",
+            headers=token_headers2,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_interval_id_does_not_exist(self):
+        """Tests whether interval id that does not exist returns 404 error"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers2 = self.get_token_header(token)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1", file_path="/test/path/1", filetype="cooler", user_id=1
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=1,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        db.session.add_all([dataset1, intervals1])
+        db.session.commit()
+        # get intervals
+        response = self.client.get(
+            "/api/intervals/500/metadata",
+            headers=token_headers2,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_no_metadata_returns_empty_response(self):
+        """Tests whether empty response is returned if no metadata is associated with intervals"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers2 = self.get_token_header(token)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1", file_path="/test/path/1", filetype="cooler", user_id=1
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=1,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        db.session.add_all([dataset1, intervals1])
+        db.session.commit()
+        # get intervals
+        response = self.client.get(
+            "/api/intervals/1/metadata",
+            headers=token_headers2,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), {})
+
+    def test_good_single_metadata_entry_is_returned_correctly(self):
+        """Tests whether single associated metadata entry to
+        interval file is returned correctly."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers2 = self.get_token_header(token)
+        # generate mock intervals in temp-directory
+        intervals_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.bedpe")
+        intervals_df = pd.DataFrame(
+            {
+                "chrom": ["chr1"] * 6,
+                "start": [0] * 6,
+                "end": [10] * 6,
+                "bed_row_id": range(6),
+            }
+        )
+        intervals_df.to_csv(intervals_file_path, index=False, header=None, sep="\t")
+        # generate mock datasets in temp-directory
+        metadata_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.csv")
+        metadata_df = pd.DataFrame(
+            {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
+        )
+        metadata_df.to_csv(metadata_file_path, index=False)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1", file_path="/test/path/1", filetype="cooler", user_id=1
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=1,
+            file_path=intervals_file_path,
+            windowsize=200000,
+        )
+        metadata1 = BedFileMetadata(
+            file_path=metadata_file_path,
+            metadata_fields='["id", "start"]',
+            dataset_id=1,
+        )
+        db.session.add_all([dataset1, intervals1, metadata1])
+        db.session.commit()
+        # make apicall
+        response = self.client.get(
+            "/api/intervals/1/metadata",
+            headers=token_headers2,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get_json(),
+            metadata_df.drop("end", axis="columns").to_dict(orient="list"),
+        )
+
+    def test_good_metadata_entries_are_returned_correctly(self):
+        """Tests whether multiple associated metadata entries to
+        interval file is returned correctly."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers2 = self.get_token_header(token)
+        # generate mock intervals in temp-directory
+        intervals_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.bedpe")
+        intervals_df = pd.DataFrame(
+            {
+                "chrom": ["chr1"] * 6,
+                "start": [0] * 6,
+                "end": [10] * 6,
+                "bed_row_id": range(6),
+            }
+        )
+        intervals_df.to_csv(intervals_file_path, index=False, header=None, sep="\t")
+        # generate mock datasets in temp-directory
+        metadata_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test1.csv")
+        metadata_df = pd.DataFrame(
+            {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
+        )
+        metadata_df.to_csv(metadata_file_path, index=False)
+        metadata_file_path_2 = os.path.join(TempDirTestCase.TEMP_PATH, "test2.csv")
+        metadata_df_2 = pd.DataFrame({"end": [10] * 6})
+        metadata_df_2.to_csv(metadata_file_path_2, index=False)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1", file_path="/test/path/1", filetype="cooler", user_id=1
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=1,
+            file_path=intervals_file_path,
+            windowsize=200000,
+        )
+        metadata1 = BedFileMetadata(
+            file_path=metadata_file_path,
+            metadata_fields='["id", "start"]',
+            dataset_id=1,
+        )
+        metadata2 = BedFileMetadata(
+            file_path=metadata_file_path, metadata_fields='["end"]', dataset_id=1
+        )
+        db.session.add_all([dataset1, intervals1, metadata1, metadata2])
+        db.session.commit()
+        # make apicall
+        response = self.client.get(
+            "/api/intervals/1/metadata",
+            headers=token_headers2,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), metadata_df.to_dict(orient="list"))
+
+    def test_metadata_entries_with_overlapping_fieldname_are_returned_correctly(self):
+        """Tests whether multiple associated metadata entries to
+        interval file with overlapping fieldnames returned the newest field (by larger id value)"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers2 = self.get_token_header(token)
+        # generate mock intervals in temp-directory
+        intervals_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.bedpe")
+        intervals_df = pd.DataFrame(
+            {
+                "chrom": ["chr1"] * 6,
+                "start": [0] * 6,
+                "end": [10] * 6,
+                "bed_row_id": range(6),
+            }
+        )
+        intervals_df.to_csv(intervals_file_path, index=False, header=None, sep="\t")
+        # generate mock datasets in temp-directory
+        metadata_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test1.csv")
+        metadata_df = pd.DataFrame(
+            {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
+        )
+        metadata_df.to_csv(metadata_file_path, index=False)
+        metadata_file_path_2 = os.path.join(TempDirTestCase.TEMP_PATH, "test2.csv")
+        metadata_df_2 = pd.DataFrame({"end": [12] * 6})
+        metadata_df_2.to_csv(metadata_file_path_2, index=False)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1", file_path="/test/path/1", filetype="cooler", user_id=1
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=1,
+            file_path=intervals_file_path,
+            windowsize=200000,
+        )
+        metadata1 = BedFileMetadata(
+            id=1,
+            file_path=metadata_file_path_2,
+            metadata_fields='["end"]',
+            dataset_id=1,
+        )
+        metadata2 = BedFileMetadata(
+            id=2,
+            file_path=metadata_file_path,
+            metadata_fields='["id", "start", "end"]',
+            dataset_id=1,
+        )
+        db.session.add_all([dataset1, intervals1, metadata1, metadata2])
+        db.session.commit()
+        # make apicall
+        response = self.client.get(
+            "/api/intervals/1/metadata",
+            headers=token_headers2,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), metadata_df.to_dict(orient="list"))
+
+    def test_metadata_entry_with_rows_differing_from_intervals_returned_correctly(self):
+        """Context: A metadata file is associated with the bedfile and has an equal number
+        of rows. However, the interval file that is associated with the bedfile does not necessarliy
+        have the same number of rows because some intervals may be filtered out because the overlap
+        chromosomal boundaries. This test checks whether such a case is handled correctly."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers2 = self.get_token_header(token)
+        # generate mock intervals in temp-directory
+        intervals_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.bedpe")
+        intervals_df = pd.DataFrame(
+            {
+                "chrom": ["chr1"] * 6,
+                "start": [0] * 6,
+                "end": [10] * 6,
+                "bed_row_id": [0, 2, 4, 6, 8, 10],
+            }
+        )
+        intervals_df.to_csv(intervals_file_path, index=False, header=None, sep="\t")
+        # generate mock metadata in temp-directory
+        metadata_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.csv")
+        metadata_df = pd.DataFrame(
+            {"id": range(11), "start": range(11), "end": range(1, 12)}
+        )
+        metadata_df.to_csv(metadata_file_path, index=False)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1", file_path="/test/path/1", filetype="cooler", user_id=1
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=1,
+            file_path=intervals_file_path,
+            windowsize=200000,
+        )
+        metadata1 = BedFileMetadata(
+            file_path=metadata_file_path,
+            metadata_fields='["id", "start", "end"]',
+            dataset_id=1,
+        )
+        db.session.add_all([dataset1, intervals1, metadata1])
+        db.session.commit()
+        # make apicall
+        response = self.client.get(
+            "/api/intervals/1/metadata",
+            headers=token_headers2,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get_json(),
+            metadata_df.iloc[intervals_df["bed_row_id"], :].to_dict(orient="list"),
+        )
 
 
 if __name__ == "__main__":

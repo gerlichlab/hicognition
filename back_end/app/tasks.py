@@ -47,7 +47,7 @@ def pipeline_bed(dataset_id):
         os.remove(file_path)
     except FileNotFoundError:
         log.warning(f"Tried removing {file_path}, but file does not exist!")
-    
+
     db.session.commit()
     for window in window_sizes:
         # preprocessing
@@ -65,8 +65,12 @@ def pipeline_pileup(dataset_id, binsizes, interval_ids):
     counter = 0
     for binsize in binsizes:
         for intervals in interval_datasets:
-            pipeline_steps.perform_pileup(current_dataset, intervals, binsize, chromosome_arms, "ICCF")
-            pipeline_steps.perform_pileup(current_dataset, intervals, binsize, chromosome_arms, "Obs/Exp")
+            pipeline_steps.perform_pileup(
+                current_dataset, intervals, binsize, chromosome_arms, "ICCF"
+            )
+            pipeline_steps.perform_pileup(
+                current_dataset, intervals, binsize, chromosome_arms, "Obs/Exp"
+            )
             counter += 1
             progress = counter / (len(binsizes) * len(interval_datasets)) * 100
             pipeline_steps._set_task_progress(progress)

@@ -19,9 +19,10 @@ def create_app(config_name):
     login.init_app(app)
     login.login_view = "login"
     # add redis queue
-    app.redis = Redis.from_url(app.config['REDIS_URL'])
-    app.task_queue = rq.Queue('hicognition-tasks', connection=app.redis)
+    app.redis = Redis.from_url(app.config["REDIS_URL"])
+    app.task_queue = rq.Queue("hicognition-tasks", connection=app.redis)
     # register api blueprint
     from .api import api as api_blueprint
-    app.register_blueprint(api_blueprint, url_prefix='/api/')
+
+    app.register_blueprint(api_blueprint, url_prefix="/api/")
     return app

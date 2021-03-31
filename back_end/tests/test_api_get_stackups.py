@@ -134,7 +134,6 @@ class TestGetIndividualIntervalDatas(LoginTestCase):
             name="testRegion1",
             dataset_id=2,
             file_path="test_path_1.bedd2db",
-
             windowsize=200000,
         )
         individualIntervalData = IndividualIntervalData(

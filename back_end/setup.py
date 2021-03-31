@@ -1,14 +1,12 @@
 import setuptools
-import os
 
-# TODO: This does not work if it is in the parent dir
-with open('VERSION') as version_file:
-   version_number = version_file.read().strip()
+with open("VERSION") as version_file:
+    version_number = version_file.read().strip()
 
 
 setuptools.setup(
     name="hicognition",
-    version = version_number,
+    version=version_number,
     packages=["hicognition"],
     install_requires=["pandas", "bioframe", "pandas", "requests"],
     classifiers=[
