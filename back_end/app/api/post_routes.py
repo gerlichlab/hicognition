@@ -144,11 +144,17 @@ def add_bedfile_metadata():
     If uploaded metadatafile has different row-number than original bedfile ->
     return error."""
 
+    SEPARATOR_MAP = {
+        ",": ",",
+        ";": ";",
+        "tab": "\t"
+    }
+
     def is_form_invalid():
         if not hasattr(request, "form"):
             return True
         # check attributes
-        if "dataset_id" not in request.form.keys():
+        if "datasetID" not in request.form.keys():
             return True
         if "separator" not in request.form.keys():
             return True
@@ -168,7 +174,7 @@ def add_bedfile_metadata():
     # get data from form
     data = request.form
     fileObject = request.files["file"]
-    dataset_id = json.loads(data["dataset_id"])
+    dataset_id = json.loads(data["datasetID"])
     # check whether dataset exists and user is allowed to access
     if Dataset.query.get(dataset_id) is None:
         return not_found("Dataset does not exist!")
@@ -176,8 +182,8 @@ def add_bedfile_metadata():
         return forbidden(f"Dataset is not owned by logged in user!")
     # check whether row-number is correct
     dataset = Dataset.query.get(dataset_id)
-    dataset_file = pd.read_csv(dataset.file_path, sep="\t")
-    uploaded_file = pd.read_csv(fileObject, sep=data["separator"]) # generate uploaded dataframe from io-stream in memory
+    dataset_file = pd.read_csv(dataset.file_path, sep="\t", header=None) # during upload process, the header of bedfiles is removed
+    uploaded_file = pd.read_csv(fileObject, sep=SEPARATOR_MAP[data["separator"]]) # generate uploaded dataframe from io-stream in memory
     if len(dataset_file) != len(uploaded_file):
         return jsonify({"ValidationError": "Dataset length missmatch!"})
     # detect numeric columns
@@ -197,6 +203,7 @@ def add_bedfile_metadata():
         {
             "message": "success! Preprocessing triggered.",
             "field_names": list(sorted(only_numeric.columns)),
+            "id": new_metadata.id
         }
     )
 
@@ -228,7 +235,7 @@ def add_bedfile_metadata_fields(metadata_id):
     # check whether field_names are correct
     metadata = BedFileMetadata.query.get(metadata_id)
     metadata_file = pd.read_csv(metadata.file_path)
-    if not all(key in metadata_file.columns for key in field_map.keys()):
+    if not all(key in metadata_file.columns for key in field_map):
         return invalid("Field names not understood!")
     # store field_map in database
     metadata.metadata_fields = json.dumps(field_map)

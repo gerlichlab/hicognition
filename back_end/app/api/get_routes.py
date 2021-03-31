@@ -1,4 +1,5 @@
 """GET API endpoints for hicognition"""
+import json
 from flask.globals import current_app
 import pandas as pd
 import numpy as np
@@ -7,7 +8,7 @@ from flask import g, request
 from .helpers import update_processing_state, is_access_to_dataset_denied
 from . import api
 from .. import db
-from ..models import Intervals, Dataset, AverageIntervalData, IndividualIntervalData
+from ..models import BedFileMetadata, Intervals, Dataset, AverageIntervalData, IndividualIntervalData
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
 
@@ -85,6 +86,32 @@ def get_intervals():
         .all()
     )
     return jsonify([dfile.to_json() for dfile in all_files])
+
+@api.route("/intervals/<interval_id>/metadata", methods=["GET"])
+@auth.login_required
+def get_interval_metadata(interval_id):
+    """returns available metadata for given intervals."""
+    interval = Intervals.query.get(interval_id)
+    if interval is None:
+        return not_found(f'Intervals with id {interval_id} do not exist!')
+    # check if associated dataset is owned
+    if is_access_to_dataset_denied(interval.source_dataset.query.first(), g.current_user):
+        return forbidden(f"Dataset associated with interval id {interval.id} is not owned by logged in user!")
+    # get associated metadata entries sorted by id; id sorting is necessary for newer metadata to win in field names
+    metadata_entries = interval.source_dataset.query.first().bedFileMetadata.order_by(BedFileMetadata.id).all()
+    # check if list is empty
+    if len(metadata_entries) == 0:
+        return jsonify({})
+    # get bed_row_index rom interval file -> this is the last column
+    bed_row_index = pd.read_csv(interval.file_path, sep="\t", header=None).iloc[:, -1]
+    # load all metadata_files as dataframes
+    temp_frames = []
+    for metadata_entry in metadata_entries:
+        columns_retained = json.loads(metadata_entry.metadata_fields)
+        temp_frame = pd.read_csv(metadata_entry.file_path, usecols=columns_retained).iloc[bed_row_index, :]
+        temp_frames.append(temp_frame)
+    output_frame = pd.concat(temp_frames, axis=1)
+    return jsonify(output_frame.to_dict(orient="list"))
 
 
 @api.route("/averageIntervalData/", methods=["GET"])

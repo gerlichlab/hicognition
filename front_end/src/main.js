@@ -4,7 +4,10 @@ import App from './App'
 
 Vue.config.productionTip = false
 Vue.config.errorHandler = function(err, vm, info){
-  if (vm.$el.classList.contains("md-select")){
+  /*
+    This eats the select error from vue-matrial input select dropdowns
+  */
+  if (vm.$el.classList.contains("md-select") || vm.$el.classList.contains("md-file")){
     return
   }
   throw err;

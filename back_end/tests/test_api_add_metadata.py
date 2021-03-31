@@ -46,7 +46,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "dataset_id": "1",
+            "datasetID": "1",
             "file": (io.BytesIO(b"abcdef"), "test.csv"),
             "separator": ",",
         }
@@ -97,7 +97,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         # add content-type
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
-        data = {"dataset_id": 1, "file": (io.BytesIO(b"abcdef"), "test.csv")}
+        data = {"datasetID": 1, "file": (io.BytesIO(b"abcdef"), "test.csv")}
         # dispatch post request
         response = self.client.post(
             "/api/bedFileMetadata/",
@@ -122,7 +122,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "dataset_id": 1,
+            "datasetID": 1,
             "file": (io.BytesIO(b"abcdef"), "test.cool"),
             "separator": ",",
         }
@@ -149,7 +149,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "dataset_id": 500,
+            "datasetID": 500,
             "file": (io.BytesIO(b"abcdef"), "test.csv"),
             "separator": ",",
         }
@@ -172,7 +172,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         test_data = pd.DataFrame(
             {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
         )
-        test_data.to_csv(test_filepath, sep="\t")
+        test_data.to_csv(test_filepath, sep="\t", header=None)
         # create paylod_file
         payload_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "payload.bed")
         payload_data = pd.DataFrame(
@@ -189,9 +189,9 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "dataset_id": 1,
+            "datasetID": 1,
             "file": (open(payload_filepath, "rb"), "test.csv"),
-            "separator": "\t",
+            "separator": "tab",
         }
         # dispatch post request
         response = self.client.post(
@@ -214,7 +214,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         test_data = pd.DataFrame(
             {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
         )
-        test_data.to_csv(test_filepath, sep="\t", index=False)
+        test_data.to_csv(test_filepath, sep="\t", index=False, header=None)
         # create paylod_file
         payload_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "payload.bed")
         payload_data = pd.DataFrame(
@@ -231,9 +231,9 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "dataset_id": 1,
+            "datasetID": 1,
             "file": (open(payload_filepath, "rb"), "test.csv"),
-            "separator": "\t",
+            "separator": "tab",
         }
         # dispatch post request
         response = self.client.post(
@@ -261,7 +261,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         test_data = pd.DataFrame(
             {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
         )
-        test_data.to_csv(test_filepath, sep="\t", index=False)
+        test_data.to_csv(test_filepath, sep="\t", index=False, header=None)
         # create paylod_file
         payload_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "payload.bed")
         payload_data = pd.DataFrame(
@@ -283,9 +283,9 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "dataset_id": 1,
+            "datasetID": 1,
             "file": (open(payload_filepath, "rb"), "test.csv"),
-            "separator": "\t",
+            "separator": "tab",
         }
         # dispatch post request
         response = self.client.post(
@@ -303,6 +303,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
                 "field_names": list(
                     sorted(payload_data.drop("string_column", axis="columns"))
                 ),
+                "id": 1
             },
         )
         # check whether metadata database entry was created and links to correct dataset
@@ -351,7 +352,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "fields": json.dumps({"asdf": "fdsa"}),
+            "fields": json.dumps(["asdf"]),
         }
         # dispatch post request
         response = self.client.post(
@@ -379,7 +380,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "fields": json.dumps({"asdf": "fdsa"}),
+            "fields": json.dumps(["asdf"]),
         }
         # dispatch post request
         response = self.client.post(
@@ -417,7 +418,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "fields": json.dumps({"asdf": "fdsa"}),
+            "fields": json.dumps(["asdf"]),
         }
         # dispatch post request
         response = self.client.post(
@@ -455,7 +456,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
         data = {
-            "fields": json.dumps({"size": "Size", "start": "Start"}),
+            "fields": json.dumps(["size", "start"]),
         }
         # dispatch post request
         response = self.client.post(
@@ -468,7 +469,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         # check whether fields were added correctly
         metadata = BedFileMetadata.query.get(1)
         actual = metadata.metadata_fields
-        expected = json.dumps({"size": "Size", "start": "Start"})
+        expected = json.dumps(["size", "start"])
         self.assertEqual(actual, expected)
 
 

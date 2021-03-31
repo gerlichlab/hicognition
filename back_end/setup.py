@@ -1,7 +1,5 @@
 import setuptools
-import os
 
-# TODO: This does not work if it is in the parent dir
 with open('VERSION') as version_file:
    version_number = version_file.read().strip()
 
