@@ -4,5 +4,5 @@ module.exports = {
   API_URL: '"/flask/api/"',
   HIGLASS_URL: '"/higlass"',
   STATIC_URL: '"/static/"',
-  VERSION: process.env.VERSION
+  VERSION: "0.2"
 }
