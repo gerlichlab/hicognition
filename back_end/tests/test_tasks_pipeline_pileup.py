@@ -139,7 +139,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         db.session.commit()
 
     @patch("app.pipeline_steps.add_pileup_db")
-    @patch("app.pipeline_steps.export_df_for_js")
     @patch("app.pipeline_steps.HT.do_pileup_iccf")
     @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
     @patch("app.pipeline_steps.HT.get_expected")
@@ -154,7 +153,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_get_expected,
         mock_pileup_obs_exp,
         mock_pileup_iccf,
-        mock_export,
         mock_add_db,
     ):
         """Tests whether regions that are defined as chrom, start, end are handled correctly."""
@@ -176,7 +174,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         assert_series_equal(pos_called, expected_df["pos"])
 
     @patch("app.pipeline_steps.add_pileup_db")
-    @patch("app.pipeline_steps.export_df_for_js")
     @patch("app.pipeline_steps.HT.do_pileup_iccf")
     @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
     @patch("app.pipeline_steps.HT.get_expected")
@@ -191,7 +188,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_get_expected,
         mock_pileup_obs_exp,
         mock_pileup_iccf,
-        mock_export,
         mock_add_db,
     ):
         """Tests whether regions that are defined as chrom, pos are handled correctly."""
@@ -211,7 +207,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         assert_series_equal(pos_called, expected_df["pos"])
 
     @patch("app.pipeline_steps.add_pileup_db")
-    @patch("app.pipeline_steps.export_df_for_js")
     @patch("app.pipeline_steps.HT.do_pileup_iccf")
     @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
     @patch("app.pipeline_steps.HT.get_expected")
@@ -226,7 +221,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_get_expected,
         mock_pileup_obs_exp,
         mock_pileup_iccf,
-        mock_export,
         mock_add_db,
     ):
         """Tests whether correct cooler is used for pileup."""
@@ -240,7 +234,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_Cooler.assert_called_with(expected_call)
 
     @patch("app.pipeline_steps.add_pileup_db")
-    @patch("app.pipeline_steps.export_df_for_js")
     @patch("app.pipeline_steps.HT.do_pileup_iccf")
     @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
     @patch("app.pipeline_steps.HT.get_expected")
@@ -255,7 +248,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_get_expected,
         mock_pileup_obs_exp,
         mock_pileup_iccf,
-        mock_export,
         mock_add_db,
     ):
         """Tests whether correct cooler is used for pileup."""
@@ -276,7 +268,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_pileup_iccf.assert_not_called()
 
     @patch("app.pipeline_steps.add_pileup_db")
-    @patch("app.pipeline_steps.export_df_for_js")
     @patch("app.pipeline_steps.HT.do_pileup_iccf")
     @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
     @patch("app.pipeline_steps.HT.get_expected")
@@ -291,7 +282,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_get_expected,
         mock_pileup_obs_exp,
         mock_pileup_iccf,
-        mock_export,
         mock_add_db,
     ):
         """Tests whether correct cooler is used for pileup."""
@@ -312,7 +302,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
 
     @patch("app.pipeline_steps.uuid.uuid4")
     @patch("app.pipeline_steps.add_pileup_db")
-    @patch("app.pipeline_steps.export_df_for_js")
     @patch("app.pipeline_steps.HT.do_pileup_iccf")
     @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
     @patch("app.pipeline_steps.HT.get_expected")
@@ -327,7 +316,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_get_expected,
         mock_pileup_obs_exp,
         mock_pileup_iccf,
-        mock_export,
         mock_add_db,
         mock_uuid,
     ):
