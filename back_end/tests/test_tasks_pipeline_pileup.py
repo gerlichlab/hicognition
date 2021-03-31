@@ -319,42 +319,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.HT.assign_regions")
     @patch("app.pipeline_steps.cooler.Cooler")
     @patch("app.pipeline_steps.pd.read_csv")
-    def test_conversion_function_called_correctly(
-        self,
-        mock_read_csv,
-        mock_Cooler,
-        mock_assign_regions,
-        mock_get_expected,
-        mock_pileup_obs_exp,
-        mock_pileup_iccf,
-        mock_export,
-        mock_add_db,
-        mock_uuid,
-    ):
-        """Tests whether conversion function as df for java script is called correctly"""
-        test_df_interval = pd.DataFrame({0: ["chr1", "chr1"], 1: [500, 1500]})
-        mock_read_csv.return_value = test_df_interval
-        mock_pileup_iccf.return_value = "testCooler"
-        # hack in return value of uuid4().hex to be asdf
-        uuid4 = MagicMock()
-        type(uuid4).hex = PropertyMock(return_value="asdf")
-        mock_uuid.return_value = uuid4
-        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        perform_pileup(self.dataset, self.intervals1, 10000, arms, "ICCF")
-        # check whether get_expected was called
-        mock_export.assert_called_with(
-            "testCooler", self.app.config["UPLOAD_DIR"] + "/asdf.npy"
-        )
-
-    @patch("app.pipeline_steps.uuid.uuid4")
-    @patch("app.pipeline_steps.add_pileup_db")
-    @patch("app.pipeline_steps.export_df_for_js")
-    @patch("app.pipeline_steps.HT.do_pileup_iccf")
-    @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
-    @patch("app.pipeline_steps.HT.get_expected")
-    @patch("app.pipeline_steps.HT.assign_regions")
-    @patch("app.pipeline_steps.cooler.Cooler")
-    @patch("app.pipeline_steps.pd.read_csv")
     def test_adding_to_db_called_correctly(
         self,
         mock_read_csv,

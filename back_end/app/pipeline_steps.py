@@ -87,7 +87,6 @@ def perform_pileup(cooler_dataset, intervals, binsize, arms, pileup_type):
     log.info("      Writing output...")
     file_name = uuid.uuid4().hex + ".npy"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
-    #export_df_for_js(pileup_array, file_path)
     np.save(file_path, pileup_array)
     # add this to database
     log.info("      Adding database entry...")
@@ -170,20 +169,6 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
     log.info("      Success!")
 
 
-def export_df_for_js(np_array, file_path):
-    """exports a pileup dataframe
-    so it can be easily read and used by
-    d3.js"""
-    output_molten = (
-        pd.DataFrame(np_array)
-        .stack()
-        .reset_index()
-        .rename(columns={"level_0": "variable", "level_1": "group", 0: "value"})
-    )
-    # write to file
-    output_molten.to_csv(file_path, index=False)
-
-
 def add_stackup_db(
     file_path, file_path_small, binsize, intervals_id, bigwig_dataset_id
 ):
@@ -198,6 +183,7 @@ def add_stackup_db(
     )
     db.session.add(new_entry)
     db.session.commit()
+
 
 def add_line_db(file_path, binsize, intervals_id, bigwig_dataset_id):
     """Adds pileup region to database"""
