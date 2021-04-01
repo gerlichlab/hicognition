@@ -1,4 +1,5 @@
 import sys
+import os
 import io
 import unittest
 from unittest.mock import patch
@@ -64,6 +65,12 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             dataset.file_path,
         ]
         self.assertEqual(expected, actual)
+        # test whether uploaded file exists
+        self.assertTrue(os.path.exists(dataset.file_path))
+        # test whether uploaded file is equal to expected file
+        expected_file = open("tests/testfiles/test.mcool", "rb").read()
+        actual_file = open(dataset.file_path, "rb").read()
+        self.assertEqual(expected_file, actual_file)
 
     @patch("app.models.User.launch_task")
     def test_dataset_added_correctly_cooler_wo_description_and_genotype(
@@ -164,6 +171,12 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             dataset.file_path,
         ]
         self.assertEqual(expected, actual)
+        # test whether uploaded file exists
+        self.assertTrue(os.path.exists(dataset.file_path))
+        # test whether uploaded file is equal to expected file
+        expected_file = b"abcdef"
+        actual_file = open(dataset.file_path, "rb").read()
+        self.assertEqual(expected_file, actual_file)
 
     @patch("app.models.User.launch_task")
     def test_incorrect_filetype_is_rejected(self, mock_launch):
