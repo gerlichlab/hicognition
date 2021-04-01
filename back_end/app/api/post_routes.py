@@ -38,9 +38,6 @@ def add_dataset():
             return True
         if correctFileEndings[request.form["filetype"]] != fileEnding:
             return True
-        # check format
-        if not FORMAT_CHECKERS[request.form["filetype"]](request.files["file"]):
-            return True
         return False
 
     current_user = g.current_user
@@ -73,6 +70,15 @@ def add_dataset():
     filename = f"{new_entry.id}_{secure_filename(fileObject.filename)}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     fileObject.save(file_path)
+    # check format -> this cannot be done in form checker since file needs to be available
+    if not FORMAT_CHECKERS[request.form["filetype"]](file_path):
+        # remove entry from database
+        db.session.delete(new_entry)
+        db.session.commit()
+        # remove file
+        os.remove(file_path)
+        # return error
+        return invalid("Wrong dataformat!")
     # add file_path to database entry
     new_entry.file_path = file_path
     new_entry.processing_state = "uploaded"
