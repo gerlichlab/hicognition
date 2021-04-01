@@ -630,9 +630,7 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
             metadata_fields='["id", "start"]',
             dataset_id=1,
         )
-        metadata2 = BedFileMetadata(
-            file_path=metadata_file_path_2, dataset_id=1
-        )
+        metadata2 = BedFileMetadata(file_path=metadata_file_path_2, dataset_id=1)
         db.session.add_all([dataset1, intervals1, metadata1, metadata2])
         db.session.commit()
         # make apicall
@@ -642,8 +640,10 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json(), metadata_df.drop(labels="end", axis="columns").to_dict(orient="list"))
-
+        self.assertEqual(
+            response.get_json(),
+            metadata_df.drop(labels="end", axis="columns").to_dict(orient="list"),
+        )
 
     def test_metadata_entries_with_overlapping_fieldname_are_returned_correctly(self):
         """Tests whether multiple associated metadata entries to

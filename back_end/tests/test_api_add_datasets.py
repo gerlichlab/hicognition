@@ -349,7 +349,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         data = {
             "datasetName": "test",
             "filetype": "bedfile",
-            "file": open("tests/testfiles/wrongly_formatted_bedfile.bed", "rb")
+            "file": open("tests/testfiles/wrongly_formatted_bedfile.bed", "rb"),
         }
         # dispatch post request
         response = self.client.post(
@@ -359,6 +359,16 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             content_type="multipart/form-data",
         )
         self.assertEqual(response.status_code, 400)
+        # check whether database entry was removed
+        self.assertEqual(0, len(Dataset.query.all()))
+        # test whether file was removed, filename will bed 1_wrongly_formatted_bedfile.bed
+        self.assertFalse(
+            os.path.exists(
+                os.path.join(
+                    TempDirTestCase.TEMP_PATH, "1_wrongly_formatted_bedfile.bed"
+                )
+            )
+        )
 
     def test_wrongly_formatted_coolerfile_rejected(self):
         """Tests whether form with wrongly formatted/corrupted coolerfile is
@@ -373,7 +383,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         data = {
             "datasetName": "test",
             "filetype": "cooler",
-            "file": open("tests/testfiles/bad_cooler.mcool", "rb")
+            "file": open("tests/testfiles/bad_cooler.mcool", "rb"),
         }
         # dispatch post request
         response = self.client.post(
@@ -383,6 +393,14 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             content_type="multipart/form-data",
         )
         self.assertEqual(response.status_code, 400)
+        # check whether database entry was removed
+        self.assertEqual(0, len(Dataset.query.all()))
+        # test whether file was removed, filename will bed 1_bad_cooler.mcool
+        self.assertFalse(
+            os.path.exists(
+                os.path.join(TempDirTestCase.TEMP_PATH, "1_bad_cooler.mcool")
+            )
+        )
 
     def test_public_flag_set_correctly_if_true(self):
         """Tests whether form with file without ending is rejected."""

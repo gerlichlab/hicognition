@@ -20,9 +20,11 @@ migrate = Migrate(app, db)
 # add command line arguments for user creation
 
 user_group = AppGroup("user")
-@user_group.command('define')
-@click.argument('name')
-@click.option('--password','-p', default=None)
+
+
+@user_group.command("define")
+@click.argument("name")
+@click.option("--password", "-p", default=None)
 def create_user(name, password):
     """Creates a new user either with defined password or password prompt.
     If user with the name exists already, password is redefined."""
@@ -40,7 +42,9 @@ def create_user(name, password):
     db.session.add(user)
     db.session.commit()
 
+
 app.cli.add_command(user_group)
+
 
 @app.shell_context_processor
 def make_shell_context():
