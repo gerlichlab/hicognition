@@ -11,6 +11,7 @@ from .. import db
 from ..models import Dataset, BedFileMetadata
 from .authentication import auth
 from .helpers import is_access_to_dataset_denied, parse_description_and_genotype
+from .format_checkers import FORMAT_CHECKERS
 from .errors import forbidden, invalid, not_found
 
 
@@ -36,6 +37,9 @@ def add_dataset():
         if request.form["filetype"] not in correctFileEndings:
             return True
         if correctFileEndings[request.form["filetype"]] != fileEnding:
+            return True
+        # check format
+        if not FORMAT_CHECKERS[request.form["filetype"]](request.files["file"]):
             return True
         return False
 
@@ -69,8 +73,6 @@ def add_dataset():
     filename = f"{new_entry.id}_{secure_filename(fileObject.filename)}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     fileObject.save(file_path)
-    if data["filetype"] not in ["cooler", "bedfile", "bigwig"]:
-        return invalid("datatype not understood")
     # add file_path to database entry
     new_entry.file_path = file_path
     new_entry.processing_state = "uploaded"

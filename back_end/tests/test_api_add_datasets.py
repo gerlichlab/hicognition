@@ -324,6 +324,29 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
+    def test_wrongly_formatted_bedfile_rejected(self):
+        """Tests whether form with wrongly formatted bedfile is rejected."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "datasetName": "test",
+            "filetype": "cooler",
+            "file": open("tests/testfiles/wrongly_formatted_bedfile.bed", "rb")
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 400)
+
     def test_public_flag_set_correctly_if_true(self):
         """Tests whether form with file without ending is rejected."""
         # authenticate
