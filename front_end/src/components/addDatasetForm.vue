@@ -196,13 +196,14 @@ export default {
       // add filetype
       formData.append("filetype", this.selectedFileType)
       // API call including upload is made in the background
-      this.postData("datasets/", formData);
-      // show progress bar for 1.5 s
-      window.setTimeout(() => {
-        this.datasetSaved = true;
-        this.sending = false;
-        this.clearForm();
-      }, 1500);
+      this.postData("datasets/", formData).then(response => {
+        this.sending = false
+          this.clearForm();
+        if (response){
+          // if error happend, global error handler will eat the response
+          this.datasetSaved = true;
+        }
+      });
     },
     validateDataset() {
       this.$v.$touch();
