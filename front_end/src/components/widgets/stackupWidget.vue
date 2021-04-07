@@ -94,12 +94,12 @@
 </template>
 
 <script>
-import stackup from "../stackup";
+import stackup from "../visualizations/stackup";
 import { apiMixin, formattingMixin } from "../../mixins";
 import { group_stackups } from "../../functions";
 
 export default {
-    name: "bigwigWidget",
+    name: "stackupWidget",
     mixins: [apiMixin, formattingMixin],
     components: {
         stackup
@@ -166,7 +166,7 @@ export default {
                 binsize: this.selectedBinsize,
                 widgetDataRef: this.widgetDataRef,
                 isDefault: this.isDefault,
-                widgetType: "BigWig"
+                widgetType: "Stackup"
             };
         },
         deleteWidget: function() {

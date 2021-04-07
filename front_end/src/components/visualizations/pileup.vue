@@ -17,8 +17,8 @@
 
 <script>
 import { createMatrixRenderer, createLibrary } from "piling.js";
-import { convert_json_to_pilingJS } from "../functions.js";
-import { createColorMap } from "../colorScales";
+import { convert_json_to_pilingJS } from "../../functions.js";
+import { createColorMap } from "../../colorScales";
 
 export default {
     name: "pileup",

@@ -92,12 +92,12 @@
 </template>
 
 <script>
-import pileup from "../pileup";
+import pileup from "../visualizations/pileup";
 import { apiMixin, formattingMixin } from "../../mixins";
 import { group_iccf_obs_exp } from "../../functions";
 
 export default {
-    name: "hiCWidget",
+    name: "pileupWidget",
     mixins: [apiMixin, formattingMixin],
     components: {
         pileup
