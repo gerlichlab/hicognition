@@ -1,161 +1,161 @@
-/*
-From https://stackoverflow.com/questions/48506428/nouislider-double-range-slider-with-two-inputs-vue-js
+/* From
+https://stackoverflow.com/questions/48506428/nouislider-double-range-slider-with-two-inputs-vue-js
 */
 
 <template>
-  <div class="range-slider md-alignment-center-center" :style="sliderStyle">
-    <input
-      @change="handleSlider"
-      v-model.number="minValue"
-      :min="sliderMin"
-      :max="sliderMax"
-      step="0.005"
-      type="range"
-    />
-    <input
-      @change="handleSlider"
-      v-model.number="maxValue"
-      :min="sliderMin"
-      :max="sliderMax"
-      step="0.005"
-      type="range"
-    />
-    <svg width="100%" height="24">
-      <line
-        x1="4"
-        y1="0"
-        :x2="sliderWidth"
-        y2="0"
-        stroke="#444"
-        stroke-width="12"
-        stroke-dasharray="1 28"
-      ></line>
-    </svg>
-  </div>
+    <div class="range-slider md-alignment-center-center" :style="sliderStyle">
+        <input
+            @change="handleSlider"
+            v-model.number="minValue"
+            :min="sliderMin"
+            :max="sliderMax"
+            step="0.005"
+            type="range"
+        />
+        <input
+            @change="handleSlider"
+            v-model.number="maxValue"
+            :min="sliderMin"
+            :max="sliderMax"
+            step="0.005"
+            type="range"
+        />
+        <svg width="100%" height="24">
+            <line
+                x1="4"
+                y1="0"
+                :x2="sliderWidth"
+                y2="0"
+                stroke="#444"
+                stroke-width="12"
+                stroke-dasharray="1 28"
+            ></line>
+        </svg>
+    </div>
 </template>
 
 <script>
 export default {
-  name: "dr-Slider",
-  props: {
-    sliderMin: Number,
-    sliderMax: Number,
-    sliderWidth: Number
-  },
-  computed: {
-    sliderStyle: function(){
-      return {
-        "width": `${this.sliderWidth}px`
-      }
+    name: "dr-Slider",
+    props: {
+        sliderMin: Number,
+        sliderMax: Number,
+        sliderWidth: Number
+    },
+    computed: {
+        sliderStyle: function() {
+            return {
+                width: `${this.sliderWidth}px`
+            };
+        }
+    },
+    data: function() {
+        return {
+            minValue: Number(this.sliderMin),
+            maxValue: Number(this.sliderMax)
+        };
+    },
+    methods: {
+        handleSlider: function() {
+            // switch around values if sliders pass each other
+            if (this.minValue > this.maxValue) {
+                var tmp = this.maxValue;
+                this.maxValue = this.minValue;
+                this.minValue = tmp;
+            }
+            this.$emit("slider-change", [this.minValue, this.maxValue]);
+        }
+    },
+    watch: {
+        sliderMin: function(val) {
+            // update to min position; This is a prop that is passed down; can change if dataset is changed
+            this.minValue = val;
+        },
+        sliderMax: function(val) {
+            // update to max position; This is a prop that is passed down; can change if dataset is changed
+            this.maxValue = val;
+        }
     }
-  },
-  data: function () {
-    return {
-      minValue: Number(this.sliderMin),
-      maxValue: Number(this.sliderMax),
-    };
-  },
-  methods: {
-    handleSlider: function () {
-      // switch around values if sliders pass each other
-      if (this.minValue > this.maxValue) {
-        var tmp = this.maxValue;
-        this.maxValue = this.minValue;
-        this.minValue = tmp;
-      }
-      this.$emit("slider-change", [this.minValue, this.maxValue]);
-    },
-  },
-  watch: {
-    sliderMin: function (val) {
-      // update to min position; This is a prop that is passed down; can change if dataset is changed
-      this.minValue = val;
-    },
-    sliderMax: function (val) {
-      // update to max position; This is a prop that is passed down; can change if dataset is changed
-      this.maxValue = val;
-    },
-  },
 };
-</script>>
+</script>
+
 
 <style scoped>
-
 .range-slider {
-  margin: auto;
-  text-align: center;
-  position: relative;
-  height: 1vh;
+    margin: auto;
+    text-align: center;
+    position: relative;
+    height: 1vh;
 }
 
 .range-slider svg,
 .range-slider input[type="range"] {
-  position: absolute;
-  left: 0;
-  bottom: 0;
+    position: absolute;
+    left: 0;
+    bottom: 0;
 }
 
 input[type="number"] {
-  border: 1px solid #ddd;
-  text-align: center;
-  font-size: 1.6em;
-  -moz-appearance: textfield;
+    border: 1px solid #ddd;
+    text-align: center;
+    font-size: 1.6em;
+    -moz-appearance: textfield;
 }
 
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
+    -webkit-appearance: none;
 }
 
 input[type="number"]:invalid,
 input[type="number"]:out-of-range {
-  border: 2px solid #ff6347;
+    border: 2px solid #ff6347;
 }
 
 input[type="range"] {
-  -webkit-appearance: none;
-  width: 100%;
+    -webkit-appearance: none;
+    width: 100%;
 }
 
 input[type="range"]:focus {
-  outline: none;
+    outline: none;
 }
 
 input[type="range"]:focus::-webkit-slider-runnable-track {
-  background: #448aff;
-  border-radius: 1vh;
+    background: #448aff;
+    border-radius: 1vh;
 }
 
 input[type="range"]:focus::-ms-fill-lower {
-  background: #448aff;
+    background: #448aff;
 }
 
 input[type="range"]:focus::-ms-fill-upper {
-  background: #448aff;
+    background: #448aff;
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
-  width: 100%;
-  height: 5px;
-  cursor: pointer;
-  animate: 0.2s;
-  background: #448aff;
-  border-radius: 5px;
-  box-shadow: none;
-  border: 0;
+    width: 100%;
+    height: 5px;
+    cursor: pointer;
+    animate: 0.2s;
+    background: #448aff;
+    border-radius: 5px;
+    box-shadow: none;
+    border: 0;
 }
 
 input[type="range"]::-webkit-slider-thumb {
-  z-index: 2;
-  position: relative;
-  box-shadow: 0px 0px 0px #000;
-  border: 1px solid #448aff;
-  height: 18px;
-  width: 18px;
-  border-radius: 25px;
-  background: #ffffff;
-  cursor: pointer;
-  -webkit-appearance: none;
-  margin-top: -7px;
+    z-index: 2;
+    position: relative;
+    box-shadow: 0px 0px 0px #000;
+    border: 1px solid #448aff;
+    height: 18px;
+    width: 18px;
+    border-radius: 25px;
+    background: #ffffff;
+    cursor: pointer;
+    -webkit-appearance: none;
+    margin-top: -7px;
 }
-</style>>
+</style>

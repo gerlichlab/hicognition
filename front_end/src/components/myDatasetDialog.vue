@@ -1,51 +1,52 @@
 <template>
-  <div>
-    <md-dialog :md-active.sync="showDialog">
-      <md-dialog-title>My Datasets</md-dialog-title>
-        <md-content class="content">
-          <datasetTable></datasetTable>
-        </md-content>
-      <md-dialog-actions>
-        <md-button class="md-primary" @click="$emit('close-dialog')">Close</md-button>
-      </md-dialog-actions>
-    </md-dialog>
-
-  </div>
+    <div>
+        <md-dialog :md-active.sync="showDialog">
+            <md-dialog-title>My Datasets</md-dialog-title>
+            <md-content class="content">
+                <datasetTable></datasetTable>
+            </md-content>
+            <md-dialog-actions>
+                <md-button class="md-primary" @click="$emit('close-dialog')"
+                    >Close</md-button
+                >
+            </md-dialog-actions>
+        </md-dialog>
+    </div>
 </template>
 
 <script>
-import datasetTable from "./datasetTable"
+import datasetTable from "./datasetTable";
 
 export default {
-    name: 'DialogCustom',
+    name: "DialogCustom",
     components: {
-      datasetTable
+        datasetTable
     },
     props: {
         dialog: Boolean
     },
     computed: {
-        showDialog: function () {
-            return this.dialog
+        showDialog: function() {
+            return this.dialog;
         }
     },
     watch: {
-      showDialog: function(val) {
-        if (val){
-          // switched on
-          this.$emit("get-datasets")
+        showDialog: function(val) {
+            if (val) {
+                // switched on
+                this.$emit("get-datasets");
+            }
         }
-      }
     }
-  }
+};
 </script>
 
 <style lang="scss" scoped>
-  .md-dialog /deep/.md-dialog-container {
+.md-dialog /deep/.md-dialog-container {
     max-width: 80vw;
-  }
+}
 
-  .content {
+.content {
     margin: 10px;
-  }
+}
 </style>
