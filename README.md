@@ -1,5 +1,10 @@
 # HiCognition
 
+[![Python code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black "Black: The Uncompromising Code Formatter")
+[![Javascript Style Guide: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier-vscode "Prettier: An Opinionated Code Formatter")
+
+[TODO:]:<> ( Add: docs badge, build badge, coverage badge. More on: https://github.com/dwyl/repo-badges)
+
 Flask server for HiCognition with Vue.js frontend. HiCognition is a a data exploration tool that aims to allow stream-lined exploration of aggregate genomic data. HiCognition is centered around Hi-C data, but also enables integration of Chip-seq and region based data.
 
 ## Requirements

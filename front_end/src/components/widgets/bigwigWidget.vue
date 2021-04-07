@@ -306,7 +306,7 @@ export default {
                             // check if intervals has changed
                             var newEntry = newValue[this.collectionID]["collectionConfig"]["intervalID"];
                             if ( newEntry != this.intervalID ){
-                                this.intervalID = newEntry;
+                                this.intervalID = newEntry,
                                 // reset state
                                 this.selectedBinsize = undefined,
                                 this.selectedDataset = undefined,
