@@ -163,7 +163,7 @@ export default {
                 binsize: this.selectedBinsize,
                 widgetDataRef: this.widgetDataRef,
                 isICCF: this.isICCF,
-                widgetType: "Hi-C"
+                widgetType: "Pileup"
             };
         },
         deleteWidget: function() {

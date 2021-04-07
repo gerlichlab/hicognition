@@ -16,16 +16,16 @@
                 <div
                     class="md-layout md-gutter md-alignment-top-center fill-half-height"
                 >
-                    <md-button @click="setHiC" class="md-raised md-accent"
-                        >Hi-C</md-button
+                    <md-button @click="setPileup" class="md-raised md-accent"
+                        >Pileup</md-button
                     >
-                    <md-button class="md-raised md-accent" @click="setBigWig"
-                        >BigWig</md-button
+                    <md-button class="md-raised md-accent" @click="setStackup"
+                        >Stackup</md-button
                     >
                 </div>
             </div>
-            <bigwigWidget
-                v-if="this.widgetType == 'BigWig'"
+            <stackupWidget
+                v-if="this.widgetType == 'Stackup'"
                 :height="height"
                 :width="width"
                 :empty="empty"
@@ -34,8 +34,8 @@
                 :rowIndex="rowIndex"
                 :colIndex="colIndex"
             />
-            <hicWidget
-                v-else-if="this.widgetType == 'Hi-C'"
+            <pileupWidget
+                v-else-if="this.widgetType == 'Pileup'"
                 :height="height"
                 :width="width"
                 :empty="empty"
@@ -61,15 +61,15 @@
 
 <script>
 import emptyWidget from "./widgets/emptyWidget";
-import hicWidget from "./widgets/hicWidget";
-import bigwigWidget from "./widgets/bigwigWidget";
+import pileupWidget from "./widgets/pileupWidget";
+import stackupWidget from "./widgets/stackupWidget";
 
 export default {
     name: "widgetContainer",
     components: {
         emptyWidget,
-        bigwigWidget,
-        hicWidget
+        stackupWidget,
+        pileupWidget
     },
     data: function() {
         // get widget type from store
@@ -88,7 +88,7 @@ export default {
         return {
             widgetType: widgetType,
             selectedType: undefined,
-            widgetTypes: ["Hi-C", "BigWig"]
+            widgetTypes: ["Pileup", "Stackup"]
         };
     },
     props: {
@@ -101,30 +101,27 @@ export default {
         colIndex: Number
     },
     methods: {
-        setHiC: function() {
+        setPileup: function() {
             // set widgetType in store
             var mutationObject = {
                 parentID: this.collectionID,
                 id: this.id,
-                widgetType: "Hi-C"
+                widgetType: "Pileup"
             };
             this.$store.commit("compare/setWidgetType", mutationObject);
             // set widget Type in this container
-            this.widgetType = "Hi-C";
-            // TODO rename to something more concrete PileUp Widget?
+            this.widgetType = "Pileup";
         },
-        setBigWig: function() {
+        setStackup: function() {
             // set widgetType in store
             var mutationObject = {
                 parentID: this.collectionID,
                 id: this.id,
-                widgetType: "BigWig"
+                widgetType: "Stackup"
             };
             this.$store.commit("compare/setWidgetType", mutationObject);
             // set widget Type in this container
-            this.widgetType = "BigWig";
-            // TODO rename to something more concrete Stackup Widget?
-            //console.log("Not implemented!");
+            this.widgetType = "Stackup";
         },
         propagateDrop: function() {
             // propagates widgetDrop up to widgetCollection
