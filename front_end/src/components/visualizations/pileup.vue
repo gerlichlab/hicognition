@@ -52,7 +52,12 @@ export default {
             return Math.max(...heatMapValues);
         },
         dataHeatMapPiling: function() {
-            return convert_json_to_pilingJS(this.pileupData, this.log);
+            return [
+                {
+                    src: this.pileupData
+                }
+            ];
+            // return convert_json_to_pilingJS(this.pileupData, this.log);
         }
     },
     data: function() {

@@ -96,7 +96,6 @@
 <script>
 import lineprofile from "../visualizations/lineprofile";
 import { apiMixin, formattingMixin } from "../../mixins";
-import { group_lineprofiles } from "../../functions";
 
 export default {
     name: "lineprofileWidget",

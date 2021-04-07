@@ -226,19 +226,15 @@ def get_pileup_data(pileup_id):
         )
     # dataset is owned, return the data
     np_data = np.load(pileup.file_path)
-    # TODO: send as array
-    variable = []
-    group = []
-    value = []
-    for var, row in enumerate(np_data):
-        for grp, item in enumerate(row):
-            variable.append(var)
-            group.append(grp)
-            value.append(item)
-    csv_data = pd.DataFrame(
-        list(zip(variable, group, value)), columns=["variable", "group", "value"]
-    )
-    json_data = csv_data.to_json()
+
+    flat_data = np_data.flatten().tolist()
+    
+    json_data = {
+        'data': flat_data,
+        'shape': np_data.shape,
+        'dtype': "float32"
+    }
+
     return jsonify(json_data)
 
 
