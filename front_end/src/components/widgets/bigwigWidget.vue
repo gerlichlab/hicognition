@@ -1,72 +1,96 @@
 <template>
-<div>
-    <div :style="cssStyle" class="smallMargin md-elevation-1 bg" draggable="true" @dragstart="handleDragStart" @dragend="handleDragEnd">
-        <div class="md-layout">
-            <div class="md-layout-item md-size-30 padding-left padding-right">
-                <md-field class="padding-top">
+    <div>
+        <div
+            :style="cssStyle"
+            class="smallMargin md-elevation-1 bg"
+            draggable="true"
+            @dragstart="handleDragStart"
+            @dragend="handleDragEnd"
+        >
+            <div class="md-layout">
+                <div
+                    class="md-layout-item md-size-30 padding-left padding-right"
+                >
+                    <md-field class="padding-top">
                         <label class="md-primary">Dataset</label>
                         <md-select
-                        v-model="selectedDataset"
-                        name="dataset"
-                        id="dataset"
-                        placeholder="Dataset"
-                        :disabled="!allowDatasetSelection"
+                            v-model="selectedDataset"
+                            name="dataset"
+                            id="dataset"
+                            placeholder="Dataset"
+                            :disabled="!allowDatasetSelection"
                         >
-                        <md-option
-                            v-for="item in datasets"
-                            :value="item.id"
-                            :key="item.id"
-                            >{{ item.dataset_name }}</md-option
-                        >
+                            <md-option
+                                v-for="item in datasets"
+                                :value="item.id"
+                                :key="item.id"
+                                >{{ item.dataset_name }}</md-option
+                            >
                         </md-select>
-                </md-field>
-            </div>
-            <div class="md-layout-item md-size-30 padding-left padding-right">
-                <md-field class="padding-top">
+                    </md-field>
+                </div>
+                <div
+                    class="md-layout-item md-size-30 padding-left padding-right"
+                >
+                    <md-field class="padding-top">
                         <label class="md-primary">Binsize</label>
                         <md-select
-                        v-model="selectedBinsize"
-                        name="binsize"
-                        id="binsze"
-                        placeholder="Binsize"
-                        :disabled="!allowBinsizeSelection"
+                            v-model="selectedBinsize"
+                            name="binsize"
+                            id="binsze"
+                            placeholder="Binsize"
+                            :disabled="!allowBinsizeSelection"
                         >
-                        <md-option
-                            v-for="item in binsizes"
-                            :value="item.binsize"
-                            :key="item.binsize"
-                            >{{ convertBasePairsToReadable(item.binsize) }}</md-option
-                        >
+                            <md-option
+                                v-for="item in binsizes"
+                                :value="item.binsize"
+                                :key="item.binsize"
+                                >{{
+                                    convertBasePairsToReadable(item.binsize)
+                                }}</md-option
+                            >
                         </md-select>
-                </md-field>
-            </div>
-            <div class="md-layout-item md-size-25">
-                <div class="padding-top">
-                    <md-switch v-model="isDefault">{{ stackupType }}</md-switch>
+                    </md-field>
+                </div>
+                <div class="md-layout-item md-size-25">
+                    <div class="padding-top">
+                        <md-switch v-model="isDefault">{{
+                            stackupType
+                        }}</md-switch>
+                    </div>
+                </div>
+                <div class="md-layout-item md-size-10">
+                    <div class="padding-top-large padding-right">
+                        <md-button
+                            @click="deleteWidget"
+                            class="md-icon-button md-accent"
+                        >
+                            <md-icon>delete</md-icon>
+                        </md-button>
+                    </div>
                 </div>
             </div>
-            <div class="md-layout-item md-size-10">
-                <div class="padding-top-large padding-right">
-                  <md-button  @click="deleteWidget"  class="md-icon-button md-accent">
-                    <md-icon>delete</md-icon>
-                 </md-button>
-                </div>
+            <stackup
+                :stackupType="stackupType"
+                v-if="showData"
+                :stackupID="id"
+                :width="225"
+                :height="225"
+                :stackupData="widgetData[stackupType]"
+                :log="true"
+            >
+            </stackup>
+            <div
+                v-if="!showData"
+                class="md-layout md-alignment-center-center"
+                style="height: 70%;"
+            >
+                <md-icon class="md-layout-item md-size-50 md-size-5x"
+                    >input</md-icon
+                >
             </div>
-        </div>
-        <stackup
-            :stackupType="stackupType"
-            v-if="showData"
-            :stackupID="id"
-            :width="225"
-            :height="225"
-            :stackupData="widgetData[stackupType]"
-            :log="true" >
-        </stackup>
-        <div v-if="!showData" class="md-layout md-alignment-center-center" style="height: 70%;">
-                <md-icon class="md-layout-item md-size-50 md-size-5x">input</md-icon>
         </div>
     </div>
-</div>
 </template>
 
 <script>
@@ -75,14 +99,14 @@ import { apiMixin, formattingMixin } from "../../mixins";
 import { group_stackups } from "../../functions";
 
 export default {
-    name: 'bigwigWidget',
+    name: "bigwigWidget",
     mixins: [apiMixin, formattingMixin],
     components: {
         stackup
     },
-    data: function () {
+    data: function() {
         // get widget data from store for initialization
-        return this.initializeWidget()
+        return this.initializeWidget();
     },
     props: {
         width: Number,
@@ -91,45 +115,47 @@ export default {
         id: Number,
         collectionID: Number,
         rowIndex: Number,
-        colIndex: Number,
+        colIndex: Number
     },
-    computed:{
+    computed: {
         //TODO: fix
         stackupType: function() {
-            if (this.isDefault){
-                return "normal"
-            }else{
-                return "problem"
+            if (this.isDefault) {
+                return "normal";
+            } else {
+                return "problem";
             }
         },
         showData: function() {
-            if (this.widgetData){
-                return true
+            if (this.widgetData) {
+                return true;
             }
-            return false
+            return false;
         },
         allowDatasetSelection: function() {
-            if (this.intervalID){
-                return true
+            if (this.intervalID) {
+                return true;
             }
-            return false
+            return false;
         },
         allowBinsizeSelection: function() {
-            return this.binsizes.length != 0
+            return this.binsizes.length != 0;
         },
         cssStyle: function() {
             return {
                 height: `${this.height}px`,
                 width: `${this.width}px`
-            }
+            };
         }
     },
     methods: {
-        toStoreObject: function(){
+        toStoreObject: function() {
             // serialize object for storing its state in the store
             return {
                 // collection Data is needed if widget is dropped on new collection
-                collectionConfig: this.$store.getters["compare/getCollectionConfig"](this.collectionID),
+                collectionConfig: this.$store.getters[
+                    "compare/getCollectionConfig"
+                ](this.collectionID),
                 colIndex: this.colIndex,
                 rowIndex: this.rowIndex,
                 id: this.id,
@@ -141,14 +167,14 @@ export default {
                 widgetDataRef: this.widgetDataRef,
                 isDefault: this.isDefault,
                 widgetType: "BigWig"
-            }
+            };
         },
-        deleteWidget: function(){
+        deleteWidget: function() {
             // delete widget from store
             var payload = {
                 parentID: this.collectionID,
                 id: this.id
-            }
+            };
             // delete widget from store
             this.$store.commit("compare/deleteWidget", payload);
         },
@@ -157,7 +183,7 @@ export default {
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
             // create data transfer object
-            e.dataTransfer.setData('widget-id', this.id);
+            e.dataTransfer.setData("widget-id", this.id);
             e.dataTransfer.setData("collection-id", this.collectionID);
             // set dragimage. Dragimage dom element needs to be present before it can be passed
             // to setDragImage. Div is positioned outside of visible area for this
@@ -168,37 +194,44 @@ export default {
             this.dragImage.style.position = "absolute";
             this.dragImage.style.top = `-${this.width}px`; // positioning outside of visible area
             document.body.appendChild(this.dragImage);
-            e.dataTransfer.setDragImage(this.dragImage, this.height/2, this.width/2);
+            e.dataTransfer.setDragImage(
+                this.dragImage,
+                this.height / 2,
+                this.width / 2
+            );
         },
         handleDragEnd: function(e) {
             // remove dragImage from document
-            if (this.dragImage){
+            if (this.dragImage) {
                 this.dragImage.remove();
             }
         },
         sameCollectionConfig: function(newCollectionData, oldCollectionData) {
-            if ( !oldCollectionData ){
+            if (!oldCollectionData) {
                 // no old data -> the widget needs to be freshly initialized
                 return false;
             }
-            if (newCollectionData["intervalID"] != oldCollectionData["intervalID"]){
+            if (
+                newCollectionData["intervalID"] !=
+                oldCollectionData["intervalID"]
+            ) {
                 return false;
             }
             return true;
         },
-        initializeForFirstTime: function(widgetData, collectionData){
+        initializeForFirstTime: function(widgetData, collectionData) {
             var data = {
-                    widgetDataRef: undefined,
-                    dragImage: undefined,
-                    widgetData: undefined,
-                    selectedDataset: undefined,
-                    selectedBinsize: undefined,
-                    intervalID: collectionData["intervalID"],
-                    emptyClass: ["smallMargin", "empty"],
-                    binsizes: [],
-                    datasets: this.$store.getters.getBigwigsDirty,
-                    isDefault: true
-            }
+                widgetDataRef: undefined,
+                dragImage: undefined,
+                widgetData: undefined,
+                selectedDataset: undefined,
+                selectedBinsize: undefined,
+                intervalID: collectionData["intervalID"],
+                emptyClass: ["smallMargin", "empty"],
+                binsizes: [],
+                datasets: this.$store.getters.getBigwigsDirty,
+                isDefault: true
+            };
             // write properties to store
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
@@ -216,24 +249,26 @@ export default {
                 binsizes: [],
                 datasets: this.$store.getters.getBigwigsDirty,
                 isDefault: true
-            }
+            };
         },
         initializeAtSameCollection: function(widgetData, collectionConfig) {
             var widgetDataValues;
-            if (widgetData["widgetDataRef"]){
+            if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
-                var widgetDataRef = widgetData["widgetDataRef"]
+                var widgetDataRef = widgetData["widgetDataRef"];
                 // deinfe store queries
                 var querynormal = {
                     stackupType: "normal",
                     id: widgetDataRef["normal"]
-                }
+                };
                 // get widget data from store
                 widgetDataValues = {
-                                    "normal": this.$store.getters["compare/getWidgetDataStackup"](querynormal)
-                                }
-            }else{
-                widgetDataValues = undefined
+                    normal: this.$store.getters["compare/getWidgetDataStackup"](
+                        querynormal
+                    )
+                };
+            } else {
+                widgetDataValues = undefined;
             }
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
@@ -246,7 +281,7 @@ export default {
                 binsizes: widgetData["binsizes"],
                 datasets: this.$store.getters.getBigwigsDirty,
                 isDefault: widgetData["isDefault"]
-            }
+            };
         },
         initializeWidget: function() {
             // initialize widget from store
@@ -254,18 +289,30 @@ export default {
                 parentID: this.collectionID,
                 id: this.id
             };
-            var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
+            var widgetData = this.$store.getters["compare/getWidgetProperties"](
+                queryObject
+            );
             // the collection config at the current collection
-            var collectionConfig = this.$store.getters["compare/getCollectionConfig"](this.collectionID);
+            var collectionConfig = this.$store.getters[
+                "compare/getCollectionConfig"
+            ](this.collectionID);
             // the collection config the widget comes from
             var oldCollectionConfig = widgetData["collectionConfig"];
-            if (!oldCollectionConfig){
-                return this.initializeForFirstTime(widgetData, collectionConfig)
+            if (!oldCollectionConfig) {
+                return this.initializeForFirstTime(
+                    widgetData,
+                    collectionConfig
+                );
             }
-            if (this.sameCollectionConfig(collectionConfig, oldCollectionConfig)){
-                return this.initializeAtSameCollection(widgetData, collectionConfig)
+            if (
+                this.sameCollectionConfig(collectionConfig, oldCollectionConfig)
+            ) {
+                return this.initializeAtSameCollection(
+                    widgetData,
+                    collectionConfig
+                );
             }
-            return this.initializeAtNewCollection(widgetData, collectionConfig)
+            return this.initializeAtNewCollection(widgetData, collectionConfig);
         },
         getStackupData: async function(stackupType, id) {
             //TODO: Update
@@ -273,87 +320,93 @@ export default {
             var queryObject = {
                 stackupType: stackupType,
                 id: id
-            }
-            if (this.$store.getters["compare/stackupExists"](queryObject)){
-                return this.$store.getters["compare/getWidgetDataStackup"](queryObject)
+            };
+            if (this.$store.getters["compare/stackupExists"](queryObject)) {
+                return this.$store.getters["compare/getWidgetDataStackup"](
+                    queryObject
+                );
             }
             // pileup does not exists in store, fetch it
-            var response = await this.fetchData(`individualIntervalData/${id}/`);
+            var response = await this.fetchData(
+                `individualIntervalData/${id}/`
+            );
             var parsed = JSON.parse(response.data);
             // save it in store
             var mutationObject = {
                 stackupType: stackupType,
                 id: id,
                 data: parsed
-            }
+            };
             this.$store.commit("compare/setWidgetDataStackup", mutationObject);
             // return it
-            return parsed
-
+            return parsed;
         }
     },
     watch: {
         "$store.state.datasets": function() {
             // updates datasets if they change -> get coolers that may be in the status of processing
-            this.datasets = this.$store.getters.getBigwigsDirty
+            this.datasets = this.$store.getters.getBigwigsDirty;
         },
         // watch for changes in store to be able to update intervals
         "$store.state.compare.widgetCollections": {
             deep: true,
             handler: function(newValue) {
-                        // check if collecitonConfig is defined
-                        if ("collectionConfig" in newValue[this.collectionID]){
-                            // check if intervals has changed
-                            var newEntry = newValue[this.collectionID]["collectionConfig"]["intervalID"];
-                            if ( newEntry != this.intervalID ){
-                                this.intervalID = newEntry,
-                                // reset state
-                                this.selectedBinsize = undefined,
-                                this.selectedDataset = undefined,
-                                this.widgetData = undefined,
-                                this.binsizes = []
-                            }
-                        }
-                     },
+                // check if collecitonConfig is defined
+                if ("collectionConfig" in newValue[this.collectionID]) {
+                    // check if intervals has changed
+                    var newEntry =
+                        newValue[this.collectionID]["collectionConfig"][
+                            "intervalID"
+                        ];
+                    if (newEntry != this.intervalID) {
+                        this.intervalID = newEntry;
+                        // reset state
+                        this.selectedBinsize = undefined;
+                        this.selectedDataset = undefined;
+                        this.widgetData = undefined;
+                        this.binsizes = [];
+                    }
+                }
+            }
         },
         selectedDataset: function() {
-            if (!this.selectedDataset){
+            if (!this.selectedDataset) {
                 // do not dispatch call if there is no id --> can happend when reset
-                return
+                return;
             }
             // fetch binsizes for the current combination of dataset and intervals
-            this.fetchData(`individualIntervalData/?dataset_id=${this.selectedDataset}&intervals_id=${this.intervalID}`).then((response) => {
+            this.fetchData(
+                `individualIntervalData/?dataset_id=${this.selectedDataset}&intervals_id=${this.intervalID}`
+            ).then(response => {
                 // update binsizes to show and group iccf/obsExp data under one binsize
                 this.binsizes = group_stackups(response.data);
-                });
+            });
         },
         selectedBinsize: async function() {
-            if (!this.selectedBinsize){
-                return
+            if (!this.selectedBinsize) {
+                return;
             }
             // fetch widget data
             var normal_id = this.binsizes[this.selectedBinsize]["normal"];
             //var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
             // store widget data ref
             this.widgetDataRef = {
-                "normal": normal_id,
-            }
+                normal: normal_id
+            };
             // get pileup iccf; update pileup data upon success
             var normal_data = await this.getStackupData("normal", normal_id);
             this.widgetData = {
-                "normal": normal_data
+                normal: normal_data
             };
         }
     }
-}
+};
 </script>
 
 <style scoped>
-
 .bg {
     background-color: rgba(211, 211, 211, 0.2);
 }
-
 
 .no-padding-right {
     padding-right: 0px;
@@ -385,5 +438,4 @@ export default {
 .md-field {
     min-height: 30px;
 }
-
 </style>

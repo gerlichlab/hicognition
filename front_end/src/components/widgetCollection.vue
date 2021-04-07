@@ -1,92 +1,115 @@
 <template>
-<div @dragenter="expandCollection" @dragleave="handleDragLeave">
-    <md-card :style="cssStyle" ref="collectionCard">
-        <md-card-header>
-            <div class="md-layout">
-                <div class="md-layout-item md-size-30 padding-right">
-                    <div class="menu-button">
-                        <md-button @click="handleZoomIn" class="md-icon-button">
-                            <md-icon>zoom_in</md-icon>
-                        </md-button>
+    <div @dragenter="expandCollection" @dragleave="handleDragLeave">
+        <md-card :style="cssStyle" ref="collectionCard">
+            <md-card-header>
+                <div class="md-layout">
+                    <div class="md-layout-item md-size-30 padding-right">
+                        <div class="menu-button">
+                            <md-button
+                                @click="handleZoomIn"
+                                class="md-icon-button"
+                            >
+                                <md-icon>zoom_in</md-icon>
+                            </md-button>
+                        </div>
+                        <div class="menu-button">
+                            <md-button
+                                @click="handleZoomOut"
+                                class="md-icon-button"
+                                :disabled="blockZoomOut"
+                            >
+                                <md-icon>zoom_out</md-icon>
+                            </md-button>
+                        </div>
                     </div>
-                    <div class="menu-button">
-                        <md-button @click="handleZoomOut" class="md-icon-button" :disabled="blockZoomOut">
-                            <md-icon>zoom_out</md-icon>
-                        </md-button>
+                    <div class="md-layout-item md-size-30 padding-right">
+                        <md-field class="padding-top">
+                            <label class="md-primary" for="region"
+                                >Region</label
+                            >
+                            <md-select
+                                v-model="selectedRegionID"
+                                name="region"
+                                id="region"
+                                placeholder="Region"
+                            >
+                                <md-option
+                                    v-for="item in regions"
+                                    :value="item.id"
+                                    :key="item.id"
+                                    >{{ item.dataset_name }}</md-option
+                                >
+                            </md-select>
+                        </md-field>
+                    </div>
+                    <div class="md-layout-item md-size-25">
+                        <md-field class="padding-top">
+                            <label class="md-primary" for="Size">Size</label>
+                            <md-select
+                                v-model="selectedWindowSize"
+                                name="size"
+                                id="size"
+                                placeholder="Size"
+                                :disabled="!windowSizesAvailable"
+                            >
+                                <md-option
+                                    v-for="item in windowSizes"
+                                    :value="item.id"
+                                    :key="item.id"
+                                    >{{
+                                        convertBasePairsToReadable(
+                                            item.windowsize
+                                        )
+                                    }}</md-option
+                                >
+                            </md-select>
+                        </md-field>
+                    </div>
+                    <div class="md-layout-item md-size-10 padding-left">
+                        <div class="menu-button">
+                            <md-button
+                                @click="fetchDatasets"
+                                class="md-icon-button md-dense md-raised button-margin md-primary md-icon-button"
+                            >
+                                <md-icon>cached</md-icon>
+                            </md-button>
+                        </div>
                     </div>
                 </div>
-                <div class="md-layout-item md-size-30 padding-right">
-                    <md-field class="padding-top">
-                        <label class="md-primary" for="region">Region</label>
-                        <md-select
-                        v-model="selectedRegionID"
-                        name="region"
-                        id="region"
-                        placeholder="Region"
-                        >
-                        <md-option
-                            v-for="item in regions"
-                            :value="item.id"
-                            :key="item.id"
-                            >{{ item.dataset_name }}</md-option
-                        >
-                        </md-select>
-                    </md-field>
-                </div>
-                <div class="md-layout-item md-size-25">
-                    <md-field class="padding-top">
-                        <label class="md-primary" for="Size">Size</label>
-                        <md-select
-                        v-model="selectedWindowSize"
-                        name="size"
-                        id="size"
-                        placeholder="Size"
-                        :disabled="!windowSizesAvailable"
-                        >
-                        <md-option
-                            v-for="item in windowSizes"
-                            :value="item.id"
-                            :key="item.id"
-                            >{{ convertBasePairsToReadable(item.windowsize) }}</md-option
-                        >
-                        </md-select>
-                    </md-field>
-                </div>
-                <div class="md-layout-item md-size-10 padding-left">
-                    <div class="menu-button">
-                        <md-button @click="fetchDatasets" class="md-icon-button md-dense md-raised button-margin md-primary md-icon-button">
-                            <md-icon>cached</md-icon>
-                        </md-button>
-                    </div>
-                </div>
-            </div>
-        <md-divider></md-divider>
-        </md-card-header>
-        <md-card-content class="nomargin">
-            <widgetContainer class="inline"  v-for="item in flattenedElements" :key="item.id"
-                                                      :height="item.height"
-                                                      :width="item.width"
-                                                      :empty="item.empty"
-                                                      :id="item.id"
-                                                      :collectionID="id"
-                                                      :rowIndex="item.rowIndex"
-                                                      :colIndex="item.colIndex"
-                                                      @widgetDrop="handleWidgetDrop" />
-        </md-card-content>
-        <md-card-actions>
-            <md-button @click="deleteCollection" class="md-primary md-raised">Delete</md-button>
-        </md-card-actions>
-    </md-card>
-</div>
+                <md-divider></md-divider>
+            </md-card-header>
+            <md-card-content class="nomargin">
+                <widgetContainer
+                    class="inline"
+                    v-for="item in flattenedElements"
+                    :key="item.id"
+                    :height="item.height"
+                    :width="item.width"
+                    :empty="item.empty"
+                    :id="item.id"
+                    :collectionID="id"
+                    :rowIndex="item.rowIndex"
+                    :colIndex="item.colIndex"
+                    @widgetDrop="handleWidgetDrop"
+                />
+            </md-card-content>
+            <md-card-actions>
+                <md-button
+                    @click="deleteCollection"
+                    class="md-primary md-raised"
+                    >Delete</md-button
+                >
+            </md-card-actions>
+        </md-card>
+    </div>
 </template>
 
 <script>
-
-import widgetContainer from "./widgetContainer"
+import widgetContainer from "./widgetContainer";
 import { apiMixin, formattingMixin } from "../mixins";
 
 export default {
-    name: 'widgetCollection',
+    name: "widgetCollection",
     mixins: [apiMixin, formattingMixin],
     props: {
         id: Number
@@ -94,7 +117,7 @@ export default {
     components: {
         widgetContainer
     },
-    data: function () {
+    data: function() {
         return {
             regions: [],
             windowSizes: [],
@@ -109,20 +132,20 @@ export default {
             maxRowNumber: 0,
             maxColumnNumber: 0,
             children: []
-        }
+        };
     },
     computed: {
         windowSizesAvailable: function() {
-            if (this.windowSizes.length != 0){
-                return true
+            if (this.windowSizes.length != 0) {
+                return true;
             }
-            return false
+            return false;
         },
         blockZoomOut: function() {
-            if (this.baseWidth <= 350){
-                return true
+            if (this.baseWidth <= 350) {
+                return true;
             }
-            return false
+            return false;
         },
         collectionHeight: function() {
             return (this.maxRowNumber + 1) * this.baseHeight;
@@ -130,13 +153,17 @@ export default {
         collectionWidth: function() {
             return (this.maxColumnNumber + 1) * this.baseWidth;
         },
-        elementMatrix: function(){
+        elementMatrix: function() {
             // creates element matrix from children filled up with empty elements
             var matrix = [];
             // create empty matrix
-            for (var rowIndex = 0; rowIndex <= this.maxRowNumber; rowIndex++){
+            for (var rowIndex = 0; rowIndex <= this.maxRowNumber; rowIndex++) {
                 var emptyRow = [];
-                for(var colIndex = 0; colIndex <= this.maxColumnNumber; colIndex++){
+                for (
+                    var colIndex = 0;
+                    colIndex <= this.maxColumnNumber;
+                    colIndex++
+                ) {
                     emptyRow[colIndex] = {
                         id: this.getNextID(),
                         height: this.baseHeight,
@@ -144,31 +171,31 @@ export default {
                         empty: true,
                         rowIndex: rowIndex,
                         colIndex: colIndex,
-                        parentID: this.id,
-                    }
+                        parentID: this.id
+                    };
                 }
                 matrix.push(emptyRow);
             }
             // fill in children
-            for (var child of this.children){
+            for (var child of this.children) {
                 matrix[child.rowIndex][child.colIndex] = {
                     id: child.id,
-                        height: this.baseHeight,
-                        width: this.baseWidth,
-                        empty: false,
-                        rowIndex: child.rowIndex,
-                        colIndex: child.colIndex,
-                        text: child.text,
-                        parentID: this.id
-                }
+                    height: this.baseHeight,
+                    width: this.baseWidth,
+                    empty: false,
+                    rowIndex: child.rowIndex,
+                    colIndex: child.colIndex,
+                    text: child.text,
+                    parentID: this.id
+                };
             }
             return matrix;
         },
         flattenedElements: function() {
             // gives a flattened representation of elements
             var output = [];
-            for (var row of this.elementMatrix){
-                for (var element of row){
+            for (var row of this.elementMatrix) {
+                for (var element of row) {
                     output.push(element);
                 }
             }
@@ -176,9 +203,13 @@ export default {
         },
         cssStyle: function() {
             return {
-                height: `${this.collectionHeight + this.paddingHeight  + (this.maxRowNumber + 1) * this.marginSizeHeight}px`,
-                width: `${this.collectionWidth + this.paddingWidth  + (this.maxColumnNumber + 1) * this.marginSizeWidth}px`
-            }
+                height: `${this.collectionHeight +
+                    this.paddingHeight +
+                    (this.maxRowNumber + 1) * this.marginSizeHeight}px`,
+                width: `${this.collectionWidth +
+                    this.paddingWidth +
+                    (this.maxColumnNumber + 1) * this.marginSizeWidth}px`
+            };
         }
     },
     methods: {
@@ -186,12 +217,12 @@ export default {
             return Math.floor(Math.random() * 1000000000);
         },
         fetchDatasets: function() {
-        this.fetchData("datasets/").then((response) => {
+            this.fetchData("datasets/").then(response => {
                 // success, store datasets
                 this.$store.commit("setDatasets", response.data);
                 // update datasets
                 this.regions = response.data.filter(
-                (element) => element.filetype == "bedfile"
+                    element => element.filetype == "bedfile"
                 );
             });
         },
@@ -203,35 +234,53 @@ export default {
             this.baseWidth -= 50;
             this.baseHeight -= 50;
         },
-        expandCollection: function(){
+        expandCollection: function() {
             // needed for showing region before widgetdrop
-            var maxRowElements = Math.max(...this.children.map((element) => element.rowIndex));
-            var maxColElements = Math.max(...this.children.map((element) => element.colIndex));
+            var maxRowElements = Math.max(
+                ...this.children.map(element => element.rowIndex)
+            );
+            var maxColElements = Math.max(
+                ...this.children.map(element => element.colIndex)
+            );
             this.maxRowNumber = maxRowElements + 1;
             this.maxColumnNumber = maxColElements + 1;
         },
-        handleDragLeave: function(e){
+        handleDragLeave: function(e) {
             // check if card is collection card, all child elements trigger leave events
-            if ((e.toElement == this.$refs["collectionCard"].$el) || (e.toElement.contains(this.$refs["collectionCard"].$el))){
+            if (
+                e.toElement == this.$refs["collectionCard"].$el ||
+                e.toElement.contains(this.$refs["collectionCard"].$el)
+            ) {
                 // if dragleave on collection card -> shrink collection
-                this.setTightBoundingArea()
+                this.setTightBoundingArea();
             }
         },
         setTightBoundingArea: function(e) {
             // resizes drawn widgetmatrix to to largest element in children
-            this.maxRowNumber = Math.max(...this.children.map((element) => element.rowIndex));
-            this.maxColumnNumber = Math.max(...this.children.map((element) => element.colIndex));
+            this.maxRowNumber = Math.max(
+                ...this.children.map(element => element.rowIndex)
+            );
+            this.maxColumnNumber = Math.max(
+                ...this.children.map(element => element.colIndex)
+            );
         },
         deleteCollection: function() {
             this.$store.commit("compare/deleteWidgetCollection", this.id);
         },
-        handleWidgetDrop: function(sourceColletionID, sourceWidgetID, rowIndex, colIndex) {
+        handleWidgetDrop: function(
+            sourceColletionID,
+            sourceWidgetID,
+            rowIndex,
+            colIndex
+        ) {
             // oupdate widget data that are managed by collection: ID, colIndex, rowIndex, parentID
             var queryObject = {
                 parentID: sourceColletionID,
                 id: sourceWidgetID
             };
-            var widgetData = this.$store.getters["compare/getWidgetProperties"](queryObject);
+            var widgetData = this.$store.getters["compare/getWidgetProperties"](
+                queryObject
+            );
             // delete original widget in store
             this.$store.commit("compare/deleteWidget", queryObject);
             // update widget data that changed upon drop
@@ -248,53 +297,58 @@ export default {
         "$store.state.compare.widgetCollections": {
             deep: true,
             handler: function(newValue, oldValue) {
-                        // check if own entry changed
-                        var newEntry = Object.assign({}, newValue[this.id]);
-                        var oldEntry = Object.assign({}, oldValue[this.id]);
-                        if (newEntry != oldEntry){
-                            // entry changed, assign new child-widgets to draw
-                            this.children = [];
-                            for (var child of Object.values(newEntry.children)){
-                                this.children.push(child)
-                            }
-                        // check if collection should be deleted
-                        if (this.children.length == 0){
-                            this.deleteCollection();
-                        }
-                        // reset collection to new size;
-                        this.setTightBoundingArea()
-                        }
-
-                     },
+                // check if own entry changed
+                var newEntry = Object.assign({}, newValue[this.id]);
+                var oldEntry = Object.assign({}, oldValue[this.id]);
+                if (newEntry != oldEntry) {
+                    // entry changed, assign new child-widgets to draw
+                    this.children = [];
+                    for (var child of Object.values(newEntry.children)) {
+                        this.children.push(child);
+                    }
+                    // check if collection should be deleted
+                    if (this.children.length == 0) {
+                        this.deleteCollection();
+                    }
+                    // reset collection to new size;
+                    this.setTightBoundingArea();
+                }
+            }
         },
-        selectedRegionID: function () {
+        selectedRegionID: function() {
             // fetch intervals and assing to windowsizes
-            this.fetchData(`datasets/${this.selectedRegionID}/intervals/`).then((response) => {
-                this.windowSizes = response.data;
-            });
+            this.fetchData(`datasets/${this.selectedRegionID}/intervals/`).then(
+                response => {
+                    this.windowSizes = response.data;
+                }
+            );
             // clear region
             this.selectedWindowSize = null;
         },
         selectedWindowSize: function() {
             // set new intervals
-            var payload = {"id": this.id, "collectionConfig": {"intervalID": this.selectedWindowSize}};
+            var payload = {
+                id: this.id,
+                collectionConfig: { intervalID: this.selectedWindowSize }
+            };
             this.$store.commit("compare/setCollectionConfig", payload);
         }
     },
     mounted: function() {
         // initialize from store
-        var collectionData = this.$store.getters["compare/getCollectionProperties"](this.id);
-        for (var child of Object.values(collectionData.children)){
-            this.children.push(child)
+        var collectionData = this.$store.getters[
+            "compare/getCollectionProperties"
+        ](this.id);
+        for (var child of Object.values(collectionData.children)) {
+            this.children.push(child);
         }
         // get datasets
         this.fetchDatasets();
     }
-}
+};
 </script>
 
 <style scoped>
-
 .padding-top {
     padding-top: 10px;
 }
@@ -312,8 +366,8 @@ export default {
 }
 
 .inline {
-  display: inline-block;
-  vertical-align: top;
+    display: inline-block;
+    vertical-align: top;
 }
 
 .menu-button {
@@ -328,10 +382,9 @@ export default {
     padding: 0px;
 }
 
-
 .halfSize {
-  width: 50vw;
-  height: 50vh;
+    width: 50vw;
+    height: 50vh;
 }
 
 .nomargin {
@@ -342,5 +395,4 @@ export default {
 .md-field {
     min-height: 30px;
 }
-
 </style>

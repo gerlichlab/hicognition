@@ -1,17 +1,23 @@
 <template>
-<div>
-    <div :style="cssStyle" :class="emptyClass" @dragenter="handleDragEnter" @dragleave="handleDragLeave"  @dragover.prevent @drop="handleDrop"/>
-</div>
+    <div>
+        <div
+            :style="cssStyle"
+            :class="emptyClass"
+            @dragenter="handleDragEnter"
+            @dragleave="handleDragLeave"
+            @dragover.prevent
+            @drop="handleDrop"
+        />
+    </div>
 </template>
 
 <script>
-
 export default {
-    name: 'emptyWidget',
-    data: function () {
+    name: "emptyWidget",
+    data: function() {
         return {
-                emptyClass: ["smallMargin", "empty"],
-        }
+            emptyClass: ["smallMargin", "empty"]
+        };
     },
     props: {
         width: Number,
@@ -20,19 +26,19 @@ export default {
         id: Number,
         collectionID: Number,
         rowIndex: Number,
-        colIndex: Number,
+        colIndex: Number
     },
-    computed:{
+    computed: {
         cssStyle: function() {
             return {
                 height: `${this.height}px`,
                 width: `${this.width}px`
-            }
+            };
         }
     },
     methods: {
         handleDragEnter: function(e) {
-            this.emptyClass.push("dark-background")
+            this.emptyClass.push("dark-background");
         },
         handleDragLeave: function(e) {
             this.emptyClass.pop();
@@ -41,14 +47,19 @@ export default {
             var sourceWidgetID = event.dataTransfer.getData("widget-id");
             var sourceColletionID = event.dataTransfer.getData("collection-id");
             this.emptyClass.pop();
-            this.$emit("widgetDrop", Number(sourceColletionID), Number(sourceWidgetID), this.rowIndex, this.colIndex);
+            this.$emit(
+                "widgetDrop",
+                Number(sourceColletionID),
+                Number(sourceWidgetID),
+                this.rowIndex,
+                this.colIndex
+            );
         }
     }
-}
+};
 </script>
 
 <style scoped>
-
 .smallMargin {
     margin-left: 2px;
     margin-right: 2px;
@@ -60,5 +71,4 @@ export default {
     background-color: grey;
     opacity: 0.5;
 }
-
 </style>
