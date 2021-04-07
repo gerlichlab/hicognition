@@ -22,6 +22,9 @@
                     <md-button class="md-raised md-accent" @click="setStackup"
                         >Stackup</md-button
                     >
+                    <md-button class="md-raised md-accent" @click="setLineprofile"
+                        >Lineprofile</md-button
+                    >
                 </div>
             </div>
             <stackupWidget
@@ -36,6 +39,16 @@
             />
             <pileupWidget
                 v-else-if="this.widgetType == 'Pileup'"
+                :height="height"
+                :width="width"
+                :empty="empty"
+                :id="id"
+                :collectionID="collectionID"
+                :rowIndex="rowIndex"
+                :colIndex="colIndex"
+            />
+            <lineprofileWidget
+                v-else-if="this.widgetType == 'Lineprofile'"
                 :height="height"
                 :width="width"
                 :empty="empty"
@@ -63,13 +76,15 @@
 import emptyWidget from "./widgets/emptyWidget";
 import pileupWidget from "./widgets/pileupWidget";
 import stackupWidget from "./widgets/stackupWidget";
+import lineprofileWidget from "./widgets/lineprofileWidget";
 
 export default {
     name: "widgetContainer",
     components: {
         emptyWidget,
         stackupWidget,
-        pileupWidget
+        pileupWidget,
+        lineprofileWidget
     },
     data: function() {
         // get widget type from store
@@ -122,6 +137,17 @@ export default {
             this.$store.commit("compare/setWidgetType", mutationObject);
             // set widget Type in this container
             this.widgetType = "Stackup";
+        },
+        setLineprofile: function() {
+            // set widgetType in store
+            var mutationObject = {
+                parentID: this.collectionID,
+                id: this.id,
+                widgetType: "Lineprofile"
+            };
+            this.$store.commit("compare/setWidgetType", mutationObject);
+            // set widget Type in this container
+            this.widgetType = "Lineprofile";
         },
         propagateDrop: function() {
             // propagates widgetDrop up to widgetCollection
