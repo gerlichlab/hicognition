@@ -69,7 +69,9 @@
                 :width="225"
                 :height="225"
                 :stackupData="widgetData"
-                :log="true"
+                :minHeatmapValue="minHeatmap"
+                :maxHeatmapValue="maxHeatmap"
+                @slider-change="handleSliderChange"
             >
             </stackup>
             <div
@@ -133,6 +135,10 @@ export default {
         }
     },
     methods: {
+        handleSliderChange: function(data) {
+            this.minHeatmap = data[0]
+            this.maxHeatmap = data[1]
+        },
         toStoreObject: function() {
             // serialize object for storing its state in the store
             return {
@@ -149,7 +155,9 @@ export default {
                 binsizes: this.binsizes,
                 binsize: this.selectedBinsize,
                 widgetDataRef: this.widgetDataRef,
-                widgetType: "Stackup"
+                widgetType: "Stackup",
+                minHeatmap: this.minHeatmap,
+                maxHeatmap: this.maxHeatmap
             };
         },
         deleteWidget: function() {
@@ -213,6 +221,8 @@ export default {
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
                 datasets: this.$store.getters.getBigwigsDirty,
+                minHeatmap: undefined,
+                maxHeatmap: undefined
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -222,6 +232,8 @@ export default {
         initializeAtNewCollection: function(widgetData, collectionConfig) {
             return {
                 widgetDataRef: undefined,
+                minHeatmap: undefined,
+                maxHeatmap: undefined,
                 dragImage: undefined,
                 widgetData: undefined,
                 selectedDataset: undefined,
@@ -250,6 +262,8 @@ export default {
                 widgetDataRef: widgetData["widgetDataRef"],
                 dragImage: undefined,
                 widgetData: widgetDataValues,
+                minHeatmap: widgetData["minHeatmap"],
+                maxHeatmap: widgetData["maxHeatmap"],
                 selectedDataset: widgetData["dataset"],
                 selectedBinsize: widgetData["binsize"],
                 intervalID: collectionConfig["intervalID"],

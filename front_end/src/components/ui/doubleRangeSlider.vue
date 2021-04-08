@@ -29,7 +29,9 @@ export default {
     props: {
         sliderMin: Number,
         sliderMax: Number,
-        sliderWidth: Number
+        sliderWidth: Number,
+        sliderPositionMin: Number,
+        sliderPositionMax: Number
     },
     computed: {
         sliderStyle: function() {
@@ -39,10 +41,17 @@ export default {
         }
     },
     data: function() {
-        return {
-            minValue: Number(this.sliderMin),
-            maxValue: Number(this.sliderMax)
-        };
+        if (this.sliderPositionMin && this.sliderPositionMax) {
+            return {
+                minValue: Number(this.sliderPositionMin),
+                maxValue: Number(this.sliderPositionMax)
+            };
+        } else {
+            return {
+                minValue: Number(this.sliderMin),
+                maxValue: Number(this.sliderMax)
+            };
+        }
     },
     methods: {
         handleSlider: function() {
@@ -67,7 +76,6 @@ export default {
     }
 };
 </script>
-
 
 <style scoped>
 .range-slider {
@@ -111,16 +119,16 @@ input[type="range"]:focus {
 }
 
 input[type="range"]:focus::-webkit-slider-runnable-track {
-    background: #264D69;
+    background: #264d69;
     border-radius: 1vh;
 }
 
 input[type="range"]:focus::-ms-fill-lower {
-    background: #264D69;
+    background: #264d69;
 }
 
 input[type="range"]:focus::-ms-fill-upper {
-    background: #264D69;
+    background: #264d69;
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
@@ -128,7 +136,7 @@ input[type="range"]::-webkit-slider-runnable-track {
     height: 5px;
     cursor: pointer;
     animate: 0.2s;
-    background: #264D69;
+    background: #264d69;
     border-radius: 5px;
     box-shadow: none;
     border: 0;
@@ -138,7 +146,7 @@ input[type="range"]::-webkit-slider-thumb {
     z-index: 2;
     position: relative;
     box-shadow: 0px 0px 0px #000;
-    border: 1px solid #264D69;
+    border: 1px solid #264d69;
     height: 18px;
     width: 18px;
     border-radius: 25px;

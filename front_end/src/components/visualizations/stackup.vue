@@ -5,8 +5,16 @@
                 <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-1">
                     <div class="small-margin" ref="canvasDiv"/>
-                    <div draggable="true" ondragstart="event.preventDefault(); event.stopPropagation();" style="width:50%; height:20px;margin:0 auto;">
-                        <double-range-slider sliderWidth="100" />
+                    <!-- this prevents drag events -->
+                    <div draggable="true" @dragstart.prevent.stop class="slider-container">
+                        <double-range-slider
+                        :sliderWidth="width/2"
+                        :sliderMin="minValue"
+                        :sliderMax="maxValue"
+                        :sliderPositionMin="minHeatmapValue"
+                        :sliderPositionMax="maxHeatmapValue"
+                        @slider-change="handleColorChange"
+                        />
                     </div>
                 </md-content>
             </md-list-item>
@@ -29,7 +37,8 @@ export default {
         width: Number,
         height: Number,
         stackupID: Number,
-        log: Boolean // TODO: remove
+        minHeatmapValue: Number,
+        maxHeatmapValue: Number
     },
     computed: {
         stackupValues: function(){
@@ -40,10 +49,6 @@ export default {
         },
         stackupDtype: function(){
             return this.stackupData["dtype"]
-        },
-        colorScale: function() {
-            // # TODO: change getScale to accept less specific paramters
-            return getScale(this.minValue, this.maxValue, "stackup")
         },
         minValue: function() {
             // find minimum by hand because Math.min cannot handle more than
@@ -95,10 +100,19 @@ export default {
             }),
             stage: undefined,
             texture: undefined,
-            sprite: undefined
+            sprite: undefined,
+            colorScale: undefined
         };
     },
     methods: {
+        handleColorChange: function(data){
+            this.$emit('slider-change', data) // propagate up to store in store
+            this.createColorMap(...data)
+            this.drawHeatmap()
+        },
+        createColorMap: function(minVal, maxVal) {
+            this.colorScale = getScale(minVal, maxVal, "stackup")
+        },
         drawHeatmap: function() {
             this.texture = PIXI.Texture.fromBuffer(this.rgbArray, this.stackupDimensions[1], this.stackupDimensions[0]);
             this.sprite = PIXI.Sprite.from(this.texture);
@@ -119,6 +133,12 @@ export default {
         }
     },
     mounted: function() {
+        // initialize min from prop if defined
+        if (this.minHeatmapValue && this.maxHeatmapValue){
+            this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue)
+        }else{
+            this.createColorMap(this.minValue, this.maxValue)
+        }
         this.initializeCanvas();
         this.drawHeatmap()
     },
@@ -128,8 +148,6 @@ export default {
             this.stage.destroy();
         }
     },
-    watch: {
-    }
 };
 </script>
 
@@ -141,4 +159,11 @@ export default {
 .small-margin {
     margin: 5px;
 }
+
+.slider-container {
+    width:100%;
+    height:20px;
+    margin:0 auto;
+}
+
 </style>
