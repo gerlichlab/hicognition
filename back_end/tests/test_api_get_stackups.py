@@ -574,7 +574,7 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-    # TODO:
+
     def test_correct_data_returned(self):
         """Correct data is returned from an owned individualIntervalData"""
         # authenticate
@@ -582,13 +582,6 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
         # create token header
         token_headers = self.get_token_header(token)
         # create datafile
-        test_data = pd.DataFrame(
-            {
-                "variable": [0, 0, 0, 0],
-                "group": [0, 1, 2, 3],
-                "value": [1.66, 2.2, 3.8, 4.5],
-            }
-        )
         arr = np.array([[1.66, 2.2, 3.8, 4.5]])
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, arr)
@@ -628,8 +621,10 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
             headers=token_headers,
             content_type="application/json",
         )
-        expected = test_data.to_json()
-        self.assertEqual(response.json, expected)
+        # compare by hand
+        self.assertTrue(np.all(np.isclose(arr, response.json["data"])))
+        self.assertEqual("float32", response.json["dtype"])
+        self.assertTrue(np.all(np.isclose([1, 4], response.json["shape"])))
 
     def test_public_unowned_data_returned(self):
         """Test whether public, unowned data is returned correctly."""
@@ -638,13 +633,6 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
         # create token header
         token_headers = self.get_token_header(token)
         # create datafile
-        test_data = pd.DataFrame(
-            {
-                "variable": [0, 0, 0, 0],
-                "group": [0, 1, 2, 3],
-                "value": [1.66, 2.2, 3.8, 4.5],
-            }
-        )
         arr = np.array([[1.66, 2.2, 3.8, 4.5]])
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, arr)
@@ -686,8 +674,9 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
             headers=token_headers,
             content_type="application/json",
         )
-        expected = test_data.to_json()
-        self.assertEqual(response.json, expected)
+        self.assertTrue(np.all(np.isclose(arr, response.json["data"])))
+        self.assertEqual("float32", response.json["dtype"])
+        self.assertTrue(np.all(np.isclose([1, 4], response.json["shape"])))
 
 
 if __name__ == "__main__":
