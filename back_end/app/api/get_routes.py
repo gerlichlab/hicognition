@@ -227,12 +227,8 @@ def get_pileup_data(pileup_id):
     # Dataset is owned, return the data
     np_data = np.load(pileup.file_path)
     # Without nan_to_num JSON has Infinity instead of null, zero behaves as null
-    flat_data = np.nan_to_num(np_data, posinf=0).flatten().tolist() 
-    json_data = {
-        'data': flat_data,
-        'shape': np_data.shape,
-        'dtype': "float32"
-    }
+    flat_data = np.nan_to_num(np_data, posinf=0).flatten().tolist()
+    json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
 
     return jsonify(json_data)
 
