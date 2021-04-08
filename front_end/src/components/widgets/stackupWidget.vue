@@ -88,13 +88,13 @@
 <script>
 import stackup from "../visualizations/stackup";
 import { apiMixin, formattingMixin } from "../../mixins";
-import { convert_tidy_to_pixi, group_stackups_by_binsize } from '../../functions';
+import { group_stackups_by_binsize } from '../../functions';
 
 export default {
     name: "stackupWidget",
     mixins: [apiMixin, formattingMixin],
     components: {
-        stackup
+        stackup,
     },
     data: function() {
         // get widget data from store for initialization

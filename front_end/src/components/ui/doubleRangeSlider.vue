@@ -20,17 +20,6 @@ https://stackoverflow.com/questions/48506428/nouislider-double-range-slider-with
             step="0.005"
             type="range"
         />
-        <svg width="100%" height="24">
-            <line
-                x1="4"
-                y1="0"
-                :x2="sliderWidth"
-                y2="0"
-                stroke="#444"
-                stroke-width="12"
-                stroke-dasharray="1 28"
-            ></line>
-        </svg>
     </div>
 </template>
 
@@ -122,16 +111,16 @@ input[type="range"]:focus {
 }
 
 input[type="range"]:focus::-webkit-slider-runnable-track {
-    background: #448aff;
+    background: #264D69;
     border-radius: 1vh;
 }
 
 input[type="range"]:focus::-ms-fill-lower {
-    background: #448aff;
+    background: #264D69;
 }
 
 input[type="range"]:focus::-ms-fill-upper {
-    background: #448aff;
+    background: #264D69;
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
@@ -139,7 +128,7 @@ input[type="range"]::-webkit-slider-runnable-track {
     height: 5px;
     cursor: pointer;
     animate: 0.2s;
-    background: #448aff;
+    background: #264D69;
     border-radius: 5px;
     box-shadow: none;
     border: 0;
@@ -149,7 +138,7 @@ input[type="range"]::-webkit-slider-thumb {
     z-index: 2;
     position: relative;
     box-shadow: 0px 0px 0px #000;
-    border: 1px solid #448aff;
+    border: 1px solid #264D69;
     height: 18px;
     width: 18px;
     border-radius: 25px;

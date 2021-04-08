@@ -5,6 +5,9 @@
                 <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-1">
                     <div class="small-margin" ref="canvasDiv"/>
+                    <div draggable="true" ondragstart="event.preventDefault(); event.stopPropagation();" style="width:50%; height:20px;margin:0 auto;">
+                        <double-range-slider sliderWidth="100" />
+                    </div>
                 </md-content>
             </md-list-item>
         </md-list>
@@ -13,9 +16,13 @@
 <script>
 import * as PIXI from 'pixi.js'
 import { getScale } from "../../colorScales.js";
+import doubleRangeSlider from '../ui/doubleRangeSlider.vue';
 
 export default {
     name: "stackup",
+    components: {
+        doubleRangeSlider
+    },
     props: {
         title: String,
         stackupData: Object,
@@ -114,6 +121,12 @@ export default {
     mounted: function() {
         this.initializeCanvas();
         this.drawHeatmap()
+    },
+    beforeDestroy: function() {
+        // destroy canvas
+        if (this.stage){
+            this.stage.destroy();
+        }
     },
     watch: {
     }
