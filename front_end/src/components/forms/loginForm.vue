@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { apiMixin } from "../mixins";
+import { apiMixin } from "../../mixins";
 
 export default {
     name: "Login",

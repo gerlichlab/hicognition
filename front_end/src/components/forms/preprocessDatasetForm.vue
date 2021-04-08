@@ -162,8 +162,8 @@
 <script>
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
-import { apiMixin, formattingMixin } from "../mixins";
-import { group_intervals_on_windowsize } from "../functions";
+import { apiMixin, formattingMixin } from "../../mixins";
+import { group_intervals_on_windowsize } from "../../functions";
 
 export default {
     name: "preprocessDatasetForm",

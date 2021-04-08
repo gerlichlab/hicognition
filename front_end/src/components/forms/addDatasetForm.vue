@@ -119,11 +119,10 @@
 import { validationMixin } from "vuelidate";
 import {
     required,
-    email,
     minLength,
     maxLength
 } from "vuelidate/lib/validators";
-import { apiMixin } from "../mixins";
+import { apiMixin } from "../../mixins";
 
 export default {
     name: "addDatasetForm",

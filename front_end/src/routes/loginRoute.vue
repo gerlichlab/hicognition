@@ -12,7 +12,7 @@
 
 <script>
 import loginToolbar from "../components/loginToolbar";
-import loginForm from "../components/loginForm";
+import loginForm from "../components/forms/loginForm";
 
 export default {
     name: "Login",

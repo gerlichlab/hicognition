@@ -108,7 +108,7 @@
 <script>
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
-import { apiMixin } from "../mixins";
+import { apiMixin } from "../../mixins";
 
 export default {
     name: "addMetadataForm",

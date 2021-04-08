@@ -50,10 +50,10 @@
 <script>
 import toolbar from "../components/toolbar";
 import drawer from "../components/drawer";
-import datasetDialog from "../components/myDatasetDialog";
-import addDatasetDialog from "../components/addDatasetDialog";
-import addMetadataDialog from "../components/addMetadataDialog";
-import preprocessDatasetDialog from "../components/preProcessDatasetDialog";
+import datasetDialog from "../components/dialogs/myDatasetDialog";
+import addDatasetDialog from "../components/dialogs/addDatasetDialog";
+import addMetadataDialog from "../components/dialogs/addMetadataDialog";
+import preprocessDatasetDialog from "../components/dialogs/preProcessDatasetDialog";
 
 export default {
     name: "mainRoute",

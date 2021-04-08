@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import datasetTable from "./datasetTable";
+import datasetTable from "../datasetTable";
 
 export default {
     name: "DialogCustom",

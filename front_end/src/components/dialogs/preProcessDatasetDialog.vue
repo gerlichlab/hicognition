@@ -1,21 +1,21 @@
 <template>
     <div>
         <md-dialog :md-active.sync="showDialog">
-            <md-dialog-title>Add Metadata </md-dialog-title>
-            <addMetadataStepper
+            <md-dialog-title>Preprocess Dataset </md-dialog-title>
+            <preprocessDatasetForm
                 @close-dialog="$emit('close-dialog')"
-            ></addMetadataStepper>
+            ></preprocessDatasetForm>
         </md-dialog>
     </div>
 </template>
 
 <script>
-import addMetadataStepper from "./addMetadataStepper";
+import preprocessDatasetForm from "../forms/preprocessDatasetForm";
 
 export default {
     name: "DialogCustom",
     components: {
-        addMetadataStepper
+        preprocessDatasetForm
     },
     props: {
         dialog: Boolean

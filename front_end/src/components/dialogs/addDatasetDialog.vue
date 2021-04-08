@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import addDatasetForm from "./addDatasetForm";
+import addDatasetForm from "../forms/addDatasetForm";
 
 export default {
     name: "DialogCustom",
