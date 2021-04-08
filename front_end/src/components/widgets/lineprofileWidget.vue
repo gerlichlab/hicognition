@@ -291,16 +291,15 @@ export default {
             return this.initializeAtNewCollection(widgetData, collectionConfig);
         },
         getlineprofileData: async function(id) {
-            //TODO: Update
             // checks whether lineprofile data is in store and fetches it if it is not
-            // if (this.$store.getters["compare/lineprofileExists"](id)) {
-            //     return this.$store.getters["compare/getWidgetDataLineprofile"](id);
-            // }
+            if (this.$store.getters["compare/lineprofileExists"](id)) {
+                return this.$store.getters["compare/getWidgetDataLineprofile"](id);
+            }
             // pileup does not exists in store, fetch it
             var response = await this.fetchData(
                 `averageIntervalData/${id}/`
             );
-            var parsed = JSON.parse(response.data);
+            var parsed = response.data;
             // save it in store
             var mutationObject = {
                 id: id,
