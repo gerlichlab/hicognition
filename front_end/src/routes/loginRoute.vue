@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import loginToolbar from "../components/loginToolbar";
+import loginToolbar from "../components/ui/loginToolbar";
 import loginForm from "../components/forms/loginForm";
 
 export default {

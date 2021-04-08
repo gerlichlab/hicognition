@@ -24,7 +24,7 @@
 import * as d3 from "d3";
 import { getScale } from "../../colorScales.js";
 import { convert_json_to_d3 } from "../../functions.js";
-import doubleRangeSlider from "../doubleRangeSlider";
+import doubleRangeSlider from "../ui/doubleRangeSlider";
 
 export default {
     name: "stackup",
