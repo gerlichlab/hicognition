@@ -77,11 +77,23 @@ const compareModule = {
             }
             return state.widgetData["stackup"][payload.stackupType][payload.id];
         },
+        getWidgetDataLineprofile: state => payload => {
+            if (!("lineprofile" in state.widgetData)) {
+                return undefined;
+            }
+            return state.widgetData["lineprofile"][payload.id];
+        },
         pileupExists: state => payload => {
             if (!("pileup" in state.widgetData)) {
                 return false;
             }
             return payload.id in state.widgetData["pileup"][payload.pileupType];
+        },
+        lineprofileExists: state => payload => {
+            if (!("lineprofile" in state.widgetData)) {
+                return false;
+            }
+            return payload.id in state.widgetData["lineprofile"];
         },
         stackupExists: state => payload => {
             if (!("stackup" in state.widgetData)) {
@@ -162,6 +174,14 @@ const compareModule = {
                 };
             }
             state.widgetData["stackup"][payload.stackupType][payload.id] =
+                payload.data;
+        },
+        setWidgetDataLineprofile(state, payload) {
+            if (!("lineprofile" in state.widgetData)) {
+                // initialize pileup
+                state.widgetData["lineprofile"] = [];
+            }
+            state.widgetData["lineprofile"][payload.id] =
                 payload.data;
         },
         setWidgetType(state, payload) {
