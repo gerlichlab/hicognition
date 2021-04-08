@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 from test_helpers import LoginTestCase, TempDirTestCase
 
-
 # add path to import app
 import sys
 
@@ -577,13 +576,12 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         # create token header
         token_headers = self.get_token_header(token)
         # create datafile
-        test_data_return = pd.DataFrame(
-            {
-                "variable": [0, 0, 0, 0],
-                "group": [0, 1, 2, 3],
-                "value": [1.66, 2.2, 3.8, 4.5],
-            }
-        )
+        test_data_return = {
+            "data": [1.66, 2.2, 3.8, 4.5],
+            "shape": [1, 4],
+            "dtype": "float32",
+        }
+
         test_data = np.array([[1.66, 2.2, 3.8, 4.5]])
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, test_data)
@@ -623,7 +621,9 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             headers=token_headers,
             content_type="application/json",
         )
-        expected = test_data_return.to_json()
+        expected = test_data_return
+        print(expected)
+        print(response.json)
         self.assertEqual(response.json, expected)
 
     def test_public_unowned_data_returned(self):
@@ -633,13 +633,12 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         # create token header
         token_headers = self.get_token_header(token)
         # create datafile
-        test_data_back = pd.DataFrame(
-            {
-                "variable": [0, 0, 0, 0],
-                "group": [0, 1, 2, 3],
-                "value": [1.66, 2.2, 3.8, 4.5],
-            }
-        )
+        test_data_back = {
+            "data": [1.66, 2.2, 3.8, 4.5],
+            "shape": [1, 4],
+            "dtype": "float32",
+        }
+
         test_data = np.array([[1.66, 2.2, 3.8, 4.5]])
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, test_data)
@@ -680,7 +679,7 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             headers=token_headers,
             content_type="application/json",
         )
-        expected = test_data_back.to_json()
+        expected = test_data_back
         self.assertEqual(response.json, expected)
 
 
