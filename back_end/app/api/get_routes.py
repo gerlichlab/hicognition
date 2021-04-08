@@ -224,11 +224,10 @@ def get_pileup_data(pileup_id):
         return forbidden(
             "Cooler dataset or bed dataset is not owned by logged in user!"
         )
-    # dataset is owned, return the data
+    # Dataset is owned, return the data
     np_data = np.load(pileup.file_path)
-
-    flat_data = np_data.flatten().tolist()
-    
+    # Without nan_to_num JSON has Infinity instead of null, zero behaves as null
+    flat_data = np.nan_to_num(np_data, posinf=0).flatten().tolist() 
     json_data = {
         'data': flat_data,
         'shape': np_data.shape,
