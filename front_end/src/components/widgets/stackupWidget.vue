@@ -9,7 +9,7 @@
         >
             <div class="md-layout">
                 <div
-                    class="md-layout-item md-size-30 padding-left padding-right"
+                    class="md-layout-item md-size-40 padding-left padding-right"
                 >
                     <md-field class="padding-top">
                         <label class="md-primary">Dataset</label>
@@ -30,7 +30,7 @@
                     </md-field>
                 </div>
                 <div
-                    class="md-layout-item md-size-30 padding-left padding-right"
+                    class="md-layout-item md-size-40 padding-left padding-right"
                 >
                     <md-field class="padding-top">
                         <label class="md-primary">Binsize</label>
