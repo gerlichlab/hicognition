@@ -75,7 +75,7 @@ const compareModule = {
             if (!("stackup" in state.widgetData)) {
                 return undefined;
             }
-            return state.widgetData["stackup"][payload.stackupType][payload.id];
+            return state.widgetData["stackup"][payload.id];
         },
         pileupExists: state => payload => {
             if (!("pileup" in state.widgetData)) {
@@ -88,7 +88,7 @@ const compareModule = {
                 return false;
             }
             return (
-                payload.id in state.widgetData["stackup"][payload.stackupType]
+                payload.id in state.widgetData["stackup"]
             );
         },
         getWidgetType: state => payload => {
@@ -157,11 +157,9 @@ const compareModule = {
         setWidgetDataStackup(state, payload) {
             if (!("stackup" in state.widgetData)) {
                 // initialize pileup
-                state.widgetData["stackup"] = {
-                    normal: {}
-                };
+                state.widgetData["stackup"] = {};
             }
-            state.widgetData["stackup"][payload.stackupType][payload.id] =
+            state.widgetData["stackup"][payload.id] =
                 payload.data;
         },
         setWidgetType(state, payload) {

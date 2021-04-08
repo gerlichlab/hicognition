@@ -242,11 +242,7 @@ export default {
                     id: widgetDataRef
                 };
                 // get widget data from store
-                widgetDataValues = {
-                    normal: this.$store.getters["compare/getWidgetDataStackup"](
-                        querynormal
-                    )
-                };
+                widgetDataValues = this.$store.getters["compare/getWidgetDataStackup"](querydata);
             } else {
                 widgetDataValues = undefined;
             }
@@ -363,9 +359,9 @@ export default {
                 return;
             }
             // fetch widget data
-            var stackup_id = this.binsizes[this.selectedBinsize];
+            var stackup_id = this.binsizes[this.selectedBinsize]["id"];
             this.widgetDataRef = stackup_id;
-            var data = await this.getStackupData(normal_id);
+            var data = await this.getStackupData(stackup_id);
             this.widgetData = data;
         }
     }
