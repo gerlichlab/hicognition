@@ -8,11 +8,15 @@ import {
 export function getScale(min, max, scaleType) {
     // returns a iccf color scale or obs/exp color scale with the specified
     // min, max values
-    if (scaleType == "ICCF" || scaleType == "normal") {
+    if (scaleType == "ICCF") {
         return d3
             .scaleLinear()
             .range(["white", "orange", "red", "black"])
             .domain(distributeMinMax(min, max));
+    } else if (scaleType == "stackup"){
+        return d3
+            .scaleSequential(d3.interpolateReds)
+            .domain([min, max]);
     } else {
         return d3
             .scaleDiverging(t => d3.interpolateRdBu(1 - t))

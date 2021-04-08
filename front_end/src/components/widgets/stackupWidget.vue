@@ -290,7 +290,6 @@ export default {
             return this.initializeAtNewCollection(widgetData, collectionConfig);
         },
         getStackupData: async function(id) {
-            //TODO: Update
             // checks whether pileup data is in store and fetches it if it is not
             var queryObject = {
                 id: id
@@ -304,10 +303,7 @@ export default {
             var response = await this.fetchData(
                 `individualIntervalData/${id}/`
             );
-            var parsed = JSON.parse(response.data);
-            // FIXME: conversion to pilingjs format not necessary after no route, change!
-            var piling_data = convert_tidy_to_pixi(parsed);
-            console.log(piling_data);
+            var piling_data = response.data
             // save it in store
             var mutationObject = {
                 id: id,

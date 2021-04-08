@@ -36,19 +36,33 @@ export default {
         },
         colorScale: function() {
             // # TODO: change getScale to accept less specific paramters
-            return getScale(this.minValue, this.maxValue, "ICCF")
+            return getScale(this.minValue, this.maxValue, "stackup")
         },
         minValue: function() {
-            // minimum value for heatmap lookuptable = minimum value in data
-            // filter out nans and extract values into array
-            var cleanedValues = this.stackupValues.filter(element => element);
-            return Math.min(...cleanedValues);
+            // find minimum by hand because Math.min cannot handle more than
+            // a few k elements...
+            var min = Infinity
+            for (var val of this.stackupValues){
+                if (val){
+                    if (val < min){
+                        min = val
+                    }
+                }
+            }
+            return min
         },
         maxValue: function() {
             // maximum value for heatmap lookuptable = maximum value in data
             // filter out nans and extract values into array
-            var cleanedValues = this.stackupValues.filter(element => element);
-            return Math.max(...cleanedValues);
+            var max = 0
+            for (var val of this.stackupValues){
+                if (val){
+                    if (val > max){
+                        max = val
+                    }
+                }
+            }
+            return max
         },
         rgbArray: function() {
             // array with rgba values for pixi Texture.fromBuffer
@@ -79,7 +93,7 @@ export default {
     },
     methods: {
         drawHeatmap: function() {
-            this.texture = PIXI.Texture.fromBuffer(this.rgbArray, this.stackupDimensions[0], this.stackupDimensions[1]);
+            this.texture = PIXI.Texture.fromBuffer(this.rgbArray, this.stackupDimensions[1], this.stackupDimensions[0]);
             this.sprite = PIXI.Sprite.from(this.texture);
             // position sprite at top left and make it stretch the canvas
             this.sprite.x = 0;
