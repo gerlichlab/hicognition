@@ -4,27 +4,15 @@
             <md-list-item class="md-alignment-top-center">
                 <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-1">
-                    <div :id="stackupDivID" class="small-margin" />
+                    <div class="small-margin" ref="canvasDiv"/>
                 </md-content>
             </md-list-item>
-            <!-- Slider -->
-
-            <!-- <md-list-item>
-                <doubleRangeSlider
-                    @slider-change="handleSliderChange"
-                    :sliderMin="sliderMin"
-                    :sliderMax="sliderMax"
-                    :sliderWidth="width"
-                />
-            </md-list-item> -->
         </md-list>
     </div>
 </template>
 <script>
-import * as d3 from "d3";
+import * as PIXI from 'pixi.js'
 import { getScale } from "../../colorScales.js";
-import { convert_json_to_d3 } from "../../functions.js";
-import doubleRangeSlider from "../ui/doubleRangeSlider";
 
 export default {
     name: "stackup",
@@ -33,156 +21,87 @@ export default {
         stackupData: Object,
         width: Number,
         height: Number,
-        stackupType: String,
-        stackupID: Number, // stackup ID is needed because I am accessing the div of the stackup via id and they must be different for different pilups
-        log: Boolean
-    },
-    components: {
-        doubleRangeSlider
+        stackupID: Number,
+        log: Boolean // TODO: remove
     },
     computed: {
-        stackupDivID: function() {
-            // ID for the div containing the stackup
-            return "stackup_" + this.stackupID;
+        stackupValues: function(){
+            return this.stackupData["data"]
         },
-        dataGroups: function() {
-            // Nomenclature: groups is first column of tidy data
-            if (this.stackupData) {
-                // this.pleupData["group"] is an object of the form { index0: value0, index1: value1, ... }
-                return Object.values(this.stackupData["group"]);
-            }
-            return null;
+        stackupDimensions: function(){
+            return this.stackupData["shape"]
         },
-        dataVariables: function() {
-            // Nomenclature: variables is second column of tidy data
-            if (this.stackupData) {
-                // this.pleupData["variable"] is an object of the form { index0: value0, index1: value1, ... }
-                var variables = Object.values(this.stackupData["variable"]);
-                // switch them around because otherwise plot will be mirrored
-                var dataRange = new Set(variables).size - 1;
-                var reversedVars = variables.map(element => {
-                    return dataRange - element;
-                });
-                return reversedVars;
-            }
-            return null;
+        stackupDtype: function(){
+            return this.stackupData["dtype"]
         },
-        sliderMin: function() {
+        colorScale: function() {
+            // # TODO: change getScale to accept less specific paramters
+            return getScale(this.minValue, this.maxValue, "ICCF")
+        },
+        minValue: function() {
             // minimum value for heatmap lookuptable = minimum value in data
             // filter out nans and extract values into array
-            var heatMapValues = this.dataHeatMap
-                .filter(element => element.value)
-                .map(element => element.value);
-            return Math.min(...heatMapValues);
+            var cleanedValues = this.stackupValues.filter(element => element);
+            return Math.min(...cleanedValues);
         },
-        sliderMax: function() {
+        maxValue: function() {
             // maximum value for heatmap lookuptable = maximum value in data
             // filter out nans and extract values into array
-            var heatMapValues = this.dataHeatMap
-                .filter(element => element.value)
-                .map(element => element.value);
-            return Math.max(...heatMapValues);
+            var cleanedValues = this.stackupValues.filter(element => element);
+            return Math.max(...cleanedValues);
         },
-        dataHeatMap: function() {
-            // data preparation for d3
-            return convert_json_to_d3(this.stackupData, this.log);
+        rgbArray: function() {
+            // array with rgba values for pixi Texture.fromBuffer
+            var bufferArray = [];
+            for (var element of this.stackupValues){
+                // convert rgb values into range between 0 and 1
+                var colorValues = this.colorScale(element).split(/[\,,(,)]/).slice(1,4).map((element) => Number(element)/255);
+                // add to bufferarray
+                for (var value of colorValues){
+                    bufferArray.push(value)
+                }
+                // add saturation of rgba to 1
+                bufferArray.push(1.0)
+            }
+            return new Float32Array(bufferArray)
         }
     },
     data: function() {
         return {
-            svg: null, // svg of heatmap,
-            stackupPicture: null, // heatmap object
-            colorScale: null
+            renderer: new PIXI.autoDetectRenderer({
+                width: this.width,
+                height: this.height
+            }),
+            stage: undefined,
+            texture: undefined,
+            sprite: undefined
         };
     },
     methods: {
-        redrawHeatMap: function() {
-            d3.select(`#${this.stackupDivID}Svg`).remove();
-            // blank picture to avoid triggering update in colorScale watcher
-            this.stackupPicture = null;
-            this.updateColorScale(this.sliderMin, this.sliderMax); //initial range
-            this.createHeatMap();
-            this.fillHeatMap();
+        drawHeatmap: function() {
+            this.texture = PIXI.Texture.fromBuffer(this.rgbArray, this.stackupDimensions[0], this.stackupDimensions[1]);
+            this.sprite = PIXI.Sprite.from(this.texture);
+            // position sprite at top left and make it stretch the canvas
+            this.sprite.x = 0;
+            this.sprite.y = 0;
+            this.sprite.width = this.width;
+            this.sprite.height = this.height;
+            // add and render
+            this.stage.addChild(this.sprite);
+            this.renderer.render(this.stage);
         },
-        handleSliderChange: function(value) {
-            var min = Number(value[0]);
-            var max = Number(value[1]);
-            this.updateColorScale(min, max);
-        },
-        updateColorScale: function(min, max) {
-            this.colorScale = getScale(min, max);
-        },
-        createHeatMap: function() {
-            // creates the svg object
-            this.svg = d3
-                .select(`#${this.stackupDivID}`)
-                .append("svg")
-                .attr("id", `${this.stackupDivID}Svg`)
-                .attr("width", this.width)
-                .attr("height", this.height)
-                .attr("style", "transform: translateY(1%);"); // center element vertically
-        },
-        fillHeatMap: function() {
-            // fills the heatmap with data
-            // Build X/Y scales and axes
-            var x = d3
-                .scaleBand()
-                .range([0, this.width])
-                .domain(this.dataGroups)
-                .padding(0.01);
-            var y = d3
-                .scaleBand()
-                .range([this.height, 0])
-                .domain(this.dataVariables)
-                .padding(0.01);
-            // TODO: make axes look nice!
-            this.stackupPicture = this.svg
-                .selectAll()
-                .data(this.dataHeatMap, function(d) {
-                    return d.variable + ":" + d.group;
-                })
-                .enter()
-                .append("rect")
-                .attr("x", function(d) {
-                    return x(d.group);
-                })
-                .attr("y", function(d) {
-                    return y(d.variable);
-                })
-                .attr("width", x.bandwidth())
-                .attr("height", y.bandwidth())
-                .style("fill", d => {
-                    if (d.value) {
-                        return this.colorScale(d.value);
-                    } else {
-                        return "#ffffff";
-                    }
-                });
+        initializeCanvas: function() {
+            // add the renderer view object into the canvas div
+            this.$refs["canvasDiv"].appendChild(this.renderer.view);
+            // create stage
+            this.stage = new PIXI.Container();
         }
     },
     mounted: function() {
-        this.updateColorScale(this.sliderMin, this.sliderMax); //initial range
-        this.createHeatMap();
-        this.fillHeatMap();
+        this.initializeCanvas();
+        this.drawHeatmap()
     },
     watch: {
-        height: function() {
-            this.redrawHeatMap();
-        },
-        width: function() {
-            this.redrawHeatMap();
-        },
-        stackupData: function() {
-            this.redrawHeatMap();
-        },
-        colorScale: function() {
-            // update plot with new color scale
-            if (this.stackupPicture) {
-                this.stackupPicture.style("fill", d => {
-                    return this.colorScale(d.value);
-                });
-            }
-        }
     }
 };
 </script>
