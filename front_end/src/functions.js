@@ -1,3 +1,44 @@
+export function convert_json_to_d3(jsonObject, log = false) {
+    /*
+      Converts pileup data from pandas.DataFrame.to_json to an 
+      object that d3 can read
+
+      input Json: '{"variable":{...},"group":{...},"value":{...}}'
+      output object: [
+          {
+              variable: 0,
+              group: 0,
+              value: 1.23
+          }
+      ]
+      Log2 is taken of output value if log is true.
+  */
+    var output = [];
+    var objectLength = Object.keys(jsonObject["variable"]).length;
+    for (var index = 0; index < objectLength; index++) {
+        var newValue;
+        if (log) {
+            // first check whether value is undefined
+            if (jsonObject["value"][index]) {
+                newValue = Math.log2(jsonObject["value"][index]);
+            } else {
+                newValue = null;
+            }
+        } else {
+            newValue = jsonObject["value"][index]; // undefined * number is NaN
+        }
+
+        // extract infos for current entry
+        var currentEntry = {
+            variable: jsonObject["variable"][index],
+            group: jsonObject["group"][index],
+            value: newValue
+        };
+        output.push(currentEntry);
+    }
+    return output;
+}
+
 export function group_iccf_obs_exp(data) {
     /*
   Takes as input an array of json objects that are returned by the averageIntervalData route (e.g.
