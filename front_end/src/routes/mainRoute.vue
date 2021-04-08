@@ -48,8 +48,8 @@
 </template>
 
 <script>
-import toolbar from "../components/toolbar";
-import drawer from "../components/drawer";
+import toolbar from "../components/ui/toolbar";
+import drawer from "../components/ui/drawer";
 import datasetDialog from "../components/dialogs/myDatasetDialog";
 import addDatasetDialog from "../components/dialogs/addDatasetDialog";
 import addMetadataDialog from "../components/dialogs/addMetadataDialog";
