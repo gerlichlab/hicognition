@@ -52,13 +52,6 @@
                         </md-select>
                     </md-field>
                 </div>
-                <div class="md-layout-item md-size-25">
-                    <div class="padding-top">
-                        <md-switch v-model="isDefault">{{
-                            stackupType
-                        }}</md-switch>
-                    </div>
-                </div>
                 <div class="md-layout-item md-size-10">
                     <div class="padding-top-large padding-right">
                         <md-button
@@ -71,12 +64,11 @@
                 </div>
             </div>
             <stackup
-                :stackupType="stackupType"
                 v-if="showData"
                 :stackupID="id"
                 :width="225"
                 :height="225"
-                :stackupData="widgetData[stackupType]"
+                :stackupData="widgetData"
                 :log="true"
             >
             </stackup>
@@ -96,7 +88,7 @@
 <script>
 import stackup from "../visualizations/stackup";
 import { apiMixin, formattingMixin } from "../../mixins";
-import { group_stackups } from "../../functions";
+import { group_stackups_by_binsize } from '../../functions';
 
 export default {
     name: "stackupWidget",
@@ -118,14 +110,6 @@ export default {
         colIndex: Number
     },
     computed: {
-        //TODO: fix
-        stackupType: function() {
-            if (this.isDefault) {
-                return "normal";
-            } else {
-                return "problem";
-            }
-        },
         showData: function() {
             if (this.widgetData) {
                 return true;
@@ -165,7 +149,6 @@ export default {
                 binsizes: this.binsizes,
                 binsize: this.selectedBinsize,
                 widgetDataRef: this.widgetDataRef,
-                isDefault: this.isDefault,
                 widgetType: "Stackup"
             };
         },
@@ -230,7 +213,6 @@ export default {
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
                 datasets: this.$store.getters.getBigwigsDirty,
-                isDefault: true
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -248,7 +230,6 @@ export default {
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
                 datasets: this.$store.getters.getBigwigsDirty,
-                isDefault: true
             };
         },
         initializeAtSameCollection: function(widgetData, collectionConfig) {
@@ -257,9 +238,8 @@ export default {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
                 var widgetDataRef = widgetData["widgetDataRef"];
                 // deinfe store queries
-                var querynormal = {
-                    stackupType: "normal",
-                    id: widgetDataRef["normal"]
+                var querydata = {
+                    id: widgetDataRef
                 };
                 // get widget data from store
                 widgetDataValues = {
@@ -280,7 +260,6 @@ export default {
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
                 datasets: this.$store.getters.getBigwigsDirty,
-                isDefault: widgetData["isDefault"]
             };
         },
         initializeWidget: function() {
@@ -314,11 +293,10 @@ export default {
             }
             return this.initializeAtNewCollection(widgetData, collectionConfig);
         },
-        getStackupData: async function(stackupType, id) {
+        getStackupData: async function(id) {
             //TODO: Update
             // checks whether pileup data is in store and fetches it if it is not
             var queryObject = {
-                stackupType: stackupType,
                 id: id
             };
             if (this.$store.getters["compare/stackupExists"](queryObject)) {
@@ -333,7 +311,6 @@ export default {
             var parsed = JSON.parse(response.data);
             // save it in store
             var mutationObject = {
-                stackupType: stackupType,
                 id: id,
                 data: parsed
             };
@@ -360,7 +337,6 @@ export default {
                         ];
                     if (newEntry != this.intervalID) {
                         this.intervalID = newEntry;
-                        // reset state
                         this.selectedBinsize = undefined;
                         this.selectedDataset = undefined;
                         this.widgetData = undefined;
@@ -379,7 +355,7 @@ export default {
                 `individualIntervalData/?dataset_id=${this.selectedDataset}&intervals_id=${this.intervalID}`
             ).then(response => {
                 // update binsizes to show and group iccf/obsExp data under one binsize
-                this.binsizes = group_stackups(response.data);
+                this.binsizes = group_stackups_by_binsize(response.data);
             });
         },
         selectedBinsize: async function() {
@@ -387,17 +363,10 @@ export default {
                 return;
             }
             // fetch widget data
-            var normal_id = this.binsizes[this.selectedBinsize]["normal"];
-            //var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
-            // store widget data ref
-            this.widgetDataRef = {
-                normal: normal_id
-            };
-            // get pileup iccf; update pileup data upon success
-            var normal_data = await this.getStackupData("normal", normal_id);
-            this.widgetData = {
-                normal: normal_data
-            };
+            var stackup_id = this.binsizes[this.selectedBinsize];
+            this.widgetDataRef = stackup_id;
+            var data = await this.getStackupData(normal_id);
+            this.widgetData = data;
         }
     }
 };

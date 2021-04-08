@@ -117,34 +117,20 @@ export function group_iccf_obs_exp(data) {
     return output;
 }
 
-export function group_stackups(data) {
+export function group_stackups_by_binsize(data) {
     /*
-  Takes as input an array of json objects that are returned by the averageIntervalData route (e.g.
- 
-  [{id:1, binsize:50000, value_type: "obs/exp"}...]
- 
-  and groups iccf and obs_exp per binsize such that the result is an object of the form
- 
-  {binsize: {iccf: averageIntervalData_id, Obs/Exp: averageIntervalData_id, binsize: 400000}, ...}
-  FIXME: Probably this can be removed.
+  Takes as input an array of json objects of the form [{"binsize": x, "id", y}]
+  and groups them by binsize into an output object: {binsize: {binsize: x, id, y}}
   */
-    var numberDatasets = data.length;
-    console.log(data);
-    var output = {};
-    for (var index = 0; index < numberDatasets; index++) {
-        var { id, binsize } = data[index];
-        var value_type = "normal";
-        if (binsize in output) {
-            // binsize is already in output, must be the other type of pileup
-            output[binsize][value_type] = id;
-        } else {
-            // binsize is not in output, must be the first type of pileup
-            output[binsize] = { binsize: binsize };
-            output[binsize][value_type] = id;
-        }
-    }
-    //console.log(output)
-    return output;
+  var numberDatasets = data.length;
+  var output = {};
+  for (var index = 0; index < numberDatasets; index++) {
+      var binsize = data[index]["binsize"];
+      output[binsize] = {}
+      output[binsize]["binsize"] = binsize
+      output[binsize]["id"] = data[index]["id"]
+  }
+  return output;
 }
 
 export function group_intervals_on_windowsize(intervals) {
