@@ -140,11 +140,13 @@ export var formattingMixin = {
     methods: {
         convertBasePairsToReadable: function(baseString) {
             var basePairs = Number(baseString);
+            if (basePairs < 1000) {
+                return basePairs + "bp";
+            }
             if (basePairs < 1000000) {
                 return Math.round(basePairs / 1000) + " kb";
-            } else {
-                return Math.round(basePairs / 1000000) + " Mb";
             }
+            return Math.round(basePairs / 1000000) + " Mb";
         }
     }
 };

@@ -5,7 +5,7 @@
                 <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-1">
                     <div class="small-margin" ref="canvasDiv"/>
-                    <!-- this prevents drag events -->
+                    <!-- this prevents drag events to allow slider change without causing widget drag -->
                     <div draggable="true" @dragstart.prevent.stop class="slider-container">
                         <double-range-slider
                         :sliderWidth="width/2"
