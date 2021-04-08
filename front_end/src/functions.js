@@ -1,16 +1,16 @@
-export function convert_json_to_pilingJS(jsonObject, log = false) {
+export function convert_tidy_to_pixi(jsonObject, log = false) {
     /*
     Converts pileup data from pandas.DataFrame.to_json to an
     object that pilingJS can read
 
     input Json: '{"variable":{...},"group":{...},"value":{...}}'
-    output Object: [
+    output Object: 
       {
         data: [flattenedArrayOfData],
         shape: [rowNumber, colNumber],
         dtype: "datatype"
       }
-    ]
+    
   */
     var rowNumber = Math.max(...Object.values(jsonObject["variable"])) + 1;
     var colNumber = Math.max(...Object.values(jsonObject["group"])) + 1;
@@ -34,15 +34,11 @@ export function convert_json_to_pilingJS(jsonObject, log = false) {
         var flattenedIndex = rowIndex * colNumber + colIndex;
         data[flattenedIndex] = newValue;
     }
-    return [
-        {
-            src: {
+    return {
                 data: data,
                 shape: [rowNumber, colNumber],
                 dtype: "float32"
             }
-        }
-    ];
 }
 
 export function convert_json_to_d3(jsonObject, log = false) {

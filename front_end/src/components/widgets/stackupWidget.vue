@@ -88,7 +88,7 @@
 <script>
 import stackup from "../visualizations/stackup";
 import { apiMixin, formattingMixin } from "../../mixins";
-import { group_stackups_by_binsize } from '../../functions';
+import { convert_tidy_to_pixi, group_stackups_by_binsize } from '../../functions';
 
 export default {
     name: "stackupWidget",
@@ -305,14 +305,17 @@ export default {
                 `individualIntervalData/${id}/`
             );
             var parsed = JSON.parse(response.data);
+            // FIXME: conversion to pilingjs format not necessary after no route, change!
+            var piling_data = convert_tidy_to_pixi(parsed);
+            console.log(piling_data);
             // save it in store
             var mutationObject = {
                 id: id,
-                data: parsed
+                data: piling_data
             };
             this.$store.commit("compare/setWidgetDataStackup", mutationObject);
             // return it
-            return parsed;
+            return piling_data;
         }
     },
     watch: {
