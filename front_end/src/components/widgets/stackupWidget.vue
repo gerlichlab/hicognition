@@ -9,7 +9,7 @@
         >
             <div class="md-layout">
                 <div
-                    class="md-layout-item md-size-40 padding-left padding-right"
+                    class="md-layout-item md-size-35 padding-left padding-right"
                 >
                     <md-field class="padding-top">
                         <label class="md-primary">Dataset</label>
@@ -30,7 +30,7 @@
                     </md-field>
                 </div>
                 <div
-                    class="md-layout-item md-size-40 padding-left padding-right"
+                    class="md-layout-item md-size-35 padding-left padding-right"
                 >
                     <md-field class="padding-top">
                         <label class="md-primary">Binsize</label>
@@ -52,8 +52,48 @@
                         </md-select>
                     </md-field>
                 </div>
+
                 <div class="md-layout-item md-size-10">
-                    <div class="padding-top-large padding-right">
+                    <md-menu
+                        md-size="big"
+                        md-direction="bottom-end"
+                        md-align-trigger
+                        :disabled="allowSortOrderSelection"
+                    >
+                        <div class="padding-top-large padding-right">
+                            <md-button class="md-icon-button" md-menu-trigger>
+                                <md-icon>menu_open</md-icon>
+                            </md-button>
+                        </div>
+                        <md-menu-content>
+                            <div class="md-layout">
+                                <div
+                                    class="md-layout-item md-size-35 padding-left padding-right"
+                                >
+                                 <span class="md-title">Sort by</span>
+                                </div>
+                            </div>
+                            <div class="md-layout">
+                                <div
+                                    class="md-layout-item md-size-35 padding-left padding-right"
+                                >
+                                    <md-switch v-model="isAscending">{{
+                                        sortDirection
+                                    }}</md-switch>
+                                </div>
+                            </div>
+                            <md-divider></md-divider>
+                            <md-menu-item
+                                v-for="item in sortorders"
+                                :key="item"
+                                @click="selectedSortOrder = item"
+                                >{{ item }}</md-menu-item
+                            >
+                        </md-menu-content>
+                    </md-menu>
+                </div>
+                <div class="md-layout-item md-size-10">
+                    <div class="padding-top-large padding-right padding-left">
                         <md-button
                             @click="deleteWidget"
                             class="md-icon-button md-accent"
@@ -90,13 +130,13 @@
 <script>
 import stackup from "../visualizations/stackup";
 import { apiMixin, formattingMixin } from "../../mixins";
-import { group_stackups_by_binsize } from '../../functions';
+import { group_stackups_by_binsize } from "../../functions";
 
 export default {
     name: "stackupWidget",
     mixins: [apiMixin, formattingMixin],
     components: {
-        stackup,
+        stackup
     },
     data: function() {
         // get widget data from store for initialization
@@ -118,6 +158,9 @@ export default {
             }
             return false;
         },
+        allowSortOrderSelection: function() {
+            return true;
+        },
         allowDatasetSelection: function() {
             if (this.intervalID) {
                 return true;
@@ -132,12 +175,18 @@ export default {
                 height: `${this.height}px`,
                 width: `${this.width}px`
             };
+        },
+        sortDirection: function() {
+            if (this.isAscending) {
+                return "Ascending";
+            }
+            return "Descending";
         }
     },
     methods: {
         handleSliderChange: function(data) {
-            this.minHeatmap = data[0]
-            this.maxHeatmap = data[1]
+            this.minHeatmap = data[0];
+            this.maxHeatmap = data[1];
         },
         toStoreObject: function() {
             // serialize object for storing its state in the store
@@ -157,7 +206,10 @@ export default {
                 widgetDataRef: this.widgetDataRef,
                 widgetType: "Stackup",
                 minHeatmap: this.minHeatmap,
-                maxHeatmap: this.maxHeatmap
+                maxHeatmap: this.maxHeatmap,
+                selectedSortOrder: this.selectedSortOrder,
+                sortorders: this.sortorders,
+                isAscending: this.isAscending
             };
         },
         deleteWidget: function() {
@@ -222,7 +274,10 @@ export default {
                 binsizes: [],
                 datasets: this.$store.getters.getBigwigsDirty,
                 minHeatmap: undefined,
-                maxHeatmap: undefined
+                maxHeatmap: undefined,
+                selectedSortOrder: undefined,
+                sortorders: ["test1", "test2", "test3"], // TODO: change!
+                isAscending: true //TODO: change!
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -241,7 +296,10 @@ export default {
                 intervalID: collectionConfig["intervalID"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
+                selectedSortOrder: undefined,
                 datasets: this.$store.getters.getBigwigsDirty,
+                sortorders: undefined,
+                isAscending: true
             };
         },
         initializeAtSameCollection: function(widgetData, collectionConfig) {
@@ -254,7 +312,9 @@ export default {
                     id: widgetDataRef
                 };
                 // get widget data from store
-                widgetDataValues = this.$store.getters["compare/getWidgetDataStackup"](querydata);
+                widgetDataValues = this.$store.getters[
+                    "compare/getWidgetDataStackup"
+                ](querydata);
             } else {
                 widgetDataValues = undefined;
             }
@@ -262,6 +322,7 @@ export default {
                 widgetDataRef: widgetData["widgetDataRef"],
                 dragImage: undefined,
                 widgetData: widgetDataValues,
+                selectedSortOrder: widgetData["selectedSortOrder"],
                 minHeatmap: widgetData["minHeatmap"],
                 maxHeatmap: widgetData["maxHeatmap"],
                 selectedDataset: widgetData["dataset"],
@@ -270,6 +331,8 @@ export default {
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
                 datasets: this.$store.getters.getBigwigsDirty,
+                sortorders: widgetData["sortorder"],
+                isAscending: widgetData["isAscending"]
             };
         },
         initializeWidget: function() {
@@ -317,7 +380,7 @@ export default {
             var response = await this.fetchData(
                 `individualIntervalData/${id}/`
             );
-            var piling_data = response.data
+            var piling_data = response.data;
             // save it in store
             var mutationObject = {
                 id: id,
