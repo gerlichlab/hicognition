@@ -259,12 +259,14 @@ def get_stackup_data(stackup_id):
     return jsonify(json_data)
 
 
-
+# TODO: test
 @api.route("/individualIntervalData/<stackup_id>/metadatasmall", methods=["GET"])
 @auth.login_required
 def get_stackup_metadata_small(stackup_id):
     """returns metadata for small stackup. This needs to be done since
-    the subsampeled stackup contains only a subset of the original intervals."""
+    the subsampeled stackup contains only a subset of the original intervals.
+    Note: stackups use the original dataset, so subsetting on interval indices
+    is not required."""
     # Check for existence
     if IndividualIntervalData.query.get(stackup_id) is None:
         return not_found("Stackup does not exist!")
@@ -277,5 +279,30 @@ def get_stackup_metadata_small(stackup_id):
         return forbidden(
             "Bigwig dataset or bed dataset is not owned by logged in user!"
         )
-    # dataset is owned, return the metadata
-    return jsonify({"message": "todo"})
+    # get associated metadata entries sorted by id; id sorting is necessary for newer metadata to win in field names
+    metadata_entries = (
+        bed_ds
+        .bedFileMetadata.order_by(BedFileMetadata.id)
+        .all()
+    )
+    # check if list is empty
+    if len(metadata_entries) == 0:
+        return jsonify({})
+    # get interval
+    interval = stackup.source_intervals
+    # load all metadata_files as dataframes
+    temp_frames = []
+    for metadata_entry in metadata_entries:
+        if metadata_entry.metadata_fields is None:
+            # skip metadata if there are no fields defined
+            continue
+        columns_retained = json.loads(metadata_entry.metadata_fields)
+        temp_frame = pd.read_csv(
+            metadata_entry.file_path, usecols=columns_retained
+        )
+        temp_frames.append(temp_frame)
+    output_frame_large = pd.concat(temp_frames, axis=1)
+    # subset by stackup index
+    stackup_index = np.load(stackup.file_path_indices_small)
+    outframe = output_frame_large.iloc[stackup_index, :]
+    return jsonify(outframe.to_dict(orient="list"))

@@ -70,7 +70,7 @@
                                 <div
                                     class="md-layout-item md-size-35 padding-left padding-right"
                                 >
-                                 <span class="md-title">Sort by</span>
+                                    <span class="md-title">Sort by</span>
                                 </div>
                             </div>
                             <div class="md-layout">
@@ -84,7 +84,7 @@
                             </div>
                             <md-divider></md-divider>
                             <md-menu-item
-                                v-for="item in sortorders"
+                                v-for="item in sortKeys"
                                 :key="item"
                                 @click="selectedSortOrder = item"
                                 >{{ item }}</md-menu-item
@@ -181,6 +181,12 @@ export default {
                 return "Ascending";
             }
             return "Descending";
+        },
+        sortKeys: function() {
+            if (this.sortorders){
+                return Object.keys(this.sortorders)
+            }
+            return {}
         }
     },
     methods: {
@@ -276,8 +282,8 @@ export default {
                 minHeatmap: undefined,
                 maxHeatmap: undefined,
                 selectedSortOrder: undefined,
-                sortorders: ["test1", "test2", "test3"], // TODO: change!
-                isAscending: true //TODO: change!
+                sortorders: undefined,
+                isAscending: true
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -331,7 +337,7 @@ export default {
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
                 datasets: this.$store.getters.getBigwigsDirty,
-                sortorders: widgetData["sortorder"],
+                sortorders: widgetData["sortorders"],
                 isAscending: widgetData["isAscending"]
             };
         },
@@ -439,6 +445,11 @@ export default {
             this.widgetDataRef = stackup_id;
             var data = await this.getStackupData(stackup_id);
             this.widgetData = data;
+            // fetch metadata
+            var response = await this.fetchData(
+                `individualIntervalData/${stackup_id}/metadatasmall`
+            );
+            this.sortorders = response.data;
         }
     }
 };
