@@ -252,7 +252,7 @@ def get_stackup_data(stackup_id):
     # dataset is owned, return the smalldata
     np_data = np.load(stackup.file_path_small)
     # sort by middle column
-    np_data = np_data[np.argsort(np_data[:, int(np_data.shape[1] / 2)])[::-1]]
+    #np_data = np_data[np.argsort(np_data[:, int(np_data.shape[1] / 2)])[::-1]]
     # return array
     flat_data = np.nan_to_num(np_data, posinf=0).flatten().tolist()
     json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}

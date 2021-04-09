@@ -58,10 +58,9 @@
                         md-size="big"
                         md-direction="bottom-end"
                         md-align-trigger
-                        :disabled="allowSortOrderSelection"
                     >
                         <div class="padding-top-large padding-right">
-                            <md-button class="md-icon-button" md-menu-trigger>
+                            <md-button class="md-icon-button" md-menu-trigger :disabled="!allowSortOrderSelection">
                                 <md-icon>menu_open</md-icon>
                             </md-button>
                         </div>
@@ -73,6 +72,14 @@
                                     <span class="md-title">Sort by</span>
                                 </div>
                             </div>
+                            <md-divider></md-divider>
+                            <md-menu-item
+                                v-for="item in sortKeys"
+                                :key="item"
+                                @click="selectedSortOrder = item"
+                                >{{ item }}</md-menu-item
+                            >
+                            <md-divider></md-divider>
                             <div class="md-layout">
                                 <div
                                     class="md-layout-item md-size-35 padding-left padding-right"
@@ -82,13 +89,6 @@
                                     }}</md-switch>
                                 </div>
                             </div>
-                            <md-divider></md-divider>
-                            <md-menu-item
-                                v-for="item in sortKeys"
-                                :key="item"
-                                @click="selectedSortOrder = item"
-                                >{{ item }}</md-menu-item
-                            >
                         </md-menu-content>
                     </md-menu>
                 </div>
@@ -108,7 +108,7 @@
                 :stackupID="id"
                 :width="225"
                 :height="225"
-                :stackupData="widgetData"
+                :stackupData="sortedMatrix"
                 :minHeatmapValue="minHeatmap"
                 :maxHeatmapValue="maxHeatmap"
                 @slider-change="handleSliderChange"
@@ -130,7 +130,11 @@
 <script>
 import stackup from "../visualizations/stackup";
 import { apiMixin, formattingMixin } from "../../mixins";
-import { group_stackups_by_binsize } from "../../functions";
+import {
+    group_stackups_by_binsize,
+    sort_matrix_by_index,
+    sort_matrix_by_center_column
+} from "../../functions";
 
 export default {
     name: "stackupWidget",
@@ -152,6 +156,19 @@ export default {
         colIndex: Number
     },
     computed: {
+        sortedMatrix: function() {
+            if (!this.widgetData){
+                return undefined
+            }
+            if (this.selectedSortOrder == "center column"){
+                var sorted_matrix = sort_matrix_by_center_column(this.widgetData["data"], this.widgetData["shape"], this.isAscending)
+                return {
+                    "data": sorted_matrix,
+                    "shape": this.widgetData["shape"],
+                    "dtype": this.widgetData["dtype"]
+                }
+            }
+        },
         showData: function() {
             if (this.widgetData) {
                 return true;
@@ -159,7 +176,10 @@ export default {
             return false;
         },
         allowSortOrderSelection: function() {
-            return true;
+            if (this.sortorders){
+                return true
+            }
+            return false
         },
         allowDatasetSelection: function() {
             if (this.intervalID) {
@@ -183,10 +203,10 @@ export default {
             return "Descending";
         },
         sortKeys: function() {
-            if (this.sortorders){
-                return Object.keys(this.sortorders)
+            if (this.sortorders) {
+                return Object.keys(this.sortorders);
             }
-            return {}
+            return {};
         }
     },
     methods: {
@@ -281,7 +301,7 @@ export default {
                 datasets: this.$store.getters.getBigwigsDirty,
                 minHeatmap: undefined,
                 maxHeatmap: undefined,
-                selectedSortOrder: undefined,
+                selectedSortOrder: "center column",
                 sortorders: undefined,
                 isAscending: true
             };
@@ -302,7 +322,7 @@ export default {
                 intervalID: collectionConfig["intervalID"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
-                selectedSortOrder: undefined,
+                selectedSortOrder: "center column",
                 datasets: this.$store.getters.getBigwigsDirty,
                 sortorders: undefined,
                 isAscending: true
@@ -450,6 +470,8 @@ export default {
                 `individualIntervalData/${stackup_id}/metadatasmall`
             );
             this.sortorders = response.data;
+            // add by center column
+            this.sortorders["center column"] = {};
         }
     }
 };

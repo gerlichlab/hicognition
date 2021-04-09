@@ -1,3 +1,5 @@
+import * as math from "mathjs"
+
 export function convert_json_to_d3(jsonObject, log = false) {
     /*
       Converts pileup data from pandas.DataFrame.to_json to an 
@@ -103,6 +105,48 @@ export function group_intervals_on_windowsize(intervals) {
     }
     return output;
 }
+
+
+// untested!
+export function sort_matrix_by_index(flattened_matrix, shape, sort_values, ascending=true){
+    /*
+        Takes a flattened_matrix of shape [width, height] and sorts it
+        along the first dimension by the passed sort_values either ascending
+        or descending.
+    */
+   // prepare matrix
+   var reshaped = math.reshape(flattened_matrix, shape)
+   // sort_values and return sort indices
+   var sort_indices;
+   if (!ascending){
+        sort_indices = Array.from(Array(sort_values.length).keys()).sort((a, b) => sort_values[a] < sort_values[b] ? -1 : (sort_values[b] < sort_values[a]) | 0)
+   }else{
+       sort_indices = Array.from(Array(sort_values.length).keys()).sort((a, b) => sort_values[a] > sort_values[b] ? -1 : (sort_values[b] > sort_values[a]) | 0)
+   }
+   var sorted = math.subset(reshaped, math.index(sort_indices, [...Array(shape[1]).keys()])) 
+   return math.flatten(sorted)
+}
+
+export function sort_matrix_by_center_column(flattened_matrix, shape, ascending=true){
+    /*
+        Takes a flattened_matrix of shape [width, height] and sorts it based on its center column either ascending
+        or descending.
+    */
+   // prepare matrix
+   var reshaped = math.reshape(flattened_matrix, shape)
+   // center column
+   var sort_values = math.subset(reshaped, math.index([...Array(shape[0]).keys()], Math.floor(shape[1]/2)))     
+   // sort_values and return sort indices
+   var sort_indices;
+   if (!ascending){
+        sort_indices = Array.from(Array(sort_values.length).keys()).sort((a, b) => sort_values[a] < sort_values[b] ? -1 : (sort_values[b] < sort_values[a]) | 0)
+   }else{
+       sort_indices = Array.from(Array(sort_values.length).keys()).sort((a, b) => sort_values[a] > sort_values[b] ? -1 : (sort_values[b] > sort_values[a]) | 0)
+   }
+   var sorted = math.subset(reshaped, math.index(sort_indices, [...Array(shape[1]).keys()])) 
+   return math.flatten(sorted)
+}
+
 
 // Helpers for datasetTable
 
