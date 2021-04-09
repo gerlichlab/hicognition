@@ -148,6 +148,10 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
     if len(stackup_regions) < current_app.config["STACKUP_THRESHOLD"]:
         # if there are less than 1000 examples, small file is the same as large file
         file_path_small = file_path
+        # store an index file
+        indices = np.arange(len(stackup_regions))
+        index_file = file_uuid + "_indices.npy"
+        np.save(index_file, indices)
     else:
         # set random seed
         np.random.seed(42)
@@ -161,16 +165,20 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
         file_path_small = os.path.join(
             current_app.config["UPLOAD_DIR"], file_name_small
         )
+        # store file
         np.save(file_path_small, downsampled_array)
+        # store indices
+        index_file = file_uuid + "_indices.npy"
+        np.save(index_file, sub_sample_index)
     # add to database
     log.info("      Adding database entry...")
-    add_stackup_db(file_path, file_path_small, binsize, intervals.id, bigwig_dataset.id)
+    add_stackup_db(file_path, file_path_small, index_file, binsize, intervals.id, bigwig_dataset.id)
     add_line_db(file_path_line, binsize, intervals.id, bigwig_dataset.id)
     log.info("      Success!")
 
 
 def add_stackup_db(
-    file_path, file_path_small, binsize, intervals_id, bigwig_dataset_id
+    file_path, file_path_small, index_file, binsize, intervals_id, bigwig_dataset_id
 ):
     """Adds stackup to database"""
     new_entry = IndividualIntervalData(
@@ -178,6 +186,7 @@ def add_stackup_db(
         name=os.path.basename(file_path),
         file_path=file_path,
         file_path_small=file_path_small,
+        file_path_indices_small=index_file,
         intervals_id=intervals_id,
         dataset_id=bigwig_dataset_id,
     )

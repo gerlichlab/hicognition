@@ -257,3 +257,25 @@ def get_stackup_data(stackup_id):
     flat_data = np.nan_to_num(np_data, posinf=0).flatten().tolist()
     json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
     return jsonify(json_data)
+
+
+
+@api.route("/individualIntervalData/<stackup_id>/metadatasmall", methods=["GET"])
+@auth.login_required
+def get_stackup_metadata_small(stackup_id):
+    """returns metadata for small stackup. This needs to be done since
+    the subsampeled stackup contains only a subset of the original intervals."""
+    # Check for existence
+    if IndividualIntervalData.query.get(stackup_id) is None:
+        return not_found("Stackup does not exist!")
+    stackup = IndividualIntervalData.query.get(stackup_id)
+    bigwig_ds = stackup.source_dataset
+    bed_ds = stackup.source_intervals.source_dataset
+    if is_access_to_dataset_denied(
+        bigwig_ds, g.current_user
+    ) or is_access_to_dataset_denied(bed_ds, g.current_user):
+        return forbidden(
+            "Bigwig dataset or bed dataset is not owned by logged in user!"
+        )
+    # dataset is owned, return the metadata
+    return jsonify({"message": "todo"})

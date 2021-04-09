@@ -196,6 +196,9 @@ class IndividualIntervalData(db.Model):
     file_path_small = db.Column(
         db.String(128), index=True
     )  # location of downsampled file
+    file_path_indices_small = db.Column(
+        db.String(128), index=True
+    )  # location of indices into original intervals of file_path_small
     dataset_id = db.Column(
         db.Integer, db.ForeignKey("dataset.id")
     )  # dataset, which was used for value extraction
