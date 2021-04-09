@@ -54,7 +54,7 @@ def convert_bed_to_bedpe(input_file, target_file, halfwindowsize):
     final.loc[:, "bed_row_index"] = bed_row_index
     final.to_csv(target_file, sep="\t", header=None, index=False)
 
-
+# TODO: write tests
 def clean_bed(input_file, output_file):
     """
         Loads in bedfile and removes headers.
