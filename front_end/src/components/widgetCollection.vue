@@ -332,6 +332,13 @@ export default {
                 collectionConfig: { intervalID: this.selectedWindowSize }
             };
             this.$store.commit("compare/setCollectionConfig", payload);
+            // set metadata
+            console.log(this.selectedWindowSize);
+            this.fetchData(`intervals/${this.selectedWindowSize}/metadata`).then(
+                response => {
+                    console.log(response.data);
+                }
+            )
         }
     },
     mounted: function() {

@@ -1,6 +1,5 @@
 """GET API endpoints for hicognition"""
 import json
-from flask.globals import current_app
 import pandas as pd
 import numpy as np
 from flask.json import jsonify
@@ -105,14 +104,14 @@ def get_interval_metadata(interval_id):
         return not_found(f"Intervals with id {interval_id} do not exist!")
     # check if associated dataset is owned
     if is_access_to_dataset_denied(
-        interval.source_dataset.query.first(), g.current_user
+        interval.source_dataset, g.current_user
     ):
         return forbidden(
             f"Dataset associated with interval id {interval.id} is not owned by logged in user!"
         )
     # get associated metadata entries sorted by id; id sorting is necessary for newer metadata to win in field names
     metadata_entries = (
-        interval.source_dataset.query.first()
+        interval.source_dataset
         .bedFileMetadata.order_by(BedFileMetadata.id)
         .all()
     )
