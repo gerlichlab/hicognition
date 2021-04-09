@@ -132,6 +132,12 @@ export default {
             this.stage = new PIXI.Container();
         }
     },
+    watch: {
+        stackupData: function(){
+            // rerender if stackupdata changes -> important for sorting
+            this.drawHeatmap()
+        }
+    },
     mounted: function() {
         // initialize min from prop if defined
         if (this.minHeatmapValue && this.maxHeatmapValue){
