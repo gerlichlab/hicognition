@@ -57,7 +57,7 @@
                     <md-menu
                         md-size="big"
                         md-direction="bottom-end"
-                        md-align-trigger
+                        :md-offset-x="210" :md-offset-y="-36"
                     >
                         <div class="padding-top-large padding-right">
                             <md-button class="md-icon-button" md-menu-trigger :disabled="!allowSortOrderSelection">
@@ -77,7 +77,9 @@
                                 v-for="item in sortKeys"
                                 :key="item"
                                 @click="selectedSortOrder = item"
-                                >{{ item }}</md-menu-item
+                                >{{ item }}
+                                <md-icon v-if="item == selectedSortOrder">done</md-icon>
+                                </md-menu-item
                             >
                             <md-divider></md-divider>
                             <div class="md-layout">
