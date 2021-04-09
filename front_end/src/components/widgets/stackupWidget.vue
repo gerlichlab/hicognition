@@ -167,6 +167,13 @@ export default {
                     "shape": this.widgetData["shape"],
                     "dtype": this.widgetData["dtype"]
                 }
+            }else{
+                var sorted_matrix = sort_matrix_by_index(this.widgetData["data"], this.widgetData["shape"], this.sortorders[this.selectedSortOrder], this.isAscending)
+                return {
+                    "data": sorted_matrix,
+                    "shape": this.widgetData["shape"],
+                    "dtype": this.widgetData["dtype"]
+                }
             }
         },
         showData: function() {
