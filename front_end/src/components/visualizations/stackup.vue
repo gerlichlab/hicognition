@@ -143,10 +143,21 @@ export default {
         this.drawHeatmap()
     },
     beforeDestroy: function() {
-        // destroy canvas
-        if (this.stage){
-            this.stage.destroy();
-        }
+        /*
+            destroy everything and release all webgl contexts
+            All things that reference any webgl components need to be nulled
+            Then, we need to hope that the webgl context is garbage collected
+            before we reach >16 contexts.
+        */
+        // 
+        this.stage.destroy();
+        this.stage = null
+        // remove renderer view
+        this.$refs["canvasDiv"].removeChild(this.renderer.view);
+        this.renderer.destroy();
+        this.renderer = null
+        this.texture = null;
+        this.sprite = null;
     },
 };
 </script>
