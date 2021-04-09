@@ -55,6 +55,15 @@ def convert_bed_to_bedpe(input_file, target_file, halfwindowsize):
     final.to_csv(target_file, sep="\t", header=None, index=False)
 
 
+def clean_bed(input_file, output_file):
+    """
+        Loads in bedfile and removes headers.
+    """
+    data = pd.read_csv(input_file, sep="\t", header=None, comment="#")
+    # write to file
+    data.to_csv(output_file, sep="\t", index=False, header=None)
+
+
 def sort_bed(input_file, output_file, chromsizes):
     """Sorts entries in bedfile according to chromsizes and
     writes it to a file. input_file, output_file and chromsizes

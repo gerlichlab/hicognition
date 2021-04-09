@@ -34,13 +34,13 @@ def pipeline_bed(dataset_id):
     log.info(f"Bed pipeline started for {dataset_id} with {window_sizes}")
     # bed-file preprocessing: sorting, clodius, uploading to higlass
     file_path = Dataset.query.get(dataset_id).file_path
-    # sort dataset
-    log.info("      Sorting...")
-    sorted_file_name = file_path.split(".")[0] + "_sorted.bed"
-    io_helpers.sort_bed(file_path, sorted_file_name, app.config["CHROM_SIZES"])
-    # set sorted_file_name as file_name
+    # clean dataset
+    log.info("      Clean...")
+    cleaned_file_name = file_path.split(".")[0] + "_cleaned.bed"
+    io_helpers.clean_bed(file_path, cleaned_file_name)
+    # set cleaned_file_name as file_name
     dataset_object = Dataset.query.get(dataset_id)
-    dataset_object.file_path = sorted_file_name
+    dataset_object.file_path = cleaned_file_name
     # delete old file
     log.info("      Delete Unsorted...")
     try:

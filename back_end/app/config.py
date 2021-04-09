@@ -17,7 +17,7 @@ class Config:
     )
     CHROM_ARMS = os.environ.get("CHROM_ARMS") or os.path.join(basedir, "data/arms.hg19")
     REDIS_URL = os.environ.get("REDIS_URL") or "redis://"
-    WINDOW_SIZES = [50000, 100000, 200000, 300000, 400000]
+    WINDOW_SIZES = [50000, 100000, 200000, 300000, 400000, 1000000, 2000000]
     BIN_SIZES = [20000, 50000]  # In development mode, 10k hogs too much memory
     STACKUP_THRESHOLD = 1000  # Threshold of when stackup is downsampled
 
