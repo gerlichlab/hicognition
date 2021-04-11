@@ -118,7 +118,7 @@ export function sort_matrix_by_index(flattened_matrix, shape, sort_values, ascen
    var reshaped = math.reshape(flattened_matrix, shape)
    // sort_values and return sort indices
    var sort_indices;
-   if (!ascending){
+   if (ascending){
         sort_indices = Array.from(Array(sort_values.length).keys()).sort((a, b) => sort_values[a] < sort_values[b] ? -1 : (sort_values[b] < sort_values[a]) | 0)
    }else{
        sort_indices = Array.from(Array(sort_values.length).keys()).sort((a, b) => sort_values[a] > sort_values[b] ? -1 : (sort_values[b] > sort_values[a]) | 0)
@@ -138,7 +138,7 @@ export function sort_matrix_by_center_column(flattened_matrix, shape, ascending=
    var sort_values = math.subset(reshaped, math.index([...Array(shape[0]).keys()], Math.floor(shape[1]/2)))     
    // sort_values and return sort indices
    var sort_indices;
-   if (!ascending){
+   if (ascending){
         sort_indices = Array.from(Array(sort_values.length).keys()).sort((a, b) => sort_values[a] < sort_values[b] ? -1 : (sort_values[b] < sort_values[a]) | 0)
    }else{
        sort_indices = Array.from(Array(sort_values.length).keys()).sort((a, b) => sort_values[a] > sort_values[b] ? -1 : (sort_values[b] > sort_values[a]) | 0)
