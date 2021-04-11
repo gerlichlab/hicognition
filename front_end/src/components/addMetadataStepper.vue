@@ -1,5 +1,5 @@
 <template>
-    <div class="half-width">
+    <div >
         <md-steppers :md-active-step.sync="active" md-linear>
             <md-step
                 id="first"
