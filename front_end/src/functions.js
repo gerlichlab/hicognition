@@ -150,7 +150,7 @@ export function max_array(array){
     */
     var max = 0
     for (var val of array){
-        if (val){
+        if (val && isFinite(val)){
             if (val > max){
                 max = val
             }
@@ -165,7 +165,7 @@ export function min_array(array){
     */
     var min = Infinity
     for (var val of array){
-        if (val){
+        if (val && isFinite(val)){
             if (val < min){
                 min = val
             }

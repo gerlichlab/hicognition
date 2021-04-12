@@ -105,7 +105,7 @@
                     </div>
                 </div>
             </div>
-            <stackup
+            <heatmap
                 v-if="showData"
                 :stackupID="id"
                 :width="225"
@@ -113,9 +113,11 @@
                 :stackupData="sortedMatrix"
                 :minHeatmapValue="minHeatmap"
                 :maxHeatmapValue="maxHeatmap"
+                colormap="stackup"
                 @slider-change="handleSliderChange"
+                :log="false"
             >
-            </stackup>
+            </heatmap>
             <div
                 v-if="!showData"
                 class="md-layout md-alignment-center-center"
@@ -130,7 +132,7 @@
 </template>
 
 <script>
-import stackup from "../visualizations/stackup";
+import heatmap from "../visualizations/heatmap";
 import { apiMixin, formattingMixin } from "../../mixins";
 import {
     group_stackups_by_binsize,
@@ -142,7 +144,7 @@ export default {
     name: "stackupWidget",
     mixins: [apiMixin, formattingMixin],
     components: {
-        stackup
+        heatmap
     },
     data: function() {
         // get widget data from store for initialization

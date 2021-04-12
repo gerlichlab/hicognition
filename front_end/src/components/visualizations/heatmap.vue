@@ -22,7 +22,7 @@
     </div>
 </template>
 <script>
-import * as PIXI from 'pixi.js'
+import * as PIXI from 'pixi.js-legacy'
 import { getScale } from "../../colorScales.js";
 import doubleRangeSlider from '../ui/doubleRangeSlider.vue';
 import {min_array, max_array} from "../../functions"
@@ -39,10 +39,20 @@ export default {
         height: Number,
         stackupID: Number,
         minHeatmapValue: Number,
-        maxHeatmapValue: Number
+        maxHeatmapValue: Number,
+        colormap: String,
+        log: Boolean
     },
     computed: {
         stackupValues: function(){
+            if (this.log){
+                return this.stackupData["data"].map((val) => {
+                    if (val && (val > 0)){
+                        return Math.log2(val)
+                    }
+                    return null
+                });
+            }
             return this.stackupData["data"]
         },
         stackupDimensions: function(){
@@ -96,7 +106,7 @@ export default {
             this.drawHeatmap()
         },
         createColorMap: function(minVal, maxVal) {
-            this.colorScale = getScale(minVal, maxVal, "stackup")
+            this.colorScale = getScale(minVal, maxVal, this.colormap)
         },
         drawHeatmap: function() {
             this.texture = PIXI.Texture.fromBuffer(this.rgbArray, this.stackupDimensions[1], this.stackupDimensions[0]);
@@ -120,6 +130,11 @@ export default {
     watch: {
         stackupData: function(){
             // rerender if stackupdata changes -> important for sorting
+            this.drawHeatmap()
+        },
+        colormap: function() {
+            // if colormap changes -> reset min and max
+            this.createColorMap(this.minValue, this.maxValue)
             this.drawHeatmap()
         }
     },

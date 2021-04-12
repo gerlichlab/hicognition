@@ -68,16 +68,19 @@
                     </div>
                 </div>
             </div>
-            <pileup
-                :pileupType="pileupType"
+            <heatmap
                 v-if="showData"
                 :pileupID="id"
                 :width="225"
                 :height="225"
-                :pileupData="widgetData[pileupType]"
+                :stackupData="widgetData[pileupType]"
+                :colormap="pileupType"
+                :minHeatmapValue="minHeatmap"
+                :maxHeatmapValue="maxHeatmap"
                 :log="true"
+                @slider-change="handleSliderChange"
             >
-            </pileup>
+            </heatmap>
             <div
                 v-if="!showData"
                 class="md-layout md-alignment-center-center"
@@ -92,7 +95,7 @@
 </template>
 
 <script>
-import pileup from "../visualizations/pileup";
+import heatmap from "../visualizations/heatmap";
 import { apiMixin, formattingMixin } from "../../mixins";
 import { group_iccf_obs_exp } from "../../functions";
 
@@ -100,7 +103,7 @@ export default {
     name: "pileupWidget",
     mixins: [apiMixin, formattingMixin],
     components: {
-        pileup
+        heatmap
     },
     data: function() {
         // get widget data from store for initialization
@@ -146,6 +149,10 @@ export default {
         }
     },
     methods: {
+        handleSliderChange: function(data) {
+            this.minHeatmap = data[0];
+            this.maxHeatmap = data[1];
+        },
         toStoreObject: function() {
             // serialize object for storing its state in the store
             return {
@@ -163,7 +170,9 @@ export default {
                 binsize: this.selectedBinsize,
                 widgetDataRef: this.widgetDataRef,
                 isICCF: this.isICCF,
-                widgetType: "Pileup"
+                widgetType: "Pileup",
+                minHeatmap: this.minHeatmap,
+                maxHeatmap: this.maxHeatmap,
             };
         },
         deleteWidget: function() {
@@ -227,6 +236,8 @@ export default {
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
                 datasets: this.$store.getters.getCoolersDirty,
+                minHeatmap: undefined,
+                maxHeatmap: undefined,
                 isICCF: true
             };
             // write properties to store
@@ -244,6 +255,8 @@ export default {
                 intervalID: collectionConfig["intervalID"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
+                minHeatmap: undefined,
+                maxHeatmap: undefined,
                 datasets: this.$store.getters.getCoolersDirty,
                 isICCF: true
             };
@@ -279,6 +292,8 @@ export default {
                 dragImage: undefined,
                 widgetData: widgetDataValues,
                 selectedDataset: widgetData["dataset"],
+                minHeatmap: widgetData["minHeatmap"],
+                maxHeatmap: widgetData["maxHeatmap"],
                 selectedBinsize: widgetData["binsize"],
                 intervalID: collectionConfig["intervalID"],
                 emptyClass: ["smallMargin", "empty"],
@@ -403,6 +418,11 @@ export default {
                 ICCF: iccf_data,
                 ObsExp: obs_exp_data
             };
+        },
+        isICCF: function(){
+            // reset min and max when this changes
+            this.minHeatmap = undefined
+            this.maxHeatmap = undefined
         }
     }
 };
