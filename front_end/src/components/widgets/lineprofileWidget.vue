@@ -64,12 +64,11 @@
                 </div>
             </div>
             <lineprofile
-                :lineprofileType="lineprofileType"
                 v-if="showData"
                 :lineprofileID="id"
                 :width="225"
                 :height="225"
-                :lineprofileData="widgetData[lineprofileType]"
+                :lineprofileData="widgetData['selected_data']"
                 :log="true"
             >
             </lineprofile>
