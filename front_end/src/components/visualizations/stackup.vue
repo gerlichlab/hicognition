@@ -25,6 +25,7 @@
 import * as PIXI from 'pixi.js'
 import { getScale } from "../../colorScales.js";
 import doubleRangeSlider from '../ui/doubleRangeSlider.vue';
+import {min_array, max_array} from "../../functions"
 
 export default {
     name: "stackup",
@@ -53,28 +54,12 @@ export default {
         minValue: function() {
             // find minimum by hand because Math.min cannot handle more than
             // a few k elements...
-            var min = Infinity
-            for (var val of this.stackupValues){
-                if (val){
-                    if (val < min){
-                        min = val
-                    }
-                }
-            }
-            return min
+            return min_array(this.stackupValues)
         },
         maxValue: function() {
             // maximum value for heatmap lookuptable = maximum value in data
             // filter out nans and extract values into array
-            var max = 0
-            for (var val of this.stackupValues){
-                if (val){
-                    if (val > max){
-                        max = val
-                    }
-                }
-            }
-            return max
+            return max_array(this.stackupValues)
         },
         rgbArray: function() {
             // array with rgba values for pixi Texture.fromBuffer

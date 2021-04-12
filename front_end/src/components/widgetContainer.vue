@@ -102,8 +102,7 @@ export default {
         }
         return {
             widgetType: widgetType,
-            selectedType: undefined,
-            widgetTypes: ["Pileup", "Stackup", "lineprofile"]
+            selectedType: undefined
         };
     },
     props: {

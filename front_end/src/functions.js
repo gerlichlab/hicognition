@@ -144,6 +144,36 @@ export function sort_matrix_by_index(
     return math.flatten(sorted);
 }
 
+export function max_array(array){
+    /*
+        returns maximum element of array
+    */
+    var max = 0
+    for (var val of array){
+        if (val){
+            if (val > max){
+                max = val
+            }
+        }
+    }
+    return max
+}
+
+export function min_array(array){
+    /*
+        returns minimum element of array
+    */
+    var min = Infinity
+    for (var val of array){
+        if (val){
+            if (val < min){
+                min = val
+            }
+        }
+    }
+    return min
+}
+
 export function sort_matrix_by_center_column(
     flattened_matrix,
     shape,

@@ -12,6 +12,7 @@
 </template>
 <script>
 import * as d3 from "d3";
+import {min_array, max_array} from "../../functions"
 
 function range(start, end) {
     var ans = [];
@@ -62,10 +63,10 @@ export default {
                 );
             // Add X axis
 
-            let minX = d3.min(this.lineData.x);
-            let maxX = d3.max(this.lineData.x);
-            let minY = d3.min(this.lineData.y);
-            let maxY = d3.max(this.lineData.y);
+            let minX = min_array(this.lineData.x);
+            let maxX = max_array(this.lineData.x);
+            let minY = min_array(this.lineData.y);
+            let maxY = max_array(this.lineData.y);
 
             var x = d3
                 .scaleLinear()

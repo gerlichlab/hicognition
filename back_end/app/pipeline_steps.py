@@ -142,7 +142,7 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
     file_path_line = os.path.join(current_app.config["UPLOAD_DIR"], file_name_line)
     np.save(file_path, stackup_array)
-    line_array = np.mean(stackup_array, axis=0)
+    line_array = np.nanmean(stackup_array, axis=0)
     np.save(file_path_line, line_array)
     # save downsampled array to file
     if len(stackup_regions) < current_app.config["STACKUP_THRESHOLD"]:
