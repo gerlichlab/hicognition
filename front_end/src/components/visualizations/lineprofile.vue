@@ -12,7 +12,7 @@
 </template>
 <script>
 import * as d3 from "d3";
-import {min_array, max_array} from "../../functions"
+import { min_array, max_array } from "../../functions";
 
 function range(start, end) {
     var ans = [];
@@ -38,17 +38,12 @@ export default {
             return "lineprofile_" + this.lineprofileID;
         },
         lineData: function() {
-            return {
-                y: this.lineprofileData.data,
-                x: range(1, this.lineprofileData.data.length)
-            };
+            return this.lineprofileData.data;
         }
     },
     methods: {
         redrawLinechart: function() {
             var margin = { top: 10, right: 30, bottom: 30, left: 30 };
-            console.log(this.lineData.y);
-            //console.log(Math.max.apply(Math, this.lineData.y));
             d3.select(`#${this.lineprofileDivID}Svg`).remove();
             var line_svg = d3
                 .select(`#${this.lineprofileDivID}`)
@@ -63,10 +58,10 @@ export default {
                 );
             // Add X axis
 
-            let minX = min_array(this.lineData.x);
-            let maxX = max_array(this.lineData.x);
-            let minY = min_array(this.lineData.y);
-            let maxY = max_array(this.lineData.y);
+            let minX = 0;
+            let maxX = this.lineData.length;
+            let minY = min_array(this.lineData);
+            let maxY = max_array(this.lineData);
 
             var x = d3
                 .scaleLinear()
@@ -74,33 +69,16 @@ export default {
                 .range([0, this.width]);
             var y = d3
                 .scaleLinear()
-                .domain([minY-0.05*maxY, maxY])
+                .domain([minY - 0.05 * maxY, maxY])
                 .range([this.height, 0]);
-            let x_test = this.lineData.x;
-            let y_test = this.lineData.y;
             var line = d3
                 .line()
                 .x(function(d, i) {
-                    return x(x_test[i]);
+                    return x(i);
                 })
                 .y(function(d, i) {
-                    return y(y_test[i]);
+                    return y(d);
                 });
-            // var x = d3
-            //     .scaleLinear()
-            //     .domain([0, this.lineprofileData.data.length])
-            //     .range([0, this.width]);
-            // svg.append("g")
-            //     .attr("transform", "translate(0," + this.height + ")")
-            //     .call(d3.axisBottom(x));
-
-            // Add Y axis
-            // var y = d3
-            //     .scaleLinear()
-            //     // ... is the short version for Math.max.apply(Math, this.lineData.y)
-            //     .domain([0, Math.max(...this.lineData.y)])
-            //     .range([this.height, 0]);
-            // svg.append("g").call(d3.axisLeft(y));
 
             let g = line_svg.append("g");
             var xAxis = d3.axisBottom().scale(x);
@@ -116,37 +94,10 @@ export default {
                 .call(yAxis);
 
             g.append("path")
-                .attr("d", line(this.lineData.x))
+                .attr("d", line(this.lineData))
                 .attr("fill", "none")
                 .attr("stroke", "steelblue")
                 .attr("stroke-width", 1.5);
-
-            // var line = d3.svg
-            //     .line()
-            //     .x(function(d, i) {
-            //         return x(d.x[i]);
-            //     })
-            //     .y(function(d, i) {
-            //         return y(d.y[i]);
-            //     });
-
-            // Add the line
-            // svg.append("path")
-            //     .datum(this.lineData)
-            //     .attr("fill", "none")
-            //     .attr("stroke", "steelblue")
-            //     .attr("stroke-width", 1.5)
-            //     .attr(
-            //         "d",
-            //         d3
-            //             .line()
-            //             .x(function(d, i) {
-            //                 return x(d.x[i]);
-            //             })
-            //             .y(function(d, i) {
-            //                 return y(d.y[i]);
-            //             })
-            //     );
         }
     },
     mounted: function() {
