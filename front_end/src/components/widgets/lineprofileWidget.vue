@@ -67,7 +67,7 @@
                 v-if="showData"
                 :lineprofileID="id"
                 :width="225"
-                :height="225"
+                :height="180"
                 :lineprofileData="widgetData"
                 :log="true"
             >

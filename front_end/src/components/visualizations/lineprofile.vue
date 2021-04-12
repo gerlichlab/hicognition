@@ -45,7 +45,7 @@ export default {
     },
     methods: {
         redrawLinechart: function() {
-            var margin = { top: 10, right: 30, bottom: 30, left: 60 };
+            var margin = { top: 10, right: 30, bottom: 30, left: 30 };
             console.log(this.lineData.y);
             //console.log(Math.max.apply(Math, this.lineData.y));
             d3.select(`#${this.lineprofileDivID}Svg`).remove();
