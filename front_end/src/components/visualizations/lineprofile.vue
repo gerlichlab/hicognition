@@ -14,13 +14,6 @@
 import * as d3 from "d3";
 import { min_array, max_array } from "../../functions";
 
-function range(start, end) {
-    var ans = [];
-    for (let i = start; i <= end; i++) {
-        ans.push(i);
-    }
-    return ans;
-}
 
 export default {
     name: "lineprofile",
