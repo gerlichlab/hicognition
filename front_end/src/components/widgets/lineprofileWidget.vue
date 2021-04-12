@@ -68,7 +68,7 @@
                 :lineprofileID="id"
                 :width="225"
                 :height="225"
-                :lineprofileData="widgetData['selected_data']"
+                :lineprofileData="widgetData"
                 :log="true"
             >
             </lineprofile>
@@ -149,7 +149,7 @@ export default {
                 binsize: this.selectedBinsize,
                 widgetDataRef: this.widgetDataRef,
                 isDefault: this.isDefault,
-                widgetType: "lineprofile"
+                widgetType: "Lineprofile"
             };
         },
         deleteWidget: function() {
@@ -240,8 +240,11 @@ export default {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
                 var widgetDataRef = widgetData["widgetDataRef"];
                 // deinfe store queries
+                var payload = {
+                    id: widgetDataRef
+                }
                 // get widget data from store
-                widgetDataValues = this.$store.getters["compare/getWidgetDatalineprofile"](widgetDataRef)
+                widgetDataValues = this.$store.getters["compare/getWidgetDataLineprofile"](payload)
             } else {
                 widgetDataValues = undefined;
             }
@@ -366,9 +369,7 @@ export default {
             this.widgetDataRef = selected_id;
             // get pileup iccf; update pileup data upon success
             var selected_data = await this.getlineprofileData(selected_id);
-            this.widgetData = {
-                selected_data
-            };
+            this.widgetData = selected_data;
         }
     }
 };
