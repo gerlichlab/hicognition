@@ -137,8 +137,8 @@
                 <md-card-actions>
                     <span
                         class="margin-right md-accent red"
-                        v-if="matrixTooLarge"
-                        >Specified matrix is too large!</span
+                        v-if="binsInvalid"
+                        >Specified sizes are not valid!</span
                     >
                     <md-button
                         class="md-dense md-raised md-primary md-icon-button md-alignment-horizontal-left"
@@ -183,7 +183,7 @@ export default {
         availableBinsizes: [],
         availableBedFiles: [],
         availableIntervals: [],
-        matrixTooLarge: false,
+        binsInvalid: false,
         form: {
             datasetID: null,
             binsizes: [],
@@ -287,7 +287,7 @@ export default {
         isTooLargeBigwig(){
             var numBins = max_array(this.form.windowsizes)/min_array(this.form.binsizes)
             // *1000 because small subset that needs to be displayed is a 1000 pixels large
-            return (numBins * 1000) > MAX_BIN
+            return (numBins * 1000) > MAX_BINS
         },
         isTooLargeCooler(){
             var numBins = max_array(this.form.windowsizes)/min_array(this.form.binsizes)
@@ -305,17 +305,22 @@ export default {
             }
         },
         saveDataset() {
-            // check whether binsize and windowsize selection makes sense
+            // check whether binsize and windowsize selection would produce huge matrix
             if (this.isCooler(this.form.datasetID) && this.isTooLargeCooler()){
-                    this.matrixTooLarge = true;
+                    this.binsInvalid = true;
                     return
             }
             if (!this.isCooler(this.form.datasetID) && this.isTooLargeBigwig()){
-                    this.matrixTooLarge = true;
+                    this.binsInvalid = true;
+                    return
+            }
+            // check whether largest binsize is smaller than smallest windowsizte
+            if ( (max_array(this.form.binsizes) > min_array(this.form.windowsizes)) ){
+                    this.binsInvalid = true;
                     return
             }
             // reset matrix too large if resubmission
-            this.matrixTooLarge = false;
+            this.binsInvalid = false;
             this.sending = true; // show progress bar
             // prepare data for form
             var prepared_data = this.prepare_form_data();
