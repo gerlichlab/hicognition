@@ -109,10 +109,10 @@ def get_interval_metadata(interval_id):
         return forbidden(
             f"Dataset associated with interval id {interval.id} is not owned by logged in user!"
         )
-    # get associated metadata entries sorted by id; id sorting is necessary for newer metadata to win in field names
+    # get associated metadata entries sorted by id in desecnding order; id sorting is necessary for newer metadata to win in field names
     metadata_entries = (
         interval.source_dataset
-        .bedFileMetadata.order_by(BedFileMetadata.id)
+        .bedFileMetadata.order_by(BedFileMetadata.id.desc())
         .all()
     )
     # check if list is empty
@@ -132,7 +132,9 @@ def get_interval_metadata(interval_id):
         ).iloc[bed_row_index, :]
         temp_frames.append(temp_frame)
     output_frame = pd.concat(temp_frames, axis=1)
-    return jsonify(output_frame.to_dict(orient="list"))
+    # this drops all occurences of a given column but the first, since ids are sorted by descending order, the newest one wins
+    output_frame_unique = output_frame.loc[:,~output_frame.columns.duplicated()]
+    return jsonify(output_frame_unique.to_dict(orient="list"))
 
 
 @api.route("/averageIntervalData/", methods=["GET"])
@@ -282,7 +284,7 @@ def get_stackup_metadata_small(stackup_id):
     # get associated metadata entries sorted by id; id sorting is necessary for newer metadata to win in field names
     metadata_entries = (
         bed_ds
-        .bedFileMetadata.order_by(BedFileMetadata.id)
+        .bedFileMetadata.order_by(BedFileMetadata.id.desc())
         .all()
     )
     # check if list is empty
@@ -302,7 +304,9 @@ def get_stackup_metadata_small(stackup_id):
         )
         temp_frames.append(temp_frame)
     output_frame_large = pd.concat(temp_frames, axis=1)
+    # this drops all occurences of a given column but the first, since ids are sorted by descending order, the newest one wins
+    output_frame_unique = output_frame_large.loc[:,~output_frame_large.columns.duplicated()]
     # subset by stackup index
     stackup_index = np.load(stackup.file_path_indices_small)
-    outframe = output_frame_large.iloc[stackup_index, :]
+    outframe = output_frame_unique.iloc[stackup_index, :]
     return jsonify(outframe.to_dict(orient="list"))

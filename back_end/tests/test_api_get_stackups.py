@@ -1,7 +1,6 @@
 import os
-import pdb
-import unittest
 import pandas as pd
+import unittest
 import numpy as np
 from test_helpers import LoginTestCase, TempDirTestCase
 
@@ -10,7 +9,7 @@ import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, IndividualIntervalData
+from app.models import Dataset, Intervals, IndividualIntervalData, BedFileMetadata
 
 
 class TestGetIndividualIntervalDatas(LoginTestCase):
@@ -574,7 +573,6 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-
     def test_correct_data_returned(self):
         """Correct data is returned from an owned individualIntervalData"""
         # authenticate
@@ -677,6 +675,394 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
         self.assertTrue(np.all(np.isclose(arr, response.json["data"])))
         self.assertEqual("float32", response.json["dtype"])
         self.assertTrue(np.all(np.isclose([1, 4], response.json["shape"])))
+
+
+class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
+    """Tests for /individualIntervalData/<stackup_id>/metadatasmall"""
+
+    def test_no_auth(self):
+        """No authentication provided, response should be 401"""
+        # protected route
+        response = self.client.get(
+            "/api/individualIntervalData/1/metadatasmall",
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_individualIntervalData_does_not_exist(self):
+        """Test 404 is returned if individualIntervalData does not exist."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # make request
+        response = self.client.get(
+            "/api/individualIntervalData/500/metadatasmall",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_bigwig_not_owned(self):
+        """Bigwig dataset underlying individualIntervalData is not owned"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bigwig",
+            user_id=5,
+        )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/2",
+            filetype="bedfile",
+            user_id=1,
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=2,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
+            binsize=10000,
+            file_path="testPath1",
+            file_path_small="testPath1_small",
+            dataset_id=1,
+            intervals_id=1,
+        )
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
+        db.session.commit()
+        # make request
+        response = self.client.get(
+            "/api/individualIntervalData/1/metadatasmall",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_intervals_not_owned(self):
+        """Intervals dataset underlying individualIntervalData is not owned"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bigwig",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/1",
+            filetype="bedfile",
+            user_id=5,
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=2,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
+            binsize=10000,
+            file_path="testPath1",
+            file_path_small="testPath1_small",
+            dataset_id=1,
+            intervals_id=1,
+        )
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
+        db.session.commit()
+        # make request for bigwig with forbidden interval
+        response = self.client.get(
+            "/api/individualIntervalData/1/metadatasmall",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_empty_response_no_metadata(self):
+        """Tests whether empty response is returned when there are no associated metadata"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bigwig",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bedfile",
+            user_id=1,
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=2,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
+            binsize=10000,
+            file_path="data_path_big",
+            file_path_small="test_path",
+            dataset_id=1,
+            intervals_id=1,
+        )
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
+        db.session.commit()
+        # make request
+        response = self.client.get(
+            "/api/individualIntervalData/1/metadatasmall",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.json, {})
+
+    def test_good_single_metadata_entry_is_returned_correctly(self):
+        """Tests whether single associated metadata entry to
+        small stackup file is returned correctly, meaning the
+        corresponding indices are returned."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers2 = self.get_token_header(token)
+        # generate mock datasets in temp-directory
+        metadata_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.csv")
+        metadata_df = pd.DataFrame(
+            {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
+        )
+        metadata_df.to_csv(metadata_file_path, index=False)
+        # generate mock index file for stackup susbet
+        indices = np.array([0, 2])
+        index_file = os.path.join(TempDirTestCase.TEMP_PATH, "indices.npy")
+        np.save(index_file, indices)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bedfile",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bigwig",
+            user_id=1,
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=1,
+            file_path="intervals_test_path",
+            windowsize=200000,
+        )
+        metadata1 = BedFileMetadata(
+            file_path=metadata_file_path,
+            metadata_fields='["id", "start"]',
+            dataset_id=1,
+        )
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
+            binsize=10000,
+            file_path="data_path_big",
+            file_path_small="test_path",
+            file_path_indices_small=index_file,
+            dataset_id=2,
+            intervals_id=1,
+        )
+        db.session.add_all(
+            [dataset1, dataset2, intervals1, metadata1, individualIntervalData]
+        )
+        db.session.commit()
+        # make apicall
+        response = self.client.get(
+            "/api/individualIntervalData/1/metadatasmall",
+            headers=token_headers2,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get_json(),
+            metadata_df.drop("end", axis="columns")
+            .iloc[[0, 2], :]
+            .to_dict(orient="list"),
+        )
+
+    def test_entries_with_no_fields_specified_are_not_returned(self):
+        """Tests whether associated metadata fiels with no field names
+        specified are not returned"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers2 = self.get_token_header(token)
+        # generate mock datasets in temp-directory
+        metadata_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.csv")
+        metadata_df = pd.DataFrame(
+            {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
+        )
+        metadata_df.to_csv(metadata_file_path, index=False)
+        metadata_file_path_2 = os.path.join(TempDirTestCase.TEMP_PATH, "test2.csv")
+        metadata_df_2 = pd.DataFrame({"end": [10] * 6})
+        metadata_df_2.to_csv(metadata_file_path_2, index=False)
+        # generate mock index file for stackup susbet
+        indices = np.array([0, 2])
+        index_file = os.path.join(TempDirTestCase.TEMP_PATH, "indices.npy")
+        np.save(index_file, indices)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bedfile",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bigwig",
+            user_id=1,
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=1,
+            file_path="intervals_test_path",
+            windowsize=200000,
+        )
+        metadata1 = BedFileMetadata(
+            file_path=metadata_file_path,
+            metadata_fields='["id", "start"]',
+            dataset_id=1,
+        )
+        metadata2 = BedFileMetadata(file_path=metadata_file_path_2, dataset_id=1)
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
+            binsize=10000,
+            file_path="data_path_big",
+            file_path_small="test_path",
+            file_path_indices_small=index_file,
+            dataset_id=2,
+            intervals_id=1,
+        )
+        db.session.add_all(
+            [
+                dataset1,
+                dataset2,
+                intervals1,
+                metadata1,
+                metadata2,
+                individualIntervalData,
+            ]
+        )
+        db.session.commit()
+        # make apicall
+        response = self.client.get(
+            "/api/individualIntervalData/1/metadatasmall",
+            headers=token_headers2,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get_json(),
+            metadata_df.drop("end", axis="columns")
+            .iloc[[0, 2], :]
+            .to_dict(orient="list"),
+        )
+
+    def test_metadata_entries_with_overlapping_fieldname_are_returned_correctly(self):
+        """Tests whether multiple associated metadata entries to
+        interval file with overlapping fieldnames returned the newest field (by larger id value)"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers2 = self.get_token_header(token)
+        # generate mock datasets in temp-directory
+        metadata_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.csv")
+        metadata_df = pd.DataFrame(
+            {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
+        )
+        metadata_df.to_csv(metadata_file_path, index=False)
+        metadata_file_path_2 = os.path.join(TempDirTestCase.TEMP_PATH, "test2.csv")
+        metadata_df_2 = pd.DataFrame({"end": [12] * 6})
+        metadata_df_2.to_csv(metadata_file_path_2, index=False)
+        # generate mock index file for stackup susbet
+        indices = np.array([0, 2])
+        index_file = os.path.join(TempDirTestCase.TEMP_PATH, "indices.npy")
+        np.save(index_file, indices)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bedfile",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bigwig",
+            user_id=1,
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=1,
+            file_path="intervals_test_path",
+            windowsize=200000,
+        )
+        metadata1 = BedFileMetadata(
+            file_path=metadata_file_path,
+            metadata_fields='["id", "start"]',
+            dataset_id=1,
+        )
+        metadata2 = BedFileMetadata(
+            id=2,
+            file_path=metadata_file_path,
+            metadata_fields='["id", "start", "end"]',
+            dataset_id=1,
+        )
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
+            binsize=10000,
+            file_path="data_path_big",
+            file_path_small="test_path",
+            file_path_indices_small=index_file,
+            dataset_id=2,
+            intervals_id=1,
+        )
+        db.session.add_all(
+            [
+                dataset1,
+                dataset2,
+                intervals1,
+                metadata1,
+                metadata2,
+                individualIntervalData,
+            ]
+        )
+        db.session.commit()
+        # make apicall
+        response = self.client.get(
+            "/api/individualIntervalData/1/metadatasmall",
+            headers=token_headers2,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get_json(),
+            metadata_df
+            .iloc[[0, 2], :]
+            .to_dict(orient="list"),
+        )
 
 
 if __name__ == "__main__":
