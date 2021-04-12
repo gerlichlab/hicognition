@@ -46,6 +46,7 @@
                                     name="binsizes"
                                     id="binsizes"
                                     v-model="form.binsizes"
+                                    :disabled="!binsizesAvailable"
                                     required
                                     multiple
                                 >
@@ -134,6 +135,11 @@
                 <md-progress-bar md-mode="indeterminate" v-if="sending" />
                 <!-- Buttons for submission and closing -->
                 <md-card-actions>
+                    <span
+                        class="margin-right md-accent red"
+                        v-if="matrixTooLarge"
+                        >Specified matrix is too large!</span
+                    >
                     <md-button
                         class="md-dense md-raised md-primary md-icon-button md-alignment-horizontal-left"
                         @click="fetchDatasets"
@@ -163,7 +169,9 @@
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
 import { apiMixin, formattingMixin } from "../../mixins";
-import { group_intervals_on_windowsize } from "../../functions";
+import { group_intervals_on_windowsize, min_array, max_array } from "../../functions";
+
+const MAX_BINS = 300000
 
 export default {
     name: "preprocessDatasetForm",
@@ -172,9 +180,10 @@ export default {
         availableDatasets: [],
         availableCoolers: [],
         availableBigwigs: [],
-        availableBinsizes: [500, 1000, 5000, 10000, 20000, 50000],
+        availableBinsizes: [],
         availableBedFiles: [],
         availableIntervals: [],
+        matrixTooLarge: false,
         form: {
             datasetID: null,
             binsizes: [],
@@ -199,6 +208,9 @@ export default {
         },
         intervalsAvailable: function() {
             return Object.keys(this.availableIntervals).length != 0;
+        },
+        binsizesAvailable: function() {
+            return this.availableBinsizes.length != 0;
         }
     },
     validations: {
@@ -272,6 +284,15 @@ export default {
                 };
             }
         },
+        isTooLargeBigwig(){
+            var numBins = max_array(this.form.windowsizes)/min_array(this.form.binsizes)
+            // *1000 because small subset that needs to be displayed is a 1000 pixels large
+            return (numBins * 1000) > MAX_BIN
+        },
+        isTooLargeCooler(){
+            var numBins = max_array(this.form.windowsizes)/min_array(this.form.binsizes)
+            return (numBins**2) > MAX_BINS
+        },
         clearForm() {
             this.$v.$reset();
             for (var key in this.form) {
@@ -284,6 +305,17 @@ export default {
             }
         },
         saveDataset() {
+            // check whether binsize and windowsize selection makes sense
+            if (this.isCooler(this.form.datasetID) && this.isTooLargeCooler()){
+                    this.matrixTooLarge = true;
+                    return
+            }
+            if (!this.isCooler(this.form.datasetID) && this.isTooLargeBigwig()){
+                    this.matrixTooLarge = true;
+                    return
+            }
+            // reset matrix too large if resubmission
+            this.matrixTooLarge = false;
             this.sending = true; // show progress bar
             // prepare data for form
             var prepared_data = this.prepare_form_data();
@@ -292,16 +324,26 @@ export default {
             for (var key in prepared_data) {
                 formData.append(key, prepared_data[key]);
             }
-            console.log(formData);
-            // API call including upload is made in the background
-            this.postData("preprocess/", formData);
-            //TODO: make conditional on promise
-            // show progress bar for 1.5 s
-            window.setTimeout(() => {
-                this.datasetSaved = true;
+            // API call 
+            this.postData("preprocess/", formData).then(response => {
+                if (response) {
+                    this.datasetSaved = true;
+                }
                 this.sending = false;
                 this.clearForm();
-            }, 1500);
+            });
+        },
+        isCooler(id) {
+            // checks wheter a dataset id in this.availableDAtasets is a cooler file
+            for (var element of this.availableDatasets) {
+                if (element.id == id) {
+                    if (element.filetype == "cooler") {
+                        return true;
+                    }
+                    return false;
+                }
+            }
+            return false;
         },
         prepare_form_data() {
             // prepare intervals
@@ -326,6 +368,18 @@ export default {
     watch: {
         "form.bedfileIDs": function() {
             this.fetchPileupregions();
+        },
+        "form.datasetID": async function(val) {
+            if (this.isCooler(val)) {
+                var response = await this.fetchData(
+                    `datasets/${val}/availableBinsizes/`
+                );
+                if (response.data) {
+                    this.availableBinsizes = response.data;
+                }
+            } else {
+                this.availableBinsizes = [500, 1000, 5000, 10000, 20000, 50000];
+            }
         }
     },
     created: function() {
@@ -335,10 +389,20 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+.margin-right {
+    margin-right: 10px;
+}
+
 .md-progress-bar {
     position: absolute;
     top: 0;
     right: 0;
     left: 0;
 }
+
+.red {
+    color: rgb(255, 23, 68);
+}
+
 </style>

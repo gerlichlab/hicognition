@@ -74,6 +74,7 @@ class Dataset(db.Model):
     public = db.Column(db.Boolean, default=False)
     filetype = db.Column(db.String(64), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    available_binsizes = db.Column(db.String(500))
     intervals = db.relationship("Intervals", backref="source_dataset", lazy="dynamic")
     averageIntervalData = db.relationship(
         "AverageIntervalData", backref="source_dataset", lazy="dynamic"

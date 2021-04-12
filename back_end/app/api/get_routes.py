@@ -82,6 +82,27 @@ def get_intervals_of_dataset(dataset_id):
     return jsonify([dfile.to_json() for dfile in all_files])
 
 
+# TODO: test
+@api.route("/datasets/<dataset_id>/availableBinsizes/", methods=["GET"])
+@auth.login_required
+def get_binsizes_of_dataset(dataset_id):
+    """Gets all available binsizes for a dataset id. Dataset needs to be a cooler."""
+    dataset = Dataset.query.get(dataset_id)
+    # check whether dataset exists
+    if dataset is None:
+        return not_found(f"Dataset with id '{dataset_id}' does not exist!")
+    # check whether user owns the dataset
+    if is_access_to_dataset_denied(dataset, g.current_user):
+        return forbidden(
+            f"Dataset with id '{dataset_id}' is not owned by logged in user!"
+        )
+    # check whether dataset is cooler
+    if dataset.filetype != "cooler":
+        return invalid(f"Dataset with id '{dataset_id}' is not a cooler file!")
+    # return availabel binsizes
+    return dataset.available_binsizes
+
+
 @api.route("/intervals/", methods=["GET"])
 @auth.login_required
 def get_intervals():
