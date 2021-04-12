@@ -92,6 +92,58 @@ class TestConvertBedToBedPE(TempDirTestCase):
         self.assertEqual([1, 3], result.iloc[:, -1].to_list())
 
 
+class TestCleanBed(TempDirTestCase):
+    """Tests cleaning a bed-file = stripping it
+    from unnecessary headers."""
+
+    def test_real_data_normal(self):
+        """Tests cleaning of bed file without"""
+        io_helpers.clean_bed(
+            "tests/testfiles/real_data_tricky_header_cleaned.bed",
+            os.path.join(
+                TempDirTestCase.TEMP_PATH, "real_data_tricky_header_cleaned.bed"
+            )
+        )
+        # load expected data
+        expected = pd.read_csv(
+            "tests/testfiles/real_data_tricky_header_cleaned.bed", sep="\t", header=None
+        )
+        # load result
+        result = pd.read_csv(
+            os.path.join(
+                TempDirTestCase.TEMP_PATH, "real_data_tricky_header_cleaned.bed"
+            ),
+            sep="\t",
+            header=None,
+        )
+        # compare
+        assert_frame_equal(expected, result)
+
+    def test_real_data_tricky_header(self):
+        """Tests cleaning of bed file with comments in header."""
+        io_helpers.clean_bed(
+            "tests/testfiles/real_data_tricky_header.bed",
+            os.path.join(
+                TempDirTestCase.TEMP_PATH, "real_data_tricky_header_cleaned.bed"
+            )
+        )
+        # load expected data
+        expected = pd.read_csv(
+            "tests/testfiles/real_data_tricky_header_cleaned.bed", sep="\t", header=None
+        )
+        # load result
+        result = pd.read_csv(
+            os.path.join(
+                TempDirTestCase.TEMP_PATH, "real_data_tricky_header_cleaned.bed"
+            ),
+            sep="\t",
+            header=None,
+        )
+        # compare
+        assert_frame_equal(expected, result)
+
+
+
 class TestSortBed(TempDirTestCase):
     """Tests sorting of bedfiles according to chromosomesizes
     and genomic position."""
