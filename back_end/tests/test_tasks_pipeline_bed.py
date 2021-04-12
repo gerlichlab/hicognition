@@ -38,24 +38,23 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
         db.session.commit()
 
     @patch("app.tasks.io_helpers.convert_bed_to_bedpe")
-    @patch("app.tasks.io_helpers.sort_bed")
+    @patch("app.tasks.io_helpers.clean_bed")
     @patch("app.pipeline_steps._set_task_progress")
     @patch("app.pipeline_steps.bed_preprocess_pipeline_step")
     def test_helper_calls_dispatched_correctly(
-        self, mock_bed_pipeline_step, mock_set_progress, mock_sort_bed, mock_convert_bed
+        self, mock_bed_pipeline_step, mock_set_progress, mock_clean_bed, mock_convert_bed
     ):
         """Tests whether the functions that execute the different pipeline steps are called
         correctly."""
         # launch task
         pipeline_bed(1)
         # check whether dataset file_path is now sorted file_path
-        self.assertEqual(self.dataset.file_path, "/test/path/test3_sorted.bed")
+        self.assertEqual(self.dataset.file_path, "/test/path/test3_cleaned.bed")
         # check whether sort_bed was called correctly
-        mock_sort_bed.assert_called_with(
+        mock_clean_bed.assert_called_with(
             *[
                 "/test/path/test3.bed",
-                "/test/path/test3_sorted.bed",
-                self.app.config["CHROM_SIZES"],
+                "/test/path/test3_cleaned.bed",
             ]
         )
         # check whether convert_bed_to_bedpe and bed_pipeline_step was called correctly
