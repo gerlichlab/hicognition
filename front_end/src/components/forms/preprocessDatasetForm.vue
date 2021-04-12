@@ -285,13 +285,25 @@ export default {
             }
         },
         isTooLargeBigwig(){
+            // checks whether preprocessing would produce file with too many bins for bigwig
             var numBins = max_array(this.form.windowsizes)/min_array(this.form.binsizes)
             // *1000 because small subset that needs to be displayed is a 1000 pixels large
             return (numBins * 1000) > MAX_BINS
         },
         isTooLargeCooler(){
+            // checks whether preprocessing would produce file with too many bins for cooler
             var numBins = max_array(this.form.windowsizes)/min_array(this.form.binsizes)
             return (numBins**2) > MAX_BINS
+        },
+        binsizesDivideWindowsizes(){
+            for (var binsize of this.form.binsizes){
+                for (var windowsize of this.form.windowsizes){
+                    if (windowsize % binsize != 0){
+                        return false
+                    }
+                }
+            }
+            return true
         },
         clearForm() {
             this.$v.$reset();
@@ -306,16 +318,11 @@ export default {
         },
         saveDataset() {
             // check whether binsize and windowsize selection would produce huge matrix
-            if (this.isCooler(this.form.datasetID) && this.isTooLargeCooler()){
+            if (this.isCooler(this.form.datasetID) && (this.isTooLargeCooler() || !this.binsizesDivideWindowsizes())){
                     this.binsInvalid = true;
                     return
             }
             if (!this.isCooler(this.form.datasetID) && this.isTooLargeBigwig()){
-                    this.binsInvalid = true;
-                    return
-            }
-            // check whether largest binsize is smaller than smallest windowsizte
-            if ( (max_array(this.form.binsizes) > min_array(this.form.windowsizes)) ){
                     this.binsInvalid = true;
                     return
             }

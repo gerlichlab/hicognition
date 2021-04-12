@@ -60,6 +60,10 @@ def perform_pileup(cooler_dataset, intervals, binsize, arms, pileup_type):
     file_path = intervals.source_dataset.file_path
     # get windowsize
     window_size = intervals.windowsize
+    # check whether windowsize is divisible by binsize
+    if window_size % int(binsize) != 0:
+        log.warn("      ########### Windowsize and binsize do not match! ##############")
+        return
     # load bedfile
     log.info("      Loading regions...")
     regions = pd.read_csv(file_path, sep="\t", header=None)
