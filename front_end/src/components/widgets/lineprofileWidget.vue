@@ -52,13 +52,6 @@
                         </md-select>
                     </md-field>
                 </div>
-                <div class="md-layout-item md-size-25">
-                    <div class="padding-top">
-                        <md-switch v-model="isDefault">{{
-                            lineprofileType
-                        }}</md-switch>
-                    </div>
-                </div>
                 <div class="md-layout-item md-size-10">
                     <div class="padding-top-large padding-right">
                         <md-button
@@ -71,12 +64,11 @@
                 </div>
             </div>
             <lineprofile
-                :lineprofileType="lineprofileType"
                 v-if="showData"
                 :lineprofileID="id"
                 :width="225"
                 :height="225"
-                :lineprofileData="widgetData[lineprofileType]"
+                :lineprofileData="widgetData['selected_data']"
                 :log="true"
             >
             </lineprofile>
@@ -117,14 +109,6 @@ export default {
         colIndex: Number
     },
     computed: {
-        //TODO: fix
-        lineprofileType: function() {
-            if (this.isDefault) {
-                return "normal";
-            } else {
-                return "problem";
-            }
-        },
         showData: function() {
             if (this.widgetData) {
                 return true;
@@ -256,16 +240,8 @@ export default {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
                 var widgetDataRef = widgetData["widgetDataRef"];
                 // deinfe store queries
-                var querynormal = {
-                    lineprofileType: "normal",
-                    id: widgetDataRef["normal"]
-                };
                 // get widget data from store
-                widgetDataValues = {
-                    normal: this.$store.getters["compare/getWidgetDatalineprofile"](
-                        querynormal
-                    )
-                };
+                widgetDataValues = this.$store.getters["compare/getWidgetDatalineprofile"](widgetDataRef)
             } else {
                 widgetDataValues = undefined;
             }
@@ -313,30 +289,22 @@ export default {
             }
             return this.initializeAtNewCollection(widgetData, collectionConfig);
         },
-        getlineprofileData: async function(lineprofileType, id) {
-            //TODO: Update
-            // checks whether pileup data is in store and fetches it if it is not
-            var queryObject = {
-                lineprofileType: lineprofileType,
-                id: id
-            };
-            if (this.$store.getters["compare/lineprofileExists"](queryObject)) {
-                return this.$store.getters["compare/getWidgetDatalineprofile"](
-                    queryObject
-                );
+        getlineprofileData: async function(id) {
+            // checks whether lineprofile data is in store and fetches it if it is not
+            if (this.$store.getters["compare/lineprofileExists"](id)) {
+                return this.$store.getters["compare/getWidgetDataLineprofile"](id);
             }
             // pileup does not exists in store, fetch it
             var response = await this.fetchData(
-                `individualIntervalData/${id}/`
+                `averageIntervalData/${id}/`
             );
-            var parsed = JSON.parse(response.data);
+            var parsed = response.data;
             // save it in store
             var mutationObject = {
-                lineprofileType: lineprofileType,
                 id: id,
                 data: parsed
             };
-            this.$store.commit("compare/setWidgetDatalineprofile", mutationObject);
+            this.$store.commit("compare/setWidgetDataLineprofile", mutationObject);
             // return it
             return parsed;
         }
@@ -375,10 +343,9 @@ export default {
             }
             // fetch binsizes for the current combination of dataset and intervals
             this.fetchData(
-                `individualIntervalData/?dataset_id=${this.selectedDataset}&intervals_id=${this.intervalID}`
+                `averageIntervalData/?dataset_id=${this.selectedDataset}&intervals_id=${this.intervalID}`
             ).then(response => {
-                // update binsizes to show and group iccf/obsExp data under one binsize
-                this.binsizes = group_lineprofiles(response.data);
+                this.binsizes = response.data;
             });
         },
         selectedBinsize: async function() {
@@ -386,16 +353,21 @@ export default {
                 return;
             }
             // fetch widget data
-            var normal_id = this.binsizes[this.selectedBinsize]["normal"];
-            //var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
+            //console.log(this.binsizes);
+            var selected_id;
+            for (var i = 0; i < this.binsizes.length; i++) {
+                if (this.selectedBinsize == this.binsizes[i].binsize){
+                //console.log(this.binsizes[i].id);
+                selected_id = this.binsizes[i].id
+                //console.log(this.binsizes[i].binsize);
+                }
+            }
             // store widget data ref
-            this.widgetDataRef = {
-                normal: normal_id
-            };
+            this.widgetDataRef = selected_id;
             // get pileup iccf; update pileup data upon success
-            var normal_data = await this.getlineprofileData("normal", normal_id);
+            var selected_data = await this.getlineprofileData(selected_id);
             this.widgetData = {
-                normal: normal_data
+                selected_data
             };
         }
     }
