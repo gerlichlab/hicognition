@@ -97,9 +97,32 @@ class TestCleanBed(TempDirTestCase):
     from unnecessary headers."""
 
     def test_real_data_normal(self):
-        """Tests cleaning of bed file without"""
+        """Tests cleaning of bed file without any header"""
         io_helpers.clean_bed(
             "tests/testfiles/real_data_tricky_header_cleaned.bed",
+            os.path.join(
+                TempDirTestCase.TEMP_PATH, "real_data_tricky_header_cleaned.bed"
+            ),
+        )
+        # load expected data
+        expected = pd.read_csv(
+            "tests/testfiles/real_data_tricky_header_cleaned.bed", sep="\t", header=None
+        )
+        # load result
+        result = pd.read_csv(
+            os.path.join(
+                TempDirTestCase.TEMP_PATH, "real_data_tricky_header_cleaned.bed"
+            ),
+            sep="\t",
+            header=None,
+        )
+        # compare
+        assert_frame_equal(expected, result)
+
+    def test_real_data_named_columns(self):
+        """Tests cleaning of bed file with header that contains named columns"""
+        io_helpers.clean_bed(
+            "tests/testfiles/real_data_tricky_header_named_columns.bed",
             os.path.join(
                 TempDirTestCase.TEMP_PATH, "real_data_tricky_header_cleaned.bed"
             ),
@@ -123,6 +146,53 @@ class TestCleanBed(TempDirTestCase):
         """Tests cleaning of bed file with comments in header."""
         io_helpers.clean_bed(
             "tests/testfiles/real_data_tricky_header.bed",
+            os.path.join(
+                TempDirTestCase.TEMP_PATH, "real_data_tricky_header_cleaned.bed"
+            ),
+        )
+        # load expected data
+        expected = pd.read_csv(
+            "tests/testfiles/real_data_tricky_header_cleaned.bed", sep="\t", header=None
+        )
+        # load result
+        result = pd.read_csv(
+            os.path.join(
+                TempDirTestCase.TEMP_PATH, "real_data_tricky_header_cleaned.bed"
+            ),
+            sep="\t",
+            header=None,
+        )
+        # compare
+        assert_frame_equal(expected, result)
+
+    def test_real_data_tricky_header_2(self):
+        """Tests cleaning of bed file with comments in header and also including track and browser lines"""
+        io_helpers.clean_bed(
+            "tests/testfiles/real_data_tricky_header_w_track_and_browser.bed",
+            os.path.join(
+                TempDirTestCase.TEMP_PATH, "real_data_tricky_header_cleaned.bed"
+            ),
+        )
+        # load expected data
+        expected = pd.read_csv(
+            "tests/testfiles/real_data_tricky_header_cleaned.bed", sep="\t", header=None
+        )
+        # load result
+        result = pd.read_csv(
+            os.path.join(
+                TempDirTestCase.TEMP_PATH, "real_data_tricky_header_cleaned.bed"
+            ),
+            sep="\t",
+            header=None,
+        )
+        # compare
+        assert_frame_equal(expected, result)
+
+    def test_real_data_tricky_header_2_w_named_columns(self):
+        """Tests cleaning of bed file with comments in header and also including track and browser lines
+        as well as named columns."""
+        io_helpers.clean_bed(
+            "tests/testfiles/real_data_tricky_header_named_columns_w_track_and_browser.bed",
             os.path.join(
                 TempDirTestCase.TEMP_PATH, "real_data_tricky_header_cleaned.bed"
             ),

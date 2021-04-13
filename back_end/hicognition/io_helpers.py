@@ -1,5 +1,6 @@
 """Helper functions to read and convert common
 data formats."""
+import re
 import pandas as pd
 import numpy as np
 import bioframe
@@ -55,15 +56,36 @@ def convert_bed_to_bedpe(input_file, target_file, halfwindowsize):
     final.to_csv(target_file, sep="\t", header=None, index=False)
 
 
-# TODO: write tests
 def clean_bed(input_file, output_file):
     """
     Loads in bedfile and removes headers.
     """
-    data = pd.read_csv(input_file, sep="\t", header=None, comment="#")
-    # write to file
+    # first, read in the file
+    with open(input_file, "r") as f:
+        content = f.read()
+        lines = content.split("\n")
+    # strip comment heade
+    skipped_rows = 0
+    for line in lines:
+        if (line[0] == "#") or (line[:5] == "track") or (line[:7] == "browser"):
+            skipped_rows += 1
+            continue
+        break
+    file_accumulator = []
+    # check whether next line contains column names -> first three columns will contain chrSomething number number
+    potential_header_line = lines[skipped_rows]
+    split_header = potential_header_line.split("\t")
+    if (re.match(r"chr+",split_header[0]) is not None) and (re.match(r"[1-9]+",split_header[1]) is not None) and (re.match(r"[1-9]+",split_header[2]) is not None):
+        # no header
+        pass
+    else:
+        skipped_rows += 1
+    stripped_lines = lines[skipped_rows:]
+    for line in stripped_lines:
+        file_accumulator.append(line.split("\t"))
+    # construct dataframe and save
+    data = pd.DataFrame(file_accumulator)
     data.to_csv(output_file, sep="\t", index=False, header=None)
-
 
 def sort_bed(input_file, output_file, chromsizes):
     """Sorts entries in bedfile according to chromsizes and
