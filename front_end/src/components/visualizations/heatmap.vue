@@ -130,6 +130,11 @@ export default {
     watch: {
         stackupData: function(){
             // rerender if stackupdata changes -> important for sorting
+            if (this.minHeatmapValue && this.maxHeatmapValue){
+            this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue)
+            }else{
+                this.createColorMap(this.minValue, this.maxValue)
+            }
             this.drawHeatmap()
         },
         colormap: function() {
