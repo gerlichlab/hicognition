@@ -5,7 +5,7 @@ from flask import g, current_app
 from .helpers import is_dataset_deletion_denied, remove_safely
 from . import api
 from .. import db
-from ..models import Intervals, Dataset, AverageIntervalData, IndividualIntervalData
+from ..models import BedFileMetadata, Intervals, Dataset, AverageIntervalData, IndividualIntervalData
 from .authentication import auth
 from .errors import forbidden, not_found
 
@@ -28,6 +28,7 @@ def delete_dataset(dataset_id):
     intervals = []
     averageIntervalData = []
     individualIntervalData = []
+    metadata = []
     if dataset.filetype == "cooler":
         averageIntervalData = AverageIntervalData.query.filter(
             AverageIntervalData.dataset_id == dataset_id
@@ -41,13 +42,14 @@ def delete_dataset(dataset_id):
         individualIntervalData = IndividualIntervalData.query.filter(
             IndividualIntervalData.intervals_id.in_([entry.id for entry in intervals])
         ).all()
+        metadata = BedFileMetadata.query.filter(BedFileMetadata.dataset_id == dataset_id).all()
     if dataset.filetype == "bigwig":
         individualIntervalData = IndividualIntervalData.query.filter(
             IndividualIntervalData.dataset_id == dataset_id
         ).all()
     # delete files and remove from database
     deletion_queue = (
-        [dataset] + intervals + averageIntervalData + individualIntervalData
+        [dataset] + intervals + averageIntervalData + individualIntervalData + metadata
     )
     for entry in deletion_queue:
         if isinstance(entry, IndividualIntervalData):
