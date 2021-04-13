@@ -14,7 +14,6 @@
 import * as d3 from "d3";
 import { min_array, max_array } from "../../functions";
 
-
 export default {
     name: "lineprofile",
     props: {
@@ -36,7 +35,7 @@ export default {
     },
     methods: {
         redrawLinechart: function() {
-            var margin = { top: 10, right: 30, bottom: 30, left: 30 };
+            var margin = { top: 10, right: 30, bottom: 20, left: 40 };
             d3.select(`#${this.lineprofileDivID}Svg`).remove();
             var line_svg = d3
                 .select(`#${this.lineprofileDivID}`)
@@ -50,7 +49,6 @@ export default {
                     "translate(" + margin.left + "," + margin.top + ")"
                 );
             // Add X axis
-
             let minX = 0;
             let maxX = this.lineData.length;
             let minY = min_array(this.lineData);
@@ -58,11 +56,11 @@ export default {
 
             var x = d3
                 .scaleLinear()
-                .domain([minX, maxX])
+                .domain([minX - 0.1 * (maxX - minX), maxX])
                 .range([0, this.width]);
             var y = d3
                 .scaleLinear()
-                .domain([minY - 0.05 * maxY, maxY])
+                .domain([minY - 0.05 * (maxY - minY), maxY])
                 .range([this.height, 0]);
             var line = d3
                 .line()
@@ -75,10 +73,10 @@ export default {
 
             let g = line_svg.append("g");
             var xAxis = d3.axisBottom().scale(x);
-            g.append("g")
-                .attr("class", "axis")
-                .attr("transform", "translate(0," + this.height + ")")
-                .call(xAxis);
+            // g.append("g")
+            //     .attr("class", "axis")
+            //     .attr("transform", "translate(0," + this.height + ")")
+            //     .call(xAxis);
 
             var yAxis = d3.axisLeft().scale(y);
             g.append("g")
