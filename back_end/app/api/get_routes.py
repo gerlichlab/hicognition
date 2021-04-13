@@ -279,7 +279,6 @@ def get_stackup_data(stackup_id):
     return jsonify(json_data)
 
 
-# TODO: test
 @api.route("/individualIntervalData/<stackup_id>/metadatasmall", methods=["GET"])
 @auth.login_required
 def get_stackup_metadata_small(stackup_id):
