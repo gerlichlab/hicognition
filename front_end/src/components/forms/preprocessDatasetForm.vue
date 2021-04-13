@@ -172,6 +172,7 @@ import { apiMixin, formattingMixin } from "../../mixins";
 import { group_intervals_on_windowsize, min_array, max_array } from "../../functions";
 
 const MAX_BINS = 300000
+const MAX_BINS_COOLER = 20000
 
 export default {
     name: "preprocessDatasetForm",
@@ -293,7 +294,7 @@ export default {
         isTooLargeCooler(){
             // checks whether preprocessing would produce file with too many bins for cooler
             var numBins = max_array(this.form.windowsizes)/min_array(this.form.binsizes)
-            return (numBins**2) > MAX_BINS
+            return (numBins**2) > MAX_BINS_COOLER
         },
         binsizesDivideWindowsizes(){
             for (var binsize of this.form.binsizes){
