@@ -24,12 +24,22 @@
                                     :disabled="!datasetsAvailable"
                                     required
                                 >
+                                 <md-optgroup label="Coolers" v-if="coolersAvailable">
                                     <md-option
-                                        v-for="item in availableDatasets"
+                                        v-for="item in availableCoolers"
                                         :value="item.id"
                                         :key="item.id"
                                         >{{ item.dataset_name }}</md-option
                                     >
+                                 </md-optgroup>
+                                <md-optgroup label="Bigwigs" v-if="bigwigsAvailable">
+                                    <md-option
+                                        v-for="item in availableBigwigs"
+                                        :value="item.id"
+                                        :key="item.id"
+                                        >{{ item.dataset_name }}</md-option
+                                    >
+                                 </md-optgroup>
                                 </md-select>
                                 <span
                                     class="md-error"

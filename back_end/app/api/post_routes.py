@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from . import api
 from .. import db
-from ..models import Dataset, BedFileMetadata
+from ..models import Dataset, BedFileMetadata, Task
 from .authentication import auth
 from .helpers import is_access_to_dataset_denied, parse_description_and_genotype
 from .format_checkers import FORMAT_CHECKERS
@@ -102,7 +102,6 @@ def add_dataset():
 def preprocess_dataset():
     """Starts preprocessing pipeline
     for datasets specified in the request body"""
-    # TODO: Reset processing state of job -> delete all tasks that are in progress when new submission
 
     def is_form_invalid():
         if not hasattr(request, "form"):
@@ -127,6 +126,9 @@ def preprocess_dataset():
         return not_found("Dataset does not exist!")
     if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g.current_user):
         return forbidden(f"Dataset is not owned by logged in user!")
+    # delete all jobs that are in database for this dataset
+    Task.query.filter_by(dataset=Dataset.query.get(dataset_id), complete=False).delete()
+    # dispatch appropriate pipelines
     if Dataset.query.get(dataset_id).filetype == "cooler":
         current_user.launch_task(
             "pipeline_pileup",
