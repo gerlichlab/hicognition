@@ -24,6 +24,13 @@ class TestIsBedFileCorrectlyFormatted(TempDirTestCase):
         )
         self.assertTrue(result)
 
+    def test_real_data_large(self):
+        """Tests good bedfile without comment header"""
+        result = format_checkers.is_bed_file_correctly_formatted(
+            "tests/testfiles/good_data_large.bed", self.chrom_names
+        )
+        self.assertTrue(result)
+
     def test_real_data_named_columns(self):
         result = format_checkers.is_bed_file_correctly_formatted(
             "tests/testfiles/real_data_tricky_header_named_columns.bed",

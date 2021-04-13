@@ -81,6 +81,9 @@ def clean_bed(input_file, output_file):
         skipped_rows += 1
     stripped_lines = lines[skipped_rows:]
     for line in stripped_lines:
+        if line == "":
+            # Skip empty last line
+            continue
         file_accumulator.append(line.split("\t"))
     # construct dataframe and save
     data = pd.DataFrame(file_accumulator)

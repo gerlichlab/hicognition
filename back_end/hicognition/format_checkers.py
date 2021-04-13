@@ -26,6 +26,8 @@ def is_bed_file_correctly_formatted(file_path, chromosome_names):
             skipped_rows += 1
         stripped_lines = lines[skipped_rows:]
         for line in stripped_lines:
+            if line == "":
+                continue
             if not _is_bed_row(line.split("\t")):
                 return False
             # check whether chromosome part of line is in accepted chromosomes

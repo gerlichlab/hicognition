@@ -72,7 +72,7 @@ def add_dataset():
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     fileObject.save(file_path)
     # check format -> this cannot be done in form checker since file needs to be available
-    chromosome_names = set(pd.read_csv(current_app.config["CHROM_SIZES"], header=None, sep="\t"))
+    chromosome_names = set(pd.read_csv(current_app.config["CHROM_SIZES"], header=None, sep="\t")[0])
     if not FORMAT_CHECKERS[request.form["filetype"]](file_path, chromosome_names):
         # remove entry from database
         db.session.delete(new_entry)
