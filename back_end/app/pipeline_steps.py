@@ -11,6 +11,7 @@ import cooler
 from hicognition import io_helpers
 import bbi
 from requests.exceptions import HTTPError
+from .api.helpers import remove_safely
 from rq import get_current_job
 from . import db
 from .models import (
@@ -193,6 +194,19 @@ def add_stackup_db(
     file_path, file_path_small, index_file, binsize, intervals_id, bigwig_dataset_id
 ):
     """Adds stackup to database"""
+    # check if old individual interval data exists and delete them
+    test_query = IndividualIntervalData.query.filter(
+        (IndividualIntervalData.binsize
+        == int(binsize)) & (IndividualIntervalData.intervals_id
+        == intervals_id) & (IndividualIntervalData.dataset_id
+        == bigwig_dataset_id)
+    ).all()
+    for entry in test_query:
+        remove_safely(entry.file_path)
+        remove_safely(entry.file_path_small)
+        remove_safely(entry.file_path_indices_small)
+        db.session.delete(entry)
+    # add new entry
     new_entry = IndividualIntervalData(
         binsize=int(binsize),
         name=os.path.basename(file_path),
@@ -208,6 +222,17 @@ def add_stackup_db(
 
 def add_line_db(file_path, binsize, intervals_id, bigwig_dataset_id):
     """Adds pileup region to database"""
+    # check if old average interval data exists and delete them
+    test_query = AverageIntervalData.query.filter(
+        (AverageIntervalData.binsize
+        == int(binsize)) & (AverageIntervalData.intervals_id
+        == intervals_id) & (AverageIntervalData.dataset_id
+        == bigwig_dataset_id)
+    ).all()
+    for entry in test_query:
+        remove_safely(entry.file_path)
+        db.session.delete(entry)
+    # add new entry
     new_entry = AverageIntervalData(
         binsize=int(binsize),
         name=os.path.basename(file_path),
@@ -221,7 +246,18 @@ def add_line_db(file_path, binsize, intervals_id, bigwig_dataset_id):
 
 
 def add_pileup_db(file_path, binsize, intervals_id, cooler_dataset_id, pileup_type):
-    """Adds pileup region to database"""
+    """Adds pileup region to database and deletes any old pileups with the same parameter combination."""
+    # check if old average interval data exists and delete them
+    test_query = AverageIntervalData.query.filter(
+        (AverageIntervalData.binsize
+        == int(binsize)) & (AverageIntervalData.intervals_id
+        == intervals_id) & (AverageIntervalData.dataset_id
+        == cooler_dataset_id) & (AverageIntervalData.value_type == pileup_type)
+    ).all()
+    for entry in test_query:
+        remove_safely(entry.file_path)
+        db.session.delete(entry)
+    # add new entry
     new_entry = AverageIntervalData(
         binsize=int(binsize),
         name=os.path.basename(file_path),

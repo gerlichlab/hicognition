@@ -1,13 +1,13 @@
 """DELETE API endpoints for hicognition"""
 import os
 from flask.json import jsonify
-from flask import g, current_app
+from flask import g
 from .helpers import is_dataset_deletion_denied, remove_safely
 from . import api
 from .. import db
 from ..models import BedFileMetadata, Intervals, Dataset, AverageIntervalData, IndividualIntervalData
 from .authentication import auth
-from .errors import forbidden, not_found
+from .errors import forbidden, invalid, not_found
 
 
 @api.route("/datasets/<dataset_id>/", methods=["DELETE"])
@@ -23,7 +23,7 @@ def delete_dataset(dataset_id):
         return forbidden(f"Dataset with id {dataset_id} is not owned by user!")
     # check if data set is processing
     if dataset.processing_state == "processing":
-        return forbidden(f"Dataset is in processing state!")
+        return invalid(f"Dataset is in processing state!")
     # cooler only needs deletion of derived averageIntervalData
     intervals = []
     averageIntervalData = []

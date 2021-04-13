@@ -223,7 +223,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             content_type="application/json",
         )
         # check response
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 400)
 
     @patch("app.api.helpers.current_app.logger.warning")
     def test_deletion_of_non_existent_file_goes_through(self, mock_log):
