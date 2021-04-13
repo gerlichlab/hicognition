@@ -6,6 +6,7 @@ import numpy as np
 import bioframe
 import logging
 from functools import partial
+from .format_checkers import _is_bed_row
 
 
 def convert_bed_to_bedpe(input_file, target_file, halfwindowsize):
@@ -75,10 +76,8 @@ def clean_bed(input_file, output_file):
     # check whether next line contains column names -> first three columns will contain chrSomething number number
     potential_header_line = lines[skipped_rows]
     split_header = potential_header_line.split("\t")
-    if (re.match(r"chr+",split_header[0]) is not None) and (re.match(r"[1-9]+",split_header[1]) is not None) and (re.match(r"[1-9]+",split_header[2]) is not None):
-        # no header
-        pass
-    else:
+    if not _is_bed_row(split_header):
+        # header present
         skipped_rows += 1
     stripped_lines = lines[skipped_rows:]
     for line in stripped_lines:
