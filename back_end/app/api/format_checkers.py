@@ -6,6 +6,7 @@ def is_bed_file_correctly_formatted(file_path):
     """Takes file and checks
     whether reading results in a correct bedfile."""
     try:
+        # TODO: use format checker from hicognition io
         bed_frame = pd.read_csv(file_path, sep="\t", header=None, comment="#")
     except:
         return False

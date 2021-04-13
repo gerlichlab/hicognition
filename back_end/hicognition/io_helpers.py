@@ -87,6 +87,7 @@ def clean_bed(input_file, output_file):
     data = pd.DataFrame(file_accumulator)
     data.to_csv(output_file, sep="\t", index=False, header=None)
 
+
 def sort_bed(input_file, output_file, chromsizes):
     """Sorts entries in bedfile according to chromsizes and
     writes it to a file. input_file, output_file and chromsizes
