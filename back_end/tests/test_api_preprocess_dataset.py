@@ -6,7 +6,7 @@ from test_helpers import LoginTestCase, TempDirTestCase
 # add path to import app
 sys.path.append("./")
 from app import db
-from app.models import Dataset
+from app.models import Dataset, Task
 
 
 class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
@@ -183,6 +183,62 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
             [10000, 20000, 40000],
             [1, 2, 3, 4],
         )
+
+    @patch("app.models.User.launch_task")
+    def test_tasks_deleted_after_relaunch(
+        self, mock_launch
+    ):
+        """Tests whether preprocessing api call deletes any remaining
+        jobs"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        token_headers = self.get_token_header(token)
+        # add datasets
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="cooler",
+            public=True,
+            user_id=2,
+        )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/2",
+            filetype="bedfile",
+            public=True,
+            user_id=2,
+        )
+        task1 = Task(
+            id = "test",
+            name = "test",
+            user_id=1,
+            dataset_id=1,
+            complete=False
+        )
+        task2 = Task(
+            id = "test2",
+            name = "test2",
+            user_id=1,
+            dataset_id=1,
+            complete=False
+        )
+        db.session.add_all([dataset1, dataset2, task1, task2])
+        db.session.commit()
+        data = {
+            "dataset_id": "1",
+            "interval_ids": "[1, 2, 3, 4]",
+            "binsizes": "[10000, 20000, 40000]",
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/preprocess/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 200)
+        #check correct tasks where deleted
+        self.assertEqual(len(Task.query.all()), 0)
 
 
 if __name__ == "__main__":
