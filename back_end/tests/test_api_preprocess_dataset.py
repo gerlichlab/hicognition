@@ -185,9 +185,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
 
     @patch("app.models.User.launch_task")
-    def test_tasks_deleted_after_relaunch(
-        self, mock_launch
-    ):
+    def test_tasks_deleted_after_relaunch(self, mock_launch):
         """Tests whether preprocessing api call deletes any remaining
         jobs"""
         # authenticate
@@ -208,20 +206,8 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
             public=True,
             user_id=2,
         )
-        task1 = Task(
-            id = "test",
-            name = "test",
-            user_id=1,
-            dataset_id=1,
-            complete=False
-        )
-        task2 = Task(
-            id = "test2",
-            name = "test2",
-            user_id=1,
-            dataset_id=1,
-            complete=False
-        )
+        task1 = Task(id="test", name="test", user_id=1, dataset_id=1, complete=False)
+        task2 = Task(id="test2", name="test2", user_id=1, dataset_id=1, complete=False)
         db.session.add_all([dataset1, dataset2, task1, task2])
         db.session.commit()
         data = {
@@ -237,7 +223,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
             content_type="multipart/form-data",
         )
         self.assertEqual(response.status_code, 200)
-        #check correct tasks where deleted
+        # check correct tasks where deleted
         self.assertEqual(len(Task.query.all()), 0)
 
 

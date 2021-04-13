@@ -91,7 +91,10 @@ def add_dataset():
         new_entry.processing_state = "processing"
     # if filetype is cooler, store available binsizes
     if data["filetype"] == "cooler":
-        binsizes = [ resolution.split("/")[2] for resolution in cooler.fileops.list_coolers(file_path)]
+        binsizes = [
+            resolution.split("/")[2]
+            for resolution in cooler.fileops.list_coolers(file_path)
+        ]
         new_entry.available_binsizes = json.dumps(binsizes)
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})

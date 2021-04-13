@@ -82,7 +82,6 @@ def get_intervals_of_dataset(dataset_id):
     return jsonify([dfile.to_json() for dfile in all_files])
 
 
-# TODO: test
 @api.route("/datasets/<dataset_id>/availableBinsizes/", methods=["GET"])
 @auth.login_required
 def get_binsizes_of_dataset(dataset_id):
@@ -100,7 +99,9 @@ def get_binsizes_of_dataset(dataset_id):
     if dataset.filetype != "cooler":
         return invalid(f"Dataset with id '{dataset_id}' is not a cooler file!")
     # return availabel binsizes
-    return dataset.available_binsizes
+    if dataset.available_binsizes is not None:
+        return dataset.available_binsizes
+    return jsonify([])
 
 
 @api.route("/intervals/", methods=["GET"])
@@ -124,18 +125,14 @@ def get_interval_metadata(interval_id):
     if interval is None:
         return not_found(f"Intervals with id {interval_id} do not exist!")
     # check if associated dataset is owned
-    if is_access_to_dataset_denied(
-        interval.source_dataset, g.current_user
-    ):
+    if is_access_to_dataset_denied(interval.source_dataset, g.current_user):
         return forbidden(
             f"Dataset associated with interval id {interval.id} is not owned by logged in user!"
         )
     # get associated metadata entries sorted by id in desecnding order; id sorting is necessary for newer metadata to win in field names
-    metadata_entries = (
-        interval.source_dataset
-        .bedFileMetadata.order_by(BedFileMetadata.id.desc())
-        .all()
-    )
+    metadata_entries = interval.source_dataset.bedFileMetadata.order_by(
+        BedFileMetadata.id.desc()
+    ).all()
     # check if list is empty
     if len(metadata_entries) == 0:
         return jsonify({})
@@ -154,7 +151,7 @@ def get_interval_metadata(interval_id):
         temp_frames.append(temp_frame)
     output_frame = pd.concat(temp_frames, axis=1)
     # this drops all occurences of a given column but the first, since ids are sorted by descending order, the newest one wins
-    output_frame_unique = output_frame.loc[:,~output_frame.columns.duplicated()]
+    output_frame_unique = output_frame.loc[:, ~output_frame.columns.duplicated()]
     return jsonify(output_frame_unique.to_dict(orient="list"))
 
 
@@ -275,7 +272,7 @@ def get_stackup_data(stackup_id):
     # dataset is owned, return the smalldata
     np_data = np.load(stackup.file_path_small)
     # sort by middle column
-    #np_data = np_data[np.argsort(np_data[:, int(np_data.shape[1] / 2)])[::-1]]
+    # np_data = np_data[np.argsort(np_data[:, int(np_data.shape[1] / 2)])[::-1]]
     # return array
     flat_data = np.nan_to_num(np_data, posinf=0).flatten().tolist()
     json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
@@ -303,11 +300,7 @@ def get_stackup_metadata_small(stackup_id):
             "Bigwig dataset or bed dataset is not owned by logged in user!"
         )
     # get associated metadata entries sorted by id; id sorting is necessary for newer metadata to win in field names
-    metadata_entries = (
-        bed_ds
-        .bedFileMetadata.order_by(BedFileMetadata.id.desc())
-        .all()
-    )
+    metadata_entries = bed_ds.bedFileMetadata.order_by(BedFileMetadata.id.desc()).all()
     # check if list is empty
     if len(metadata_entries) == 0:
         return jsonify({})
@@ -320,13 +313,13 @@ def get_stackup_metadata_small(stackup_id):
             # skip metadata if there are no fields defined
             continue
         columns_retained = json.loads(metadata_entry.metadata_fields)
-        temp_frame = pd.read_csv(
-            metadata_entry.file_path, usecols=columns_retained
-        )
+        temp_frame = pd.read_csv(metadata_entry.file_path, usecols=columns_retained)
         temp_frames.append(temp_frame)
     output_frame_large = pd.concat(temp_frames, axis=1)
     # this drops all occurences of a given column but the first, since ids are sorted by descending order, the newest one wins
-    output_frame_unique = output_frame_large.loc[:,~output_frame_large.columns.duplicated()]
+    output_frame_unique = output_frame_large.loc[
+        :, ~output_frame_large.columns.duplicated()
+    ]
     # subset by stackup index
     stackup_index = np.load(stackup.file_path_indices_small)
     outframe = output_frame_unique.iloc[stackup_index, :]

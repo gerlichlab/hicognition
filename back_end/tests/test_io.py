@@ -102,7 +102,7 @@ class TestCleanBed(TempDirTestCase):
             "tests/testfiles/real_data_tricky_header_cleaned.bed",
             os.path.join(
                 TempDirTestCase.TEMP_PATH, "real_data_tricky_header_cleaned.bed"
-            )
+            ),
         )
         # load expected data
         expected = pd.read_csv(
@@ -125,7 +125,7 @@ class TestCleanBed(TempDirTestCase):
             "tests/testfiles/real_data_tricky_header.bed",
             os.path.join(
                 TempDirTestCase.TEMP_PATH, "real_data_tricky_header_cleaned.bed"
-            )
+            ),
         )
         # load expected data
         expected = pd.read_csv(
@@ -141,7 +141,6 @@ class TestCleanBed(TempDirTestCase):
         )
         # compare
         assert_frame_equal(expected, result)
-
 
 
 class TestSortBed(TempDirTestCase):

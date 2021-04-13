@@ -62,7 +62,9 @@ def perform_pileup(cooler_dataset, intervals, binsize, arms, pileup_type):
     window_size = intervals.windowsize
     # check whether windowsize is divisible by binsize
     if window_size % int(binsize) != 0:
-        log.warn("      ########### Windowsize and binsize do not match! ##############")
+        log.warn(
+            "      ########### Windowsize and binsize do not match! ##############"
+        )
         return
     # load bedfile
     log.info("      Loading regions...")
@@ -154,7 +156,9 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
         file_path_small = file_path
         # store an index file
         indices = np.arange(len(stackup_regions))
-        index_file = os.path.join(current_app.config["UPLOAD_DIR"], file_uuid + "_indices.npy" )
+        index_file = os.path.join(
+            current_app.config["UPLOAD_DIR"], file_uuid + "_indices.npy"
+        )
         np.save(index_file, indices)
     else:
         # set random seed
@@ -172,11 +176,15 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
         # store file
         np.save(file_path_small, downsampled_array)
         # store indices
-        index_file = os.path.join(current_app.config["UPLOAD_DIR"], file_uuid + "_indices.npy" )
+        index_file = os.path.join(
+            current_app.config["UPLOAD_DIR"], file_uuid + "_indices.npy"
+        )
         np.save(index_file, sub_sample_index)
     # add to database
     log.info("      Adding database entry...")
-    add_stackup_db(file_path, file_path_small, index_file, binsize, intervals.id, bigwig_dataset.id)
+    add_stackup_db(
+        file_path, file_path_small, index_file, binsize, intervals.id, bigwig_dataset.id
+    )
     add_line_db(file_path_line, binsize, intervals.id, bigwig_dataset.id)
     log.info("      Success!")
 

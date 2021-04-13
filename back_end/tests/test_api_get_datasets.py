@@ -1,6 +1,7 @@
-from test_helpers import LoginTestCase
+import json
 import unittest
 from unittest.mock import patch
+from test_helpers import LoginTestCase
 
 # add path to import app
 import sys
@@ -386,6 +387,151 @@ class TestGetDatasets(LoginTestCase):
         # check response
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, [expected[1], expected[2]])
+
+
+class TestGetAvailableBinsizes(LoginTestCase):
+    """Tests get route for available binsizes of a cooler file."""
+
+    def test_no_auth(self):
+        """No authentication provided, response should be 401"""
+        # protected route
+        response = self.client.get(
+            "/api/datasets/3/availableBinsizes/", content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_id_does_not_exist(self):
+        """ID does not exist"""
+        token = self.add_and_authenticate("test", "asdf")
+        token_headers = self.get_token_header(token)
+        # get datasets
+        response = self.client.get(
+            "/api/datasets/100/availableBinsizes/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_unowned_dataset_not_returned(self):
+        """Dataset is not owned"""
+        token = self.add_and_authenticate("test", "asdf")
+        token2 = self.add_and_authenticate("test2", "fdsa")
+        token_headers = self.get_token_header(token)
+        # add datasets
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="cooler",
+            processing_state="finished",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/2",
+            filetype="cooler",
+            processing_state="finished",
+            user_id=2,
+        )
+        db.session.add_all([dataset1, dataset2])
+        db.session.commit()
+        # get datasets
+        response = self.client.get(
+            "/api/datasets/2/availableBinsizes/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_bedfile_not_returned(self):
+        """Bedfile does not have available binsizes and should not be returned."""
+        token = self.add_and_authenticate("test", "asdf")
+        token_headers = self.get_token_header(token)
+        # add datasets
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bedfile",
+            processing_state="finished",
+            user_id=1,
+        )
+        db.session.add(dataset1)
+        db.session.commit()
+        # get datasets
+        response = self.client.get(
+            "/api/datasets/1/availableBinsizes/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_bigwig_not_returned(self):
+        """Bigwig does not have available binsizes and should not be returned."""
+        token = self.add_and_authenticate("test", "asdf")
+        token_headers = self.get_token_header(token)
+        # add datasets
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bigwig",
+            processing_state="finished",
+            user_id=1,
+        )
+        db.session.add(dataset1)
+        db.session.commit()
+        # get datasets
+        response = self.client.get(
+            "/api/datasets/1/availableBinsizes/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_cooler_w_binsizes_set_returned_correctly(self):
+        """Test whether binsizes from cooler with binsizes set is returned correctly."""
+        token = self.add_and_authenticate("test", "asdf")
+        token_headers = self.get_token_header(token)
+        # add datasets
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="cooler",
+            processing_state="finished",
+            available_binsizes="[100, 200, 300]",
+            user_id=1,
+        )
+        db.session.add(dataset1)
+        db.session.commit()
+        # get datasets
+        response = self.client.get(
+            "/api/datasets/1/availableBinsizes/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.data), [100, 200, 300])
+
+    def test_cooler_wo_binsizes_set_returned_correctly(self):
+        """Test whether binsizes from cooler without binsizes is returned correctly"""
+        token = self.add_and_authenticate("test", "asdf")
+        token_headers = self.get_token_header(token)
+        # add datasets
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="cooler",
+            processing_state="finished",
+            user_id=1,
+        )
+        db.session.add(dataset1)
+        db.session.commit()
+        # get datasets
+        response = self.client.get(
+            "/api/datasets/1/availableBinsizes/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.data), [])
 
 
 class TestProcessingStateIsUpdated(LoginTestCase):

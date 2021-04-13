@@ -1059,9 +1059,7 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.get_json(),
-            metadata_df
-            .iloc[[0, 2], :]
-            .to_dict(orient="list"),
+            metadata_df.iloc[[0, 2], :].to_dict(orient="list"),
         )
 
 

@@ -42,7 +42,11 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps._set_task_progress")
     @patch("app.pipeline_steps.bed_preprocess_pipeline_step")
     def test_helper_calls_dispatched_correctly(
-        self, mock_bed_pipeline_step, mock_set_progress, mock_clean_bed, mock_convert_bed
+        self,
+        mock_bed_pipeline_step,
+        mock_set_progress,
+        mock_clean_bed,
+        mock_convert_bed,
     ):
         """Tests whether the functions that execute the different pipeline steps are called
         correctly."""
