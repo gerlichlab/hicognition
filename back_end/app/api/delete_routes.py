@@ -2,7 +2,7 @@
 import os
 from flask.json import jsonify
 from flask import g, current_app
-from .helpers import is_dataset_deletion_denied
+from .helpers import is_dataset_deletion_denied, remove_safely
 from . import api
 from .. import db
 from ..models import Intervals, Dataset, AverageIntervalData, IndividualIntervalData
@@ -50,19 +50,11 @@ def delete_dataset(dataset_id):
         [dataset] + intervals + averageIntervalData + individualIntervalData
     )
     for entry in deletion_queue:
-        try:
-            if hasattr(entry, "file_path_small"):
-                os.remove(entry.file_path_small)
-            if entry.file_path is not None:
-                os.remove(entry.file_path)
-            else:
-                current_app.logger.warning(
-                    f"Tried removing {entry}, but there was no filepath!"
-                )
-        except FileNotFoundError:
-            current_app.logger.warning(
-                f"Tried removing {entry.file_path}, but file does not exist!"
-            )
+        if isinstance(entry, IndividualIntervalData):
+            remove_safely(entry.file_path_small)
+            remove_safely(entry.file_path_indices_small)
+        if entry.file_path is not None:
+            remove_safely(entry.file_path)
         db.session.delete(
             entry
         )  # TODO: this leaves the session invalid for a short time for some reason -> fix!

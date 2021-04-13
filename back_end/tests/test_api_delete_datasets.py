@@ -225,7 +225,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         # check response
         self.assertEqual(response.status_code, 403)
 
-    @patch("app.api.delete_routes.current_app.logger.warning")
+    @patch("app.api.helpers.current_app.logger.warning")
     def test_deletion_of_non_existent_file_goes_through(self, mock_log):
         """tests whether deletion of datasets that are processing does not work."""
         token = self.add_and_authenticate("test", "asdf")
@@ -254,8 +254,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         datasets = Dataset.query.all()
         self.assertEqual(len(datasets), 0)
 
-    @patch("app.api.delete_routes.current_app.logger.warning")
-    def test_deletion_of_entry_without_filename_goes_through(self, mock_log):
+    def test_deletion_of_entry_without_filename_goes_through(self):
         """tests whether deletion of datasets that are processing does not work."""
         token = self.add_and_authenticate("test", "asdf")
         # create token_headers
@@ -274,10 +273,6 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             "/api/datasets/1/",
             headers=token_headers,
             content_type="application/json",
-        )
-        # check logger has been called
-        mock_log.assert_called_with(
-            f"Tried removing <Dataset None>, but there was no filepath!"
         )
         # check_dataset entry
         datasets = Dataset.query.all()

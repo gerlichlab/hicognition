@@ -1,5 +1,6 @@
 """Helper functions for api routes"""
-
+import os
+from flask import current_app
 
 def is_access_to_dataset_denied(dataset, current_user):
     """Checks whether access to a certian dataset is denied
@@ -29,3 +30,12 @@ def parse_description_and_genotype(form_data):
     else:
         description = form_data["description"]
     return description, genotype
+
+def remove_safely(file_path):
+    """Tries to remove a file and logs warning with app logger if this does not work."""
+    try:
+        os.remove(file_path)
+    except FileNotFoundError:
+        current_app.logger.warning(
+            f"Tried removing {file_path}, but file does not exist!"
+        )
