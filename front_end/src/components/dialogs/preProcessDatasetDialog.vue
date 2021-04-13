@@ -6,7 +6,7 @@
                     <div>
                         <span class="md-title">Information about preprocessing</span>
                     </div>
-                    <div v-for="item in preprocessDataSetText" :key=item>
+                    <div v-for="item, index in preprocessDataSetText" :key="index">
                         <span class="md-subheading">{{ item}}</span>
                     </div>
                 </md-tooltip>
