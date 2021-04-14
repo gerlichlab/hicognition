@@ -581,7 +581,6 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             "shape": [1, 4],
             "dtype": "float32",
         }
-
         test_data = np.array([[1.66, 2.2, 3.8, 4.5]])
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, test_data)
@@ -622,8 +621,118 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
             content_type="application/json",
         )
         expected = test_data_return
-        print(expected)
-        print(response.json)
+        self.assertEqual(response.json, expected)
+
+    def test_correct_data_returned_with_nan(self):
+        """Correct data is returned from an owned averageIntervalData
+        that contains nan"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # create datafile
+        test_data_return = {
+            "data": [1.66, 2.2, 3.8, 4.5, None],
+            "shape": [1, 5],
+            "dtype": "float32",
+        }
+
+        test_data = np.array([[1.66, 2.2, 3.8, 4.5, np.nan]])
+        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
+        np.save(data_path, test_data)
+
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="cooler",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/2",
+            filetype="bedfile",
+            user_id=1,
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=2,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        averageIntervalData = AverageIntervalData(
+            name="testAverageIntervalData1",
+            binsize=10000,
+            file_path=data_path,
+            dataset_id=1,
+            intervals_id=1,
+            value_type="ICCF",
+        )
+        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
+        db.session.commit()
+        # make request
+        response = self.client.get(
+            "/api/averageIntervalData/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        expected = test_data_return
+        self.assertEqual(response.json, expected)
+
+    def test_correct_data_returned_with_inf(self):
+        """Correct data is returned from an owned averageIntervalData
+        that contains nan"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # create datafile
+        test_data_return = {
+            "data": [1.66, 2.2, 3.8, 4.5, None],
+            "shape": [1, 5],
+            "dtype": "float32",
+        }
+
+        test_data = np.array([[1.66, 2.2, 3.8, 4.5, np.inf]])
+        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
+        np.save(data_path, test_data)
+
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="cooler",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/2",
+            filetype="bedfile",
+            user_id=1,
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=2,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        averageIntervalData = AverageIntervalData(
+            name="testAverageIntervalData1",
+            binsize=10000,
+            file_path=data_path,
+            dataset_id=1,
+            intervals_id=1,
+            value_type="ICCF",
+        )
+        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
+        db.session.commit()
+        # make request
+        response = self.client.get(
+            "/api/averageIntervalData/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        expected = test_data_return
         self.assertEqual(response.json, expected)
 
     def test_public_unowned_data_returned(self):

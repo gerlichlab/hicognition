@@ -245,10 +245,9 @@ def get_pileup_data(entry_id):
         )
     # Dataset is owned, return the data
     np_data = np.load(pileup.file_path)
-    # Without nan_to_num JSON has Infinity instead of null, zero behaves as null
-    flat_data = np.nan_to_num(np_data, posinf=0).flatten().tolist()
+    # Convert np.nan and np.isinf to None -> this is handeled by jsonify correctly
+    flat_data = [entry if not (np.isnan(entry) or np.isinf(entry)) else None for entry in np_data.flatten()]
     json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
-
     return jsonify(json_data)
 
 
@@ -271,8 +270,8 @@ def get_stackup_data(entry_id):
         )
     # dataset is owned, return the smalldata
     np_data = np.load(stackup.file_path_small)
-    # return array
-    flat_data = np.nan_to_num(np_data, posinf=0).flatten().tolist()
+    # Convert np.nan and np.isinf to None -> this is handeled by jsonify correctly
+    flat_data = [entry if not (np.isnan(entry) or np.isinf(entry)) else None for entry in np_data.flatten()]
     json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
     return jsonify(json_data)
 

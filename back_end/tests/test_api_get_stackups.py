@@ -580,10 +580,14 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
         # create token header
         token_headers = self.get_token_header(token)
         # create datafile
+        test_data_return = {
+            "data": [1.66, 2.2, 3.8, 4.5],
+            "shape": [1, 4],
+            "dtype": "float32",
+        }
         arr = np.array([[1.66, 2.2, 3.8, 4.5]])
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, arr)
-
         # add data
         dataset1 = Dataset(
             dataset_name="test1",
@@ -619,10 +623,111 @@ class TestGetIndividualIntervalDataData(LoginTestCase, TempDirTestCase):
             headers=token_headers,
             content_type="application/json",
         )
-        # compare by hand
-        self.assertTrue(np.all(np.isclose(arr, response.json["data"])))
-        self.assertEqual("float32", response.json["dtype"])
-        self.assertTrue(np.all(np.isclose([1, 4], response.json["shape"])))
+        self.assertEqual(response.json, test_data_return)
+
+    def test_correct_data_returned_w_nan(self):
+        """Correct data is returned from an owned individualIntervalData that contains nan"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # create datafile
+        test_data_return = {
+            "data": [1.66, 2.2, 3.8, 4.5, None],
+            "shape": [1, 5],
+            "dtype": "float32",
+        }
+        arr = np.array([[1.66, 2.2, 3.8, 4.5, np.nan]])
+        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
+        np.save(data_path, arr)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bigwig",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bedfile",
+            user_id=1,
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=2,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
+            binsize=10000,
+            file_path="data_path_big",
+            file_path_small=data_path,
+            dataset_id=1,
+            intervals_id=1,
+        )
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
+        db.session.commit()
+        # make request
+        response = self.client.get(
+            "/api/individualIntervalData/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.json, test_data_return)
+
+    def test_correct_data_returned_w_inf(self):
+        """Correct data is returned from an owned individualIntervalData that contains nan"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # create datafile
+        test_data_return = {
+            "data": [1.66, 2.2, 3.8, 4.5, None],
+            "shape": [1, 5],
+            "dtype": "float32",
+        }
+        arr = np.array([[1.66, 2.2, 3.8, 4.5, np.inf]])
+        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
+        np.save(data_path, arr)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bigwig",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bedfile",
+            user_id=1,
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=2,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
+            binsize=10000,
+            file_path="data_path_big",
+            file_path_small=data_path,
+            dataset_id=1,
+            intervals_id=1,
+        )
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData])
+        db.session.commit()
+        # make request
+        response = self.client.get(
+            "/api/individualIntervalData/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.json, test_data_return)
 
     def test_public_unowned_data_returned(self):
         """Test whether public, unowned data is returned correctly."""

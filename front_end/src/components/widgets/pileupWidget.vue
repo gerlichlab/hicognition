@@ -352,6 +352,7 @@ export default {
             }
             // pileup does not exists in store, fetch it
             var response = await this.fetchData(`averageIntervalData/${id}/`);
+            console.log(response);
             var parsed = response.data;
             //var parsed = JSON.parse(response.data);
             //console.log(JSON.parse(response.data));
