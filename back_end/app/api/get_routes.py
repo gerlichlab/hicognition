@@ -193,25 +193,25 @@ def get_averageIntervalData():
 @api.route("/individualIntervalData/", methods=["GET"])
 @auth.login_required
 def get_individualIntervalData():
-    """Gets all available individualIntervalData from a given bigwig file
+    """Gets all available individualIntervalData from a given dataset id file
     for the specified intervals_id. Only returns stackup object if
     user owns the bigwig dataset and intervals_id"""
     # unpack query string
-    bigwig_id = request.args.get("dataset_id")
+    genomic_feature_id = request.args.get("dataset_id")
     intervals_id = request.args.get("intervals_id")
-    if bigwig_id is None or intervals_id is None:
-        return invalid("Bigwig dataset or intervals were not specified!")
+    if genomic_feature_id is None or intervals_id is None:
+        return invalid("Genomic features or intervals were not specified!")
     # Check whether datasets exist
-    bigwig_ds = Dataset.query.get(bigwig_id)
+    genomic_feature_ds = Dataset.query.get(genomic_feature_id)
     intervals_ds = Intervals.query.get(intervals_id)
-    if (bigwig_ds is None) or (intervals_ds is None):
-        return not_found("Bigwig dataset or intervals dataset do not exist!")
+    if (genomic_feature_ds is None) or (intervals_ds is None):
+        return not_found("Genomic features or intervals dataset do not exist!")
     # Check whether datasets are owned
     if is_access_to_dataset_denied(
-        bigwig_ds, g.current_user
+        genomic_feature_ds, g.current_user
     ) or is_access_to_dataset_denied(intervals_ds.source_dataset, g.current_user):
         return forbidden(
-            "Bigwig dataset or intervals dataset is not owned by logged in user!"
+            "Genomic features or intervals dataset is not owned by logged in user!"
         )
     # return all intervals the are derived from the specified selection of bigwig and intervals
     all_files = (
@@ -219,7 +219,7 @@ def get_individualIntervalData():
             IndividualIntervalData.intervals_id == intervals_id
         )
         .join(Dataset)
-        .filter(Dataset.id == bigwig_id)
+        .filter(Dataset.id == genomic_feature_id)
         .all()
     )
     return jsonify([dfile.to_json() for dfile in all_files])
@@ -271,8 +271,6 @@ def get_stackup_data(entry_id):
         )
     # dataset is owned, return the smalldata
     np_data = np.load(stackup.file_path_small)
-    # sort by middle column
-    # np_data = np_data[np.argsort(np_data[:, int(np_data.shape[1] / 2)])[::-1]]
     # return array
     flat_data = np.nan_to_num(np_data, posinf=0).flatten().tolist()
     json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
