@@ -27,6 +27,8 @@ import { getScale } from "../../colorScales.js";
 import doubleRangeSlider from '../ui/doubleRangeSlider.vue';
 import {min_array, max_array} from "../../functions"
 
+const NAN_COLOR = [1, 1, 1] // white nan color
+
 export default {
     name: "stackup",
     components: {
@@ -45,6 +47,9 @@ export default {
     },
     computed: {
         stackupValues: function(){
+            /*
+                applies log if defined
+            */
             if (this.log){
                 return this.stackupData["data"].map((val) => {
                     if (val && (val > 0)){
@@ -76,7 +81,12 @@ export default {
             var bufferArray = [];
             for (var element of this.stackupValues){
                 // convert rgb values into range between 0 and 1
-                var colorValues = this.colorScale(element).split(/[\,,(,)]/).slice(1,4).map((element) => Number(element)/255);
+                var colorValues;
+                if (element){
+                    colorValues = this.colorScale(element).split(/[\,,(,)]/).slice(1,4).map((element) => Number(element)/255);
+                }else{
+                    colorValues = NAN_COLOR;
+                }
                 // add to bufferarray
                 for (var value of colorValues){
                     bufferArray.push(value)
