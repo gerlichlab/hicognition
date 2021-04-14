@@ -225,16 +225,16 @@ def get_individualIntervalData():
     return jsonify([dfile.to_json() for dfile in all_files])
 
 
-@api.route("/averageIntervalData/<pileup_id>/", methods=["GET"])
+@api.route("/averageIntervalData/<entry_id>/", methods=["GET"])
 @auth.login_required
-def get_pileup_data(pileup_id):
+def get_pileup_data(entry_id):
     """returns pileup data for the specified pileup id if it exists and
     the user is owner."""
     # Check for existence
-    if AverageIntervalData.query.get(pileup_id) is None:
+    if AverageIntervalData.query.get(entry_id) is None:
         return not_found("Pileup does not exist!")
     # Check whether datasets are owned
-    pileup = AverageIntervalData.query.get(pileup_id)
+    pileup = AverageIntervalData.query.get(entry_id)
     cooler_ds = pileup.source_dataset
     bed_ds = pileup.source_intervals.source_dataset
     if is_access_to_dataset_denied(
@@ -252,15 +252,15 @@ def get_pileup_data(pileup_id):
     return jsonify(json_data)
 
 
-@api.route("/individualIntervalData/<stackup_id>/", methods=["GET"])
+@api.route("/individualIntervalData/<entry_id>/", methods=["GET"])
 @auth.login_required
-def get_stackup_data(stackup_id):
+def get_stackup_data(entry_id):
     """returns stackup data for the specified stackup id if it exists and
     the user is owner."""
     # Check for existence
-    if IndividualIntervalData.query.get(stackup_id) is None:
+    if IndividualIntervalData.query.get(entry_id) is None:
         return not_found("Stackup does not exist!")
-    stackup = IndividualIntervalData.query.get(stackup_id)
+    stackup = IndividualIntervalData.query.get(entry_id)
     bigwig_ds = stackup.source_dataset
     bed_ds = stackup.source_intervals.source_dataset
     if is_access_to_dataset_denied(
@@ -279,17 +279,17 @@ def get_stackup_data(stackup_id):
     return jsonify(json_data)
 
 
-@api.route("/individualIntervalData/<stackup_id>/metadatasmall", methods=["GET"])
+@api.route("/individualIntervalData/<entry_id>/metadatasmall", methods=["GET"])
 @auth.login_required
-def get_stackup_metadata_small(stackup_id):
+def get_stackup_metadata_small(entry_id):
     """returns metadata for small stackup. This needs to be done since
     the subsampeled stackup contains only a subset of the original intervals.
     Note: stackups use the original dataset, so subsetting on interval indices
     is not required."""
     # Check for existence
-    if IndividualIntervalData.query.get(stackup_id) is None:
+    if IndividualIntervalData.query.get(entry_id) is None:
         return not_found("Stackup does not exist!")
-    stackup = IndividualIntervalData.query.get(stackup_id)
+    stackup = IndividualIntervalData.query.get(entry_id)
     bigwig_ds = stackup.source_dataset
     bed_ds = stackup.source_intervals.source_dataset
     if is_access_to_dataset_denied(
