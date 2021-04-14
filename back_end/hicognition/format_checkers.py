@@ -1,5 +1,4 @@
 """Collection of format checkers for biological data formats. """
-import pandas as pd
 import re
 import cooler
 
@@ -62,3 +61,9 @@ def is_mcooler(file_path, chromosome_names):
     except:
         return False
     return True
+
+FORMAT_CHECKERS = {
+    "bedfile": is_bed_file_correctly_formatted,
+    "cooler": is_mcooler,
+    "bigwig": lambda x, y: True,
+}

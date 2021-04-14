@@ -12,8 +12,8 @@ from .. import db
 from ..models import Dataset, BedFileMetadata, Task
 from .authentication import auth
 from .helpers import is_access_to_dataset_denied, parse_description_and_genotype
-from .format_checkers import FORMAT_CHECKERS
 from .errors import forbidden, invalid, not_found
+from hicognition.format_checkers import FORMAT_CHECKERS
 
 
 @api.route("/datasets/", methods=["POST"])
