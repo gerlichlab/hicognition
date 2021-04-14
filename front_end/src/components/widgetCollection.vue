@@ -1,6 +1,11 @@
 <template>
-    <div @dragenter="expandCollection" @dragleave="handleDragLeave">
-        <md-card :style="cssStyle" ref="collectionCard">
+    <div
+        @dragenter="expandCollection"
+        @dragleave="handleDragLeave"
+        :style="widgetContainerBorder"
+        class="md-elevation-5"
+    >
+        <md-card :style="cssStyle" ref="collectionCard" class="md-elevation-0">
             <md-card-header>
                 <div class="md-layout">
                     <div class="md-layout-item md-size-30 padding-right">
@@ -93,14 +98,45 @@
                     @widgetDrop="handleWidgetDrop"
                 />
             </md-card-content>
-            <md-card-actions>
-                <md-button
-                    @click="deleteCollection"
-                    class="md-primary md-raised"
-                    >Delete</md-button
-                >
-            </md-card-actions>
         </md-card>
+        <div class="column-button-container">
+            <div class="flex-container">
+                <div>
+                    <md-button
+                        class="md-icon-button md-accent md-mini"
+                        @click="increaseColumns"
+                    >
+                        <md-icon>add</md-icon>
+                    </md-button>
+                </div>
+                <div>
+                    <md-button
+                        class="md-icon-button md-accent md-mini"
+                        @click="decreaseColumns"
+                    >
+                        <md-icon>remove</md-icon>
+                    </md-button>
+                </div>
+            </div>
+        </div>
+        <div class="full-width md-layout md-gutter md-alignment-center-center">
+            <div class="md-layout-item md-size-25">
+                <md-button
+                    class="md-icon-button md-accent md-mini"
+                    @click="increaseRows"
+                >
+                    <md-icon>add</md-icon>
+                </md-button>
+            </div>
+            <div class="md-layout-item md-size-25">
+                <md-button
+                    class="md-icon-button md-accent md-mini"
+                    @click="decreaseRows"
+                >
+                    <md-icon>remove</md-icon>
+                </md-button>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -126,7 +162,7 @@ export default {
             marginSizeWidth: 4,
             marginSizeHeight: 10,
             paddingWidth: 11,
-            paddingHeight: 130,
+            paddingHeight: 80,
             baseWidth: 350,
             baseHeight: 350,
             maxRowNumber: 0,
@@ -135,6 +171,20 @@ export default {
         };
     },
     computed: {
+        widgetContainerBorder: function() {
+            return {
+                width: `${this.collectionWidth +
+                    this.paddingWidth +
+                    40 +
+                    (this.maxColumnNumber + 1) * this.marginSizeWidth}px`,
+                height: `${this.collectionHeight +
+                    this.paddingHeight +
+                    40 +
+                    (this.maxRowNumber + 1) * this.marginSizeHeight}px`,
+                background: "rgba(75, 75, 75, 0.1)",
+                "margin-right": "10px"
+            };
+        },
         windowSizesAvailable: function() {
             if (this.windowSizes.length != 0) {
                 return true;
@@ -208,11 +258,26 @@ export default {
                     (this.maxRowNumber + 1) * this.marginSizeHeight}px`,
                 width: `${this.collectionWidth +
                     this.paddingWidth +
-                    (this.maxColumnNumber + 1) * this.marginSizeWidth}px`
+                    (this.maxColumnNumber + 1) * this.marginSizeWidth}px`,
+                "margin-left": "0px",
+                "margin-right": "0px",
+                float: "left"
             };
         }
     },
     methods: {
+        increaseRows: function() {
+            this.maxRowNumber = this.maxRowNumber + 1;
+        },
+        decreaseRows: function() {
+            this.maxRowNumber = this.maxRowNumber - 1;
+        },
+        increaseColumns: function() {
+            this.maxColumnNumber = this.maxColumnNumber + 1;
+        },
+        decreaseColumns: function() {
+            this.maxColumnNumber = this.maxColumnNumber - 1;
+        },
         getNextID: function() {
             return Math.floor(Math.random() * 1000000000);
         },
@@ -363,6 +428,28 @@ export default {
 
 .padding-bottom {
     padding-bottom: 10px;
+}
+
+.flex-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    height: 100%;
+    align-items: center;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.center {
+    justify-content: center;
+}
+
+.column-button-container {
+    height:90%;
+    width:40px;
+    display:inline-block;
 }
 
 .inline {
