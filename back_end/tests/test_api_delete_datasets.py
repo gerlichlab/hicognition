@@ -8,7 +8,7 @@ import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, AverageIntervalData
+from app.models import Dataset, Intervals, AverageIntervalData, IndividualIntervalData
 
 
 class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
@@ -53,6 +53,14 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             filetype="bedfile",
             user_id=2,
         )
+        # create owned data_set bigwig
+        file_path_5 = self.create_empty_file_in_tempdir("test1.bw")
+        dataset5 = Dataset(
+            id=5,
+            file_path=file_path_5,
+            filetype="bigwig",
+            user_id=1,
+        )
         # create Intervals for owned data_set
         file_path_pr_1 = self.create_empty_file_in_tempdir("test1.bedpe")
         intervals_1 = Intervals(id=1, dataset_id=3, file_path=file_path_pr_1)
@@ -63,6 +71,14 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         file_path_pu_1 = self.create_empty_file_in_tempdir("test1.csv")
         averageIntervalData_1 = AverageIntervalData(
             id=1, file_path=file_path_pu_1, dataset_id=1, intervals_id=1
+        )
+        # create individualIntervalData for owned data_sets
+        file_path_pr_3 = self.create_empty_file_in_tempdir("test3.csv")
+        file_path_small_3 = self.create_empty_file_in_tempdir("test3_small.csv")
+        file_path_indices_3 = self.create_empty_file_in_tempdir("test3_indices.csv")
+        individualIntervalData_1 = IndividualIntervalData(
+            id=1, file_path=file_path_pr_3, dataset_id=5, intervals_id=1, file_path_small=file_path_small_3,
+            file_path_indices_small=file_path_indices_3
         )
         # create averageIntervalData for not owned data_set
         file_path_pu_2 = self.create_empty_file_in_tempdir("test2.csv")
@@ -76,10 +92,12 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
                 dataset2,
                 dataset3,
                 dataset4,
+                dataset5,
                 intervals_1,
                 intervals_2,
                 averageIntervalData_1,
                 averageIntervalData_2,
+                individualIntervalData_1
             ]
         )
         db.session.commit()
@@ -107,7 +125,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         # try deletion of dataset that is not owned, current user is id 1 and dataset id2 is owned
         # by user id 2
         response = self.client.delete(
-            "/api/datasets/5/",
+            "/api/datasets/500/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -146,13 +164,17 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 200)
         # check database state
         dataset_ids = set(entry.id for entry in Dataset.query.all())
-        self.assertEqual(dataset_ids, {2, 3, 4})
+        self.assertEqual(dataset_ids, {2, 3, 4, 5})
         intervals_ids = set(entry.id for entry in Intervals.query.all())
         self.assertEqual(intervals_ids, {1, 2})
         averageIntervalData_ids = set(
             entry.id for entry in AverageIntervalData.query.all()
         )
         self.assertEqual(averageIntervalData_ids, {2})
+        individualIntervalData_ids = set(
+            entry.id for entry in IndividualIntervalData.query.all()
+        )
+        self.assertEqual(individualIntervalData_ids, {1})
         # check temp_idr state
         files_tempdir = set(os.listdir(TempDirTestCase.TEMP_PATH))
         expected = {
@@ -162,6 +184,10 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             "test1.bedpe",
             "test2.bedpe",
             "test2.csv",
+            "test3.csv",
+            "test1.bw",
+            "test3_small.csv",
+            "test3_indices.csv"
         }
         self.assertEqual(files_tempdir, expected)
 
@@ -182,13 +208,17 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 200)
         # check database state
         dataset_ids = set(entry.id for entry in Dataset.query.all())
-        self.assertEqual(dataset_ids, {1, 2, 4})
+        self.assertEqual(dataset_ids, {1, 2, 4, 5})
         intervals_ids = set(entry.id for entry in Intervals.query.all())
         self.assertEqual(intervals_ids, {2})
         averageIntervalData_ids = set(
             entry.id for entry in AverageIntervalData.query.all()
         )
         self.assertEqual(averageIntervalData_ids, {2})
+        individualIntervalData_ids = set(
+            entry.id for entry in IndividualIntervalData.query.all()
+        )
+        self.assertEqual(individualIntervalData_ids, set())
         # check temp_idr state
         files_tempdir = set(os.listdir(TempDirTestCase.TEMP_PATH))
         expected = {
@@ -197,6 +227,49 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             "test2.bed",
             "test2.bedpe",
             "test2.csv",
+            "test1.bw"
+        }
+        self.assertEqual(files_tempdir, expected)
+
+    def test_delete_owned_bigwig_dataset(self):
+        """test delete owned dataset."""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        # add datasets
+        self.add_test_datasets()
+        # delete data set
+        response = self.client.delete(
+            "/api/datasets/5/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        # check database state
+        dataset_ids = set(entry.id for entry in Dataset.query.all())
+        self.assertEqual(dataset_ids, {1, 2,3, 4})
+        intervals_ids = set(entry.id for entry in Intervals.query.all())
+        self.assertEqual(intervals_ids, {1, 2})
+        averageIntervalData_ids = set(
+            entry.id for entry in AverageIntervalData.query.all()
+        )
+        self.assertEqual(averageIntervalData_ids, {1, 2})
+        individualIntervalData_ids = set(
+            entry.id for entry in IndividualIntervalData.query.all()
+        )
+        self.assertEqual(individualIntervalData_ids, set())
+        # check temp_idr state
+        files_tempdir = set(os.listdir(TempDirTestCase.TEMP_PATH))
+        expected = {
+            "test1.mcool",
+            "test1.csv",
+            "test2.mcool",
+            "test1.bed",
+            "test2.bed",
+            "test1.bedpe",
+            "test2.bedpe",
+            "test2.csv"
         }
         self.assertEqual(files_tempdir, expected)
 

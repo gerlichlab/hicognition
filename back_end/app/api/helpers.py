@@ -35,7 +35,7 @@ def remove_safely(file_path):
     """Tries to remove a file and logs warning with app logger if this does not work."""
     try:
         os.remove(file_path)
-    except FileNotFoundError:
+    except BaseException:
         current_app.logger.warning(
             f"Tried removing {file_path}, but file does not exist!"
         )
