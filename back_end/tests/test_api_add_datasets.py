@@ -1,6 +1,7 @@
 import sys
 import os
 import io
+import json
 import unittest
 from unittest.mock import patch
 from test_helpers import LoginTestCase, TempDirTestCase
@@ -231,6 +232,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             dataset.file_path,
         ]
         self.assertEqual(expected, actual)
+        # check whether binsizes have been added correctly -> test cooler contains single resolution with size 5 * 10**6
+        self.assertEqual(json.loads(dataset.available_binsizes), ["5000000"])
 
     @patch("app.models.User.launch_task")
     def test_dataset_added_correctly_bed(self, mock_launch):
