@@ -7,36 +7,24 @@
                 class="md-elevation-1 bg"
             >
                 <div
-                    class="md-layout md-gutter md-alignment-bottom-center fill-upper-height"
+                    class="md-layout md-gutter md-alignment-bottom-center fill-half-height"
                 >
-                    <div
-                        class="md-layout-item align-text-center"
-                    >
+                    <div class="md-layout-item md-size-90 align-text-center">
                         <span class="md-display-1">Select a widget type</span>
                     </div>
-                    <md-speed-dial md-direction="bottom" class="center">
-                        <md-speed-dial-target>
-                            <md-icon>add</md-icon>
-                        </md-speed-dial-target>
-
-                        <md-speed-dial-content>
-                            <md-button
-                                @click="setPileup"
-                                class="md-raised md-accent"
-                                >Pileup</md-button
-                            >
-                            <md-button
-                                class="md-raised md-accent"
-                                @click="setStackup"
-                                >Stackup</md-button
-                            >
-                            <md-button
-                                class="md-raised md-accent"
-                                @click="setLineprofile"
-                                >Lineplot</md-button
-                            >
-                        </md-speed-dial-content>
-                    </md-speed-dial>
+                </div>
+                <div
+                    class="md-layout md-gutter md-alignment-top-center fill-half-height"
+                >
+                    <md-button @click="setPileup" class="md-raised md-accent"
+                        >Pileup</md-button
+                    >
+                    <md-button class="md-raised md-accent" @click="setStackup"
+                        >Stackup</md-button
+                    >
+                    <md-button class="md-raised md-accent" @click="setLineprofile"
+                        >Lineprofile</md-button
+                    >
                 </div>
             </div>
             <stackupWidget
@@ -199,37 +187,7 @@ export default {
     text-align: center;
 }
 
-.fill-width {
-    width: 100%;
-}
-
-.fill-quarter-height {
-    height: 25%;
-}
-
-.fill-upper-height {
-    height: 35%;
-}
-
-
-.fill-height {
-    height: 100%;
-}
-
-.md-speed-dial-content {
-    height: 200px;
-}
-
-.center {
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -12%);
-}
-
-.md-speed-dialt {
-    height: auto;
+.fill-half-height {
+    height: 50%;
 }
 </style>
