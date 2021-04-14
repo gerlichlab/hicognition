@@ -131,7 +131,8 @@ export default {
         fileTypeMapping: {
             bed: "bedfile",
             mcool: "cooler",
-            bw: "bigwig"
+            bw: "bigwig",
+            bigwig: "bigwig"
         },
         form: {
             datasetName: null,
@@ -164,7 +165,7 @@ export default {
     computed: {
         selectedFileType: function() {
             if (this.fileEnding) {
-                return this.fileTypeMapping[this.fileEnding];
+                return this.fileTypeMapping[this.fileEnding.toLowerCase()];
             }
             return undefined;
         },

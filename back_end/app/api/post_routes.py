@@ -34,10 +34,10 @@ def add_dataset():
             return True
         # check filename
         fileEnding = request.files["file"].filename.split(".")[-1]
-        correctFileEndings = {"bedfile": "bed", "cooler": "mcool", "bigwig": "bw"}
+        correctFileEndings = {"bedfile": ["bed"], "cooler": ["mcool"], "bigwig": ["bw", "bigwig"]}
         if request.form["filetype"] not in correctFileEndings:
             return True
-        if correctFileEndings[request.form["filetype"]] != fileEnding:
+        if fileEnding.lower() not in correctFileEndings[request.form["filetype"]]:
             return True
         return False
 

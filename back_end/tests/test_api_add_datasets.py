@@ -73,6 +73,116 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         self.assertEqual(expected_file, actual_file)
 
     @patch("app.models.User.launch_task")
+    def test_dataset_added_correctly_bigwig_bw_ending(self, mock_launch):
+        """Tests whether a bigwig dataset is added
+        correctly to the Dataset table following
+        a post request."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "datasetName": "test",
+            "description": "test-description",
+            "genotype": "WT",
+            "filetype": "bigwig",
+            "file": (open("tests/testfiles/test.bw", "rb"), "test.bw"),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether dataset has been added to database
+        self.assertEqual(len(Dataset.query.all()), 1)
+        dataset = Dataset.query.first()
+        expected = [
+            1,
+            "test",
+            "test-description",
+            "WT",
+            "bigwig",
+            1,
+            TempDirTestCase.TEMP_PATH + f"{dataset.id}_test.bw",
+        ]
+        actual = [
+            dataset.id,
+            dataset.dataset_name,
+            dataset.description,
+            dataset.genotype,
+            dataset.filetype,
+            dataset.user_id,
+            dataset.file_path,
+        ]
+        self.assertEqual(expected, actual)
+        # test whether uploaded file exists
+        self.assertTrue(os.path.exists(dataset.file_path))
+        # test whether uploaded file is equal to expected file
+        with open("tests/testfiles/test.bw", "rb") as expected_file, open(dataset.file_path, "rb") as actual_file:
+            self.assertEqual(expected_file.read(), actual_file.read())
+
+    @patch("app.models.User.launch_task")
+    def test_dataset_added_correctly_bigwig_bigwig_ending(self, mock_launch):
+        """Tests whether a bigwig dataset is added
+        correctly to the Dataset table following
+        a post request."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "datasetName": "test",
+            "description": "test-description",
+            "genotype": "WT",
+            "filetype": "bigwig",
+            "file": (open("tests/testfiles/test.bigwig", "rb"), "test.bigwig"),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether dataset has been added to database
+        self.assertEqual(len(Dataset.query.all()), 1)
+        dataset = Dataset.query.first()
+        expected = [
+            1,
+            "test",
+            "test-description",
+            "WT",
+            "bigwig",
+            1,
+            TempDirTestCase.TEMP_PATH + f"{dataset.id}_test.bigwig",
+        ]
+        actual = [
+            dataset.id,
+            dataset.dataset_name,
+            dataset.description,
+            dataset.genotype,
+            dataset.filetype,
+            dataset.user_id,
+            dataset.file_path,
+        ]
+        self.assertEqual(expected, actual)
+        # test whether uploaded file exists
+        self.assertTrue(os.path.exists(dataset.file_path))
+        # test whether uploaded file is equal to expected file
+        with open("tests/testfiles/test.bigwig", "rb") as expected_file, open(dataset.file_path, "rb") as actual_file:
+            self.assertEqual(expected_file.read(), actual_file.read())
+
+    @patch("app.models.User.launch_task")
     def test_dataset_added_correctly_cooler_wo_description_and_genotype(
         self, mock_launch
     ):
@@ -175,8 +285,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         self.assertTrue(os.path.exists(dataset.file_path))
         # test whether uploaded file is equal to expected file
         expected_file = b"abcdef"
-        actual_file = open(dataset.file_path, "rb").read()
-        self.assertEqual(expected_file, actual_file)
+        with open(dataset.file_path, "rb") as actual_file:
+            self.assertEqual(expected_file, actual_file.read())
 
     @patch("app.models.User.launch_task")
     def test_incorrect_filetype_is_rejected(self, mock_launch):
