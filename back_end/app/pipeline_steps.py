@@ -10,7 +10,6 @@ from ngs import HiCTools as HT
 import cooler
 from hicognition import io_helpers
 import bbi
-from requests.exceptions import HTTPError
 from .api.helpers import remove_safely
 from rq import get_current_job
 from . import db
