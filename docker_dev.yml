@@ -16,12 +16,8 @@ services:
     hicognition:
         container_name: flask-dev
         volumes:  
-            - ${HICOGNITION_DIR}:/code # quick and dirty mount of the git repo
-            # TODO fix this, this is horrible
-            # #HICOGNITION_DIR=./workdir/hicognition_dir -> use for path of DB
+            - ${HICOGNITION_DIR}:/code
         environment:
-            - UPLOAD_ENABLED=true # TODO: I think this can be removed
-            - PUBLIC_UPLOAD_ENABLED=true # TODO: I think this can be removed
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
             - REDIS_URL=${REDIS_URL}
@@ -34,7 +30,6 @@ services:
         build:
             context: "./back_end"
         image: flask:test2
-            # TODO Host this on Dockerhub
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
@@ -55,12 +50,8 @@ services:
     redis-worker:
         container_name: redis-worker
         volumes:  
-            - ${HICOGNITION_DIR}:/code # quick and dirty mount of the git repo
-            # TODO fix this, this is horrible
-            # #HICOGNITION_DIR=./workdir/hicognition_dir -> use for path of DB
+            - ${HICOGNITION_DIR}:/code
         environment:
-            - UPLOAD_ENABLED=true # TODO: I think this can be removed
-            - PUBLIC_UPLOAD_ENABLED=true # TODO: I think this can be removed
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
             - REDIS_URL=${REDIS_URL}
@@ -72,7 +63,6 @@ services:
         build:
             context: "./back_end"
         image: flask:test2
-            # TODO Host this on Dockerhub
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:

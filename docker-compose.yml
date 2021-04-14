@@ -5,9 +5,7 @@ services:
     hicognition:
         container_name: flask-server
         volumes:  
-            - ${HICOGNITION_DIR}:/code # quick and dirty mount of the git repo
-            # TODO fix this, this is horrible
-            # #HICOGNITION_DIR=./workdir/hicognition_dir -> use for path of DB
+            - ${HICOGNITION_DIR}:/code
         environment:
             - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
@@ -21,7 +19,6 @@ services:
         build:
             context: "./back_end"
         image: flask:test2
-            # TODO Host this on Dockerhub
         entrypoint: "/bin/bash"
         command: -c "source activate flask && cd /code && flask db upgrade && flask run --host=0.0.0.0"
         networks:
@@ -69,9 +66,7 @@ services:
     redis-worker:
         container_name: redis-worker
         volumes:  
-            - ${HICOGNITION_DIR}:/code # quick and dirty mount of the git repo
-            # TODO fix this, this is horrible
-            # #HICOGNITION_DIR=./workdir/hicognition_dir -> use for path of DB
+            - ${HICOGNITION_DIR}:/code
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
@@ -84,7 +79,6 @@ services:
         build:
             context: "./back_end"
         image: flask:test2
-            # TODO Host this on Dockerhub
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
