@@ -44,6 +44,9 @@ def delete_dataset(dataset_id):
         ).all()
         metadata = BedFileMetadata.query.filter(BedFileMetadata.dataset_id == dataset_id).all()
     if dataset.filetype == "bigwig":
+        averageIntervalData = AverageIntervalData.query.filter(
+            AverageIntervalData.dataset_id == dataset_id
+        ).all()
         individualIntervalData = IndividualIntervalData.query.filter(
             IndividualIntervalData.dataset_id == dataset_id
         ).all()

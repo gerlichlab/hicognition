@@ -67,7 +67,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         # create Intervals for not owned data_set
         file_path_pr_2 = self.create_empty_file_in_tempdir("test2.bedpe")
         intervals_2 = Intervals(id=2, dataset_id=4, file_path=file_path_pr_2)
-        # create averageIntervalData for owned data_sets
+        # create averageIntervalData for owned data_set cooler
         file_path_pu_1 = self.create_empty_file_in_tempdir("test1.csv")
         averageIntervalData_1 = AverageIntervalData(
             id=1, file_path=file_path_pu_1, dataset_id=1, intervals_id=1
@@ -85,6 +85,11 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         averageIntervalData_2 = AverageIntervalData(
             id=2, file_path=file_path_pu_2, dataset_id=2, intervals_id=2
         )
+        # create averageIntervalData for owned data_set bigwig
+        file_path_pu_3 = self.create_empty_file_in_tempdir("test5.csv")
+        averageIntervalData_3 = AverageIntervalData(
+            id=3, file_path=file_path_pu_3, dataset_id=5, intervals_id=1
+        )
         # add to database
         db.session.add_all(
             [
@@ -97,6 +102,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
                 intervals_2,
                 averageIntervalData_1,
                 averageIntervalData_2,
+                averageIntervalData_3,
                 individualIntervalData_1
             ]
         )
@@ -170,7 +176,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         averageIntervalData_ids = set(
             entry.id for entry in AverageIntervalData.query.all()
         )
-        self.assertEqual(averageIntervalData_ids, {2})
+        self.assertEqual(averageIntervalData_ids, {2, 3})
         individualIntervalData_ids = set(
             entry.id for entry in IndividualIntervalData.query.all()
         )
@@ -185,6 +191,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             "test2.bedpe",
             "test2.csv",
             "test3.csv",
+            "test5.csv",
             "test1.bw",
             "test3_small.csv",
             "test3_indices.csv"
