@@ -113,7 +113,7 @@
                 :stackupData="sortedMatrix"
                 :minHeatmapValue="minHeatmap"
                 :maxHeatmapValue="maxHeatmap"
-                colormap="stackup"
+                colormap="red"
                 @slider-change="handleSliderChange"
                 :log="false"
             >

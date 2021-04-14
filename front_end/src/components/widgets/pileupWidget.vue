@@ -74,7 +74,7 @@
                 :width="225"
                 :height="225"
                 :stackupData="widgetData[pileupType]"
-                :colormap="pileupType"
+                :colormap="colormap"
                 :minHeatmapValue="minHeatmap"
                 :maxHeatmapValue="maxHeatmap"
                 :log="true"
@@ -119,6 +119,12 @@ export default {
         colIndex: Number
     },
     computed: {
+        colormap: function(){
+            if (this.pileupType == "ICCF"){
+                return "fall"
+            }
+            return "blueWhiteRed"
+        },
         pileupType: function() {
             if (this.isICCF) {
                 return "ICCF";
