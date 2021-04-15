@@ -9,11 +9,12 @@
             @dragover.prevent
             @drop="handleDrop"
         >
+        <div  @mouseleave="hideSelection=true" class="fill-height">
             <div v-if="hideSelection" class="fill-height">
                 <div
                     class="md-layout md-gutter md-alignment-center-center fill-height"
                 >
-                    <md-button @click="hideSelection=!hideSelection" class="md-icon-button md-primary md-raised"
+                    <md-button @mouseover="hideSelection=false" class="md-icon-button md-primary md-raised"
                         >
                         <md-icon>add</md-icon>
                         </md-button
@@ -34,6 +35,7 @@
                     >Lineprofile</md-button
                 >
             </div>
+        </div>
         </div>
         <stackupWidget
             v-if="this.widgetType == 'Stackup'"
@@ -111,6 +113,10 @@ export default {
         colIndex: Number
     },
     methods: {
+        handleMouseOverSelectionButton: function() {
+            this.hideSelection = false;
+            setTimeout(() => {this.hideSelection = true}, 1000);
+        },
         handleDragEnter: function(e) {
             this.containerClasses.push("dark-background");
         },
