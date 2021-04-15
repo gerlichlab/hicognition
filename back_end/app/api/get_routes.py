@@ -70,6 +70,20 @@ def get_datasets(dtype):
     else:
         return not_found(f"option: '{dtype}' not understood")
 
+@api.route("/datasets/<dataset_id>/name/", methods=["GET"])
+@auth.login_required
+def get_name_of_dataset(dataset_id):
+    """Returns the name for a given dataset, if the user owns the requested dataset."""
+    dataset = Dataset.query.get(dataset_id)
+    # check whether dataset exists
+    if dataset is None:
+        return not_found(f"Dataset with id '{dataset_id}' does not exist!")
+    # check whether user owns the dataset
+    if is_access_to_dataset_denied(dataset, g.current_user):
+        return forbidden(
+            f"Dataset with id '{dataset_id}' is not owned by logged in user!"
+        )
+    return jsonify(dataset.dataset_name)
 
 @api.route("/datasets/<dataset_id>/intervals/", methods=["GET"])
 @auth.login_required
