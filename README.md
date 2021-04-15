@@ -50,7 +50,7 @@ db.session.commit()
 
 view the app on ```http://localhost:8080```
 
-## Running tests
+## Running tests backend
 
 ```
 docker exec -it flask-dev bash
@@ -66,6 +66,17 @@ The /code folder is linked to the outside of the container in your git folder.
 Attention, if you test changes run first:
 ```
 pip install .
+```
+
+## Running tests frontend
+```
+docker exec -it node-dev bash
+```
+Then
+
+```
+cd /front_end
+npm run test
 ```
 
 ## Changing Database
