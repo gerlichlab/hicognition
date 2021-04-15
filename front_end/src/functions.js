@@ -58,7 +58,7 @@ export function group_iccf_obs_exp(data) {
   */
     var numberDatasets = data.length;
     var output = {};
-    for (var index = 0; index < numberDatasets; index++) {
+    for (let index = 0; index < numberDatasets; index++) {
         var { id, binsize, value_type } = data[index];
         if (binsize in output) {
             // binsize is already in output, must be the other type of pileup
@@ -79,7 +79,7 @@ export function group_stackups_by_binsize(data) {
   */
     var numberDatasets = data.length;
     var output = {};
-    for (var index = 0; index < numberDatasets; index++) {
+    for (let index = 0; index < numberDatasets; index++) {
         var binsize = data[index]["binsize"];
         output[binsize] = {};
         output[binsize]["binsize"] = binsize;
