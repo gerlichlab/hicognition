@@ -9,9 +9,9 @@ Repository to collect all the decisions made for the development environment of 
 - The back-end is a pure API implemented using [flask](https://flask.palletsprojects.com/en/1.1.x/)
 - We will use a sql-lite database to store User-data and meta-data about data-sets
 - Results of computations such as matrices will be stored on disk and referenced in the database via filename
-- Authentication with the API is token-based: User presents credentials to receive token that is valid for 1h.
+- Authentication with the API is token-based: User presents credentials to receive a token that is valid for 1h.
 - All the expensive computations will be performed by a redis queue that is triggered by the back-end server
-- All computations on data-sets will done before data exploration and the user sees only preprocessed data-sets that can be quickly examined.
+- All computations on datasets will be done before data exploration, and the user sees only preprocessed datasets that can be quickly examined.
 - We will use [higlass](https://higlass.io/) to visualize datasets, but switch off its interactive capabilities since those are handled through our app.
   - Here, we will run our own higlass-server that serves datasets that are requested by our app
   - The interface to this higlass-server will be purely through the exposed [REST-API](https://docs.higlass.io/higlass_server.html#api) of the higlass-server and the [Javavscript-API](https://docs.higlass.io/javascript_api.html) or the view-component.
@@ -19,9 +19,9 @@ Repository to collect all the decisions made for the development environment of 
 - We will use [Nginx](https://www.nginx.com/) as a [reverse proxy](https://en.wikipedia.org/wiki/Reverse_proxy) to control access to the back-end docker network. This has the following advantages:
   - We can offload TLS-encryption/decryption to the optimized Nginx-server
   - Firewall access needs to be granted only for the port exposed by the Nginx-server (80 for http-requests and 443 for https-requests)
-  - In the future, scaling will be facilitated since Nginx can perform load-balancing between multiple instances off our app
+  - In the future, scaling will be facilitated since Nginx can perform load-balancing between multiple instances of our app
   - Static requests (e.g. for the `index.html` file as well as for the js-code and css-files) can be cached in memory to reduce wait time.
-  - Dynamic requests that don't change often can also be cached (e.g. API-calls to retrieve data-sets could be cached for multiple minutes).
+  - Dynamic requests that don't change often can also be cached (e.g. API-calls to retrieve datasets could be cached for multiple minutes).
 
 The architecture of our app is summarized in the following figure:
 
@@ -37,18 +37,18 @@ The architecture of our app is summarized in the following figure:
 
 ### Flask-server
 
-The core of our back-end is a flask-server that manages authorization of users and exchange of data with the Vue.js front-end. This flask-server is a pure REST-API, meaning that it is mostly state-less with regards the user-requests and serves data in json-format. The api-routes are implemented using the [blueprint-pattern](https://flask.palletsprojects.com/en/1.1.x/blueprints/) to allow modularization and easy extension in the future.
+The core of our back-end is a flask-server that manages the authorization of users and exchange of data with the Vue.js front-end. This flask-server is a pure REST-API, meaning that it is mostly state-less with regards the user-requests and serves data in json-format. The api-routes are implemented using the [blueprint-pattern](https://flask.palletsprojects.com/en/1.1.x/blueprints/) to allow modularization and easy extension in the future.
 
 The flask-server runs in a custom docker container that is derived from `docker.io/gerlichlab/scshic_docker:release-1.3` by creating a `flask` conda environment and installing all needed flask-extensions from a `requirements.txt` file via pip.
 
-The User-authorization is done either by sending the user-credentials (username and password) or via a token that can be obtained from  the `/tokens/` route. The token is generated using `itsdangerous.TimedJSONWebSignatureSerializer` and is currently valid for 1h. The `/tokens/` route only accepts username/password authorization to prevent malicious actors from obtaining new tokens with an old token indefinitely.
+The User-authorization is done either by sending the user credentials (username and password) or via a token that can be obtained from the `/tokens/` route. The token is generated using `itsdangerous.TimedJSONWebSignatureSerializer` and is currently valid for 1h. The `/tokens/` route only accepts username/password authorization to prevent malicious actors from obtaining new tokens with an old token indefinitely.
 
 Cross-origin-requests are currently allowed from all domains via injecting the `Access-Control-Allow-Origin *` Header after every request.
 TODO: Look into whether this needs to be changed.
 
 Different configurations of the server are collected in a `config.py` file that defines classes that carry the configuration options as class-variables. These different classes are used in the `create_app` app-factory function to register the relevant config settings via `app.config.from_object()`. The relevant config class can be specified via the env-variable `FLASK_CONFIG` .The different class are:
 
-- `DevelopmentConfig` - This configuration class is used in development and specifies that flask should be started in development mode and that the sqlite database resides in a file.
+- `DevelopmentConfig` - This configuration class is used in the development and specifies that flask should be started in development mode and that the sqlite database resides in a file.
 - `TestingConfig` - This configuration class is used during testing and creates the sqlite database in memory
 - `ProductionConfig` - This configuration class is used in production and specifies that the database should be created in the app-directory resides in a file.
 
@@ -72,9 +72,9 @@ The general policy is to provide default values for development but get the valu
 
 ### Database
 
-The flask-server as well as the redis-queue worker use a common database to record and change information about users and datasets. We use [SQLAlchemy](https://www.sqlalchemy.org/) as an Object-relational-mapper (ORM) to abstract details of the underlying database. This allows in principle to quickly change database back-ends and allows interaction with the database via python classes and functions. Currently, we use [sqlite](https://www.sqlite.org/index.html) since we only store meta-information about datasets (file-path, name, etc.) and users directly in the database and large data (images, raw-files, processed-files...) is stored on the file-system.
+The flask-server and the redis-queue worker use a common database to record and change information about users and datasets. We use [SQLAlchemy](https://www.sqlalchemy.org/) as an Object-relational-mapper (ORM) to abstract details of the underlying database. This allows in principle to quickly change database back-ends and allows interaction with the database via python classes and functions. Currently, we use [sqlite](https://www.sqlite.org/index.html) since we only store meta-information about datasets (file-path, name, etc.) and users directly in the database and large data (images, raw-files, processed-files...) is stored on the filesystem.
 
-Database migrations are managed using [FLASK-Migrate](https://flask-migrate.readthedocs.io/en/latest/) that is a wrapper for [alembic](https://alembic.sqlalchemy.org/en/latest/), a database migration tool for SQLAlchemy. Using this set-up, database migrations are scheduled using 'flask db migrate -m $MESSAGE', which creates a migration script in the `./migrations` sub-folder. This migration can then be applied using `flask db upgrade`. The `./migrations` directory is committed to version control and records the migration-history of our database. The development workflow is to define database models in a `models.py` file and commit a migration to version control. Then, on the production sever, the newest changes - including the migration script - are pulled and the database migrated to the newest version using `flask db upgrade`.
+Database migrations are managed using [FLASK-Migrate](https://flask-migrate.readthedocs.io/en/latest/) that is a wrapper for [alembic](https://alembic.sqlalchemy.org/en/latest/), a database migration tool for SQLAlchemy. Using this set-up, database migrations are scheduled using 'flask db migrate -m $MESSAGE', which creates a migration script in the `./migrations` sub-folder. This migration can then be applied using `flask db upgrade`. The `./migrations` directory is committed to version control and records the migration-history of our database. The development workflow is to define database models in a `models.py` file and commit a migration to version control. Then, on the production server, the newest changes - including the migration script - are pulled and the database migrated to the newest version using `flask db upgrade`.
 
 Interactions with the database are managed by [FLASK-SQLAlchemy](https://flask-sqlalchemy.palletsprojects.com/en/2.x/), which uses a `ScopedSession` object as `db` throughout the app, that ensures thread-safety of database interactions.
 
@@ -112,11 +112,11 @@ Tasks are launched using an instance-method of `User` called `User.launch_task` 
 
 ### Higlass
 
-A [higlass](https://higlass.io/) server is running in the vanilla higlass docker-container (`higlass/higlass-docker`). Interactions with this server in the backend are purely done via the exposed [REST-API](https://docs.higlass.io/higlass_server.html#api). This server is used in the front-end to view data sets.
+A [higlass](https://higlass.io/) server is running in the vanilla higlass docker-container (`higlass/higlass-docker`). Interactions with this server in the back-end are purely done via the exposed [REST-API](https://docs.higlass.io/higlass_server.html#api). This server is used in the front-end to view data sets.
 
 ### Filesystem interactions
 
-The flask-server and the redis-worker need access to a shared filesytem since all raw and processed data-sets are stored as files, with their filenames being recorded in the database.
+The flask-server and the redis-worker need access to a shared filesytem since all raw and processed datasets are stored as files, with their filenames being recorded in the database.
 
 ### Docker network
 
@@ -157,11 +157,11 @@ Modules for build are imported using the "import"-syntax rather than the "requir
 
 ### Development server
 
-A webpack development server is started using `webpack-dev-server --inline --progress --config build/webpack.dev.conf.js --host 0.0.0.0` with the alias `npm run dev`. This enables, hot-reload, real-time linting and the usage of front-end debugging using the [vue-development chrome extension](https://chrome.google.com/webstore/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd?hl=en).
+A webpack development server is started using `webpack-dev-server --inline --progress --config build/webpack.dev.conf.js --host 0.0.0.0` with the alias `npm run dev`. This enables hot-reload, real-time linting and the usage of front-end debugging using the [vue-development chrome extension](https://chrome.google.com/webstore/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd?hl=en).
 
 ### Vue set-up
 
-Vue is used to a create a single-page-application (SPA) in the front-end. This requires the usage of several extensions that serve different parts of the app:
+Vue is used to create a single-page-application (SPA) in the front-end. This requires the usage of several extensions that serve different parts of the app:
 
 - [vue-router](https://router.vuejs.org/) - This manages front-end routing and enables route-nesting and routing of subsets of the current view
 - [vuex](https://vuex.vuejs.org/) - Since a vue.js app often consists of multiple components and multiple routes, it is frequently necessary to share data between these parts. Vuex serves the purpose of a front-end database that allows sharing of data.
@@ -171,7 +171,7 @@ Vue is used to a create a single-page-application (SPA) in the front-end. This r
 
 The specifics of the router are defined in `frontend/src/router.js`. In general, there are two main views called `/login` and `/main`. `/login` defines the loginRoute component that has a different toolbar to the `/main` view components. `/main` is where the app resides and it contains four sub-routes: `/main/predefined`, `/main/compare`, `/main/explore` and `/main/annotate`. These sub-routes only change the app-content, but leave the toolbar and the side-drawer intact. They are the different content-tabs of the app and define different functionalities.
 
-The `/login` route defines a form that sends the user credentials to the `/api/token/` backend route to obtain a token that is valid for 1 h.
+The `/login` route defines a form that sends the user credentials to the `/api/token/` back-end route to obtain a token that is valid for 1 h.
 
 All routes that are children of `/main` require authentication. Authentication is checked by verifying that a token resides in the main `vuex` store. If no token is found, the user is redirected to `/login`. Note that this routing step does not check validity of the token. Validity is only checked when data is retrieved from the back-end.
 
@@ -186,7 +186,7 @@ Data that needs to be shared among multiple front-end components is stored in a 
 
 ### Interaction with back-end
 
-All interactions with the backend are done via api-calls that are dispatched by [axios](https://github.com/axios/axios). The `axios` instance is bound to `Vue.prototype.$http` so all `Vue` instances and components have access to the client without import.
+All interactions with the back-end are done via api-calls that are dispatched by [axios](https://github.com/axios/axios). The `axios` instance is bound to `Vue.prototype.$http` so all `Vue` instances and components have access to the client without import.
 
 The api-calls are defined as a mixin in `frontend/src/mixins.js` in `apiMixin`. All components that need interaction with the back-end receive the `apiMixin`. The `apimixin` has a convenience method for fetching and storing the authentication token called `.fetchAndStoreToken` and two more generic methods that allow to dispatch get and post reqeusts, `.fetchData` and `.postData` respectively. These work by return the promise the is returned by axios-requests is there is no error in the call. The caller can then resolve the promise than receive the data. If there is an error, however, the user is redirected to the login-page to get a new token.
 
@@ -220,7 +220,7 @@ Install black via `pip install black` and set it as your python formatting provi
 
 ## Documentation guidelines
 
-Every function/class should have docstrings according the the rules laid out in [PEP257](https://www.python.org/dev/peps/pep-0257/):
+Every function/class should have docstrings according to the rules laid out in [PEP257](https://www.python.org/dev/peps/pep-0257/):
 
 >Multi-line docstrings consist of a summary line just like a one-line docstring, followed by a blank line, followed by a more elaborate description. The summary line may be used by automatic indexing tools; it is important that it fits on one line and is separated from the rest of the docstring by a blank line. The summary line may be on the same line as the opening quotes or on the next line. The entire docstring is indented the same as the quotes at its first line (see example below).
 
