@@ -18,6 +18,7 @@
                             name="dataset"
                             id="dataset"
                             placeholder="Dataset"
+                            multiple
                             :disabled="!allowDatasetSelection"
                         >
                             <md-option
@@ -88,6 +89,7 @@
 <script>
 import lineprofile from "../visualizations/lineprofile";
 import { apiMixin, formattingMixin } from "../../mixins";
+import { group_lineprofils_by_binsize } from "../../functions";
 
 export default {
     name: "lineprofileWidget",
@@ -207,7 +209,7 @@ export default {
                 widgetDataRef: undefined,
                 dragImage: undefined,
                 widgetData: undefined,
-                selectedDataset: undefined,
+                selectedDataset: [],
                 selectedBinsize: undefined,
                 intervalID: collectionData["intervalID"],
                 emptyClass: ["smallMargin", "empty"],
@@ -225,7 +227,7 @@ export default {
                 widgetDataRef: undefined,
                 dragImage: undefined,
                 widgetData: undefined,
-                selectedDataset: undefined,
+                selectedDataset: [],
                 selectedBinsize: undefined,
                 intervalID: collectionConfig["intervalID"],
                 emptyClass: ["smallMargin", "empty"],
@@ -242,9 +244,11 @@ export default {
                 // deinfe store queries
                 var payload = {
                     id: widgetDataRef
-                }
+                };
                 // get widget data from store
-                widgetDataValues = this.$store.getters["compare/getWidgetDataLineprofile"](payload)
+                widgetDataValues = this.$store.getters[
+                    "compare/getWidgetDataLineprofile"
+                ](payload);
             } else {
                 widgetDataValues = undefined;
             }
@@ -295,19 +299,22 @@ export default {
         getlineprofileData: async function(id) {
             // checks whether lineprofile data is in store and fetches it if it is not
             if (this.$store.getters["compare/lineprofileExists"](id)) {
-                return this.$store.getters["compare/getWidgetDataLineprofile"](id);
+                return this.$store.getters["compare/getWidgetDataLineprofile"](
+                    id
+                );
             }
             // pileup does not exists in store, fetch it
-            var response = await this.fetchData(
-                `averageIntervalData/${id}/`
-            );
+            var response = await this.fetchData(`averageIntervalData/${id}/`);
             var parsed = response.data;
             // save it in store
             var mutationObject = {
                 id: id,
                 data: parsed
             };
-            this.$store.commit("compare/setWidgetDataLineprofile", mutationObject);
+            this.$store.commit(
+                "compare/setWidgetDataLineprofile",
+                mutationObject
+            );
             // return it
             return parsed;
         }
@@ -339,36 +346,64 @@ export default {
                 }
             }
         },
-        selectedDataset: function() {
-            if (!this.selectedDataset) {
+        selectedDataset: async function() {
+            if (
+                this.selectedDataset == undefined ||
+                this.selectedDataset.length == 0
+            ) {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
             }
             // fetch binsizes for the current combination of dataset and intervals
-            this.fetchData(
+            await this.fetchData(
                 `averageIntervalData/?dataset_id=${this.selectedDataset}&intervals_id=${this.intervalID}`
             ).then(response => {
-                this.binsizes = response.data;
+                this.binsizes = group_lineprofils_by_binsize(response.data);
+                //this.binsizes = response.data;
             });
+
+            if (!this.selectedBinsize) {
+                return;
+            }
+            var selected_ids;
+            for (let [key, entry] of Object.entries(this.binsizes)) {
+                if (this.selectedBinsize == key) {
+                    selected_ids = entry.id;
+                }
+            }
+
+            // store widget data ref
+
+            this.widgetDataRef = selected_ids;
+
+            var selected_data = [];
+            for (let selected_id of selected_ids) {
+                selected_data.push(await this.getlineprofileData(selected_id));
+            }
+            this.widgetData = selected_data;
+
         },
         selectedBinsize: async function() {
             if (!this.selectedBinsize) {
                 return;
             }
             // fetch widget data
-            //console.log(this.binsizes);
-            var selected_id;
-            for (var i = 0; i < this.binsizes.length; i++) {
-                if (this.selectedBinsize == this.binsizes[i].binsize){
-                //console.log(this.binsizes[i].id);
-                selected_id = this.binsizes[i].id
-                //console.log(this.binsizes[i].binsize);
+            var selected_ids;
+
+            for (let [key, entry] of Object.entries(this.binsizes)) {
+                if (this.selectedBinsize == key) {
+                    //.id is an array
+                    selected_ids = entry.id;
                 }
             }
+
             // store widget data ref
-            this.widgetDataRef = selected_id;
-            // get pileup iccf; update pileup data upon success
-            var selected_data = await this.getlineprofileData(selected_id);
+            this.widgetDataRef = selected_ids;
+
+            var selected_data = [];
+            for (let selected_id of selected_ids) {
+                selected_data.push(await this.getlineprofileData(selected_id));
+            }
             this.widgetData = selected_data;
         }
     }

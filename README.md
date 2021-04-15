@@ -50,7 +50,7 @@ db.session.commit()
 
 view the app on ```http://localhost:8080```
 
-## Running tests
+## Running tests backend
 
 ```
 docker exec -it flask-dev bash
@@ -66,6 +66,17 @@ The /code folder is linked to the outside of the container in your git folder.
 Attention, if you test changes run first:
 ```
 pip install .
+```
+
+## Running tests frontend
+```
+docker exec -it node-dev bash
+```
+Then
+
+```
+cd /front_end
+npm run test
 ```
 
 ## Changing Database
@@ -112,7 +123,7 @@ execute the command above in the root directory of this repo.
 
 ## Project architecture and design decisions
 
-For a detailed description of the project architecture and development design decisions see our [dev-git](https://github.com/gerlichlab/HiCognition_devgit).
+For a detailed description of the project architecture and development design decisions see our [dev-git](https://github.com/gerlichlab/HiCognition_flask/tree/master/documentation).
 
 ## Fullsize test data
 A .mcool, .bw and .bed file can be found ar this [dropbox](https://www.dropbox.com/sh/zjfc6sgkbdp3ksh/AAAWrbgKt8hz4npNxSfh-RBja?dl=0) location.

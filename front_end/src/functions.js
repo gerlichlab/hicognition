@@ -58,7 +58,7 @@ export function group_iccf_obs_exp(data) {
   */
     var numberDatasets = data.length;
     var output = {};
-    for (var index = 0; index < numberDatasets; index++) {
+    for (let index = 0; index < numberDatasets; index++) {
         var { id, binsize, value_type } = data[index];
         if (binsize in output) {
             // binsize is already in output, must be the other type of pileup
@@ -79,7 +79,7 @@ export function group_stackups_by_binsize(data) {
   */
     var numberDatasets = data.length;
     var output = {};
-    for (var index = 0; index < numberDatasets; index++) {
+    for (let index = 0; index < numberDatasets; index++) {
         var binsize = data[index]["binsize"];
         output[binsize] = {};
         output[binsize]["binsize"] = binsize;
@@ -87,6 +87,31 @@ export function group_stackups_by_binsize(data) {
     }
     return output;
 }
+
+// TODO: group_lineprofils_by_binsizeprofils
+export function group_lineprofils_by_binsize(data, intersection = true) {
+    /*
+  Takes as input an array of json objects of the form [{"binsize": x, "id", y1}{"binsize": x, "id", y2}]
+  and groups them by binsize into an output object: {binsize: {binsize: x, id, {y1,y2}}}
+  */
+    
+    var output = {};
+    for (let interval of data) {
+        var binsize = interval.binsize;
+        if (binsize in output) {
+            output[binsize]["id"].push(interval.id);
+        } else {
+            output[binsize] = { binsize: binsize, id: [] };
+            output[binsize]["id"].push(interval.id);
+        }
+    }
+    if (intersection == true) {
+        //TODO Remove binsizes where there is no intersection.
+        console.log("Intersection Tested")
+    }
+    return output;
+}
+
 
 export function group_intervals_on_windowsize(intervals) {
     /*

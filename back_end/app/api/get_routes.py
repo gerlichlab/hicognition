@@ -60,9 +60,30 @@ def get_datasets(dtype):
         ).all()
         update_processing_state(bed_files, db)
         return jsonify([bfile.to_json() for bfile in bed_files])
+    elif dtype == "bigwig":
+        bed_files = Dataset.query.filter(
+            (Dataset.filetype == "bigwig")
+            & ((g.current_user.id == Dataset.user_id) | (Dataset.public))
+        ).all()
+        update_processing_state(bed_files, db)
+        return jsonify([bfile.to_json() for bfile in bed_files])
     else:
         return not_found(f"option: '{dtype}' not understood")
 
+@api.route("/datasets/<dataset_id>/name/", methods=["GET"])
+@auth.login_required
+def get_name_of_dataset(dataset_id):
+    """Returns the name for a given dataset, if the user owns the requested dataset."""
+    dataset = Dataset.query.get(dataset_id)
+    # check whether dataset exists
+    if dataset is None:
+        return not_found(f"Dataset with id '{dataset_id}' does not exist!")
+    # check whether user owns the dataset
+    if is_access_to_dataset_denied(dataset, g.current_user):
+        return forbidden(
+            f"Dataset with id '{dataset_id}' is not owned by logged in user!"
+        )
+    return jsonify(dataset.dataset_name)
 
 @api.route("/datasets/<dataset_id>/intervals/", methods=["GET"])
 @auth.login_required
@@ -162,32 +183,39 @@ def get_averageIntervalData():
     for the specified intervals_id. Only returns pileup object if
     user owns the cooler dataset and intervals_id"""
     # unpack query string
-    dataset_id = request.args.get("dataset_id")
+    dataset_id_string = request.args.get("dataset_id")
+    dataset_id_list= dataset_id_string.split(",")
     intervals_id = request.args.get("intervals_id")
-    if dataset_id is None or intervals_id is None:
-        return invalid("Cooler dataset or intervals were not specified!")
-    # Check whether datasets exist
-    cooler_ds = Dataset.query.get(dataset_id)
-    intervals_ds = Intervals.query.get(intervals_id)
-    if (cooler_ds is None) or (intervals_ds is None):
-        return not_found("Cooler dataset or intervals dataset do not exist!")
-    # Check whether datasets are owned
-    if is_access_to_dataset_denied(
-        cooler_ds, g.current_user
-    ) or is_access_to_dataset_denied(intervals_ds.source_dataset, g.current_user):
-        return forbidden(
-            "Cooler dataset or intervals dataset is not owned by logged in user!"
+    file_collection = []
+    for dataset_id in dataset_id_list:
+        if dataset_id is None or intervals_id is None:
+            return invalid("Cooler/Bigwig dataset or intervals were not specified!")
+        # Fails silently for the default state of an empty multiple selection
+        if dataset_id is "" or intervals_id is None:
+            return "No Bigwig selected yet!"
+        # Check whether datasets exist
+        cooler_ds = Dataset.query.get(dataset_id)
+        intervals_ds = Intervals.query.get(intervals_id)
+        if (cooler_ds is None) or (intervals_ds is None):
+            return not_found("Cooler/Bigwig dataset or intervals dataset do not exist!")
+        # Check whether datasets are owned
+        if is_access_to_dataset_denied(
+            cooler_ds, g.current_user
+        ) or is_access_to_dataset_denied(intervals_ds.source_dataset, g.current_user):
+            return forbidden(
+                "Cooler/Bigwig dataset or intervals dataset is not owned by logged in user!"
+            )
+        # return all intervals the are derived from the specified selection of cooler and intervals
+        all_files = (
+            AverageIntervalData.query.filter(
+                AverageIntervalData.intervals_id == intervals_id
+            )
+            .join(Dataset)
+            .filter(Dataset.id == dataset_id)
+            .all()
         )
-    # return all intervals the are derived from the specified selection of cooler and intervals
-    all_files = (
-        AverageIntervalData.query.filter(
-            AverageIntervalData.intervals_id == intervals_id
-        )
-        .join(Dataset)
-        .filter(Dataset.id == dataset_id)
-        .all()
-    )
-    return jsonify([dfile.to_json() for dfile in all_files])
+        file_collection.extend(all_files)
+    return jsonify([dfile.to_json() for dfile in file_collection])
 
 
 @api.route("/individualIntervalData/", methods=["GET"])
