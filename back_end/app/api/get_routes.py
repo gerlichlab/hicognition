@@ -187,23 +187,22 @@ def get_averageIntervalData():
     user owns the cooler dataset and intervals_id"""
     # unpack query string
     dataset_id_list = request.args.getlist("dataset_id")
-    #TODO handle for all sizes
-    if len(dataset_id_list) == 1:
-        dataset_id = dataset_id_list[0]
-        intervals_id = request.args.get("intervals_id")
+    intervals_id = request.args.get("intervals_id")
+    file_collection = []
+    for dataset_id in dataset_id_list:
         if dataset_id is None or intervals_id is None:
-            return invalid("Cooler dataset or intervals were not specified!")
+            return invalid("Cooler/Bigwig dataset or intervals were not specified!")
         # Check whether datasets exist
         cooler_ds = Dataset.query.get(dataset_id)
         intervals_ds = Intervals.query.get(intervals_id)
         if (cooler_ds is None) or (intervals_ds is None):
-            return not_found("Cooler dataset or intervals dataset do not exist!")
+            return not_found("Cooler/Bigwig dataset or intervals dataset do not exist!")
         # Check whether datasets are owned
         if is_access_to_dataset_denied(
             cooler_ds, g.current_user
         ) or is_access_to_dataset_denied(intervals_ds.source_dataset, g.current_user):
             return forbidden(
-                "Cooler dataset or intervals dataset is not owned by logged in user!"
+                "Cooler/Bigwig dataset or intervals dataset is not owned by logged in user!"
             )
         # return all intervals the are derived from the specified selection of cooler and intervals
         all_files = (
@@ -214,12 +213,9 @@ def get_averageIntervalData():
             .filter(Dataset.id == dataset_id)
             .all()
         )
-    # else:
-        
-    #     for dataset_id in dataset_id_list:
-            
 
-    return jsonify([dfile.to_json() for dfile in all_files])
+        file_collection.extend(all_files)
+    return jsonify([dfile.to_json() for dfile in file_collection])
 
 
 @api.route("/individualIntervalData/", methods=["GET"])
