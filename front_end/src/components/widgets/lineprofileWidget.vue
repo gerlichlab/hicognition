@@ -18,6 +18,7 @@
                             name="dataset"
                             id="dataset"
                             placeholder="Dataset"
+                            multiple
                             :disabled="!allowDatasetSelection"
                         >
                             <md-option
@@ -88,6 +89,7 @@
 <script>
 import lineprofile from "../visualizations/lineprofile";
 import { apiMixin, formattingMixin } from "../../mixins";
+import { group_lineprofils_by_binsize} from "../../functions"
 
 export default {
     name: "lineprofileWidget",
@@ -348,7 +350,7 @@ export default {
             this.fetchData(
                 `averageIntervalData/?dataset_id=${this.selectedDataset}&intervals_id=${this.intervalID}`
             ).then(response => {
-                this.binsizes = response.data;
+                this.binsizes = group_lineprofils_by_binsize(response.data);
             });
         },
         selectedBinsize: async function() {

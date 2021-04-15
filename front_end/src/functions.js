@@ -88,6 +88,26 @@ export function group_stackups_by_binsize(data) {
     return output;
 }
 
+// TODO: group_lineprofils_by_binsizeprofils
+export function group_lineprofils_by_binsize(data, intersection = true) {
+    /*
+  Takes as input an array of json objects of the form [{"binsize": x, "id", y}]
+  and groups them by binsize into an output object: {binsize: {binsize: x, id, y}}
+  */
+    var numberDatasets = data.length;
+    var output = {};
+    //TODO allow choice of binsize exist in both sets
+    let id = {};
+    for (let index = 0; index < numberDatasets; index++) {
+        var binsize = data[index]["binsize"];
+        output[binsize] = {};
+        output[binsize]["binsize"] = binsize;
+        output[binsize]["id"] = data[index]["id"];
+    }
+    return output;
+}
+
+
 export function group_intervals_on_windowsize(intervals) {
     /*
     data is array intervals object [{"id": 1, "windowsize": 20000, ...}]
