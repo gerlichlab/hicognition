@@ -83,6 +83,10 @@ const compareModule = {
             }
             return state.widgetData["lineprofile"][payload.id];
         },
+        widgetExists: state => payload => {
+            // checks whether widget with id exists
+            return payload.id in state.widgetCollections[payload.parentID]["children"]
+        },
         pileupExists: state => payload => {
             if (!("pileup" in state.widgetData)) {
                 return false;

@@ -1,6 +1,5 @@
 <template>
     <div>
-        <div v-if="!isEmpty">
             <div
                 v-if="noWidgetType"
                 :style="cssStyle"
@@ -57,23 +56,10 @@
                 :rowIndex="rowIndex"
                 :colIndex="colIndex"
             />
-        </div>
-        <emptyWidget
-            v-else
-            :height="height"
-            :width="width"
-            :empty="empty"
-            :id="collectionID"
-            :collectionID="id"
-            :rowIndex="rowIndex"
-            :colIndex="colIndex"
-            @widgetDrop="propagateDrop"
-        />
     </div>
 </template>
 
 <script>
-import emptyWidget from "./widgets/emptyWidget";
 import pileupWidget from "./widgets/pileupWidget";
 import stackupWidget from "./widgets/stackupWidget";
 import lineprofileWidget from "./widgets/lineprofileWidget";
@@ -81,7 +67,6 @@ import lineprofileWidget from "./widgets/lineprofileWidget";
 export default {
     name: "widgetContainer",
     components: {
-        emptyWidget,
         stackupWidget,
         pileupWidget,
         lineprofileWidget
@@ -115,7 +100,30 @@ export default {
         colIndex: Number
     },
     methods: {
+        widgetIDExists: function(){
+            // checks whether widget id exists
+            var queryObject = {
+                id: this.id,
+                parentID: this.collectionID
+            }
+            return this.$store.getters["compare/pileupExists"](queryObject)
+        },
+        initializeWidgetFromEmpty: function(){
+            // if state is selected for an empty widget, initializes it for the first time
+            var payload = {
+                id: this.id,
+                rowIndex: this.rowIndex,
+                colIndex: this.colIndex,
+                parentID: this.collectionID
+            }
+            // update changed data in store
+            this.$store.commit("compare/setWidget", payload);
+        },
         setPileup: function() {
+            // check if widget is in store
+            if (!this.widgetIDExists()){
+                this.initializeWidgetFromEmpty()
+            }
             // set widgetType in store
             var mutationObject = {
                 parentID: this.collectionID,
@@ -127,6 +135,10 @@ export default {
             this.widgetType = "Pileup";
         },
         setStackup: function() {
+            // check if widget is in store
+            if (!this.widgetIDExists()){
+                this.initializeWidgetFromEmpty()
+            }
             // set widgetType in store
             var mutationObject = {
                 parentID: this.collectionID,
@@ -138,6 +150,10 @@ export default {
             this.widgetType = "Stackup";
         },
         setLineprofile: function() {
+            // check if widget is in store
+            if (!this.widgetIDExists()){
+                this.initializeWidgetFromEmpty()
+            }
             // set widgetType in store
             var mutationObject = {
                 parentID: this.collectionID,
@@ -166,13 +182,6 @@ export default {
                 return false;
             }
             return true;
-        },
-        isEmpty: function() {
-            if (this.empty == true) {
-                return true;
-            } else {
-                return false;
-            }
         }
     }
 };
