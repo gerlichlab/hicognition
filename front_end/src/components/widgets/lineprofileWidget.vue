@@ -241,14 +241,18 @@ export default {
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
                 var widgetDataRef = widgetData["widgetDataRef"];
-                // deinfe store queries
-                var payload = {
-                    id: widgetDataRef
-                };
-                // get widget data from store
-                widgetDataValues = this.$store.getters[
-                    "compare/getWidgetDataLineprofile"
-                ](payload);
+                var widgetDataValues = []
+                for (var widget_data_id of widgetDataRef){
+                    // deinfe store queries
+                    var payload = {
+                        id: widget_data_id
+                    };
+                    // get widget data from store
+                    var new_widgetDataValues = this.$store.getters[
+                        "compare/getWidgetDataLineprofile"
+                    ](payload);
+                    widgetDataValues.push(new_widgetDataValues)
+                }
             } else {
                 widgetDataValues = undefined;
             }
