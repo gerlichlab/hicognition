@@ -30,12 +30,12 @@ export default {
             return "lineprofile_" + this.lineprofileID;
         },
         lineData: function() {
-            return this.lineprofileData[0].data;
+            return this.lineprofileData;
         }
     },
     methods: {
         redrawLinechart: function() {
-            console.log(this.lineprofileData[0].data)
+            //console.log(this.lineData)
             var margin = { top: 10, right: 30, bottom: 20, left: 40 };
             d3.select(`#${this.lineprofileDivID}Svg`).remove();
             var line_svg = d3
@@ -50,10 +50,21 @@ export default {
                     "translate(" + margin.left + "," + margin.top + ")"
                 );
             // Add X axis
-            let minX = 0;
-            let maxX = this.lineData.length;
-            let minY = min_array(this.lineData);
-            let maxY = max_array(this.lineData);
+            var minX = 0;
+            var maxX = undefined;
+            var minY = undefined;
+            var maxY = undefined;
+            for (let single_data of this.lineData){
+                if (maxX == undefined || maxX < single_data.data.length){
+                    maxX = single_data.data.length;
+                }
+                if (minY == undefined || minY > min_array(single_data.data)){
+                    minY = min_array(single_data.data);
+                }
+                if (maxY == undefined || maxY < max_array(single_data.data)){
+                maxY = max_array(single_data.data);
+                }
+            }
 
             var x = d3
                 .scaleLinear()
@@ -84,12 +95,14 @@ export default {
                 .attr("class", "axis")
                 .attr("transform", "translate(0,0)")
                 .call(yAxis);
-
-            g.append("path")
-                .attr("d", line(this.lineData))
-                .attr("fill", "none")
-                .attr("stroke", "steelblue")
-                .attr("stroke-width", 1.5);
+            for (let single_data of this.lineData){
+                //console.log(single_data)
+                g.append("path")
+                    .attr("d", line(single_data.data))
+                    .attr("fill", "none")
+                    .attr("stroke", "steelblue")
+                    .attr("stroke-width", 1.5);
+            }
         }
     },
     mounted: function() {
@@ -102,8 +115,12 @@ export default {
         width: function() {
             this.redrawLinechart();
         },
-        lineprofileData: function() {
-            this.redrawLinechart();
+        lineprofileData: {
+            deep: true,
+            handler(){
+                //console.log("triggered")
+                this.redrawLinechart();
+            }
         }
     }
 };
