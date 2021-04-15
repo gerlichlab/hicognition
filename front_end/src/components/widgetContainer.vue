@@ -1,61 +1,70 @@
 <template>
     <div>
-            <div
-                v-if="noWidgetType"
-                :style="cssStyle"
-                class="md-elevation-1 bg"
-            >
+        <div
+            v-if="noWidgetType"
+            :style="cssStyle"
+            :class="containerClasses"
+            @dragenter="handleDragEnter"
+            @dragleave="handleDragLeave"
+            @dragover.prevent
+            @drop="handleDrop"
+        >
+            <div v-if="hideSelection" class="fill-height">
                 <div
-                    class="md-layout md-gutter md-alignment-bottom-center fill-half-height"
+                    class="md-layout md-gutter md-alignment-center-center fill-height"
                 >
-                    <div class="md-layout-item md-size-90 align-text-center">
-                        <span class="md-display-1">Select a widget type</span>
-                    </div>
-                </div>
-                <div
-                    class="md-layout md-gutter md-alignment-top-center fill-half-height"
-                >
-                    <md-button @click="setPileup" class="md-raised md-accent"
-                        >Pileup</md-button
-                    >
-                    <md-button class="md-raised md-accent" @click="setStackup"
-                        >Stackup</md-button
-                    >
-                    <md-button class="md-raised md-accent" @click="setLineprofile"
-                        >Lineprofile</md-button
+                    <md-button @click="hideSelection=!hideSelection" class="md-icon-button md-primary md-raised"
+                        >
+                        <md-icon>add</md-icon>
+                        </md-button
                     >
                 </div>
             </div>
-            <stackupWidget
-                v-if="this.widgetType == 'Stackup'"
-                :height="height"
-                :width="width"
-                :empty="empty"
-                :id="id"
-                :collectionID="collectionID"
-                :rowIndex="rowIndex"
-                :colIndex="colIndex"
-            />
-            <pileupWidget
-                v-else-if="this.widgetType == 'Pileup'"
-                :height="height"
-                :width="width"
-                :empty="empty"
-                :id="id"
-                :collectionID="collectionID"
-                :rowIndex="rowIndex"
-                :colIndex="colIndex"
-            />
-            <lineprofileWidget
-                v-else-if="this.widgetType == 'Lineprofile'"
-                :height="height"
-                :width="width"
-                :empty="empty"
-                :id="id"
-                :collectionID="collectionID"
-                :rowIndex="rowIndex"
-                :colIndex="colIndex"
-            />
+            <div
+                class="md-layout md-gutter md-alignment-center-center fill-height"
+                v-else
+            >
+                <md-button @click="setPileup" class="md-raised md-primary"
+                    >Pileup</md-button
+                >
+                <md-button class="md-raised md-primary" @click="setStackup"
+                    >Stackup</md-button
+                >
+                <md-button class="md-raised md-primary" @click="setLineprofile"
+                    >Lineprofile</md-button
+                >
+            </div>
+        </div>
+        <stackupWidget
+            v-if="this.widgetType == 'Stackup'"
+            :height="height"
+            :width="width"
+            :empty="empty"
+            :id="id"
+            :collectionID="collectionID"
+            :rowIndex="rowIndex"
+            :colIndex="colIndex"
+        />
+        <pileupWidget
+            v-else-if="this.widgetType == 'Pileup'"
+            :height="height"
+            :width="width"
+            :empty="empty"
+            :id="id"
+            :collectionID="collectionID"
+            :rowIndex="rowIndex"
+            :colIndex="colIndex"
+        />
+        <lineprofileWidget
+            v-else-if="this.widgetType == 'Lineprofile'"
+            :height="height"
+            :width="width"
+            :empty="empty"
+            :id="id"
+            :collectionID="collectionID"
+            :rowIndex="rowIndex"
+            :colIndex="colIndex"
+        />
     </div>
 </template>
 
@@ -87,7 +96,9 @@ export default {
         }
         return {
             widgetType: widgetType,
-            selectedType: undefined
+            selectedType: undefined,
+            containerClasses: ["md-elevation-0"],
+            hideSelection: true
         };
     },
     props: {
@@ -100,29 +111,47 @@ export default {
         colIndex: Number
     },
     methods: {
-        widgetIDExists: function(){
+        handleDragEnter: function(e) {
+            this.containerClasses.push("dark-background");
+        },
+        handleDragLeave: function(e) {
+            this.containerClasses.pop();
+        },
+        handleDrop: function(event) {
+            var sourceWidgetID = event.dataTransfer.getData("widget-id");
+            var sourceColletionID = event.dataTransfer.getData("collection-id");
+            this.containerClasses.pop();
+            this.$emit(
+                "widgetDrop",
+                Number(sourceColletionID),
+                Number(sourceWidgetID),
+                this.rowIndex,
+                this.colIndex
+            );
+        },
+        widgetIDExists: function() {
             // checks whether widget id exists
             var queryObject = {
                 id: this.id,
                 parentID: this.collectionID
-            }
-            return this.$store.getters["compare/pileupExists"](queryObject)
+            };
+            return this.$store.getters["compare/pileupExists"](queryObject);
         },
-        initializeWidgetFromEmpty: function(){
+        initializeWidgetFromEmpty: function() {
             // if state is selected for an empty widget, initializes it for the first time
             var payload = {
                 id: this.id,
                 rowIndex: this.rowIndex,
                 colIndex: this.colIndex,
                 parentID: this.collectionID
-            }
+            };
             // update changed data in store
             this.$store.commit("compare/setWidget", payload);
         },
         setPileup: function() {
             // check if widget is in store
-            if (!this.widgetIDExists()){
-                this.initializeWidgetFromEmpty()
+            if (!this.widgetIDExists()) {
+                this.initializeWidgetFromEmpty();
             }
             // set widgetType in store
             var mutationObject = {
@@ -136,8 +165,8 @@ export default {
         },
         setStackup: function() {
             // check if widget is in store
-            if (!this.widgetIDExists()){
-                this.initializeWidgetFromEmpty()
+            if (!this.widgetIDExists()) {
+                this.initializeWidgetFromEmpty();
             }
             // set widgetType in store
             var mutationObject = {
@@ -151,8 +180,8 @@ export default {
         },
         setLineprofile: function() {
             // check if widget is in store
-            if (!this.widgetIDExists()){
-                this.initializeWidgetFromEmpty()
+            if (!this.widgetIDExists()) {
+                this.initializeWidgetFromEmpty();
             }
             // set widgetType in store
             var mutationObject = {
@@ -188,8 +217,9 @@ export default {
 </script>
 
 <style scoped>
-.bg {
-    background-color: rgba(211, 211, 211, 0.2);
+.dark-background {
+    background-color: grey;
+    opacity: 0.5;
 }
 
 .align-text-center {
@@ -198,5 +228,9 @@ export default {
 
 .fill-half-height {
     height: 50%;
+}
+
+.fill-height {
+    height: 100%;
 }
 </style>

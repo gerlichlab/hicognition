@@ -123,7 +123,12 @@ const compareModule = {
         clearWidgetCollections(state) {
             state.widgetCollections = {};
         },
-        setWidgetCollection(state, payload) {
+        createEmptyWidgetCollection(state, id){
+            Vue.set(state.widgetCollections, id, {
+                children: { }
+            });
+        },
+        setWidgetCollectionWithChild(state, payload) {
             // Vue.set is needed to preserve reactivity
             Vue.set(state.widgetCollections, payload.parentID, {
                 children: { [payload.id]: payload }

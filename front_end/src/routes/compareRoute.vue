@@ -38,15 +38,8 @@ export default {
             });
         },
         addCollection: function() {
-            // add newEntry to store for collection with a single child
-            var initialChild = {
-                id: Math.floor(Math.random() * 1000000000),
-                rowIndex: 0,
-                colIndex: 0,
-                parentID: this.currentID,
-                widgetType: undefined
-            };
-            this.$store.commit("compare/setWidgetCollection", initialChild);
+            // add newEntry to store for collection
+            this.$store.commit("compare/createEmptyWidgetCollection", this.currentID);
             this.currentID += 1;
         }
     },

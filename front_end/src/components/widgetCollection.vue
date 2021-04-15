@@ -1,7 +1,5 @@
 <template>
     <div
-        @dragenter="expandCollection"
-        @dragleave="handleDragLeave"
         :style="widgetContainerBorder"
         class="md-elevation-5"
     >
@@ -73,10 +71,10 @@
                     <div class="md-layout-item md-size-10 padding-left">
                         <div class="menu-button">
                             <md-button
-                                @click="fetchDatasets"
-                                class="md-icon-button md-dense md-raised button-margin md-primary md-icon-button"
+                                @click="deleteCollection"
+                                class="md-icon-button button-margin md-primary md-icon-button md-mini"
                             >
-                                <md-icon>cached</md-icon>
+                                <md-icon>delete</md-icon>
                             </md-button>
                         </div>
                     </div>
@@ -113,6 +111,7 @@
                     <md-button
                         class="md-icon-button md-accent md-mini"
                         @click="decreaseColumns"
+                        :disabled="!decreaseColumnsAllowed"
                     >
                         <md-icon>remove</md-icon>
                     </md-button>
@@ -132,6 +131,7 @@
                 <md-button
                     class="md-icon-button md-accent md-mini"
                     @click="decreaseRows"
+                    :disabled="!decreaseRowsAllowed"
                 >
                     <md-icon>remove</md-icon>
                 </md-button>
@@ -184,6 +184,18 @@ export default {
                 background: "rgba(75, 75, 75, 0.1)",
                 "margin-right": "10px"
             };
+        },
+        decreaseRowsAllowed: function(){
+            var maxRowElements = Math.max(
+                ...this.children.map(element => element.rowIndex)
+            );
+            return this.maxRowNumber > maxRowElements
+        },
+        decreaseColumnsAllowed: function() {
+            var maxColElements = Math.max(
+                ...this.children.map(element => element.colIndex)
+            );
+            return this.maxColumnNumber > maxColElements
         },
         windowSizesAvailable: function() {
             if (this.windowSizes.length != 0) {
@@ -299,36 +311,6 @@ export default {
             this.baseWidth -= 50;
             this.baseHeight -= 50;
         },
-        expandCollection: function() {
-            // needed for showing region before widgetdrop
-            var maxRowElements = Math.max(
-                ...this.children.map(element => element.rowIndex)
-            );
-            var maxColElements = Math.max(
-                ...this.children.map(element => element.colIndex)
-            );
-            this.maxRowNumber = maxRowElements + 1;
-            this.maxColumnNumber = maxColElements + 1;
-        },
-        handleDragLeave: function(e) {
-            // check if card is collection card, all child elements trigger leave events
-            if (
-                e.toElement == this.$refs["collectionCard"].$el ||
-                e.toElement.contains(this.$refs["collectionCard"].$el)
-            ) {
-                // if dragleave on collection card -> shrink collection
-                this.setTightBoundingArea();
-            }
-        },
-        setTightBoundingArea: function(e) {
-            // resizes drawn widgetmatrix to to largest element in children
-            this.maxRowNumber = Math.max(
-                ...this.children.map(element => element.rowIndex)
-            );
-            this.maxColumnNumber = Math.max(
-                ...this.children.map(element => element.colIndex)
-            );
-        },
         deleteCollection: function() {
             this.$store.commit("compare/deleteWidgetCollection", this.id);
         },
@@ -371,12 +353,6 @@ export default {
                     for (var child of Object.values(newEntry.children)) {
                         this.children.push(child);
                     }
-                    // check if collection should be deleted
-                    if (this.children.length == 0) {
-                        this.deleteCollection();
-                    }
-                    // reset collection to new size;
-                    this.setTightBoundingArea();
                 }
             }
         },
