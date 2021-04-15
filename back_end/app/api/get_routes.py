@@ -193,6 +193,9 @@ def get_averageIntervalData():
     for dataset_id in dataset_id_list:
         if dataset_id is None or intervals_id is None:
             return invalid("Cooler/Bigwig dataset or intervals were not specified!")
+        # Fails silently for the default state of an empty multiple selection
+        if dataset_id is "" or intervals_id is None:
+            return "No Bigwig selected yet!"
         # Check whether datasets exist
         cooler_ds = Dataset.query.get(dataset_id)
         intervals_ds = Intervals.query.get(intervals_id)
