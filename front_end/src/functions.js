@@ -91,18 +91,23 @@ export function group_stackups_by_binsize(data) {
 // TODO: group_lineprofils_by_binsizeprofils
 export function group_lineprofils_by_binsize(data, intersection = true) {
     /*
-  Takes as input an array of json objects of the form [{"binsize": x, "id", y}]
-  and groups them by binsize into an output object: {binsize: {binsize: x, id, y}}
+  Takes as input an array of json objects of the form [{"binsize": x, "id", y1}{"binsize": x, "id", y2}]
+  and groups them by binsize into an output object: {binsize: {binsize: x, id, {y1,y2}}}
   */
-    var numberDatasets = data.length;
+    
     var output = {};
-    //TODO allow choice of binsize exist in both sets
-    let id = {};
-    for (let index = 0; index < numberDatasets; index++) {
-        var binsize = data[index]["binsize"];
-        output[binsize] = {};
-        output[binsize]["binsize"] = binsize;
-        output[binsize]["id"] = data[index]["id"];
+    for (let interval of data) {
+        var binsize = interval.binsize;
+        if (binsize in output) {
+            output[binsize]["id"].push(interval.id);
+        } else {
+            output[binsize] = { binsize: binsize, id: [] };
+            output[binsize]["id"].push(interval.id);
+        }
+    }
+    if (intersection == true) {
+        //TODO Remove binsizes where there is no intersection.
+        console.log("Intersection Tested")
     }
     return output;
 }
