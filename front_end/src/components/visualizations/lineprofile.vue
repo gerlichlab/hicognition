@@ -54,15 +54,15 @@ export default {
             var maxX = undefined;
             var minY = undefined;
             var maxY = undefined;
-            for (let single_data of this.lineData){
-                if (maxX == undefined || maxX < single_data.data.length){
+            for (let single_data of this.lineData) {
+                if (maxX == undefined || maxX < single_data.data.length) {
                     maxX = single_data.data.length;
                 }
-                if (minY == undefined || minY > min_array(single_data.data)){
+                if (minY == undefined || minY > min_array(single_data.data)) {
                     minY = min_array(single_data.data);
                 }
-                if (maxY == undefined || maxY < max_array(single_data.data)){
-                maxY = max_array(single_data.data);
+                if (maxY == undefined || maxY < max_array(single_data.data)) {
+                    maxY = max_array(single_data.data);
                 }
             }
 
@@ -95,13 +95,16 @@ export default {
                 .attr("class", "axis")
                 .attr("transform", "translate(0,0)")
                 .call(yAxis);
-            for (let single_data of this.lineData){
+            var color_index = 0;
+            for (let single_data of this.lineData) {
                 //console.log(single_data)
                 g.append("path")
                     .attr("d", line(single_data.data))
                     .attr("fill", "none")
-                    .attr("stroke", "steelblue")
+                    .attr("stroke", d3.schemeDark2[color_index])
                     .attr("stroke-width", 1.5);
+                
+                color_index = color_index + 1;
             }
         }
     },
@@ -117,7 +120,7 @@ export default {
         },
         lineprofileData: {
             deep: true,
-            handler(){
+            handler() {
                 this.redrawLinechart();
             }
         }
