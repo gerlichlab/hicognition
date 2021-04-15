@@ -118,7 +118,6 @@ export default {
         lineprofileData: {
             deep: true,
             handler(){
-                //console.log("triggered")
                 this.redrawLinechart();
             }
         }
