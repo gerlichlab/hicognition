@@ -141,7 +141,7 @@ export default {
                 id: this.id,
                 parentID: this.collectionID
             };
-            return this.$store.getters["compare/pileupExists"](queryObject);
+            return this.$store.getters["compare/widgetExists"](queryObject);
         },
         initializeWidgetFromEmpty: function() {
             // if state is selected for an empty widget, initializes it for the first time
