@@ -186,7 +186,8 @@ def get_averageIntervalData():
     for the specified intervals_id. Only returns pileup object if
     user owns the cooler dataset and intervals_id"""
     # unpack query string
-    dataset_id_list = request.args.getlist("dataset_id")
+    dataset_id_string = request.args.get("dataset_id")
+    dataset_id_list= dataset_id_string.split(",")
     intervals_id = request.args.get("intervals_id")
     file_collection = []
     for dataset_id in dataset_id_list:
@@ -213,7 +214,6 @@ def get_averageIntervalData():
             .filter(Dataset.id == dataset_id)
             .all()
         )
-
         file_collection.extend(all_files)
     return jsonify([dfile.to_json() for dfile in file_collection])
 
