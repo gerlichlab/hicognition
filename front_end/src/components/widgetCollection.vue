@@ -104,7 +104,7 @@
                         class="md-icon-button md-accent md-mini"
                         @click="increaseColumns"
                     >
-                        <md-icon>add</md-icon>
+                        <md-icon>chevron_right</md-icon>
                     </md-button>
                 </div>
                 <div>
@@ -113,28 +113,33 @@
                         @click="decreaseColumns"
                         :disabled="!decreaseColumnsAllowed"
                     >
-                        <md-icon>remove</md-icon>
+                        <md-icon>chevron_left</md-icon>
                     </md-button>
                 </div>
             </div>
         </div>
         <div class="full-width md-layout md-gutter md-alignment-center-center">
-            <div class="md-layout-item md-size-25">
-                <md-button
-                    class="md-icon-button md-accent md-mini"
-                    @click="increaseRows"
-                >
-                    <md-icon>add</md-icon>
-                </md-button>
+            <div class="md-layout-item md-size-40">
+                <div class="flex-container-horizontal">
+                    <div style="display: inline-block;">
+                    <md-button
+                        class="md-icon-button md-accent md-mini"
+                        @click="increaseRows"
+                    >
+                        <md-icon>expand_more</md-icon>
+                    </md-button>
+                    </div>
+                    <div style="display: inline-block;">
+                    <md-button
+                        class="md-icon-button md-accent md-mini"
+                        @click="decreaseRows"
+                        :disabled="!decreaseRowsAllowed"
+                    >
+                        <md-icon>expand_less</md-icon>
+                    </md-button>
+                    </div>
+                </div>
             </div>
-            <div class="md-layout-item md-size-25">
-                <md-button
-                    class="md-icon-button md-accent md-mini"
-                    @click="decreaseRows"
-                    :disabled="!decreaseRowsAllowed"
-                >
-                    <md-icon>remove</md-icon>
-                </md-button>
             </div>
         </div>
     </div>
@@ -181,7 +186,7 @@ export default {
                     this.paddingHeight +
                     40 +
                     (this.maxRowNumber + 1) * this.marginSizeHeight}px`,
-                background: "rgba(75, 75, 75, 0.1)",
+                background: "rgba(200, 200, 200, 0.2)",
                 "margin-right": "10px"
             };
         },
@@ -410,6 +415,13 @@ export default {
     display: flex;
     justify-content: center;
     flex-direction: column;
+    height: 100%;
+    align-items: center;
+}
+
+.flex-container-horizontal {
+    display: flex;
+    justify-content: center;
     height: 100%;
     align-items: center;
 }
