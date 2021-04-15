@@ -18,7 +18,7 @@ export default {
     name: "lineprofile",
     props: {
         title: String,
-        lineprofileData: Object,
+        lineprofileData: Array,
         width: Number,
         height: Number,
         lineprofileID: Number, // lineprofile ID is needed because I am accessing the div of the lineprofile via id and they must be different for different pilups
@@ -30,11 +30,12 @@ export default {
             return "lineprofile_" + this.lineprofileID;
         },
         lineData: function() {
-            return this.lineprofileData.data;
+            return this.lineprofileData[0].data;
         }
     },
     methods: {
         redrawLinechart: function() {
+            console.log(this.lineprofileData[0].data)
             var margin = { top: 10, right: 30, bottom: 20, left: 40 };
             d3.select(`#${this.lineprofileDivID}Svg`).remove();
             var line_svg = d3
