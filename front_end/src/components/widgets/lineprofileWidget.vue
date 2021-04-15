@@ -227,7 +227,7 @@ export default {
                 widgetDataRef: undefined,
                 dragImage: undefined,
                 widgetData: undefined,
-                selectedDataset: undefined,
+                selectedDataset: [],
                 selectedBinsize: undefined,
                 intervalID: collectionConfig["intervalID"],
                 emptyClass: ["smallMargin", "empty"],
@@ -342,7 +342,7 @@ export default {
             }
         },
         selectedDataset: function() {
-            if (this.selectedDataset.length == 0) {
+            if (this.selectedDataset == undefined || this.selectedDataset.length == 0) {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
             }
@@ -359,7 +359,6 @@ export default {
                 return;
             }
             // fetch widget data
-            console.log(this.binsizes);
             var selected_ids;
             for (let [key,entry] of Object.entries(this.binsizes)){
                 if (this.selectedBinsize == key){
