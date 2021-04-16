@@ -131,15 +131,24 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
     )
     # calculate number of bins
     bin_number = int(window_size / binsize) * 2
+    # make arget array
+    target_array = np.empty((len(stackup_regions), bin_number))
+    target_array.fill(np.nan)
+    # filter stackup_regions for chromoosmes that are in bigwig
+    chromosome_names = bbi.chromsizes(bigwig_dataset.file_path).keys()
+    good_chromosome_indices = np.arange(len(stackup_regions))[stackup_regions["chrom"] in chromosome_names]
+    good_regions = stackup_regions.iloc[good_chromosome_indices, :]
     # extract data
     stackup_array = bbi.stackup(
         bigwig_dataset.file_path,
-        chroms=stackup_regions["chrom"].to_list(),
-        starts=stackup_regions["start"].to_list(),
-        ends=stackup_regions["end"].to_list(),
+        chroms=good_regions["chrom"].to_list(),
+        starts=good_regions["start"].to_list(),
+        ends=good_regions["end"].to_list(),
         bins=bin_number,
         missing=np.nan,
     )
+    # put extracted data back in target array
+    target_array[good_chromosome_indices, :] = stackup_array
     # save full length array to file
     log.info("      Writing output...")
     file_uuid = uuid.uuid4().hex
@@ -147,8 +156,8 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
     file_name_line = file_uuid + "_line.npy"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
     file_path_line = os.path.join(current_app.config["UPLOAD_DIR"], file_name_line)
-    np.save(file_path, stackup_array)
-    line_array = np.nanmean(stackup_array, axis=0)
+    np.save(file_path, target_array)
+    line_array = np.nanmean(target_array, axis=0)
     np.save(file_path_line, line_array)
     # save downsampled array to file
     if len(stackup_regions) < current_app.config["STACKUP_THRESHOLD"]:
@@ -168,7 +177,7 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
         sub_sample_index = np.random.choice(
             index, current_app.config["STACKUP_THRESHOLD"]
         )
-        downsampled_array = stackup_array[sub_sample_index, :]
+        downsampled_array = target_array[sub_sample_index, :]
         file_name_small = file_uuid + "_small.npy"
         file_path_small = os.path.join(
             current_app.config["UPLOAD_DIR"], file_name_small

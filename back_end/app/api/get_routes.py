@@ -184,6 +184,8 @@ def get_averageIntervalData():
     user owns the cooler dataset and intervals_id"""
     # unpack query string
     dataset_id_string = request.args.get("dataset_id")
+    if dataset_id_string is None:
+        return invalid("Cooler/Bigwig datasets were not specified!")
     dataset_id_list= dataset_id_string.split(",")
     intervals_id = request.args.get("intervals_id")
     file_collection = []
