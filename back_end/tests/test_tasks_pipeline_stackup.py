@@ -129,10 +129,7 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.bbi.stackup")
     @patch("app.pipeline_steps.pd.read_csv")
     def test_stackup_called_correctly_regions_start_end(
-        self,
-        mock_read_csv,
-        mock_stackup,
-        mock_chromsizes
+        self, mock_read_csv, mock_stackup, mock_chromsizes
     ):
         """Tests whether regions that are defined as chrom, start, end are handled correctly."""
         BIN_NUMBER = 40
@@ -157,7 +154,9 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.bbi.chromsizes")
     @patch("app.pipeline_steps.bbi.stackup")
     @patch("app.pipeline_steps.pd.read_csv")
-    def test_stackup_called_correctly_regions_pos(self, mock_read_csv, mock_stackup, mock_chromsizes):
+    def test_stackup_called_correctly_regions_pos(
+        self, mock_read_csv, mock_stackup, mock_chromsizes
+    ):
         """Tests whether regions that are defined as chrom, start, end are handled correctly."""
         BIN_NUMBER = 40
         mock_chromsizes.return_value = {"chr1": "test"}
@@ -265,9 +264,9 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
         """Tests whether large regions with wrong chromosome names (not in bigwig) are skipped correclty """
         test_df_interval = pd.DataFrame(
             {
-                "chrom": ["chr1", "chrT" ,"chr1", "chrU"],
+                "chrom": ["chr1", "chrT", "chr1", "chrU"],
                 "start": [100000, 50000, 500000, 1234],
-                "end": [200000, 50000 ,600000, 5678],
+                "end": [200000, 50000, 600000, 5678],
             }
         )
         mock_read_csv.return_value = test_df_interval
@@ -280,8 +279,11 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
             1
         ).file_path  # filepath of stackup file
         loaded_dataset = np.load(file_path)
-        expected_dataset = np.array([[5.0, 0.0], [np.nan, np.nan] ,[6.0, 0.0], [np.nan,np.nan]])
+        expected_dataset = np.array(
+            [[5.0, 0.0], [np.nan, np.nan], [6.0, 0.0], [np.nan, np.nan]]
+        )
         np.testing.assert_array_almost_equal(loaded_dataset, expected_dataset)
+
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

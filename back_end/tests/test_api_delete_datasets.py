@@ -77,8 +77,12 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         file_path_small_3 = self.create_empty_file_in_tempdir("test3_small.csv")
         file_path_indices_3 = self.create_empty_file_in_tempdir("test3_indices.csv")
         individualIntervalData_1 = IndividualIntervalData(
-            id=1, file_path=file_path_pr_3, dataset_id=5, intervals_id=1, file_path_small=file_path_small_3,
-            file_path_indices_small=file_path_indices_3
+            id=1,
+            file_path=file_path_pr_3,
+            dataset_id=5,
+            intervals_id=1,
+            file_path_small=file_path_small_3,
+            file_path_indices_small=file_path_indices_3,
         )
         # create averageIntervalData for not owned data_set
         file_path_pu_2 = self.create_empty_file_in_tempdir("test2.csv")
@@ -103,7 +107,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
                 averageIntervalData_1,
                 averageIntervalData_2,
                 averageIntervalData_3,
-                individualIntervalData_1
+                individualIntervalData_1,
             ]
         )
         db.session.commit()
@@ -194,7 +198,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             "test5.csv",
             "test1.bw",
             "test3_small.csv",
-            "test3_indices.csv"
+            "test3_indices.csv",
         }
         self.assertEqual(files_tempdir, expected)
 
@@ -234,7 +238,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             "test2.bed",
             "test2.bedpe",
             "test2.csv",
-            "test1.bw"
+            "test1.bw",
         }
         self.assertEqual(files_tempdir, expected)
 
@@ -255,7 +259,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 200)
         # check database state
         dataset_ids = set(entry.id for entry in Dataset.query.all())
-        self.assertEqual(dataset_ids, {1, 2,3, 4})
+        self.assertEqual(dataset_ids, {1, 2, 3, 4})
         intervals_ids = set(entry.id for entry in Intervals.query.all())
         self.assertEqual(intervals_ids, {1, 2})
         averageIntervalData_ids = set(
@@ -276,7 +280,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             "test2.bed",
             "test1.bedpe",
             "test2.bedpe",
-            "test2.csv"
+            "test2.csv",
         }
         self.assertEqual(files_tempdir, expected)
 
