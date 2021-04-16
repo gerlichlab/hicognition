@@ -48,7 +48,28 @@ db.session.add(new_user)
 db.session.commit()
 ```
 
+or with the new command line tool:
+```
+Usage: flask user define [OPTIONS] NAME
+
+Creates a new user either with defined password or password prompt. If
+user with the name exists already, password is redefined.
+
+Options:
+-p, --password TEXT
+--help Show this message and exit.
+```
+Example:
+
+```
+docker exec -it flask-dev bash
+source activate flask
+flask user define dummy -p 1234
+```
+
+
 view the app on ```http://localhost:8080```
+
 
 ## Running tests backend
 
