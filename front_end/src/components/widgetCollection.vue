@@ -191,12 +191,18 @@ export default {
             };
         },
         decreaseRowsAllowed: function(){
+            if (this.maxRowNumber == 0){
+                return false
+            }
             var maxRowElements = Math.max(
                 ...this.children.map(element => element.rowIndex)
             );
             return this.maxRowNumber > maxRowElements
         },
         decreaseColumnsAllowed: function() {
+            if (this.maxColumnNumber == 0){
+                return false
+            }
             var maxColElements = Math.max(
                 ...this.children.map(element => element.colIndex)
             );
