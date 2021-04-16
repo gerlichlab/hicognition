@@ -1,10 +1,8 @@
 import sys
 import unittest
 from unittest.mock import patch
-from unittest.mock import MagicMock, PropertyMock
 import pandas as pd
 import numpy as np
-from pandas.testing import assert_series_equal
 from test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
@@ -127,14 +125,19 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
         db.session.add(self.intervals2)
         db.session.commit()
 
+    @patch("app.pipeline_steps.bbi.chromsizes")
     @patch("app.pipeline_steps.bbi.stackup")
     @patch("app.pipeline_steps.pd.read_csv")
     def test_stackup_called_correctly_regions_start_end(
         self,
         mock_read_csv,
         mock_stackup,
+        mock_chromsizes
     ):
         """Tests whether regions that are defined as chrom, start, end are handled correctly."""
+        BIN_NUMBER = 40
+        mock_chromsizes.return_value = {"chr1": "test"}
+        mock_stackup.return_value = np.empty((2, BIN_NUMBER))
         test_df_interval = pd.DataFrame(
             {0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000]}
         )
@@ -147,14 +150,18 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
             chroms=["chr1", "chr1"],
             starts=[-199500, -198500],
             ends=[200500, 201500],
-            bins=40,
+            bins=BIN_NUMBER,
             missing=np.nan,
         )
 
+    @patch("app.pipeline_steps.bbi.chromsizes")
     @patch("app.pipeline_steps.bbi.stackup")
     @patch("app.pipeline_steps.pd.read_csv")
-    def test_stackup_called_correctly_regions_pos(self, mock_read_csv, mock_stackup):
+    def test_stackup_called_correctly_regions_pos(self, mock_read_csv, mock_stackup, mock_chromsizes):
         """Tests whether regions that are defined as chrom, start, end are handled correctly."""
+        BIN_NUMBER = 40
+        mock_chromsizes.return_value = {"chr1": "test"}
+        mock_stackup.return_value = np.empty((2, BIN_NUMBER))
         test_df_interval = pd.DataFrame({0: ["chr1", "chr1"], 1: [500, 1500]})
         mock_read_csv.return_value = test_df_interval
         # dispatch call
@@ -165,7 +172,7 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
             chroms=["chr1", "chr1"],
             starts=[-199500, -198500],
             ends=[200500, 201500],
-            bins=40,
+            bins=BIN_NUMBER,
             missing=np.nan,
         )
 
@@ -250,6 +257,31 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
         self.assertEqual(loaded_dataset_full.shape[0], 20)
         self.assertEqual(loaded_dataset_small.shape[0], 10)
 
+    @patch("app.pipeline_steps.pd.read_csv")
+    def test_regions_with_wrong_chromosomes_skipped_correctly(
+        self,
+        mock_read_csv,
+    ):
+        """Tests whether large regions with wrong chromosome names (not in bigwig) are skipped correclty """
+        test_df_interval = pd.DataFrame(
+            {
+                "chrom": ["chr1", "chrT" ,"chr1", "chrU"],
+                "start": [100000, 50000, 500000, 1234],
+                "end": [200000, 50000 ,600000, 5678],
+            }
+        )
+        mock_read_csv.return_value = test_df_interval
+        # dispatch call
+        perform_stackup(
+            self.dataset2, self.intervals2, 50000
+        )  # interfls2 has a windowsize of 50kb, with binsize of 50kb, this will produce 2 values per example
+        # check whether example is correct
+        file_path = IndividualIntervalData.query.get(
+            1
+        ).file_path  # filepath of stackup file
+        loaded_dataset = np.load(file_path)
+        expected_dataset = np.array([[5.0, 0.0], [np.nan, np.nan] ,[6.0, 0.0], [np.nan,np.nan]])
+        np.testing.assert_array_almost_equal(loaded_dataset, expected_dataset)
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

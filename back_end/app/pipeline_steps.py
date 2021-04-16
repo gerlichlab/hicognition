@@ -136,7 +136,8 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
     target_array.fill(np.nan)
     # filter stackup_regions for chromoosmes that are in bigwig
     chromosome_names = bbi.chromsizes(bigwig_dataset.file_path).keys()
-    good_chromosome_indices = np.arange(len(stackup_regions))[stackup_regions["chrom"] in chromosome_names]
+    is_good_chromosome = [True if chrom in chromosome_names else False for chrom in stackup_regions["chrom"]]
+    good_chromosome_indices = np.arange(len(stackup_regions))[is_good_chromosome]
     good_regions = stackup_regions.iloc[good_chromosome_indices, :]
     # extract data
     stackup_array = bbi.stackup(
