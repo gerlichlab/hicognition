@@ -24,22 +24,28 @@
                                     :disabled="!datasetsAvailable"
                                     required
                                 >
-                                 <md-optgroup label="Coolers" v-if="coolersAvailable">
-                                    <md-option
-                                        v-for="item in availableCoolers"
-                                        :value="item.id"
-                                        :key="item.id"
-                                        >{{ item.dataset_name }}</md-option
+                                    <md-optgroup
+                                        label="Coolers"
+                                        v-if="coolersAvailable"
                                     >
-                                 </md-optgroup>
-                                <md-optgroup label="Bigwigs" v-if="bigwigsAvailable">
-                                    <md-option
-                                        v-for="item in availableBigwigs"
-                                        :value="item.id"
-                                        :key="item.id"
-                                        >{{ item.dataset_name }}</md-option
+                                        <md-option
+                                            v-for="item in availableCoolers"
+                                            :value="item.id"
+                                            :key="item.id"
+                                            >{{ item.dataset_name }}</md-option
+                                        >
+                                    </md-optgroup>
+                                    <md-optgroup
+                                        label="Bigwigs"
+                                        v-if="bigwigsAvailable"
                                     >
-                                 </md-optgroup>
+                                        <md-option
+                                            v-for="item in availableBigwigs"
+                                            :value="item.id"
+                                            :key="item.id"
+                                            >{{ item.dataset_name }}</md-option
+                                        >
+                                    </md-optgroup>
                                 </md-select>
                                 <span
                                     class="md-error"
@@ -145,9 +151,7 @@
                 <md-progress-bar md-mode="indeterminate" v-if="sending" />
                 <!-- Buttons for submission and closing -->
                 <md-card-actions>
-                    <span
-                        class="margin-right md-accent red"
-                        v-if="binsInvalid"
+                    <span class="margin-right md-accent red" v-if="binsInvalid"
                         >Specified sizes are not valid!</span
                     >
                     <md-button
@@ -179,10 +183,14 @@
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
 import { apiMixin, formattingMixin } from "../../mixins";
-import { group_intervals_on_windowsize, min_array, max_array } from "../../functions";
+import {
+    group_intervals_on_windowsize,
+    min_array,
+    max_array
+} from "../../functions";
 
-const MAX_BINS = 300000
-const MAX_BINS_COOLER = 20000
+const MAX_BINS = 300000;
+const MAX_BINS_COOLER = 20000;
 
 export default {
     name: "preprocessDatasetForm",
@@ -295,26 +303,30 @@ export default {
                 };
             }
         },
-        isTooLargeBigwig(){
+        isTooLargeBigwig() {
             // checks whether preprocessing would produce file with too many bins for bigwig
-            var numBins = max_array(this.form.windowsizes)/min_array(this.form.binsizes)
+            var numBins =
+                max_array(this.form.windowsizes) /
+                min_array(this.form.binsizes);
             // *1000 because small subset that needs to be displayed is a 1000 pixels large
-            return (numBins * 1000) > MAX_BINS
+            return numBins * 1000 > MAX_BINS;
         },
-        isTooLargeCooler(){
+        isTooLargeCooler() {
             // checks whether preprocessing would produce file with too many bins for cooler
-            var numBins = max_array(this.form.windowsizes)/min_array(this.form.binsizes)
-            return (numBins**2) > MAX_BINS_COOLER
+            var numBins =
+                max_array(this.form.windowsizes) /
+                min_array(this.form.binsizes);
+            return numBins ** 2 > MAX_BINS_COOLER;
         },
-        binsizesDivideWindowsizes(){
-            for (var binsize of this.form.binsizes){
-                for (var windowsize of this.form.windowsizes){
-                    if (windowsize % binsize != 0){
-                        return false
+        binsizesDivideWindowsizes() {
+            for (var binsize of this.form.binsizes) {
+                for (var windowsize of this.form.windowsizes) {
+                    if (windowsize % binsize != 0) {
+                        return false;
                     }
                 }
             }
-            return true
+            return true;
         },
         clearForm() {
             this.$v.$reset();
@@ -329,13 +341,19 @@ export default {
         },
         saveDataset() {
             // check whether binsize and windowsize selection would produce huge matrix
-            if (this.isCooler(this.form.datasetID) && (this.isTooLargeCooler() || !this.binsizesDivideWindowsizes())){
-                    this.binsInvalid = true;
-                    return
+            if (
+                this.isCooler(this.form.datasetID) &&
+                (this.isTooLargeCooler() || !this.binsizesDivideWindowsizes())
+            ) {
+                this.binsInvalid = true;
+                return;
             }
-            if (!this.isCooler(this.form.datasetID) && this.isTooLargeBigwig()){
-                    this.binsInvalid = true;
-                    return
+            if (
+                !this.isCooler(this.form.datasetID) &&
+                this.isTooLargeBigwig()
+            ) {
+                this.binsInvalid = true;
+                return;
             }
             // reset matrix too large if resubmission
             this.binsInvalid = false;
@@ -347,7 +365,7 @@ export default {
             for (var key in prepared_data) {
                 formData.append(key, prepared_data[key]);
             }
-            // API call 
+            // API call
             this.postData("preprocess/", formData).then(response => {
                 if (response) {
                     this.datasetSaved = true;
@@ -412,7 +430,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .margin-right {
     margin-right: 10px;
 }
@@ -427,5 +444,4 @@ export default {
 .red {
     color: rgb(255, 23, 68);
 }
-
 </style>

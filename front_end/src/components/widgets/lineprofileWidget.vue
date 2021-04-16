@@ -241,8 +241,8 @@ export default {
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
                 var widgetDataRef = widgetData["widgetDataRef"];
-                var widgetDataValues = []
-                for (var widget_data_id of widgetDataRef){
+                var widgetDataValues = [];
+                for (var widget_data_id of widgetDataRef) {
                     // deinfe store queries
                     var payload = {
                         id: widget_data_id
@@ -251,7 +251,7 @@ export default {
                     var new_widgetDataValues = this.$store.getters[
                         "compare/getWidgetDataLineprofile"
                     ](payload);
-                    widgetDataValues.push(new_widgetDataValues)
+                    widgetDataValues.push(new_widgetDataValues);
                 }
             } else {
                 widgetDataValues = undefined;
@@ -385,7 +385,6 @@ export default {
                 selected_data.push(await this.getlineprofileData(selected_id));
             }
             this.widgetData = selected_data;
-
         },
         selectedBinsize: async function() {
             if (!this.selectedBinsize) {

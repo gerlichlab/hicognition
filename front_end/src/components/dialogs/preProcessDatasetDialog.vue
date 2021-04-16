@@ -4,10 +4,15 @@
             <md-dialog-title
                 >Preprocess Dataset<md-tooltip md-direction="left">
                     <div>
-                        <span class="md-title">Information about preprocessing</span>
+                        <span class="md-title"
+                            >Information about preprocessing</span
+                        >
                     </div>
-                    <div v-for="item, index in preprocessDataSetText" :key="index">
-                        <span class="md-subheading">{{ item}}</span>
+                    <div
+                        v-for="(item, index) in preprocessDataSetText"
+                        :key="index"
+                    >
+                        <span class="md-subheading">{{ item }}</span>
                     </div>
                 </md-tooltip>
             </md-dialog-title>

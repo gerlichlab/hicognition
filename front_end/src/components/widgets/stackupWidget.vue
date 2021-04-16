@@ -57,10 +57,15 @@
                     <md-menu
                         md-size="big"
                         md-direction="bottom-end"
-                        :md-offset-x="210" :md-offset-y="-36"
+                        :md-offset-x="210"
+                        :md-offset-y="-36"
                     >
                         <div class="padding-top-large padding-right">
-                            <md-button class="md-icon-button" md-menu-trigger :disabled="!allowSortOrderSelection">
+                            <md-button
+                                class="md-icon-button"
+                                md-menu-trigger
+                                :disabled="!allowSortOrderSelection"
+                            >
                                 <md-icon>menu_open</md-icon>
                             </md-button>
                         </div>
@@ -78,9 +83,10 @@
                                 :key="item"
                                 @click="selectedSortOrder = item"
                                 >{{ item }}
-                                <md-icon v-if="item == selectedSortOrder">done</md-icon>
-                                </md-menu-item
-                            >
+                                <md-icon v-if="item == selectedSortOrder"
+                                    >done</md-icon
+                                >
+                            </md-menu-item>
                             <md-divider></md-divider>
                             <div class="md-layout">
                                 <div
@@ -161,23 +167,32 @@ export default {
     },
     computed: {
         sortedMatrix: function() {
-            if (!this.widgetData){
-                return undefined
+            if (!this.widgetData) {
+                return undefined;
             }
-            if (this.selectedSortOrder == "center column"){
-                var sorted_matrix = sort_matrix_by_center_column(this.widgetData["data"], this.widgetData["shape"], this.isAscending)
+            if (this.selectedSortOrder == "center column") {
+                var sorted_matrix = sort_matrix_by_center_column(
+                    this.widgetData["data"],
+                    this.widgetData["shape"],
+                    this.isAscending
+                );
                 return {
-                    "data": sorted_matrix,
-                    "shape": this.widgetData["shape"],
-                    "dtype": this.widgetData["dtype"]
-                }
-            }else{
-                var sorted_matrix = sort_matrix_by_index(this.widgetData["data"], this.widgetData["shape"], this.sortorders[this.selectedSortOrder], this.isAscending)
+                    data: sorted_matrix,
+                    shape: this.widgetData["shape"],
+                    dtype: this.widgetData["dtype"]
+                };
+            } else {
+                var sorted_matrix = sort_matrix_by_index(
+                    this.widgetData["data"],
+                    this.widgetData["shape"],
+                    this.sortorders[this.selectedSortOrder],
+                    this.isAscending
+                );
                 return {
-                    "data": sorted_matrix,
-                    "shape": this.widgetData["shape"],
-                    "dtype": this.widgetData["dtype"]
-                }
+                    data: sorted_matrix,
+                    shape: this.widgetData["shape"],
+                    dtype: this.widgetData["dtype"]
+                };
             }
         },
         showData: function() {
@@ -187,10 +202,10 @@ export default {
             return false;
         },
         allowSortOrderSelection: function() {
-            if (this.sortorders){
-                return true
+            if (this.sortorders) {
+                return true;
             }
-            return false
+            return false;
         },
         allowDatasetSelection: function() {
             if (this.intervalID) {

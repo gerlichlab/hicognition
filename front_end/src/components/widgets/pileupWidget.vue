@@ -119,11 +119,11 @@ export default {
         colIndex: Number
     },
     computed: {
-        colormap: function(){
-            if (this.pileupType == "ICCF"){
-                return "fall"
+        colormap: function() {
+            if (this.pileupType == "ICCF") {
+                return "fall";
             }
-            return "blueWhiteRed"
+            return "blueWhiteRed";
         },
         pileupType: function() {
             if (this.isICCF) {
@@ -178,7 +178,7 @@ export default {
                 isICCF: this.isICCF,
                 widgetType: "Pileup",
                 minHeatmap: this.minHeatmap,
-                maxHeatmap: this.maxHeatmap,
+                maxHeatmap: this.maxHeatmap
             };
         },
         deleteWidget: function() {
@@ -345,7 +345,7 @@ export default {
                 pileupType: pileupType,
                 id: id
             };
-            console.log(queryObject)
+            console.log(queryObject);
             if (this.$store.getters["compare/pileupExists"](queryObject)) {
                 return this.$store.getters["compare/getWidgetDataPileup"](
                     queryObject
@@ -426,10 +426,10 @@ export default {
                 ObsExp: obs_exp_data
             };
         },
-        isICCF: function(){
+        isICCF: function() {
             // reset min and max when this changes
-            this.minHeatmap = undefined
-            this.maxHeatmap = undefined
+            this.minHeatmap = undefined;
+            this.maxHeatmap = undefined;
         }
     }
 };
