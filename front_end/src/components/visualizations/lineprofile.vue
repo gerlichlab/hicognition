@@ -103,7 +103,7 @@ export default {
                     .attr("fill", "none")
                     .attr("stroke", d3.schemeDark2[color_index])
                     .attr("stroke-width", 1.5);
-                
+
                 color_index = color_index + 1;
             }
         }

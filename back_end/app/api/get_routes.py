@@ -70,6 +70,7 @@ def get_datasets(dtype):
     else:
         return not_found(f"option: '{dtype}' not understood")
 
+
 @api.route("/datasets/<dataset_id>/name/", methods=["GET"])
 @auth.login_required
 def get_name_of_dataset(dataset_id):
@@ -84,6 +85,7 @@ def get_name_of_dataset(dataset_id):
             f"Dataset with id '{dataset_id}' is not owned by logged in user!"
         )
     return jsonify(dataset.dataset_name)
+
 
 @api.route("/datasets/<dataset_id>/intervals/", methods=["GET"])
 @auth.login_required
@@ -186,7 +188,7 @@ def get_averageIntervalData():
     dataset_id_string = request.args.get("dataset_id")
     if dataset_id_string is None:
         return invalid("Cooler/Bigwig datasets were not specified!")
-    dataset_id_list= dataset_id_string.split(",")
+    dataset_id_list = dataset_id_string.split(",")
     intervals_id = request.args.get("intervals_id")
     file_collection = []
     for dataset_id in dataset_id_list:
@@ -276,7 +278,10 @@ def get_pileup_data(entry_id):
     # Dataset is owned, return the data
     np_data = np.load(pileup.file_path)
     # Convert np.nan and np.isinf to None -> this is handeled by jsonify correctly
-    flat_data = [entry if not (np.isnan(entry) or np.isinf(entry)) else None for entry in np_data.flatten()]
+    flat_data = [
+        entry if not (np.isnan(entry) or np.isinf(entry)) else None
+        for entry in np_data.flatten()
+    ]
     json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
     return jsonify(json_data)
 
@@ -301,7 +306,10 @@ def get_stackup_data(entry_id):
     # dataset is owned, return the smalldata
     np_data = np.load(stackup.file_path_small)
     # Convert np.nan and np.isinf to None -> this is handeled by jsonify correctly
-    flat_data = [entry if not (np.isnan(entry) or np.isinf(entry)) else None for entry in np_data.flatten()]
+    flat_data = [
+        entry if not (np.isnan(entry) or np.isinf(entry)) else None
+        for entry in np_data.flatten()
+    ]
     json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
     return jsonify(json_data)
 

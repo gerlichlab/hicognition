@@ -1,8 +1,5 @@
 <template>
-    <div
-        :style="widgetContainerBorder"
-        class="md-elevation-5"
-    >
+    <div :style="widgetContainerBorder" class="md-elevation-5">
         <md-card :style="cssStyle" ref="collectionCard" class="md-elevation-0">
             <md-card-header>
                 <div class="md-layout">
@@ -122,24 +119,23 @@
             <div class="md-layout-item md-size-40">
                 <div class="flex-container-horizontal">
                     <div style="display: inline-block;">
-                    <md-button
-                        class="md-icon-button md-accent md-mini"
-                        @click="increaseRows"
-                    >
-                        <md-icon>expand_more</md-icon>
-                    </md-button>
+                        <md-button
+                            class="md-icon-button md-accent md-mini"
+                            @click="increaseRows"
+                        >
+                            <md-icon>expand_more</md-icon>
+                        </md-button>
                     </div>
                     <div style="display: inline-block;">
-                    <md-button
-                        class="md-icon-button md-accent md-mini"
-                        @click="decreaseRows"
-                        :disabled="!decreaseRowsAllowed"
-                    >
-                        <md-icon>expand_less</md-icon>
-                    </md-button>
+                        <md-button
+                            class="md-icon-button md-accent md-mini"
+                            @click="decreaseRows"
+                            :disabled="!decreaseRowsAllowed"
+                        >
+                            <md-icon>expand_less</md-icon>
+                        </md-button>
                     </div>
                 </div>
-            </div>
             </div>
         </div>
     </div>
@@ -197,7 +193,7 @@ export default {
             var maxRowElements = Math.max(
                 ...this.children.map(element => element.rowIndex)
             );
-            return this.maxRowNumber > maxRowElements
+            return this.maxRowNumber > maxRowElements;
         },
         decreaseColumnsAllowed: function() {
             if (this.maxColumnNumber == 0){
@@ -206,7 +202,7 @@ export default {
             var maxColElements = Math.max(
                 ...this.children.map(element => element.colIndex)
             );
-            return this.maxColumnNumber > maxColElements
+            return this.maxColumnNumber > maxColElements;
         },
         windowSizesAvailable: function() {
             if (this.windowSizes.length != 0) {
@@ -441,9 +437,9 @@ export default {
 }
 
 .column-button-container {
-    height:90%;
-    width:40px;
-    display:inline-block;
+    height: 90%;
+    width: 40px;
+    display: inline-block;
 }
 
 .inline {

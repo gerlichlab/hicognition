@@ -185,9 +185,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
 
     @patch("app.models.User.launch_task")
-    def test_pipeline_stackup_is_called_correctly_for_owned_dataset(
-        self, mock_launch
-    ):
+    def test_pipeline_stackup_is_called_correctly_for_owned_dataset(self, mock_launch):
         """Tests whether bigwig pipeline to do pileups is called correctly."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -236,7 +234,6 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
             [10000, 20000, 40000],
             [1, 2, 3, 4],
         )
-
 
     @patch("app.models.User.launch_task")
     def test_tasks_deleted_after_relaunch(self, mock_launch):

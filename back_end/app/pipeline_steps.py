@@ -136,7 +136,10 @@ def perform_stackup(bigwig_dataset, intervals, binsize):
     target_array.fill(np.nan)
     # filter stackup_regions for chromoosmes that are in bigwig
     chromosome_names = bbi.chromsizes(bigwig_dataset.file_path).keys()
-    is_good_chromosome = [True if chrom in chromosome_names else False for chrom in stackup_regions["chrom"]]
+    is_good_chromosome = [
+        True if chrom in chromosome_names else False
+        for chrom in stackup_regions["chrom"]
+    ]
     good_chromosome_indices = np.arange(len(stackup_regions))[is_good_chromosome]
     good_regions = stackup_regions.iloc[good_chromosome_indices, :]
     # extract data
@@ -205,10 +208,9 @@ def add_stackup_db(
     """Adds stackup to database"""
     # check if old individual interval data exists and delete them
     test_query = IndividualIntervalData.query.filter(
-        (IndividualIntervalData.binsize
-        == int(binsize)) & (IndividualIntervalData.intervals_id
-        == intervals_id) & (IndividualIntervalData.dataset_id
-        == bigwig_dataset_id)
+        (IndividualIntervalData.binsize == int(binsize))
+        & (IndividualIntervalData.intervals_id == intervals_id)
+        & (IndividualIntervalData.dataset_id == bigwig_dataset_id)
     ).all()
     for entry in test_query:
         remove_safely(entry.file_path)
@@ -233,10 +235,9 @@ def add_line_db(file_path, binsize, intervals_id, bigwig_dataset_id):
     """Adds pileup region to database"""
     # check if old average interval data exists and delete them
     test_query = AverageIntervalData.query.filter(
-        (AverageIntervalData.binsize
-        == int(binsize)) & (AverageIntervalData.intervals_id
-        == intervals_id) & (AverageIntervalData.dataset_id
-        == bigwig_dataset_id)
+        (AverageIntervalData.binsize == int(binsize))
+        & (AverageIntervalData.intervals_id == intervals_id)
+        & (AverageIntervalData.dataset_id == bigwig_dataset_id)
     ).all()
     for entry in test_query:
         remove_safely(entry.file_path)
@@ -258,10 +259,10 @@ def add_pileup_db(file_path, binsize, intervals_id, cooler_dataset_id, pileup_ty
     """Adds pileup region to database and deletes any old pileups with the same parameter combination."""
     # check if old average interval data exists and delete them
     test_query = AverageIntervalData.query.filter(
-        (AverageIntervalData.binsize
-        == int(binsize)) & (AverageIntervalData.intervals_id
-        == intervals_id) & (AverageIntervalData.dataset_id
-        == cooler_dataset_id) & (AverageIntervalData.value_type == pileup_type)
+        (AverageIntervalData.binsize == int(binsize))
+        & (AverageIntervalData.intervals_id == intervals_id)
+        & (AverageIntervalData.dataset_id == cooler_dataset_id)
+        & (AverageIntervalData.value_type == pileup_type)
     ).all()
     for entry in test_query:
         remove_safely(entry.file_path)

@@ -5,7 +5,13 @@ from flask import g
 from .helpers import is_dataset_deletion_denied, remove_safely
 from . import api
 from .. import db
-from ..models import BedFileMetadata, Intervals, Dataset, AverageIntervalData, IndividualIntervalData
+from ..models import (
+    BedFileMetadata,
+    Intervals,
+    Dataset,
+    AverageIntervalData,
+    IndividualIntervalData,
+)
 from .authentication import auth
 from .errors import forbidden, invalid, not_found
 
@@ -42,7 +48,9 @@ def delete_dataset(dataset_id):
         individualIntervalData = IndividualIntervalData.query.filter(
             IndividualIntervalData.intervals_id.in_([entry.id for entry in intervals])
         ).all()
-        metadata = BedFileMetadata.query.filter(BedFileMetadata.dataset_id == dataset_id).all()
+        metadata = BedFileMetadata.query.filter(
+            BedFileMetadata.dataset_id == dataset_id
+        ).all()
     if dataset.filetype == "bigwig":
         averageIntervalData = AverageIntervalData.query.filter(
             AverageIntervalData.dataset_id == dataset_id

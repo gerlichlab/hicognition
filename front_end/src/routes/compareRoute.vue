@@ -39,7 +39,10 @@ export default {
         },
         addCollection: function() {
             // add newEntry to store for collection
-            this.$store.commit("compare/createEmptyWidgetCollection", this.currentID);
+            this.$store.commit(
+                "compare/createEmptyWidgetCollection",
+                this.currentID
+            );
             this.currentID += 1;
         }
     },

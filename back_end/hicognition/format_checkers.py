@@ -62,6 +62,7 @@ def is_mcooler(file_path, chromosome_names):
         return False
     return True
 
+
 FORMAT_CHECKERS = {
     "bedfile": is_bed_file_correctly_formatted,
     "cooler": is_mcooler,

@@ -4,16 +4,20 @@
             <md-list-item class="md-alignment-top-center">
                 <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-1">
-                    <div class="small-margin" ref="canvasDiv"/>
+                    <div class="small-margin" ref="canvasDiv" />
                     <!-- this prevents drag events to allow slider change without causing widget drag -->
-                    <div draggable="true" @dragstart.prevent.stop class="slider-container">
+                    <div
+                        draggable="true"
+                        @dragstart.prevent.stop
+                        class="slider-container"
+                    >
                         <double-range-slider
-                        :sliderWidth="width/2"
-                        :sliderMin="minValue"
-                        :sliderMax="maxValue"
-                        :sliderPositionMin="minHeatmapValue"
-                        :sliderPositionMax="maxHeatmapValue"
-                        @slider-change="handleColorChange"
+                            :sliderWidth="width / 2"
+                            :sliderMin="minValue"
+                            :sliderMax="maxValue"
+                            :sliderPositionMin="minHeatmapValue"
+                            :sliderPositionMax="maxHeatmapValue"
+                            @slider-change="handleColorChange"
                         />
                     </div>
                 </md-content>
@@ -22,12 +26,12 @@
     </div>
 </template>
 <script>
-import * as PIXI from 'pixi.js-legacy'
+import * as PIXI from "pixi.js-legacy";
 import { getScale } from "../../colorScales.js";
-import doubleRangeSlider from '../ui/doubleRangeSlider.vue';
-import {min_array, max_array} from "../../functions"
+import doubleRangeSlider from "../ui/doubleRangeSlider.vue";
+import { min_array, max_array } from "../../functions";
 
-const NAN_COLOR = [1, 1, 1] // white nan color
+const NAN_COLOR = [1, 1, 1]; // white nan color
 
 export default {
     name: "stackup",
@@ -46,55 +50,58 @@ export default {
         log: Boolean
     },
     computed: {
-        stackupValues: function(){
+        stackupValues: function() {
             /*
                 applies log if defined
             */
-            if (this.log){
-                return this.stackupData["data"].map((val) => {
-                    if (val && (val > 0)){
-                        return Math.log2(val)
+            if (this.log) {
+                return this.stackupData["data"].map(val => {
+                    if (val && val > 0) {
+                        return Math.log2(val);
                     }
-                    return null
+                    return null;
                 });
             }
-            return this.stackupData["data"]
+            return this.stackupData["data"];
         },
-        stackupDimensions: function(){
-            return this.stackupData["shape"]
+        stackupDimensions: function() {
+            return this.stackupData["shape"];
         },
-        stackupDtype: function(){
-            return this.stackupData["dtype"]
+        stackupDtype: function() {
+            return this.stackupData["dtype"];
         },
         minValue: function() {
             // find minimum by hand because Math.min cannot handle more than
             // a few k elements...
-            return min_array(this.stackupValues)
+            return min_array(this.stackupValues);
         },
         maxValue: function() {
             // maximum value for heatmap lookuptable = maximum value in data
             // filter out nans and extract values into array
-            return max_array(this.stackupValues)
+            return max_array(this.stackupValues);
         },
         rgbArray: function() {
             // array with rgba values for pixi Texture.fromBuffer
             var bufferArray = [];
-            for (var element of this.stackupValues){
+            for (var element of this.stackupValues) {
                 // convert rgb values into range between 0 and 1
                 var colorValues;
-                if (element){
-                    colorValues = this.colorScale(element).split(/[\,,(,)]/).slice(1,4).map((element) => Number(element)/255);
-                }else{
+                if (element) {
+                    colorValues = this.colorScale(element)
+                        .split(/[\,,(,)]/)
+                        .slice(1, 4)
+                        .map(element => Number(element) / 255);
+                } else {
                     colorValues = NAN_COLOR;
                 }
                 // add to bufferarray
-                for (var value of colorValues){
-                    bufferArray.push(value)
+                for (var value of colorValues) {
+                    bufferArray.push(value);
                 }
                 // add saturation of rgba to 1
-                bufferArray.push(1.0)
+                bufferArray.push(1.0);
             }
-            return new Float32Array(bufferArray)
+            return new Float32Array(bufferArray);
         }
     },
     data: function() {
@@ -110,16 +117,20 @@ export default {
         };
     },
     methods: {
-        handleColorChange: function(data){
-            this.$emit('slider-change', data) // propagate up to store in store
-            this.createColorMap(...data)
-            this.drawHeatmap()
+        handleColorChange: function(data) {
+            this.$emit("slider-change", data); // propagate up to store in store
+            this.createColorMap(...data);
+            this.drawHeatmap();
         },
         createColorMap: function(minVal, maxVal) {
-            this.colorScale = getScale(minVal, maxVal, this.colormap)
+            this.colorScale = getScale(minVal, maxVal, this.colormap);
         },
         drawHeatmap: function() {
-            this.texture = PIXI.Texture.fromBuffer(this.rgbArray, this.stackupDimensions[1], this.stackupDimensions[0]);
+            this.texture = PIXI.Texture.fromBuffer(
+                this.rgbArray,
+                this.stackupDimensions[1],
+                this.stackupDimensions[0]
+            );
             this.sprite = PIXI.Sprite.from(this.texture);
             // position sprite at top left and make it stretch the canvas
             this.sprite.x = 0;
@@ -138,30 +149,30 @@ export default {
         }
     },
     watch: {
-        stackupData: function(){
+        stackupData: function() {
             // rerender if stackupdata changes -> important for sorting
-            if (this.minHeatmapValue && this.maxHeatmapValue){
-            this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue)
-            }else{
-                this.createColorMap(this.minValue, this.maxValue)
+            if (this.minHeatmapValue && this.maxHeatmapValue) {
+                this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue);
+            } else {
+                this.createColorMap(this.minValue, this.maxValue);
             }
-            this.drawHeatmap()
+            this.drawHeatmap();
         },
         colormap: function() {
             // if colormap changes -> reset min and max
-            this.createColorMap(this.minValue, this.maxValue)
-            this.drawHeatmap()
+            this.createColorMap(this.minValue, this.maxValue);
+            this.drawHeatmap();
         }
     },
     mounted: function() {
         // initialize min from prop if defined
-        if (this.minHeatmapValue && this.maxHeatmapValue){
-            this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue)
-        }else{
-            this.createColorMap(this.minValue, this.maxValue)
+        if (this.minHeatmapValue && this.maxHeatmapValue) {
+            this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue);
+        } else {
+            this.createColorMap(this.minValue, this.maxValue);
         }
         this.initializeCanvas();
-        this.drawHeatmap()
+        this.drawHeatmap();
     },
     beforeDestroy: function() {
         /*
@@ -170,16 +181,16 @@ export default {
             Then, we need to hope that the webgl context is garbage collected
             before we reach >16 contexts.
         */
-        // 
+        //
         this.stage.destroy();
-        this.stage = null
+        this.stage = null;
         // remove renderer view
         this.$refs["canvasDiv"].removeChild(this.renderer.view);
         this.renderer.destroy();
-        this.renderer = null
+        this.renderer = null;
         this.texture = null;
         this.sprite = null;
-    },
+    }
 };
 </script>
 
@@ -193,9 +204,8 @@ export default {
 }
 
 .slider-container {
-    width:100%;
-    height:20px;
-    margin:0 auto;
+    width: 100%;
+    height: 20px;
+    margin: 0 auto;
 }
-
 </style>

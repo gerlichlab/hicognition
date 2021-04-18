@@ -117,11 +117,7 @@
 
 <script>
 import { validationMixin } from "vuelidate";
-import {
-    required,
-    minLength,
-    maxLength
-} from "vuelidate/lib/validators";
+import { required, minLength, maxLength } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 export default {
