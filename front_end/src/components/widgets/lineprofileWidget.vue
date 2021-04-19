@@ -321,6 +321,13 @@ export default {
             );
             // return it
             return parsed;
+        },
+        getlineprofileName: async function(id) {
+            // fetch it
+            var response = await this.fetchData(`datasets/${id}/name/`);
+            var parsed = response.data;
+            // return it
+            return parsed;
         }
     },
     watch: {
@@ -384,6 +391,12 @@ export default {
             for (let selected_id of selected_ids) {
                 selected_data.push(await this.getlineprofileData(selected_id));
             }
+            //this.widgetData = selected_data;
+            var selected_names = [];
+            for (let selected_id of this.selectedDataset) {
+                selected_names.push(await this.getlineprofileName(selected_id));
+            }
+            selected_data.push(selected_names);
             this.widgetData = selected_data;
         },
         selectedBinsize: async function() {
@@ -392,7 +405,7 @@ export default {
             }
             // fetch widget data
             var selected_ids;
-
+            // add list of names
             for (let [key, entry] of Object.entries(this.binsizes)) {
                 if (this.selectedBinsize == key) {
                     //.id is an array
@@ -407,6 +420,12 @@ export default {
             for (let selected_id of selected_ids) {
                 selected_data.push(await this.getlineprofileData(selected_id));
             }
+            // add list of names
+            var selected_names = [];
+            for (let selected_id of this.selectedDataset) {
+                selected_names.push(await this.getlineprofileName(selected_id));
+            }
+            selected_data.push(selected_names);
             this.widgetData = selected_data;
         }
     }

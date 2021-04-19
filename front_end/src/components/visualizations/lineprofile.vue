@@ -30,7 +30,10 @@ export default {
             return "lineprofile_" + this.lineprofileID;
         },
         lineData: function() {
-            return this.lineprofileData;
+            return this.lineprofileData.slice(0, -1);
+        },
+        lineNames: function() {
+            return this.lineprofileData[this.lineprofileData.length - 1];
         }
     },
     methods: {
@@ -103,7 +106,16 @@ export default {
                     .attr("fill", "none")
                     .attr("stroke", d3.schemeDark2[color_index])
                     .attr("stroke-width", 1.5);
-
+                g.append("text")
+                    .attr(
+                        "transform",
+                        "translate(" + (this.width - 35) + "," + y(single_data.data[single_data.data.length - 1]) + ")"
+                    )
+                    .attr("dy", ".35em")
+                    .attr("text-anchor", "start")
+                    .style("font-size", "12px")
+                    .style("fill", d3.schemeDark2[color_index])
+                    .text(this.lineNames[color_index]);
                 color_index = color_index + 1;
             }
         }

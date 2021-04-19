@@ -94,7 +94,7 @@ export function group_lineprofils_by_binsize(data, intersection = true) {
   Takes as input an array of json objects of the form [{"binsize": x, "id", y1}{"binsize": x, "id", y2}]
   and groups them by binsize into an output object: {binsize: {binsize: x, id, {y1,y2}}}
   */
-    
+
     var output = {};
     for (let interval of data) {
         var binsize = interval.binsize;
@@ -107,11 +107,10 @@ export function group_lineprofils_by_binsize(data, intersection = true) {
     }
     if (intersection == true) {
         //TODO Remove binsizes where there is no intersection.
-        console.log("Intersection Tested")
+        //console.log("Intersection Tested")
     }
     return output;
 }
-
 
 export function group_intervals_on_windowsize(intervals) {
     /*
@@ -169,34 +168,34 @@ export function sort_matrix_by_index(
     return math.flatten(sorted);
 }
 
-export function max_array(array){
+export function max_array(array) {
     /*
         returns maximum element of array
     */
-    var max = 0
-    for (var val of array){
-        if (val && isFinite(val)){
-            if (val > max){
-                max = val
+    var max = 0;
+    for (var val of array) {
+        if (val && isFinite(val)) {
+            if (val > max) {
+                max = val;
             }
         }
     }
-    return max
+    return max;
 }
 
-export function min_array(array){
+export function min_array(array) {
     /*
         returns minimum element of array
     */
-    var min = Infinity
-    for (var val of array){
-        if (val && isFinite(val)){
-            if (val < min){
-                min = val
+    var min = Infinity;
+    for (var val of array) {
+        if (val && isFinite(val)) {
+            if (val < min) {
+                min = val;
             }
         }
     }
-    return min
+    return min;
 }
 
 export function sort_matrix_by_center_column(
