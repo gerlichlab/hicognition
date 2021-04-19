@@ -109,7 +109,7 @@ export default {
                 g.append("text")
                     .attr(
                         "transform",
-                        "translate(" + (this.width - 35) + "," + y(single_data.data[single_data.data.length - 1]) + ")"
+                        "translate(" + (this.width - 40) + "," + (y(single_data.data[single_data.data.length - 1])+10) + ")"
                     )
                     .attr("dy", ".35em")
                     .attr("text-anchor", "start")
