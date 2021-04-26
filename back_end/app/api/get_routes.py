@@ -335,11 +335,9 @@ def get_stackup_metadata_small(entry_id):
         )
     # get associated metadata entries sorted by id; id sorting is necessary for newer metadata to win in field names
     metadata_entries = bed_ds.bedFileMetadata.order_by(BedFileMetadata.id.desc()).all()
-    # check if list is empty
-    if len(metadata_entries) == 0:
+    # check if list is empty or all metadata entries have undefiend metadata fields
+    if (len(metadata_entries) == 0) or all(metadata_entry.metadata_fields is None for metadata_entry in metadata_entries):
         return jsonify({})
-    # get interval
-    interval = stackup.source_intervals
     # load all metadata_files as dataframes
     temp_frames = []
     for metadata_entry in metadata_entries:

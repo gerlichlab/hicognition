@@ -937,6 +937,54 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.json, {})
 
+    def test_empty_response_metadata_without_fields(self):
+        """Tests whether empty response is returned when associated
+        metadata fields are empty."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bigwig",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bedfile",
+            user_id=1,
+        )
+        metadata1 = BedFileMetadata(
+            file_path="test_filepath",
+            dataset_id=2
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=2,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        individualIntervalData = IndividualIntervalData(
+            name="testIndividualIntervalData1",
+            binsize=10000,
+            file_path="data_path_big",
+            file_path_small="test_path",
+            dataset_id=1,
+            intervals_id=1,
+        )
+        db.session.add_all([dataset1, dataset2, intervals1, individualIntervalData, metadata1])
+        db.session.commit()
+        # make request
+        response = self.client.get(
+            "/api/individualIntervalData/1/metadatasmall",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.json, {})
+
     def test_good_single_metadata_entry_is_returned_correctly(self):
         """Tests whether single associated metadata entry to
         small stackup file is returned correctly, meaning the
