@@ -3,7 +3,7 @@
         <md-list class="md-double-line">
             <md-list-item class="md-alignment-top-center">
                 <!-- Pileup display -->
-                <md-content class="center-horizontal md-elevation-1">
+                <md-content class="center-horizontal md-elevation-0">
                     <div class="small-margin" ref="canvasDiv" />
                     <!-- this prevents drag events to allow slider change without causing widget drag -->
                     <div

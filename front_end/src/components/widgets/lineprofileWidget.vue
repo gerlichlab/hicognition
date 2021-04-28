@@ -7,7 +7,7 @@
             @dragstart="handleDragStart"
             @dragend="handleDragEnd"
         >
-            <div class="md-layout">
+            <div class="md-layout height-71">
                 <div
                     class="md-layout-item md-size-30 padding-left padding-right"
                 >
@@ -67,8 +67,9 @@
             <lineprofile
                 v-if="showData"
                 :lineprofileID="id"
-                :width="225"
-                :height="180"
+                :width="lineProfileWidth"
+                :height="lineProfileHeight"
+                :lineprofileNames="lineProfileNames"
                 :lineprofileData="widgetData"
                 :log="true"
             >
@@ -91,6 +92,8 @@ import lineprofile from "../visualizations/lineprofile";
 import { apiMixin, formattingMixin } from "../../mixins";
 import { group_lineprofils_by_binsize } from "../../functions";
 
+const TOOLBARHEIGHT = 71;
+
 export default {
     name: "lineprofileWidget",
     mixins: [apiMixin, formattingMixin],
@@ -111,6 +114,12 @@ export default {
         colIndex: Number
     },
     computed: {
+        lineProfileHeight: function() {
+            return Math.round((this.height - TOOLBARHEIGHT ) * 0.75)
+        },
+        lineProfileWidth: function() {
+            return Math.round(this.width * 0.7)
+        },
         showData: function() {
             if (this.widgetData) {
                 return true;
@@ -150,6 +159,7 @@ export default {
                 binsizes: this.binsizes,
                 binsize: this.selectedBinsize,
                 widgetDataRef: this.widgetDataRef,
+                lineProfileNames: this.lineProfileNames,
                 isDefault: this.isDefault,
                 widgetType: "Lineprofile"
             };
@@ -215,7 +225,8 @@ export default {
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
                 datasets: this.$store.getters.getBigwigsDirty,
-                isDefault: true
+                isDefault: true,
+                lineProfileNames: []
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -233,7 +244,8 @@ export default {
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
                 datasets: this.$store.getters.getBigwigsDirty,
-                isDefault: true
+                isDefault: true,
+                lineProfileNames: []
             };
         },
         initializeAtSameCollection: function(widgetData, collectionConfig) {
@@ -262,6 +274,7 @@ export default {
                 widgetData: widgetDataValues,
                 selectedDataset: widgetData["dataset"],
                 selectedBinsize: widgetData["binsize"],
+                lineProfileNames: widgetData["lineProfileNames"],
                 intervalID: collectionConfig["intervalID"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
@@ -396,7 +409,7 @@ export default {
             for (let selected_id of this.selectedDataset) {
                 selected_names.push(await this.getlineprofileName(selected_id));
             }
-            selected_data.push(selected_names);
+            this.lineProfileNames = selected_names
             this.widgetData = selected_data;
         },
         selectedBinsize: async function() {
@@ -425,7 +438,7 @@ export default {
             for (let selected_id of this.selectedDataset) {
                 selected_names.push(await this.getlineprofileName(selected_id));
             }
-            selected_data.push(selected_names);
+            this.lineProfileNames = selected_names
             this.widgetData = selected_data;
         }
     }
@@ -435,6 +448,10 @@ export default {
 <style scoped>
 .bg {
     background-color: rgba(211, 211, 211, 0.2);
+}
+
+.height-71 {
+    height: 71px;
 }
 
 .no-padding-right {

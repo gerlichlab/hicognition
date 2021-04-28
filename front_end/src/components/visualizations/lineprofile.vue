@@ -3,7 +3,7 @@
         <md-list class="md-double-line">
             <md-list-item class="md-alignment-top-center">
                 <!-- Pileup display -->
-                <md-content class="center-horizontal md-elevation-1">
+                <md-content class="center-horizontal md-elevation-0">
                     <div :id="lineprofileDivID" class="small-margin" />
                 </md-content>
             </md-list-item>
@@ -19,6 +19,7 @@ export default {
     props: {
         title: String,
         lineprofileData: Array,
+        lineprofileNames: Array,
         width: Number,
         height: Number,
         lineprofileID: Number, // lineprofile ID is needed because I am accessing the div of the lineprofile via id and they must be different for different pilups
@@ -30,16 +31,15 @@ export default {
             return "lineprofile_" + this.lineprofileID;
         },
         lineData: function() {
-            return this.lineprofileData.slice(0, -1);
+            return this.lineprofileData
         },
         lineNames: function() {
-            return this.lineprofileData[this.lineprofileData.length - 1];
+            return this.lineprofileNames;
         }
     },
     methods: {
         redrawLinechart: function() {
-            //console.log(this.lineData)
-            var margin = { top: 10, right: 30, bottom: 20, left: 40 };
+            var margin = { top: 10, right: 30, bottom: 20, left: 30 };
             d3.select(`#${this.lineprofileDivID}Svg`).remove();
             var line_svg = d3
                 .select(`#${this.lineprofileDivID}`)
@@ -133,6 +133,7 @@ export default {
         lineprofileData: {
             deep: true,
             handler() {
+                console.log("triggered")
                 this.redrawLinechart();
             }
         }
