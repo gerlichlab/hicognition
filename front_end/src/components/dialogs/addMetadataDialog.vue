@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import addMetadataStepper from "../addMetadataStepper";
+import addMetadataStepper from "../ui/addMetadataStepper";
 
 export default {
     name: "DialogCustom",

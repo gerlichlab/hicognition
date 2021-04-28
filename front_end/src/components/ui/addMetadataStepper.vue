@@ -47,8 +47,8 @@
 </template>
 
 <script>
-import addMetadataForm from "./forms/addMetadataForm";
-import addMetadataFieldsForm from "./forms/addMetadataFieldsForm";
+import addMetadataForm from "../forms/addMetadataForm";
+import addMetadataFieldsForm from "../forms/addMetadataFieldsForm";
 
 export default {
     name: "Metadata-stepper",
