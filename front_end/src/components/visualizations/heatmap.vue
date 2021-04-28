@@ -9,7 +9,7 @@
                     <div
                         draggable="true"
                         @dragstart.prevent.stop
-                        class="slider-container"
+                        :style="sliderContainerStyle"
                     >
                         <double-range-slider
                             :sliderWidth="width / 2"
@@ -43,6 +43,7 @@ export default {
         stackupData: Object,
         width: Number,
         height: Number,
+        sliderHeight: Number,
         stackupID: Number,
         minHeatmapValue: Number,
         maxHeatmapValue: Number,
@@ -50,6 +51,16 @@ export default {
         log: Boolean
     },
     computed: {
+        sliderContainerStyle: function() {
+            return {
+                "width": "100%",
+                "margin": "0 auto",
+                "height": this.sliderHeight + "px",
+                "display": "flex",
+                "justify-content": "center",
+                "align-content": "center"
+            }
+        },
         stackupValues: function() {
             /*
                 applies log if defined
@@ -125,6 +136,9 @@ export default {
         createColorMap: function(minVal, maxVal) {
             this.colorScale = getScale(minVal, maxVal, this.colormap);
         },
+        resizeCanvas: function(width, height) {
+            this.renderer.resize(width, height)
+        },
         drawHeatmap: function() {
             this.texture = PIXI.Texture.fromBuffer(
                 this.rgbArray,
@@ -161,6 +175,14 @@ export default {
         colormap: function() {
             // if colormap changes -> reset min and max
             this.createColorMap(this.minValue, this.maxValue);
+            this.drawHeatmap();
+        },
+        height: function(){
+            this.resizeCanvas(this.width, this.height)
+            this.drawHeatmap();
+        },
+        height: function(){
+            this.resizeCanvas(this.width, this.height)
             this.drawHeatmap();
         }
     },
@@ -203,9 +225,4 @@ export default {
     margin: 5px;
 }
 
-.slider-container {
-    width: 100%;
-    height: 20px;
-    margin: 0 auto;
-}
 </style>

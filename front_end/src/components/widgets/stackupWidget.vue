@@ -7,7 +7,7 @@
             @dragstart="handleDragStart"
             @dragend="handleDragEnd"
         >
-            <div class="md-layout">
+            <div class="md-layout" ref="layout">
                 <div
                     class="md-layout-item md-size-35 padding-left padding-right"
                 >
@@ -114,8 +114,9 @@
             <heatmap
                 v-if="showData"
                 :stackupID="id"
-                :width="225"
-                :height="225"
+                :width="stackupWidth"
+                :height="stackupHeight"
+                :sliderHeight="sliderHeight"
                 :stackupData="sortedMatrix"
                 :minHeatmapValue="minHeatmap"
                 :maxHeatmapValue="maxHeatmap"
@@ -166,6 +167,15 @@ export default {
         colIndex: Number
     },
     computed: {
+        stackupHeight: function() {
+            return Math.round((this.height - 71 ) * 0.8)
+        },
+        stackupWidth: function() {
+            return Math.round(this.width * 0.75)
+        },
+        sliderHeight: function() {
+            return Math.round((this.height - 71 ) * 0.07)
+        },
         sortedMatrix: function() {
             if (!this.widgetData) {
                 return undefined;
