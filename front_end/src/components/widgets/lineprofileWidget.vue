@@ -53,6 +53,32 @@
                         </md-select>
                     </md-field>
                 </div>
+                <div class="md-layout-item md-size-20">
+                    <md-menu md-direction="bottom-start">
+                        <div class="padding-top-large padding-right">
+                            <md-button class="md-icon-button" md-menu-trigger>
+                                <md-icon>menu_open</md-icon>
+                            </md-button>
+                        </div>
+                        <md-menu-content>
+                            <md-menu-item>My Item 1</md-menu-item>
+                            <md-menu-item>My Item 2</md-menu-item>
+                            <md-menu-item>
+                                <md-menu :md-offset-x="200" :md-offset-y="-36">
+                                    <md-button md-menu-trigger
+                                        >Nested menu</md-button
+                                    >
+
+                                    <md-menu-content>
+                                        <md-menu-item>My Item 1</md-menu-item>
+                                        <md-menu-item>My Item 2</md-menu-item>
+                                        <md-menu-item>My Item 3</md-menu-item>
+                                    </md-menu-content>
+                                </md-menu>
+                            </md-menu-item>
+                        </md-menu-content>
+                    </md-menu>
+                </div>
                 <div class="md-layout-item md-size-10">
                     <div class="padding-top-large padding-right">
                         <md-button
@@ -115,10 +141,10 @@ export default {
     },
     computed: {
         lineProfileHeight: function() {
-            return Math.round((this.height - TOOLBARHEIGHT ) * 0.75)
+            return Math.round((this.height - TOOLBARHEIGHT) * 0.75);
         },
         lineProfileWidth: function() {
-            return Math.round(this.width * 0.7)
+            return Math.round(this.width * 0.7);
         },
         showData: function() {
             if (this.widgetData) {
@@ -409,7 +435,7 @@ export default {
             for (let selected_id of this.selectedDataset) {
                 selected_names.push(await this.getlineprofileName(selected_id));
             }
-            this.lineProfileNames = selected_names
+            this.lineProfileNames = selected_names;
             this.widgetData = selected_data;
         },
         selectedBinsize: async function() {
@@ -438,7 +464,7 @@ export default {
             for (let selected_id of this.selectedDataset) {
                 selected_names.push(await this.getlineprofileName(selected_id));
             }
-            this.lineProfileNames = selected_names
+            this.lineProfileNames = selected_names;
             this.widgetData = selected_data;
         }
     }

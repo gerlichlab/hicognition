@@ -170,13 +170,13 @@ export default {
     },
     computed: {
         stackupHeight: function() {
-            return Math.round((this.height - TOOLBARHEIGHT ) * 0.8)
+            return Math.round((this.height - TOOLBARHEIGHT) * 0.8);
         },
         stackupWidth: function() {
-            return Math.round(this.width * 0.7)
+            return Math.round(this.width * 0.7);
         },
         sliderHeight: function() {
-            return Math.round((this.height - TOOLBARHEIGHT ) * 0.07)
+            return Math.round((this.height - TOOLBARHEIGHT) * 0.07);
         },
         sortedMatrix: function() {
             if (!this.widgetData) {
