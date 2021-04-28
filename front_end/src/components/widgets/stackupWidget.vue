@@ -7,7 +7,7 @@
             @dragstart="handleDragStart"
             @dragend="handleDragEnd"
         >
-            <div class="md-layout" ref="layout">
+            <div class="md-layout height-71">
                 <div
                     class="md-layout-item md-size-35 padding-left padding-right"
                 >
@@ -147,6 +147,8 @@ import {
     sort_matrix_by_center_column
 } from "../../functions";
 
+const TOOLBARHEIGHT = 71;
+
 export default {
     name: "stackupWidget",
     mixins: [apiMixin, formattingMixin],
@@ -168,13 +170,13 @@ export default {
     },
     computed: {
         stackupHeight: function() {
-            return Math.round((this.height - 71 ) * 0.8)
+            return Math.round((this.height - TOOLBARHEIGHT ) * 0.8)
         },
         stackupWidth: function() {
             return Math.round(this.width * 0.75)
         },
         sliderHeight: function() {
-            return Math.round((this.height - 71 ) * 0.07)
+            return Math.round((this.height - TOOLBARHEIGHT ) * 0.07)
         },
         sortedMatrix: function() {
             if (!this.widgetData) {
@@ -516,6 +518,10 @@ export default {
 <style scoped>
 .bg {
     background-color: rgba(211, 211, 211, 0.2);
+}
+
+.height-71 {
+    height: 71px;
 }
 
 .no-padding-right {

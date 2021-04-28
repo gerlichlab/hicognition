@@ -7,7 +7,7 @@
             @dragstart="handleDragStart"
             @dragend="handleDragEnd"
         >
-            <div class="md-layout">
+            <div class="md-layout height-71">
                 <div
                     class="md-layout-item md-size-30 padding-left padding-right"
                 >
@@ -71,8 +71,9 @@
             <heatmap
                 v-if="showData"
                 :pileupID="id"
-                :width="225"
-                :height="225"
+                :width="pileupWidth"
+                :height="pileupHeight"
+                :sliderHeight="sliderHeight"
                 :stackupData="widgetData[pileupType]"
                 :colormap="colormap"
                 :minHeatmapValue="minHeatmap"
@@ -99,6 +100,8 @@ import heatmap from "../visualizations/heatmap";
 import { apiMixin, formattingMixin } from "../../mixins";
 import { group_iccf_obs_exp } from "../../functions";
 
+const TOOLBARHEIGHT = 71;
+
 export default {
     name: "pileupWidget",
     mixins: [apiMixin, formattingMixin],
@@ -119,6 +122,15 @@ export default {
         colIndex: Number
     },
     computed: {
+        pileupHeight: function() {
+            return Math.round((this.height - TOOLBARHEIGHT ) * 0.8)
+        },
+        pileupWidth: function() {
+            return Math.round(this.width * 0.75)
+        },
+        sliderHeight: function() {
+            return Math.round((this.height - TOOLBARHEIGHT ) * 0.07)
+        },
         colormap: function() {
             if (this.pileupType == "ICCF") {
                 return "fall";
@@ -470,4 +482,9 @@ export default {
 .md-field {
     min-height: 30px;
 }
+
+.height-71 {
+    height: 71px;
+}
+
 </style>
