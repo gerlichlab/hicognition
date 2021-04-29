@@ -59,6 +59,7 @@
                         md-direction="bottom-end"
                         :md-offset-x="210"
                         :md-offset-y="-36"
+                        :md-active.sync="showMenu"
                     >
                         <div class="padding-top-large padding-right">
                             <md-button
@@ -70,33 +71,31 @@
                             </md-button>
                         </div>
                         <md-menu-content>
-                            <div class="md-layout">
-                                <div
-                                    class="md-layout-item md-size-35 padding-left padding-right"
-                                >
-                                    <span class="md-title">Sort by</span>
-                                </div>
-                            </div>
-                            <md-divider></md-divider>
-                            <md-menu-item
-                                v-for="item in sortKeys"
-                                :key="item"
-                                @click="selectedSortOrder = item"
-                                >{{ item }}
-                                <md-icon v-if="item == selectedSortOrder"
-                                    >done</md-icon
-                                >
-                            </md-menu-item>
-                            <md-divider></md-divider>
-                            <div class="md-layout">
-                                <div
-                                    class="md-layout-item md-size-35 padding-left padding-right"
-                                >
-                                    <md-switch v-model="isAscending">{{
-                                        sortDirection
-                                    }}</md-switch>
-                                </div>
-                            </div>
+                            <md-list-item md-expand>
+                                <span class="md-list-item-text">Sort by</span>
+
+                                <md-list slot="md-expand">
+                                    <md-list-item
+                                        v-for="item in sortKeys"
+                                        :key="item"
+                                        @click="selectedSortOrder = item; showMenu=false"
+                                        >{{ item }}
+                                        <md-icon
+                                            v-if="item == selectedSortOrder"
+                                            >done</md-icon
+                                        >
+                                    </md-list-item>
+                                    <div class="md-layout">
+                                        <div
+                                            class="md-layout-item md-size-35 padding-left padding-right"
+                                        >
+                                            <md-switch v-model="isAscending">{{
+                                                sortDirection
+                                            }}</md-switch>
+                                        </div>
+                                    </div>
+                                </md-list>
+                            </md-list-item>
                         </md-menu-content>
                     </md-menu>
                 </div>
@@ -341,7 +340,8 @@ export default {
                 maxHeatmap: undefined,
                 selectedSortOrder: "center column",
                 sortorders: undefined,
-                isAscending: true
+                isAscending: true,
+                showMenu: false
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -363,7 +363,8 @@ export default {
                 selectedSortOrder: "center column",
                 datasets: this.$store.getters.getBigwigsDirty,
                 sortorders: undefined,
-                isAscending: true
+                isAscending: true,
+                showMenu: false
             };
         },
         initializeAtSameCollection: function(widgetData, collectionConfig) {
@@ -396,7 +397,8 @@ export default {
                 binsizes: widgetData["binsizes"],
                 datasets: this.$store.getters.getBigwigsDirty,
                 sortorders: widgetData["sortorders"],
-                isAscending: widgetData["isAscending"]
+                isAscending: widgetData["isAscending"],
+                showMenu: false
             };
         },
         initializeWidget: function() {

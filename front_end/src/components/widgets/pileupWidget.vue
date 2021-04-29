@@ -52,11 +52,43 @@
                         </md-select>
                     </md-field>
                 </div>
-                <div class="md-layout-item md-size-25">
-                    <div class="padding-top">
-                        <md-switch v-model="isICCF">{{ pileupType }}</md-switch>
-                    </div>
+
+
+
+                <div class="md-layout-item md-size-15">
+                    <md-menu :md-offset-x="50" :md-offset-y="-36" md-size="big" :md-active.sync="showMenu">
+                        <div class="padding-top-large">
+                            <md-button class="md-icon-button" md-menu-trigger >
+                                <md-icon>menu_open</md-icon>
+                            </md-button>
+                        </div>
+                        <md-menu-content>
+                            <md-list-item md-expand >
+                            <span class="md-list-item-text">Scale</span>
+
+                            <md-list slot="md-expand">
+                                <md-list-item class="md-inset" @click="isICCF = true; showMenu=false" >
+                                     ICCF 
+                                    <md-icon
+                                            v-if="isICCF"
+                                            >done</md-icon
+                                    >
+                                </md-list-item>
+                                <md-list-item class="md-inset" @click="isICCF = false; showMenu=false">
+                                    Obs/Exp
+                                    <md-icon
+                                            v-if="!isICCF"
+                                            >done</md-icon
+                                    >
+                                </md-list-item>
+                            </md-list>
+                            </md-list-item>
+                        </md-menu-content>
+                    </md-menu>
                 </div>
+
+
+
                 <div class="md-layout-item md-size-10">
                     <div class="padding-top-large padding-right">
                         <md-button
@@ -126,7 +158,7 @@ export default {
             return Math.round((this.height - TOOLBARHEIGHT ) * 0.8)
         },
         pileupWidth: function() {
-            return Math.round(this.width * 0.75)
+            return Math.round(this.width * 0.7)
         },
         sliderHeight: function() {
             return Math.round((this.height - TOOLBARHEIGHT ) * 0.07)
@@ -256,7 +288,8 @@ export default {
                 datasets: this.$store.getters.getCoolersDirty,
                 minHeatmap: undefined,
                 maxHeatmap: undefined,
-                isICCF: true
+                isICCF: true,
+                showMenu: false
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -276,7 +309,8 @@ export default {
                 minHeatmap: undefined,
                 maxHeatmap: undefined,
                 datasets: this.$store.getters.getCoolersDirty,
-                isICCF: true
+                isICCF: true,
+                showMenu: false
             };
         },
         initializeAtSameCollection: function(widgetData, collectionConfig) {
@@ -317,7 +351,8 @@ export default {
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
                 datasets: this.$store.getters.getCoolersDirty,
-                isICCF: widgetData["isICCF"]
+                isICCF: widgetData["isICCF"],
+                showMenu: false
             };
         },
         initializeWidget: function() {

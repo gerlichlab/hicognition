@@ -9,7 +9,7 @@
         >
             <div class="md-layout height-71">
                 <div
-                    class="md-layout-item md-size-30 padding-left padding-right"
+                    class="md-layout-item md-size-35 padding-left padding-right"
                 >
                     <md-field class="padding-top">
                         <label class="md-primary">Dataset</label>
@@ -31,7 +31,7 @@
                     </md-field>
                 </div>
                 <div
-                    class="md-layout-item md-size-30 padding-left padding-right"
+                    class="md-layout-item md-size-35 padding-left padding-right"
                 >
                     <md-field class="padding-top">
                         <label class="md-primary">Binsize</label>
@@ -53,29 +53,26 @@
                         </md-select>
                     </md-field>
                 </div>
-                <div class="md-layout-item md-size-20">
-                    <md-menu md-direction="bottom-start">
-                        <div class="padding-top-large padding-right">
-                            <md-button class="md-icon-button" md-menu-trigger>
+                <div class="md-layout-item md-size-15">
+                    <md-menu :md-offset-x="50" :md-offset-y="-36" md-size="big" :md-active.sync="showMenu">
+                        <div class="padding-top-large">
+                            <md-button class="md-icon-button" md-menu-trigger >
                                 <md-icon>menu_open</md-icon>
                             </md-button>
                         </div>
                         <md-menu-content>
-                            <md-menu-item>My Item 1</md-menu-item>
-                            <md-menu-item>My Item 2</md-menu-item>
-                            <md-menu-item>
-                                <md-menu :md-offset-x="200" :md-offset-y="-36">
-                                    <md-button md-menu-trigger
-                                        >Nested menu</md-button
-                                    >
+                            <md-list-item md-expand >
+                            <span class="md-list-item-text">Scale</span>
 
-                                    <md-menu-content>
-                                        <md-menu-item>My Item 1</md-menu-item>
-                                        <md-menu-item>My Item 2</md-menu-item>
-                                        <md-menu-item>My Item 3</md-menu-item>
-                                    </md-menu-content>
-                                </md-menu>
-                            </md-menu-item>
+                            <md-list slot="md-expand">
+                                <md-list-item class="md-inset" @click="normalized = false; showMenu=false" >
+                                     Unscaled 
+                                </md-list-item>
+                                <md-list-item class="md-inset" @click="normalized = true; showMenu=false">
+                                    Normalized 
+                                </md-list-item>
+                            </md-list>
+                            </md-list-item>
                         </md-menu-content>
                     </md-menu>
                 </div>
@@ -187,7 +184,8 @@ export default {
                 widgetDataRef: this.widgetDataRef,
                 lineProfileNames: this.lineProfileNames,
                 isDefault: this.isDefault,
-                widgetType: "Lineprofile"
+                widgetType: "Lineprofile",
+                normalized: this.normalized
             };
         },
         deleteWidget: function() {
@@ -252,7 +250,9 @@ export default {
                 binsizes: [],
                 datasets: this.$store.getters.getBigwigsDirty,
                 isDefault: true,
-                lineProfileNames: []
+                lineProfileNames: [],
+                showMenu: false,
+                normalized: false
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -271,7 +271,9 @@ export default {
                 binsizes: [],
                 datasets: this.$store.getters.getBigwigsDirty,
                 isDefault: true,
-                lineProfileNames: []
+                lineProfileNames: [],
+                showMenu: false,
+                normalized: false
             };
         },
         initializeAtSameCollection: function(widgetData, collectionConfig) {
@@ -305,7 +307,9 @@ export default {
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
                 datasets: this.$store.getters.getBigwigsDirty,
-                isDefault: widgetData["isDefault"]
+                isDefault: widgetData["isDefault"],
+                showMenu: false,
+                normalized: widgetData["normalized"]
             };
         },
         initializeWidget: function() {
