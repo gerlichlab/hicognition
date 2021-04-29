@@ -53,11 +53,10 @@
                     </md-field>
                 </div>
 
-                <div class="md-layout-item md-size-10">
+                <div class="md-layout-item md-size-15">
                     <md-menu
-                        md-size="big"
-                        md-direction="bottom-end"
-                        :md-offset-x="210"
+                        md-size="small"
+                        :md-offset-x="50"
                         :md-offset-y="-36"
                         :md-active.sync="showMenu"
                     >
@@ -72,14 +71,14 @@
                         </div>
                         <md-menu-content>
                             <md-list-item md-expand>
-                                <span class="md-list-item-text">Sort by</span>
+                                <span class="md-body-1">Sort by</span>
 
                                 <md-list slot="md-expand">
                                     <md-list-item
                                         v-for="item in sortKeys"
                                         :key="item"
                                         @click="selectedSortOrder = item; showMenu=false"
-                                        >{{ item }}
+                                        ><span class="md-body-1">{{ item }}</span>
                                         <md-icon
                                             v-if="item == selectedSortOrder"
                                             >done</md-icon
@@ -87,11 +86,11 @@
                                     </md-list-item>
                                     <div class="md-layout">
                                         <div
-                                            class="md-layout-item md-size-35 padding-left padding-right"
+                                            class="md-layout-item md-size-30 padding-left padding-right"
                                         >
-                                            <md-switch v-model="isAscending">{{
+                                            <md-switch v-model="isAscending"><span class="md-body-1">{{
                                                 sortDirection
-                                            }}</md-switch>
+                                            }}</span></md-switch>
                                         </div>
                                     </div>
                                 </md-list>

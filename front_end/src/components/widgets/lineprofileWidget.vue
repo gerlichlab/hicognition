@@ -54,7 +54,7 @@
                     </md-field>
                 </div>
                 <div class="md-layout-item md-size-15">
-                    <md-menu :md-offset-x="50" :md-offset-y="-36" md-size="big" :md-active.sync="showMenu">
+                    <md-menu :md-offset-x="50" :md-offset-y="-36" md-size="small" :md-active.sync="showMenu">
                         <div class="padding-top-large">
                             <md-button class="md-icon-button" md-menu-trigger >
                                 <md-icon>menu_open</md-icon>
@@ -62,18 +62,18 @@
                         </div>
                         <md-menu-content>
                             <md-list-item md-expand >
-                            <span class="md-list-item-text">Scale</span>
+                            <span class="md-body-1">Scale</span>
 
                             <md-list slot="md-expand">
                                 <md-list-item class="md-inset" @click="normalized = false; showMenu=false" >
-                                     Unscaled
+                                     <span class="md-body-1">Unscaled</span>
                                      <md-icon
                                             v-if="!normalized"
                                             >done</md-icon
                                     >
                                 </md-list-item>
                                 <md-list-item class="md-inset" @click="normalized = true; showMenu=false">
-                                    Normalized 
+                                    <span class="md-body-1">Normalized</span>
                                     <md-icon
                                             v-if="normalized"
                                             >done</md-icon
