@@ -224,6 +224,14 @@ export function sort_matrix_by_center_column(
     );
 }
 
+export function normalizeLineProfile(lineProfile){
+    let max_value = max_array(lineProfile);
+    let min_value = min_array(lineProfile);
+    return lineProfile.map((val) => {
+        return (val - min_value)/(max_value - min_value)
+    })
+}
+
 // Helpers for datasetTable
 
 export function toLower(text) {

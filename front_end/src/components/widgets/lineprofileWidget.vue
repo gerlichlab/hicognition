@@ -66,10 +66,18 @@
 
                             <md-list slot="md-expand">
                                 <md-list-item class="md-inset" @click="normalized = false; showMenu=false" >
-                                     Unscaled 
+                                     Unscaled
+                                     <md-icon
+                                            v-if="!normalized"
+                                            >done</md-icon
+                                    >
                                 </md-list-item>
                                 <md-list-item class="md-inset" @click="normalized = true; showMenu=false">
                                     Normalized 
+                                    <md-icon
+                                            v-if="normalized"
+                                            >done</md-icon
+                                    >
                                 </md-list-item>
                             </md-list>
                             </md-list-item>
@@ -94,6 +102,7 @@
                 :height="lineProfileHeight"
                 :lineprofileNames="lineProfileNames"
                 :lineprofileData="widgetData"
+                :normalized="normalized"
                 :log="true"
             >
             </lineprofile>

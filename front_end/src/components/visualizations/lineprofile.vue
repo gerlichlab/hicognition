@@ -12,7 +12,7 @@
 </template>
 <script>
 import * as d3 from "d3";
-import { min_array, max_array } from "../../functions";
+import { min_array, max_array, normalizeLineProfile } from "../../functions";
 
 export default {
     name: "lineprofile",
@@ -20,6 +20,7 @@ export default {
         title: String,
         lineprofileData: Array,
         lineprofileNames: Array,
+        normalized: Boolean,
         width: Number,
         height: Number,
         lineprofileID: Number, // lineprofile ID is needed because I am accessing the div of the lineprofile via id and they must be different for different pilups
@@ -31,6 +32,15 @@ export default {
             return "lineprofile_" + this.lineprofileID;
         },
         lineData: function() {
+            if (this.normalized){
+                return this.lineprofileData.map((elem) => {
+                    return {
+                        data: normalizeLineProfile(elem.data),
+                        shape: elem.shape,
+                        dtype: elem.dtype
+                    }
+                });
+            }
             return this.lineprofileData
         },
         lineNames: function() {
@@ -130,10 +140,9 @@ export default {
         width: function() {
             this.redrawLinechart();
         },
-        lineprofileData: {
+        lineData: {
             deep: true,
             handler() {
-                console.log("triggered")
                 this.redrawLinechart();
             }
         }
