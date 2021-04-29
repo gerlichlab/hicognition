@@ -156,4 +156,12 @@ describe("When normalize lineProfile is called", function() {
             normalizeLineProfile([1, 2, 3, 4, Infinity]).slice(0, 4)
         ).toBeDeepCloseTo([0, 0.333333333333, 0.6666666666666, 1]);
     });
+    it("Should return a normalized array when all elements in the array are the same", () => {
+        expect(normalizeLineProfile([2, 2, 2, 2])).toBeDeepCloseTo([
+            1,
+            1,
+            1,
+            1
+        ]);
+    });
 });

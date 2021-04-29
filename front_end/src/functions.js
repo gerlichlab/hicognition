@@ -1,5 +1,7 @@
 import * as math from "mathjs";
 
+const FLOATDIFFERENCE = 10**(-8)
+
 export function convert_json_to_d3(jsonObject, log = false) {
     /*
       Converts pileup data from pandas.DataFrame.to_json to an 
@@ -227,6 +229,14 @@ export function sort_matrix_by_center_column(
 export function normalizeLineProfile(lineProfile){
     let max_value = max_array(lineProfile);
     let min_value = min_array(lineProfile);
+    if ((max_value - min_value) < FLOATDIFFERENCE){
+        return lineProfile.map((val) => {
+            if (val && isFinite(val)){
+                return 1
+            }
+            return undefined
+        })
+    }
     return lineProfile.map((val) => {
         if (val && isFinite(val)){
             return (val - min_value)/(max_value - min_value)
