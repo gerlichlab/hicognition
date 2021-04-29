@@ -228,7 +228,10 @@ export function normalizeLineProfile(lineProfile){
     let max_value = max_array(lineProfile);
     let min_value = min_array(lineProfile);
     return lineProfile.map((val) => {
-        return (val - min_value)/(max_value - min_value)
+        if (val && isFinite(val)){
+            return (val - min_value)/(max_value - min_value)
+        }
+        return undefined
     })
 }
 
