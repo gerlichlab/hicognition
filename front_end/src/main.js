@@ -31,6 +31,15 @@ Vue.use(VueMaterial);
 // use vue router
 Vue.use(VueRouter);
 
+// check whether token is available and set it if so
+
+if (localStorage.getItem("hicognition-token")){
+    store.commit("setToken", localStorage.getItem("hicognition-token"))
+    store.commit("setUserId", localStorage.getItem("hicognition-User"))
+}
+
+// instantiate vue app
+
 new Vue({
     el: "#app",
     store,

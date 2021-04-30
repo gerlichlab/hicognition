@@ -19,7 +19,14 @@ export default {
     components: {
         loginToolbar,
         loginForm
+    },
+    mounted: function(){
+        // check if token is there and push to main route
+        if (this.$store.getters.isTokenEmpty){
+            this.$router.push("/main/compare");
+        }
     }
+
 };
 </script>
 

@@ -252,13 +252,18 @@ const store = new Vuex.Store({
     mutations: {
         setToken(state, tokenValue) {
             state.token = tokenValue;
+            // store token in local storage
+            localStorage.setItem("hicognition-token", tokenValue);
         },
         setUserId(state, id) {
             state.user_id = id;
+            localStorage.setItem("hicognition-User", id);
         },
         clearToken(state) {
             state.token = null;
             state.user_id = null;
+            localStorage.setItem("hicognition-token", null);
+            localStorage.setItem("hicognition-User", null);
         },
         setDatasets(state, datasets) {
             state.datasets = datasets;
