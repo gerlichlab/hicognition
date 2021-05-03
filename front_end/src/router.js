@@ -7,6 +7,7 @@ import mainRoute from "./routes/mainRoute";
 import loginRoute from "./routes/loginRoute";
 import annotateRoute from "./routes/annotateRoute";
 import compareRoute from "./routes/compareRoute";
+import sessionLoadRoute from "./routes/sessionLoadRoute";
 
 // define routes
 
@@ -30,6 +31,13 @@ const routes = [
             {
                 path: "annotate",
                 component: annotateRoute,
+                meta: {
+                    requiresAuth: true
+                }
+            },
+            {
+                path: "session",
+                component: sessionLoadRoute,
                 meta: {
                     requiresAuth: true
                 }
