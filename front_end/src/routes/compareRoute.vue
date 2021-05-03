@@ -17,6 +17,7 @@
 <script>
 import widgetCollection from "../components/widgetCollection.vue";
 import { apiMixin } from "../mixins";
+import EventBus from "../eventBus";
 
 export default {
     name: "CompareRoute",
@@ -64,7 +65,6 @@ export default {
     },
     mounted: function() {
         // clear widgetCollections
-        console.log("mounted called")
         //this.$store.commit("compare/clearWidgetCollections");
         // initilize from store
         var collections = Object.keys(this.$store.getters["compare/getWidgetCollections"])
@@ -78,6 +78,9 @@ export default {
             this.currentID = Math.max(...collections) + 1;
         }
         this.fetchDatasets()
+    },
+    beforeDestroy: function(){
+        EventBus.$emit('serialize-widgets');
     }
 };
 </script>

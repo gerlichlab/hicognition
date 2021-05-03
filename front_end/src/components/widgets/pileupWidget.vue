@@ -491,6 +491,9 @@ export default {
     },
     mounted: function (){
         EventBus.$on('serialize-widgets', this.serializeWidget)
+    },
+    beforeDestroy: function(){
+        EventBus.$off('serialize-widgets')
     }
 };
 </script>
