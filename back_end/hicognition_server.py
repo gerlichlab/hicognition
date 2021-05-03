@@ -10,6 +10,7 @@ from app.models import (
     Task,
     AverageIntervalData,
     BedFileMetadata,
+    Session
 )
 from flask_migrate import Migrate
 from flask.cli import AppGroup
@@ -57,4 +58,5 @@ def make_shell_context():
         "Task": Task,
         "AverageIntervalData": AverageIntervalData,
         "BedFileMetadata": BedFileMetadata,
+        "Session": Session
     }

@@ -278,6 +278,24 @@ class Session(db.Model):
     datasets = db.relationship("Dataset",
                                secondary=session_dataset_assoc_table)
 
+    def generate_session_token(self, expiration):
+        """generates session token"""
+        s = Serializer(current_app.config["SECRET_KEY"], expires_in=expiration)
+        return s.dumps({"session_id": self.id}).decode("utf-8")
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(current_app.config["SECRET_KEY"])
+        try:
+            data = s.loads(token)
+        except:
+            return None
+        return Session.query.get(data["session_id"])
+
+    def __repr__(self):
+        """Format print output."""
+        return f"<Session {self.name}>"
+
 
 
 # helpers
