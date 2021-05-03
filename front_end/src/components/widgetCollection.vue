@@ -320,6 +320,10 @@ export default {
         },
         deleteCollection: function() {
             this.$store.commit("compare/deleteWidgetCollection", this.id);
+            // remove dataset from usage counter
+            if (this.selectedRegionID){
+                this.$store.commit("compare/decrement_usage_dataset", this.selectedRegionID)
+            }
         },
         handleWidgetDrop: function(
             sourceColletionID,
@@ -363,7 +367,7 @@ export default {
                 }
             }
         },
-        selectedRegionID: function() {
+        selectedRegionID: function(newVal, oldVal) {
             // fetch intervals and assing to windowsizes
             this.fetchData(`datasets/${this.selectedRegionID}/intervals/`).then(
                 response => {
@@ -372,6 +376,9 @@ export default {
             );
             // clear region
             this.selectedWindowSize = null;
+            // update used_datasets in store -> old dataset is decremented, new one is added
+            this.$store.commit("compare/decrement_usage_dataset", oldVal)
+            this.$store.commit("compare/increment_usage_dataset", newVal)
         },
         selectedWindowSize: function() {
             // set new intervals

@@ -38,7 +38,8 @@ const compareModule = {
     state: function() {
         return {
             widgetCollections: {}, // collections of widgets that are currently displayed. Has structure {id: {children: {child_id: childProperties}}}
-            widgetData: {} // data that is displayed by the widgets, is referenced by widgetCollections -> separate for performance reasons
+            widgetData: {}, // data that is displayed by the widgets, is referenced by widgetCollections -> separate for performance reasons
+            used_datasets: new Map() // ids of datasets used in this config with usage numbers
         };
     },
     getters: {
@@ -120,6 +121,30 @@ const compareModule = {
         }
     },
     mutations: {
+        decrement_usage_dataset(state, id){
+            if (state.used_datasets.has(id)){
+                var old_value = state.used_datasets.get(id)
+                // decrement
+                var new_value = old_value -=1
+                // delete is 0
+                if (new_value == 0){
+                    state.used_datasets.delete(id)
+                }else{
+                    state.used_datasets.set(id, new_value)
+                }
+            } 
+        },
+        increment_usage_dataset(state, id){
+            if (state.used_datasets.has(id)){
+                var old_value = state.used_datasets.get(id)
+                // decrement
+                var new_value = old_value += 1
+                state.used_datasets.set(id, new_value)
+            }else{
+                // initialize to one if not in there
+                state.used_datasets.set(id, 1)
+            }
+        },
         clearWidgetCollections(state) {
             state.widgetCollections = {};
         },
@@ -262,8 +287,8 @@ const store = new Vuex.Store({
         clearToken(state) {
             state.token = null;
             state.user_id = null;
-            localStorage.setItem("hicognition-token", null);
-            localStorage.setItem("hicognition-User", null);
+            localStorage.removeItem("hicognition-token");
+            localStorage.removeItem("hicognition-User");
         },
         setDatasets(state, datasets) {
             state.datasets = datasets;

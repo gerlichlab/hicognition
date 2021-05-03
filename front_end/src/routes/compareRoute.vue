@@ -62,10 +62,10 @@ export default {
             }
         }
     },
-    created: function() {
+    mounted: function() {
         // clear widgetCollections
         this.$store.commit("compare/clearWidgetCollections");
-        this.fetchDatasets();
+        this.fetchDatasets()
     }
 };
 </script>
