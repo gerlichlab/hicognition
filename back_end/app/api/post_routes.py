@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from . import api
 from .. import db
-from ..models import Dataset, BedFileMetadata, Task
+from ..models import Dataset, BedFileMetadata, Task, Session
 from .authentication import auth
 from .helpers import is_access_to_dataset_denied, parse_description_and_genotype
 from .errors import forbidden, invalid, not_found
@@ -268,3 +268,47 @@ def add_bedfile_metadata_fields(metadata_id):
     metadata.metadata_fields = json.dumps(field_map)
     db.session.commit()
     return jsonify({"message": "Success! Field map added."})
+
+
+@api.route("/sessions/", methods=["POST"])
+@auth.login_required
+def create_session():
+    """Creates a session with name."""
+
+    def is_form_invalid():
+        if not hasattr(request, "form"):
+            return True
+        if len(request.form) == 0:
+            return True
+        # check attributes
+        if sorted(request.form.keys()) != ["name", "session_object", "session_type", "used_datasets"]:
+            return True
+        return False
+
+    # check form
+    if is_form_invalid():
+        return invalid("Form is not valid!")
+    # get data from form
+    data = request.form
+    name = data["name"]
+    session_object = data["session_object"]
+    session_type = data["session_type"]
+    used_datasets = json.loads(data["used_datasets"]) # used_datasets is array, needs to be parsed from json
+    # check whether datasets exist
+    datasets = [Dataset.query.get(dataset_id) for dataset_id in used_datasets]
+    if any(dataset is None for dataset in datasets):
+        return invalid(f"Some of the datasets in used_datasets do not exist!")
+    # check whether dataset is owned
+    if any(dataset.user_id != g.current_user.id for dataset in datasets):
+        return forbidden(f"Some of the datasets associated with this session are not owned!")
+    # create session
+    session = Session(user_id=g.current_user.id,
+                      name=name,
+                      session_object=session_object,
+                      session_type=session_type)
+    # add datasets
+
+    session.datasets.extend(datasets)
+    db.session.add(session)
+    db.session.commit()
+    return jsonify({"session_id": f"{session.id}"})
