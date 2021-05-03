@@ -412,7 +412,7 @@ export default {
                         this.intervalID = newEntry;
                         // reset state
                         this.selectedBinsize = undefined;
-                        this.selectedDataset = undefined;
+                        this.selectedDataset = [];
                         this.widgetData = undefined;
                         this.binsizes = [];
                     }

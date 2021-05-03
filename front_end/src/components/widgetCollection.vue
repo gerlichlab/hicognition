@@ -375,8 +375,10 @@ export default {
                     this.windowSizes = response.data;
                 }
             );
-            // clear region
-            this.selectedWindowSize = null;
+            // clear region if switched from another not null region
+            if (oldVal){
+                this.selectedWindowSize = null;
+            }
             // update used_datasets in store -> old dataset is decremented, new one is added
             this.$store.commit("compare/decrement_usage_dataset", oldVal)
             this.$store.commit("compare/increment_usage_dataset", newVal)
@@ -385,7 +387,7 @@ export default {
             // set new intervals
             var payload = {
                 id: this.id,
-                collectionConfig: { intervalID: this.selectedWindowSize }
+                collectionConfig: { intervalID: this.selectedWindowSize, regionID: this.selectedRegionID }
             };
             this.$store.commit("compare/setCollectionConfig", payload);
         }
@@ -395,6 +397,11 @@ export default {
         var collectionData = this.$store.getters[
             "compare/getCollectionProperties"
         ](this.id);
+        // set selected dataset and binsize
+        if (collectionData.collectionConfig){
+            this.selectedRegionID = collectionData.collectionConfig["regionID"]
+            this.selectedWindowSize = collectionData.collectionConfig["intervalID"]
+        }
         // set maxrownumber and maxcolumnnumber
         if (collectionData.children){
             this.maxRowNumber =  max_array(Object.values(collectionData.children).map( (elem) => {
