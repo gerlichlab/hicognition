@@ -64,12 +64,19 @@ export default {
     },
     mounted: function() {
         // clear widgetCollections
+        console.log("mounted called")
         //this.$store.commit("compare/clearWidgetCollections");
         // initilize from store
         var collections = Object.keys(this.$store.getters["compare/getWidgetCollections"])
         this.collections = collections.map(elem => {
             return {id: Number(elem)}
         })
+        // set maximum id
+        if (collections.length == 0){
+            this.currentID = 0
+        }else{
+            this.currentID = Math.max(...collections) + 1;
+        }
         this.fetchDatasets()
     }
 };
