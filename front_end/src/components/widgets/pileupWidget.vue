@@ -233,6 +233,8 @@ export default {
             };
             // delete widget from store
             this.$store.commit("compare/deleteWidget", payload);
+            // decrement dataset from used dataset in store
+            this.$store.commit("compare/decrement_usage_dataset", this.selectedDataset)
         },
         handleDragStart: function(e) {
             // commit to store once drag starts
@@ -440,7 +442,7 @@ export default {
                 }
             }
         },
-        selectedDataset: function() {
+        selectedDataset: function(newVal, oldVal) {
             if (!this.selectedDataset) {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
@@ -452,6 +454,9 @@ export default {
                 // update binsizes to show and group iccf/obsExp data under one binsize
                 this.binsizes = group_iccf_obs_exp(response.data);
             });
+            // add dataset to store for tallying used_dataset
+            this.$store.commit("compare/decrement_usage_dataset", oldVal)
+            this.$store.commit("compare/increment_usage_dataset", newVal)
         },
         selectedBinsize: async function() {
             if (!this.selectedBinsize) {

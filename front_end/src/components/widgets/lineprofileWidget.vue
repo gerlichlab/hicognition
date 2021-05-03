@@ -205,6 +205,11 @@ export default {
             };
             // delete widget from store
             this.$store.commit("compare/deleteWidget", payload);
+            // remove old dataset ids from used values in store
+            for (let dataset_id_old of this.selectedDataset){
+                this.$store.commit("compare/decrement_usage_dataset", dataset_id_old)
+            }
+
         },
         handleDragStart: function(e) {
             // commit to store once drag starts
@@ -409,7 +414,7 @@ export default {
                 }
             }
         },
-        selectedDataset: async function() {
+        selectedDataset: async function(newVal, oldVal) {
             if (
                 this.selectedDataset == undefined ||
                 this.selectedDataset.length == 0
@@ -424,7 +429,15 @@ export default {
                 this.binsizes = group_lineprofils_by_binsize(response.data);
                 //this.binsizes = response.data;
             });
-
+            // remove old dataset ids from used values in store
+            for (let dataset_id_old of oldVal){
+                this.$store.commit("compare/decrement_usage_dataset", dataset_id_old)
+            }
+            // add new datasets to used values in store
+            for (let dataset_id_new of newVal){
+                this.$store.commit("compare/increment_usage_dataset", dataset_id_new)
+            }
+            // if no binsizes selected, return 
             if (!this.selectedBinsize) {
                 return;
             }
