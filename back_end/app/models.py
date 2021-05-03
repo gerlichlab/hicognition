@@ -271,7 +271,7 @@ class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    session_object = db.Column(db.String(10**3))
+    session_object = db.Column(db.String(10**4))
     created_utc = db.Column(db.DateTime, nullable=False,
         default=datetime.datetime.utcnow)
     session_type = db.Column(db.String(100))
