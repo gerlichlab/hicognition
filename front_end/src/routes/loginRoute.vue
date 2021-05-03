@@ -22,7 +22,7 @@ export default {
     },
     mounted: function(){
         // check if token is there and push to main route
-        if (this.$store.getters.isTokenEmpty){
+        if (!this.$store.getters.isTokenEmpty){
             this.$router.push("/main/compare");
         }
     }
