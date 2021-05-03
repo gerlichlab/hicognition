@@ -53,7 +53,8 @@ export var apiMixin = {
                         error.response.status == 403 ||
                         error.response.status == 401
                     ) {
-                        // if forbidden error is returned, redirect to login page
+                        // if forbidden error is returned, delete token and return to login
+                        this.$store.commit("clearToken");
                         this.$router.push("/login");
                     } else {
                         alert(

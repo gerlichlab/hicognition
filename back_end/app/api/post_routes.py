@@ -293,7 +293,7 @@ def create_session():
     name = data["name"]
     session_object = data["session_object"]
     session_type = data["session_type"]
-    used_datasets = json.loads(data["used_datasets"]) # used_datasets is array, needs to be parsed from json
+    used_datasets = json.loads(data["used_datasets"])
     # check whether datasets exist
     datasets = [Dataset.query.get(dataset_id) for dataset_id in used_datasets]
     if any(dataset is None for dataset in datasets):
