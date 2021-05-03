@@ -64,7 +64,12 @@ export default {
     },
     mounted: function() {
         // clear widgetCollections
-        this.$store.commit("compare/clearWidgetCollections");
+        //this.$store.commit("compare/clearWidgetCollections");
+        // initilize from store
+        var collections = Object.keys(this.$store.getters["compare/getWidgetCollections"])
+        this.collections = collections.map(elem => {
+            return {id: Number(elem)}
+        })
         this.fetchDatasets()
     }
 };
