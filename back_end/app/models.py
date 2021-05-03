@@ -1,4 +1,5 @@
 """Database models for HiCognition."""
+import datetime
 from flask.globals import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
@@ -256,6 +257,27 @@ class BedFileMetadata(db.Model):
     def __repr__(self):
         """Format print output."""
         return f"<Metadata {self.name}>"
+
+
+
+session_dataset_assoc_table = db.Table('session_dataset_assoc_table',
+    db.Column('session_id', db.Integer, db.ForeignKey('session.id')),
+    db.Column('dataset_id', db.Integer, db.ForeignKey('dataset.id'))
+)
+
+class Session(db.Model):
+    """Model for session data that represents configurations
+    of views. For example, compare views."""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    session_object = db.Column(db.String(10**3))
+    created_utc = db.Column(db.DateTime, nullable=False,
+        default=datetime.datetime.utcnow)
+    session_type = db.Column(db.String(100))
+    datasets = db.relationship("Dataset",
+                               secondary=session_dataset_assoc_table)
+
 
 
 # helpers
