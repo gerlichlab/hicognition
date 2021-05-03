@@ -77,8 +77,13 @@
                                     <md-list-item
                                         v-for="item in sortKeys"
                                         :key="item"
-                                        @click="selectedSortOrder = item; showMenu=false"
-                                        ><span class="md-body-1">{{ item }}</span>
+                                        @click="
+                                            selectedSortOrder = item;
+                                            showMenu = false;
+                                        "
+                                        ><span class="md-body-1">{{
+                                            item
+                                        }}</span>
                                         <md-icon
                                             v-if="item == selectedSortOrder"
                                             >done</md-icon
@@ -88,9 +93,11 @@
                                         <div
                                             class="md-layout-item md-size-30 padding-left padding-right"
                                         >
-                                            <md-switch v-model="isAscending"><span class="md-body-1">{{
-                                                sortDirection
-                                            }}</span></md-switch>
+                                            <md-switch v-model="isAscending"
+                                                ><span class="md-body-1">{{
+                                                    sortDirection
+                                                }}</span></md-switch
+                                            >
                                         </div>
                                     </div>
                                 </md-list>
@@ -144,6 +151,7 @@ import {
     sort_matrix_by_index,
     sort_matrix_by_center_column
 } from "../../functions";
+import EventBus from "../../eventBus";
 
 const TOOLBARHEIGHT = 71;
 
@@ -246,6 +254,10 @@ export default {
         }
     },
     methods: {
+        serializeWidget: function() {
+            var newObject = this.toStoreObject();
+            this.$store.commit("compare/setWidget", newObject);
+        },
         handleSliderChange: function(data) {
             this.minHeatmap = data[0];
             this.maxHeatmap = data[1];
@@ -283,7 +295,10 @@ export default {
             // delete widget from store
             this.$store.commit("compare/deleteWidget", payload);
             // decrement dataset from used dataset in store
-            this.$store.commit("compare/decrement_usage_dataset", this.selectedDataset)
+            this.$store.commit(
+                "compare/decrement_usage_dataset",
+                this.selectedDataset
+            );
         },
         handleDragStart: function(e) {
             // commit to store once drag starts
@@ -497,8 +512,8 @@ export default {
                 this.binsizes = group_stackups_by_binsize(response.data);
             });
             // add dataset to store for tallying used_dataset
-            this.$store.commit("compare/decrement_usage_dataset", oldVal)
-            this.$store.commit("compare/increment_usage_dataset", newVal)
+            this.$store.commit("compare/decrement_usage_dataset", oldVal);
+            this.$store.commit("compare/increment_usage_dataset", newVal);
         },
         selectedBinsize: async function() {
             if (!this.selectedBinsize) {
@@ -517,6 +532,9 @@ export default {
             // add by center column
             this.sortorders["center column"] = {};
         }
+    },
+    mounted: function() {
+        EventBus.$on("serialize-widgets", this.serializeWidget);
     }
 };
 </script>

@@ -131,6 +131,7 @@
 import heatmap from "../visualizations/heatmap";
 import { apiMixin, formattingMixin } from "../../mixins";
 import { group_iccf_obs_exp } from "../../functions";
+import EventBus from "../../eventBus";
 
 const TOOLBARHEIGHT = 71;
 
@@ -199,6 +200,10 @@ export default {
         }
     },
     methods: {
+        serializeWidget: function() {
+            var newObject = this.toStoreObject();
+            this.$store.commit("compare/setWidget", newObject);
+        },
         handleSliderChange: function(data) {
             this.minHeatmap = data[0];
             this.maxHeatmap = data[1];
@@ -483,6 +488,9 @@ export default {
             this.minHeatmap = undefined;
             this.maxHeatmap = undefined;
         }
+    },
+    mounted: function (){
+        EventBus.$on('serialize-widgets', this.serializeWidget)
     }
 };
 </script>

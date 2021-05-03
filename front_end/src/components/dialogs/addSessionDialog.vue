@@ -23,6 +23,7 @@
 
 <script>
 import addSessionForm from "../forms/addSessionForm";
+import EventBus from "../../eventBus";
 
 export default {
     name: "addSessionDialog",
@@ -42,6 +43,14 @@ export default {
     computed: {
         showDialog: function() {
             return this.dialog;
+        }
+    },
+    watch: {
+        dialog: function(val){
+            if (val){
+                // serialize widgets when dialog is shown
+                EventBus.$emit('serialize-widgets');
+            }
         }
     }
 };

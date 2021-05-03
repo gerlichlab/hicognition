@@ -123,6 +123,7 @@
 import lineprofile from "../visualizations/lineprofile";
 import { apiMixin, formattingMixin } from "../../mixins";
 import { group_lineprofils_by_binsize } from "../../functions";
+import EventBus from "../../eventBus";
 
 const TOOLBARHEIGHT = 71;
 
@@ -175,6 +176,10 @@ export default {
         }
     },
     methods: {
+        serializeWidget: function() {
+            var newObject = this.toStoreObject();
+            this.$store.commit("compare/setWidget", newObject);
+        },
         toStoreObject: function() {
             // serialize object for storing its state in the store
             return {
@@ -493,6 +498,9 @@ export default {
             this.lineProfileNames = selected_names;
             this.widgetData = selected_data;
         }
+    },
+    mounted: function (){
+        EventBus.$on('serialize-widgets', this.serializeWidget)
     }
 };
 </script>
