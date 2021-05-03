@@ -151,6 +151,9 @@ const compareModule = {
                 state.used_datasets.set(id, 1)
             }
         },
+        setWidgetCollections(state, payload){
+            state.widgetCollections = payload
+        },
         clearWidgetCollections(state) {
             state.widgetCollections = {};
         },

@@ -396,15 +396,17 @@ export default {
             "compare/getCollectionProperties"
         ](this.id);
         // set maxrownumber and maxcolumnnumber
-        this.maxRowNumber =  max_array(Object.values(collectionData.children).map( (elem) => {
-            return elem.rowIndex
-        }));
-        this.maxColumnNumber = max_array(Object.values(collectionData.children).map( (elem) => {
-            return elem.colIndex
-        }));
-        // add children
-        for (var child of Object.values(collectionData.children)) {
-            this.children.push(child);
+        if (collectionData.children){
+            this.maxRowNumber =  max_array(Object.values(collectionData.children).map( (elem) => {
+                return elem.rowIndex
+            }));
+            this.maxColumnNumber = max_array(Object.values(collectionData.children).map( (elem) => {
+                return elem.colIndex
+            }));
+            // add children
+            for (var child of Object.values(collectionData.children)) {
+                this.children.push(child);
+            }
         }
         // get datasets
         this.fetchDatasets();

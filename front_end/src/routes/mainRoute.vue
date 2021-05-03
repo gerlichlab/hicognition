@@ -1,7 +1,11 @@
 <template>
     <md-app>
         <md-app-toolbar class="md-dense md-primary">
-            <toolbar @drawer-clicked="menuVisible = !menuVisible" @add-session-click="showAddSessionDialog = true"></toolbar>
+            <toolbar
+                @drawer-clicked="menuVisible = !menuVisible"
+                @add-session-click="showAddSessionDialog = true"
+                @my-sessions-click="showMySessionsDialog = true"
+            ></toolbar>
         </md-app-toolbar>
 
         <md-app-drawer :md-active.sync="menuVisible">
@@ -47,6 +51,10 @@
                 :dialog="showAddSessionDialog"
                 @close-dialog="showAddSessionDialog = false"
             ></addSessionDialog>
+            <mySessionsDialog
+                :dialog="showMySessionsDialog"
+                @close-dialog="showMySessionsDialog = false"
+            ></mySessionsDialog>
         </md-app-content>
     </md-app>
 </template>
@@ -58,7 +66,8 @@ import datasetDialog from "../components/dialogs/myDatasetDialog";
 import addDatasetDialog from "../components/dialogs/addDatasetDialog";
 import addMetadataDialog from "../components/dialogs/addMetadataDialog";
 import preprocessDatasetDialog from "../components/dialogs/preProcessDatasetDialog";
-import addSessionDialog from "../components/dialogs/addSessionDialog"
+import addSessionDialog from "../components/dialogs/addSessionDialog";
+import mySessionsDialog from "../components/dialogs/mySessionsDialog";
 
 export default {
     name: "mainRoute",
@@ -69,7 +78,8 @@ export default {
         addDatasetDialog,
         addMetadataDialog,
         preprocessDatasetDialog,
-        addSessionDialog
+        addSessionDialog,
+        mySessionsDialog
     },
     data: () => ({
         menuVisible: false,
@@ -77,7 +87,8 @@ export default {
         showAddDatasetDialog: false,
         showAddMetadataDialog: false,
         showPreprocessDatasetDialog: false,
-        showAddSessionDialog: false
+        showAddSessionDialog: false,
+        showMySessionsDialog: false
     })
 };
 </script>
