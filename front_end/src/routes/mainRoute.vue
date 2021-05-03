@@ -1,7 +1,7 @@
 <template>
     <md-app>
         <md-app-toolbar class="md-dense md-primary">
-            <toolbar @drawer-clicked="menuVisible = !menuVisible"></toolbar>
+            <toolbar @drawer-clicked="menuVisible = !menuVisible" @add-session-click="showAddSessionDialog = true"></toolbar>
         </md-app-toolbar>
 
         <md-app-drawer :md-active.sync="menuVisible">
@@ -43,6 +43,10 @@
                 :dialog="showMyDatasetDialog"
                 @close-dialog="showMyDatasetDialog = false"
             ></datasetDialog>
+            <addSessionDialog
+                :dialog="showAddSessionDialog"
+                @close-dialog="showAddSessionDialog = false"
+            ></addSessionDialog>
         </md-app-content>
     </md-app>
 </template>
@@ -54,6 +58,7 @@ import datasetDialog from "../components/dialogs/myDatasetDialog";
 import addDatasetDialog from "../components/dialogs/addDatasetDialog";
 import addMetadataDialog from "../components/dialogs/addMetadataDialog";
 import preprocessDatasetDialog from "../components/dialogs/preProcessDatasetDialog";
+import addSessionDialog from "../components/dialogs/addSessionDialog"
 
 export default {
     name: "mainRoute",
@@ -63,14 +68,16 @@ export default {
         datasetDialog,
         addDatasetDialog,
         addMetadataDialog,
-        preprocessDatasetDialog
+        preprocessDatasetDialog,
+        addSessionDialog
     },
     data: () => ({
         menuVisible: false,
         showMyDatasetDialog: false,
         showAddDatasetDialog: false,
         showAddMetadataDialog: false,
-        showPreprocessDatasetDialog: false
+        showPreprocessDatasetDialog: false,
+        showAddSessionDialog: false
     })
 };
 </script>

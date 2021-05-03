@@ -43,6 +43,12 @@ const compareModule = {
         };
     },
     getters: {
+        getWidgetCollections: state => {
+            return state.widgetCollections
+        },
+        getUsedDatasets: state => {
+            return state.used_datasets
+        },
         getWidgetProperties: state => payload => {
             return Object.assign(
                 {},

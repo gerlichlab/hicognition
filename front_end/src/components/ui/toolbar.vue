@@ -31,6 +31,7 @@
                     </md-button>
 
                     <md-menu-content>
+                        <md-menu-item @click="$emit('add-session-click')">Save Session</md-menu-item>
                         <md-menu-item @click="logout">Logout</md-menu-item>
                     </md-menu-content>
                 </md-menu>
