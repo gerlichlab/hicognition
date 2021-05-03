@@ -13,6 +13,7 @@ from ..models import (
     Dataset,
     AverageIntervalData,
     IndividualIntervalData,
+    Session
 )
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
@@ -356,3 +357,26 @@ def get_stackup_metadata_small(entry_id):
     stackup_index = np.load(stackup.file_path_indices_small)
     outframe = output_frame_unique.iloc[stackup_index, :]
     return jsonify(outframe.to_dict(orient="list"))
+
+@api.route("/sessions/", methods=["GET"])
+@auth.login_required
+def get_all_sessions():
+    """Gets all available sessions for a given user."""
+    all_available_sessions = Session.query.filter(
+        (Session.user_id == g.current_user.id)
+    ).all()
+    return jsonify([dfile.to_json() for dfile in all_available_sessions])
+
+@api.route("/sessions/<session_id>/", methods=["GET"])
+@auth.login_required
+def get_session_data_with_id(session_id):
+    """Returns session data with given id"""
+    # check whether session with id exists
+    session = Session.query.get(session_id)
+    # check whether dataset exists
+    if session is None:
+        return not_found(f"Session with id '{session_id}' does not exist!")
+    # check if session is owned
+    if session.user_id != g.current_user.id:
+        return forbidden(f"Session with id '{session_id}' is not owned!")
+    return jsonify(session.to_json())

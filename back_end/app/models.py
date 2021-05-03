@@ -292,6 +292,18 @@ class Session(db.Model):
             return None
         return Session.query.get(data["session_id"])
 
+    def to_json(self):
+        """Formats json output."""
+        json_session = {
+            "id": self.id,
+            "name": self.name,
+            "created": self.created_utc.strftime("%m/%d/%Y, %H:%M:%S"),
+            "session_type": self.session_type,
+            "session_object": self.session_object,
+        }
+        return json_session
+
+
     def __repr__(self):
         """Format print output."""
         return f"<Session {self.name}>"
