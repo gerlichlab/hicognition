@@ -84,8 +84,5 @@ class TestGetSessionToken(LoginTestCase):
         result = Session.verify_auth_token("asdf")
         self.assertTrue(result is None)
 
-
-
-
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)
