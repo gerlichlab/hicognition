@@ -3,6 +3,7 @@ import datetime
 from flask.globals import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from itsdangerous import JSONWebSignatureSerializer
 from flask_login import UserMixin
 import redis
 import rq
@@ -278,14 +279,14 @@ class Session(db.Model):
     datasets = db.relationship("Dataset",
                                secondary=session_dataset_assoc_table)
 
-    def generate_session_token(self, expiration):
+    def generate_session_token(self):
         """generates session token"""
-        s = Serializer(current_app.config["SECRET_KEY"], expires_in=expiration)
+        s = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
         return s.dumps({"session_id": self.id}).decode("utf-8")
 
     @staticmethod
     def verify_auth_token(token):
-        s = Serializer(current_app.config["SECRET_KEY"])
+        s = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
         try:
             data = s.loads(token)
         except:

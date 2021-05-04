@@ -380,3 +380,23 @@ def get_session_data_with_id(session_id):
     if session.user_id != g.current_user.id:
         return forbidden(f"Session with id '{session_id}' is not owned!")
     return jsonify(session.to_json())
+
+@api.route("/sessions/<session_id>/sessionToken/", methods=["GET"])
+@auth.login_required
+def get_session_token(session_id):
+    """Returns session token for a given session."""
+    # check whether session with id exists
+    session = Session.query.get(session_id)
+    # check whether dataset exists
+    if session is None:
+        return not_found(f"Session with id '{session_id}' does not exist!")
+    # check if session is owned
+    if session.user_id != g.current_user.id:
+        return forbidden(f"Session with id '{session_id}' is not owned!")
+    # create session token
+    return jsonify(
+            {
+                "session_token": session.generate_session_token(),
+                "session_id": session_id,
+            }
+        )
