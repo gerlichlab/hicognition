@@ -135,7 +135,7 @@ def get_intervals():
     # SQL join to get all intervals that come from a dataset owned by the respective user
     all_files = (
         Intervals.query.join(Dataset)
-        .filter((Dataset.user_id == g.current_user.id) | (Dataset.public))
+        .filter((Dataset.user_id == g.current_user.id) | (Dataset.public) | (Dataset.id.in_(g.session_datasets)))
         .all()
     )
     return jsonify([dfile.to_json() for dfile in all_files])

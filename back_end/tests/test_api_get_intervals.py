@@ -8,7 +8,7 @@ import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, BedFileMetadata
+from app.models import Dataset, Intervals, BedFileMetadata, Session
 
 
 class TestGetIntervals(LoginTestCase):
@@ -147,6 +147,55 @@ class TestGetIntervals(LoginTestCase):
             }
         ]
         self.assertEqual(response.json, expected)
+
+    def test_correct_intervals_with_valid_session_token(self):
+        """Tests whether correct intervals are returned if
+        there are multiple datasets from different users and
+        there is a valid session token."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add data
+        dataset1 = Dataset(
+            dataset_name="test1", file_path="/test/path/1", filetype="cooler", user_id=1
+        )
+        dataset2 = Dataset(
+            dataset_name="test1", file_path="/test/path/1", filetype="cooler", user_id=2
+        )
+        intervals1 = Intervals(
+            name="testRegion1",
+            dataset_id=1,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        intervals2 = Intervals(
+            name="testRegion2",
+            dataset_id=1,
+            file_path="test_path_2.bedd2db",
+            windowsize=400000,
+        )
+        intervals3 = Intervals(
+            name="testRegion3",
+            dataset_id=2,
+            file_path="test_path_3.bedd2db",
+            windowsize=400000,
+        )
+        # add session
+        session = Session()
+        session.datasets = [dataset2]
+        db.session.add_all([dataset1, dataset2, intervals1, intervals2, intervals3, session])
+        db.session.commit()
+        # get intervals
+        token = session.generate_session_token()
+        response = self.client.get(
+            f"/api/intervals/?sessionToken={token}",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check whether they are correct
+        ids = [entry["id"] for entry in response.json]
+        self.assertEqual(ids, [1,2,3])
 
     def test_get_public_intervals(self):
         """Tests whether intervals are returned for a public but not
