@@ -148,7 +148,7 @@ class TestGetSessionWithID(LoginTestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_owned_session_returned_correctly(self):
-        """Session is not owned, response whould be 403."""
+        """Tests whether owned session is returned correctly"""
         self.create_sessions()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -165,6 +165,48 @@ class TestGetSessionWithID(LoginTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, self.session_user_1.to_json())
+
+    def test_unowned_session_is_returned_correctly_with_session_token(self):
+        """Session is not owned, but correcte session token is provided."""
+        self.create_sessions()
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add session data
+        db.session.add_all([self.session_user_1, self.session_user_2])
+        db.session.commit()
+        # create session token
+        token = self.session_user_2.generate_session_token()
+        # get session
+        response = self.client.get(
+            f"/api/sessions/2/?sessionToken={token}",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, self.session_user_2.to_json())
+
+    def test_unowned_session_is_not_returned_with_invalid_session_token(self):
+        """Session is not owned, but correcte session token is provided."""
+        self.create_sessions()
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add session data
+        db.session.add_all([self.session_user_1, self.session_user_2])
+        db.session.commit()
+        # create session token
+        token = "IamABadToken"
+        # get session
+        response = self.client.get(
+            f"/api/sessions/2/?sessionToken={token}",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
 
 
 if __name__ == "__main__":
