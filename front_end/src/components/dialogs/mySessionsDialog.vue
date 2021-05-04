@@ -8,9 +8,14 @@
                     @selection-unavailable="handleSelectionUnAvailable"
                 ></sessionsTable>
             </md-content>
+            <div class="md-layout md-gutter md-alignment-center-center no-margin" v-if="showShareableUrl">
+                <div class="md-layout-item md-elevation-1 large-margin">
+                    <span class="md-caption center-span large-margin">{{ shareableUrl }}</span>
+                </div>
+            </div>
             <md-dialog-actions>
-                <div style="width: 100%">
-                    <div style="display: inline-block; float: left">
+                <div class="full-width">
+                    <div class="float-left">
                         <md-button
                             class="md-secondary md-raised md-accent"
                             @click="handleSessionDeletion"
@@ -18,7 +23,7 @@
                             >Delete</md-button
                         >
                     </div>
-                    <div style="display: inline-block; float: right">
+                    <div class="float-right">
                         <md-button
                             class="md-primary"
                             @click="handleUrlgeneration"
@@ -26,7 +31,7 @@
                             >Get URL</md-button
                         >
                     </div>
-                    <div style="display: inline-block; float: right">
+                    <div class="float-right">
                         <md-button
                             class="md-primary"
                             @click="handleSessionRestoration"
@@ -34,7 +39,7 @@
                             >Restore</md-button
                         >
                     </div>
-                    <div style="display: inline-block; float: right">
+                    <div class="float-right">
                         <md-button
                             class="md-secondary"
                             @click="
@@ -63,7 +68,8 @@ export default {
         return {
             showRestore: false,
             selected_session_object: null,
-            selected_session_id: null
+            selected_session_id: null,
+            shareableUrl: null
         };
     },
     components: {
@@ -75,6 +81,20 @@ export default {
     computed: {
         showDialog: function() {
             return this.dialog;
+        },
+        showShareableUrl: function(){
+            if (this.selected_session_object && this.shareableUrl){
+                return true
+            }
+            return false
+        }
+    },
+    watch: {
+        selected_session_object: function(newVal, oldVal){
+            if (newVal != oldVal){
+                // blank url
+                this.shareableUrl = null
+            }
         }
     },
     methods: {
@@ -86,7 +106,15 @@ export default {
             );
         },
         handleUrlgeneration: function() {
-            return;
+            this.fetchData(
+                `sessions/${this.selected_session_id}/sessionToken/`
+            ).then(response => {
+                let sessionToken = response.data["session_token"];
+                var shareableUrl =
+                    window.location.host +
+                    `/#/main/session?sessionToken=${sessionToken}&sessionID=${this.selected_session_id}`;
+                this.shareableUrl = shareableUrl
+            });
         },
         handleSessionRestoration: async function() {
             // fetch data references to put into store
@@ -122,6 +150,7 @@ export default {
             );
             this.selected_session_object = null;
             this.showRestore = false;
+            this.shareableUrl = null;
             this.$emit("close-dialog");
         },
         handleSelectionAvailable: function(session_object, session_id) {
@@ -207,6 +236,31 @@ export default {
 <style lang="scss" scoped>
 .md-dialog /deep/.md-dialog-container {
     max-width: 80vw;
+}
+
+.center-span {
+    display: table;
+    margin: 0 auto;
+}
+
+.no-margin {
+    margin: 0px;
+}
+
+.large-margin {
+    margin: 10px;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
 }
 
 .content {

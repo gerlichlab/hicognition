@@ -77,7 +77,7 @@ export default {
             // fetch datasets
             await this.fetchDatasets()
             // naviage to compare route
-            this.$router.push("/main/compare")
+            setTimeout(() => {this.$router.push("/main/compare")}, 1000)
         },
         fetchLineProfileData: async function(ids) {
             for (let id of ids) {
