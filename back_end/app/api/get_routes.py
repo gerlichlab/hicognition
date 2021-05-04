@@ -37,7 +37,7 @@ def test_protected():
 def get_all_datasets():
     """Gets all available datasets for a given user."""
     all_available_datasets = Dataset.query.filter(
-        (Dataset.user_id == g.current_user.id) | (Dataset.public)
+        (Dataset.user_id == g.current_user.id) | (Dataset.public) | (Dataset.id.in_(g.session_datasets))
     ).all()
     update_processing_state(all_available_datasets, db)
     return jsonify([dfile.to_json() for dfile in all_available_datasets])
@@ -81,7 +81,7 @@ def get_name_of_dataset(dataset_id):
     if dataset is None:
         return not_found(f"Dataset with id '{dataset_id}' does not exist!")
     # check whether user owns the dataset
-    if is_access_to_dataset_denied(dataset, g.current_user):
+    if is_access_to_dataset_denied(dataset, g):
         return forbidden(
             f"Dataset with id '{dataset_id}' is not owned by logged in user!"
         )
@@ -97,7 +97,7 @@ def get_intervals_of_dataset(dataset_id):
     if dataset is None:
         return not_found(f"Dataset with id '{dataset_id}' does not exist!")
     # check whether user owns the dataset
-    if is_access_to_dataset_denied(dataset, g.current_user):
+    if is_access_to_dataset_denied(dataset, g):
         return forbidden(
             f"Dataset with id '{dataset_id}' is not owned by logged in user!"
         )
@@ -115,7 +115,7 @@ def get_binsizes_of_dataset(dataset_id):
     if dataset is None:
         return not_found(f"Dataset with id '{dataset_id}' does not exist!")
     # check whether user owns the dataset
-    if is_access_to_dataset_denied(dataset, g.current_user):
+    if is_access_to_dataset_denied(dataset, g):
         return forbidden(
             f"Dataset with id '{dataset_id}' is not owned by logged in user!"
         )
@@ -149,7 +149,7 @@ def get_interval_metadata(interval_id):
     if interval is None:
         return not_found(f"Intervals with id {interval_id} do not exist!")
     # check if associated dataset is owned
-    if is_access_to_dataset_denied(interval.source_dataset, g.current_user):
+    if is_access_to_dataset_denied(interval.source_dataset, g):
         return forbidden(
             f"Dataset associated with interval id {interval.id} is not owned by logged in user!"
         )
@@ -205,8 +205,8 @@ def get_averageIntervalData():
             return not_found("Cooler/Bigwig dataset or intervals dataset do not exist!")
         # Check whether datasets are owned
         if is_access_to_dataset_denied(
-            cooler_ds, g.current_user
-        ) or is_access_to_dataset_denied(intervals_ds.source_dataset, g.current_user):
+            cooler_ds, g
+        ) or is_access_to_dataset_denied(intervals_ds.source_dataset, g):
             return forbidden(
                 "Cooler/Bigwig dataset or intervals dataset is not owned by logged in user!"
             )
@@ -241,8 +241,8 @@ def get_individualIntervalData():
         return not_found("Genomic features or intervals dataset do not exist!")
     # Check whether datasets are owned
     if is_access_to_dataset_denied(
-        genomic_feature_ds, g.current_user
-    ) or is_access_to_dataset_denied(intervals_ds.source_dataset, g.current_user):
+        genomic_feature_ds, g
+    ) or is_access_to_dataset_denied(intervals_ds.source_dataset, g):
         return forbidden(
             "Genomic features or intervals dataset is not owned by logged in user!"
         )
@@ -271,8 +271,8 @@ def get_pileup_data(entry_id):
     cooler_ds = pileup.source_dataset
     bed_ds = pileup.source_intervals.source_dataset
     if is_access_to_dataset_denied(
-        cooler_ds, g.current_user
-    ) or is_access_to_dataset_denied(bed_ds, g.current_user):
+        cooler_ds, g
+    ) or is_access_to_dataset_denied(bed_ds, g):
         return forbidden(
             "Cooler dataset or bed dataset is not owned by logged in user!"
         )
@@ -299,8 +299,8 @@ def get_stackup_data(entry_id):
     bigwig_ds = stackup.source_dataset
     bed_ds = stackup.source_intervals.source_dataset
     if is_access_to_dataset_denied(
-        bigwig_ds, g.current_user
-    ) or is_access_to_dataset_denied(bed_ds, g.current_user):
+        bigwig_ds, g
+    ) or is_access_to_dataset_denied(bed_ds, g):
         return forbidden(
             "Bigwig dataset or bed dataset is not owned by logged in user!"
         )
@@ -329,8 +329,8 @@ def get_stackup_metadata_small(entry_id):
     bigwig_ds = stackup.source_dataset
     bed_ds = stackup.source_intervals.source_dataset
     if is_access_to_dataset_denied(
-        bigwig_ds, g.current_user
-    ) or is_access_to_dataset_denied(bed_ds, g.current_user):
+        bigwig_ds, g
+    ) or is_access_to_dataset_denied(bed_ds, g):
         return forbidden(
             "Bigwig dataset or bed dataset is not owned by logged in user!"
         )
@@ -377,7 +377,7 @@ def get_session_data_with_id(session_id):
     if session is None:
         return not_found(f"Session with id '{session_id}' does not exist!")
     # check if session is owned
-    if session.user_id != g.current_user.id:
+    if (session.user_id != g.current_user.id) and (session.id != g.session_id):
         return forbidden(f"Session with id '{session_id}' is not owned!")
     return jsonify(session.to_json())
 

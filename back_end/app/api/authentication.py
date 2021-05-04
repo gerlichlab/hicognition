@@ -1,9 +1,9 @@
 from flask.json import jsonify
 from flask_httpauth import HTTPBasicAuth
-from flask import g
+from flask import g, request
 from . import api
 from . import errors
-from ..models import User
+from ..models import User, Session
 
 
 auth = HTTPBasicAuth()
@@ -37,3 +37,22 @@ def get_token():
             "user_id": g.current_user.id,
         }
     )
+
+@api.before_request
+def before_request():
+    g.session_datasets = []
+    g.session_id = None
+    _verify_and_store_session_token(request)
+
+
+
+# helpers
+def _verify_and_store_session_token(request):
+    session_token = request.args.get('sessionToken')
+    if session_token is None:
+        return None
+    # check whether session token is valid
+    session = Session.verify_auth_token(session_token)
+    if session is not None:
+        g.session_datasets.extend([dataset.id for dataset in session.datasets])
+        g.session_id = session.id

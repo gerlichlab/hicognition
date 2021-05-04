@@ -3,10 +3,14 @@ import os
 from flask import current_app
 
 
-def is_access_to_dataset_denied(dataset, current_user):
+def is_access_to_dataset_denied(dataset, g):
     """Checks whether access to a certian dataset is denied
     for a given user."""
-    return (dataset.user_id != current_user.id) and not dataset.public
+    if dataset.public:
+        return False
+    if dataset.id in g.session_datasets:
+        return False
+    return (dataset.user_id != g.current_user.id)
 
 
 def is_dataset_deletion_denied(dataset_id, current_user):
