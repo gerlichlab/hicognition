@@ -57,7 +57,6 @@ class TestDeleteSession(LoginTestCase, TempDirTestCase):
         # add session
         db.session.add(self.session_user_2)
         db.session.commit()
-        # try deletion of dataset that is not owned, current user is id 1 and dataset id2 is owned
         # by user id 2
         response = self.client.delete(
             "/api/sessions/1/",
@@ -66,6 +65,25 @@ class TestDeleteSession(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+
+    def test_delete_owned_dataset(self):
+        """Check whether owned dataset is deleted correctly."""
+        self.create_sessions()
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        # add session
+        db.session.add_all([self.session_user_1, self.session_user_1_2])
+        db.session.commit()
+        # by user id 2
+        response = self.client.delete(
+            "/api/sessions/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(Session.query.all()), 1)
+        self.assertEqual(Session.query.first(), self.session_user_1_2)
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)
