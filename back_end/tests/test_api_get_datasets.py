@@ -341,6 +341,63 @@ class TestGetDatasets(LoginTestCase):
         ids = [dataset["id"] for dataset in response.json]
         self.assertEqual(ids, [1,2,3])
 
+    def test_user_cannot_get_datasets_w_invalid_session_token(self):
+        """Authenticated user  cannot get other datasets with
+        an invalid sessino token."""
+        token1 = self.add_and_authenticate("test", "asdf")
+        # add datasets
+        dataset1 = Dataset(
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="cooler",
+            processing_state="finished",
+            user_id=1,
+        )
+        dataset2 = Dataset(
+            dataset_name="test2",
+            file_path="/test/path/2",
+            filetype="cooler",
+            processing_state="finished",
+            user_id=2,
+        )
+        dataset3 = Dataset(
+            dataset_name="test3",
+            file_path="/test/path/3",
+            filetype="bedfile",
+            processing_state="finished",
+            user_id=1,
+        )
+        dataset4 = Dataset(
+            dataset_name="test4",
+            file_path="/test/path/4",
+            filetype="bedfile",
+            processing_state="finished",
+            user_id=2,
+        )
+        # create session that contains dataset2
+        session = Session()
+        session.datasets = [dataset2]
+        # add to database session
+        db.session.add(dataset1)
+        db.session.add(dataset2)
+        db.session.add(dataset3)
+        db.session.add(dataset4)
+        db.session.add(session)
+        db.session.commit()
+        # get datasets with user_token 1
+        token_headers = self.get_token_header(token1)
+        token = "badToken"
+        # get datasets with session token
+        response = self.client.get(
+            f"/api/datasets/?sessionToken={token}",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        ids = [dataset["id"] for dataset in response.json]
+        self.assertEqual(ids, [1,3])
+
     def test_user_gets_public_dataset(self):
         """Tests whether user is able to access public dataset."""
         token1 = self.add_and_authenticate("test", "asdf")
