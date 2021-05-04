@@ -3,15 +3,45 @@
         <md-dialog :md-active.sync="showDialog">
             <md-dialog-title>Available Sessions</md-dialog-title>
             <md-content class="content">
-                <sessionsTable @selection-available="handleSelectionAvailable" @selection-unavailable="handleSelectionUnAvailable"></sessionsTable>
+                <sessionsTable
+                    @selection-available="handleSelectionAvailable"
+                    @selection-unavailable="handleSelectionUnAvailable"
+                ></sessionsTable>
             </md-content>
             <md-dialog-actions>
-                <md-button class="md-primary" @click="handleSessionRestoration" v-if="showRestore"
-                    >Restore</md-button
-                >
-                <md-button class="md-primary" @click="$emit('close-dialog')"
-                    >Close</md-button
-                >
+                <div style="width: 100%">
+                    <div style="display: inline-block; float: left">
+                        <md-button
+                            class="md-secondary md-raised md-accent"
+                            @click="handleSessionDeletion"
+                            v-if="showRestore"
+                            >Delete</md-button
+                        >
+                    </div>
+                    <div style="display: inline-block; float: right">
+                        <md-button
+                            class="md-primary"
+                            @click="handleUrlgeneration"
+                            v-if="showRestore"
+                            >Get URL</md-button
+                        >
+                    </div>
+                    <div style="display: inline-block; float: right">
+                        <md-button
+                            class="md-primary"
+                            @click="handleSessionRestoration"
+                            v-if="showRestore"
+                            >Restore</md-button
+                        >
+                    </div>
+                    <div style="display: inline-block; float: right">
+                        <md-button
+                            class="md-secondary"
+                            @click="$emit('close-dialog'); showRestore = false; selected_session_object = null"
+                            >Close</md-button
+                        >
+                    </div>
+                </div>
             </md-dialog-actions>
         </md-dialog>
     </div>
@@ -19,7 +49,7 @@
 
 <script>
 import sessionsTable from "../tables/sessionsTable";
-import {apiMixin} from "../../mixins";
+import { apiMixin } from "../../mixins";
 
 export default {
     name: "MySessionsDialog",
@@ -28,7 +58,7 @@ export default {
         return {
             showRestore: false,
             selected_session_object: null
-        }
+        };
     },
     components: {
         sessionsTable
@@ -42,42 +72,60 @@ export default {
         }
     },
     methods: {
-        handleSessionRestoration: async function(){
+        handleSessionDeletion: function() {
+            return;
+        },
+        handleUrlgeneration: function(){
+            return
+        },
+        handleSessionRestoration: async function() {
             // fetch data references to put into store
             var parsed_object = JSON.parse(this.selected_session_object);
-            for (let collection of Object.values(parsed_object)){
-                for (let child of Object.values(collection)){
-                    for(let child_vals of Object.values(child)){
-                        if (child_vals.widgetDataRef){
+            for (let collection of Object.values(parsed_object)) {
+                for (let child of Object.values(collection)) {
+                    for (let child_vals of Object.values(child)) {
+                        if (child_vals.widgetDataRef) {
                             var widgetType = child_vals.widgetType;
-                            switch (widgetType){
+                            switch (widgetType) {
                                 case "Lineprofile":
-                                    await this.fetchLineProfileData(child_vals.widgetDataRef)
-                                    break
+                                    await this.fetchLineProfileData(
+                                        child_vals.widgetDataRef
+                                    );
+                                    break;
                                 case "Pileup":
-                                    await this.fetchPileupData(child_vals.widgetDataRef)
-                                    break
+                                    await this.fetchPileupData(
+                                        child_vals.widgetDataRef
+                                    );
+                                    break;
                                 case "Stackup":
-                                    await this.fetchStackupData(child_vals.widgetDataRef)
+                                    await this.fetchStackupData(
+                                        child_vals.widgetDataRef
+                                    );
                             }
                         }
                     }
                 }
             }
-            this.$store.commit("compare/setWidgetCollections", JSON.parse(this.selected_session_object))
-            this.$emit("close-dialog")
+            this.$store.commit(
+                "compare/setWidgetCollections",
+                JSON.parse(this.selected_session_object)
+            );
+            this.selected_session_object = null;
+            this.showRestore = false;
+            this.$emit("close-dialog");
         },
-        handleSelectionAvailable: function(e){
-            this.showRestore = true,
-            this.selected_session_object = e
+        handleSelectionAvailable: function(e) {
+            (this.showRestore = true), (this.selected_session_object = e);
         },
-        fetchLineProfileData: async function(ids){
-            for (let id of ids){
+        fetchLineProfileData: async function(ids) {
+            for (let id of ids) {
                 // checks whether lineprofile data is in store and does not fetch it if it is there
                 if (this.$store.getters["compare/lineprofileExists"](id)) {
-                    continue
+                    continue;
                 }
-                var response = await this.fetchData(`averageIntervalData/${id}/`);
+                var response = await this.fetchData(
+                    `averageIntervalData/${id}/`
+                );
                 var parsed = response.data;
                 // save it in store
                 var mutationObject = {
@@ -90,13 +138,13 @@ export default {
                 );
             }
         },
-        fetchStackupData: async function(id){
+        fetchStackupData: async function(id) {
             // checks whether pileup data is in store and fetches it if it is not
             var queryObject = {
                 id: id
             };
             if (this.$store.getters["compare/stackupExists"](queryObject)) {
-                return
+                return;
             }
             // pileup does not exists in store, fetch it
             var response = await this.fetchData(
@@ -110,8 +158,8 @@ export default {
             };
             this.$store.commit("compare/setWidgetDataStackup", mutationObject);
         },
-        fetchPileupData: async function(dataRef){
-            for (let [pileupType, id] of Object.entries(dataRef)){
+        fetchPileupData: async function(dataRef) {
+            for (let [pileupType, id] of Object.entries(dataRef)) {
                 // checks whether pileup data is in store and fetches it if it is not
                 var queryObject = {
                     pileupType: pileupType,
@@ -119,10 +167,12 @@ export default {
                 };
                 console.log(queryObject);
                 if (this.$store.getters["compare/pileupExists"](queryObject)) {
-                    return
+                    return;
                 }
                 // pileup does not exists in store, fetch it
-                var response = await this.fetchData(`averageIntervalData/${id}/`);
+                var response = await this.fetchData(
+                    `averageIntervalData/${id}/`
+                );
                 var parsed = response.data;
                 // save it in store
                 var mutationObject = {
@@ -130,12 +180,14 @@ export default {
                     id: id,
                     data: parsed
                 };
-                this.$store.commit("compare/setWidgetDataPileup", mutationObject);
+                this.$store.commit(
+                    "compare/setWidgetDataPileup",
+                    mutationObject
+                );
             }
         },
-        handleSelectionUnAvailable: function(){
-            this.showRestore = false,
-            this.selected_session_object = null
+        handleSelectionUnAvailable: function() {
+            (this.showRestore = false), (this.selected_session_object = null);
         }
     }
 };

@@ -11,6 +11,7 @@ from ..models import (
     Dataset,
     AverageIntervalData,
     IndividualIntervalData,
+    Session
 )
 from .authentication import auth
 from .errors import forbidden, invalid, not_found
@@ -71,6 +72,24 @@ def delete_dataset(dataset_id):
         db.session.delete(
             entry
         )  # TODO: this leaves the session invalid for a short time for some reason -> fix!
+    db.session.commit()
+    response = jsonify({"message": "success"})
+    response.status_code = 200
+    return response
+
+@api.route("/sessions/<session_id>/", methods=["DELETE"])
+@auth.login_required
+def delete_session(session_id):
+    """Deletes """
+    # check if data set exists
+    session = Session.query.get(session_id)
+    if session is None:
+        return not_found(f"Session with id {session_id} does not exist!")
+    # check if data set can be accessed
+    if session.user_id != g.current_user.id:
+        return forbidden(f"Session with id {session_id} is not owned by user!")
+    # delete session
+    db.session.delete(session)
     db.session.commit()
     response = jsonify({"message": "success"})
     response.status_code = 200
