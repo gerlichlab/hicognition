@@ -37,7 +37,11 @@
                     <div style="display: inline-block; float: right">
                         <md-button
                             class="md-secondary"
-                            @click="$emit('close-dialog'); showRestore = false; selected_session_object = null"
+                            @click="
+                                $emit('close-dialog');
+                                showRestore = false;
+                                selected_session_object = null;
+                            "
                             >Close</md-button
                         >
                     </div>
@@ -50,6 +54,7 @@
 <script>
 import sessionsTable from "../tables/sessionsTable";
 import { apiMixin } from "../../mixins";
+import EventBus from "../../eventBus";
 
 export default {
     name: "MySessionsDialog",
@@ -57,7 +62,8 @@ export default {
     data: function() {
         return {
             showRestore: false,
-            selected_session_object: null
+            selected_session_object: null,
+            selected_session_id: null
         };
     },
     components: {
@@ -73,10 +79,14 @@ export default {
     },
     methods: {
         handleSessionDeletion: function() {
-            return;
+            this.deleteData(`sessions/${this.selected_session_id}/`).then(
+                response => {
+                    EventBus.$emit("fetch-sessions");
+                }
+            );
         },
-        handleUrlgeneration: function(){
-            return
+        handleUrlgeneration: function() {
+            return;
         },
         handleSessionRestoration: async function() {
             // fetch data references to put into store
@@ -114,8 +124,10 @@ export default {
             this.showRestore = false;
             this.$emit("close-dialog");
         },
-        handleSelectionAvailable: function(e) {
-            (this.showRestore = true), (this.selected_session_object = e);
+        handleSelectionAvailable: function(session_object, session_id) {
+            (this.showRestore = true),
+                (this.selected_session_object = session_object),
+                (this.selected_session_id = session_id);
         },
         fetchLineProfileData: async function(ids) {
             for (let id of ids) {

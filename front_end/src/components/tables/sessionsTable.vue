@@ -55,6 +55,7 @@
 
 <script>
 import { apiMixin } from "../../mixins";
+import EventBus from "../../eventBus"
 
 export default {
     name: "datasetTable",
@@ -96,14 +97,18 @@ export default {
     watch: {
         selected: function(val){
             if (val != undefined){
-                this.$emit("selection-available", this.selected.session_object)
+                this.$emit("selection-available", this.selected.session_object, this.selected.id)
             }else{
                 this.$emit("selection-unavailable")
             }
         }
     },
     created: function() {
+        EventBus.$on("fetch-sessions", this.fetchSessions)
         this.fetchSessions()
+    },
+    beforeDestroy: function(){
+        EventBus.$off("fetch-sessions")
     }
 };
 </script>
