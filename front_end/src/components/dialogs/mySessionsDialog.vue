@@ -177,7 +177,6 @@ export default {
                     pileupType: pileupType,
                     id: id
                 };
-                console.log(queryObject);
                 if (this.$store.getters["compare/pileupExists"](queryObject)) {
                     return;
                 }

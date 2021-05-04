@@ -246,12 +246,16 @@ const store = new Vuex.Store({
     },
     state: {
         token: null,
+        sessionToken: null,
         user_id: null,
         datasets: null // datasets are in the global store because they will be shared for all functionalities for a given user throughout a session
     },
     getters: {
         isTokenEmpty: state => {
             return state.token == null;
+        },
+        sessionToken: state => {
+            return state.sessionToken
         },
         getUserId: state => {
             return state.user_id;
@@ -284,6 +288,9 @@ const store = new Vuex.Store({
         }
     },
     mutations: {
+        setSessionToken(state, tokenValue){
+            state.sessionToken = tokenValue
+        },
         setToken(state, tokenValue) {
             state.token = tokenValue;
             // store token in local storage

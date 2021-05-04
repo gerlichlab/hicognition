@@ -29,7 +29,7 @@ export var apiMixin = {
         fetchData: function(url) {
             /* Fetches data at url relative to api url.
             Function returns a promise. Assumes a token is stored in store.
-            Redirects to login if fetching fails
+            Redirects to login if fetching fails. If there is a session token available, use it
             */
             // Check whether token exists
             var token = this.$store.state.token;
@@ -39,6 +39,11 @@ export var apiMixin = {
             }
             // base64 encoding of token
             var encodedToken = btoa(token + ":");
+            // check whether session token exists
+            var sessionToken = this.$store.getters.sessionToken
+            if (sessionToken){
+                url = url + `?sessionToken=${sessionToken}`
+            }
             // fetch url
             return this.$http
                 .get(process.env.API_URL + url, {
