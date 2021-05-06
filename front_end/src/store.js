@@ -127,6 +127,11 @@ const compareModule = {
         }
     },
     mutations: {
+        clearAll(state){
+          state.widgetCollections = {},
+          state.used_datasets = new Map(),
+          state.widgetData = {} 
+        },
         decrement_usage_dataset(state, id){
             if (state.used_datasets.has(id)){
                 var old_value = state.used_datasets.get(id)
@@ -299,6 +304,9 @@ const store = new Vuex.Store({
         setUserId(state, id) {
             state.user_id = id;
             localStorage.setItem("hicognition-User", id);
+        },
+        clearSessionToken(state){
+            state.sessionToken = null
         },
         clearToken(state) {
             state.token = null;

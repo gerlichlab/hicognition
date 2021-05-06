@@ -46,8 +46,11 @@ export default {
     name: "toolbar",
     methods: {
         logout: function() {
-            this.$store.commit("clearToken");
-            this.$router.push("/login");
+            this.$store.commit("clearToken")
+            this.$store.commit("clearSessionToken")
+            this.$globalFlags["serializeCompare"] = false
+            this.$store.commit("compare/clearAll")
+            this.$router.push("/login")
         }
     }
 };

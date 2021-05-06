@@ -38,6 +38,12 @@ if (localStorage.getItem("hicognition-token")){
     store.commit("setUserId", localStorage.getItem("hicognition-User"))
 }
 
+// define global flags
+
+Vue.prototype.$globalFlags = {
+    serializeCompare: true // whether compare view should be serialized to store before it is destroeyd -> needs to happen upon front-end routing, but not upon logout
+}
+
 // instantiate vue app
 
 new Vue({

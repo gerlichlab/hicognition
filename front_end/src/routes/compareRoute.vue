@@ -80,7 +80,9 @@ export default {
         this.fetchDatasets()
     },
     beforeDestroy: function(){
-        EventBus.$emit('serialize-widgets');
+        if (this.$globalFlags["serializeCompare"]){
+            EventBus.$emit('serialize-widgets');
+        }
     }
 };
 </script>
