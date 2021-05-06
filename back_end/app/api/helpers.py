@@ -8,10 +8,9 @@ def is_access_to_dataset_denied(dataset, g):
     for a given user."""
     if dataset.public:
         return False
-    if dataset.id in g.session_datasets:
-        return False
-    return (dataset.user_id != g.current_user.id)
-
+    if (dataset.user_id != g.current_user.id) and (dataset.id not in g.session_datasets):
+        return True
+    return False
 
 def is_dataset_deletion_denied(dataset_id, current_user):
     """Checks whether access to a certian dataset is denied

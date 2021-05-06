@@ -85,6 +85,15 @@ export var apiMixin = {
             }
             // base64 encoding of token
             var encodedToken = btoa(token + ":");
+            // check whether session token exists
+            var sessionToken = this.$store.getters.sessionToken
+            if (sessionToken){
+                if(url.includes("?")){
+                    url = url + `&sessionToken=${sessionToken}`
+                }else{
+                    url = url + `?sessionToken=${sessionToken}`
+                }
+            }
             return this.$http
                 .post(process.env.API_URL + url, formData, {
                     headers: {
