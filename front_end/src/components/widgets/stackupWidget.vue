@@ -535,9 +535,16 @@ export default {
     },
     mounted: function() {
         EventBus.$on("serialize-widgets", this.serializeWidget);
+        // widget deletion can be trigered via event bus from widget collection
+        EventBus.$on('delete-widget', (id) => {
+            if (id == this.id){
+                this.deleteWidget()
+            }
+        })
     },
     beforeDestroy: function(){
         EventBus.$off('serialize-widgets')
+        EventBus.$off("delete-widget")
     }
 };
 </script>

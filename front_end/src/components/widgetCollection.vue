@@ -145,6 +145,7 @@
 import widgetContainer from "./widgetContainer";
 import { apiMixin, formattingMixin } from "../mixins";
 import {max_array} from "../functions"
+import EventBus from "../eventBus"
 
 export default {
     name: "widgetCollection",
@@ -320,6 +321,10 @@ export default {
             this.baseHeight -= 50;
         },
         deleteCollection: function() {
+            // call delete of each child
+            for (let child of this.children){
+                EventBus.$emit("delete-widget", child.id)
+            }
             this.$store.commit("compare/deleteWidgetCollection", this.id);
             // remove dataset from usage counter
             if (this.selectedRegionID){
