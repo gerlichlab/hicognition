@@ -42,7 +42,11 @@ export var apiMixin = {
             // check whether session token exists
             var sessionToken = this.$store.getters.sessionToken
             if (sessionToken){
-                url = url + `?sessionToken=${sessionToken}`
+                if(url.includes("?")){
+                    url = url + `&sessionToken=${sessionToken}`
+                }else{
+                    url = url + `?sessionToken=${sessionToken}`
+                }
             }
             // fetch url
             return this.$http

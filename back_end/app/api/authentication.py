@@ -40,14 +40,14 @@ def get_token():
 
 @api.before_request
 def before_request():
-    g.session_datasets = []
-    g.session_id = None
     _verify_and_store_session_token(request)
 
 
 
 # helpers
 def _verify_and_store_session_token(request):
+    g.session_datasets = []
+    g.session_id = None
     session_token = request.args.get('sessionToken')
     if session_token is None:
         return None

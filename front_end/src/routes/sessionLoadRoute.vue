@@ -5,7 +5,7 @@
         </div>
         <div>
             <span class="md-display-1" v-if="showLoad"> Session is being restored! </span>
-            <span class="md-display-1" v-else> No session token provided! </span>
+            <span class="md-display-1" v-else> Session credentials are not valid </span>
         </div>
     </div>
 </template>
@@ -40,8 +40,11 @@ export default {
         },
         loadData: async function(){
             // get session data
-            this.showLoad = true
             var response = await this.fetchData(`sessions/${this.sessionID}/`);
+            if (!response){
+                return
+            }
+            this.showLoad = true
             var parsed_object = JSON.parse(response.data["session_object"])
             // get dependent data
             for (let collection of Object.values(parsed_object)) {

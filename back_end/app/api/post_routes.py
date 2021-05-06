@@ -134,7 +134,7 @@ def preprocess_dataset():
     # check whether dataset exists
     if Dataset.query.get(dataset_id) is None:
         return not_found("Dataset does not exist!")
-    if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g.current_user):
+    if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g):
         return forbidden(f"Dataset is not owned by logged in user!")
     # delete all jobs that are in database for this dataset
     Task.query.filter_by(dataset=Dataset.query.get(dataset_id), complete=False).delete()
@@ -199,7 +199,7 @@ def add_bedfile_metadata():
     # check whether dataset exists and user is allowed to access
     if Dataset.query.get(dataset_id) is None:
         return not_found("Dataset does not exist!")
-    if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g.current_user):
+    if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g):
         return forbidden(f"Dataset is not owned by logged in user!")
     # check whether row-number is correct
     dataset = Dataset.query.get(dataset_id)
@@ -256,7 +256,7 @@ def add_bedfile_metadata_fields(metadata_id):
     if BedFileMetadata.query.get(metadata_id) is None:
         return not_found("Metadataset does not exist!")
     if is_access_to_dataset_denied(
-        BedFileMetadata.query.get(metadata_id).associated_dataset, g.current_user
+        BedFileMetadata.query.get(metadata_id).associated_dataset, g
     ):
         return forbidden(f"Associated dataset is not owned by logged in user!")
     # check whether field_names are correct
