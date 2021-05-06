@@ -46,9 +46,13 @@ export default {
             if (this.password.length > 0) {
                 this.fetchAndStoreToken(this.username, this.password)
                     .then(() => {
-                        //fetching and storing in store worked, redirect to main/predefined
+                        //fetching and storing in store worked, redirect either to main/compare or to next url
                         this.$globalFlags["serializeCompare"] = true
-                        this.$router.push("/main/compare");
+                        if (this.$route.query && this.$route.query.redirect){
+                            this.$router.push(this.$route.query.redirect)
+                        }else{
+                            this.$router.push("/main/compare");
+                        }
                     })
                     .catch(error => {
                         // something went wrong

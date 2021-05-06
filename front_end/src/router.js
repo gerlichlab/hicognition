@@ -56,7 +56,7 @@ router.beforeEach((to, from, next) => {
         if (store.getters.isTokenEmpty) {
             next({
                 path: "/login",
-                params: { nextUrl: to.fullPath }
+                query: { redirect: to.fullPath }
             });
         } else {
             next();
