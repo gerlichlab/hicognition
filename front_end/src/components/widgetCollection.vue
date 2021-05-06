@@ -345,8 +345,8 @@ export default {
             var widgetData = this.$store.getters["compare/getWidgetProperties"](
                 queryObject
             );
-            // delete original widget in store
-            this.$store.commit("compare/deleteWidget", queryObject);
+            // delete original widget
+            EventBus.$emit("delete-widget", sourceWidgetID)
             // update widget data that changed upon drop
             widgetData["id"] = this.getNextID();
             widgetData["rowIndex"] = rowIndex;

@@ -346,6 +346,11 @@ export default {
             } else {
                 widgetDataValues = undefined;
             }
+            // increment dataset usage in store
+            if (widgetData["dataset"]){
+                let datasetId = widgetData["dataset"]
+                this.$store.commit("compare/increment_usage_dataset", datasetId)
+            }
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
                 dragImage: undefined,
@@ -500,7 +505,7 @@ export default {
     },
     beforeDestroy: function(){
         EventBus.$off('serialize-widgets')
-        EventBus.$off("delete-widget")
+        // delete widget does not need to be taken off the event bus as ids don't get reused
     }
 };
 </script>
