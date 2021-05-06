@@ -8,7 +8,7 @@ import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, AverageIntervalData, IndividualIntervalData
+from app.models import Dataset, Intervals, AverageIntervalData, IndividualIntervalData, Session
 
 
 class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
@@ -408,6 +408,44 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    def test_deletion_of_dataset_deletes_associated_sessions(self):
+        """tests whether deletion of dataset with associated sessions
+        causes deletion of these sessions."""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        dataset1 = Dataset(
+            id=1,
+            filetype="cooler",
+            user_id=1,
+            processing_state="finished",
+        )
+        dataset2 = Dataset(
+            id=2,
+            filetype="cooler",
+            user_id=1,
+            processing_state="finished",
+        )
+        # session that contains dataset1
+        session1  = Session()
+        session1.datasets = [dataset1]
+        # session that contains dataset2
+        session2  = Session()
+        session2.datasets = [dataset2]
+        db.session.add_all([dataset1, dataset2, session1, session2])
+        db.session.commit()
+        # delete data set
+        response = self.client.delete(
+            "/api/datasets/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check_dataset entry
+        datasets = Dataset.query.all()
+        self.assertEqual(len(datasets), 1)
+        self.assertEqual(Dataset.query.first(), dataset2)
+        self.assertEqual(len(Session.query.all()), 1)
+        self.assertEqual(Session.query.first(), session2)
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

@@ -31,11 +31,11 @@ def delete_dataset(dataset_id):
     # check if data set is processing
     if dataset.processing_state == "processing":
         return invalid(f"Dataset is in processing state!")
-    # cooler only needs deletion of derived averageIntervalData
     intervals = []
     averageIntervalData = []
     individualIntervalData = []
     metadata = []
+    # cooler only needs deletion of derived averageIntervalData
     if dataset.filetype == "cooler":
         averageIntervalData = AverageIntervalData.query.filter(
             AverageIntervalData.dataset_id == dataset_id
@@ -59,15 +59,17 @@ def delete_dataset(dataset_id):
         individualIntervalData = IndividualIntervalData.query.filter(
             IndividualIntervalData.dataset_id == dataset_id
         ).all()
+    # get all associated sessions
+    sessions = Session.query.filter(Session.datasets.any(id=dataset.id)).all()
     # delete files and remove from database
     deletion_queue = (
-        [dataset] + intervals + averageIntervalData + individualIntervalData + metadata
+        [dataset] + intervals + averageIntervalData + individualIntervalData + metadata + sessions
     )
     for entry in deletion_queue:
         if isinstance(entry, IndividualIntervalData):
             remove_safely(entry.file_path_small)
             remove_safely(entry.file_path_indices_small)
-        if entry.file_path is not None:
+        if hasattr(entry, "file_path") and (entry.file_path is not None):
             remove_safely(entry.file_path)
         db.session.delete(
             entry
