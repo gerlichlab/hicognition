@@ -584,10 +584,7 @@ export default {
 }
 
 .smallMargin {
-    margin-left: 2px;
-    margin-right: 2px;
-    margin-top: 2px;
-    margin-bottom: 1px;
+    margin: 2px;
 }
 
 .md-field {

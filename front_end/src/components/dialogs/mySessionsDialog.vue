@@ -8,11 +8,20 @@
                     @selection-unavailable="handleSelectionUnAvailable"
                 ></sessionsTable>
             </md-content>
-            <div class="md-layout md-gutter md-alignment-center-center no-margin" v-if="showShareableUrl">
-                <div class="md-layout-item md-elevation-1 large-margin">
-                    <span class="md-caption center-span large-margin">{{ shareableUrl }}</span>
+                <div class="md-layout md-gutter md-alignment-center-center no-margin" v-if="showShareableUrl">
+                    <div class="md-layout-item md-elevation-0 large-margin md-size-60">
+                        <md-field>
+                        <label>Shareable Url</label>
+                            <md-input v-model="shareableUrl" readonly ref="urlInput"></md-input>
+                        </md-field>
+                        <!-- <span class="md-caption center-span large-margin">{{ shareableUrl }}</span> -->
+                    </div>
+                    <div class="md-layout-item md-size-10">
+                        <md-button class="md-icon-button md-raised md-primary" @click="copyToClipboard">
+                            <md-icon>content_copy</md-icon>
+                        </md-button>
+                    </div>
                 </div>
-            </div>
             <md-dialog-actions>
                 <div class="full-width">
                     <div class="float-left">
@@ -53,6 +62,11 @@
                 </div>
             </md-dialog-actions>
         </md-dialog>
+        <md-snackbar md-position="center" :md-duration="1000" :md-active.sync="copySuccesful" md-persistent >
+            <div class="full-width-flexbox-center">
+                <span>Copied!</span>
+            </div>
+        </md-snackbar>
     </div>
 </template>
 
@@ -69,7 +83,8 @@ export default {
             showRestore: false,
             selected_session_object: null,
             selected_session_id: null,
-            shareableUrl: null
+            shareableUrl: null,
+            copySuccesful: false
         };
     },
     components: {
@@ -94,10 +109,22 @@ export default {
             if (newVal != oldVal){
                 // blank url
                 this.shareableUrl = null
+                this.copySuccesful = false
             }
         }
     },
     methods: {
+        copyToClipboard: function (){
+            try{
+                this.$refs["urlInput"].$el.focus()
+                this.$refs["urlInput"].$el.select()
+                document.execCommand("copy")
+                this.copySuccesful = true
+            } catch(err){
+                console.log("Copying did not work...")
+            }
+
+        },
         handleSessionDeletion: function() {
             this.deleteData(`sessions/${this.selected_session_id}/`).then(
                 response => {
@@ -238,10 +265,12 @@ export default {
     max-width: 80vw;
 }
 
-.center-span {
-    display: table;
-    margin: 0 auto;
+.full-width-flexbox-center{
+    display: flex;
+    justify-content: center;
+    width: 100%;
 }
+
 
 .no-margin {
     margin: 0px;
@@ -266,4 +295,5 @@ export default {
 .content {
     margin: 10px;
 }
+
 </style>

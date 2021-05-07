@@ -12,7 +12,7 @@
             <div @mouseleave="hideSelection = true" class="fill-height">
                 <div v-if="hideSelection" class="fill-height">
                     <div
-                        class="md-layout md-gutter md-alignment-center-center fill-height"
+                        class="md-layout md-gutter md-alignment-center-center fill-height no-margin"
                     >
                         <md-button
                             @mouseover="hideSelection = false"
@@ -23,7 +23,7 @@
                     </div>
                 </div>
                 <div
-                    class="md-layout md-gutter md-alignment-center-center fill-height"
+                    class="md-layout md-gutter md-alignment-center-center fill-height no-margin"
                     v-else
                 >
                     <md-button @click="setPileup" class="md-raised md-primary"
@@ -102,7 +102,7 @@ export default {
         return {
             widgetType: widgetType,
             selectedType: undefined,
-            containerClasses: ["md-elevation-0"],
+            containerClasses: ["md-elevation-0", "small-margin"],
             hideSelection: true
         };
     },
@@ -228,6 +228,14 @@ export default {
 </script>
 
 <style scoped>
+.small-margin {
+    margin: 2px;
+}
+
+.no-margin {
+    margin: 0px;
+}
+
 .dark-background {
     background-color: grey;
     opacity: 0.5;
