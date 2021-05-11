@@ -1,6 +1,6 @@
 import sys
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
@@ -236,9 +236,14 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
 
     @patch("app.models.User.launch_task")
-    def test_tasks_deleted_after_relaunch(self, mock_launch):
+    @patch("app.models.Task.get_rq_job")
+    def test_tasks_deleted_after_relaunch(self, mock_get_rq_job, mock_launch):
         """Tests whether preprocessing api call deletes any remaining
-        jobs"""
+        jobs that have failed."""
+        # patch
+        mock_job = MagicMock()
+        mock_job.get_status.return_value = "failed"
+        mock_get_rq_job.return_value = mock_job
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)

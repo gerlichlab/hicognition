@@ -44,3 +44,11 @@ def remove_safely(file_path):
         current_app.logger.warning(
             f"Tried removing {file_path}, but file does not exist!"
         )
+
+def remove_failed_tasks(tasks, db):
+    for task in tasks:
+        if task.get_rq_job() is None:
+            continue
+        if task.get_rq_job().get_status() == "failed":
+            db.session.delete(task)
+    db.session.commit()

@@ -11,7 +11,7 @@ from . import api
 from .. import db
 from ..models import Dataset, BedFileMetadata, Task, Session
 from .authentication import auth
-from .helpers import is_access_to_dataset_denied, parse_description_and_genotype
+from .helpers import is_access_to_dataset_denied, parse_description_and_genotype, remove_failed_tasks
 from .errors import forbidden, invalid, not_found
 from hicognition.format_checkers import FORMAT_CHECKERS
 
@@ -136,8 +136,9 @@ def preprocess_dataset():
         return not_found("Dataset does not exist!")
     if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g):
         return forbidden(f"Dataset is not owned by logged in user!")
-    # delete all jobs that are in database for this dataset
-    Task.query.filter_by(dataset=Dataset.query.get(dataset_id), complete=False).delete()
+    # delete all jobs that are in database and have failed
+    associated_tasks = Task.query.filter_by(dataset=Dataset.query.get(dataset_id)).all()
+    remove_failed_tasks(associated_tasks, db)
     # dispatch appropriate pipelines
     if Dataset.query.get(dataset_id).filetype == "cooler":
         current_user.launch_task(
