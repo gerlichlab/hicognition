@@ -4,7 +4,9 @@ import {
     sort_matrix_by_center_column,
     max_array,
     min_array,
-    normalizeLineProfile
+    normalizeLineProfile,
+    interQuartileRange,
+    getQuartile
 } from "../functions.js";
 import { toBeDeepCloseTo } from "jest-matcher-deep-close-to";
 

@@ -1,6 +1,6 @@
 import * as math from "mathjs";
 
-const FLOATDIFFERENCE = 10**(-8)
+const FLOATDIFFERENCE = 10 ** -8;
 
 export function convert_json_to_d3(jsonObject, log = false) {
     /*
@@ -174,7 +174,10 @@ export function max_array(array) {
     /*
         returns maximum element of array
     */
-    var max = 0;
+    if (array.length == 0){
+        return undefined
+    }
+    var max = -Infinity;
     for (var val of array) {
         if (val && isFinite(val)) {
             if (val > max) {
@@ -189,6 +192,9 @@ export function min_array(array) {
     /*
         returns minimum element of array
     */
+    if (array.length == 0){
+        return undefined
+    }
     var min = Infinity;
     for (var val of array) {
         if (val && isFinite(val)) {
@@ -226,23 +232,34 @@ export function sort_matrix_by_center_column(
     );
 }
 
-export function normalizeLineProfile(lineProfile){
+export function normalizeLineProfile(lineProfile) {
     let max_value = max_array(lineProfile);
     let min_value = min_array(lineProfile);
-    if ((max_value - min_value) < FLOATDIFFERENCE){
-        return lineProfile.map((val) => {
-            if (val && isFinite(val)){
-                return 1
+    if (max_value - min_value < FLOATDIFFERENCE) {
+        return lineProfile.map(val => {
+            if (val && isFinite(val)) {
+                return 1;
             }
-            return undefined
-        })
+            return undefined;
+        });
     }
-    return lineProfile.map((val) => {
-        if (val && isFinite(val)){
-            return (val - min_value)/(max_value - min_value)
+    return lineProfile.map(val => {
+        if (val && isFinite(val)) {
+            return (val - min_value) / (max_value - min_value);
         }
-        return undefined
+        return undefined;
+    });
+}
+
+export function getPercentile(array, p) {
+    /*
+        Returns qth quartile of array
+    */
+    let cleaned_array = array.filter((val) => {
+        return val && isFinite(val)
     })
+    let sorted_array = cleaned_array.sort((a,b) => a - b);
+    return sorted_array[Math.floor((sorted_array.length * p) / 100)];
 }
 
 // Helpers for datasetTable

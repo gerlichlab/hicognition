@@ -411,10 +411,10 @@ export default {
         if (collectionData.children){
             this.maxRowNumber =  max_array(Object.values(collectionData.children).map( (elem) => {
                 return elem.rowIndex
-            }));
+            })) || 0;
             this.maxColumnNumber = max_array(Object.values(collectionData.children).map( (elem) => {
                 return elem.colIndex
-            }));
+            })) || 0;
             // add children
             for (var child of Object.values(collectionData.children)) {
                 this.children.push(child);
