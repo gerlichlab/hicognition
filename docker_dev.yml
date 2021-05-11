@@ -70,6 +70,29 @@ services:
         # sleeps to wait for redis-server. TODO: make this check nicer!
         command: -c "sleep 5 && source activate flask && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
 
+    redis-worker2:
+        container_name: redis-worker2
+        volumes:  
+            - ${HICOGNITION_DIR}:/code
+        environment:
+            - FLASK_DEBUG=1
+            - FLASK_APP=/code/hicognition_server.py
+            - REDIS_URL=${REDIS_URL}
+            - UPLOAD_DIR=${UPLOAD_DIR}
+            - CHROM_SIZES=${CHROM_SIZES}
+            - CHROM_ARMS=${CHROM_ARMS}
+        depends_on:
+                - redis-server
+        build:
+            context: "./back_end"
+        image: flask:test2
+        entrypoint: "/bin/bash"
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.6
+        # sleeps to wait for redis-server. TODO: make this check nicer!
+        command: -c "sleep 5 && source activate flask && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
+
 networks:
     hicognition-net:
         ipam:
