@@ -58,7 +58,7 @@ import { apiMixin } from "../../mixins";
 import EventBus from "../../eventBus"
 
 export default {
-    name: "datasetTable",
+    name: "sessionTable",
     mixins: [apiMixin],
     data: () => ({
         selected: undefined,

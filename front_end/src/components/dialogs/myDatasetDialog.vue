@@ -18,7 +18,7 @@
 import datasetTable from "../tables/datasetTable";
 
 export default {
-    name: "DialogCustom",
+    name: "MyDatasetDialog",
     components: {
         datasetTable
     },

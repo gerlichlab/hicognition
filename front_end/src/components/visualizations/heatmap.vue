@@ -34,7 +34,7 @@ import { min_array, max_array } from "../../functions";
 const NAN_COLOR = [1, 1, 1]; // white nan color
 
 export default {
-    name: "stackup",
+    name: "heatmap",
     components: {
         doubleRangeSlider
     },

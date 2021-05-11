@@ -68,7 +68,7 @@ import { required } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 export default {
-    name: "addMetadataFields",
+    name: "AddMetadataFields",
     mixins: [validationMixin, apiMixin],
     props: {
         availableFields: Array,

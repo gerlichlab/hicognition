@@ -32,7 +32,7 @@
 import { apiMixin } from "../../mixins";
 
 export default {
-    name: "Login",
+    name: "LoginForm",
     mixins: [apiMixin],
     data: function() {
         return {

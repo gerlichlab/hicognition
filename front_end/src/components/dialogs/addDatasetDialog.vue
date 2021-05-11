@@ -25,7 +25,7 @@
 import addDatasetForm from "../forms/addDatasetForm";
 
 export default {
-    name: "DialogCustom",
+    name: "AddDatasetDialog",
     data: function() {
         return {
             infoText: " \nHere you can add datasets. \n Datasets can either be genomic intervals in the case of bedfiles, \n or genomic features, if you add bigwig-files or cooler files. \n\n Looking forward to your data!".split(

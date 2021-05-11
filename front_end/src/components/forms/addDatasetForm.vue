@@ -121,7 +121,7 @@ import { required, minLength, maxLength } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 export default {
-    name: "addDatasetForm",
+    name: "AddDatasetForm",
     mixins: [validationMixin, apiMixin],
     data: () => ({
         fileTypeMapping: {

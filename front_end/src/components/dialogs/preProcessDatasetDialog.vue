@@ -27,7 +27,7 @@
 import preprocessDatasetForm from "../forms/preprocessDatasetForm";
 
 export default {
-    name: "DialogCustom",
+    name: "PreprocessDatasetDialog",
     components: {
         preprocessDatasetForm
     },

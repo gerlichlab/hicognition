@@ -193,7 +193,7 @@ const MAX_BINS = 300000;
 const MAX_BINS_COOLER = 20000;
 
 export default {
-    name: "preprocessDatasetForm",
+    name: "PreprocessDatasetForm",
     mixins: [validationMixin, apiMixin, formattingMixin],
     data: () => ({
         availableDatasets: [],

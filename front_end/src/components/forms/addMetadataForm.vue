@@ -111,7 +111,7 @@ import { required } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 export default {
-    name: "addMetadataForm",
+    name: "AddMetadataForm",
     mixins: [validationMixin, apiMixin],
     data: () => ({
         form: {

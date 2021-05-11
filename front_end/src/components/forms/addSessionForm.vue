@@ -60,7 +60,7 @@ import { required } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 export default {
-    name: "addSessionForm",
+    name: "AddSessionForm",
     mixins: [validationMixin, apiMixin],
     data: () => ({
         form: {

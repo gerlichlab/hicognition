@@ -26,7 +26,7 @@ import addSessionForm from "../forms/addSessionForm";
 import EventBus from "../../eventBus";
 
 export default {
-    name: "addSessionDialog",
+    name: "AddSessionDialog",
     data: function() {
         return {
             infoText: " \nHere you can save your sessions".split(

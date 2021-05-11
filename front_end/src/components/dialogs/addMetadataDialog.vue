@@ -25,7 +25,7 @@
 import addMetadataStepper from "../ui/addMetadataStepper";
 
 export default {
-    name: "DialogCustom",
+    name: "AddMetaDataDialog",
     data: function() {
         return {
             addMetadataText: "Here you can add metadata for your uploaded region files. \n You can upload textfiles that have the same number of rows as your target regionfile. \n Only numeric columns will be displayed. \n Looking forward to your metadata.".split(
