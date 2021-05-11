@@ -121,7 +121,7 @@
 </template>
 
 <script>
-import { apiMixin } from "../mixins";
+import { apiMixin } from "../../mixins";
 
 export default {
     name: "datasetTable",
@@ -196,7 +196,7 @@ export default {
         }
     },
     created: function() {
-        this.datasets = this.$store.state.datasets;
+        this.fetchDatasets()
     }
 };
 </script>
