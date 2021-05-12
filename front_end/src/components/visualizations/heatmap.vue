@@ -29,7 +29,7 @@
 import * as PIXI from "pixi.js-legacy";
 import { getScale } from "../../colorScales.js";
 import doubleRangeSlider from "../ui/doubleRangeSlider.vue";
-import { min_array, max_array, getPercentile } from "../../functions";
+import { min_array, max_array, getPercentile, getPerMilRank } from "../../functions";
 
 const NAN_COLOR = [1, 1, 1]; // white nan color
 
@@ -96,12 +96,12 @@ export default {
         minValue: function() {
             // find minimum by hand because Math.min cannot handle more than
             // a few k elements...
-            return min_array(this.stackupValues);
+            return getPerMilRank(this.stackupValues, 1)
         },
         maxValue: function() {
             // maximum value for heatmap lookuptable = maximum value in data
             // filter out nans and extract values into array
-            return max_array(this.stackupValues);
+            return getPerMilRank(this.stackupValues, 999)
         },
         rgbArray: function() {
             // array with rgba values for pixi Texture.fromBuffer

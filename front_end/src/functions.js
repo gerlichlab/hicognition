@@ -259,10 +259,25 @@ export function getPercentile(array, p) {
        return undefined
    }
     let cleaned_array = array.filter((val) => {
-        return isFinite(val)
+        return isFinite(val) && (val != null)
     })
     let sorted_array = cleaned_array.sort((a,b) => a - b);
     let index = Math.ceil(( (sorted_array.length -1) * p) / 100)
+    return sorted_array[index];
+}
+
+export function getPerMilRank(array, p) {
+    /*
+        Returns pth percentile of array
+    */
+   if ( (p < 0) || (p > 1000)){
+       return undefined
+   }
+    let cleaned_array = array.filter((val) => {
+        return isFinite(val) && (val != null)
+    })
+    let sorted_array = cleaned_array.sort((a,b) => a - b);
+    let index = Math.ceil(( (sorted_array.length -1) * p) / 1000)
     return sorted_array[index];
 }
 
