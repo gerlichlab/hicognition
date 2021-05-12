@@ -15,8 +15,8 @@
                             :sliderWidth="width / 2"
                             :sliderMin="minValue"
                             :sliderMax="maxValue"
-                            :sliderPositionMin="minHeatmapValue"
-                            :sliderPositionMax="maxHeatmapValue"
+                            :sliderPositionMin="minValueRobust"
+                            :sliderPositionMax="maxValueRobust"
                             @slider-change="handleColorChange"
                         />
                     </div>
@@ -80,6 +80,18 @@ export default {
         },
         stackupDtype: function() {
             return this.stackupData["dtype"];
+        },
+        minValueRobust: function(){
+            if (this.minHeatmapValue){
+                return this.minHeatmapValue
+            }
+            return getPercentile(this.stackupValues, 1)
+        },
+        maxValueRobust: function(){
+            if (this.maxHeatmapValue){
+                return this.maxHeatmapValue
+            }
+            return getPercentile(this.stackupValues, 99)
         },
         minValue: function() {
             // find minimum by hand because Math.min cannot handle more than
@@ -168,13 +180,13 @@ export default {
             if (this.minHeatmapValue && this.maxHeatmapValue) {
                 this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue);
             } else {
-                this.createColorMap(this.minValue, this.maxValue);
+                this.createColorMap(this.minValueRobust, this.maxValueRobust);
             }
             this.drawHeatmap();
         },
         colormap: function() {
             // if colormap changes -> reset min and max
-            this.createColorMap(this.minValue, this.maxValue);
+            this.createColorMap(this.minValueRobust, this.maxValueRobust);
             this.drawHeatmap();
         },
         height: function(){
@@ -191,7 +203,7 @@ export default {
         if (this.minHeatmapValue && this.maxHeatmapValue) {
             this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue);
         } else {
-            this.createColorMap(this.minValue, this.maxValue);
+            this.createColorMap(this.minValueRobust, this.maxValueRobust);
         }
         this.initializeCanvas();
         this.drawHeatmap();

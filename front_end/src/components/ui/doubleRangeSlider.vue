@@ -65,12 +65,10 @@ export default {
         }
     },
     watch: {
-        sliderMin: function(val) {
-            // update to min position; This is a prop that is passed down; can change if dataset is changed
+        sliderPositionMin: function(val){
             this.minValue = val;
         },
-        sliderMax: function(val) {
-            // update to max position; This is a prop that is passed down; can change if dataset is changed
+        sliderPositionMax: function(val){
             this.maxValue = val;
         }
     }
