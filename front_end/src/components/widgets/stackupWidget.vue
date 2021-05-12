@@ -509,6 +509,8 @@ export default {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
             }
+            // reset min and max colormap values
+            this.minHeatmap = undefined, this.maxHeatmap = undefined;
             // fetch binsizes for the current combination of dataset and intervals
             this.fetchData(
                 `individualIntervalData/?dataset_id=${this.selectedDataset}&intervals_id=${this.intervalID}`
@@ -524,6 +526,8 @@ export default {
             if (!this.selectedBinsize) {
                 return;
             }
+            // reset min and max colormap values
+            this.minHeatmap = undefined, this.maxHeatmap = undefined;
             // fetch widget data
             var stackup_id = this.binsizes[this.selectedBinsize]["id"];
             this.widgetDataRef = stackup_id;

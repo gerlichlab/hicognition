@@ -29,7 +29,7 @@
 import * as PIXI from "pixi.js-legacy";
 import { getScale } from "../../colorScales.js";
 import doubleRangeSlider from "../ui/doubleRangeSlider.vue";
-import { min_array, max_array } from "../../functions";
+import { min_array, max_array, getPercentile } from "../../functions";
 
 const NAN_COLOR = [1, 1, 1]; // white nan color
 
