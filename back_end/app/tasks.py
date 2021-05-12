@@ -55,9 +55,10 @@ def pipeline_bed(dataset_id):
     pipeline_steps._set_task_progress(100)
 
 
-def pipeline_pileup(dataset_id, intervals_id, binsize, chromosome_arms):
+def pipeline_pileup(dataset_id, intervals_id, binsize):
     """Start pileup pipeline for specified combination of
     dataset_id (cooler_file), binsizes and intervals_id"""
+    chromosome_arms = pd.read_csv(app.config["CHROM_ARMS"])
     pipeline_steps.perform_pileup(
         dataset_id, intervals_id, binsize, chromosome_arms, "ICCF"
     )

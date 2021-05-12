@@ -141,7 +141,7 @@ def preprocess_dataset():
     remove_failed_tasks(associated_tasks, db)
     # dispatch appropriate pipelines
     if Dataset.query.get(dataset_id).filetype == "cooler":
-        chromosome_arms = pd.read_csv(current_app.config["CHROM_ARMS"])
+        
         for binsize in binsizes:
             for interval_id in interval_ids:
                 current_user.launch_task(
@@ -149,8 +149,7 @@ def preprocess_dataset():
                     "run pileup pipeline",
                     dataset_id,
                     interval_id,
-                    binsize,
-                    chromosome_arms
+                    binsize
                 )
     if Dataset.query.get(dataset_id).filetype == "bigwig":
         for binsize in binsizes:

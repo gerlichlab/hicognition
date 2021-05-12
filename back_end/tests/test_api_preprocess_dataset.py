@@ -42,10 +42,13 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token_headers = self.get_token_header(token)
         # add datasets
         self.add_test_datasets()
+        # define call arguments
+        binsizes = [10000, 20000, 40000]
+        intervals = [1,2,3,4]
         data = {
             "dataset_id": "1",
-            "interval_ids": "[1, 2, 3, 4]",
-            "binsizes": "[10000, 20000, 40000]",
+            "interval_ids": f"{intervals}",
+            "binsizes": f"{binsizes}",
         }
         # dispatch post request
         response = self.client.post(
@@ -56,13 +59,17 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        mock_launch.assert_called_with(
-            "pipeline_pileup",
-            "run pileup pipeline",
-            1,
-            [10000, 20000, 40000],
-            [1, 2, 3, 4],
-        )
+        for binsize in binsizes:
+            for interval in intervals:
+                mock_launch.assert_any_call(
+                    "pipeline_pileup",
+                    "run pileup pipeline",
+                    1,
+                    interval,
+                    binsize,
+                )
+        # check whether number of calls was correct
+        self.assertEqual(len(mock_launch.call_args_list), len(intervals) * len(binsizes) )
 
     @patch("app.models.User.launch_task")
     def test_user_cannot_access_other_datasets(self, mock_launch):
@@ -162,10 +169,13 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         db.session.add(dataset2)
         db.session.add(dataset3)
         db.session.commit()
+        # call args
+        binsizes = [10000, 20000, 40000]
+        intervals = [1,2,3,4]
         data = {
             "dataset_id": "1",
-            "interval_ids": "[1, 2, 3, 4]",
-            "binsizes": "[10000, 20000, 40000]",
+            "interval_ids": f"{intervals}",
+            "binsizes": f"{binsizes}",
         }
         # dispatch post request
         response = self.client.post(
@@ -176,13 +186,17 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        mock_launch.assert_called_with(
-            "pipeline_pileup",
-            "run pileup pipeline",
-            1,
-            [10000, 20000, 40000],
-            [1, 2, 3, 4],
-        )
+        for binsize in binsizes:
+            for interval in intervals:
+                mock_launch.assert_any_call(
+                    "pipeline_pileup",
+                    "run pileup pipeline",
+                    1,
+                    interval,
+                    binsize,
+                )
+        # check whether number of calls was correct
+        self.assertEqual(len(mock_launch.call_args_list), len(intervals) * len(binsizes) )
 
     @patch("app.models.User.launch_task")
     def test_pipeline_stackup_is_called_correctly_for_owned_dataset(self, mock_launch):
@@ -213,10 +227,13 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         db.session.add(dataset2)
         db.session.add(dataset3)
         db.session.commit()
+        # call args
+        binsizes = [10000, 20000, 40000]
+        intervals = [1,2,3,4]
         data = {
             "dataset_id": "1",
-            "interval_ids": "[1, 2, 3, 4]",
-            "binsizes": "[10000, 20000, 40000]",
+            "interval_ids": f"{intervals}",
+            "binsizes": f"{binsizes}",
         }
         # dispatch post request
         response = self.client.post(
@@ -227,13 +244,17 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        mock_launch.assert_called_with(
-            "pipeline_stackup",
-            "run stackup pipeline",
-            1,
-            [10000, 20000, 40000],
-            [1, 2, 3, 4],
-        )
+        for binsize in binsizes:
+            for interval in intervals:
+                mock_launch.assert_any_call(
+                "pipeline_stackup",
+                "run stackup pipeline",
+                    1,
+                    interval,
+                    binsize,
+                )
+        # check whether number of calls was correct
+        self.assertEqual(len(mock_launch.call_args_list), len(intervals) * len(binsizes) )
 
     @patch("app.models.User.launch_task")
     @patch("app.models.Task.get_rq_job")
