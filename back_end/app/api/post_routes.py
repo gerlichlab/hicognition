@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from . import api
 from .. import db
-from ..models import Dataset, BedFileMetadata, Task, Session
+from ..models import Dataset, BedFileMetadata, Task, Session, Intervals
 from .authentication import auth
 from .helpers import is_access_to_dataset_denied, parse_description_and_genotype, remove_failed_tasks
 from .errors import forbidden, invalid, not_found
@@ -141,21 +141,27 @@ def preprocess_dataset():
     remove_failed_tasks(associated_tasks, db)
     # dispatch appropriate pipelines
     if Dataset.query.get(dataset_id).filetype == "cooler":
-        current_user.launch_task(
-            "pipeline_pileup",
-            "run pileup pipeline",
-            dataset_id,
-            binsizes,
-            interval_ids,
-        )
+        chromosome_arms = pd.read_csv(current_app.config["CHROM_ARMS"])
+        for binsize in binsizes:
+            for interval_id in interval_ids:
+                current_user.launch_task(
+                    "pipeline_pileup",
+                    "run pileup pipeline",
+                    dataset_id,
+                    interval_id,
+                    binsize,
+                    chromosome_arms
+                )
     if Dataset.query.get(dataset_id).filetype == "bigwig":
-        current_user.launch_task(
-            "pipeline_stackup",
-            "run stackup pipeline",
-            dataset_id,
-            binsizes,
-            interval_ids,
-        )
+        for binsize in binsizes:
+            for interval_id in interval_ids:
+                current_user.launch_task(
+                    "pipeline_stackup",
+                    "run stackup pipeline",
+                    dataset_id,
+                    interval_id,
+                    binsize,
+                )
     # set processing state
     dataset = Dataset.query.get(dataset_id)
     dataset.processing_state = "processing"

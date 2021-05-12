@@ -55,39 +55,20 @@ def pipeline_bed(dataset_id):
     pipeline_steps._set_task_progress(100)
 
 
-def pipeline_pileup(dataset_id, binsizes, interval_ids):
+def pipeline_pileup(dataset_id, intervals_id, binsize, chromosome_arms):
     """Start pileup pipeline for specified combination of
-    dataset_id (cooler_file), binsizes and intervals"""
-    current_dataset = Dataset.query.get(dataset_id)
-    interval_datasets = Intervals.query.filter(Intervals.id.in_(interval_ids)).all()
-    chromosome_arms = pd.read_csv(app.config["CHROM_ARMS"])
-    # perform pileup
-    counter = 0
-    for binsize in binsizes:
-        for intervals in interval_datasets:
-            pipeline_steps.perform_pileup(
-                current_dataset, intervals, binsize, chromosome_arms, "ICCF"
-            )
-            pipeline_steps.perform_pileup(
-                current_dataset, intervals, binsize, chromosome_arms, "Obs/Exp"
-            )
-            counter += 1
-            progress = counter / (len(binsizes) * len(interval_datasets)) * 100
-            pipeline_steps._set_task_progress(progress)
+    dataset_id (cooler_file), binsizes and intervals_id"""
+    pipeline_steps.perform_pileup(
+        dataset_id, intervals_id, binsize, chromosome_arms, "ICCF"
+    )
+    pipeline_steps.perform_pileup(
+        dataset_id, intervals_id, binsize, chromosome_arms, "Obs/Exp"
+    )
     pipeline_steps._set_task_progress(100)
 
 
-def pipeline_stackup(dataset_id, binsizes, interval_ids):
+def pipeline_stackup(dataset_id, intervals_id, binsize):
     """Start stackup pipeline for specified combination of
-    dataset_id (bigwig file), binsizes and intervals"""
-    current_dataset = Dataset.query.get(dataset_id)
-    interval_datasets = Intervals.query.filter(Intervals.id.in_(interval_ids)).all()
-    # perform stackup
-    counter = 0
-    for binsize in binsizes:
-        for intervals in interval_datasets:
-            pipeline_steps.perform_stackup(current_dataset, intervals, binsize)
-            counter += 1
-            progress = counter / (len(binsizes) * len(interval_datasets)) * 100
-            pipeline_steps._set_task_progress(progress)
+    dataset_id (bigwig file), binsizes and intervals_id"""
+    pipeline_steps.perform_stackup(dataset_id, intervals_id, binsize)
     pipeline_steps._set_task_progress(100)

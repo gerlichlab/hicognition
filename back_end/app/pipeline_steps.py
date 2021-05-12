@@ -50,12 +50,14 @@ def bed_preprocess_pipeline_step(dataset_id, windowsize):
     db.session.commit()
 
 
-def perform_pileup(cooler_dataset, intervals, binsize, arms, pileup_type):
+def perform_pileup(cooler_dataset_id, interval_id, binsize, arms, pileup_type):
     """Performs pileup [either ICCF or Obs/Exp; parameter passed to pileup_type] of cooler_dataset on
     intervals with resolution binsize."""
     log.info(
-        f"  Doing pileup on cooler {cooler_dataset.id} with intervals {intervals.id} on binsize {binsize}"
+        f"  Doing pileup on cooler {cooler_dataset_id} with intervals { interval_id} on binsize {binsize}"
     )
+    cooler_dataset = Dataset.query.get(cooler_dataset_id)
+    intervals = Intervals.query.get(interval_id)
     # get path to dataset
     file_path = intervals.source_dataset.file_path
     # get windowsize
@@ -100,12 +102,14 @@ def perform_pileup(cooler_dataset, intervals, binsize, arms, pileup_type):
     log.info("      Success!")
 
 
-def perform_stackup(bigwig_dataset, intervals, binsize):
+def perform_stackup(bigwig_dataset_id, intervals_id, binsize):
     """Performs stackup of bigwig dataset over the intervals provided with the indicated binsize.
     Stores result and adds it to database."""
     log.info(
-        f"  Doing pileup on bigwig {bigwig_dataset.id} with intervals {intervals.id} on binsize {binsize}"
+        f"  Doing pileup on bigwig {bigwig_dataset_id} with intervals {intervals_id} on binsize {binsize}"
     )
+    bigwig_dataset = Dataset.query.get(bigwig_dataset_id)
+    intervals = Intervals.query.get(intervals_id)
     # get path to dataset
     file_path = intervals.source_dataset.file_path
     # get windowsize
