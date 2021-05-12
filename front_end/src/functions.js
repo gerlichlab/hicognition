@@ -253,13 +253,17 @@ export function normalizeLineProfile(lineProfile) {
 
 export function getPercentile(array, p) {
     /*
-        Returns qth quartile of array
+        Returns pth percentile of array
     */
+   if ( (p < 0) || (p > 100)){
+       return undefined
+   }
     let cleaned_array = array.filter((val) => {
-        return val && isFinite(val)
+        return isFinite(val)
     })
     let sorted_array = cleaned_array.sort((a,b) => a - b);
-    return sorted_array[Math.floor((sorted_array.length * p) / 100)];
+    let index = Math.ceil(( (sorted_array.length -1) * p) / 100)
+    return sorted_array[index];
 }
 
 // Helpers for datasetTable

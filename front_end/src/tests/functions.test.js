@@ -6,7 +6,8 @@ import {
     min_array,
     normalizeLineProfile,
     interQuartileRange,
-    getQuartile
+    getQuartile,
+    getPercentile
 } from "../functions.js";
 import { toBeDeepCloseTo } from "jest-matcher-deep-close-to";
 
@@ -104,6 +105,12 @@ describe("When max array is called", function() {
     it("Should return the maximum element of an array that contains infinite", () => {
         expect(max_array([1, 4, Infinity, 2])).toEqual(4);
     });
+    it("Should return undefined if length of array is 0", () => {
+        expect(max_array([])).toEqual(undefined);
+    });
+    it("Should return 0 from an array of all 0s", () => {
+        expect(max_array([0,0,0])).toEqual(0);
+    });
 });
 
 // test min array
@@ -121,7 +128,38 @@ describe("When min array is called", function() {
     it("Should return the maximum element of an array that contains infinite", () => {
         expect(min_array([1, 4, Infinity, 2])).toEqual(1);
     });
+    it("Should return undefined if length of array is 0", () => {
+        expect(min_array([])).toEqual(undefined);
+    });
+    it("Should return 0 from an array of all 0s", () => {
+        expect(min_array([0,0,0])).toEqual(0);
+    });
 });
+
+// test get percentile
+
+describe("When get percentile is called", function() {
+    it("Should return undefined if percentile is  < 0", () => {
+        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], -1)).toEqual(undefined);
+    });
+    it("Should return undefined if percentile is  > 100", () => {
+        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 101)).toEqual(undefined);
+    });
+    it("Should return correct percentiles", () => {
+        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 0)).toBeCloseTo(0.0);
+        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 10)).toBeCloseTo(1.0);
+        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 20)).toBeCloseTo(2.0);
+        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 30)).toBeCloseTo(3.0);
+        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 40)).toBeCloseTo(4.0);
+        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 50)).toBeCloseTo(5.0);
+        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 60)).toBeCloseTo(6.0);
+        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 70)).toBeCloseTo(7.0);
+        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 80)).toBeCloseTo(8.0);
+        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 90)).toBeCloseTo(9.0);
+        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 100)).toBeCloseTo(10.0);
+    });
+});
+
 
 // test normalize array
 
