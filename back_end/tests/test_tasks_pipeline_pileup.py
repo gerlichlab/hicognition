@@ -54,6 +54,21 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         db.session.add(self.intervals2)
         db.session.commit()
 
+    @staticmethod
+    def get_call_args_without_index(mock, remove_index):
+        """extracts call args from magic mock object and removes
+        object at index"""
+        call_args = []
+        for call in mock.call_args_list:
+            current_call_list = []
+            for index in range(len(call[0])):
+                if index == remove_index:
+                    # remove chromosome arms dataframe
+                    continue
+                current_call_list.append(call[0][index])
+            call_args.append(current_call_list)
+        return call_args
+
     @patch("app.pipeline_steps._set_task_progress")
     @patch("app.pipeline_steps.perform_pileup")
     def test_pipeline_pileup_calls_steps_correctly(
@@ -62,32 +77,21 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         """Tests whether the functions that execute the different pipeline steps are called
         correctly."""
         # launch task
-        binsizes = [10000, 20000, 30000]
+        binsize = 10000
         dataset_id = 1
-        intervals_id = [1, 2]
+        intervals_id = 2
         pileup_types = ["ICCF", "Obs/Exp"]
-        intervals_objects = [self.intervals1, self.intervals2]
-        pipeline_pileup(dataset_id, binsizes, intervals_id)
+        pipeline_pileup(dataset_id, intervals_id, binsize)
         # construct call arguments, pd.dataframe breaks magicmocks interval methods
-        call_args = []
-        for call in mock_perform_pileup.call_args_list:
-            current_call_list = []
-            for index in range(len(call[0])):
-                if index == 3:
-                    # remove chromosome arms dataframe
-                    continue
-                current_call_list.append(call[0][index])
-            call_args.append(current_call_list)
+        call_args = self.get_call_args_without_index(mock_perform_pileup, 3)
         # compare expected call arguments with actual call arguments
-        for binsize in binsizes:
-            for pileup_type in pileup_types:
-                for intervals in intervals_objects:
-                    # check whether the current combination is in call args list
-                    expected_call_args = [self.dataset, intervals, binsize, pileup_type]
-                    self.assertTrue(expected_call_args in call_args)
+        for pileup_type in pileup_types:
+                # check whether the current combination is in call args list
+                expected_call_args = [dataset_id, intervals_id, binsize, pileup_type]
+                self.assertTrue(expected_call_args in call_args)
         # check whether number of calls was as expected
         self.assertEqual(
-            len(call_args), len(binsizes) * len(pileup_types) * len(intervals_objects)
+            len(call_args), len(pileup_types)
         )
         # check whether last call to set task progress was 100
         mock_set_progress.assert_called_with(100)
@@ -161,8 +165,10 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         )
         mock_read_csv.return_value = test_df_interval
         # dispatch call
+        dataset_id = 1
+        intervals_id = 1
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        perform_pileup(self.dataset, self.intervals1, 10000, arms, "ICCF")
+        perform_pileup(dataset_id, intervals_id, 10000, arms, "ICCF")
         # check whether assign regions was called with correct arguments
         expected_df = pd.DataFrame({"chrom": ["chr1", "chr1"], "pos": [500, 1500]})
         window_size, binsize, chrom_called, pos_called = mock_assign_regions.call_args[
@@ -194,8 +200,10 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         test_df_interval = pd.DataFrame({0: ["chr1", "chr1"], 1: [500, 1500]})
         mock_read_csv.return_value = test_df_interval
         # dispatch call
+        dataset_id = 1
+        intervals_id = 1
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        perform_pileup(self.dataset, self.intervals1, 10000, arms, "ICCF")
+        perform_pileup(dataset_id, intervals_id, 10000, arms, "ICCF")
         # check whether assign regions was called with correct arguments
         expected_df = pd.DataFrame({"chrom": ["chr1", "chr1"], "pos": [500, 1500]})
         window_size, binsize, chrom_called, pos_called = mock_assign_regions.call_args[
@@ -227,8 +235,10 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         test_df_interval = pd.DataFrame({0: ["chr1", "chr1"], 1: [500, 1500]})
         mock_read_csv.return_value = test_df_interval
         # dispatch call
+        dataset_id = 1
+        intervals_id = 1
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        perform_pileup(self.dataset, self.intervals1, 10000, arms, "ICCF")
+        perform_pileup(dataset_id, intervals_id, 10000, arms, "ICCF")
         # check whether corrrect cooler file was called with correct binsize
         expected_call = self.dataset.file_path + "::/resolutions/10000"
         mock_Cooler.assert_called_with(expected_call)
@@ -258,8 +268,10 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_assign_regions.return_value = returned_regions
         mock_get_expected.return_value = "expected"
         # dispatch call
+        dataset_id = 1
+        intervals_id = 1
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        perform_pileup(self.dataset, self.intervals1, 10000, arms, "Obs/Exp")
+        perform_pileup(dataset_id, intervals_id, 10000, arms, "Obs/Exp")
         # check whether get_expected was called
         mock_get_expected.assert_called()
         expected_pileup_call = ["mock_cooler", "expected", returned_regions.dropna()]
@@ -291,8 +303,10 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         returned_regions = MagicMock()
         mock_assign_regions.return_value = returned_regions
         # dispatch call
+        dataset_id = 1
+        intervals_id = 1
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        perform_pileup(self.dataset, self.intervals1, 10000, arms, "ICCF")
+        perform_pileup(dataset_id, intervals_id, 10000, arms, "ICCF")
         # check whether get_expected was called
         expected_pileup_call = ["mock_cooler", returned_regions.dropna()]
         mock_pileup_iccf.assert_called_with(*expected_pileup_call, proc=1)
@@ -327,8 +341,11 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         uuid4 = MagicMock()
         type(uuid4).hex = PropertyMock(return_value="asdf")
         mock_uuid.return_value = uuid4
+        # construct call args
+        dataset_id = 1
+        intervals_id = 1
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        perform_pileup(self.dataset, self.intervals1, 10000, arms, "ICCF")
+        perform_pileup(dataset_id, intervals_id, 10000, arms, "ICCF")
         # check whether get_expected was called
         mock_add_db.assert_called_with(
             self.app.config["UPLOAD_DIR"] + "/asdf.npy",
