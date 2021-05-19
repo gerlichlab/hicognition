@@ -30,7 +30,7 @@ def pipeline_bed(dataset_id):
     Output-folder is not needed for this since the file_path
     of Dataset entry contains it.
     """
-    window_sizes = app.config["WINDOW_SIZES"]
+    window_sizes = app.config["PREPROCESSING_MAP"].keys()
     log.info(f"Bed pipeline started for {dataset_id} with {window_sizes}")
     # bed-file preprocessing: sorting, clodius, uploading to higlass
     file_path = Dataset.query.get(dataset_id).file_path

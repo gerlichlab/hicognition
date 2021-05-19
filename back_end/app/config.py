@@ -10,14 +10,20 @@ class Config:
 
     SECRET_KEY = os.environ.get("SECRET_KEY") or "eieieiei"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    # TODO: check whether we still need this
     UPLOAD_DIR = os.environ.get("UPLOAD_DIR") or os.path.join(basedir, "temp")
     CHROM_SIZES = os.environ.get("CHROM_SIZES") or os.path.join(
         basedir, "data/hg19.chrom.sizes"
     )
     CHROM_ARMS = os.environ.get("CHROM_ARMS") or os.path.join(basedir, "data/arms.hg19")
     REDIS_URL = os.environ.get("REDIS_URL") or "redis://"
-    WINDOW_SIZES = [50000, 100000, 200000, 300000, 400000, 1000000, 2000000]
+    PREPROCESSING_MAP = {
+            50000: [1000, 2000, 5000],
+            100000: [1000, 2000, 5000, 10000],
+            300000: [2000, 5000, 10000, 20000],
+            400000: [5000, 10000, 20000, 50000],
+            1000000: [20000, 50000, 100000, 200000],
+            2000000: [50000, 100000, 200000, 500000],
+    }
     BIN_SIZES = [20000, 50000]  # In development mode, 10k hogs too much memory
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled
 

@@ -62,7 +62,7 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
             ]
         )
         # check whether convert_bed_to_bedpe and bed_pipeline_step was called correctly
-        for window in self.app.config["WINDOW_SIZES"]:
+        for window in self.app.config["PREPROCESSING_MAP"].keys():
             # target_file = "/test/path/test3_sorted.bed" + f".{window}" + ".bedpe"
             # mock_convert_bed.assert_any_call(
             #    *["/test/path/test3_sorted.bed", target_file, window]
