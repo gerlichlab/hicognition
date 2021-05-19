@@ -16,7 +16,7 @@ class Config:
     )
     CHROM_ARMS = os.environ.get("CHROM_ARMS") or os.path.join(basedir, "data/arms.hg19")
     REDIS_URL = os.environ.get("REDIS_URL") or "redis://"
-    # allowed binsizes for given windowsizes of regions
+    # allowed binsizes for given windowsizes of regions -> pileups still fail for some combinations cannot be pickled -> FIXME: fix this
     PREPROCESSING_MAP = {
             50000: [1000, 2000, 5000],
             100000: [1000, 2000, 5000, 10000],

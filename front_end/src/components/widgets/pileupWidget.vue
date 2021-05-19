@@ -463,8 +463,10 @@ export default {
             this.fetchData(
                 `averageIntervalData/?dataset_id=${this.selectedDataset}&intervals_id=${this.intervalID}`
             ).then(response => {
-                // update binsizes to show and group iccf/obsExp data under one binsize
+                // update binsizes to show and group iccf/obsExp data under one binsize and sets default binsize. TODO: test!
                 this.binsizes = group_iccf_obs_exp(response.data);
+                let binsizes = Object.keys(this.binsizes)
+                this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
             });
             // add dataset to store for tallying used_dataset
             this.$store.commit("compare/decrement_usage_dataset", oldVal)

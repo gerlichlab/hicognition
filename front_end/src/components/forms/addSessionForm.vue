@@ -107,7 +107,6 @@ export default {
             }else{
                 used_dataset_array = Array.from(used_datasets.keys())
             }
-            console.log(used_datasets);
             formData.append("session_object", JSON.stringify(session_object))
             formData.append("session_type", "compare")
             formData.append("used_datasets", JSON.stringify(used_dataset_array))
