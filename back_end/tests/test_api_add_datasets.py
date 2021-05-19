@@ -17,11 +17,14 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
     Inherits both from LoginTest and TempDirTestCase
     to be able to login and make temporary directory"""
 
+    @patch("app.api.post_routes.parse_binsizes")
     @patch("app.models.User.launch_task")
-    def test_dataset_added_correctly_cooler(self, mock_launch):
+    def test_dataset_added_correctly_cooler(self, mock_launch, mock_parse_binsizes):
         """Tests whether a cooler dataset is added
         correctly to the Dataset table following
         a post request."""
+        # define return values
+        mock_parse_binsizes.return_value = [5000000]
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token_header
@@ -72,6 +75,35 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         expected_file = open("tests/testfiles/test.mcool", "rb").read()
         actual_file = open(dataset.file_path, "rb").read()
         self.assertEqual(expected_file, actual_file)
+
+    @patch("app.api.post_routes.parse_binsizes")
+    @patch("app.models.User.launch_task")
+    def test_cooler_w_wrong_binsize_rejected(self, mock_launch, mock_parse_binsizes):
+        """Tests whether a cooler dataset lacking needed binsizes is rejected."""
+        # define return values
+        mock_parse_binsizes.return_value = [500000]
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_header
+        token_headers = self.get_token_header(token)
+        # add content-type
+        token_headers["Content-Type"] = "multipart/form-data"
+        # construct form data
+        data = {
+            "datasetName": "test",
+            "description": "test-description",
+            "genotype": "WT",
+            "filetype": "cooler",
+            "file": (open("tests/testfiles/test.mcool", "rb"), "test.mcool"),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 400)
 
     @patch("app.models.User.launch_task")
     def test_dataset_added_correctly_bigwig_bw_ending(self, mock_launch):
@@ -187,13 +219,16 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         ) as actual_file:
             self.assertEqual(expected_file.read(), actual_file.read())
 
+    @patch("app.api.post_routes.parse_binsizes")
     @patch("app.models.User.launch_task")
     def test_dataset_added_correctly_cooler_wo_description_and_genotype(
-        self, mock_launch
+        self, mock_launch, mock_parse_binsizes
     ):
         """Tests whether a cooler dataset is added
         correctly to the Dataset table following
         a post request."""
+        # add return values
+        mock_parse_binsizes.return_value = [5000000]
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token_header

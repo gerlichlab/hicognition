@@ -59,3 +59,10 @@ def get_all_interval_ids(region_datasets):
     for region_dataset in region_datasets:
         interval_ids.extend([entry.id for entry in region_dataset.intervals.all()])
     return interval_ids
+
+def parse_binsizes(map):
+    """returns needed binsizes from preprocessing map."""
+    binsizes = set()
+    for windowsize, bins in map.items():
+        binsizes |= set(bins)
+    return list(binsizes)

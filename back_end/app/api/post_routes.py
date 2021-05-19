@@ -11,7 +11,7 @@ from . import api
 from .. import db
 from ..models import Dataset, BedFileMetadata, Task, Session, Intervals
 from .authentication import auth
-from .helpers import is_access_to_dataset_denied, parse_description_and_genotype, remove_failed_tasks, get_all_interval_ids
+from .helpers import is_access_to_dataset_denied, parse_description_and_genotype, remove_failed_tasks, get_all_interval_ids, parse_binsizes
 from .errors import forbidden, invalid, not_found
 from hicognition.format_checkers import FORMAT_CHECKERS
 
@@ -76,7 +76,8 @@ def add_dataset():
     chromosome_names = set(
         pd.read_csv(current_app.config["CHROM_SIZES"], header=None, sep="\t")[0]
     )
-    if not FORMAT_CHECKERS[request.form["filetype"]](file_path, chromosome_names):
+    needed_resolutions = parse_binsizes(current_app.config["PREPROCESSING_MAP"])
+    if not FORMAT_CHECKERS[request.form["filetype"]](file_path, chromosome_names, needed_resolutions):
         db.session.delete(new_entry)
         db.session.commit()
         os.remove(file_path)

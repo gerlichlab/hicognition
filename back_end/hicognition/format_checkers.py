@@ -3,7 +3,7 @@ import re
 import cooler
 
 
-def is_bed_file_correctly_formatted(file_path, chromosome_names):
+def is_bed_file_correctly_formatted(file_path, chromosome_names, needed_resolutions):
     """Takes bed-file and checks whether it is correctly formated"""
     try:
         # first, read in the file
@@ -51,14 +51,14 @@ def _is_bed_row(bed_row):
     )
 
 
-def is_mcooler(file_path, needed_resolutions):
+def is_mcooler(file_path, chromosome_names, needed_resolutions):
     """Tests whether cooler file
     is an mcool with required resolutions."""
     try:
         resolutions = cooler.fileops.list_coolers(file_path)
         # check whether needed_resolutions are available
         for needed in needed_resolutions:
-            if needed not in resolutions:
+            if f"/resolutions/{needed}" not in resolutions:
                 return False
         for resolution in resolutions:
             temp_cool = cooler.Cooler(f"{file_path}::{resolution}")
@@ -70,5 +70,5 @@ def is_mcooler(file_path, needed_resolutions):
 FORMAT_CHECKERS = {
     "bedfile": is_bed_file_correctly_formatted,
     "cooler": is_mcooler,
-    "bigwig": lambda x, y: True,
+    "bigwig": lambda x, y, z: True,
 }

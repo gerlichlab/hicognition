@@ -16,28 +16,28 @@ class TestIsBedFileCorrectlyFormatted(TempDirTestCase):
     def test_real_data_normal(self):
         """Tests good bedfilewithou any header"""
         result = format_checkers.is_bed_file_correctly_formatted(
-            "tests/testfiles/real_data_tricky_header_cleaned.bed", self.chrom_names
+            "tests/testfiles/real_data_tricky_header_cleaned.bed", self.chrom_names, []
         )
         self.assertTrue(result)
 
     def test_real_data_large(self):
         """Tests good bedfile without comment header"""
         result = format_checkers.is_bed_file_correctly_formatted(
-            "tests/testfiles/good_data_large.bed", self.chrom_names
+            "tests/testfiles/good_data_large.bed", self.chrom_names, []
         )
         self.assertTrue(result)
 
     def test_real_data_named_columns(self):
         result = format_checkers.is_bed_file_correctly_formatted(
             "tests/testfiles/real_data_tricky_header_named_columns.bed",
-            self.chrom_names,
+            self.chrom_names, [],
         )
         self.assertTrue(result)
 
     def test_real_data_tricky_header(self):
         """Tests format checking of real data with comments in header."""
         result = format_checkers.is_bed_file_correctly_formatted(
-            "tests/testfiles/real_data_tricky_header.bed", self.chrom_names
+            "tests/testfiles/real_data_tricky_header.bed", self.chrom_names, []
         )
         self.assertTrue(result)
 
@@ -45,7 +45,7 @@ class TestIsBedFileCorrectlyFormatted(TempDirTestCase):
         """Tests formatchecking of bedfile with header containing track and browser"""
         result = format_checkers.is_bed_file_correctly_formatted(
             "tests/testfiles/real_data_tricky_header_w_track_and_browser.bed",
-            self.chrom_names,
+            self.chrom_names, [],
         )
         self.assertTrue(result)
 
@@ -54,28 +54,28 @@ class TestIsBedFileCorrectlyFormatted(TempDirTestCase):
         as well as named columns."""
         result = format_checkers.is_bed_file_correctly_formatted(
             "tests/testfiles/real_data_tricky_header_named_columns_w_track_and_browser.bed",
-            self.chrom_names,
+            self.chrom_names, [],
         )
         self.assertTrue(result)
 
     def test_bad_data_no_textfile(self):
         """Tests something that is not a textfile."""
         result = format_checkers.is_bed_file_correctly_formatted(
-            "tests/testfiles/bad_cooler.mcool", self.chrom_names
+            "tests/testfiles/bad_cooler.mcool", self.chrom_names, []
         )
         self.assertFalse(result)
 
     def test_bad_data_non_numeric_value_in_column(self):
         """Tests bedfile with  non-numeric values in start/end columns"""
         result = format_checkers.is_bed_file_correctly_formatted(
-            "tests/testfiles/non_numeric_values.bed", self.chrom_names
+            "tests/testfiles/non_numeric_values.bed", self.chrom_names, []
         )
         self.assertFalse(result)
 
     def test_bad_data_unsupported_chromosomes(self):
         """Tests bedfile with unsupported chromosomes"""
         result = format_checkers.is_bed_file_correctly_formatted(
-            "tests/testfiles/unsupported_chromosomes.bed", self.chrom_names
+            "tests/testfiles/unsupported_chromosomes.bed", self.chrom_names, []
         )
         self.assertFalse(result)
 
@@ -83,17 +83,23 @@ class TestIsBedFileCorrectlyFormatted(TempDirTestCase):
 class TestIsCoolerCorrectlyFormatted(unittest.TestCase):
     """Test suite the check whether cooler is correctly formatted"""
 
+    @classmethod
+    def setUp(cls):
+        cls.chrom_names = set(
+            ["chr" + str(i) for i in range(1, 23)] + ["chrX", "chrY", "chrM"]
+        )
+
     def test_good_cooler(self):
         """Good cooler should return True"""
-        self.assertTrue(format_checkers.is_mcooler("./tests/testfiles/test.mcool", []))
+        self.assertTrue(format_checkers.is_mcooler("./tests/testfiles/test.mcool",self.chrom_names, []))
 
     def test_bad_cooler(self):
         """bad cooler should return false"""
-        self.assertFalse(format_checkers.is_mcooler("./tests/testfiles/bad_cooler.mcool", []))
+        self.assertFalse(format_checkers.is_mcooler("./tests/testfiles/bad_cooler.mcool",self.chrom_names, []))
 
     def test_good_cooler_resolution_not_available(self):
         """Good cooler without required resolutions should return false."""
-        self.assertFalse(format_checkers.is_mcooler("./tests/testfiles/test.mcool", [42]))
+        self.assertFalse(format_checkers.is_mcooler("./tests/testfiles/test.mcool",self.chrom_names, [42]))
 
 
 if __name__ == "__main__":
