@@ -54,37 +54,6 @@
                                 >
                             </md-field>
                         </div>
-                        <!-- Binsizes field -->
-                        <div class="md-layout-item md-small-size-100">
-                            <md-field :class="getValidationClass('binsizes')">
-                                <label for="binsizes">Binsizes</label>
-                                <md-select
-                                    name="binsizes"
-                                    id="binsizes"
-                                    v-model="form.binsizes"
-                                    :disabled="!binsizesAvailable"
-                                    required
-                                    multiple
-                                >
-                                    <md-option
-                                        v-for="item in availableBinsizes"
-                                        :value="item"
-                                        :key="item"
-                                        >{{
-                                            convertBasePairsToReadable(item)
-                                        }}</md-option
-                                    >
-                                </md-select>
-                                <span
-                                    class="md-error"
-                                    v-if="!$v.form.binsizes.required"
-                                    >Binsize selection is required</span
-                                >
-                            </md-field>
-                        </div>
-                    </div>
-                    <!-- Second row -->
-                    <div class="md-layout md-gutter">
                         <!-- bedfiles -->
                         <div class="md-layout-item md-small-size-100">
                             <md-field :class="getValidationClass('bedfileIDs')">
@@ -112,48 +81,12 @@
                                 >
                             </md-field>
                         </div>
-                        <!-- windwosize -->
-                        <div class="md-layout-item md-small-size-100">
-                            <md-field
-                                :class="getValidationClass('windowsizes')"
-                            >
-                                <label for="windowsizes">Windowsizes</label>
-                                <md-select
-                                    id="windowsizes"
-                                    name="windowsizes"
-                                    v-model="form.windowsizes"
-                                    md-dense
-                                    :disabled="!intervalsAvailable"
-                                    required
-                                    multiple
-                                >
-                                    <md-option
-                                        v-for="item in availableIntervals"
-                                        :value="item.windowsize"
-                                        :key="item.windowsize"
-                                        >{{
-                                            convertBasePairsToReadable(
-                                                item.windowsize
-                                            )
-                                        }}</md-option
-                                    >
-                                </md-select>
-                                <span
-                                    class="md-error"
-                                    v-if="!$v.form.windowsizes.required"
-                                    >A windowsize is required!</span
-                                >
-                            </md-field>
-                        </div>
                     </div>
                 </md-card-content>
                 <!-- Progress bar -->
                 <md-progress-bar md-mode="indeterminate" v-if="sending" />
                 <!-- Buttons for submission and closing -->
                 <md-card-actions>
-                    <span class="margin-right md-accent red" v-if="binsInvalid"
-                        >Specified sizes are not valid!</span
-                    >
                     <md-button
                         class="md-dense md-raised md-primary md-icon-button md-alignment-horizontal-left"
                         @click="fetchDatasets"
@@ -183,14 +116,6 @@
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
 import { apiMixin, formattingMixin } from "../../mixins";
-import {
-    group_intervals_on_windowsize,
-    min_array,
-    max_array
-} from "../../functions";
-
-const MAX_BINS = 300000;
-const MAX_BINS_COOLER = 20000;
 
 export default {
     name: "PreprocessDatasetForm",
@@ -199,15 +124,10 @@ export default {
         availableDatasets: [],
         availableCoolers: [],
         availableBigwigs: [],
-        availableBinsizes: [],
         availableBedFiles: [],
-        availableIntervals: [],
-        binsInvalid: false,
         form: {
             datasetID: null,
-            binsizes: [],
             bedfileIDs: [],
-            windowsizes: []
         },
         datasetSaved: false,
         sending: false
@@ -224,12 +144,6 @@ export default {
         },
         bedFilesAvailable: function() {
             return this.availableBedFiles.length != 0;
-        },
-        intervalsAvailable: function() {
-            return Object.keys(this.availableIntervals).length != 0;
-        },
-        binsizesAvailable: function() {
-            return this.availableBinsizes.length != 0;
         }
     },
     validations: {
@@ -238,13 +152,7 @@ export default {
             datasetID: {
                 required
             },
-            binsizes: {
-                required
-            },
             bedfileIDs: {
-                required
-            },
-            windowsizes: {
                 required
             }
         }
@@ -279,20 +187,6 @@ export default {
                 );
             });
         },
-        fetchPileupregions: async function() {
-            // fetches available intervals or selected bedfiles
-            var intervals = [];
-            var tempPileupRegions = {};
-            for (var regionID of this.form.bedfileIDs) {
-                tempPileupRegions = await this.fetchPileupregion(regionID);
-                intervals.push(...tempPileupRegions.data);
-            }
-            this.availableIntervals = group_intervals_on_windowsize(intervals);
-        },
-        fetchPileupregion: function(regionID) {
-            // fetches intervals for one bedfile
-            return this.fetchData(`datasets/${regionID}/intervals/`);
-        },
         getValidationClass(fieldName) {
             // matrial validation class for form field;
             const field = this.$v.form[fieldName];
@@ -302,31 +196,6 @@ export default {
                     "md-invalid": field.$invalid && field.$dirty
                 };
             }
-        },
-        isTooLargeBigwig() {
-            // checks whether preprocessing would produce file with too many bins for bigwig
-            var numBins =
-                max_array(this.form.windowsizes) /
-                min_array(this.form.binsizes);
-            // *1000 because small subset that needs to be displayed is a 1000 pixels large
-            return numBins * 1000 > MAX_BINS;
-        },
-        isTooLargeCooler() {
-            // checks whether preprocessing would produce file with too many bins for cooler
-            var numBins =
-                max_array(this.form.windowsizes) /
-                min_array(this.form.binsizes);
-            return numBins ** 2 > MAX_BINS_COOLER;
-        },
-        binsizesDivideWindowsizes() {
-            for (var binsize of this.form.binsizes) {
-                for (var windowsize of this.form.windowsizes) {
-                    if (windowsize % binsize != 0) {
-                        return false;
-                    }
-                }
-            }
-            return true;
         },
         clearForm() {
             this.$v.$reset();
@@ -340,23 +209,6 @@ export default {
             }
         },
         saveDataset() {
-            // check whether binsize and windowsize selection would produce huge matrix
-            if (
-                this.isCooler(this.form.datasetID) &&
-                (this.isTooLargeCooler() || !this.binsizesDivideWindowsizes())
-            ) {
-                this.binsInvalid = true;
-                return;
-            }
-            if (
-                !this.isCooler(this.form.datasetID) &&
-                this.isTooLargeBigwig()
-            ) {
-                this.binsInvalid = true;
-                return;
-            }
-            // reset matrix too large if resubmission
-            this.binsInvalid = false;
             this.sending = true; // show progress bar
             // prepare data for form
             var prepared_data = this.prepare_form_data();
@@ -387,39 +239,16 @@ export default {
             return false;
         },
         prepare_form_data() {
-            // prepare intervals
-            var intervals_ids = [];
-            for (var windowsize of this.form["windowsizes"]) {
-                intervals_ids.push(...this.availableIntervals[windowsize].id);
-            }
             // put data into form
             var form_data = {};
-            form_data["interval_ids"] = JSON.stringify(intervals_ids);
             form_data["dataset_id"] = JSON.stringify(this.form["datasetID"]);
-            form_data["binsizes"] = JSON.stringify(this.form["binsizes"]);
+            form_data["region_ids"] = JSON.stringify(this.form["bedfileIDs"]);
             return form_data;
         },
         validateDataset() {
             this.$v.$touch();
             if (!this.$v.$invalid) {
                 this.saveDataset();
-            }
-        }
-    },
-    watch: {
-        "form.bedfileIDs": function() {
-            this.fetchPileupregions();
-        },
-        "form.datasetID": async function(val) {
-            if (this.isCooler(val)) {
-                var response = await this.fetchData(
-                    `datasets/${val}/availableBinsizes/`
-                );
-                if (response.data) {
-                    this.availableBinsizes = response.data;
-                }
-            } else {
-                this.availableBinsizes = [500, 1000, 5000, 10000, 20000, 50000];
             }
         }
     },
