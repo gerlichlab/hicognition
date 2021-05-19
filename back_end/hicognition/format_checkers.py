@@ -51,11 +51,15 @@ def _is_bed_row(bed_row):
     )
 
 
-def is_mcooler(file_path, chromosome_names):
+def is_mcooler(file_path, needed_resolutions):
     """Tests whether cooler file
-    is an mcool file ty listing resolutions and trying to open them"""
+    is an mcool with required resolutions."""
     try:
         resolutions = cooler.fileops.list_coolers(file_path)
+        # check whether needed_resolutions are available
+        for needed in needed_resolutions:
+            if needed not in resolutions:
+                return False
         for resolution in resolutions:
             temp_cool = cooler.Cooler(f"{file_path}::{resolution}")
     except:

@@ -80,5 +80,21 @@ class TestIsBedFileCorrectlyFormatted(TempDirTestCase):
         self.assertFalse(result)
 
 
+class TestIsCoolerCorrectlyFormatted(unittest.TestCase):
+    """Test suite the check whether cooler is correctly formatted"""
+
+    def test_good_cooler(self):
+        """Good cooler should return True"""
+        self.assertTrue(format_checkers.is_mcooler("./tests/testfiles/test.mcool", []))
+
+    def test_bad_cooler(self):
+        """bad cooler should return false"""
+        self.assertFalse(format_checkers.is_mcooler("./tests/testfiles/bad_cooler.mcool", []))
+
+    def test_good_cooler_resolution_not_available(self):
+        """Good cooler without required resolutions should return false."""
+        self.assertFalse(format_checkers.is_mcooler("./tests/testfiles/test.mcool", [42]))
+
+
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)
