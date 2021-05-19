@@ -380,12 +380,10 @@ export default {
                     this.windowSizes = response.data;
                 }
             );
-            // clear region if switched from another not null region
-            if (oldVal){
-                this.selectedWindowSize = null;
+            if (!this.selectedWindowSize){
+                // set default -> middle of available windwosizes
+                this.selectedWindowSize = this.windowSizes[Math.floor(this.windowSizes.length / 2)].id
             }
-            // set default -> middle of available windwosizes
-            this.selectedWindowSize = this.windowSizes[Math.floor(this.windowSizes.length / 2)].id
             // update used_datasets in store -> old dataset is decremented, new one is added
             this.$store.commit("compare/decrement_usage_dataset", oldVal)
             this.$store.commit("compare/increment_usage_dataset", newVal)
