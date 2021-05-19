@@ -1,4 +1,4 @@
-FROM docker.io/gerlichlab/scshic_docker:dev-1.0
+FROM docker.io/gerlichlab/scshic_docker:dev-1.1
 
 WORKDIR /temp
 COPY . /temp/install/

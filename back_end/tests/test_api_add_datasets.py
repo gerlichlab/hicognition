@@ -554,7 +554,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             )
         )
 
-    def test_public_flag_set_correctly_if_true(self):
+    @patch("app.models.User.launch_task")
+    def test_public_flag_set_correctly_if_true(self, mock_launch_task):
         """Tests whether form with file without ending is rejected."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -581,7 +582,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         dataset = Dataset.query.get(1)
         self.assertTrue(dataset.public)
 
-    def test_public_flag_set_correctly_if_false(self):
+    @patch("app.models.User.launch_task")
+    def test_public_flag_set_correctly_if_false(self, mock_launch_task):
         """Tests whether form with file without ending is rejected."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
