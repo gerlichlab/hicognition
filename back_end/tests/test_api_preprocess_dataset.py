@@ -1,12 +1,14 @@
 import sys
 import unittest
 from unittest.mock import MagicMock, patch
+
+from flask.globals import current_app
 from test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Task
+from app.models import Dataset, Task, Intervals
 
 
 class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
@@ -29,9 +31,24 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
             filetype="bedfile",
             user_id=2,
         )
-        db.session.add(dataset1)
-        db.session.add(dataset2)
-        db.session.add(dataset3)
+        dataset4 = Dataset(
+            dataset_name="test4",
+            file_path="test/path/4",
+            filetype="bedfile",
+            user_id = 1
+        )
+        dataset5 = Dataset(
+            dataset_name="test1", file_path="/test/path/1", filetype="cooler", user_id=2, public=True
+        )
+        dataset6 = Dataset(
+            dataset_name="test1", file_path="/test/path/1", filetype="bigwig", user_id=1
+        )
+        interval1 = Intervals(
+            name = "interval1",
+            windowsize=100000,
+            dataset_id=4
+        )
+        db.session.add_all([dataset1, dataset2, dataset3, dataset4, dataset5, dataset6, interval1])
         db.session.commit()
 
     @patch("app.models.User.launch_task")
@@ -43,12 +60,9 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # add datasets
         self.add_test_datasets()
         # define call arguments
-        binsizes = [10000, 20000, 40000]
-        intervals = [1,2,3,4]
         data = {
             "dataset_id": "1",
-            "interval_ids": f"{intervals}",
-            "binsizes": f"{binsizes}",
+            "region_ids": "[4]",
         }
         # dispatch post request
         response = self.client.post(
@@ -59,6 +73,8 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
+        binsizes = current_app.config["PREPROCESSING_MAP"][100000]
+        intervals = [1]
         for binsize in binsizes:
             for interval in intervals:
                 mock_launch.assert_any_call(
@@ -81,8 +97,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         self.add_test_datasets()
         data = {
             "dataset_id": "3",
-            "interval_ids": "[1, 2, 3, 4]",
-            "binsizes": "[10000, 20000, 40000]",
+            "region_ids": "[4]",
         }
         # dispatch post request
         response = self.client.post(
@@ -102,9 +117,8 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # add datasets
         self.add_test_datasets()
         data = {
-            "dataset_id": "4",
-            "interval_ids": "[1, 2, 3, 4]",
-            "binsizes": "[10000, 20000, 40000]",
+            "dataset_id": "100",
+            "region_ids": "[4]",
         }
         # dispatch post request
         response = self.client.post(
@@ -124,8 +138,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # add datasets
         self.add_test_datasets()
         data = {
-            "interval_ids": "[1, 2, 3, 4]",
-            "binsizes": "[10000, 20000, 40000]",
+            "region_ids": "[4]",
         }
         # dispatch post request
         response = self.client.post(
@@ -145,37 +158,11 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # add datasets
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="cooler",
-            public=True,
-            user_id=2,
-        )
-        dataset2 = Dataset(
-            dataset_name="test2",
-            file_path="/test/path/2",
-            filetype="cooler",
-            public=True,
-            user_id=2,
-        )
-        dataset3 = Dataset(
-            dataset_name="test3",
-            file_path="/test/path/3",
-            filetype="bedfile",
-            user_id=2,
-        )
-        db.session.add(dataset1)
-        db.session.add(dataset2)
-        db.session.add(dataset3)
-        db.session.commit()
+        self.add_test_datasets()
         # call args
-        binsizes = [10000, 20000, 40000]
-        intervals = [1,2,3,4]
         data = {
-            "dataset_id": "1",
-            "interval_ids": f"{intervals}",
-            "binsizes": f"{binsizes}",
+            "dataset_id": "5",
+            "region_ids": "[4]",
         }
         # dispatch post request
         response = self.client.post(
@@ -186,12 +173,14 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
+        binsizes = current_app.config["PREPROCESSING_MAP"][100000]
+        intervals = [1]
         for binsize in binsizes:
             for interval in intervals:
                 mock_launch.assert_any_call(
                     "pipeline_pileup",
                     "run pileup pipeline",
-                    1,
+                    5,
                     interval,
                     binsize,
                 )
@@ -205,35 +194,10 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # add datasets
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="bigwig",
-            user_id=1,
-        )
-        dataset2 = Dataset(
-            dataset_name="test2",
-            file_path="/test/path/2",
-            filetype="cooler",
-            user_id=2,
-        )
-        dataset3 = Dataset(
-            dataset_name="test3",
-            file_path="/test/path/3",
-            filetype="bedfile",
-            user_id=2,
-        )
-        db.session.add(dataset1)
-        db.session.add(dataset2)
-        db.session.add(dataset3)
-        db.session.commit()
-        # call args
-        binsizes = [10000, 20000, 40000]
-        intervals = [1,2,3,4]
+        self.add_test_datasets()
         data = {
-            "dataset_id": "1",
-            "interval_ids": f"{intervals}",
-            "binsizes": f"{binsizes}",
+            "dataset_id": "6",
+            "region_ids": "[4]",
         }
         # dispatch post request
         response = self.client.post(
@@ -244,12 +208,14 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
+        binsizes = current_app.config["PREPROCESSING_MAP"][100000]
+        intervals = [1]
         for binsize in binsizes:
             for interval in intervals:
                 mock_launch.assert_any_call(
                 "pipeline_stackup",
                 "run stackup pipeline",
-                    1,
+                    6,
                     interval,
                     binsize,
                 )
@@ -269,28 +235,15 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # add datasets
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="cooler",
-            public=True,
-            user_id=2,
-        )
-        dataset2 = Dataset(
-            dataset_name="test2",
-            file_path="/test/path/2",
-            filetype="bedfile",
-            public=True,
-            user_id=2,
-        )
+        self.add_test_datasets()
+        # add tasks
         task1 = Task(id="test", name="test", user_id=1, dataset_id=1, complete=False)
         task2 = Task(id="test2", name="test2", user_id=1, dataset_id=1, complete=False)
-        db.session.add_all([dataset1, dataset2, task1, task2])
+        db.session.add_all([task1, task2])
         db.session.commit()
         data = {
             "dataset_id": "1",
-            "interval_ids": "[1, 2, 3, 4]",
-            "binsizes": "[10000, 20000, 40000]",
+            "region_ids": "[4]"
         }
         # dispatch post request
         response = self.client.post(

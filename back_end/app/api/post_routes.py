@@ -11,7 +11,7 @@ from . import api
 from .. import db
 from ..models import Dataset, BedFileMetadata, Task, Session, Intervals
 from .authentication import auth
-from .helpers import is_access_to_dataset_denied, parse_description_and_genotype, remove_failed_tasks
+from .helpers import is_access_to_dataset_denied, parse_description_and_genotype, remove_failed_tasks, get_all_interval_ids
 from .errors import forbidden, invalid, not_found
 from hicognition.format_checkers import FORMAT_CHECKERS
 
@@ -55,10 +55,7 @@ def add_dataset():
     # check whether description and genotype is there
     description, genotype = parse_description_and_genotype(data)
     # check whether dataset should be public
-    setPublic = False
-    if "public" in data:
-        if data["public"].lower() == "true":
-            setPublic = True
+    setPublic = ("public" in data and data["public"].lower() == "true")
     # add data to Database -> in order to show uploading
     new_entry = Dataset(
         dataset_name=data["datasetName"],
@@ -80,12 +77,9 @@ def add_dataset():
         pd.read_csv(current_app.config["CHROM_SIZES"], header=None, sep="\t")[0]
     )
     if not FORMAT_CHECKERS[request.form["filetype"]](file_path, chromosome_names):
-        # remove entry from database
         db.session.delete(new_entry)
         db.session.commit()
-        # remove file
         os.remove(file_path)
-        # return error
         return invalid("Wrong dataformat or wrong chromosome names!")
     # add file_path to database entry
     new_entry.file_path = file_path
@@ -94,7 +88,6 @@ def add_dataset():
     # start preprocessing of bedfile, the other filetypes do not need preprocessing
     if data["filetype"] == "bedfile":
         current_user.launch_task("pipeline_bed", "run bed preprocessing", new_entry.id)
-        # set processing state
         new_entry.processing_state = "processing"
     # if filetype is cooler, store available binsizes
     if data["filetype"] == "cooler":
@@ -117,7 +110,7 @@ def preprocess_dataset():
         if not hasattr(request, "form"):
             return True
         if sorted(list(request.form.keys())) != sorted(
-            ["dataset_id", "binsizes", "interval_ids"]
+            ["dataset_id", "region_ids"]
         ):
             return True
         return False
@@ -129,21 +122,28 @@ def preprocess_dataset():
     # get data from form
     data = request.form
     dataset_id = json.loads(data["dataset_id"])
-    binsizes = json.loads(data["binsizes"])
-    interval_ids = json.loads(data["interval_ids"])
+    region_datasets_ids = json.loads(data["region_ids"])
     # check whether dataset exists
     if Dataset.query.get(dataset_id) is None:
         return not_found("Dataset does not exist!")
     if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g):
         return forbidden(f"Dataset is not owned by logged in user!")
+    # check whether region datasets exists
+    region_datasets = [Dataset.query.get(region_id) for region_id in region_datasets_ids]
+    if any(entry is None for entry in region_datasets):
+        return not_found("Region dataset does not exist!")
+    # check whether region datasets are owned
+    if any(is_access_to_dataset_denied(entry, g) for entry in region_datasets):
+        return forbidden(f"Dataset is not owned by logged in user!")
     # delete all jobs that are in database and have failed
     associated_tasks = Task.query.filter_by(dataset=Dataset.query.get(dataset_id)).all()
     remove_failed_tasks(associated_tasks, db)
+    # get interval ids of selected regions
+    interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
     if Dataset.query.get(dataset_id).filetype == "cooler":
-        
-        for binsize in binsizes:
-            for interval_id in interval_ids:
+        for interval_id in interval_ids:
+            for binsize in current_app.config["PREPROCESSING_MAP"][Intervals.query.get(interval_id).windowsize]:
                 current_user.launch_task(
                     "pipeline_pileup",
                     "run pileup pipeline",
@@ -152,8 +152,8 @@ def preprocess_dataset():
                     binsize
                 )
     if Dataset.query.get(dataset_id).filetype == "bigwig":
-        for binsize in binsizes:
-            for interval_id in interval_ids:
+        for interval_id in interval_ids:
+            for binsize in current_app.config["PREPROCESSING_MAP"][Intervals.query.get(interval_id).windowsize]:
                 current_user.launch_task(
                     "pipeline_stackup",
                     "run stackup pipeline",
