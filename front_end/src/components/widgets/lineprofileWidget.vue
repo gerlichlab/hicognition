@@ -448,8 +448,10 @@ export default {
             for (let dataset_id_new of newVal){
                 this.$store.commit("compare/increment_usage_dataset", dataset_id_new)
             }
-            // if no binsizes selected, return 
+            // if no binsizes selected, set default and return
             if (!this.selectedBinsize) {
+                var binsizes = Object.keys(this.binsizes)
+                this.selectedBinsize = binsizes[Math.floor(binsizes.length / 2)]
                 return;
             }
             var selected_ids;

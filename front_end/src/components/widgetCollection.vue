@@ -373,9 +373,9 @@ export default {
                 }
             }
         },
-        selectedRegionID: function(newVal, oldVal) {
+        selectedRegionID: async function(newVal, oldVal) {
             // fetch intervals and assing to windowsizes
-            this.fetchData(`datasets/${this.selectedRegionID}/intervals/`).then(
+            await this.fetchData(`datasets/${this.selectedRegionID}/intervals/`).then(
                 response => {
                     this.windowSizes = response.data;
                 }
@@ -384,6 +384,8 @@ export default {
             if (oldVal){
                 this.selectedWindowSize = null;
             }
+            // set default -> middle of available windwosizes
+            this.selectedWindowSize = this.windowSizes[Math.floor(this.windowSizes.length / 2)].id
             // update used_datasets in store -> old dataset is decremented, new one is added
             this.$store.commit("compare/decrement_usage_dataset", oldVal)
             this.$store.commit("compare/increment_usage_dataset", newVal)
