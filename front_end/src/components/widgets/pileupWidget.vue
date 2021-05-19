@@ -404,7 +404,6 @@ export default {
                 pileupType: pileupType,
                 id: id
             };
-            console.log(queryObject);
             if (this.$store.getters["compare/pileupExists"](queryObject)) {
                 return this.$store.getters["compare/getWidgetDataPileup"](
                     queryObject
@@ -413,8 +412,6 @@ export default {
             // pileup does not exists in store, fetch it
             var response = await this.fetchData(`averageIntervalData/${id}/`);
             var parsed = response.data;
-            //var parsed = JSON.parse(response.data);
-            //console.log(JSON.parse(response.data));
             // save it in store
             var mutationObject = {
                 pileupType: pileupType,
