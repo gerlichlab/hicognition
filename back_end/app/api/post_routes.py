@@ -141,26 +141,14 @@ def preprocess_dataset():
     # get interval ids of selected regions
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
-    if Dataset.query.get(dataset_id).filetype == "cooler":
-        for interval_id in interval_ids:
-            for binsize in current_app.config["PREPROCESSING_MAP"][Intervals.query.get(interval_id).windowsize]:
-                current_user.launch_task(
-                    "pipeline_pileup",
-                    "run pileup pipeline",
-                    dataset_id,
-                    interval_id,
-                    binsize
-                )
-    if Dataset.query.get(dataset_id).filetype == "bigwig":
-        for interval_id in interval_ids:
-            for binsize in current_app.config["PREPROCESSING_MAP"][Intervals.query.get(interval_id).windowsize]:
-                current_user.launch_task(
-                    "pipeline_stackup",
-                    "run stackup pipeline",
-                    dataset_id,
-                    interval_id,
-                    binsize,
-                )
+    for interval_id in interval_ids:
+        for binsize in current_app.config["PREPROCESSING_MAP"][Intervals.query.get(interval_id).windowsize]:
+            current_user.launch_task(
+                *current_app.config["PIPELINE_NAMES"][Dataset.query.get(dataset_id).filetype],
+                dataset_id,
+                interval_id,
+                binsize
+            )
     # set processing state
     dataset = Dataset.query.get(dataset_id)
     dataset.processing_state = "processing"

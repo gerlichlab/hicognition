@@ -16,6 +16,7 @@ class Config:
     )
     CHROM_ARMS = os.environ.get("CHROM_ARMS") or os.path.join(basedir, "data/arms.hg19")
     REDIS_URL = os.environ.get("REDIS_URL") or "redis://"
+    # allowed binsizes for given windowsizes of regions
     PREPROCESSING_MAP = {
             50000: [1000, 2000, 5000],
             100000: [1000, 2000, 5000, 10000],
@@ -23,6 +24,11 @@ class Config:
             400000: [5000, 10000, 20000, 50000],
             1000000: [20000, 50000, 100000, 200000],
             2000000: [50000, 100000, 200000, 500000],
+    }
+    # mapping of pipeline names to filetypes
+    PIPELINE_NAMES = {
+        "cooler": ("pipeline_pileup", "run pileup pipeline"),
+        "bigwig": ("pipeline_stackup", "run stackup pipeline")
     }
     BIN_SIZES = [20000, 50000]  # In development mode, 10k hogs too much memory
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled
