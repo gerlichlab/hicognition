@@ -4,7 +4,13 @@ import pandas as pd
 import numpy as np
 from flask.json import jsonify
 from flask import g, request
-from .helpers import update_processing_state, is_access_to_dataset_denied
+from .helpers import (
+    update_processing_state,
+    is_access_to_dataset_denied,
+    add_average_data_to_preprocessing_map,
+    add_individual_data_to_preprocessing_map,
+    recDict
+)
 from . import api
 from .. import db
 from ..models import (
@@ -13,7 +19,7 @@ from ..models import (
     Dataset,
     AverageIntervalData,
     IndividualIntervalData,
-    Session
+    Session,
 )
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
@@ -37,7 +43,9 @@ def test_protected():
 def get_all_datasets():
     """Gets all available datasets for a given user."""
     all_available_datasets = Dataset.query.filter(
-        (Dataset.user_id == g.current_user.id) | (Dataset.public) | (Dataset.id.in_(g.session_datasets))
+        (Dataset.user_id == g.current_user.id)
+        | (Dataset.public)
+        | (Dataset.id.in_(g.session_datasets))
     ).all()
     update_processing_state(all_available_datasets, db)
     return jsonify([dfile.to_json() for dfile in all_available_datasets])
@@ -128,6 +136,57 @@ def get_binsizes_of_dataset(dataset_id):
     return jsonify([])
 
 
+@api.route("/datasets/<dataset_id>/processedDataMap/", methods=["GET"])
+@auth.login_required
+def get_processed_data_mapping_of_dataset(dataset_id):
+    """Gets processed data map of a given region dataset.
+    This object has the following structure:
+    {
+        processed_data_type: {
+            associated_dataset_id: {
+                name: NAME_OF_ASSOCIATED_DATASET,
+                data_ids: {
+                    interval_size: {
+                        binsize: {
+                            processed_data_id
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Processed_data_type is in [pileup, stackup, lineprofile]. All entries
+    for a given processed_data_type key are available processed_datasets.
+    The values for each processed_dataset hold information about their name
+    and which id in the target table corresponds to which interval and binsize
+    combintaion.
+    """
+    dataset = Dataset.query.get(dataset_id)
+    # check whether dataset exists
+    if dataset is None:
+        return not_found(f"Dataset with id '{dataset_id}' does not exist!")
+    # check whether user owns the dataset
+    if is_access_to_dataset_denied(dataset, g):
+        return forbidden(
+            f"Dataset with id '{dataset_id}' is not owned by logged in user!"
+        )
+    # check whether dataset is bedfile
+    if dataset.filetype != "bedfile":
+        return invalid(f"Dataset with id '{dataset_id}' is not a bedfile!")
+    # create output object
+    output = {"pileup": recDict(), "stackup": recDict(), "lineprofile": recDict()}
+    # populate output object
+    associated_intervals = dataset.intervals.all()
+    for interval in associated_intervals:
+        average_data = interval.averageIntervalData.all()
+        individual_data = interval.individualIntervalData.all()
+        # add data
+        add_average_data_to_preprocessing_map(average_data, output)
+        add_individual_data_to_preprocessing_map(individual_data, output)
+    return jsonify(output)
+
+
 @api.route("/intervals/", methods=["GET"])
 @auth.login_required
 def get_intervals():
@@ -135,7 +194,11 @@ def get_intervals():
     # SQL join to get all intervals that come from a dataset owned by the respective user
     all_files = (
         Intervals.query.join(Dataset)
-        .filter((Dataset.user_id == g.current_user.id) | (Dataset.public) | (Dataset.id.in_(g.session_datasets)))
+        .filter(
+            (Dataset.user_id == g.current_user.id)
+            | (Dataset.public)
+            | (Dataset.id.in_(g.session_datasets))
+        )
         .all()
     )
     return jsonify([dfile.to_json() for dfile in all_files])
@@ -204,9 +267,9 @@ def get_averageIntervalData():
         if (cooler_ds is None) or (intervals_ds is None):
             return not_found("Cooler/Bigwig dataset or intervals dataset do not exist!")
         # Check whether datasets are owned
-        if is_access_to_dataset_denied(
-            cooler_ds, g
-        ) or is_access_to_dataset_denied(intervals_ds.source_dataset, g):
+        if is_access_to_dataset_denied(cooler_ds, g) or is_access_to_dataset_denied(
+            intervals_ds.source_dataset, g
+        ):
             return forbidden(
                 "Cooler/Bigwig dataset or intervals dataset is not owned by logged in user!"
             )
@@ -270,9 +333,9 @@ def get_pileup_data(entry_id):
     pileup = AverageIntervalData.query.get(entry_id)
     cooler_ds = pileup.source_dataset
     bed_ds = pileup.source_intervals.source_dataset
-    if is_access_to_dataset_denied(
-        cooler_ds, g
-    ) or is_access_to_dataset_denied(bed_ds, g):
+    if is_access_to_dataset_denied(cooler_ds, g) or is_access_to_dataset_denied(
+        bed_ds, g
+    ):
         return forbidden(
             "Cooler dataset or bed dataset is not owned by logged in user!"
         )
@@ -298,9 +361,9 @@ def get_stackup_data(entry_id):
     stackup = IndividualIntervalData.query.get(entry_id)
     bigwig_ds = stackup.source_dataset
     bed_ds = stackup.source_intervals.source_dataset
-    if is_access_to_dataset_denied(
-        bigwig_ds, g
-    ) or is_access_to_dataset_denied(bed_ds, g):
+    if is_access_to_dataset_denied(bigwig_ds, g) or is_access_to_dataset_denied(
+        bed_ds, g
+    ):
         return forbidden(
             "Bigwig dataset or bed dataset is not owned by logged in user!"
         )
@@ -328,16 +391,18 @@ def get_stackup_metadata_small(entry_id):
     stackup = IndividualIntervalData.query.get(entry_id)
     bigwig_ds = stackup.source_dataset
     bed_ds = stackup.source_intervals.source_dataset
-    if is_access_to_dataset_denied(
-        bigwig_ds, g
-    ) or is_access_to_dataset_denied(bed_ds, g):
+    if is_access_to_dataset_denied(bigwig_ds, g) or is_access_to_dataset_denied(
+        bed_ds, g
+    ):
         return forbidden(
             "Bigwig dataset or bed dataset is not owned by logged in user!"
         )
     # get associated metadata entries sorted by id; id sorting is necessary for newer metadata to win in field names
     metadata_entries = bed_ds.bedFileMetadata.order_by(BedFileMetadata.id.desc()).all()
     # check if list is empty or all metadata entries have undefiend metadata fields
-    if (len(metadata_entries) == 0) or all(metadata_entry.metadata_fields is None for metadata_entry in metadata_entries):
+    if (len(metadata_entries) == 0) or all(
+        metadata_entry.metadata_fields is None for metadata_entry in metadata_entries
+    ):
         return jsonify({})
     # load all metadata_files as dataframes
     temp_frames = []
@@ -358,6 +423,7 @@ def get_stackup_metadata_small(entry_id):
     outframe = output_frame_unique.iloc[stackup_index, :]
     return jsonify(outframe.to_dict(orient="list"))
 
+
 @api.route("/sessions/", methods=["GET"])
 @auth.login_required
 def get_all_sessions():
@@ -366,6 +432,7 @@ def get_all_sessions():
         (Session.user_id == g.current_user.id)
     ).all()
     return jsonify([dfile.to_json() for dfile in all_available_sessions])
+
 
 @api.route("/sessions/<session_id>/", methods=["GET"])
 @auth.login_required
@@ -381,6 +448,7 @@ def get_session_data_with_id(session_id):
         return forbidden(f"Session with id '{session_id}' is not owned!")
     return jsonify(session.to_json())
 
+
 @api.route("/sessions/<session_id>/sessionToken/", methods=["GET"])
 @auth.login_required
 def get_session_token(session_id):
@@ -395,8 +463,8 @@ def get_session_token(session_id):
         return forbidden(f"Session with id '{session_id}' is not owned!")
     # create session token
     return jsonify(
-            {
-                "session_token": session.generate_session_token(),
-                "session_id": session_id,
-            }
-        )
+        {
+            "session_token": session.generate_session_token(),
+            "session_id": session_id,
+        }
+    )
