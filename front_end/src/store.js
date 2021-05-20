@@ -253,9 +253,13 @@ const store = new Vuex.Store({
         token: null,
         sessionToken: null,
         user_id: null,
+        resolutions: null,
         datasets: null // datasets are in the global store because they will be shared for all functionalities for a given user throughout a session
     },
     getters: {
+        getResolutions: state => {
+            return state.resolutions
+        },
         isTokenEmpty: state => {
             return state.token == null;
         },
@@ -316,6 +320,9 @@ const store = new Vuex.Store({
         },
         setDatasets(state, datasets) {
             state.datasets = datasets;
+        },
+        setResolutions(state, resolutions){
+            state.resolutions = resolutions
         }
     }
 });

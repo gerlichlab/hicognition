@@ -50,15 +50,15 @@
                                 name="size"
                                 id="size"
                                 placeholder="Size"
-                                :disabled="!windowSizesAvailable"
+                                :disabled="!allowWindowSizeSelection"
                             >
                                 <md-option
                                     v-for="item in windowSizes"
-                                    :value="item.id"
-                                    :key="item.id"
+                                    :value="item"
+                                    :key="item"
                                     >{{
                                         convertBasePairsToReadable(
-                                            item.windowsize
+                                            item
                                         )
                                     }}</md-option
                                 >
@@ -170,7 +170,8 @@ export default {
             baseHeight: 350,
             maxRowNumber: 0,
             maxColumnNumber: 0,
-            children: []
+            children: [],
+            availableData: {}
         };
     },
     computed: {
@@ -206,11 +207,8 @@ export default {
             );
             return this.maxColumnNumber > maxColElements;
         },
-        windowSizesAvailable: function() {
-            if (this.windowSizes.length != 0) {
-                return true;
-            }
-            return false;
+        allowWindowSizeSelection: function(){
+            return this.windowSizes.length > 0 && this.selectedRegionID
         },
         blockZoomOut: function() {
             if (this.baseWidth <= 350) {
@@ -312,6 +310,13 @@ export default {
                 );
             });
         },
+        fetchResolutions: function(){
+            this.fetchData("resolutions/").then(response => {
+                // success, store resolutions
+                this.$store.commit("setResolutions", response.data)
+                this.windowSizes = Object.keys(response.data)
+            })
+        },
         handleZoomIn: function() {
             this.baseWidth += 50;
             this.baseHeight += 50;
@@ -374,15 +379,14 @@ export default {
             }
         },
         selectedRegionID: async function(newVal, oldVal) {
-            // fetch intervals and assing to windowsizes
-            await this.fetchData(`datasets/${this.selectedRegionID}/intervals/`).then(
-                response => {
-                    this.windowSizes = response.data;
-                }
-            );
+            // get availability object
+            await this.fetchData(`datasets/${newVal}/processedDataMap/`).then(response => {
+                // success, store availability object
+                this.availableData = response.data
+            })
             if (!this.selectedWindowSize){
                 // set default -> middle of available windwosizes
-                this.selectedWindowSize = this.windowSizes[Math.floor(this.windowSizes.length / 2)].id
+                this.selectedWindowSize = this.windowSizes[Math.floor(this.windowSizes.length / 2)]
             }
             // update used_datasets in store -> old dataset is decremented, new one is added
             this.$store.commit("compare/decrement_usage_dataset", oldVal)
@@ -392,7 +396,7 @@ export default {
             // set new intervals
             var payload = {
                 id: this.id,
-                collectionConfig: { intervalID: this.selectedWindowSize, regionID: this.selectedRegionID }
+                collectionConfig: { regionID: this.selectedRegionID, availableData: this.availableData , intervalSize: this.selectedWindowSize}
             };
             this.$store.commit("compare/setCollectionConfig", payload);
         }
@@ -402,10 +406,22 @@ export default {
         var collectionData = this.$store.getters[
             "compare/getCollectionProperties"
         ](this.id);
-        // set selected dataset and binsize
+        // set selected dataset and binsize if they are defined
         if (collectionData.collectionConfig){
             this.selectedRegionID = collectionData.collectionConfig["regionID"]
-            this.selectedWindowSize = collectionData.collectionConfig["intervalID"]
+            this.selectedWindowSize = collectionData.collectionConfig["intervalSize"]
+            this.availableData = collectionData.collectionConfig["availableData"]
+        }else{
+            // set new collectionConfig if not initialized from store
+                let payload = {
+                    id: this.id,
+                    collectionConfig: {
+                        regionID: undefined,
+                        availableData: {"pileup": {}, "lineprofile": {}, "stackup": {}},
+                        intervalSize: undefined
+                    }
+                }
+            this.$store.commit("compare/setCollectionConfig", payload)
         }
         // set maxrownumber and maxcolumnnumber
         if (collectionData.children){
@@ -422,6 +438,12 @@ export default {
         }
         // get datasets
         this.fetchDatasets();
+        // get resolutions
+        if (this.$store.state.resolutions){
+            this.windowSizes = Object.keys(this.$store.getters.getResolutions)
+        }else{
+            this.fetchResolutions()
+        }
     }
 };
 </script>

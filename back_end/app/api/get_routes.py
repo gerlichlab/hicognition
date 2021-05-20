@@ -1,5 +1,6 @@
 """GET API endpoints for hicognition"""
 import json
+from flask.globals import current_app
 import pandas as pd
 import numpy as np
 from flask.json import jsonify
@@ -37,6 +38,12 @@ def test_protected():
     """test api calls"""
     return jsonify({"test": "Hello, world!"})
 
+@api.route("/resolutions/", methods=["GET"])
+@auth.login_required
+def get_resolutions():
+    """Gets available combinations of windowsizes and binsizes
+    from config file"""
+    return jsonify(current_app.config["PREPROCESSING_MAP"])
 
 @api.route("/datasets/", methods=["GET"])
 @auth.login_required

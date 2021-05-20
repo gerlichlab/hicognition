@@ -38,6 +38,12 @@ export default {
                 this.$store.commit("setDatasets", response.data);
             });
         },
+        fetchResolutions: function(){
+            this.fetchData("resolutions/").then(response => {
+                // success, store resolutions
+                this.$store.commit("setResolutions", response.data)
+            })
+        },
         addCollection: function() {
             // add newEntry to store for collection
             this.$store.commit(
@@ -78,6 +84,7 @@ export default {
             this.currentID = Math.max(...collections) + 1;
         }
         this.fetchDatasets()
+        this.fetchResolutions()
     },
     beforeDestroy: function(){
         if (this.$globalFlags["serializeCompare"]){
