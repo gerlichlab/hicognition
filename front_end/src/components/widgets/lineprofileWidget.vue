@@ -22,10 +22,10 @@
                             :disabled="!allowDatasetSelection"
                         >
                             <md-option
-                                v-for="item in datasets"
-                                :value="item.id"
-                                :key="item.id"
-                                >{{ item.dataset_name }}</md-option
+                                v-for="(item, id) in datasets"
+                                :value="id"
+                                :key="id"
+                                >{{ item.name }}</md-option
                             >
                         </md-select>
                     </md-field>
@@ -43,11 +43,11 @@
                             :disabled="!allowBinsizeSelection"
                         >
                             <md-option
-                                v-for="item in binsizes"
-                                :value="item.binsize"
-                                :key="item.binsize"
+                                v-for="(item, binsize) in binsizes"
+                                :value="binsize"
+                                :key="binsize"
                                 >{{
-                                    convertBasePairsToReadable(item.binsize)
+                                    convertBasePairsToReadable(binsize)
                                 }}</md-option
                             >
                         </md-select>
@@ -160,13 +160,13 @@ export default {
             return false;
         },
         allowDatasetSelection: function() {
-            if (this.intervalID) {
+            if (this.intervalSize) {
                 return true;
             }
             return false;
         },
         allowBinsizeSelection: function() {
-            return this.binsizes.length != 0;
+            return Object.keys(this.binsizes).length != 0;
         },
         cssStyle: function() {
             return {
@@ -250,8 +250,10 @@ export default {
                 return false;
             }
             if (
-                newCollectionData["intervalID"] !=
-                oldCollectionData["intervalID"]
+                (newCollectionData["regionID"] !=
+                oldCollectionData["regionID"]) || 
+                (newCollectionData["intervalSize"] !=
+                oldCollectionData["intervalSize"])
             ) {
                 return false;
             }
@@ -264,10 +266,10 @@ export default {
                 widgetData: undefined,
                 selectedDataset: [],
                 selectedBinsize: undefined,
-                intervalID: collectionData["intervalID"],
+                intervalSize: collectionData["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
-                binsizes: [],
-                datasets: this.$store.getters.getBigwigsDirty,
+                binsizes: {},
+                datasets: collectionData["availableData"]["lineprofile"],
                 isDefault: true,
                 lineProfileNames: [],
                 showMenu: false,
@@ -285,10 +287,10 @@ export default {
                 widgetData: undefined,
                 selectedDataset: [],
                 selectedBinsize: undefined,
-                intervalID: collectionConfig["intervalID"],
+                intervalSize: collectionConfig["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
-                binsizes: [],
-                datasets: this.$store.getters.getBigwigsDirty,
+                binsizes: {},
+                datasets: collectionConfig["availableData"]["lineprofile"],
                 isDefault: true,
                 lineProfileNames: [],
                 showMenu: false,
@@ -328,10 +330,10 @@ export default {
                 selectedDataset: widgetData["dataset"],
                 selectedBinsize: widgetData["binsize"],
                 lineProfileNames: widgetData["lineProfileNames"],
-                intervalID: collectionConfig["intervalID"],
+                intervalSize: collectionConfig["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
-                datasets: this.$store.getters.getBigwigsDirty,
+                datasets: collectionConfig["availableData"]["lineprofile"],
                 isDefault: widgetData["isDefault"],
                 showMenu: false,
                 normalized: widgetData["normalized"]
@@ -390,56 +392,76 @@ export default {
             // return it
             return parsed;
         },
-        getlineprofileName: async function(id) {
-            // fetch it
-            var response = await this.fetchData(`datasets/${id}/name/`);
-            var parsed = response.data;
-            // return it
-            return parsed;
+        updateData: async function(){
+            // construct data ids to be fecthed
+            let selected_ids = this.binsizes[this.selectedBinsize]
+            // store widget data ref
+            this.widgetDataRef = selected_ids;
+            // fetch data
+            var selected_data = [];
+            for (let selected_id of selected_ids) {
+                selected_data.push(await this.getlineprofileData(selected_id));
+            }
+            // get lineprofile names
+            this.lineProfileNames = this.selectedDataset.map(elem => {
+                return this.datasets[elem]["name"]
+            })
+            this.widgetData = selected_data;
+        },
+        getIdsOfBinsizes: function(){
+            // takes selected dataset array and constructs an object with binsizes and arrays of data ids
+            let binsizes ={};
+            for (let selectedDataset of this.selectedDataset){
+                let temp_binsizes = this.datasets[selectedDataset]["data_ids"][this.intervalSize];
+                for (let [key, value] of Object.entries(temp_binsizes)){
+                    if (!(key in binsizes)){
+                        binsizes[key] = [value]
+                    }else{
+                        binsizes[key].push(value)
+                    }
+                }
+            }
+            return binsizes
         }
     },
     watch: {
-        "$store.state.datasets": function() {
-            // updates datasets if they change -> get coolers that may be in the status of processing
-            this.datasets = this.$store.getters.getBigwigsDirty;
-        },
         // watch for changes in store to be able to update intervals
         "$store.state.compare.widgetCollections": {
             deep: true,
             handler: function(newValue) {
-                // check if collecitonConfig is defined
-                if ("collectionConfig" in newValue[this.collectionID]) {
-                    // check if intervals has changed
-                    var newEntry =
-                        newValue[this.collectionID]["collectionConfig"][
-                            "intervalID"
-                        ];
-                    if (newEntry != this.intervalID) {
-                        this.intervalID = newEntry;
-                        // reset state
-                        this.selectedBinsize = undefined;
-                        this.selectedDataset = [];
-                        this.widgetData = undefined;
-                        this.binsizes = [];
-                    }
-                }
+                // update availability object
+                this.datasets = newValue[this.collectionID]["collectionConfig"]["availableData"]["lineprofile"]
+                this.intervalSize = newValue[this.collectionID]["collectionConfig"]["intervalSize"]
             }
+        },
+        datasets: function(newVal, oldVal){
+            if (!newVal || !oldVal || !this.selectedDataset || (this.selectedDataset.length == 0)){
+                return
+            }
+            this.binsizes = this.getIdsOfBinsizes()
+            let binsizes = Object.keys(this.binsizes)
+            this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
+            this.updateData()
+        },
+        intervalSize: function(newVal, oldVal){
+            // if interval size changes, reload data
+            if (!newVal || !oldVal || (this.selectedDataset.length == 0)){
+                return
+            }
+            this.binsizes = this.getIdsOfBinsizes()
+            let binsizes = Object.keys(this.binsizes)
+            this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
+            this.updateData()
         },
         selectedDataset: async function(newVal, oldVal) {
             if (
-                this.selectedDataset == undefined ||
                 this.selectedDataset.length == 0
             ) {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
             }
-            // fetch binsizes for the current combination of dataset and intervals
-            await this.fetchData(
-                `averageIntervalData/?dataset_id=${this.selectedDataset}&intervals_id=${this.intervalID}`
-            ).then(response => {
-                this.binsizes = group_lineprofils_by_binsize(response.data);
-                //this.binsizes = response.data;
-            });
+            // set binsizes -> there can be multiple datasets, binsizes need to be collected for them
+            this.binsizes = this.getIdsOfBinsizes()
             // remove old dataset ids from used values in store
             for (let dataset_id_old of oldVal){
                 this.$store.commit("compare/decrement_usage_dataset", dataset_id_old)
@@ -450,61 +472,17 @@ export default {
             }
             // if no binsizes selected, set default and return
             if (!this.selectedBinsize) {
-                var binsizes = Object.keys(this.binsizes)
+                let binsizes = Object.keys(this.binsizes)
                 this.selectedBinsize = binsizes[Math.floor(binsizes.length / 2)]
-                return;
+            }else{
+                this.updateData()
             }
-            var selected_ids;
-            for (let [key, entry] of Object.entries(this.binsizes)) {
-                if (this.selectedBinsize == key) {
-                    selected_ids = entry.id;
-                }
-            }
-
-            // store widget data ref
-
-            this.widgetDataRef = selected_ids;
-
-            var selected_data = [];
-            for (let selected_id of selected_ids) {
-                selected_data.push(await this.getlineprofileData(selected_id));
-            }
-            //this.widgetData = selected_data;
-            var selected_names = [];
-            for (let selected_id of this.selectedDataset) {
-                selected_names.push(await this.getlineprofileName(selected_id));
-            }
-            this.lineProfileNames = selected_names;
-            this.widgetData = selected_data;
         },
         selectedBinsize: async function() {
             if (!this.selectedBinsize) {
                 return;
             }
-            // fetch widget data
-            var selected_ids;
-            // add list of names
-            for (let [key, entry] of Object.entries(this.binsizes)) {
-                if (this.selectedBinsize == key) {
-                    //.id is an array
-                    selected_ids = entry.id;
-                }
-            }
-
-            // store widget data ref
-            this.widgetDataRef = selected_ids;
-
-            var selected_data = [];
-            for (let selected_id of selected_ids) {
-                selected_data.push(await this.getlineprofileData(selected_id));
-            }
-            // add list of names
-            var selected_names = [];
-            for (let selected_id of this.selectedDataset) {
-                selected_names.push(await this.getlineprofileName(selected_id));
-            }
-            this.lineProfileNames = selected_names;
-            this.widgetData = selected_data;
+            this.updateData()
         }
     },
     mounted: function (){

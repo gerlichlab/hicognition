@@ -147,7 +147,6 @@
 import heatmap from "../visualizations/heatmap";
 import { apiMixin, formattingMixin } from "../../mixins";
 import {
-    group_stackups_by_binsize,
     sort_matrix_by_index,
     sort_matrix_by_center_column
 } from "../../functions";
@@ -510,8 +509,6 @@ export default {
             if (!newVal || !oldVal || !this.selectedDataset){
                 return
             }
-            console.log(newVal)
-            console.log(this.selectedDataset)
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize]
             let binsizes = Object.keys(this.binsizes)
             this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
