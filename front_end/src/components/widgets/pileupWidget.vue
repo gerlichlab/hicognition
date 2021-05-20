@@ -483,9 +483,14 @@ export default {
             // set binsizes from available datasets 
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize]
             let binsizes = Object.keys(this.binsizes)
-            this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
+            if (!this.selectedBinsize){
+                this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
+            }else{
+                this.updatedData()
+            }
             this.$store.commit("compare/decrement_usage_dataset", oldVal)
             this.$store.commit("compare/increment_usage_dataset", newVal)
+
         },
         selectedBinsize: async function() {
             if (!this.selectedBinsize) {
