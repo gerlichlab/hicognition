@@ -76,7 +76,7 @@ def parse_binsizes(map):
     return list(binsizes)
 
 
-def add_average_data_to_preprocessing_map(average_interval_datasets, output_object):
+def add_average_data_to_preprocessed_dataset_map(average_interval_datasets, output_object):
     for average in average_interval_datasets:
         dataset = Dataset.query.get(average.dataset_id)
         interval = Intervals.query.get(average.intervals_id)
@@ -92,7 +92,7 @@ def add_average_data_to_preprocessing_map(average_interval_datasets, output_obje
             ][average.binsize] = str(average.id)
 
 
-def add_individual_data_to_preprocessing_map(
+def add_individual_data_to_preprocessed_dataset_map(
     individual_interval_datasets, output_object
 ):
     for individual in individual_interval_datasets:

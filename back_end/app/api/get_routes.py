@@ -7,8 +7,8 @@ from flask import g, request
 from .helpers import (
     update_processing_state,
     is_access_to_dataset_denied,
-    add_average_data_to_preprocessing_map,
-    add_individual_data_to_preprocessing_map,
+    add_average_data_to_preprocessed_dataset_map,
+    add_individual_data_to_preprocessed_dataset_map,
     recDict
 )
 from . import api
@@ -182,8 +182,8 @@ def get_processed_data_mapping_of_dataset(dataset_id):
         average_data = interval.averageIntervalData.all()
         individual_data = interval.individualIntervalData.all()
         # add data
-        add_average_data_to_preprocessing_map(average_data, output)
-        add_individual_data_to_preprocessing_map(individual_data, output)
+        add_average_data_to_preprocessed_dataset_map(average_data, output)
+        add_individual_data_to_preprocessed_dataset_map(individual_data, output)
     return jsonify(output)
 
 
