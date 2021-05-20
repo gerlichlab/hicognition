@@ -316,7 +316,7 @@ export default {
                 binsizes: [],
                 minHeatmap: undefined,
                 maxHeatmap: undefined,
-                datasets: this.$store.getters.getCoolersDirty,
+                datasets: collectionData["availableData"]["pileup"],
                 isICCF: true,
                 showMenu: false
             };

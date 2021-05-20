@@ -386,6 +386,9 @@ export default {
             }
         },
         selectedRegionID: async function(newVal, oldVal) {
+            if (!newVal){
+                return
+            }
             // get availability object
             await this.fetchData(`datasets/${newVal}/processedDataMap/`).then(response => {
                 // success, store availability object

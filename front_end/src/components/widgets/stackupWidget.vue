@@ -21,10 +21,10 @@
                             :disabled="!allowDatasetSelection"
                         >
                             <md-option
-                                v-for="item in datasets"
-                                :value="item.id"
-                                :key="item.id"
-                                >{{ item.dataset_name }}</md-option
+                                v-for="(item, id) in datasets"
+                                :value="id"
+                                :key="id"
+                                >{{ item.name }}</md-option
                             >
                         </md-select>
                     </md-field>
@@ -42,11 +42,11 @@
                             :disabled="!allowBinsizeSelection"
                         >
                             <md-option
-                                v-for="item in binsizes"
-                                :value="item.binsize"
-                                :key="item.binsize"
+                                v-for="(item, binsize) in binsizes"
+                                :value="binsize"
+                                :key="binsize"
                                 >{{
-                                    convertBasePairsToReadable(item.binsize)
+                                    convertBasePairsToReadable(binsize)
                                 }}</md-option
                             >
                         </md-select>
@@ -226,13 +226,13 @@ export default {
             return false;
         },
         allowDatasetSelection: function() {
-            if (this.intervalID) {
+            if (this.intervalSize) {
                 return true;
             }
             return false;
         },
         allowBinsizeSelection: function() {
-            return this.binsizes.length != 0;
+            return Object.keys(this.binsizes).length != 0;
         },
         cssStyle: function() {
             return {
@@ -334,8 +334,10 @@ export default {
                 return false;
             }
             if (
-                newCollectionData["intervalID"] !=
-                oldCollectionData["intervalID"]
+                (newCollectionData["regionID"] !=
+                oldCollectionData["regionID"]) || 
+                (newCollectionData["intervalSize"] !=
+                oldCollectionData["intervalSize"])
             ) {
                 return false;
             }
@@ -348,10 +350,10 @@ export default {
                 widgetData: undefined,
                 selectedDataset: undefined,
                 selectedBinsize: undefined,
-                intervalID: collectionData["intervalID"],
+                intervalSize: collectionData["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
-                datasets: this.$store.getters.getBigwigsDirty,
+                datasets:  collectionData["availableData"]["stackup"],
                 minHeatmap: undefined,
                 maxHeatmap: undefined,
                 selectedSortOrder: "center column",
@@ -373,11 +375,11 @@ export default {
                 widgetData: undefined,
                 selectedDataset: undefined,
                 selectedBinsize: undefined,
-                intervalID: collectionConfig["intervalID"],
+                intervalSize: collectionConfig["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
                 selectedSortOrder: "center column",
-                datasets: this.$store.getters.getBigwigsDirty,
+                datasets: collectionData["availableData"]["stackup"],
                 sortorders: undefined,
                 isAscending: true,
                 showMenu: false
@@ -413,10 +415,10 @@ export default {
                 maxHeatmap: widgetData["maxHeatmap"],
                 selectedDataset: widgetData["dataset"],
                 selectedBinsize: widgetData["binsize"],
-                intervalID: collectionConfig["intervalID"],
+                intervalSize: collectionConfig["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
-                datasets: this.$store.getters.getBigwigsDirty,
+                datasets: collectionConfig["availableData"]["stackup"],
                 sortorders: widgetData["sortorders"],
                 isAscending: widgetData["isAscending"],
                 showMenu: false
@@ -476,62 +478,12 @@ export default {
             this.$store.commit("compare/setWidgetDataStackup", mutationObject);
             // return it
             return piling_data;
-        }
-    },
-    watch: {
-        "$store.state.datasets": function() {
-            // updates datasets if they change -> get coolers that may be in the status of processing
-            this.datasets = this.$store.getters.getBigwigsDirty;
         },
-        // watch for changes in store to be able to update intervals
-        "$store.state.compare.widgetCollections": {
-            deep: true,
-            handler: function(newValue) {
-                // check if collecitonConfig is defined
-                if ("collectionConfig" in newValue[this.collectionID]) {
-                    // check if intervals has changed
-                    var newEntry =
-                        newValue[this.collectionID]["collectionConfig"][
-                            "intervalID"
-                        ];
-                    if (newEntry != this.intervalID) {
-                        this.intervalID = newEntry;
-                        this.selectedBinsize = undefined;
-                        this.selectedDataset = undefined;
-                        this.widgetData = undefined;
-                        this.binsizes = [];
-                    }
-                }
-            }
-        },
-        selectedDataset: function(newVal, oldVal) {
-            if (!this.selectedDataset) {
-                // do not dispatch call if there is no id --> can happend when reset
-                return;
-            }
-            // reset min and max colormap values
-            this.minHeatmap = undefined, this.maxHeatmap = undefined;
-            // fetch binsizes for the current combination of dataset and intervals
-            this.fetchData(
-                `individualIntervalData/?dataset_id=${this.selectedDataset}&intervals_id=${this.intervalID}`
-            ).then(response => {
-                // update binsizes to show and data under one binsize
-                this.binsizes = group_stackups_by_binsize(response.data);
-                let binsizes = Object.keys(this.binsizes)
-                this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
-            });
-            // add dataset to store for tallying used_dataset
-            this.$store.commit("compare/decrement_usage_dataset", oldVal);
-            this.$store.commit("compare/increment_usage_dataset", newVal);
-        },
-        selectedBinsize: async function() {
-            if (!this.selectedBinsize) {
-                return;
-            }
+        updateData: async function(){
             // reset min and max colormap values
             this.minHeatmap = undefined, this.maxHeatmap = undefined;
             // fetch widget data
-            var stackup_id = this.binsizes[this.selectedBinsize]["id"];
+            var stackup_id = this.binsizes[this.selectedBinsize];
             this.widgetDataRef = stackup_id;
             var data = await this.getStackupData(stackup_id);
             this.widgetData = data;
@@ -542,6 +494,63 @@ export default {
             this.sortorders = response.data;
             // add by center column
             this.sortorders["center column"] = {};
+        }
+    },
+    watch: {
+        // watch for changes in store to be able to update intervals
+        "$store.state.compare.widgetCollections": {
+            deep: true,
+            handler: function(newValue) {
+                // update availability object
+                this.datasets = newValue[this.collectionID]["collectionConfig"]["availableData"]["stackup"]
+                this.intervalSize = newValue[this.collectionID]["collectionConfig"]["intervalSize"]
+            }
+        },
+        datasets: function(newVal, oldVal){
+            if (!newVal || !oldVal || !this.selectedDataset){
+                return
+            }
+            console.log(newVal)
+            console.log(this.selectedDataset)
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize]
+            let binsizes = Object.keys(this.binsizes)
+            this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
+            this.updateData()
+        },
+        intervalSize: function(newVal, oldVal){
+            // if interval size changes, reload data
+            if (!newVal || !oldVal || !this.selectedDataset){
+                return
+            }
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize]
+            let binsizes = Object.keys(this.binsizes)
+            this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
+            this.updateData()
+        },
+        selectedDataset: function(newVal, oldVal) {
+            if (!this.selectedDataset) {
+                // do not dispatch call if there is no id --> can happend when reset
+                return;
+            }
+            // reset min and max colormap values
+            this.minHeatmap = undefined, this.maxHeatmap = undefined;
+            // set binsizes and add default
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize];
+            let binsizes = Object.keys(this.binsizes)
+            if (!this.selectedBinsize){
+                this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
+            }else{
+                this.updatedData()
+            }
+            // add dataset to store for tallying used_dataset
+            this.$store.commit("compare/decrement_usage_dataset", oldVal);
+            this.$store.commit("compare/increment_usage_dataset", newVal);
+        },
+        selectedBinsize: async function() {
+            if (!this.selectedBinsize) {
+                return;
+            }
+            this.updateData()
         }
     },
     mounted: function() {
