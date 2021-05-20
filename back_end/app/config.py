@@ -19,11 +19,10 @@ class Config:
     # allowed binsizes for given windowsizes of regions -> pileups still fail for some combinations cannot be pickled -> FIXME: fix this
     PREPROCESSING_MAP = {
             50000: [1000, 2000, 5000],
-            100000: [1000, 2000, 5000, 10000],
-            300000: [2000, 5000, 10000, 20000],
-            400000: [5000, 10000, 20000, 50000],
-            1000000: [20000, 50000, 100000, 200000],
-            2000000: [50000, 100000, 200000, 500000],
+            100000: [2000, 5000, 10000],
+            400000: [5000, 10000, 20000],
+            1000000: [20000, 50000, 100000],
+            2000000: [50000, 100000, 200000],
     }
     # mapping of pipeline names to filetypes
     PIPELINE_NAMES = {
@@ -32,6 +31,8 @@ class Config:
     }
     BIN_SIZES = [20000, 50000]  # In development mode, 10k hogs too much memory
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled
+    OBS_EXP_PROCESSES = 4 # Number of processes to use per worker to calcualte obs/exp matrix of pileups
+    PILEUP_PROCESSES = 1 # Number of processes to use per worker to do pileups
 
 
 class DevelopmentConfig(Config):

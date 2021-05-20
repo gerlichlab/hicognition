@@ -85,12 +85,12 @@ def perform_pileup(cooler_dataset_id, interval_id, binsize, arms, pileup_type):
         window_size, int(binsize), regions["chrom"], regions["pos"], arms
     ).dropna()
     if pileup_type == "Obs/Exp":
-        expected = HT.get_expected(cooler_file, arms, proc=2)
+        expected = HT.get_expected(cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"])
         pileup_array = HT.do_pileup_obs_exp(
-            cooler_file, expected, pileup_windows, proc=1
+            cooler_file, expected, pileup_windows, proc=current_app.config["PILEUP_PROCESSES"]
         )
     else:
-        pileup_array = HT.do_pileup_iccf(cooler_file, pileup_windows, proc=1)
+        pileup_array = HT.do_pileup_iccf(cooler_file, pileup_windows, proc=current_app.config["PILEUP_PROCESSES"])
     # prepare dataframe for js reading1
     log.info("      Writing output...")
     file_name = uuid.uuid4().hex + ".npy"
