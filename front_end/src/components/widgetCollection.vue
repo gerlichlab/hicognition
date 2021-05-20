@@ -325,6 +325,13 @@ export default {
             this.baseWidth -= 50;
             this.baseHeight -= 50;
         },
+        storeCollectionConfig: function(){
+            var payload = {
+                id: this.id,
+                collectionConfig: { regionID: this.selectedRegionID, availableData: this.availableData , intervalSize: this.selectedWindowSize}
+            };
+            this.$store.commit("compare/setCollectionConfig", payload);
+        },
         deleteCollection: function() {
             // call delete of each child
             for (let child of this.children){
@@ -387,18 +394,16 @@ export default {
             if (!this.selectedWindowSize){
                 // set default -> middle of available windwosizes
                 this.selectedWindowSize = this.windowSizes[Math.floor(this.windowSizes.length / 2)]
+            }else{
+                // both seleted regions and windowsize are defined -> update selected windowsize
+                this.storeCollectionConfig()
             }
             // update used_datasets in store -> old dataset is decremented, new one is added
             this.$store.commit("compare/decrement_usage_dataset", oldVal)
             this.$store.commit("compare/increment_usage_dataset", newVal)
         },
         selectedWindowSize: function() {
-            // set new intervals
-            var payload = {
-                id: this.id,
-                collectionConfig: { regionID: this.selectedRegionID, availableData: this.availableData , intervalSize: this.selectedWindowSize}
-            };
-            this.$store.commit("compare/setCollectionConfig", payload);
+            this.storeCollectionConfig()
         }
     },
     mounted: function() {

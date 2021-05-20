@@ -454,9 +454,18 @@ export default {
                 this.intervalSize = newValue[this.collectionID]["collectionConfig"]["intervalSize"]
             }
         },
+        datasets: function(oldVal, newVal){
+            if (!newVal || !oldVal || !this.selectedDataset){
+                return
+            }
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize]
+            let binsizes = Object.keys(this.binsizes)
+            this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
+            this.updatedData()
+        },
         intervalSize: function(newVal, oldVal){
             // if interval size changes, reload data
-            if (!newVal || !oldVal){
+            if (!newVal || !oldVal || !this.selectedDataset){
                 return
             }
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize]
