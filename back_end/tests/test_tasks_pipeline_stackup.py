@@ -75,7 +75,9 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
         # dispatch call
         dataset_id = 1
         intervals_id = 1
-        perform_stackup(dataset_id, intervals_id, 10000)
+        with patch("app.pipeline_steps.np.load") as mock_load:
+            mock_load.return_value = np.array([0, 1])
+            perform_stackup(dataset_id, intervals_id, 10000)
         # check whether stackup was called correctly
         mock_stackup.assert_called_with(
             self.dataset.file_path,
@@ -101,7 +103,9 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
         # dispatch call
         dataset_id = 1
         intervals_id = 1
-        perform_stackup(dataset_id, intervals_id, 10000)
+        with patch("app.pipeline_steps.np.load") as mock_load:
+            mock_load.return_value = np.array([0, 1])
+            perform_stackup(dataset_id, intervals_id, 10000)
         # check whether stackup was called correctly
         mock_stackup.assert_called_with(
             self.dataset.file_path,
@@ -129,9 +133,11 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
         # dispatch call
         dataset_id = 2
         intervals_id = 2
-        perform_stackup(
-            dataset_id, intervals_id, 50000
-        )  # interfls2 has a windowsize of 50kb, with binsize of 50kb, this will produce 2 values per example
+        with patch("app.pipeline_steps.np.load") as mock_load:
+            mock_load.return_value = np.array([0])
+            perform_stackup(
+                dataset_id, intervals_id, 50000
+            )  # intervals have a windowsize of 50kb, with binsize of 50kb, this will produce 2 values per example
         # check whether example is correct
         file_path = IndividualIntervalData.query.get(
             1
@@ -139,65 +145,13 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
         loaded_dataset = np.load(file_path)
         expected_dataset = np.array([[5.0, 0.0], [6.0, 0.0]])
         self.assertTrue(np.all(np.isclose(loaded_dataset, expected_dataset)))
-
-    @patch("app.pipeline_steps.pd.read_csv")
-    def test_small_example_not_downsampled(
-        self,
-        mock_read_csv,
-    ):
-        """Tests whether small example is not downsampled"""
-        test_df_interval = pd.DataFrame(
-            {
-                "chrom": ["chr1", "chr1"],
-                "start": [100000, 500000],
-                "end": [200000, 600000],
-            }
-        )
-        mock_read_csv.return_value = test_df_interval
-        # dispatch call
-        dataset_id = 2
-        intervals_id = 2
-        perform_stackup(
-            dataset_id, intervals_id, 50000
-        )  # interfls2 has a windowsize of 50kb, with binsize of 50kb, this will produce 2 values per example
-        # check whether example is correct
-        file_path = IndividualIntervalData.query.get(
+        # check whether small example is correct
+        file_path_small = IndividualIntervalData.query.get(
             1
-        ).file_path  # filepath of stackup file
-        file_path_small = IndividualIntervalData.query.get(1).file_path_small
-        loaded_dataset_full = np.load(file_path)
-        loaded_dataset_small = np.load(file_path_small)
-        self.assertTrue(np.all(np.isclose(loaded_dataset_full, loaded_dataset_small)))
-
-    @patch("app.pipeline_steps.pd.read_csv")
-    def test_large_example_downampled(
-        self,
-        mock_read_csv,
-    ):
-        """Tests whether large example (testing threshold is 10) is downsampled"""
-        test_df_interval = pd.DataFrame(
-            {
-                "chrom": ["chr1"] * 20,
-                "start": [100000] * 20,
-                "end": [200000] * 20,
-            }
-        )
-        mock_read_csv.return_value = test_df_interval
-        # dispatch call
-        dataset_id = 2
-        intervals_id = 2
-        perform_stackup(
-            dataset_id, intervals_id, 50000
-        )  # interfls2 has a windowsize of 50kb, with binsize of 50kb, this will produce 2 values per example
-        # check whether example is correct
-        file_path = IndividualIntervalData.query.get(
-            1
-        ).file_path  # filepath of stackup file
-        file_path_small = IndividualIntervalData.query.get(1).file_path_small
-        loaded_dataset_full = np.load(file_path)
-        loaded_dataset_small = np.load(file_path_small)
-        self.assertEqual(loaded_dataset_full.shape[0], 20)
-        self.assertEqual(loaded_dataset_small.shape[0], 10)
+        ).file_path_small  # filepath of stackup file
+        loaded_dataset = np.load(file_path_small)
+        expected_dataset = np.array([[5.0, 0.0]])
+        self.assertTrue(np.all(np.isclose(loaded_dataset, expected_dataset)))
 
     @patch("app.pipeline_steps.pd.read_csv")
     def test_regions_with_wrong_chromosomes_skipped_correctly(
@@ -216,9 +170,11 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
         # dispatch call
         dataset_id = 2
         intervals_id = 2
-        perform_stackup(
-            dataset_id, intervals_id, 50000
-        )  # interfls2 has a windowsize of 50kb, with binsize of 50kb, this will produce 2 values per example
+        with patch("app.pipeline_steps.np.load") as mock_load:
+            mock_load.return_value = np.array([0, 1])
+            perform_stackup(
+                dataset_id, intervals_id, 50000
+            )  # intervalrs has a windowsize of 50kb, with binsize of 50kb, this will produce 2 values per example
         # check whether example is correct
         file_path = IndividualIntervalData.query.get(
             1
@@ -228,7 +184,6 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
             [[5.0, 0.0], [np.nan, np.nan], [6.0, 0.0], [np.nan, np.nan]]
         )
         np.testing.assert_array_almost_equal(loaded_dataset, expected_dataset)
-
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

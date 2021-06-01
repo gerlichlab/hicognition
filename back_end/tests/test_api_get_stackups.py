@@ -1020,6 +1020,7 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=1,
             file_path="intervals_test_path",
+            file_path_sub_sample_index=index_file,
             windowsize=200000,
         )
         metadata1 = BedFileMetadata(
@@ -1032,7 +1033,6 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
             binsize=10000,
             file_path="data_path_big",
             file_path_small="test_path",
-            file_path_indices_small=index_file,
             dataset_id=2,
             intervals_id=1,
         )
@@ -1091,6 +1091,7 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=1,
             file_path="intervals_test_path",
+            file_path_sub_sample_index=index_file,
             windowsize=200000,
         )
         metadata1 = BedFileMetadata(
@@ -1104,7 +1105,6 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
             binsize=10000,
             file_path="data_path_big",
             file_path_small="test_path",
-            file_path_indices_small=index_file,
             dataset_id=2,
             intervals_id=1,
         )
@@ -1170,6 +1170,7 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
             name="testRegion1",
             dataset_id=1,
             file_path="intervals_test_path",
+            file_path_sub_sample_index=index_file,
             windowsize=200000,
         )
         metadata1 = BedFileMetadata(
@@ -1188,7 +1189,6 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
             binsize=10000,
             file_path="data_path_big",
             file_path_small="test_path",
-            file_path_indices_small=index_file,
             dataset_id=2,
             intervals_id=1,
         )

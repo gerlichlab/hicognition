@@ -42,7 +42,7 @@ def bed_preprocess_pipeline_step(dataset_id, windowsize):
     # generate subsample index for smaller stackup
     bedpe = pd.read_csv(bedpe_file, sep="\t", header=None)
     index_file = os.path.join(
-            current_app.config["UPLOAD_DIR"], bedpe_file + "_indices.npy"
+            current_app.config["UPLOAD_DIR"], bedpe_file.split(os.sep)[-1] + "_indices.npy"
         )
     if len(bedpe) < current_app.config["STACKUP_THRESHOLD"]:
         # if there are less rows than the stackup theshold, index file are the indices of this file
@@ -62,7 +62,7 @@ def bed_preprocess_pipeline_step(dataset_id, windowsize):
         dataset_id=dataset_id,
         name=bedpe_file.split(os.sep)[-1],
         file_path=bedpe_file,
-        file_path_subsample_index=index_file,
+        file_path_sub_sample_index=index_file,
         windowsize=windowsize,
     )
     db.session.add(new_entry)
@@ -167,7 +167,7 @@ def perform_stackup(bigwig_dataset_id, intervals_id, binsize):
 
 
 def add_stackup_db(
-    file_path, file_path_small, index_file, binsize, intervals_id, bigwig_dataset_id
+    file_path, file_path_small, binsize, intervals_id, bigwig_dataset_id
 ):
     """Adds stackup to database"""
     # check if old individual interval data exists and delete them
@@ -179,7 +179,6 @@ def add_stackup_db(
     for entry in test_query:
         remove_safely(entry.file_path)
         remove_safely(entry.file_path_small)
-        remove_safely(entry.file_path_indices_small)
         db.session.delete(entry)
     # add new entry
     new_entry = IndividualIntervalData(
@@ -187,7 +186,6 @@ def add_stackup_db(
         name=os.path.basename(file_path),
         file_path=file_path,
         file_path_small=file_path_small,
-        file_path_indices_small=index_file,
         intervals_id=intervals_id,
         dataset_id=bigwig_dataset_id,
     )
@@ -243,6 +241,7 @@ def add_pileup_db(file_path, binsize, intervals_id, cooler_dataset_id, pileup_ty
     db.session.add(new_entry)
     db.session.commit()
 
+
 def _do_stackup(regions, window_size, binsize, bigwig_dataset):
     """Takes a set of regions, window_size, binsize as well as the path to a bigwig file and
     extracts data along those regions."""
@@ -268,7 +267,7 @@ def _do_stackup(regions, window_size, binsize, bigwig_dataset):
     target_array = np.empty((len(stackup_regions), bin_number))
     target_array.fill(np.nan)
     # filter stackup_regions for chromoosmes that are in bigwig
-    chromosome_names = bbi.chromsizes(bigwig_dataset.file_path).keys()
+    chromosome_names = bbi.chromsizes(bigwig_dataset).keys()
     is_good_chromosome = [
         True if chrom in chromosome_names else False
         for chrom in stackup_regions["chrom"]
@@ -277,7 +276,7 @@ def _do_stackup(regions, window_size, binsize, bigwig_dataset):
     good_regions = stackup_regions.iloc[good_chromosome_indices, :]
     # extract data
     stackup_array = bbi.stackup(
-        bigwig_dataset.file_path,
+        bigwig_dataset,
         chroms=good_regions["chrom"].to_list(),
         starts=good_regions["start"].to_list(),
         ends=good_regions["end"].to_list(),

@@ -10,7 +10,7 @@ from .helpers import (
     is_access_to_dataset_denied,
     add_average_data_to_preprocessed_dataset_map,
     add_individual_data_to_preprocessed_dataset_map,
-    recDict
+    recDict,
 )
 from . import api
 from .. import db
@@ -38,12 +38,14 @@ def test_protected():
     """test api calls"""
     return jsonify({"test": "Hello, world!"})
 
+
 @api.route("/resolutions/", methods=["GET"])
 @auth.login_required
 def get_resolutions():
     """Gets available combinations of windowsizes and binsizes
     from config file"""
     return jsonify(current_app.config["PREPROCESSING_MAP"])
+
 
 @api.route("/datasets/", methods=["GET"])
 @auth.login_required
@@ -396,6 +398,10 @@ def get_stackup_metadata_small(entry_id):
     if IndividualIntervalData.query.get(entry_id) is None:
         return not_found("Stackup does not exist!")
     stackup = IndividualIntervalData.query.get(entry_id)
+    # get downsample index from associated intervals
+    down_sample_index = Intervals.query.get(
+        stackup.intervals_id
+    ).file_path_sub_sample_index
     bigwig_ds = stackup.source_dataset
     bed_ds = stackup.source_intervals.source_dataset
     if is_access_to_dataset_denied(bigwig_ds, g) or is_access_to_dataset_denied(
@@ -426,7 +432,7 @@ def get_stackup_metadata_small(entry_id):
         :, ~output_frame_large.columns.duplicated()
     ]
     # subset by stackup index
-    stackup_index = np.load(stackup.file_path_indices_small)
+    stackup_index = np.load(down_sample_index)
     outframe = output_frame_unique.iloc[stackup_index, :]
     return jsonify(outframe.to_dict(orient="list"))
 
