@@ -39,11 +39,30 @@ def bed_preprocess_pipeline_step(dataset_id, windowsize):
     # generate bedpe file
     bedpe_file = file_path + f".{windowsize}" + ".bedpe"
     io_helpers.convert_bed_to_bedpe(file_path, bedpe_file, windowsize)
-    # interval generation succeeded, commit to database
+    # generate subsample index for smaller stackup
+    bedpe = pd.read_csv(bedpe_file, sep="\t", header=None)
+    index_file = os.path.join(
+            current_app.config["UPLOAD_DIR"], bedpe_file + "_indices.npy"
+        )
+    if len(bedpe) < current_app.config["STACKUP_THRESHOLD"]:
+        # if there are less rows than the stackup theshold, index file are the indices of this file
+        sub_sample_index = np.arange(len(bedpe))
+    else:
+        # set random seed
+        np.random.seed(42)
+        # subsample
+        all_indices = np.arange(len(bedpe))
+        sub_sample_index = np.random.choice(
+            all_indices, current_app.config["STACKUP_THRESHOLD"]
+        )
+    # store indices
+    np.save(index_file, sub_sample_index)
+    # Commit to database
     new_entry = Intervals(
         dataset_id=dataset_id,
         name=bedpe_file.split(os.sep)[-1],
         file_path=bedpe_file,
+        file_path_subsample_index=index_file,
         windowsize=windowsize,
     )
     db.session.add(new_entry)

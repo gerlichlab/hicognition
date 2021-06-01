@@ -136,6 +136,7 @@ class Intervals(db.Model):
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     name = db.Column(db.String(64), index=True)
     file_path = db.Column(db.String(128), index=True)
+    file_path_sub_sample_index = db.Column(db.String(128), index=True)
     windowsize = db.Column(db.Integer, index=True)
     averageIntervalData = db.relationship(
         "AverageIntervalData", backref="source_intervals", lazy="dynamic"
