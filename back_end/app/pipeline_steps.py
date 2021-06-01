@@ -136,46 +136,11 @@ def perform_stackup(bigwig_dataset_id, intervals_id, binsize):
     # load bedfile
     log.info("      Loading regions...")
     regions = pd.read_csv(file_path, sep="\t", header=None)
-    if len(regions.columns) > 2:
-        # region definition with start and end
-        regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
-        regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
-    else:
-        # region definition with start
-        regions = regions.rename(columns={0: "chrom", 1: "pos"})
-    # construct stackup-regions: positions - windowsize until position + windowsize
-    stackup_regions = pd.DataFrame(
-        {
-            "chrom": regions["chrom"],
-            "start": regions["pos"]
-            - window_size,  # regions outside of chromosomes will be filled with NaN by pybbi
-            "end": regions["pos"] + window_size,
-        }
-    )
-    # calculate number of bins
-    bin_number = int(window_size / binsize) * 2
-    # make arget array
-    target_array = np.empty((len(stackup_regions), bin_number))
-    target_array.fill(np.nan)
-    # filter stackup_regions for chromoosmes that are in bigwig
-    chromosome_names = bbi.chromsizes(bigwig_dataset.file_path).keys()
-    is_good_chromosome = [
-        True if chrom in chromosome_names else False
-        for chrom in stackup_regions["chrom"]
-    ]
-    good_chromosome_indices = np.arange(len(stackup_regions))[is_good_chromosome]
-    good_regions = stackup_regions.iloc[good_chromosome_indices, :]
-    # extract data
-    stackup_array = bbi.stackup(
-        bigwig_dataset.file_path,
-        chroms=good_regions["chrom"].to_list(),
-        starts=good_regions["start"].to_list(),
-        ends=good_regions["end"].to_list(),
-        bins=bin_number,
-        missing=np.nan,
-    )
-    # put extracted data back in target array
-    target_array[good_chromosome_indices, :] = stackup_array
+    sub_sample_index = np.load(intervals.file_path_sub_sample_index)
+    regions_small = regions.iloc[sub_sample_index, :]
+    log.info("      Doing stackup...")
+    full_size_array = _do_stackup(regions, window_size, binsize, bigwig_dataset.file_path)
+    downsampled_array = _do_stackup(regions_small, window_size, binsize, bigwig_dataset.file_path)
     # save full length array to file
     log.info("      Writing output...")
     file_uuid = uuid.uuid4().hex
@@ -183,43 +148,19 @@ def perform_stackup(bigwig_dataset_id, intervals_id, binsize):
     file_name_line = file_uuid + "_line.npy"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
     file_path_line = os.path.join(current_app.config["UPLOAD_DIR"], file_name_line)
-    np.save(file_path, target_array)
-    line_array = np.nanmean(target_array, axis=0)
+    np.save(file_path, full_size_array)
+    line_array = np.nanmean(full_size_array, axis=0)
     np.save(file_path_line, line_array)
-    # save downsampled array to file
-    if len(stackup_regions) < current_app.config["STACKUP_THRESHOLD"]:
-        # if there are less than 1000 examples, small file is the same as large file
-        file_path_small = file_path
-        # store an index file
-        indices = np.arange(len(stackup_regions))
-        index_file = os.path.join(
-            current_app.config["UPLOAD_DIR"], file_uuid + "_indices.npy"
-        )
-        np.save(index_file, indices)
-    else:
-        # set random seed
-        np.random.seed(42)
-        # subsample
-        index = np.arange(len(stackup_regions))
-        sub_sample_index = np.random.choice(
-            index, current_app.config["STACKUP_THRESHOLD"]
-        )
-        downsampled_array = target_array[sub_sample_index, :]
-        file_name_small = file_uuid + "_small.npy"
-        file_path_small = os.path.join(
-            current_app.config["UPLOAD_DIR"], file_name_small
-        )
-        # store file
-        np.save(file_path_small, downsampled_array)
-        # store indices
-        index_file = os.path.join(
-            current_app.config["UPLOAD_DIR"], file_uuid + "_indices.npy"
-        )
-        np.save(index_file, sub_sample_index)
+    # save small array to file
+    file_name_small = file_uuid + "_small.npy"
+    file_path_small = os.path.join(
+        current_app.config["UPLOAD_DIR"], file_name_small
+    )
+    np.save(file_path_small, downsampled_array)
     # add to database
     log.info("      Adding database entry...")
     add_stackup_db(
-        file_path, file_path_small, index_file, binsize, intervals.id, bigwig_dataset.id
+        file_path, file_path_small, binsize, intervals.id, bigwig_dataset.id
     )
     add_line_db(file_path_line, binsize, intervals.id, bigwig_dataset.id)
     log.info("      Success!")
@@ -302,6 +243,50 @@ def add_pileup_db(file_path, binsize, intervals_id, cooler_dataset_id, pileup_ty
     db.session.add(new_entry)
     db.session.commit()
 
+def _do_stackup(regions, window_size, binsize, bigwig_dataset):
+    """Takes a set of regions, window_size, binsize as well as the path to a bigwig file and
+    extracts data along those regions."""
+    if len(regions.columns) > 2:
+        # region definition with start and end
+        regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
+        regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
+    else:
+        # region definition with start
+        regions = regions.rename(columns={0: "chrom", 1: "pos"})
+    # construct stackup-regions: positions - windowsize until position + windowsize
+    stackup_regions = pd.DataFrame(
+        {
+            "chrom": regions["chrom"],
+            "start": regions["pos"]
+            - window_size,  # regions outside of chromosomes will be filled with NaN by pybbi
+            "end": regions["pos"] + window_size,
+        }
+    )
+    # calculate number of bins
+    bin_number = int(window_size / binsize) * 2
+    # make arget array
+    target_array = np.empty((len(stackup_regions), bin_number))
+    target_array.fill(np.nan)
+    # filter stackup_regions for chromoosmes that are in bigwig
+    chromosome_names = bbi.chromsizes(bigwig_dataset.file_path).keys()
+    is_good_chromosome = [
+        True if chrom in chromosome_names else False
+        for chrom in stackup_regions["chrom"]
+    ]
+    good_chromosome_indices = np.arange(len(stackup_regions))[is_good_chromosome]
+    good_regions = stackup_regions.iloc[good_chromosome_indices, :]
+    # extract data
+    stackup_array = bbi.stackup(
+        bigwig_dataset.file_path,
+        chroms=good_regions["chrom"].to_list(),
+        starts=good_regions["start"].to_list(),
+        ends=good_regions["end"].to_list(),
+        bins=bin_number,
+        missing=np.nan,
+    )
+    # put extracted data back in target array
+    target_array[good_chromosome_indices, :] = stackup_array
+    return target_array
 
 def _set_task_progress(progress):
     job = get_current_job()
