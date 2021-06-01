@@ -75,14 +75,12 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         # create individualIntervalData for owned data_sets
         file_path_pr_3 = self.create_empty_file_in_tempdir("test3.csv")
         file_path_small_3 = self.create_empty_file_in_tempdir("test3_small.csv")
-        file_path_indices_3 = self.create_empty_file_in_tempdir("test3_indices.csv")
         individualIntervalData_1 = IndividualIntervalData(
             id=1,
             file_path=file_path_pr_3,
             dataset_id=5,
             intervals_id=1,
-            file_path_small=file_path_small_3,
-            file_path_indices_small=file_path_indices_3,
+            file_path_small=file_path_small_3
         )
         # create averageIntervalData for not owned data_set
         file_path_pu_2 = self.create_empty_file_in_tempdir("test2.csv")
@@ -197,8 +195,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             "test3.csv",
             "test5.csv",
             "test1.bw",
-            "test3_small.csv",
-            "test3_indices.csv",
+            "test3_small.csv"
         }
         self.assertEqual(files_tempdir, expected)
 

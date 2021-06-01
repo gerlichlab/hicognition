@@ -1,5 +1,4 @@
 """DELETE API endpoints for hicognition"""
-import os
 from flask.json import jsonify
 from flask import g
 from .helpers import is_dataset_deletion_denied, remove_safely
@@ -68,9 +67,10 @@ def delete_dataset(dataset_id):
     for entry in deletion_queue:
         if isinstance(entry, IndividualIntervalData):
             remove_safely(entry.file_path_small)
-            remove_safely(entry.file_path_indices_small)
         if hasattr(entry, "file_path") and (entry.file_path is not None):
             remove_safely(entry.file_path)
+        if hasattr(entry, "file_path_sub_sample_index") and (entry.file_path_sub_sample_index is not None):
+            remove_safely(entry.file_path_sub_sample_index)
         db.session.delete(
             entry
         )  # TODO: this leaves the session invalid for a short time for some reason -> fix!
