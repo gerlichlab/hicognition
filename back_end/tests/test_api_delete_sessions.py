@@ -13,12 +13,19 @@ from app.models import Session
 class TestDeleteSession(LoginTestCase, TempDirTestCase):
     """ Tests for deletion of datasets."""
 
-    def create_sessions(self):
+    def setUp(self):
+        super().setUp()
         # define datasets
         self.timestamp = datetime.datetime.utcnow()
-        self.session_user_1 = Session(user_id=1, name="test", created_utc=self.timestamp)
-        self.session_user_1_2 = Session(user_id=1, name="test2", created_utc=self.timestamp)
-        self.session_user_2 = Session(user_id=2, name="test3", created_utc=self.timestamp)
+        self.session_user_1 = Session(
+            user_id=1, name="test", created_utc=self.timestamp
+        )
+        self.session_user_1_2 = Session(
+            user_id=1, name="test2", created_utc=self.timestamp
+        )
+        self.session_user_2 = Session(
+            user_id=2, name="test3", created_utc=self.timestamp
+        )
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
@@ -48,7 +55,6 @@ class TestDeleteSession(LoginTestCase, TempDirTestCase):
 
     def test_delete_session_wo_permission(self):
         """Should return 403 since dataset is not owned."""
-        self.create_sessions()
         token = self.add_and_authenticate("test", "asdf")
         # create token_headers
         token_headers = self.get_token_header(token)
@@ -63,10 +69,8 @@ class TestDeleteSession(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-
     def test_delete_owned_session(self):
         """Check whether owned dataset is deleted correctly."""
-        self.create_sessions()
         token = self.add_and_authenticate("test", "asdf")
         # create token_headers
         token_headers = self.get_token_header(token)
@@ -82,6 +86,7 @@ class TestDeleteSession(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(Session.query.all()), 1)
         self.assertEqual(Session.query.first(), self.session_user_1_2)
+
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)
