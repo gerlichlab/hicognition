@@ -11,6 +11,14 @@ from app.models import Dataset, Session
 class TestAddSessionObject(LoginTestCase, TempDirTestCase):
     """Tests whether post routes for sessions works."""
 
+    def setUp(self):
+        super().setUp()
+        # add datasets
+        self.empty_owned_dataset_1 = Dataset(id=1, user_id=1)
+        self.empty_owned_dataset_2 = Dataset(id=2, user_id=1)
+        self.owned_datasets = [self.empty_owned_dataset_1, self.empty_owned_dataset_2]
+        self.empty_unowned_dataset = Dataset(id=1, user_id=2)
+
     def test_access_denied_without_token(self):
         """Test whether post request results in 401 error
         if no token is provided."""
@@ -34,7 +42,6 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-
     def test_invalid_form_no_name(self):
         """Test whether post request without name is rejected."""
         # authenticate
@@ -43,14 +50,14 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
         data = {
             "session_object": "test-object",
             "session_type": "compare",
-            "used_datasets": "[1, 2, 3, 4]"
+            "used_datasets": "[1, 2, 3, 4]",
         }
         # dispatch post request
         response = self.client.post(
             "/api/sessions/",
             content_type="multipart/form-data",
             headers=token_headers,
-            data=data
+            data=data,
         )
         self.assertEqual(response.status_code, 400)
 
@@ -62,14 +69,14 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
         data = {
             "name": "test-session",
             "session_type": "compare",
-            "used_datasets": "[1, 2, 3, 4]"
+            "used_datasets": "[1, 2, 3, 4]",
         }
         # dispatch post request
         response = self.client.post(
             "/api/sessions/",
             content_type="multipart/form-data",
             headers=token_headers,
-            data=data
+            data=data,
         )
         self.assertEqual(response.status_code, 400)
 
@@ -81,14 +88,14 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
         data = {
             "name": "test-session",
             "session_object": "test-object",
-            "used_datasets": "[1, 2, 3, 4]"
+            "used_datasets": "[1, 2, 3, 4]",
         }
         # dispatch post request
         response = self.client.post(
             "/api/sessions/",
             content_type="multipart/form-data",
             headers=token_headers,
-            data=data
+            data=data,
         )
         self.assertEqual(response.status_code, 400)
 
@@ -100,14 +107,14 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
         data = {
             "name": "test-session",
             "session_object": "test-object",
-            "session_type": "compare"
+            "session_type": "compare",
         }
         # dispatch post request
         response = self.client.post(
             "/api/sessions/",
             content_type="multipart/form-data",
             headers=token_headers,
-            data=data
+            data=data,
         )
         self.assertEqual(response.status_code, 400)
 
@@ -120,46 +127,16 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
             "name": "test-session",
             "session_object": "test-object",
             "session_type": "compare",
-            "used_datasets": "[1, 2, 3]"
+            "used_datasets": "[1, 2, 3]",
         }
         # dispatch post request
         response = self.client.post(
             "/api/sessions/",
             content_type="multipart/form-data",
             headers=token_headers,
-            data=data
+            data=data,
         )
         self.assertEqual(response.status_code, 400)
-
-    def test_session_w_existing_dataset_added_correctly(self):
-        """Test whether post request to add a session with a single dataset is 
-        processed correctly."""
-        # authenticate
-        token = self.add_and_authenticate("test", "asdf")
-        token_headers = self.get_token_header(token)
-        # add dataset
-        # add dataset
-        dataset = Dataset(id=1, user_id=1)
-        db.session.add(dataset)
-        db.session.commit()
-        data = {
-            "name": "test-session",
-            "session_object": "test-object",
-            "session_type": "compare",
-            "used_datasets": "[1]"
-        }
-        # dispatch post request
-        response = self.client.post(
-            "/api/sessions/",
-            content_type="multipart/form-data",
-            headers=token_headers,
-            data=data
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json, {'session_id': '1'})
-        session = Session.query.get(1)
-        self.assertTrue(session is not None)
-        self.assertEqual(session.datasets, [dataset])
 
     def test_session_w_unowned_dataset_rejected(self):
         """Test whether post request to add a session with a dataset
@@ -168,55 +145,78 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # add dataset
-        # add dataset
-        dataset = Dataset(id=1, user_id=2)
-        db.session.add(dataset)
+        db.session.add(self.empty_unowned_dataset)
         db.session.commit()
         data = {
             "name": "test-session",
             "session_object": "test-object",
             "session_type": "compare",
-            "used_datasets": "[1]"
+            "used_datasets": "[1]",
         }
         # dispatch post request
         response = self.client.post(
             "/api/sessions/",
             content_type="multipart/form-data",
             headers=token_headers,
-            data=data
+            data=data,
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_session_w_existing_datasets_added_correctly(self):
-        """Test whether post request to add a session with a multiple datasets is 
+    def test_session_w_existing_dataset_added_correctly(self):
+        """Test whether post request to add a session with a single dataset is
         processed correctly."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # add dataset
-        # add dataset
-        dataset1 = Dataset(id=1, user_id=1)
-        dataset2 = Dataset(id=2, user_id=1)
-        db.session.add_all([dataset1, dataset2])
+        db.session.add(self.empty_owned_dataset_1)
         db.session.commit()
         data = {
             "name": "test-session",
             "session_object": "test-object",
             "session_type": "compare",
-            "used_datasets": "[1, 2]"
+            "used_datasets": "[1]",
         }
         # dispatch post request
         response = self.client.post(
             "/api/sessions/",
             content_type="multipart/form-data",
             headers=token_headers,
-            data=data
+            data=data,
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json, {'session_id': '1'})
+        self.assertEqual(response.json, {"session_id": "1"})
         session = Session.query.get(1)
         self.assertTrue(session is not None)
-        self.assertEqual(session.datasets, [dataset1, dataset2])
+        self.assertEqual(session.datasets, [self.empty_owned_dataset_1])
+
+    def test_session_w_existing_datasets_added_correctly(self):
+        """Test whether post request to add a session with multiple datasets is
+        processed correctly."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        token_headers = self.get_token_header(token)
+        # add dataset
+        db.session.add_all(self.owned_datasets)
+        db.session.commit()
+        data = {
+            "name": "test-session",
+            "session_object": "test-object",
+            "session_type": "compare",
+            "used_datasets": "[1, 2]",
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/sessions/",
+            content_type="multipart/form-data",
+            headers=token_headers,
+            data=data,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, {"session_id": "1"})
+        session = Session.query.get(1)
+        self.assertTrue(session is not None)
+        self.assertEqual(session.datasets, self.owned_datasets)
 
 
 if __name__ == "__main__":
