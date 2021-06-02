@@ -18,6 +18,19 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
     Tests for addition of metadata to existing bedfile.
     """
 
+    def setUp(self):
+        super().setUp()
+        self.owned_dataset = Dataset(id=1, user_id=1)
+        self.unowned_dataset = Dataset(id=1, user_id=2)
+        # create dataset with test data length 6
+        test_filepath_len_6 = os.path.join(TempDirTestCase.TEMP_PATH, "test.bed")
+        test_data_len_6 = pd.DataFrame(
+            {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
+        )
+        test_data_len_6.to_csv(test_filepath_len_6, sep="\t", header=None)
+        self.dataset_len_6 = Dataset(id=1, user_id=1, file_path=test_filepath_len_6)
+
+
     def test_access_denied_without_token(self):
         """Test whether post request results in 401 error
         if no token is provided."""
@@ -33,12 +46,8 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         not owned dataset."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
-        token2 = self.add_and_authenticate(
-            "test2", "fdsa"
-        )  # second user that is not used
         # add dataset
-        dataset = Dataset(id=1, user_id=2)
-        db.session.add(dataset)
+        db.session.add(self.unowned_dataset)
         db.session.commit()
         # create token_header
         token_headers = self.get_token_header(token)
@@ -65,8 +74,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # add dataset
-        dataset = Dataset(id=1, user_id=1)
-        db.session.add(dataset)
+        db.session.add(self.owned_dataset)
         db.session.commit()
         # create token_header
         token_headers = self.get_token_header(token)
@@ -89,8 +97,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # add dataset
-        dataset = Dataset(id=1, user_id=1)
-        db.session.add(dataset)
+        db.session.add(self.owned_dataset)
         db.session.commit()
         # create token_header
         token_headers = self.get_token_header(token)
@@ -113,8 +120,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # add dataset
-        dataset = Dataset(id=1, user_id=1)
-        db.session.add(dataset)
+        db.session.add(self.owned_dataset)
         db.session.commit()
         # create token_header
         token_headers = self.get_token_header(token)
@@ -139,10 +145,6 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         """Tests whether dataset id that does not exist causes 404 error."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
-        # add dataset
-        dataset = Dataset(id=1, user_id=1)
-        db.session.add(dataset)
-        db.session.commit()
         # create token_header
         token_headers = self.get_token_header(token)
         # add content-type
@@ -167,12 +169,6 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         dataset and metadata is detected."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
-        # create dataset file
-        test_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "test.bed")
-        test_data = pd.DataFrame(
-            {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
-        )
-        test_data.to_csv(test_filepath, sep="\t", header=None)
         # create paylod_file
         payload_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "payload.bed")
         payload_data = pd.DataFrame(
@@ -180,8 +176,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         )
         payload_data.to_csv(payload_filepath, sep="\t")
         # add dataset
-        dataset = Dataset(id=1, user_id=1, file_path=test_filepath)
-        db.session.add(dataset)
+        db.session.add(self.dataset_len_6)
         db.session.commit()
         # create token_header
         token_headers = self.get_token_header(token)
@@ -209,12 +204,6 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         """Tests whether valid metadata dataset is added correctly."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
-        # create dataset file
-        test_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "test.bed")
-        test_data = pd.DataFrame(
-            {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
-        )
-        test_data.to_csv(test_filepath, sep="\t", index=False, header=None)
         # create paylod_file
         payload_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "payload.bed")
         payload_data = pd.DataFrame(
@@ -222,8 +211,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         )
         payload_data.to_csv(payload_filepath, sep="\t", index=False)
         # add dataset
-        dataset = Dataset(id=1, user_id=1, file_path=test_filepath)
-        db.session.add(dataset)
+        db.session.add(self.dataset_len_6)
         db.session.commit()
         # create token_header
         token_headers = self.get_token_header(token)
@@ -256,12 +244,6 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         even if it contains string columns"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
-        # create dataset file
-        test_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "test.bed")
-        test_data = pd.DataFrame(
-            {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
-        )
-        test_data.to_csv(test_filepath, sep="\t", index=False, header=None)
         # create paylod_file
         payload_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "payload.bed")
         payload_data = pd.DataFrame(
@@ -274,8 +256,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         )
         payload_data.to_csv(payload_filepath, sep="\t", index=False)
         # add dataset
-        dataset = Dataset(id=1, user_id=1, file_path=test_filepath)
-        db.session.add(dataset)
+        db.session.add(self.dataset_len_6)
         db.session.commit()
         # create token_header
         token_headers = self.get_token_header(token)
@@ -322,6 +303,29 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
     where key is a valid metadata columns and the value is the wanted display name
      works."""
 
+    def setUp(self):
+        super().setUp()
+        # create unowned dataset-metadata combination
+        self.unowned_dataset = Dataset(id=1, user_id=2)
+        self.metadata_unowned_dataset = BedFileMetadata(id=1, dataset_id=1)
+        self.unowned = [self.unowned_dataset, self.metadata_unowned_dataset]
+        # create owned dataset-metadata combination with empty metadata
+        self.owned_dataset = Dataset(id=2, user_id=1)
+        self.empty_metadata_owned_dataset = BedFileMetadata(id=2, dataset_id=2)
+        self.owned_empty = [self.owned_dataset, self.empty_metadata_owned_dataset]
+        # create owned dataset-metadata combination with exisiting fields
+        metadata_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "metadata.txt")
+        metadata_data = pd.DataFrame(
+            {
+                "size": [0, 1, 2, 3, 4, 5],
+                "start": [0] * 6,
+                "end": [10] * 6,
+            }
+        )
+        metadata_data.to_csv(metadata_filepath, index=False)
+        self.owned_metadata_with_file = BedFileMetadata(id=1, dataset_id=2, file_path=metadata_filepath)
+        self.owned_with_file = [self.owned_dataset, self.owned_metadata_with_file]
+
     def test_access_denied_without_token(self):
         """Test whether post request results in 401 error
         if no token is provided."""
@@ -337,14 +341,8 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         metadata associated with not owned dataset"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
-        token2 = self.add_and_authenticate(
-            "test2", "fdsa"
-        )  # second user that is not used
         # add dataset and metadata
-        dataset = Dataset(id=1, user_id=2)
-        metadata = BedFileMetadata(id=1, dataset_id=1)
-        db.session.add(dataset)
-        db.session.add(metadata)
+        db.session.add_all(self.unowned)
         db.session.commit()
         # create token_header
         token_headers = self.get_token_header(token)
@@ -369,10 +367,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # add dataset and metadata
-        dataset = Dataset(id=1, user_id=1)
-        metadata = BedFileMetadata(id=1, dataset_id=1)
-        db.session.add(dataset)
-        db.session.add(metadata)
+        db.session.add_all(self.owned_empty)
         db.session.commit()
         # create token_header
         token_headers = self.get_token_header(token)
@@ -396,21 +391,8 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         field specified does not exist in the metadata."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
-        # generate metadata file
-        metadata_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "metadata.txt")
-        metadata_data = pd.DataFrame(
-            {
-                "size": [0, 1, 2, 3, 4, 5],
-                "start": [0] * 6,
-                "end": [10] * 6,
-            }
-        )
-        metadata_data.to_csv(metadata_filepath, index=False)
         # add dataset and metadata
-        dataset = Dataset(id=1, user_id=1)
-        metadata = BedFileMetadata(id=1, dataset_id=1, file_path=metadata_filepath)
-        db.session.add(dataset)
-        db.session.add(metadata)
+        db.session.add_all(self.owned_with_file)
         db.session.commit()
         # create token_header
         token_headers = self.get_token_header(token)
@@ -434,21 +416,8 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         added correctly."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
-        # generate metadata file
-        metadata_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "metadata.txt")
-        metadata_data = pd.DataFrame(
-            {
-                "size": [0, 1, 2, 3, 4, 5],
-                "start": [0] * 6,
-                "end": [10] * 6,
-            }
-        )
-        metadata_data.to_csv(metadata_filepath, index=False)
-        # add dataset and metadata
-        dataset = Dataset(id=1, user_id=1)
-        metadata = BedFileMetadata(id=1, dataset_id=1, file_path=metadata_filepath)
-        db.session.add(dataset)
-        db.session.add(metadata)
+        # create dataset metadata combination
+        db.session.add_all(self.owned_with_file)
         db.session.commit()
         # create token_header
         token_headers = self.get_token_header(token)
