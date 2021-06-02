@@ -94,7 +94,7 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
     def test_stackup_called_correctly_regions_pos(
         self, mock_read_csv, mock_stackup, mock_chromsizes
     ):
-        """Tests whether regions that are defined as chrom, start, end are handled correctly."""
+        """Tests whether regions that are defined as chrom, pos are handled correctly."""
         BIN_NUMBER = 40
         mock_chromsizes.return_value = {"chr1": "test"}
         mock_stackup.return_value = np.empty((2, BIN_NUMBER))

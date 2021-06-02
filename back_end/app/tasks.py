@@ -6,8 +6,9 @@ import logging
 import pandas as pd
 from hicognition import io_helpers
 from . import create_app, db
-from .models import Dataset, Intervals
+from .models import Dataset
 from . import pipeline_steps
+from .api.helpers import remove_safely
 
 # get logger
 log = logging.getLogger("rq.worker")
@@ -43,11 +44,7 @@ def pipeline_bed(dataset_id):
     dataset_object.file_path = cleaned_file_name
     # delete old file
     log.info("      Delete Unsorted...")
-    try:
-        os.remove(file_path)
-    except FileNotFoundError:
-        log.warning(f"Tried removing {file_path}, but file does not exist!")
-
+    remove_safely(file_path)
     db.session.commit()
     for window in window_sizes:
         # preprocessing

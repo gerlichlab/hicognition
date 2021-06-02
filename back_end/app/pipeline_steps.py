@@ -28,8 +28,8 @@ log = logging.getLogger("rq.worker")
 def bed_preprocess_pipeline_step(dataset_id, windowsize):
     """
     Performs bedpe preprocessing pipeline step:
-    * run clodius on bedpe file
-    * upload result to higlass
+    * Convert bed to bedpe
+    * Create downsampled indices
     * add Intervals dataset entry
     """
     log.info(f"  Converting to bedpe: {dataset_id} with {windowsize}")
@@ -53,7 +53,7 @@ def bed_preprocess_pipeline_step(dataset_id, windowsize):
         # subsample
         all_indices = np.arange(len(bedpe))
         sub_sample_index = np.random.choice(
-            all_indices, current_app.config["STACKUP_THRESHOLD"]
+            all_indices, current_app.config["STACKUP_THRESHOLD"], replace=False
         )
     # store indices
     np.save(index_file, sub_sample_index)
