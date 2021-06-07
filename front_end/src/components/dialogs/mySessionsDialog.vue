@@ -14,7 +14,6 @@
                         <label>Shareable Url</label>
                             <md-input v-model="shareableUrl" readonly ref="urlInput"></md-input>
                         </md-field>
-                        <!-- <span class="md-caption center-span large-margin">{{ shareableUrl }}</span> -->
                     </div>
                     <div class="md-layout-item md-size-10">
                         <md-button class="md-icon-button md-raised md-primary" @click="copyToClipboard">
@@ -144,6 +143,9 @@ export default {
             });
         },
         handleSessionRestoration: async function() {
+            // fetch and store session token -> this is needed in case unowned datasets are in session
+            let response = await this.fetchData(`sessions/${this.selected_session_id}/sessionToken/`)
+            this.$store.commit("setSessionToken", response.data["session_token"]);
             // fetch data references to put into store
             var parsed_object = JSON.parse(this.selected_session_object);
             for (let collection of Object.values(parsed_object)) {
@@ -171,6 +173,7 @@ export default {
                     }
                 }
             }
+            // populate store
             this.$store.commit(
                 "compare/setWidgetCollections",
                 JSON.parse(this.selected_session_object)

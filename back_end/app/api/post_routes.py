@@ -293,8 +293,8 @@ def create_session():
     datasets = [Dataset.query.get(dataset_id) for dataset_id in used_datasets]
     if any(dataset is None for dataset in datasets):
         return invalid(f"Some of the datasets in used_datasets do not exist!")
-    # check whether dataset is owned
-    if any(dataset.user_id != g.current_user.id for dataset in datasets):
+    # check whether dataset is owned or session token is valid
+    if any(is_access_to_dataset_denied(dataset, g) for dataset in datasets):
         return forbidden(f"Some of the datasets associated with this session are not owned!")
     # create session
     session = Session(user_id=g.current_user.id,
