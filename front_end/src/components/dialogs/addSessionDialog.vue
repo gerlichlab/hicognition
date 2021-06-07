@@ -15,7 +15,7 @@
                 </md-tooltip>
             </md-dialog-title>
             <addSessionForm
-                @close-dialog="$emit('close-dialog')"
+                @close-dialog="$emit('close-dialog'); serializing = true"
                 :serializing="serializing"
             ></addSessionForm>
         </md-dialog>
@@ -53,7 +53,7 @@ export default {
                 // serialize widgets when dialog is shown
                 EventBus.$emit('serialize-widgets');
                 // wait for serialization
-                setTimeout(() => {this.serializing = false}, 1500)
+                setTimeout(() => {this.serializing = false}, 1000)
             }else{
                 this.serializing = true
             }
