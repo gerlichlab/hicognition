@@ -12,7 +12,8 @@ from app.models import Dataset, Intervals, AverageIntervalData, IndividualInterv
 class TestGetProcessedDatasetMap(LoginTestCase):
     """Tests for /api/datasets/<dataset_id>/processedDatasetMap/ route to list and query sessions."""
 
-    def create_datasets(self):
+    def setUp(self):
+        super().setUp()
         # create datasets
         self.owned_bedfile = Dataset(
             id=1, user_id=1, filetype="bedfile", dataset_name="testfile"
@@ -91,7 +92,6 @@ class TestGetProcessedDatasetMap(LoginTestCase):
 
     def test_403_if_dataset_is_not_owned(self):
         """Test whether route returns 404 if dataset does not exist."""
-        self.create_datasets()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -109,7 +109,6 @@ class TestGetProcessedDatasetMap(LoginTestCase):
 
     def test_400_if_dataset_is_no_bedfile(self):
         """Test whether route returns 400 if dataset does not a bedfile."""
-        self.create_datasets()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -128,7 +127,6 @@ class TestGetProcessedDatasetMap(LoginTestCase):
     def test_structure_of_mapping_wo_intervals(self):
         """Test whether the structure of the returned object is correct
         for bedfile without associations."""
-        self.create_datasets()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -150,7 +148,6 @@ class TestGetProcessedDatasetMap(LoginTestCase):
     def test_structure_of_mapping_w_intervals_wo_data(self):
         """Test whether the structure of the returned object is correct
         for bedfile with intervals that do not contain data."""
-        self.create_datasets()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -173,7 +170,6 @@ class TestGetProcessedDatasetMap(LoginTestCase):
     def test_structure_of_mapping_w_intervals_w_pileups(self):
         """Test whether the structure of the returned object is correct for
         bedfile associated with pileups"""
-        self.create_datasets()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -209,7 +205,6 @@ class TestGetProcessedDatasetMap(LoginTestCase):
     def test_structure_of_mapping_w_intervals_w_lineprofiles(self):
         """Test whether the structure of the returned object is correct for
         bedfile associated with pileups"""
-        self.create_datasets()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -242,7 +237,6 @@ class TestGetProcessedDatasetMap(LoginTestCase):
     def test_structure_of_mapping_w_intervals_w_stackupes(self):
         """Test whether the structure of the returned object is correct for
         bedfile associated with pileups"""
-        self.create_datasets()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -275,7 +269,6 @@ class TestGetProcessedDatasetMap(LoginTestCase):
     def test_structure_of_mapping_w_intervals_w_all_datataypes(self):
         """Test whether the structure of the returned object is correct for
         bedfile associated with pileups"""
-        self.create_datasets()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
