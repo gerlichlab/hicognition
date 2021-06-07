@@ -13,9 +13,155 @@ from app import db
 from app.models import Dataset, Intervals, AverageIntervalData
 
 
-class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
+class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
     """Test to check whether retrieving of averageIntervalData data
     works."""
+
+    def setUp(self):
+        super().setUp()
+        # add owned cooler
+        self.owned_cooler = Dataset(
+            id=1,
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="cooler",
+            user_id=1,
+        )
+        # add unowned cooler
+        self.unowned_cooler = Dataset(
+            id=2,
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="cooler",
+            user_id=2,
+        )
+        # add owned bedfile
+        self.owned_bedfile = Dataset(
+            id=3,
+            dataset_name="test2",
+            file_path="/test/path/2",
+            filetype="bedfile",
+            user_id=1,
+        )
+        # add unowned bedfile
+        self.unowned_bedfile = Dataset(
+            id=4,
+            dataset_name="test2",
+            file_path="/test/path/2",
+            filetype="bedfile",
+            user_id=2,
+        )
+        # add unowned, public cooler
+        self.unowned_public_cooler = Dataset(
+            id=5,
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="cooler",
+            user_id=2,
+            public=True,
+        )
+        # add unowned, public bedfile
+        self.unowned_public_bedfile = Dataset(
+            id=6,
+            dataset_name="test2",
+            file_path="/test/path/2",
+            filetype="bedfile",
+            user_id=2,
+            public=True,
+        )
+        # add intervals for owned bedfile
+        self.owned_intervals = Intervals(
+            id=1,
+            name="testRegion1",
+            dataset_id=self.owned_bedfile.id,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        # add intervals for unowned bedfile
+        self.unowned_intervals = Intervals(
+            id=2,
+            name="testRegion1",
+            dataset_id=self.unowned_bedfile.id,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        # add intervals for unowned, public bedfile
+        self.unowned_public_intervals = Intervals(
+            id=3,
+            name="testRegion1",
+            dataset_id=self.unowned_public_bedfile.id,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        # add averageIntervalData with unowned cooler
+        self.avgData_cooler_unowned = AverageIntervalData(
+            id=1,
+            name="testAverageIntervalData1",
+            binsize=10000,
+            file_path="testPath1",
+            dataset_id=self.unowned_cooler.id,
+            intervals_id=self.owned_intervals.id,
+            value_type="ICCF",
+        )
+        # add averageIntervalData with unowned intervals
+        self.avgData_intervals_unowned = AverageIntervalData(
+            id=2,
+            name="testAverageIntervalData1",
+            binsize=10000,
+            file_path="testPath1",
+            dataset_id=self.owned_cooler.id,
+            intervals_id=self.unowned_intervals.id,
+            value_type="ICCF",
+        )
+        # add averageIntervalData with owned intervals and cooler and associated data
+        self.test_data = np.array([[1.66, 2.2, 3.8, 4.5]])
+        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
+        np.save(data_path, self.test_data)
+        self.avgData_owned = AverageIntervalData(
+            id=3,
+            name="testAverageIntervalData1",
+            binsize=10000,
+            file_path=data_path,
+            dataset_id=1,
+            intervals_id=1,
+            value_type="ICCF",
+        )
+        # add averageIntervalData with owned intervals and cooler and associated data containing nans
+        self.test_data_w_nans = np.array([[1.66, 2.2, 3.8, 4.5, np.nan]])
+        data_path_w_nans = os.path.join(TempDirTestCase.TEMP_PATH, "test1.npy")
+        np.save(data_path_w_nans, self.test_data_w_nans)
+        self.avgData_owned_w_nans = AverageIntervalData(
+            id=4,
+            name="testAverageIntervalData1",
+            binsize=10000,
+            file_path=data_path_w_nans,
+            dataset_id=1,
+            intervals_id=1,
+            value_type="ICCF",
+        )
+        # add averageIntervalData with owned intervals and cooler and associated data containing inf
+        self.test_data_w_inf = np.array([[1.66, 2.2, 3.8, 4.5, np.inf]])
+        data_path_w_inf = os.path.join(TempDirTestCase.TEMP_PATH, "test2.npy")
+        np.save(data_path_w_inf, self.test_data_w_inf)
+        self.avgData_owned_w_inf = AverageIntervalData(
+            id=5,
+            name="testAverageIntervalData1",
+            binsize=10000,
+            file_path=data_path_w_inf,
+            dataset_id=1,
+            intervals_id=1,
+            value_type="ICCF",
+        )
+        # add averageIntervalData with public intervals and cooler and associated data
+        self.avgData_unowned_public = AverageIntervalData(
+            id=6,
+            name="testAverageIntervalData1",
+            binsize=10000,
+            file_path=data_path,
+            dataset_id=self.unowned_public_cooler.id,
+            intervals_id=self.unowned_public_intervals.id,
+            value_type="ICCF",
+        )
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
@@ -46,37 +192,18 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         # create token header
         token_headers = self.get_token_header(token)
         # add data
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="cooler",
-            user_id=5,
+        db.session.add_all(
+            [
+                self.owned_bedfile,
+                self.unowned_cooler,
+                self.owned_intervals,
+                self.avgData_cooler_unowned,
+            ]
         )
-        dataset2 = Dataset(
-            dataset_name="test2",
-            file_path="/test/path/2",
-            filetype="bedfile",
-            user_id=1,
-        )
-        intervals1 = Intervals(
-            name="testRegion1",
-            dataset_id=2,
-            file_path="test_path_1.bedd2db",
-            windowsize=200000,
-        )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
-            binsize=10000,
-            file_path="testPath1",
-            dataset_id=1,
-            intervals_id=1,
-            value_type="ICCF",
-        )
-        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
         db.session.commit()
         # make request for forbidden cooler
         response = self.client.get(
-            "/api/averageIntervalData/1/",
+            f"/api/averageIntervalData/{self.avgData_cooler_unowned.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -89,37 +216,18 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         # create token header
         token_headers = self.get_token_header(token)
         # add data
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="cooler",
-            user_id=1,
+        db.session.add_all(
+            [
+                self.owned_cooler,
+                self.unowned_bedfile,
+                self.unowned_intervals,
+                self.avgData_intervals_unowned,
+            ]
         )
-        dataset2 = Dataset(
-            dataset_name="test2",
-            file_path="/test/path/2",
-            filetype="bedfile",
-            user_id=5,
-        )
-        intervals1 = Intervals(
-            name="testRegion1",
-            dataset_id=2,
-            file_path="test_path_1.bedd2db",
-            windowsize=200000,
-        )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
-            binsize=10000,
-            file_path="testPath1",
-            dataset_id=1,
-            intervals_id=1,
-            value_type="ICCF",
-        )
-        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
         db.session.commit()
         # make request with forbidden intervall
         response = self.client.get(
-            "/api/averageIntervalData/1/",
+            f"/api/averageIntervalData/{self.avgData_intervals_unowned.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -131,52 +239,27 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         # create token header
         token_headers = self.get_token_header(token)
-        # create datafile
-        test_data_return = {
-            "data": [1.66, 2.2, 3.8, 4.5],
-            "shape": [1, 4],
-            "dtype": "float32",
-        }
-        test_data = np.array([[1.66, 2.2, 3.8, 4.5]])
-        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
-        np.save(data_path, test_data)
-
         # add data
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="cooler",
-            user_id=1,
+        db.session.add_all(
+            [
+                self.owned_cooler,
+                self.owned_bedfile,
+                self.owned_intervals,
+                self.avgData_owned,
+            ]
         )
-        dataset2 = Dataset(
-            dataset_name="test2",
-            file_path="/test/path/2",
-            filetype="bedfile",
-            user_id=1,
-        )
-        intervals1 = Intervals(
-            name="testRegion1",
-            dataset_id=2,
-            file_path="test_path_1.bedd2db",
-            windowsize=200000,
-        )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
-            binsize=10000,
-            file_path=data_path,
-            dataset_id=1,
-            intervals_id=1,
-            value_type="ICCF",
-        )
-        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/averageIntervalData/1/",
+            f"/api/averageIntervalData/{self.avgData_owned.id}/",
             headers=token_headers,
             content_type="application/json",
         )
-        expected = test_data_return
+        expected = {
+            "data": self.test_data.flatten().tolist(),
+            "shape": list(self.test_data.shape),
+            "dtype": "float32",
+        }
         self.assertEqual(response.json, expected)
 
     def test_correct_data_returned_with_nan(self):
@@ -186,53 +269,29 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         # create token header
         token_headers = self.get_token_header(token)
-        # create datafile
-        test_data_return = {
-            "data": [1.66, 2.2, 3.8, 4.5, None],
-            "shape": [1, 5],
-            "dtype": "float32",
-        }
-
-        test_data = np.array([[1.66, 2.2, 3.8, 4.5, np.nan]])
-        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
-        np.save(data_path, test_data)
-
         # add data
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="cooler",
-            user_id=1,
+        db.session.add_all(
+            [
+                self.owned_cooler,
+                self.owned_bedfile,
+                self.owned_intervals,
+                self.avgData_owned_w_nans,
+            ]
         )
-        dataset2 = Dataset(
-            dataset_name="test2",
-            file_path="/test/path/2",
-            filetype="bedfile",
-            user_id=1,
-        )
-        intervals1 = Intervals(
-            name="testRegion1",
-            dataset_id=2,
-            file_path="test_path_1.bedd2db",
-            windowsize=200000,
-        )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
-            binsize=10000,
-            file_path=data_path,
-            dataset_id=1,
-            intervals_id=1,
-            value_type="ICCF",
-        )
-        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/averageIntervalData/1/",
+            f"/api/averageIntervalData/{self.avgData_owned_w_nans.id}/",
             headers=token_headers,
             content_type="application/json",
         )
-        expected = test_data_return
+        expected = {
+            "data": [
+                i if not np.isnan(i) else None for i in self.test_data_w_nans.flatten()
+            ],
+            "shape": list(self.test_data_w_nans.shape),
+            "dtype": "float32",
+        }
         self.assertEqual(response.json, expected)
 
     def test_correct_data_returned_with_inf(self):
@@ -242,53 +301,29 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         # create token header
         token_headers = self.get_token_header(token)
-        # create datafile
-        test_data_return = {
-            "data": [1.66, 2.2, 3.8, 4.5, None],
-            "shape": [1, 5],
-            "dtype": "float32",
-        }
-
-        test_data = np.array([[1.66, 2.2, 3.8, 4.5, np.inf]])
-        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
-        np.save(data_path, test_data)
-
         # add data
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="cooler",
-            user_id=1,
+        db.session.add_all(
+            [
+                self.owned_cooler,
+                self.owned_bedfile,
+                self.owned_intervals,
+                self.avgData_owned_w_inf,
+            ]
         )
-        dataset2 = Dataset(
-            dataset_name="test2",
-            file_path="/test/path/2",
-            filetype="bedfile",
-            user_id=1,
-        )
-        intervals1 = Intervals(
-            name="testRegion1",
-            dataset_id=2,
-            file_path="test_path_1.bedd2db",
-            windowsize=200000,
-        )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
-            binsize=10000,
-            file_path=data_path,
-            dataset_id=1,
-            intervals_id=1,
-            value_type="ICCF",
-        )
-        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/averageIntervalData/1/",
+            f"/api/averageIntervalData/{self.avgData_owned_w_inf.id}/",
             headers=token_headers,
             content_type="application/json",
         )
-        expected = test_data_return
+        expected = {
+            "data": [
+                i if not np.isinf(i) else None for i in self.test_data_w_inf.flatten()
+            ],
+            "shape": list(self.test_data_w_inf.shape),
+            "dtype": "float32",
+        }
         self.assertEqual(response.json, expected)
 
     def test_public_unowned_data_returned(self):
@@ -297,54 +332,28 @@ class TestGetAverageIntervalDataData(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         # create token header
         token_headers = self.get_token_header(token)
-        # create datafile
-        test_data_back = {
-            "data": [1.66, 2.2, 3.8, 4.5],
-            "shape": [1, 4],
-            "dtype": "float32",
-        }
-
-        test_data = np.array([[1.66, 2.2, 3.8, 4.5]])
-        data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
-        np.save(data_path, test_data)
         # add data
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="cooler",
-            public=True,
-            user_id=2,
+        db.session.add_all(
+            [
+                self.unowned_public_cooler,
+                self.unowned_public_bedfile,
+                self.unowned_public_intervals,
+                self.avgData_unowned_public,
+            ]
         )
-        dataset2 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="bedfile",
-            public=True,
-            user_id=2,
-        )
-        intervals1 = Intervals(
-            name="testRegion1",
-            dataset_id=2,
-            file_path="test_path_1.bedd2db",
-            windowsize=200000,
-        )
-        averageIntervalData = AverageIntervalData(
-            name="testAverageIntervalData1",
-            binsize=10000,
-            file_path=data_path,
-            dataset_id=1,
-            intervals_id=1,
-            value_type="ICCF",
-        )
-        db.session.add_all([dataset1, dataset2, intervals1, averageIntervalData])
+        db.session.commit()
         db.session.commit()
         # make request
         response = self.client.get(
-            "/api/averageIntervalData/1/",
+            f"/api/averageIntervalData/{self.avgData_unowned_public.id}/",
             headers=token_headers,
             content_type="application/json",
         )
-        expected = test_data_back
+        expected = {
+            "data": self.test_data.flatten().tolist(),
+            "shape": list(self.test_data.shape),
+            "dtype": "float32",
+        }
         self.assertEqual(response.json, expected)
 
 
