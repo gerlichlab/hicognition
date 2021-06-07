@@ -15,33 +15,72 @@ class TestGetDatasets(LoginTestCase):
     """Tests for /api/datasets route to list
     datasets."""
 
-    def add_test_datasets(self):
+    def setUp(self):
         """adds test datasets to db"""
-        dataset1 = Dataset(
+        super().setUp()
+        # add owned coolers
+        self.owned_cooler_1 = Dataset(
+            id=1,
             dataset_name="test1",
             file_path="/test/path/1",
             filetype="cooler",
             processing_state="finished",
             user_id=1,
         )
-        dataset2 = Dataset(
+        self.owned_cooler_2 = Dataset(
+            id=2,
             dataset_name="test2",
             file_path="/test/path/2",
             filetype="cooler",
             processing_state="finished",
             user_id=1,
         )
-        dataset3 = Dataset(
+        # add unowned coolers
+        self.unowned_cooler = Dataset(
+            id=3,
+            dataset_name="test2",
+            file_path="/test/path/2",
+            filetype="cooler",
+            processing_state="finished",
+            user_id=2,
+        )
+        # add owned bedfile
+        self.owned_bedfile = Dataset(
+            id=4,
             dataset_name="test3",
             file_path="/test/path/3",
             filetype="bedfile",
             processing_state="finished",
             user_id=1,
         )
-        db.session.add(dataset1)
-        db.session.add(dataset2)
-        db.session.add(dataset3)
-        db.session.commit()
+        # add public bedfile
+        self.public_bedfile = Dataset(
+            dataset_name="test4",
+            file_path="/test/path/4",
+            filetype="bedfile",
+            processing_state="finished",
+            public=True,
+            user_id=2,
+        )
+        # add unowned bedfile
+        self.unowned_bedfile = Dataset(
+            id=5,
+            dataset_name="test4",
+            file_path="/test/path/4",
+            filetype="bedfile",
+            processing_state="finished",
+            user_id=2,
+        )
+        # define session that contains unwoned bedfile
+        self.session_unowned_cooler = Session(datasets=[self.unowned_cooler])
+        # aggregated datasets
+        self.owned_coolers = [self.owned_cooler_1, self.owned_cooler_2]
+        self.owned_datasets = [*self.owned_coolers, self.owned_bedfile]
+        self.all_datasets = [
+            *self.owned_datasets,
+            self.unowned_bedfile,
+            self.unowned_cooler,
+        ]
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
@@ -55,8 +94,9 @@ class TestGetDatasets(LoginTestCase):
         token = self.add_and_authenticate("test", "asdf")
         # create token header
         token_headers = self.get_token_header(token)
-        # add new datasets
-        self.add_test_datasets()
+        # add datasets
+        db.session.add_all(self.owned_coolers)
+        db.session.commit()
         # get datasets
         response = self.client.get(
             "/api/datasets/cooler",
@@ -65,30 +105,7 @@ class TestGetDatasets(LoginTestCase):
         )
         # check response
         self.assertEqual(response.status_code, 200)
-        expected = [
-            {
-                "dataset_name": "test1",
-                "genotype": "undefined",
-                "description": "undefined",
-                "file_path": "/test/path/1",
-                "filetype": "cooler",
-                "id": 1,
-                "user_id": 1,
-                "public": False,
-                "processing_state": "finished",
-            },
-            {
-                "dataset_name": "test2",
-                "genotype": "undefined",
-                "description": "undefined",
-                "file_path": "/test/path/2",
-                "filetype": "cooler",
-                "id": 2,
-                "user_id": 1,
-                "public": False,
-                "processing_state": "finished",
-            },
-        ]
+        expected = [dataset.to_json() for dataset in self.owned_coolers]
         self.assertEqual(response.json, expected)
 
     def test_get_bedfiles(self):
@@ -98,7 +115,8 @@ class TestGetDatasets(LoginTestCase):
         # create token header
         token_headers = self.get_token_header(token)
         # add new datasets
-        self.add_test_datasets()
+        db.session.add(self.owned_bedfile)
+        db.session.commit()
         # get datasets
         response = self.client.get(
             "/api/datasets/bed",
@@ -107,19 +125,7 @@ class TestGetDatasets(LoginTestCase):
         )
         # check response
         self.assertEqual(response.status_code, 200)
-        expected = [
-            {
-                "dataset_name": "test3",
-                "file_path": "/test/path/3",
-                "genotype": "undefined",
-                "description": "undefined",
-                "filetype": "bedfile",
-                "public": False,
-                "id": 3,
-                "user_id": 1,
-                "processing_state": "finished",
-            },
-        ]
+        expected = [self.owned_bedfile.to_json()]
         self.assertEqual(response.json, expected)
 
     def test_get_all_datasets(self):
@@ -129,7 +135,7 @@ class TestGetDatasets(LoginTestCase):
         # create token header
         token_headers = self.get_token_header(token)
         # add new datasets
-        self.add_test_datasets()
+        db.session.add_all(self.owned_datasets)
         # get datasets
         response = self.client.get(
             "/api/datasets/",
@@ -138,41 +144,7 @@ class TestGetDatasets(LoginTestCase):
         )
         # check response
         self.assertEqual(response.status_code, 200)
-        expected = [
-            {
-                "dataset_name": "test1",
-                "file_path": "/test/path/1",
-                "genotype": "undefined",
-                "description": "undefined",
-                "filetype": "cooler",
-                "id": 1,
-                "user_id": 1,
-                "public": False,
-                "processing_state": "finished",
-            },
-            {
-                "dataset_name": "test2",
-                "file_path": "/test/path/2",
-                "genotype": "undefined",
-                "description": "undefined",
-                "filetype": "cooler",
-                "id": 2,
-                "public": False,
-                "user_id": 1,
-                "processing_state": "finished",
-            },
-            {
-                "dataset_name": "test3",
-                "file_path": "/test/path/3",
-                "genotype": "undefined",
-                "description": "undefined",
-                "filetype": "bedfile",
-                "id": 3,
-                "user_id": 1,
-                "public": False,
-                "processing_state": "finished",
-            },
-        ]
+        expected = [dataset.to_json() for dataset in self.owned_datasets]
         self.assertEqual(response.json, expected)
 
     def test_wrong_path(self):
@@ -182,8 +154,6 @@ class TestGetDatasets(LoginTestCase):
         token = self.add_and_authenticate("test", "asdf")
         # create token header
         token_headers = self.get_token_header(token)
-        # add new datasets
-        self.add_test_datasets()
         # get datasets
         response = self.client.get(
             "/api/datasets/asdf",
@@ -195,40 +165,8 @@ class TestGetDatasets(LoginTestCase):
     def test_user_can_get_only_own_datasets(self):
         """Authenticated user can only get own datasets"""
         token1 = self.add_and_authenticate("test", "asdf")
-        token2 = self.add_and_authenticate("test2", "fdsa")
         # add datasets
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="cooler",
-            processing_state="finished",
-            user_id=1,
-        )
-        dataset2 = Dataset(
-            dataset_name="test2",
-            file_path="/test/path/2",
-            filetype="cooler",
-            processing_state="finished",
-            user_id=2,
-        )
-        dataset3 = Dataset(
-            dataset_name="test3",
-            file_path="/test/path/3",
-            filetype="bedfile",
-            processing_state="finished",
-            user_id=1,
-        )
-        dataset4 = Dataset(
-            dataset_name="test4",
-            file_path="/test/path/4",
-            filetype="bedfile",
-            processing_state="finished",
-            user_id=2,
-        )
-        db.session.add(dataset1)
-        db.session.add(dataset2)
-        db.session.add(dataset3)
-        db.session.add(dataset4)
+        db.session.add_all(self.all_datasets)
         db.session.commit()
         # get datasets with user_token 1
         token_headers = self.get_token_header(token1)
@@ -240,30 +178,7 @@ class TestGetDatasets(LoginTestCase):
         )
         # check response
         self.assertEqual(response.status_code, 200)
-        expected = [
-            {
-                "dataset_name": "test1",
-                "file_path": "/test/path/1",
-                "genotype": "undefined",
-                "description": "undefined",
-                "filetype": "cooler",
-                "id": 1,
-                "public": False,
-                "user_id": 1,
-                "processing_state": "finished",
-            },
-            {
-                "dataset_name": "test3",
-                "file_path": "/test/path/3",
-                "genotype": "undefined",
-                "description": "undefined",
-                "filetype": "bedfile",
-                "id": 3,
-                "public": False,
-                "user_id": 1,
-                "processing_state": "finished",
-            },
-        ]
+        expected = [dataset.to_json() for dataset in self.owned_datasets]
         self.assertEqual(response.json, expected)
         # check response for coolers
         response = self.client.get(
@@ -273,7 +188,9 @@ class TestGetDatasets(LoginTestCase):
         )
         # check response
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json, [expected[0]])
+        self.assertEqual(
+            response.json, [dataset.to_json() for dataset in self.owned_coolers]
+        )
         # check response for bedfiles
         response = self.client.get(
             "/api/datasets/bed",
@@ -282,54 +199,18 @@ class TestGetDatasets(LoginTestCase):
         )
         # check response
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json, [expected[1]])
+        self.assertEqual(response.json, [self.owned_bedfile.to_json()])
 
     def test_user_can_get_datasets_w_session_token(self):
         """Authenticated user can get datasets that they
         do not own if they have a session token."""
         token1 = self.add_and_authenticate("test", "asdf")
         # add datasets
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="cooler",
-            processing_state="finished",
-            user_id=1,
-        )
-        dataset2 = Dataset(
-            dataset_name="test2",
-            file_path="/test/path/2",
-            filetype="cooler",
-            processing_state="finished",
-            user_id=2,
-        )
-        dataset3 = Dataset(
-            dataset_name="test3",
-            file_path="/test/path/3",
-            filetype="bedfile",
-            processing_state="finished",
-            user_id=1,
-        )
-        dataset4 = Dataset(
-            dataset_name="test4",
-            file_path="/test/path/4",
-            filetype="bedfile",
-            processing_state="finished",
-            user_id=2,
-        )
-        # create session that contains dataset2
-        session = Session()
-        session.datasets = [dataset2]
-        # add to database session
-        db.session.add(dataset1)
-        db.session.add(dataset2)
-        db.session.add(dataset3)
-        db.session.add(dataset4)
-        db.session.add(session)
+        db.session.add_all([*self.all_datasets, self.session_unowned_cooler])
         db.session.commit()
-        # get datasets with user_token 1
+        # get datasets using session token
         token_headers = self.get_token_header(token1)
-        token = session.generate_session_token()
+        token = self.session_unowned_cooler.generate_session_token()
         # get datasets with session token
         response = self.client.get(
             f"/api/datasets/?sessionToken={token}",
@@ -338,51 +219,21 @@ class TestGetDatasets(LoginTestCase):
         )
         # check response
         self.assertEqual(response.status_code, 200)
-        ids = [dataset["id"] for dataset in response.json]
-        self.assertEqual(ids, [1,2,3])
+        expected = sorted(
+            [
+                dataset.to_json()
+                for dataset in [*self.owned_datasets, self.unowned_cooler]
+            ],
+            key=lambda x: x["id"],
+        )
+        self.assertEqual(sorted(response.json, key=lambda x: x["id"]), expected)
 
     def test_user_cannot_get_datasets_w_invalid_session_token(self):
         """Authenticated user  cannot get other datasets with
         an invalid sessino token."""
         token1 = self.add_and_authenticate("test", "asdf")
         # add datasets
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="cooler",
-            processing_state="finished",
-            user_id=1,
-        )
-        dataset2 = Dataset(
-            dataset_name="test2",
-            file_path="/test/path/2",
-            filetype="cooler",
-            processing_state="finished",
-            user_id=2,
-        )
-        dataset3 = Dataset(
-            dataset_name="test3",
-            file_path="/test/path/3",
-            filetype="bedfile",
-            processing_state="finished",
-            user_id=1,
-        )
-        dataset4 = Dataset(
-            dataset_name="test4",
-            file_path="/test/path/4",
-            filetype="bedfile",
-            processing_state="finished",
-            user_id=2,
-        )
-        # create session that contains dataset2
-        session = Session()
-        session.datasets = [dataset2]
-        # add to database session
-        db.session.add(dataset1)
-        db.session.add(dataset2)
-        db.session.add(dataset3)
-        db.session.add(dataset4)
-        db.session.add(session)
+        db.session.add_all(self.all_datasets)
         db.session.commit()
         # get datasets with user_token 1
         token_headers = self.get_token_header(token1)
@@ -395,47 +246,14 @@ class TestGetDatasets(LoginTestCase):
         )
         # check response
         self.assertEqual(response.status_code, 200)
-        ids = [dataset["id"] for dataset in response.json]
-        self.assertEqual(ids, [1,3])
+        expected = [dataset.to_json() for dataset in self.owned_datasets]
+        self.assertEqual(response.json, expected)
 
     def test_user_gets_public_dataset(self):
         """Tests whether user is able to access public dataset."""
         token1 = self.add_and_authenticate("test", "asdf")
-        token2 = self.add_and_authenticate("test2", "fdsa")
         # add datasets
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="cooler",
-            processing_state="finished",
-            user_id=1,
-        )
-        dataset2 = Dataset(
-            dataset_name="test2",
-            file_path="/test/path/2",
-            filetype="cooler",
-            processing_state="finished",
-            user_id=2,
-        )
-        dataset3 = Dataset(
-            dataset_name="test3",
-            file_path="/test/path/3",
-            filetype="bedfile",
-            processing_state="finished",
-            user_id=1,
-        )
-        dataset4 = Dataset(
-            dataset_name="test4",
-            file_path="/test/path/4",
-            filetype="bedfile",
-            processing_state="finished",
-            public=True,
-            user_id=2,
-        )
-        db.session.add(dataset1)
-        db.session.add(dataset2)
-        db.session.add(dataset3)
-        db.session.add(dataset4)
+        db.session.add_all([*self.all_datasets, self.public_bedfile])
         db.session.commit()
         # get datasets with user_token 1
         token_headers = self.get_token_header(token1)
@@ -447,221 +265,53 @@ class TestGetDatasets(LoginTestCase):
         )
         # check response
         self.assertEqual(response.status_code, 200)
-        expected = [
-            {
-                "dataset_name": "test1",
-                "file_path": "/test/path/1",
-                "genotype": "undefined",
-                "description": "undefined",
-                "filetype": "cooler",
-                "id": 1,
-                "user_id": 1,
-                "public": False,
-                "processing_state": "finished",
-            },
-            {
-                "dataset_name": "test3",
-                "file_path": "/test/path/3",
-                "genotype": "undefined",
-                "description": "undefined",
-                "filetype": "bedfile",
-                "id": 3,
-                "user_id": 1,
-                "public": False,
-                "processing_state": "finished",
-            },
-            {
-                "dataset_name": "test4",
-                "file_path": "/test/path/4",
-                "genotype": "undefined",
-                "description": "undefined",
-                "filetype": "bedfile",
-                "id": 4,
-                "user_id": 2,
-                "public": True,
-                "processing_state": "finished",
-            },
-        ]
-        self.assertEqual(response.json, expected)
-        # check response for coolers
-        response = self.client.get(
-            "/api/datasets/cooler",
-            headers=token_headers,
-            content_type="application/json",
+        expected = sorted(
+            [
+                dataset.to_json()
+                for dataset in [*self.owned_datasets, self.public_bedfile]
+            ],
+            key=lambda x: x["id"],
         )
-        # check response
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json, [expected[0]])
-        # check response for bedfiles
-        response = self.client.get(
-            "/api/datasets/bed",
-            headers=token_headers,
-            content_type="application/json",
-        )
-        # check response
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json, [expected[1], expected[2]])
-
-
-class TestGetAvailableBinsizes(LoginTestCase):
-    """Tests get route for available binsizes of a cooler file."""
-
-    def test_no_auth(self):
-        """No authentication provided, response should be 401"""
-        # protected route
-        response = self.client.get(
-            "/api/datasets/3/availableBinsizes/", content_type="application/json"
-        )
-        self.assertEqual(response.status_code, 401)
-
-    def test_id_does_not_exist(self):
-        """ID does not exist"""
-        token = self.add_and_authenticate("test", "asdf")
-        token_headers = self.get_token_header(token)
-        # get datasets
-        response = self.client.get(
-            "/api/datasets/100/availableBinsizes/",
-            headers=token_headers,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 404)
-
-    def test_unowned_dataset_not_returned(self):
-        """Dataset is not owned"""
-        token = self.add_and_authenticate("test", "asdf")
-        token2 = self.add_and_authenticate("test2", "fdsa")
-        token_headers = self.get_token_header(token)
-        # add datasets
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="cooler",
-            processing_state="finished",
-            user_id=1,
-        )
-        dataset2 = Dataset(
-            dataset_name="test2",
-            file_path="/test/path/2",
-            filetype="cooler",
-            processing_state="finished",
-            user_id=2,
-        )
-        db.session.add_all([dataset1, dataset2])
-        db.session.commit()
-        # get datasets
-        response = self.client.get(
-            "/api/datasets/2/availableBinsizes/",
-            headers=token_headers,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 403)
-
-    def test_bedfile_not_returned(self):
-        """Bedfile does not have available binsizes and should not be returned."""
-        token = self.add_and_authenticate("test", "asdf")
-        token_headers = self.get_token_header(token)
-        # add datasets
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="bedfile",
-            processing_state="finished",
-            user_id=1,
-        )
-        db.session.add(dataset1)
-        db.session.commit()
-        # get datasets
-        response = self.client.get(
-            "/api/datasets/1/availableBinsizes/",
-            headers=token_headers,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 400)
-
-    def test_bigwig_not_returned(self):
-        """Bigwig does not have available binsizes and should not be returned."""
-        token = self.add_and_authenticate("test", "asdf")
-        token_headers = self.get_token_header(token)
-        # add datasets
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="bigwig",
-            processing_state="finished",
-            user_id=1,
-        )
-        db.session.add(dataset1)
-        db.session.commit()
-        # get datasets
-        response = self.client.get(
-            "/api/datasets/1/availableBinsizes/",
-            headers=token_headers,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 400)
-
-    def test_cooler_w_binsizes_set_returned_correctly(self):
-        """Test whether binsizes from cooler with binsizes set is returned correctly."""
-        token = self.add_and_authenticate("test", "asdf")
-        token_headers = self.get_token_header(token)
-        # add datasets
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="cooler",
-            processing_state="finished",
-            available_binsizes="[100, 200, 300]",
-            user_id=1,
-        )
-        db.session.add(dataset1)
-        db.session.commit()
-        # get datasets
-        response = self.client.get(
-            "/api/datasets/1/availableBinsizes/",
-            headers=token_headers,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.data), [100, 200, 300])
-
-    def test_cooler_wo_binsizes_set_returned_correctly(self):
-        """Test whether binsizes from cooler without binsizes is returned correctly"""
-        token = self.add_and_authenticate("test", "asdf")
-        token_headers = self.get_token_header(token)
-        # add datasets
-        dataset1 = Dataset(
-            dataset_name="test1",
-            file_path="/test/path/1",
-            filetype="cooler",
-            processing_state="finished",
-            user_id=1,
-        )
-        db.session.add(dataset1)
-        db.session.commit()
-        # get datasets
-        response = self.client.get(
-            "/api/datasets/1/availableBinsizes/",
-            headers=token_headers,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.data), [])
+        self.assertEqual(sorted(response.json, key=lambda x: x["id"]), expected)
 
 
 class TestProcessingStateIsUpdated(LoginTestCase):
     """Tests whether get route updates processing state"""
 
-    def add_test_datasets(self, state):
+    def setUp(self):
         """adds test datasets to db"""
-        dataset1 = Dataset(
+        super().setUp()
+        # add finished dataset
+        self.finished_dataset = Dataset(
+            id=1,
             dataset_name="test1",
             file_path="/test/path/1",
             filetype="cooler",
-            processing_state=state,
+            processing_state="finished",
             user_id=1,
         )
-        db.session.add(dataset1)
-        db.session.commit()
+        # add processing dataset
+        self.processing_dataset = Dataset(
+            id=2,
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="cooler",
+            processing_state="processing",
+            user_id=1,
+        )
+        # add uploading dataset
+        self.uploading_dataset = Dataset(
+            id=3,
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="cooler",
+            processing_state="uploading",
+            user_id=1,
+        )
+        # add task for processing dataset
+        self.task_processing_dataset = Task(id="asdf", name="test", dataset_id=1)
+        # add task for uploading dataset
+        self.task_uploading_dataset = Task(id="asdf", name="test", dataset_id=3)
 
     @patch("app.models.any_tasks_failed")
     @patch("app.models.all_tasks_finished")
@@ -675,11 +325,8 @@ class TestProcessingStateIsUpdated(LoginTestCase):
         token = self.add_and_authenticate("test", "asdf")
         # create token header
         token_headers = self.get_token_header(token)
-        # add new datasets
-        self.add_test_datasets("processing")
-        # add Task
-        new_task = Task(id="asdf", name="test", dataset_id=1)
-        db.session.add(new_task)
+        # add datasets
+        db.session.add_all([self.finished_dataset, self.task_processing_dataset])
         db.session.commit()
         # get datasets
         response = self.client.get(
@@ -689,91 +336,17 @@ class TestProcessingStateIsUpdated(LoginTestCase):
         )
         # check response
         self.assertEqual(response.status_code, 200)
-        expected = [
-            {
-                "dataset_name": "test1",
-                "file_path": "/test/path/1",
-                "genotype": "undefined",
-                "description": "undefined",
-                "filetype": "cooler",
-                "public": False,
-                "id": 1,
-                "user_id": 1,
-                "processing_state": "processing",
-            }
-        ]
-        self.assertEqual(response.json, expected)
+        dataset = Dataset.query.get(self.finished_dataset.id)
+        self.assertEqual(dataset.processing_state, "processing")
 
     def test_finished_when_no_task(self):
+        """Tests whether dataset is swithced from processing to finished if there is no task"""
         # add new user
         token = self.add_and_authenticate("test", "asdf")
         # create token header
         token_headers = self.get_token_header(token)
         # add new datasets
-        self.add_test_datasets("processing")
-        # get datasets
-        response = self.client.get(
-            "/api/datasets/",
-            headers=token_headers,
-            content_type="application/json",
-        )
-        # check response
-        self.assertEqual(response.status_code, 200)
-        expected = [
-            {
-                "dataset_name": "test1",
-                "file_path": "/test/path/1",
-                "genotype": "undefined",
-                "description": "undefined",
-                "filetype": "cooler",
-                "public": False,
-                "id": 1,
-                "user_id": 1,
-                "processing_state": "finished",
-            }
-        ]
-        self.assertEqual(response.json, expected)
-
-    def test_uploaded_no_update_wo_task(self):
-        # add new user
-        token = self.add_and_authenticate("test", "asdf")
-        # create token header
-        token_headers = self.get_token_header(token)
-        # add new datasets
-        self.add_test_datasets("uploading")
-        # get datasets
-        response = self.client.get(
-            "/api/datasets/",
-            headers=token_headers,
-            content_type="application/json",
-        )
-        # check response
-        self.assertEqual(response.status_code, 200)
-        expected = [
-            {
-                "dataset_name": "test1",
-                "file_path": "/test/path/1",
-                "genotype": "undefined",
-                "description": "undefined",
-                "filetype": "cooler",
-                "public": False,
-                "id": 1,
-                "user_id": 1,
-                "processing_state": "uploading",
-            }
-        ]
-        self.assertEqual(response.json, expected)
-
-    def test_uploaded_no_update_w_task(self):
-        # add new user
-        token = self.add_and_authenticate("test", "asdf")
-        # create token header
-        token_headers = self.get_token_header(token)
-        # add new datasets
-        self.add_test_datasets("uploading")
-        # add Task
-        new_task = Task(id="asdf", name="test", dataset_id=1)
-        db.session.add(new_task)
+        db.session.add_all([self.processing_dataset])
         db.session.commit()
         # get datasets
         response = self.client.get(
@@ -783,20 +356,47 @@ class TestProcessingStateIsUpdated(LoginTestCase):
         )
         # check response
         self.assertEqual(response.status_code, 200)
-        expected = [
-            {
-                "dataset_name": "test1",
-                "file_path": "/test/path/1",
-                "genotype": "undefined",
-                "description": "undefined",
-                "filetype": "cooler",
-                "public": False,
-                "id": 1,
-                "user_id": 1,
-                "processing_state": "uploading",
-            }
-        ]
-        self.assertEqual(response.json, expected)
+        dataset = Dataset.query.get(self.processing_dataset.id)
+        self.assertEqual(dataset.processing_state, "finished")
+
+    def test_uploading_dataset_no_update_wo_task(self):
+        # add new user
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add new datasets
+        db.session.add_all([self.uploading_dataset])
+        db.session.commit()
+        # get datasets
+        response = self.client.get(
+            "/api/datasets/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        dataset = Dataset.query.get(self.uploading_dataset.id)
+        self.assertEqual(dataset.processing_state, "uploading")
+
+    def test_uploading_dataset_no_update_wo_task(self):
+        # add new user
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add new datasets
+        # add new datasets
+        db.session.add_all([self.uploading_dataset, self.task_uploading_dataset])
+        db.session.commit()
+        # get datasets
+        response = self.client.get(
+            "/api/datasets/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        dataset = Dataset.query.get(self.uploading_dataset.id)
+        self.assertEqual(dataset.processing_state, "uploading")
 
 
 if __name__ == "__main__":
