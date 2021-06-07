@@ -122,7 +122,6 @@
 <script>
 import lineprofile from "../visualizations/lineprofile";
 import { apiMixin, formattingMixin } from "../../mixins";
-import { group_lineprofils_by_binsize } from "../../functions";
 import EventBus from "../../eventBus";
 
 const TOOLBARHEIGHT = 71;

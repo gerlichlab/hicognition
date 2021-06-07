@@ -8,9 +8,7 @@ export function getScale(min, max, scaleType) {
             .scaleLinear()
             .range(["white", "orange", "red", "black"])
             .domain(distributeMinMax(min, max));
-    } else if (scaleType == "red") {
-        return d3.scaleSequential(d3.interpolateReds).domain([min, max]);
-    } else if (scaleType == "blueWhiteRed") {
+    }else if (scaleType == "blueWhiteRed") {
         return d3
             .scaleDiverging(t => d3.interpolateRdBu(1 - t))
             .domain([min, 0, max]);
