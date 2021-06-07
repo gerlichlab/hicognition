@@ -105,24 +105,6 @@ def get_name_of_dataset(dataset_id):
     return jsonify(dataset.dataset_name)
 
 
-@api.route("/datasets/<dataset_id>/intervals/", methods=["GET"])
-@auth.login_required
-def get_intervals_of_dataset(dataset_id):
-    """Gets all available intervals for a given dataset, if the user owns the requested dataset."""
-    dataset = Dataset.query.get(dataset_id)
-    # check whether dataset exists
-    if dataset is None:
-        return not_found(f"Dataset with id '{dataset_id}' does not exist!")
-    # check whether user owns the dataset
-    if is_access_to_dataset_denied(dataset, g):
-        return forbidden(
-            f"Dataset with id '{dataset_id}' is not owned by logged in user!"
-        )
-    # SQL join to get all intervals that come from the specified dataset
-    all_files = Intervals.query.join(Dataset).filter(Dataset.id == dataset_id).all()
-    return jsonify([dfile.to_json() for dfile in all_files])
-
-
 @api.route("/datasets/<dataset_id>/processedDataMap/", methods=["GET"])
 @auth.login_required
 def get_processed_data_mapping_of_dataset(dataset_id):
