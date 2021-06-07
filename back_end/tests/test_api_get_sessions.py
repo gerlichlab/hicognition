@@ -8,18 +8,25 @@ import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Task, Session
+from app.models import Session
 
 
 class TestGetSessions(LoginTestCase):
     """Tests for /api/sessions route to list and query sessions."""
 
-    def create_sessions(self):
+    def setUp(self):
+        super().setUp()
         # define datasets
         self.timestamp = datetime.datetime.utcnow()
-        self.session_user_1 = Session(user_id=1, name="test", created_utc=self.timestamp)
-        self.session_user_1_2 = Session(user_id=1, name="test2", created_utc=self.timestamp)
-        self.session_user_2 = Session(user_id=2, name="test3", created_utc=self.timestamp)
+        self.session_user_1 = Session(
+            user_id=1, name="test", created_utc=self.timestamp
+        )
+        self.session_user_1_2 = Session(
+            user_id=1, name="test2", created_utc=self.timestamp
+        )
+        self.session_user_2 = Session(
+            user_id=2, name="test3", created_utc=self.timestamp
+        )
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
@@ -44,7 +51,6 @@ class TestGetSessions(LoginTestCase):
 
     def test_single_owned_session_is_returned_correctly(self):
         """No sessions exist, return value is empty"""
-        self.create_sessions()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -63,7 +69,6 @@ class TestGetSessions(LoginTestCase):
 
     def test_multiple_owned_session_are_returned_correctly(self):
         """No sessions exist, return value is empty"""
-        self.create_sessions()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -78,11 +83,13 @@ class TestGetSessions(LoginTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json, [self.session_user_1.to_json(), self.session_user_1_2.to_json()])
+        self.assertEqual(
+            response.json,
+            [self.session_user_1.to_json(), self.session_user_1_2.to_json()],
+        )
 
     def test_only_owned_sessions_are_returned(self):
         """No sessions exist, return value is empty"""
-        self.create_sessions()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -99,15 +106,23 @@ class TestGetSessions(LoginTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, [self.session_user_1.to_json()])
 
+
 class TestGetSessionWithID(LoginTestCase):
     """Tests for /api/sessions/<id> route to list and query sessions."""
 
-    def create_sessions(self):
+    def setUp(self):
+        super().setUp()
         # define datasets
         self.timestamp = datetime.datetime.utcnow()
-        self.session_user_1 = Session(user_id=1, name="test", created_utc=self.timestamp)
-        self.session_user_1_2 = Session(user_id=1, name="test2", created_utc=self.timestamp)
-        self.session_user_2 = Session(user_id=2, name="test3", created_utc=self.timestamp)
+        self.session_user_1 = Session(
+            user_id=1, name="test", created_utc=self.timestamp
+        )
+        self.session_user_1_2 = Session(
+            user_id=1, name="test2", created_utc=self.timestamp
+        )
+        self.session_user_2 = Session(
+            user_id=2, name="test3", created_utc=self.timestamp
+        )
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
@@ -131,7 +146,6 @@ class TestGetSessionWithID(LoginTestCase):
 
     def test_session_is_not_owned(self):
         """Session is not owned, response whould be 403."""
-        self.create_sessions()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -149,7 +163,6 @@ class TestGetSessionWithID(LoginTestCase):
 
     def test_owned_session_returned_correctly(self):
         """Tests whether owned session is returned correctly"""
-        self.create_sessions()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -168,7 +181,6 @@ class TestGetSessionWithID(LoginTestCase):
 
     def test_unowned_session_is_returned_correctly_with_session_token(self):
         """Session is not owned, but correcte session token is provided."""
-        self.create_sessions()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -189,7 +201,6 @@ class TestGetSessionWithID(LoginTestCase):
 
     def test_unowned_session_is_not_returned_with_invalid_session_token(self):
         """Session is not owned, but correcte session token is provided."""
-        self.create_sessions()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -206,7 +217,6 @@ class TestGetSessionWithID(LoginTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
-
 
 
 if __name__ == "__main__":
