@@ -17,8 +17,9 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
     Inherits both from LoginTest and TempDirTestCase
     to be able to login and make temporary directory"""
 
-    def add_test_datasets(self):
+    def setUp(self):
         """adds test datasets to db"""
+        super().setUp()
         dataset1 = Dataset(
             dataset_name="test1", file_path="/test/path/1", filetype="cooler", user_id=1
         )
@@ -32,23 +33,22 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
             user_id=2,
         )
         dataset4 = Dataset(
-            dataset_name="test4",
-            file_path="test/path/4",
-            filetype="bedfile",
-            user_id = 1
+            dataset_name="test4", file_path="test/path/4", filetype="bedfile", user_id=1
         )
         dataset5 = Dataset(
-            dataset_name="test1", file_path="/test/path/1", filetype="cooler", user_id=2, public=True
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="cooler",
+            user_id=2,
+            public=True,
         )
         dataset6 = Dataset(
             dataset_name="test1", file_path="/test/path/1", filetype="bigwig", user_id=1
         )
-        interval1 = Intervals(
-            name = "interval1",
-            windowsize=100000,
-            dataset_id=4
+        interval1 = Intervals(name="interval1", windowsize=100000, dataset_id=4)
+        db.session.add_all(
+            [dataset1, dataset2, dataset3, dataset4, dataset5, dataset6, interval1]
         )
-        db.session.add_all([dataset1, dataset2, dataset3, dataset4, dataset5, dataset6, interval1])
         db.session.commit()
 
     @patch("app.models.User.launch_task")
@@ -57,8 +57,6 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
-        # add datasets
-        self.add_test_datasets()
         # define call arguments
         data = {
             "dataset_id": "1",
@@ -85,7 +83,9 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     binsize,
                 )
         # check whether number of calls was correct
-        self.assertEqual(len(mock_launch.call_args_list), len(intervals) * len(binsizes) )
+        self.assertEqual(
+            len(mock_launch.call_args_list), len(intervals) * len(binsizes)
+        )
 
     @patch("app.models.User.launch_task")
     def test_user_cannot_access_other_datasets(self, mock_launch):
@@ -93,8 +93,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
-        # add datasets
-        self.add_test_datasets()
+        # construct post data
         data = {
             "dataset_id": "3",
             "region_ids": "[4]",
@@ -114,8 +113,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
-        # add datasets
-        self.add_test_datasets()
+        # construct post data
         data = {
             "dataset_id": "100",
             "region_ids": "[4]",
@@ -135,8 +133,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
-        # add datasets
-        self.add_test_datasets()
+        # construct post data
         data = {
             "region_ids": "[4]",
         }
@@ -157,8 +154,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
-        # add datasets
-        self.add_test_datasets()
+        # construct post data
         # call args
         data = {
             "dataset_id": "5",
@@ -185,7 +181,9 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     binsize,
                 )
         # check whether number of calls was correct
-        self.assertEqual(len(mock_launch.call_args_list), len(intervals) * len(binsizes) )
+        self.assertEqual(
+            len(mock_launch.call_args_list), len(intervals) * len(binsizes)
+        )
 
     @patch("app.models.User.launch_task")
     def test_pipeline_stackup_is_called_correctly_for_owned_dataset(self, mock_launch):
@@ -193,8 +191,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
-        # add datasets
-        self.add_test_datasets()
+        # construct post data
         data = {
             "dataset_id": "6",
             "region_ids": "[4]",
@@ -213,14 +210,16 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         for binsize in binsizes:
             for interval in intervals:
                 mock_launch.assert_any_call(
-                "pipeline_stackup",
-                "run stackup pipeline",
+                    "pipeline_stackup",
+                    "run stackup pipeline",
                     6,
                     interval,
                     binsize,
                 )
         # check whether number of calls was correct
-        self.assertEqual(len(mock_launch.call_args_list), len(intervals) * len(binsizes) )
+        self.assertEqual(
+            len(mock_launch.call_args_list), len(intervals) * len(binsizes)
+        )
 
     @patch("app.models.User.launch_task")
     @patch("app.models.Task.get_rq_job")
@@ -234,17 +233,12 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
-        # add datasets
-        self.add_test_datasets()
         # add tasks
         task1 = Task(id="test", name="test", user_id=1, dataset_id=1, complete=False)
         task2 = Task(id="test2", name="test2", user_id=1, dataset_id=1, complete=False)
         db.session.add_all([task1, task2])
         db.session.commit()
-        data = {
-            "dataset_id": "1",
-            "region_ids": "[4]"
-        }
+        data = {"dataset_id": "1", "region_ids": "[4]"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/",
