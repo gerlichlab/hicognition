@@ -16,6 +16,7 @@
             </md-dialog-title>
             <addSessionForm
                 @close-dialog="$emit('close-dialog')"
+                :serializing="serializing"
             ></addSessionForm>
         </md-dialog>
     </div>
@@ -31,7 +32,8 @@ export default {
         return {
             infoText: " \nHere you can save your sessions".split(
                 "\n"
-            )
+            ),
+            serializing: true
         };
     },
     components: {
@@ -50,6 +52,10 @@ export default {
             if (val){
                 // serialize widgets when dialog is shown
                 EventBus.$emit('serialize-widgets');
+                // wait for serialization
+                setTimeout(() => {this.serializing = false}, 1500)
+            }else{
+                this.serializing = true
             }
         }
     }

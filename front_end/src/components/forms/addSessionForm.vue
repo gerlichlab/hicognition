@@ -41,7 +41,7 @@
                     <md-button
                         type="submit"
                         class="md-primary"
-                        :disabled="sending"
+                        :disabled="sending || serializing"
                         >Save session</md-button
                     >
                 </md-card-actions>
@@ -62,6 +62,9 @@ import { apiMixin } from "../../mixins";
 export default {
     name: "AddSessionForm",
     mixins: [validationMixin, apiMixin],
+    props: {
+        serializing: Boolean
+    },
     data: () => ({
         form: {
             sessionName: null
