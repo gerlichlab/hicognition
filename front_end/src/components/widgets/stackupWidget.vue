@@ -1,5 +1,9 @@
 <template>
-    <div>
+    <div
+        @click="handleWidgetSelection"
+        @mouseenter="handleMouseEnter"
+        @mouseleave="handleMouseLeave"
+    >
         <div
             :style="cssStyle"
             class="smallMargin md-elevation-1 bg"
@@ -102,6 +106,17 @@
                                     </div>
                                 </md-list>
                             </md-list-item>
+                            <md-list-item md-expand>
+                                <span class="md-body-1">Share</span>
+                                <md-list slot="md-expand">
+                                    <md-list-item
+                                        @click="handleStartSortOrderShare"
+                                        ><span class="md-body-1"
+                                            >Sort order</span
+                                        >
+                                    </md-list-item>
+                                </md-list>
+                            </md-list-item>
                         </md-menu-content>
                     </md-menu>
                 </div>
@@ -148,7 +163,8 @@ import heatmap from "../visualizations/heatmap";
 import { apiMixin, formattingMixin } from "../../mixins";
 import {
     sort_matrix_by_index,
-    sort_matrix_by_center_column
+    sort_matrix_by_center_column,
+    get_indices_center_column
 } from "../../functions";
 import EventBus from "../../eventBus";
 
@@ -234,9 +250,11 @@ export default {
             return Object.keys(this.binsizes).length != 0;
         },
         cssStyle: function() {
+            let opacity = this.showSelection ? "0.6" : "1";
             return {
                 height: `${this.height}px`,
-                width: `${this.width}px`
+                width: `${this.width}px`,
+                opacity: opacity
             };
         },
         sortDirection: function() {
@@ -253,6 +271,50 @@ export default {
         }
     },
     methods: {
+        handleMouseEnter: function() {
+            if (this.sortOrderSelectionState && this.showData) {
+                this.showSelection = true;
+            }
+        },
+        handleMouseLeave: function() {
+            if (this.sortOrderSelectionState && this.showData) {
+                this.showSelection = false;
+            }
+        },
+        handleWidgetSelection: function() {
+            if (this.sortOrderSelectionState && this.showData) {
+                // construct sort order -> the values are just shared and sorting is done in target widget
+                let values;
+                if (this.selectedSortOrder == "center column"){
+                    values = get_indices_center_column(this.widgetData["data"], this.widgetData["shape"])
+                }else{
+                    values = this.sortorders[this.selectedSortOrder]
+                }
+                EventBus.$emit(
+                    "select-sort-order-end",
+                    this.id,
+                    values,
+                    this.isAscending
+                );
+                this.showSelection = false;
+            }
+        },
+        handleStartSortOrderShare: function() {
+            EventBus.$emit("select-sort-order-start", this.id);
+            // add event listener to window to catch next click event
+            window.addEventListener(
+                "click", this.emitEmptySortOrderEnd,
+                { once: true }
+            );
+            this.sortOrderRecipient = true
+        },
+        emitEmptySortOrderEnd: function(){
+            EventBus.$emit(
+                        "select-sort-order-end",
+                        undefined,
+                        undefined
+                    );
+        },
         serializeWidget: function() {
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
@@ -333,10 +395,10 @@ export default {
                 return false;
             }
             if (
-                (newCollectionData["regionID"] !=
-                oldCollectionData["regionID"]) || 
-                (newCollectionData["intervalSize"] !=
-                oldCollectionData["intervalSize"])
+                newCollectionData["regionID"] !=
+                    oldCollectionData["regionID"] ||
+                newCollectionData["intervalSize"] !=
+                    oldCollectionData["intervalSize"]
             ) {
                 return false;
             }
@@ -352,12 +414,15 @@ export default {
                 intervalSize: collectionData["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
-                datasets:  collectionData["availableData"]["stackup"],
+                datasets: collectionData["availableData"]["stackup"],
                 minHeatmap: undefined,
                 maxHeatmap: undefined,
                 selectedSortOrder: "center column",
                 sortorders: undefined,
                 isAscending: true,
+                sortOrderSelectionState: false,
+                showSelection: false,
+                sortOrderRecipient: false,
                 showMenu: false
             };
             // write properties to store
@@ -381,6 +446,9 @@ export default {
                 datasets: collectionData["availableData"]["stackup"],
                 sortorders: undefined,
                 isAscending: true,
+                sortOrderSelectionState: false,
+                showSelection: false,
+                sortOrderRecipient: false,
                 showMenu: false
             };
         },
@@ -401,9 +469,12 @@ export default {
                 widgetDataValues = undefined;
             }
             // increment dataset usage in store
-            if (widgetData["dataset"]){
-                let datasetId = widgetData["dataset"]
-                this.$store.commit("compare/increment_usage_dataset", datasetId)
+            if (widgetData["dataset"]) {
+                let datasetId = widgetData["dataset"];
+                this.$store.commit(
+                    "compare/increment_usage_dataset",
+                    datasetId
+                );
             }
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
@@ -420,6 +491,9 @@ export default {
                 datasets: collectionConfig["availableData"]["stackup"],
                 sortorders: widgetData["sortorders"],
                 isAscending: widgetData["isAscending"],
+                showSelection: false,
+                sortOrderSelectionState: false,
+                sortOrderRecipient: false,
                 showMenu: false
             };
         },
@@ -478,9 +552,9 @@ export default {
             // return it
             return piling_data;
         },
-        updateData: async function(){
+        updateData: async function() {
             // reset min and max colormap values
-            this.minHeatmap = undefined, this.maxHeatmap = undefined;
+            (this.minHeatmap = undefined), (this.maxHeatmap = undefined);
             // fetch widget data
             var stackup_id = this.binsizes[this.selectedBinsize];
             this.widgetDataRef = stackup_id;
@@ -501,28 +575,42 @@ export default {
             deep: true,
             handler: function(newValue) {
                 // update availability object
-                this.datasets = newValue[this.collectionID]["collectionConfig"]["availableData"]["stackup"]
-                this.intervalSize = newValue[this.collectionID]["collectionConfig"]["intervalSize"]
+                this.datasets =
+                    newValue[this.collectionID]["collectionConfig"][
+                        "availableData"
+                    ]["stackup"];
+                this.intervalSize =
+                    newValue[this.collectionID]["collectionConfig"][
+                        "intervalSize"
+                    ];
             }
         },
-        datasets: function(newVal, oldVal){
-            if (!newVal || !oldVal || !this.selectedDataset){
-                return
+        datasets: function(newVal, oldVal) {
+            if (!newVal || !oldVal || !this.selectedDataset) {
+                return;
             }
-            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize]
-            let binsizes = Object.keys(this.binsizes)
-            this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
-            this.updateData()
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
+            let binsizes = Object.keys(this.binsizes);
+            this.selectedBinsize = Number(
+                binsizes[Math.floor(binsizes.length / 2)]
+            );
+            this.updateData();
         },
-        intervalSize: function(newVal, oldVal){
+        intervalSize: function(newVal, oldVal) {
             // if interval size changes, reload data
-            if (!newVal || !oldVal || !this.selectedDataset){
-                return
+            if (!newVal || !oldVal || !this.selectedDataset) {
+                return;
             }
-            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize]
-            let binsizes = Object.keys(this.binsizes)
-            this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
-            this.updateData()
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
+            let binsizes = Object.keys(this.binsizes);
+            this.selectedBinsize = Number(
+                binsizes[Math.floor(binsizes.length / 2)]
+            );
+            this.updateData();
         },
         selectedDataset: function(newVal, oldVal) {
             if (!this.selectedDataset) {
@@ -530,14 +618,18 @@ export default {
                 return;
             }
             // reset min and max colormap values
-            this.minHeatmap = undefined, this.maxHeatmap = undefined;
+            (this.minHeatmap = undefined), (this.maxHeatmap = undefined);
             // set binsizes and add default
-            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize];
-            let binsizes = Object.keys(this.binsizes)
-            if (!this.selectedBinsize){
-                this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
-            }else{
-                this.updatedData()
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
+            let binsizes = Object.keys(this.binsizes);
+            if (!this.selectedBinsize) {
+                this.selectedBinsize = Number(
+                    binsizes[Math.floor(binsizes.length / 2)]
+                );
+            } else {
+                this.updatedData();
             }
             // add dataset to store for tallying used_dataset
             this.$store.commit("compare/decrement_usage_dataset", oldVal);
@@ -547,21 +639,38 @@ export default {
             if (!this.selectedBinsize) {
                 return;
             }
-            this.updateData()
+            this.updateData();
         }
     },
     mounted: function() {
         EventBus.$on("serialize-widgets", this.serializeWidget);
         // widget deletion can be trigered via event bus from widget collection
-        EventBus.$on('delete-widget', (id) => {
-            if (id == this.id){
-                this.deleteWidget()
+        EventBus.$on("delete-widget", id => {
+            if (id == this.id) {
+                this.deleteWidget();
             }
-        })
+        });
+        // event bus listeners for sort order sharing
+        EventBus.$on("select-sort-order-start", id => {
+            if (id != this.id) {
+                this.sortOrderSelectionState = true;
+            }
+        });
+        EventBus.$on("select-sort-order-end", (target_id, sortorder, direction) => {
+            if (this.sortOrderRecipient && target_id && sortorder && direction){
+                    this.$set(this.sortorders, "shared", sortorder);
+                    this.selectedSortOrder = "shared"
+                    this.isAscending = direction
+            }
+            this.sortOrderSelectionState = false;
+        });
     },
-    beforeDestroy: function(){
-        EventBus.$off('serialize-widgets')
+    beforeDestroy: function() {
+        EventBus.$off("serialize-widgets");
         // delete widget does not need to be taken off the event bus as ids don't get reused
+        // remove other event listeners
+        EventBus.$off("select-sort-order-start")
+        EventBus.$off("select-sort-order-end")
     }
 };
 </script>

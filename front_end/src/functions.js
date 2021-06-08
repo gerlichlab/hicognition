@@ -2,7 +2,6 @@ import * as math from "mathjs";
 
 const FLOATDIFFERENCE = 10 ** -8;
 
-
 export function argsort(sort_values, ascending = true) {
     if (ascending) {
         return Array.from(Array(sort_values.length).keys()).sort((a, b) =>
@@ -45,8 +44,8 @@ export function max_array(array) {
     /*
         returns maximum element of array
     */
-    if (array.length == 0){
-        return undefined
+    if (array.length == 0) {
+        return undefined;
     }
     var max = -Infinity;
     for (var val of array) {
@@ -63,8 +62,8 @@ export function min_array(array) {
     /*
         returns minimum element of array
     */
-    if (array.length == 0){
-        return undefined
+    if (array.length == 0) {
+        return undefined;
     }
     var min = Infinity;
     for (var val of array) {
@@ -77,6 +76,21 @@ export function min_array(array) {
     return min;
 }
 
+export function get_indices_center_column(flattened_matrix, shape) {
+    /*
+        returnes the indices of the center column of the flattened matrix
+    */
+    var reshaped = math.reshape(flattened_matrix, shape);
+    // center column
+    var sort_values = math.flatten(
+        math.subset(
+            reshaped,
+            math.index([...Array(shape[0]).keys()], Math.floor(shape[1] / 2))
+        )
+    );
+    return sort_values;
+}
+
 export function sort_matrix_by_center_column(
     flattened_matrix,
     shape,
@@ -86,15 +100,8 @@ export function sort_matrix_by_center_column(
         Takes a flattened_matrix of shape [width, height] and sorts it based on its center column either ascending
         or descending.
     */
-    // prepare matrix
-    var reshaped = math.reshape(flattened_matrix, shape);
     // center column
-    var sort_values = math.flatten(
-        math.subset(
-            reshaped,
-            math.index([...Array(shape[0]).keys()], Math.floor(shape[1] / 2))
-        )
-    );
+    var sort_values = get_indices_center_column(flattened_matrix, shape)
     return sort_matrix_by_index(
         flattened_matrix,
         shape,
@@ -126,14 +133,14 @@ export function getPercentile(array, p) {
     /*
         Returns pth percentile of array
     */
-   if ( (p < 0) || (p > 100)){
-       return undefined
-   }
-    let cleaned_array = array.filter((val) => {
-        return isFinite(val) && (val != null)
-    })
-    let sorted_array = cleaned_array.sort((a,b) => a - b);
-    let index = Math.ceil(( (sorted_array.length -1) * p) / 100)
+    if (p < 0 || p > 100) {
+        return undefined;
+    }
+    let cleaned_array = array.filter(val => {
+        return isFinite(val) && val != null;
+    });
+    let sorted_array = cleaned_array.sort((a, b) => a - b);
+    let index = Math.ceil(((sorted_array.length - 1) * p) / 100);
     return sorted_array[index];
 }
 
@@ -141,14 +148,14 @@ export function getPerMilRank(array, p) {
     /*
         Returns pth percentile of array
     */
-   if ( (p < 0) || (p > 1000)){
-       return undefined
-   }
-    let cleaned_array = array.filter((val) => {
-        return isFinite(val) && (val != null)
-    })
-    let sorted_array = cleaned_array.sort((a,b) => a - b);
-    let index = Math.ceil(( (sorted_array.length -1) * p) / 1000)
+    if (p < 0 || p > 1000) {
+        return undefined;
+    }
+    let cleaned_array = array.filter(val => {
+        return isFinite(val) && val != null;
+    });
+    let sorted_array = cleaned_array.sort((a, b) => a - b);
+    let index = Math.ceil(((sorted_array.length - 1) * p) / 1000);
     return sorted_array[index];
 }
 
