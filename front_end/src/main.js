@@ -41,7 +41,9 @@ if (localStorage.getItem("hicognition-token")){
 // define global flags
 
 Vue.prototype.$globalFlags = {
-    serializeCompare: true // whether compare view should be serialized to store before it is destroeyd -> needs to happen upon front-end routing, but not upon logout
+    serializeCompare: true, // whether compare view should be serialized to store before it is destroeyd -> needs to happen upon front-end routing, but not upon logout
+    sortOrderShareColors: ["#AA8F66", "#ED9B40", "#FFEEDB", "#BA3B46"],
+    sortOrderColorIndex: 0
 }
 
 // instantiate vue app

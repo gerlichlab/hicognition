@@ -112,7 +112,7 @@
                                     <md-list-item
                                         @click="handleStartSortOrderShare"
                                         ><span class="md-body-1"
-                                            >Sort order</span
+                                            >Take sort order from</span
                                         >
                                     </md-list-item>
                                 </md-list>
@@ -251,10 +251,23 @@ export default {
         },
         cssStyle: function() {
             let opacity = this.showSelection ? "0.6" : "1";
+            // define border style
+            let borderStyle;
+            if (this.sortOrderRecipients > 0){
+                borderStyle = "solid"
+            }else if (this.sortOrderTargetID){ // sort order target id is defined if widget takes sort order from somewhere else
+                borderStyle = "dashed"
+            }else{
+                borderStyle = "none"
+            }
             return {
                 height: `${this.height}px`,
                 width: `${this.width}px`,
-                opacity: opacity
+                opacity: opacity,
+                "box-sizing": "border-box",
+                "border-width": "10px",
+                "border-style": `none none ${borderStyle} none`,
+                "border-color": this.sortOrderColor ? this.sortOrderColor: "none"
             };
         },
         sortDirection: function() {
@@ -290,12 +303,20 @@ export default {
                 }else{
                     values = this.sortorders[this.selectedSortOrder]
                 }
+                if (this.sortOrderRecipients == 0){
+                    // new share established, get current color
+                    this.sortOrderColor = this.$globalFlags.sortOrderShareColors[this.$globalFlags.sortOrderColorIndex]
+                    // increment index
+                    this.$globalFlags.sortOrderColorIndex += 1
+                }
                 EventBus.$emit(
                     "select-sort-order-end",
                     this.id,
                     values,
-                    this.isAscending
+                    this.isAscending,
+                    this.sortOrderColor
                 );
+                this.sortOrderRecipients += 1;
                 this.showSelection = false;
             }
         },
@@ -344,6 +365,7 @@ export default {
                 maxHeatmap: this.maxHeatmap,
                 selectedSortOrder: this.selectedSortOrder,
                 sortorders: this.sortorders,
+                sortOrderColor: undefined,
                 isAscending: this.isAscending
             };
         },
@@ -423,6 +445,9 @@ export default {
                 sortOrderSelectionState: false,
                 showSelection: false,
                 sortOrderRecipient: false,
+                sortOrderRecipients: 0,
+                sortOrderTargetID: false,
+                sortOrderColor: undefined,
                 showMenu: false
             };
             // write properties to store
@@ -449,6 +474,9 @@ export default {
                 sortOrderSelectionState: false,
                 showSelection: false,
                 sortOrderRecipient: false,
+                sortOrderRecipients: 0,
+                sortOrderTargetID: false,
+                sortOrderColor: undefined,
                 showMenu: false
             };
         },
@@ -494,6 +522,9 @@ export default {
                 showSelection: false,
                 sortOrderSelectionState: false,
                 sortOrderRecipient: false,
+                sortOrderRecipients: 0,
+                sortOrderTargetID: undefined,
+                sortOrderColor: undefined,
                 showMenu: false
             };
         },
@@ -629,7 +660,7 @@ export default {
                     binsizes[Math.floor(binsizes.length / 2)]
                 );
             } else {
-                this.updatedData();
+                this.updateData();
             }
             // add dataset to store for tallying used_dataset
             this.$store.commit("compare/decrement_usage_dataset", oldVal);
@@ -640,6 +671,45 @@ export default {
                 return;
             }
             this.updateData();
+        },
+        isAscending: function() {
+            // check if widget is sort order recipient -> emit stop sort order sharing event
+            if (this.sortOrderRecipient){
+                this.selectedSortOrder = "center column"
+                EventBus.$emit("stop-sort-order-sharing", this.sortOrderTargetID)
+                this.$delete(this.sortorders, "shared")
+                this.sortOrderRecipient = false;
+                this.sortOrderTargetID = undefined;
+            }
+            // check if selected sort order changes if widget is a sort order donor
+            if (this.sortOrderRecipients > 0){
+                let values;
+                if (this.selectedSortOrder == "center column"){
+                    values = get_indices_center_column(this.widgetData["data"], this.widgetData["shape"])
+                }else{
+                    values = this.sortorders[this.selectedSortOrder]
+                }
+                EventBus.$emit("update-sort-order-sharing", this.id, values, this.isAscending)
+            }
+        },
+        selectedSortOrder: function(val){
+            // check if widget is sort order recipient -> emit stop sort order sharing event
+            if (this.sortOrderRecipient && (val != "shared")){
+                EventBus.$emit("stop-sort-order-sharing", this.sortOrderTargetID)
+                this.$delete(this.sortorders, "shared")
+                this.sortOrderRecipient = false;
+                this.sortOrderTargetID = undefined;
+            }
+            // check if selected sort order changes if widget is a sort order donor
+            if (this.sortOrderRecipients > 0){
+                let values;
+                if (this.selectedSortOrder == "center column"){
+                    values = get_indices_center_column(this.widgetData["data"], this.widgetData["shape"])
+                }else{
+                    values = this.sortorders[this.selectedSortOrder]
+                }
+                EventBus.$emit("update-sort-order-sharing", this.id, values, this.isAscending)
+            }
         }
     },
     mounted: function() {
@@ -656,14 +726,31 @@ export default {
                 this.sortOrderSelectionState = true;
             }
         });
-        EventBus.$on("select-sort-order-end", (target_id, sortorder, direction) => {
-            if (this.sortOrderRecipient && target_id && sortorder && direction){
+        EventBus.$on("select-sort-order-end", (target_id, sortorder, direction, color) => {
+            if (this.sortOrderRecipient && target_id && sortorder && direction && color){
                     this.$set(this.sortorders, "shared", sortorder);
                     this.selectedSortOrder = "shared"
                     this.isAscending = direction
+                    this.sortOrderTargetID = target_id
+                    this.sortOrderColor = color
             }
             this.sortOrderSelectionState = false;
         });
+        EventBus.$on("stop-sort-order-sharing", (target_id) => {
+            if (target_id == this.id){
+                this.sortOrderRecipients -= 1
+                if (this.sortOrderRecipients == 0){
+                    this.$globalFlags.sortOrderColorIndex -= 1
+                }
+            }
+        });
+        EventBus.$on("update-sort-order-sharing", (target_id, sortorder, direction) => {
+            if (this.sortOrderTargetID && (target_id == this.sortOrderTargetID)){
+                this.$set(this.sortorders, "shared", sortorder);
+                this.selectedSortOrder = "shared"
+                this.isAscending = direction
+            }
+        })
     },
     beforeDestroy: function() {
         EventBus.$off("serialize-widgets");
@@ -671,6 +758,7 @@ export default {
         // remove other event listeners
         EventBus.$off("select-sort-order-start")
         EventBus.$off("select-sort-order-end")
+        EventBus.$off("stop-sort-order-sharing")
     }
 };
 </script>
