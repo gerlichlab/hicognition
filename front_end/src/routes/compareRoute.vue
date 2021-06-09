@@ -66,7 +66,6 @@ export default {
                 var newEntry = Object.keys(newValue);
                 var oldEntry = Object.keys(oldValue);
                 if (newEntry != oldEntry) {
-                    console.log("ran")
                     this.collections = newEntry.map(elem => {
                         return { id: Number(elem) };
                     });

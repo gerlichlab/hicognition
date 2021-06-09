@@ -653,6 +653,14 @@ export default {
             }
             // add by center column
             this.sortorders["center column"] = {};
+            // emit sort order update event
+            let values;
+            if (this.selectedSortOrder == "center column"){
+                values = get_indices_center_column(this.widgetData["data"], this.widgetData["shape"])
+            }else{
+                values = this.sortorders[this.selectedSortOrder]
+            }
+            EventBus.$emit("update-sort-order-sharing", this.id, values, this.isAscending)
         }
     },
     watch: {
