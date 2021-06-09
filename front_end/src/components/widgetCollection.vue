@@ -364,6 +364,8 @@ export default {
             widgetData["rowIndex"] = rowIndex;
             widgetData["colIndex"] = colIndex;
             widgetData["parentID"] = this.id;
+            // emit id change event
+            EventBus.$emit("widget-id-change", sourceWidgetID, widgetData["id"])
             // update changed data in store
             this.$store.commit("compare/setWidget", widgetData);
         }

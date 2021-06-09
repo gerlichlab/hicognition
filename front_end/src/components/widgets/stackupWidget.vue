@@ -85,6 +85,7 @@
                                             selectedSortOrder = item;
                                             showMenu = false;
                                         "
+                                        :disabled="sortOrderRecipient"
                                         ><span class="md-body-1">{{
                                             item
                                         }}</span>
@@ -97,7 +98,7 @@
                                         <div
                                             class="md-layout-item md-size-30 padding-left padding-right"
                                         >
-                                            <md-switch v-model="isAscending"
+                                            <md-switch v-model="isAscending" :disabled="sortOrderRecipient"
                                                 ><span class="md-body-1">{{
                                                     sortDirection
                                                 }}</span></md-switch
@@ -110,9 +111,14 @@
                                 <span class="md-body-1">Share</span>
                                 <md-list slot="md-expand">
                                     <md-list-item
-                                        @click="handleStartSortOrderShare"
+                                        @click="handleStartSortOrderShare" :disabled="sortOrderRecipient || this.sortOrderRecipients > 0"
                                         ><span class="md-body-1"
                                             >Take sort order from</span
+                                        >
+                                    </md-list-item>
+                                    <md-list-item @click="handleStopSortOrderShare" :disabled="!sortOrderRecipient">
+                                        <span class="md-body-1"
+                                            >Release sort order</span
                                         >
                                     </md-list-item>
                                 </md-list>
@@ -123,7 +129,7 @@
                 <div class="md-layout-item md-size-10">
                     <div class="padding-top-large padding-right padding-left">
                         <md-button
-                            @click="deleteWidget"
+                            @click="handleWidgetDeletion"
                             class="md-icon-button md-accent"
                         >
                             <md-icon>delete</md-icon>
@@ -285,17 +291,17 @@ export default {
     },
     methods: {
         handleMouseEnter: function() {
-            if (this.sortOrderSelectionState && this.showData) {
+            if (this.sortOrderSelectionState && this.showData && !this.sortOrderRecipient) {
                 this.showSelection = true;
             }
         },
         handleMouseLeave: function() {
-            if (this.sortOrderSelectionState && this.showData) {
+            if (this.sortOrderSelectionState && this.showData && !this.sortOrderRecipient) {
                 this.showSelection = false;
             }
         },
         handleWidgetSelection: function() {
-            if (this.sortOrderSelectionState && this.showData) {
+            if (this.sortOrderSelectionState && this.showData && !this.sortOrderRecipient) {
                 // construct sort order -> the values are just shared and sorting is done in target widget
                 let values;
                 if (this.selectedSortOrder == "center column"){
@@ -327,7 +333,14 @@ export default {
                 "click", this.emitEmptySortOrderEnd,
                 { once: true }
             );
-            this.sortOrderRecipient = true
+            this.expectingSortOrder = true // this needs to be closed after receiving again -> otherwise everything updates
+        },
+        handleStopSortOrderShare: function(){
+            this.selectedSortOrder = "center column"
+            EventBus.$emit("stop-sort-order-sharing", this.sortOrderTargetID)
+            this.$delete(this.sortorders, "shared")
+            this.sortOrderRecipient = false;
+            this.sortOrderTargetID = undefined;
         },
         emitEmptySortOrderEnd: function(){
             EventBus.$emit(
@@ -365,9 +378,27 @@ export default {
                 maxHeatmap: this.maxHeatmap,
                 selectedSortOrder: this.selectedSortOrder,
                 sortorders: this.sortorders,
-                sortOrderColor: undefined,
-                isAscending: this.isAscending
+                isAscending: this.isAscending,
+                expectingSortOrder: false,
+                sortOrderSelectionState: false,
+                showSelection: false,
+                sortOrderRecipient: this.sortOrderRecipient,
+                sortOrderRecipients: this.sortOrderRecipients,
+                sortOrderTargetID: this.sortOrderTargetID,
+                sortOrderColor: this.sortOrderColor
             };
+        },
+        handleWidgetDeletion: function(){
+            // needs to be separate to distinguish it from moving
+            // emit events for sort-order update
+            if (this.sortOrderRecipient){
+                // client handling
+                this.handleStopSortOrderShare()
+            }else if (this.sortOrderRecipients > 0){
+                // source handling
+                EventBus.$emit("sort-order-source-deletion", this.id)
+            }
+            this.deleteWidget()
         },
         deleteWidget: function() {
             // delete widget from store
@@ -442,6 +473,7 @@ export default {
                 selectedSortOrder: "center column",
                 sortorders: undefined,
                 isAscending: true,
+                expectingSortOrder: false,
                 sortOrderSelectionState: false,
                 showSelection: false,
                 sortOrderRecipient: false,
@@ -471,6 +503,7 @@ export default {
                 datasets: collectionData["availableData"]["stackup"],
                 sortorders: undefined,
                 isAscending: true,
+                expectingSortOrder: false,
                 sortOrderSelectionState: false,
                 showSelection: false,
                 sortOrderRecipient: false,
@@ -480,7 +513,7 @@ export default {
                 showMenu: false
             };
         },
-        initializeAtSameCollection: function(widgetData, collectionConfig) {
+        initializeAtSameCollection: function(widgetData, collectionConfig) {// TODO: watcher for select-start-order start does not work when client is moved
             var widgetDataValues;
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
@@ -519,12 +552,13 @@ export default {
                 datasets: collectionConfig["availableData"]["stackup"],
                 sortorders: widgetData["sortorders"],
                 isAscending: widgetData["isAscending"],
+                expectingSortOrder: false,
                 showSelection: false,
                 sortOrderSelectionState: false,
-                sortOrderRecipient: false,
-                sortOrderRecipients: 0,
-                sortOrderTargetID: undefined,
-                sortOrderColor: undefined,
+                sortOrderRecipient: widgetData["sortOrderRecipient"],
+                sortOrderRecipients: widgetData["sortOrderRecipients"],
+                sortOrderTargetID: widgetData["sortOrderTargetID"],
+                sortOrderColor: widgetData["sortOrderColor"],
                 showMenu: false
             };
         },
@@ -673,14 +707,6 @@ export default {
             this.updateData();
         },
         isAscending: function() {
-            // check if widget is sort order recipient -> emit stop sort order sharing event
-            if (this.sortOrderRecipient){
-                this.selectedSortOrder = "center column"
-                EventBus.$emit("stop-sort-order-sharing", this.sortOrderTargetID)
-                this.$delete(this.sortorders, "shared")
-                this.sortOrderRecipient = false;
-                this.sortOrderTargetID = undefined;
-            }
             // check if selected sort order changes if widget is a sort order donor
             if (this.sortOrderRecipients > 0){
                 let values;
@@ -693,13 +719,6 @@ export default {
             }
         },
         selectedSortOrder: function(val){
-            // check if widget is sort order recipient -> emit stop sort order sharing event
-            if (this.sortOrderRecipient && (val != "shared")){
-                EventBus.$emit("stop-sort-order-sharing", this.sortOrderTargetID)
-                this.$delete(this.sortorders, "shared")
-                this.sortOrderRecipient = false;
-                this.sortOrderTargetID = undefined;
-            }
             // check if selected sort order changes if widget is a sort order donor
             if (this.sortOrderRecipients > 0){
                 let values;
@@ -727,14 +746,17 @@ export default {
             }
         });
         EventBus.$on("select-sort-order-end", (target_id, sortorder, direction, color) => {
-            if (this.sortOrderRecipient && target_id && sortorder && direction && color){
-                    this.$set(this.sortorders, "shared", sortorder);
-                    this.selectedSortOrder = "shared"
-                    this.isAscending = direction
-                    this.sortOrderTargetID = target_id
-                    this.sortOrderColor = color
+            if (this.expectingSortOrder && target_id && sortorder && direction && color){
+                // recipient stores data
+                this.$set(this.sortorders, "shared", sortorder);
+                this.selectedSortOrder = "shared"
+                this.isAscending = direction
+                this.sortOrderTargetID = target_id
+                this.sortOrderColor = color
+                this.sortOrderRecipient = true
             }
-            this.sortOrderSelectionState = false;
+            this.expectingSortOrder = false; // switches off expecting recipient
+            this.sortOrderSelectionState = false; // switches off donors
         });
         EventBus.$on("stop-sort-order-sharing", (target_id) => {
             if (target_id == this.id){
@@ -751,14 +773,20 @@ export default {
                 this.isAscending = direction
             }
         })
+        EventBus.$on("widget-id-change", (old_id, new_id) => {
+            if (this.sortOrderRecipient && old_id == this.sortOrderTargetID){
+                this.sortOrderTargetID = new_id
+            }
+        })
+        EventBus.$on("sort-order-source-deletion", (source_id) => {
+            if (this.sortOrderTargetID == source_id){
+                this.handleStopSortOrderShare()
+            }
+        })
     },
     beforeDestroy: function() {
         EventBus.$off("serialize-widgets");
         // delete widget does not need to be taken off the event bus as ids don't get reused
-        // remove other event listeners
-        EventBus.$off("select-sort-order-start")
-        EventBus.$off("select-sort-order-end")
-        EventBus.$off("stop-sort-order-sharing")
     }
 };
 </script>
