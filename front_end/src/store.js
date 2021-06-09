@@ -244,6 +244,8 @@ const compareModule = {
 
 // create global store
 
+const SORTORDERCOLORS = ["#AA8F66", "#ED9B40", "#2E5E61", "#BA3B46", "#823021", "#B58D17", "#125d98"]
+
 const store = new Vuex.Store({
     modules: {
         predefined: predefinedModule,
@@ -254,9 +256,18 @@ const store = new Vuex.Store({
         sessionToken: null,
         user_id: null,
         resolutions: null,
-        datasets: null // datasets are in the global store because they will be shared for all functionalities for a given user throughout a session
+        datasets: null, // datasets are in the global store because they will be shared for all functionalities for a given user throughout a session
+        usedSortOrders: [0, 0, 0, 0, 0, 0, 0] // flags for used numbers
     },
     getters: {
+        getNextSortOrderColor: state => {
+            let nextEmptyIndex = state.usedSortOrders.indexOf(0)
+            if (nextEmptyIndex == -1){
+                return undefined
+            }
+            var color = SORTORDERCOLORS[nextEmptyIndex]
+            return color
+        },
         getResolutions: state => {
             return state.resolutions
         },
@@ -297,6 +308,24 @@ const store = new Vuex.Store({
         }
     },
     mutations: {
+        setColorUsage(state, color){
+            let colorIndex = SORTORDERCOLORS.indexOf(color)
+            state.usedSortOrders = state.usedSortOrders.map((val, index) => {
+                if (index == colorIndex){
+                    return 1
+                }
+                return val
+            })
+        },
+        releaseColorUsage(state, color){
+            let colorIndex = SORTORDERCOLORS.indexOf(color)
+            state.usedSortOrders = state.usedSortOrders.map((val, index) => {
+                if (index == colorIndex){
+                    return 0
+                }
+                return val
+            })
+        },
         setSessionToken(state, tokenValue){
             state.sessionToken = tokenValue
         },

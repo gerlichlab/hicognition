@@ -311,9 +311,13 @@ export default {
                 }
                 if (this.sortOrderRecipients == 0){
                     // new share established, get current color
-                    this.sortOrderColor = this.$globalFlags.sortOrderShareColors[this.$globalFlags.sortOrderColorIndex]
-                    // increment index
-                    this.$globalFlags.sortOrderColorIndex += 1
+                    let returnedColor = this.$store.getters.getNextSortOrderColor
+                    if (!returnedColor){
+                        this.emitEmptySortOrderEnd()
+                    }else{
+                        this.sortOrderColor = returnedColor
+                        this.$store.commit("setColorUsage", this.sortOrderColor)
+                    }
                 }
                 EventBus.$emit(
                     "select-sort-order-end",
@@ -397,6 +401,7 @@ export default {
             }else if (this.sortOrderRecipients > 0){
                 // source handling
                 EventBus.$emit("sort-order-source-deletion", this.id)
+                this.$store.commit("releaseColorUsage", this.sortOrderColor)
             }
             this.deleteWidget()
         },
@@ -762,7 +767,7 @@ export default {
             if (target_id == this.id){
                 this.sortOrderRecipients -= 1
                 if (this.sortOrderRecipients == 0){
-                    this.$globalFlags.sortOrderColorIndex -= 1
+                    this.$store.commit("releaseColorUsage", this.sortOrderColor)
                 }
             }
         });
