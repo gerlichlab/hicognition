@@ -98,7 +98,9 @@
                                         <div
                                             class="md-layout-item md-size-30 padding-left padding-right"
                                         >
-                                            <md-switch v-model="isAscending" :disabled="sortOrderRecipient"
+                                            <md-switch
+                                                v-model="isAscending"
+                                                :disabled="sortOrderRecipient"
                                                 ><span class="md-body-1">{{
                                                     sortDirection
                                                 }}</span></md-switch
@@ -111,12 +113,19 @@
                                 <span class="md-body-1">Share</span>
                                 <md-list slot="md-expand">
                                     <md-list-item
-                                        @click="handleStartSortOrderShare" :disabled="sortOrderRecipient || this.sortOrderRecipients > 0"
+                                        @click="handleStartSortOrderShare"
+                                        :disabled="
+                                            sortOrderRecipient ||
+                                                this.sortOrderRecipients > 0
+                                        "
                                         ><span class="md-body-1"
                                             >Take sort order from</span
                                         >
                                     </md-list-item>
-                                    <md-list-item @click="handleStopSortOrderShare" :disabled="!sortOrderRecipient">
+                                    <md-list-item
+                                        @click="handleStopSortOrderShare"
+                                        :disabled="!sortOrderRecipient"
+                                    >
                                         <span class="md-body-1"
                                             >Release sort order</span
                                         >
@@ -259,12 +268,13 @@ export default {
             let opacity = this.showSelection ? "0.6" : "1";
             // define border style
             let borderStyle;
-            if (this.sortOrderRecipients > 0){
-                borderStyle = "solid"
-            }else if (this.sortOrderTargetID){ // sort order target id is defined if widget takes sort order from somewhere else
-                borderStyle = "dashed"
-            }else{
-                borderStyle = "none"
+            if (this.sortOrderRecipients > 0) {
+                borderStyle = "solid";
+            } else if (this.sortOrderTargetID) {
+                // sort order target id is defined if widget takes sort order from somewhere else
+                borderStyle = "dashed";
+            } else {
+                borderStyle = "none";
             }
             return {
                 height: `${this.height}px`,
@@ -273,7 +283,9 @@ export default {
                 "box-sizing": "border-box",
                 "border-width": "10px",
                 "border-style": `none none ${borderStyle} none`,
-                "border-color": this.sortOrderColor ? this.sortOrderColor: "none"
+                "border-color": this.sortOrderColor
+                    ? this.sortOrderColor
+                    : "none"
             };
         },
         sortDirection: function() {
@@ -290,36 +302,68 @@ export default {
         }
     },
     methods: {
+        constructSortOrder: function() {
+            // extracts sort order values from current selected sort-order
+            let values;
+            if (this.selectedSortOrder == "center column") {
+                values = get_indices_center_column(
+                    this.widgetData["data"],
+                    this.widgetData["shape"]
+                );
+            } else {
+                values = this.sortorders[this.selectedSortOrder];
+            }
+            return values
+        },
+        colorExhaustionErrorHandler: function(){
+            // error handler for when there are no more colors to be shared
+            alert("Maximum number of shares reached!");
+            this.emitEmptySortOrderEnd();
+            this.showSelection = false;
+            return;
+        },
+        setBorderColor: function(color){
+            // sets color for widget and commits to store
+            this.sortOrderColor = color;
+            this.$store.commit(
+                "setColorUsage",
+                this.sortOrderColor
+            );
+        },
         handleMouseEnter: function() {
-            if (this.sortOrderSelectionState && this.showData && !this.sortOrderRecipient) {
+            if (
+                this.sortOrderSelectionState &&
+                this.showData &&
+                !this.sortOrderRecipient
+            ) {
                 this.showSelection = true;
             }
         },
         handleMouseLeave: function() {
-            if (this.sortOrderSelectionState && this.showData && !this.sortOrderRecipient) {
+            if (
+                this.sortOrderSelectionState &&
+                this.showData &&
+                !this.sortOrderRecipient
+            ) {
                 this.showSelection = false;
             }
         },
         handleWidgetSelection: function() {
-            if (this.sortOrderSelectionState && this.showData && !this.sortOrderRecipient) {
+            if (
+                this.sortOrderSelectionState &&
+                this.showData &&
+                !this.sortOrderRecipient
+            ) {
                 // construct sort order -> the values are just shared and sorting is done in target widget
-                let values;
-                if (this.selectedSortOrder == "center column"){
-                    values = get_indices_center_column(this.widgetData["data"], this.widgetData["shape"])
-                }else{
-                    values = this.sortorders[this.selectedSortOrder]
-                }
-                if (this.sortOrderRecipients == 0){
+                let values = this.constructSortOrder()
+                if (this.sortOrderRecipients == 0) {
                     // new share established, get current color
-                    let returnedColor = this.$store.getters.getNextSortOrderColor
-                    if (!returnedColor){
-                        alert("Maximum number of shares reached!")
-                        this.emitEmptySortOrderEnd()
-                        this.showSelection = false;
-                        return
-                    }else{
-                        this.sortOrderColor = returnedColor
-                        this.$store.commit("setColorUsage", this.sortOrderColor)
+                    let returnedColor = this.$store.getters
+                        .getNextSortOrderColor;
+                    if (!returnedColor) {
+                        return this.colorExhaustionErrorHandler()
+                    } else {
+                        this.setBorderColor(returnedColor)
                     }
                 }
                 EventBus.$emit(
@@ -334,27 +378,26 @@ export default {
             }
         },
         handleStartSortOrderShare: function() {
-            EventBus.$emit("select-sort-order-start", this.id, this.collectionID);
-            // add event listener to window to catch next click event
-            window.addEventListener(
-                "click", this.emitEmptySortOrderEnd,
-                { once: true }
+            EventBus.$emit(
+                "select-sort-order-start",
+                this.id,
+                this.collectionID
             );
-            this.expectingSortOrder = true // this needs to be closed after receiving again -> otherwise everything updates
+            // add event listener to window to catch next click event
+            window.addEventListener("click", this.emitEmptySortOrderEnd, {
+                once: true
+            });
+            this.expectingSortOrder = true; // this needs to be closed after receiving again -> otherwise everything updates
         },
-        handleStopSortOrderShare: function(){
-            this.selectedSortOrder = "center column"
-            EventBus.$emit("stop-sort-order-sharing", this.sortOrderTargetID)
-            this.$delete(this.sortorders, "shared")
+        handleStopSortOrderShare: function() {
+            this.selectedSortOrder = "center column";
+            EventBus.$emit("stop-sort-order-sharing", this.sortOrderTargetID);
+            this.$delete(this.sortorders, "shared");
             this.sortOrderRecipient = false;
             this.sortOrderTargetID = undefined;
         },
-        emitEmptySortOrderEnd: function(){
-            EventBus.$emit(
-                        "select-sort-order-end",
-                        undefined,
-                        undefined
-                    );
+        emitEmptySortOrderEnd: function() {
+            EventBus.$emit("select-sort-order-end", undefined, undefined);
         },
         serializeWidget: function() {
             var newObject = this.toStoreObject();
@@ -395,23 +438,23 @@ export default {
                 sortOrderColor: this.sortOrderColor
             };
         },
-        handleWidgetDeletion: function(){
+        handleWidgetDeletion: function() {
             // needs to be separate to distinguish it from moving
             // emit events for sort-order update
-            if (this.sortOrderRecipient){
+            if (this.sortOrderRecipient) {
                 // client handling
-                this.handleStopSortOrderShare()
-            }else if (this.sortOrderRecipients > 0){
+                this.handleStopSortOrderShare();
+            } else if (this.sortOrderRecipients > 0) {
                 // source handling
-                EventBus.$emit("sort-order-source-deletion", this.id)
-                this.$store.commit("releaseColorUsage", this.sortOrderColor)
+                EventBus.$emit("sort-order-source-deletion", this.id);
+                this.$store.commit("releaseColorUsage", this.sortOrderColor);
             }
-            this.deleteWidget()
+            this.deleteWidget();
         },
         deleteWidget: function() {
-            // release color 
-            if (this.sortOrderRecipients > 0){
-                this.$store.commit("releaseColorUsage", this.sortOrderColor)
+            // release color
+            if (this.sortOrderRecipients > 0) {
+                this.$store.commit("releaseColorUsage", this.sortOrderColor);
             }
             // delete widget from store
             var payload = {
@@ -512,7 +555,7 @@ export default {
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
                 selectedSortOrder: "center column",
-                datasets: collectionData["availableData"]["stackup"],
+                datasets: collectionConfig["availableData"]["stackup"],
                 sortorders: undefined,
                 isAscending: true,
                 expectingSortOrder: false,
@@ -550,7 +593,7 @@ export default {
                 );
             }
             // set color usage in store
-            this.$store.commit("setColorUsage", widgetData["sortOrderColor"])
+            this.$store.commit("setColorUsage", widgetData["sortOrderColor"]);
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
                 dragImage: undefined,
@@ -644,23 +687,122 @@ export default {
                 `individualIntervalData/${stackup_id}/metadatasmall`
             );
             // check if shared value is in sortorders
-            if (this.sortorders && ("shared" in this.sortorders)){
-                let tempSortOrder = response.data
-                tempSortOrder["shared"] = this.sortorders["shared"]
-                this.sortorders = tempSortOrder
-            }else{
+            if (this.sortorders && "shared" in this.sortorders) {
+                let tempSortOrder = response.data;
+                tempSortOrder["shared"] = this.sortorders["shared"];
+                this.sortorders = tempSortOrder;
+            } else {
                 this.sortorders = response.data;
             }
             // add by center column
             this.sortorders["center column"] = {};
             // emit sort order update event
             let values;
-            if (this.selectedSortOrder == "center column"){
-                values = get_indices_center_column(this.widgetData["data"], this.widgetData["shape"])
-            }else{
-                values = this.sortorders[this.selectedSortOrder]
+            if (this.selectedSortOrder == "center column") {
+                values = get_indices_center_column(
+                    this.widgetData["data"],
+                    this.widgetData["shape"]
+                );
+            } else {
+                values = this.sortorders[this.selectedSortOrder];
             }
-            EventBus.$emit("update-sort-order-sharing", this.id, values, this.isAscending)
+            EventBus.$emit(
+                "update-sort-order-sharing",
+                this.id,
+                values,
+                this.isAscending
+            );
+        },
+        acceptSortOrderEndEvent: function(
+            target_id,
+            sortorder,
+            direction,
+            color
+        ) {
+            // checks whether passed event arguments are valid and widget is in right state
+            return (
+                this.expectingSortOrder &&
+                target_id &&
+                sortorder != undefined &&
+                direction &&
+                color
+            );
+        },
+        registerSortOrderClientHandlers: function() {
+            // register event handlers that are relevant when widget is a sort order share client
+            EventBus.$on(
+                "select-sort-order-end",
+                (target_id, sortorder, direction, color) => {
+                    if (
+                        this.acceptSortOrderEndEvent(
+                            target_id,
+                            sortorder,
+                            direction,
+                            color
+                        )
+                    ) {
+                        // recipient stores data
+                        this.$set(this.sortorders, "shared", sortorder);
+                        this.selectedSortOrder = "shared";
+                        this.isAscending = direction;
+                        this.sortOrderTargetID = target_id;
+                        this.sortOrderColor = color;
+                        this.sortOrderRecipient = true;
+                    }
+                    this.expectingSortOrder = false; // switches off expecting recipient
+                    this.sortOrderSelectionState = false; // switches off donors
+                }
+            );
+            EventBus.$on(
+                "update-sort-order-sharing",
+                (target_id, sortorder, direction) => {
+                    if (
+                        this.sortOrderTargetID &&
+                        target_id == this.sortOrderTargetID
+                    ) {
+                        this.$set(this.sortorders, "shared", sortorder);
+                        this.selectedSortOrder = "shared";
+                        this.isAscending = direction;
+                    }
+                }
+            );
+            EventBus.$on("widget-id-change", (old_id, new_id) => {
+                if (
+                    this.sortOrderRecipient &&
+                    old_id == this.sortOrderTargetID
+                ) {
+                    this.sortOrderTargetID = new_id;
+                }
+            });
+            EventBus.$on("sort-order-source-deletion", source_id => {
+                if (this.sortOrderTargetID == source_id) {
+                    this.handleStopSortOrderShare();
+                }
+            });
+        },
+        registerSortOrderSourceHandlers: function() {
+            // handlers that are needed if widget is a sort order source
+            EventBus.$on("select-sort-order-start", (id, parent_id) => {
+                if (id != this.id && parent_id == this.collectionID) {
+                    this.sortOrderSelectionState = true;
+                }
+            });
+            EventBus.$on("stop-sort-order-sharing", target_id => {
+                if (target_id == this.id) {
+                    this.sortOrderRecipients -= 1;
+                    if (this.sortOrderRecipients == 0) {
+                        this.$store.commit(
+                            "releaseColorUsage",
+                            this.sortOrderColor
+                        );
+                    }
+                }
+            });
+        },
+        registerSortOrderEventHandlers: function() {
+            // event bus listeners for sort order sharing
+            this.registerSortOrderClientHandlers();
+            this.registerSortOrderSourceHandlers();
         }
     },
     watch: {
@@ -737,26 +879,42 @@ export default {
         },
         isAscending: function() {
             // check if selected sort order changes if widget is a sort order donor
-            if (this.sortOrderRecipients > 0){
+            if (this.sortOrderRecipients > 0) {
                 let values;
-                if (this.selectedSortOrder == "center column"){
-                    values = get_indices_center_column(this.widgetData["data"], this.widgetData["shape"])
-                }else{
-                    values = this.sortorders[this.selectedSortOrder]
+                if (this.selectedSortOrder == "center column") {
+                    values = get_indices_center_column(
+                        this.widgetData["data"],
+                        this.widgetData["shape"]
+                    );
+                } else {
+                    values = this.sortorders[this.selectedSortOrder];
                 }
-                EventBus.$emit("update-sort-order-sharing", this.id, values, this.isAscending)
+                EventBus.$emit(
+                    "update-sort-order-sharing",
+                    this.id,
+                    values,
+                    this.isAscending
+                );
             }
         },
-        selectedSortOrder: function(val){
+        selectedSortOrder: function(val) {
             // check if selected sort order changes if widget is a sort order donor
-            if (this.sortOrderRecipients > 0){
+            if (this.sortOrderRecipients > 0) {
                 let values;
-                if (this.selectedSortOrder == "center column"){
-                    values = get_indices_center_column(this.widgetData["data"], this.widgetData["shape"])
-                }else{
-                    values = this.sortorders[this.selectedSortOrder]
+                if (this.selectedSortOrder == "center column") {
+                    values = get_indices_center_column(
+                        this.widgetData["data"],
+                        this.widgetData["shape"]
+                    );
+                } else {
+                    values = this.sortorders[this.selectedSortOrder];
                 }
-                EventBus.$emit("update-sort-order-sharing", this.id, values, this.isAscending)
+                EventBus.$emit(
+                    "update-sort-order-sharing",
+                    this.id,
+                    values,
+                    this.isAscending
+                );
             }
         }
     },
@@ -768,51 +926,7 @@ export default {
                 this.deleteWidget();
             }
         });
-        // event bus listeners for sort order sharing
-        EventBus.$on("select-sort-order-start", (id, parent_id) => {
-
-            if ((id != this.id) && (parent_id == this.collectionID)) {
-                this.sortOrderSelectionState = true;
-            }
-        });
-        EventBus.$on("select-sort-order-end", (target_id, sortorder, direction, color) => {
-            if (this.expectingSortOrder && target_id && sortorder && direction && color){
-                // recipient stores data
-                this.$set(this.sortorders, "shared", sortorder);
-                this.selectedSortOrder = "shared"
-                this.isAscending = direction
-                this.sortOrderTargetID = target_id
-                this.sortOrderColor = color
-                this.sortOrderRecipient = true
-            }
-            this.expectingSortOrder = false; // switches off expecting recipient
-            this.sortOrderSelectionState = false; // switches off donors
-        });
-        EventBus.$on("stop-sort-order-sharing", (target_id) => {
-            if (target_id == this.id){
-                this.sortOrderRecipients -= 1
-                if (this.sortOrderRecipients == 0){
-                    this.$store.commit("releaseColorUsage", this.sortOrderColor)
-                }
-            }
-        });
-        EventBus.$on("update-sort-order-sharing", (target_id, sortorder, direction) => {
-            if (this.sortOrderTargetID && (target_id == this.sortOrderTargetID)){
-                this.$set(this.sortorders, "shared", sortorder);
-                this.selectedSortOrder = "shared"
-                this.isAscending = direction
-            }
-        })
-        EventBus.$on("widget-id-change", (old_id, new_id) => {
-            if (this.sortOrderRecipient && old_id == this.sortOrderTargetID){
-                this.sortOrderTargetID = new_id
-            }
-        })
-        EventBus.$on("sort-order-source-deletion", (source_id) => {
-            if (this.sortOrderTargetID == source_id){
-                this.handleStopSortOrderShare()
-            }
-        })
+        this.registerSortOrderEventHandlers();
     },
     beforeDestroy: function() {
         EventBus.$off("serialize-widgets");
