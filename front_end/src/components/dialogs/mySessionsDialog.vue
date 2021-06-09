@@ -178,6 +178,8 @@ export default {
                 "compare/setWidgetCollections",
                 JSON.parse(this.selected_session_object)
             );
+            // event session loaded fro compare route
+            EventBus.$emit("session-loaded")
             this.selected_session_object = null;
             this.showRestore = false;
             this.shareableUrl = null;

@@ -51,6 +51,10 @@ export default {
                 this.currentID
             );
             this.currentID += 1;
+        },
+        updateMaxID: function() {
+            var collections = Object.keys(this.$store.getters["compare/getWidgetCollections"])
+            this.currentID =  Math.max(...collections) + 1;
         }
     },
     watch: {
@@ -62,6 +66,7 @@ export default {
                 var newEntry = Object.keys(newValue);
                 var oldEntry = Object.keys(oldValue);
                 if (newEntry != oldEntry) {
+                    console.log("ran")
                     this.collections = newEntry.map(elem => {
                         return { id: Number(elem) };
                     });
@@ -70,8 +75,6 @@ export default {
         }
     },
     mounted: function() {
-        // clear widgetCollections
-        //this.$store.commit("compare/clearWidgetCollections");
         // initilize from store
         var collections = Object.keys(this.$store.getters["compare/getWidgetCollections"])
         this.collections = collections.map(elem => {
@@ -83,6 +86,8 @@ export default {
         }else{
             this.currentID = Math.max(...collections) + 1;
         }
+        //
+        EventBus.$on("session-loaded", this.updateMaxID)
         this.fetchDatasets()
         this.fetchResolutions()
     },

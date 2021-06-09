@@ -549,6 +549,8 @@ export default {
                     datasetId
                 );
             }
+            // set color usage in store
+            this.$store.commit("setColorUsage", widgetData["sortOrderColor"])
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
                 dragImage: undefined,
@@ -641,7 +643,14 @@ export default {
             var response = await this.fetchData(
                 `individualIntervalData/${stackup_id}/metadatasmall`
             );
-            this.sortorders = response.data;
+            // check if shared value is in sortorders
+            if (this.sortorders && ("shared" in this.sortorders)){
+                let tempSortOrder = response.data
+                tempSortOrder["shared"] = this.sortorders["shared"]
+                this.sortorders = tempSortOrder
+            }else{
+                this.sortorders = response.data;
+            }
             // add by center column
             this.sortorders["center column"] = {};
         }
