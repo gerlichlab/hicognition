@@ -257,7 +257,7 @@ const store = new Vuex.Store({
         user_id: null,
         resolutions: null,
         datasets: null, // datasets are in the global store because they will be shared for all functionalities for a given user throughout a session
-        usedSortOrders: [0, 0, 0, 0, 0, 0, 0] // flags for used numbers
+        usedSortOrders: Array(SORTORDERCOLORS.length - 1).fill(0) // flags for used numbers
     },
     getters: {
         getNextSortOrderColor: state => {

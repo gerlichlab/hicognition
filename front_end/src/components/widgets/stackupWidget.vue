@@ -313,7 +313,10 @@ export default {
                     // new share established, get current color
                     let returnedColor = this.$store.getters.getNextSortOrderColor
                     if (!returnedColor){
+                        alert("Maximum number of shares reached!")
                         this.emitEmptySortOrderEnd()
+                        this.showSelection = false;
+                        return
                     }else{
                         this.sortOrderColor = returnedColor
                         this.$store.commit("setColorUsage", this.sortOrderColor)
@@ -331,7 +334,7 @@ export default {
             }
         },
         handleStartSortOrderShare: function() {
-            EventBus.$emit("select-sort-order-start", this.id);
+            EventBus.$emit("select-sort-order-start", this.id, this.collectionID);
             // add event listener to window to catch next click event
             window.addEventListener(
                 "click", this.emitEmptySortOrderEnd,
@@ -406,6 +409,10 @@ export default {
             this.deleteWidget()
         },
         deleteWidget: function() {
+            // release color 
+            if (this.sortOrderRecipients > 0){
+                this.$store.commit("releaseColorUsage", this.sortOrderColor)
+            }
             // delete widget from store
             var payload = {
                 parentID: this.collectionID,
@@ -462,17 +469,17 @@ export default {
             }
             return true;
         },
-        initializeForFirstTime: function(widgetData, collectionData) {
+        initializeForFirstTime: function(widgetData, collectionConfig) {
             var data = {
                 widgetDataRef: undefined,
                 dragImage: undefined,
                 widgetData: undefined,
                 selectedDataset: undefined,
                 selectedBinsize: undefined,
-                intervalSize: collectionData["intervalSize"],
+                intervalSize: collectionConfig["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
-                datasets: collectionData["availableData"]["stackup"],
+                datasets: collectionConfig["availableData"]["stackup"],
                 minHeatmap: undefined,
                 maxHeatmap: undefined,
                 selectedSortOrder: "center column",
@@ -518,7 +525,7 @@ export default {
                 showMenu: false
             };
         },
-        initializeAtSameCollection: function(widgetData, collectionConfig) {// TODO: watcher for select-start-order start does not work when client is moved
+        initializeAtSameCollection: function(widgetData, collectionConfig) {
             var widgetDataValues;
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
@@ -745,8 +752,9 @@ export default {
             }
         });
         // event bus listeners for sort order sharing
-        EventBus.$on("select-sort-order-start", id => {
-            if (id != this.id) {
+        EventBus.$on("select-sort-order-start", (id, parent_id) => {
+
+            if ((id != this.id) && (parent_id == this.collectionID)) {
                 this.sortOrderSelectionState = true;
             }
         });
