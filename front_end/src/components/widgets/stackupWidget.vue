@@ -862,10 +862,9 @@ export default {
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
                 this.intervalSize
             ];
-            let binsizes = Object.keys(this.binsizes);
             if (!this.selectedBinsize) {
-                this.selectedBinsize = Number(
-                    binsizes[Math.floor(binsizes.length / 2)]
+                this.selectedBinsize = this.getCenterOfArray(
+                    Object.keys(this.binsizes)
                 );
             } else {
                 this.updateData();
