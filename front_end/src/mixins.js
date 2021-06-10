@@ -169,3 +169,40 @@ export var formattingMixin = {
         }
     }
 };
+
+
+export var widgetMixin = {
+    data: function() {
+        // get widget data from store for initialization
+        return this.initializeWidget();
+    },
+    methods: {
+        initializeWidget: function() {
+            // initialize widget from store
+            var queryObject = {
+                parentID: this.collectionID,
+                id: this.id
+            };
+            var widgetData = this.$store.getters["compare/getWidgetProperties"](
+                queryObject
+            );
+            // the collection config at the current collection
+            var collectionConfig = this.$store.getters[
+                "compare/getCollectionConfig"
+            ](this.collectionID);
+            // the collection config the widget comes from
+            var oldCollectionConfig = widgetData["collectionConfig"];
+            if (!oldCollectionConfig || !this.sameCollectionConfig(collectionConfig, oldCollectionConfig)) {
+                return this.initializeForFirstTime(
+                    widgetData,
+                    collectionConfig
+                );
+            }else{
+                return this.initializeFromStore(
+                    widgetData,
+                    collectionConfig
+                );
+            }
+        },
+    }
+}

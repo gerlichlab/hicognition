@@ -121,20 +121,16 @@
 
 <script>
 import lineprofile from "../visualizations/lineprofile";
-import { apiMixin, formattingMixin } from "../../mixins";
+import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
 import EventBus from "../../eventBus";
 
 const TOOLBARHEIGHT = 71;
 
 export default {
     name: "lineprofileWidget",
-    mixins: [apiMixin, formattingMixin],
+    mixins: [apiMixin, formattingMixin, widgetMixin],
     components: {
         lineprofile
-    },
-    data: function() {
-        // get widget data from store for initialization
-        return this.initializeWidget();
     },
     props: {
         width: Number,
@@ -320,33 +316,6 @@ export default {
                 showMenu: false,
                 normalized: widgetData["normalized"]
             };
-        },
-        initializeWidget: function() {
-            // initialize widget from store
-            var queryObject = {
-                parentID: this.collectionID,
-                id: this.id
-            };
-            var widgetData = this.$store.getters["compare/getWidgetProperties"](
-                queryObject
-            );
-            // the collection config at the current collection
-            var collectionConfig = this.$store.getters[
-                "compare/getCollectionConfig"
-            ](this.collectionID);
-            // the collection config the widget comes from
-            var oldCollectionConfig = widgetData["collectionConfig"];
-            if (!oldCollectionConfig || !this.sameCollectionConfig(collectionConfig, oldCollectionConfig)) {
-                return this.initializeForFirstTime(
-                    widgetData,
-                    collectionConfig
-                );
-            }else{
-                return this.initializeFromStore(
-                    widgetData,
-                    collectionConfig
-                );
-            }
         },
         getlineprofileData: async function(id) {
             // checks whether lineprofile data is in store and fetches it if it is not
