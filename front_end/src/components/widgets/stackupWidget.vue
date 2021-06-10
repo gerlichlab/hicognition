@@ -312,11 +312,10 @@ export default {
         broadcastSortOrderUpdate: function() {
             // tell client widgets that sort order has changed
             EventBus.$emit(
-                "select-sort-order-end",
+                "update-sort-order-sharing",
                 this.id,
                 this.constructSortOrder(),
-                this.isAscending,
-                this.sortOrderColor
+                this.isAscending
             );
         },
         constructSortOrder: function() {
