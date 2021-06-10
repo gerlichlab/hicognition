@@ -566,10 +566,10 @@ export default {
             // checks whether passed event arguments are valid and widget is in right state
             return (
                 this.expectingSortOrder &&
-                target_id &&
-                sortorder != undefined &&
-                direction &&
-                color
+                (target_id != undefined) &&
+                (sortorder != undefined) &&
+                (direction != undefined) &&
+                (color != undefined)
             );
         },
         registerSortOrderClientHandlers: function() {
