@@ -21,7 +21,7 @@
                             :disabled="!allowDatasetSelection"
                         >
                             <md-option
-                                v-for=" (item, id) in datasets"
+                                v-for="(item, id) in datasets"
                                 :value="id"
                                 :key="id"
                                 >{{ item.name }}</md-option
@@ -53,41 +53,48 @@
                     </md-field>
                 </div>
 
-
-
                 <div class="md-layout-item md-size-15">
-                    <md-menu :md-offset-x="50" :md-offset-y="-36" md-size="small" :md-active.sync="showMenu">
+                    <md-menu
+                        :md-offset-x="50"
+                        :md-offset-y="-36"
+                        md-size="small"
+                        :md-active.sync="showMenu"
+                    >
                         <div class="padding-top-large">
-                            <md-button class="md-icon-button" md-menu-trigger >
+                            <md-button class="md-icon-button" md-menu-trigger>
                                 <md-icon>menu_open</md-icon>
                             </md-button>
                         </div>
                         <md-menu-content>
-                            <md-list-item md-expand >
-                            <span class="md-body-1">Scale</span>
+                            <md-list-item md-expand>
+                                <span class="md-body-1">Scale</span>
 
-                            <md-list slot="md-expand">
-                                <md-list-item class="md-inset" @click="isICCF = true; showMenu=false" >
-                                     <span class="md-body-1">ICCF</span>
-                                    <md-icon
-                                            v-if="isICCF"
-                                            >done</md-icon
+                                <md-list slot="md-expand">
+                                    <md-list-item
+                                        class="md-inset"
+                                        @click="
+                                            isICCF = true;
+                                            showMenu = false;
+                                        "
                                     >
-                                </md-list-item>
-                                <md-list-item class="md-inset" @click="isICCF = false; showMenu=false">
-                                    <span class="md-body-1">Obs/Exp</span>
-                                    <md-icon
-                                            v-if="!isICCF"
-                                            >done</md-icon
+                                        <span class="md-body-1">ICCF</span>
+                                        <md-icon v-if="isICCF">done</md-icon>
+                                    </md-list-item>
+                                    <md-list-item
+                                        class="md-inset"
+                                        @click="
+                                            isICCF = false;
+                                            showMenu = false;
+                                        "
                                     >
-                                </md-list-item>
-                            </md-list>
+                                        <span class="md-body-1">Obs/Exp</span>
+                                        <md-icon v-if="!isICCF">done</md-icon>
+                                    </md-list-item>
+                                </md-list>
                             </md-list-item>
                         </md-menu-content>
                     </md-menu>
                 </div>
-
-
 
                 <div class="md-layout-item md-size-10">
                     <div class="padding-top-large padding-right">
@@ -132,7 +139,6 @@ import heatmap from "../visualizations/heatmap";
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
 import EventBus from "../../eventBus";
 
-
 export default {
     name: "pileupWidget",
     mixins: [apiMixin, formattingMixin, widgetMixin],
@@ -152,7 +158,7 @@ export default {
             } else {
                 return "ObsExp";
             }
-        },
+        }
     },
     methods: {
         handleSliderChange: function(data) {
@@ -229,9 +235,12 @@ export default {
                 widgetDataValues = undefined;
             }
             // increment dataset usage in store
-            if (widgetData["dataset"]){
-                let datasetId = widgetData["dataset"]
-                this.$store.commit("compare/increment_usage_dataset", datasetId)
+            if (widgetData["dataset"]) {
+                let datasetId = widgetData["dataset"];
+                this.$store.commit(
+                    "compare/increment_usage_dataset",
+                    datasetId
+                );
             }
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
@@ -273,10 +282,10 @@ export default {
             // return it
             return parsed;
         },
-        updatedData: async function(){
+        updatedData: async function() {
             // triggers load and storing of both pileuptypes
             // reset min and max colormap values
-            this.minHeatmap = undefined, this.maxHeatmap = undefined;
+            (this.minHeatmap = undefined), (this.maxHeatmap = undefined);
             // fetch widget data
             var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"];
             var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
@@ -300,26 +309,40 @@ export default {
             deep: true,
             handler: function(newValue) {
                 // update availability object
-                this.datasets = newValue[this.collectionID]["collectionConfig"]["availableData"]["pileup"]
-                this.intervalSize = newValue[this.collectionID]["collectionConfig"]["intervalSize"]
+                this.datasets =
+                    newValue[this.collectionID]["collectionConfig"][
+                        "availableData"
+                    ]["pileup"];
+                this.intervalSize =
+                    newValue[this.collectionID]["collectionConfig"][
+                        "intervalSize"
+                    ];
             }
         },
-        datasets: function(oldVal, newVal){
-            if (!newVal || !oldVal || !this.selectedDataset){
-                return
+        datasets: function(oldVal, newVal) {
+            if (!newVal || !oldVal || !this.selectedDataset) {
+                return;
             }
-            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize]
-            this.selectedBinsize = this.getCenterOfArray(Object.keys(this.binsizes))
-            this.updatedData()
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
+            this.selectedBinsize = this.getCenterOfArray(
+                Object.keys(this.binsizes)
+            );
+            this.updatedData();
         },
-        intervalSize: function(newVal, oldVal){
+        intervalSize: function(newVal, oldVal) {
             // if interval size changes, reload data
-            if (!newVal || !oldVal || !this.selectedDataset){
-                return
+            if (!newVal || !oldVal || !this.selectedDataset) {
+                return;
             }
-            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize]
-            this.selectedBinsize = this.getCenterOfArray(Object.keys(this.binsizes))
-            this.updatedData()
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
+            this.selectedBinsize = this.getCenterOfArray(
+                Object.keys(this.binsizes)
+            );
+            this.updatedData();
         },
         selectedDataset: function(newVal, oldVal) {
             if (!this.selectedDataset) {
@@ -327,23 +350,26 @@ export default {
                 return;
             }
             // reset min and max colormap values
-            this.minHeatmap = undefined, this.maxHeatmap = undefined;
-            // set binsizes from available datasets 
-            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize]
-            if (!this.selectedBinsize){
-                this.selectedBinsize = this.getCenterOfArray(Object.keys(this.binsizes))
-            }else{
-                this.updatedData()
+            (this.minHeatmap = undefined), (this.maxHeatmap = undefined);
+            // set binsizes from available datasets
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
+            if (!this.selectedBinsize) {
+                this.selectedBinsize = this.getCenterOfArray(
+                    Object.keys(this.binsizes)
+                );
+            } else {
+                this.updatedData();
             }
-            this.$store.commit("compare/decrement_usage_dataset", oldVal)
-            this.$store.commit("compare/increment_usage_dataset", newVal)
-
+            this.$store.commit("compare/decrement_usage_dataset", oldVal);
+            this.$store.commit("compare/increment_usage_dataset", newVal);
         },
         selectedBinsize: async function() {
             if (!this.selectedBinsize) {
                 return;
             }
-            this.updatedData()
+            this.updatedData();
         },
         isICCF: function() {
             // reset min and max when this changes
@@ -390,5 +416,4 @@ export default {
 .height-71 {
     height: 71px;
 }
-
 </style>

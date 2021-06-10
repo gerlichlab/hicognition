@@ -54,32 +54,49 @@
                     </md-field>
                 </div>
                 <div class="md-layout-item md-size-15">
-                    <md-menu :md-offset-x="50" :md-offset-y="-36" md-size="small" :md-active.sync="showMenu">
+                    <md-menu
+                        :md-offset-x="50"
+                        :md-offset-y="-36"
+                        md-size="small"
+                        :md-active.sync="showMenu"
+                    >
                         <div class="padding-top-large">
-                            <md-button class="md-icon-button" md-menu-trigger >
+                            <md-button class="md-icon-button" md-menu-trigger>
                                 <md-icon>menu_open</md-icon>
                             </md-button>
                         </div>
                         <md-menu-content>
-                            <md-list-item md-expand >
-                            <span class="md-body-1">Scale</span>
+                            <md-list-item md-expand>
+                                <span class="md-body-1">Scale</span>
 
-                            <md-list slot="md-expand">
-                                <md-list-item class="md-inset" @click="normalized = false; showMenu=false" >
-                                     <span class="md-body-1">Unscaled</span>
-                                     <md-icon
-                                            v-if="!normalized"
-                                            >done</md-icon
+                                <md-list slot="md-expand">
+                                    <md-list-item
+                                        class="md-inset"
+                                        @click="
+                                            normalized = false;
+                                            showMenu = false;
+                                        "
                                     >
-                                </md-list-item>
-                                <md-list-item class="md-inset" @click="normalized = true; showMenu=false">
-                                    <span class="md-body-1">Normalized</span>
-                                    <md-icon
-                                            v-if="normalized"
+                                        <span class="md-body-1">Unscaled</span>
+                                        <md-icon v-if="!normalized"
                                             >done</md-icon
+                                        >
+                                    </md-list-item>
+                                    <md-list-item
+                                        class="md-inset"
+                                        @click="
+                                            normalized = true;
+                                            showMenu = false;
+                                        "
                                     >
-                                </md-list-item>
-                            </md-list>
+                                        <span class="md-body-1"
+                                            >Normalized</span
+                                        >
+                                        <md-icon v-if="normalized"
+                                            >done</md-icon
+                                        >
+                                    </md-list-item>
+                                </md-list>
                             </md-list-item>
                         </md-menu-content>
                     </md-menu>
@@ -124,15 +141,13 @@ import lineprofile from "../visualizations/lineprofile";
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
 import EventBus from "../../eventBus";
 
-
 export default {
     name: "lineprofileWidget",
     mixins: [apiMixin, formattingMixin, widgetMixin],
     components: {
         lineprofile
     },
-    computed: {
-    },
+    computed: {},
     methods: {
         toStoreObject: function() {
             // serialize object for storing its state in the store
@@ -198,9 +213,12 @@ export default {
                 widgetDataValues = undefined;
             }
             // increment dataset usage in store
-            if (widgetData["dataset"]){
-                for (let datasetId of widgetData["dataset"]){
-                    this.$store.commit("compare/increment_usage_dataset", datasetId)
+            if (widgetData["dataset"]) {
+                for (let datasetId of widgetData["dataset"]) {
+                    this.$store.commit(
+                        "compare/increment_usage_dataset",
+                        datasetId
+                    );
                 }
             }
             return {
@@ -241,9 +259,9 @@ export default {
             // return it
             return parsed;
         },
-        updateData: async function(){
+        updateData: async function() {
             // construct data ids to be fecthed
-            let selected_ids = this.binsizes[this.selectedBinsize]
+            let selected_ids = this.binsizes[this.selectedBinsize];
             // store widget data ref
             this.widgetDataRef = selected_ids;
             // fetch data
@@ -253,24 +271,26 @@ export default {
             }
             // get lineprofile names
             this.lineProfileNames = this.selectedDataset.map(elem => {
-                return this.datasets[elem]["name"]
-            })
+                return this.datasets[elem]["name"];
+            });
             this.widgetData = selected_data;
         },
-        getIdsOfBinsizes: function(){
+        getIdsOfBinsizes: function() {
             // takes selected dataset array and constructs an object with binsizes and arrays of data ids
-            let binsizes ={};
-            for (let selectedDataset of this.selectedDataset){
-                let temp_binsizes = this.datasets[selectedDataset]["data_ids"][this.intervalSize];
-                for (let [key, value] of Object.entries(temp_binsizes)){
-                    if (!(key in binsizes)){
-                        binsizes[key] = [value]
-                    }else{
-                        binsizes[key].push(value)
+            let binsizes = {};
+            for (let selectedDataset of this.selectedDataset) {
+                let temp_binsizes = this.datasets[selectedDataset]["data_ids"][
+                    this.intervalSize
+                ];
+                for (let [key, value] of Object.entries(temp_binsizes)) {
+                    if (!(key in binsizes)) {
+                        binsizes[key] = [value];
+                    } else {
+                        binsizes[key].push(value);
                     }
                 }
             }
-            return binsizes
+            return binsizes;
         }
     },
     watch: {
@@ -279,56 +299,77 @@ export default {
             deep: true,
             handler: function(newValue) {
                 // update availability object
-                this.datasets = newValue[this.collectionID]["collectionConfig"]["availableData"]["lineprofile"]
-                this.intervalSize = newValue[this.collectionID]["collectionConfig"]["intervalSize"]
+                this.datasets =
+                    newValue[this.collectionID]["collectionConfig"][
+                        "availableData"
+                    ]["lineprofile"];
+                this.intervalSize =
+                    newValue[this.collectionID]["collectionConfig"][
+                        "intervalSize"
+                    ];
             }
         },
-        datasets: function(newVal, oldVal){
-            if (!newVal || !oldVal || !this.selectedDataset || (this.selectedDataset.length == 0)){
-                return
-            }
-            this.binsizes = this.getIdsOfBinsizes()
-            this.selectedBinsize = this.getCenterOfArray(Object.keys(this.binsizes))
-            this.updateData()
-        },
-        intervalSize: function(newVal, oldVal){
-            // if interval size changes, reload data
-            if (!newVal || !oldVal || (this.selectedDataset.length == 0)){
-                return
-            }
-            this.binsizes = this.getIdsOfBinsizes()
-            this.selectedBinsize = this.getCenterOfArray(Object.keys(this.binsizes))
-            this.updateData()
-        },
-        selectedDataset: async function(newVal, oldVal) {
+        datasets: function(newVal, oldVal) {
             if (
+                !newVal ||
+                !oldVal ||
+                !this.selectedDataset ||
                 this.selectedDataset.length == 0
             ) {
+                return;
+            }
+            this.binsizes = this.getIdsOfBinsizes();
+            this.selectedBinsize = this.getCenterOfArray(
+                Object.keys(this.binsizes)
+            );
+            this.updateData();
+        },
+        intervalSize: function(newVal, oldVal) {
+            // if interval size changes, reload data
+            if (!newVal || !oldVal || this.selectedDataset.length == 0) {
+                return;
+            }
+            this.binsizes = this.getIdsOfBinsizes();
+            this.selectedBinsize = this.getCenterOfArray(
+                Object.keys(this.binsizes)
+            );
+            this.updateData();
+        },
+        selectedDataset: async function(newVal, oldVal) {
+            if (this.selectedDataset.length == 0) {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
             }
             // set binsizes -> there can be multiple datasets, binsizes need to be collected for them
-            this.binsizes = this.getIdsOfBinsizes()
+            this.binsizes = this.getIdsOfBinsizes();
             // remove old dataset ids from used values in store
-            for (let dataset_id_old of oldVal){
-                this.$store.commit("compare/decrement_usage_dataset", dataset_id_old)
+            for (let dataset_id_old of oldVal) {
+                this.$store.commit(
+                    "compare/decrement_usage_dataset",
+                    dataset_id_old
+                );
             }
             // add new datasets to used values in store
-            for (let dataset_id_new of newVal){
-                this.$store.commit("compare/increment_usage_dataset", dataset_id_new)
+            for (let dataset_id_new of newVal) {
+                this.$store.commit(
+                    "compare/increment_usage_dataset",
+                    dataset_id_new
+                );
             }
             // if no binsizes selected, set default and return
             if (!this.selectedBinsize) {
-                this.selectedBinsize = this.getCenterOfArray(Object.keys(this.binsizes))
-            }else{
-                this.updateData()
+                this.selectedBinsize = this.getCenterOfArray(
+                    Object.keys(this.binsizes)
+                );
+            } else {
+                this.updateData();
             }
         },
         selectedBinsize: async function() {
             if (!this.selectedBinsize) {
                 return;
             }
-            this.updateData()
+            this.updateData();
         }
     }
 };
@@ -364,7 +405,7 @@ export default {
 }
 
 .smallMargin {
-    margin: 2px
+    margin: 2px;
 }
 
 .md-field {

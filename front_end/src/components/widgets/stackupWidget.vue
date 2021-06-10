@@ -183,7 +183,6 @@ import {
 } from "../../functions";
 import EventBus from "../../eventBus";
 
-
 export default {
     name: "stackupWidget",
     mixins: [apiMixin, formattingMixin, widgetMixin],
@@ -648,7 +647,7 @@ export default {
             // event bus listeners for sort order sharing
             this.registerSortOrderClientHandlers();
             this.registerSortOrderSourceHandlers();
-        },
+        }
     },
     watch: {
         // watch for changes in store to be able to update intervals
