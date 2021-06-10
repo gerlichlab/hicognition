@@ -543,33 +543,7 @@ export default {
             this.$store.commit("compare/setWidget", newObject);
             return data;
         },
-        initializeAtNewCollection: function(widgetData, collectionConfig) {
-            return {
-                widgetDataRef: undefined,
-                minHeatmap: undefined,
-                maxHeatmap: undefined,
-                dragImage: undefined,
-                widgetData: undefined,
-                selectedDataset: undefined,
-                selectedBinsize: undefined,
-                intervalSize: collectionConfig["intervalSize"],
-                emptyClass: ["smallMargin", "empty"],
-                binsizes: [],
-                selectedSortOrder: "center column",
-                datasets: collectionConfig["availableData"]["stackup"],
-                sortorders: undefined,
-                isAscending: true,
-                expectingSortOrder: false,
-                sortOrderSelectionState: false,
-                showSelection: false,
-                sortOrderRecipient: false,
-                sortOrderRecipients: 0,
-                sortOrderTargetID: false,
-                sortOrderColor: undefined,
-                showMenu: false
-            };
-        },
-        initializeAtSameCollection: function(widgetData, collectionConfig) {
+        initializeFromStore: function(widgetData, collectionConfig) {
             var widgetDataValues;
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
@@ -635,21 +609,17 @@ export default {
             ](this.collectionID);
             // the collection config the widget comes from
             var oldCollectionConfig = widgetData["collectionConfig"];
-            if (!oldCollectionConfig) {
+            if (!oldCollectionConfig || !this.sameCollectionConfig(collectionConfig, oldCollectionConfig)) {
                 return this.initializeForFirstTime(
                     widgetData,
                     collectionConfig
                 );
-            }
-            if (
-                this.sameCollectionConfig(collectionConfig, oldCollectionConfig)
-            ) {
-                return this.initializeAtSameCollection(
+            }else{
+                return this.initializeFromStore(
                     widgetData,
                     collectionConfig
                 );
             }
-            return this.initializeAtNewCollection(widgetData, collectionConfig);
         },
         getStackupData: async function(id) {
             // checks whether pileup data is in store and fetches it if it is not

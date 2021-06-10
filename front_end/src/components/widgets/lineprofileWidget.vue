@@ -279,24 +279,7 @@ export default {
             this.$store.commit("compare/setWidget", newObject);
             return data;
         },
-        initializeAtNewCollection: function(widgetData, collectionConfig) {
-            return {
-                widgetDataRef: undefined,
-                dragImage: undefined,
-                widgetData: undefined,
-                selectedDataset: [],
-                selectedBinsize: undefined,
-                intervalSize: collectionConfig["intervalSize"],
-                emptyClass: ["smallMargin", "empty"],
-                binsizes: {},
-                datasets: collectionConfig["availableData"]["lineprofile"],
-                isDefault: true,
-                lineProfileNames: [],
-                showMenu: false,
-                normalized: false
-            };
-        },
-        initializeAtSameCollection: function(widgetData, collectionConfig) {
+        initializeFromStore: function(widgetData, collectionConfig) {
             var widgetDataValues;
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
@@ -353,21 +336,17 @@ export default {
             ](this.collectionID);
             // the collection config the widget comes from
             var oldCollectionConfig = widgetData["collectionConfig"];
-            if (!oldCollectionConfig) {
+            if (!oldCollectionConfig || !this.sameCollectionConfig(collectionConfig, oldCollectionConfig)) {
                 return this.initializeForFirstTime(
                     widgetData,
                     collectionConfig
                 );
-            }
-            if (
-                this.sameCollectionConfig(collectionConfig, oldCollectionConfig)
-            ) {
-                return this.initializeAtSameCollection(
+            }else{
+                return this.initializeFromStore(
                     widgetData,
                     collectionConfig
                 );
             }
-            return this.initializeAtNewCollection(widgetData, collectionConfig);
         },
         getlineprofileData: async function(id) {
             // checks whether lineprofile data is in store and fetches it if it is not
