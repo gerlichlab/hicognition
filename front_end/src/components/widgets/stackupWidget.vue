@@ -772,7 +772,7 @@ export default {
             });
         },
         removeEventHandlers: function() {
-            EventBus.$off("serialize-widgets");
+            EventBus.$off("serialize-widgets", this.serializeWidget);
         },
         getCenterOfArray: function(array) {
             // returns value of center entry in array (rounded down)

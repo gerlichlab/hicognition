@@ -473,7 +473,7 @@ export default {
         })
     },
     beforeDestroy: function(){
-        EventBus.$off('serialize-widgets')
+        EventBus.$off('serialize-widgets', this.serializeWidget)
         // delete widget does not need to be taken off the event bus as ids don't get reused
     }
 };
