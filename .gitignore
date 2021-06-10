@@ -11,6 +11,7 @@ back_end/temp/*.bed2ddb
 back_end/temp/*.bw
 back_end/temp/*.npy
 back_end/temp/*.bigwig
+back_end/temp/*.bigWig
 .vscode/*
 *.csv
 workdir/higlass_data/
