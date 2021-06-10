@@ -9,7 +9,7 @@ https://stackoverflow.com/questions/48506428/nouislider-double-range-slider-with
             v-model.number="minValue"
             :min="sliderMin"
             :max="sliderMax"
-            step="0.005"
+            :step="sliderStep"
             type="range"
         />
         <input
@@ -17,7 +17,7 @@ https://stackoverflow.com/questions/48506428/nouislider-double-range-slider-with
             v-model.number="maxValue"
             :min="sliderMin"
             :max="sliderMax"
-            step="0.005"
+            :step="sliderStep"
             type="range"
         />
     </div>
@@ -38,6 +38,9 @@ export default {
             return {
                 width: `${this.sliderWidth}px`
             };
+        },
+        sliderStep: function(){
+            return Math.abs(this.sliderMax - this.sliderMin)/50
         }
     },
     data: function() {
