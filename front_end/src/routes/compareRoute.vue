@@ -35,13 +35,17 @@ export default {
         fetchDatasets: function() {
             this.fetchData("datasets/").then(response => {
                 // success, store datasets
-                this.$store.commit("setDatasets", response.data);
+                if (response){
+                    this.$store.commit("setDatasets", response.data);
+                }
             });
         },
         fetchResolutions: function(){
             this.fetchData("resolutions/").then(response => {
                 // success, store resolutions
-                this.$store.commit("setResolutions", response.data)
+                if (response){
+                    this.$store.commit("setResolutions", response.data)
+                }
             })
         },
         addCollection: function() {
