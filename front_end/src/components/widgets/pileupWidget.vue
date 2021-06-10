@@ -103,8 +103,8 @@
             <heatmap
                 v-if="showData"
                 :pileupID="id"
-                :width="pileupWidth"
-                :height="pileupHeight"
+                :width="visualizationWidth"
+                :height="visualizationHeight"
                 :sliderHeight="sliderHeight"
                 :stackupData="widgetData[pileupType]"
                 :colormap="colormap"
@@ -132,7 +132,6 @@ import heatmap from "../visualizations/heatmap";
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
 import EventBus from "../../eventBus";
 
-const TOOLBARHEIGHT = 71;
 
 export default {
     name: "pileupWidget",
@@ -140,25 +139,7 @@ export default {
     components: {
         heatmap
     },
-    props: {
-        width: Number,
-        height: Number,
-        empty: Boolean,
-        id: Number,
-        collectionID: Number,
-        rowIndex: Number,
-        colIndex: Number
-    },
     computed: {
-        pileupHeight: function() {
-            return Math.round((this.height - TOOLBARHEIGHT ) * 0.8)
-        },
-        pileupWidth: function() {
-            return Math.round(this.width * 0.7)
-        },
-        sliderHeight: function() {
-            return Math.round((this.height - TOOLBARHEIGHT ) * 0.07)
-        },
         colormap: function() {
             if (this.pileupType == "ICCF") {
                 return "fall";
@@ -172,33 +153,8 @@ export default {
                 return "ObsExp";
             }
         },
-        showData: function() {
-            if (this.widgetData) {
-                return true;
-            }
-            return false;
-        },
-        allowDatasetSelection: function() {
-            if (this.intervalSize) {
-                return true;
-            }
-            return false;
-        },
-        allowBinsizeSelection: function() {
-            return Object.keys(this.binsizes).length != 0;
-        },
-        cssStyle: function() {
-            return {
-                height: `${this.height}px`,
-                width: `${this.width}px`
-            };
-        }
     },
     methods: {
-        serializeWidget: function() {
-            var newObject = this.toStoreObject();
-            this.$store.commit("compare/setWidget", newObject);
-        },
         handleSliderChange: function(data) {
             this.minHeatmap = data[0];
             this.maxHeatmap = data[1];
@@ -224,60 +180,6 @@ export default {
                 minHeatmap: this.minHeatmap,
                 maxHeatmap: this.maxHeatmap
             };
-        },
-        deleteWidget: function() {
-            // delete widget from store
-            var payload = {
-                parentID: this.collectionID,
-                id: this.id
-            };
-            // delete widget from store
-            this.$store.commit("compare/deleteWidget", payload);
-            // decrement dataset from used dataset in store
-            this.$store.commit("compare/decrement_usage_dataset", this.selectedDataset)
-        },
-        handleDragStart: function(e) {
-            // commit to store once drag starts
-            var newObject = this.toStoreObject();
-            this.$store.commit("compare/setWidget", newObject);
-            // create data transfer object
-            e.dataTransfer.setData("widget-id", this.id);
-            e.dataTransfer.setData("collection-id", this.collectionID);
-            // set dragimage. Dragimage dom element needs to be present before it can be passed
-            // to setDragImage. Div is positioned outside of visible area for this
-            this.dragImage = document.createElement("div");
-            this.dragImage.style.backgroundColor = "grey";
-            this.dragImage.style.height = `${this.height}px`;
-            this.dragImage.style.width = `${this.width}px`;
-            this.dragImage.style.position = "absolute";
-            this.dragImage.style.top = `-${this.width}px`; // positioning outside of visible area
-            document.body.appendChild(this.dragImage);
-            e.dataTransfer.setDragImage(
-                this.dragImage,
-                this.height / 2,
-                this.width / 2
-            );
-        },
-        handleDragEnd: function(e) {
-            // remove dragImage from document
-            if (this.dragImage) {
-                this.dragImage.remove();
-            }
-        },
-        sameCollectionConfig: function(newCollectionData, oldCollectionData) {
-            if (!oldCollectionData) {
-                // no old data -> the widget needs to be freshly initialized
-                return false;
-            }
-            if (
-                (newCollectionData["regionID"] !=
-                oldCollectionData["regionID"]) || 
-                (newCollectionData["intervalSize"] !=
-                oldCollectionData["intervalSize"])
-            ) {
-                return false;
-            }
-            return true;
         },
         initializeForFirstTime: function(widgetData, collectionData) {
             var data = {
@@ -407,8 +309,7 @@ export default {
                 return
             }
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize]
-            let binsizes = Object.keys(this.binsizes)
-            this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
+            this.selectedBinsize = this.getCenterOfArray(Object.keys(this.binsizes))
             this.updatedData()
         },
         intervalSize: function(newVal, oldVal){
@@ -417,8 +318,7 @@ export default {
                 return
             }
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize]
-            let binsizes = Object.keys(this.binsizes)
-            this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
+            this.selectedBinsize = this.getCenterOfArray(Object.keys(this.binsizes))
             this.updatedData()
         },
         selectedDataset: function(newVal, oldVal) {
@@ -430,9 +330,8 @@ export default {
             this.minHeatmap = undefined, this.maxHeatmap = undefined;
             // set binsizes from available datasets 
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][this.intervalSize]
-            let binsizes = Object.keys(this.binsizes)
             if (!this.selectedBinsize){
-                this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
+                this.selectedBinsize = this.getCenterOfArray(Object.keys(this.binsizes))
             }else{
                 this.updatedData()
             }
@@ -451,18 +350,6 @@ export default {
             this.minHeatmap = undefined;
             this.maxHeatmap = undefined;
         }
-    },
-    mounted: function (){
-        EventBus.$on('serialize-widgets', this.serializeWidget)
-        // widget deletion can be trigered via event bus from widget collection
-        EventBus.$on('delete-widget', (id) => {
-            if (id == this.id){
-                this.deleteWidget()
-            }
-        })
-    },
-    beforeDestroy: function(){
-        EventBus.$off('serialize-widgets', this.serializeWidget)
     }
 };
 </script>

@@ -149,8 +149,8 @@
             <heatmap
                 v-if="showData"
                 :stackupID="id"
-                :width="stackupWidth"
-                :height="stackupHeight"
+                :width="visualizationWidth"
+                :height="visualizationHeight"
                 :sliderHeight="sliderHeight"
                 :stackupData="sortedMatrix"
                 :minHeatmapValue="minHeatmap"
@@ -183,7 +183,6 @@ import {
 } from "../../functions";
 import EventBus from "../../eventBus";
 
-const TOOLBARHEIGHT = 71;
 
 export default {
     name: "stackupWidget",
@@ -191,25 +190,7 @@ export default {
     components: {
         heatmap
     },
-    props: {
-        width: Number,
-        height: Number,
-        empty: Boolean,
-        id: Number,
-        collectionID: Number,
-        rowIndex: Number,
-        colIndex: Number
-    },
     computed: {
-        stackupHeight: function() {
-            return Math.round((this.height - TOOLBARHEIGHT) * 0.8);
-        },
-        stackupWidth: function() {
-            return Math.round(this.width * 0.7);
-        },
-        sliderHeight: function() {
-            return Math.round((this.height - TOOLBARHEIGHT) * 0.07);
-        },
         sortedMatrix: function() {
             if (!this.widgetData) {
                 return undefined;
@@ -239,26 +220,11 @@ export default {
                 };
             }
         },
-        showData: function() {
-            if (this.widgetData) {
-                return true;
-            }
-            return false;
-        },
         allowSortOrderSelection: function() {
             if (this.sortorders) {
                 return true;
             }
             return false;
-        },
-        allowDatasetSelection: function() {
-            if (this.intervalSize) {
-                return true;
-            }
-            return false;
-        },
-        allowBinsizeSelection: function() {
-            return Object.keys(this.binsizes).length != 0;
         },
         cssStyle: function() {
             let opacity = this.showSelection ? "0.6" : "1";
@@ -396,10 +362,6 @@ export default {
         emitEmptySortOrderEnd: function() {
             EventBus.$emit("select-sort-order-end", undefined, undefined);
         },
-        serializeWidget: function() {
-            var newObject = this.toStoreObject();
-            this.$store.commit("compare/setWidget", newObject);
-        },
         handleSliderChange: function(data) {
             this.minHeatmap = data[0];
             this.maxHeatmap = data[1];
@@ -465,49 +427,6 @@ export default {
                 "compare/decrement_usage_dataset",
                 this.selectedDataset
             );
-        },
-        handleDragStart: function(e) {
-            // commit to store once drag starts
-            var newObject = this.toStoreObject();
-            this.$store.commit("compare/setWidget", newObject);
-            // create data transfer object
-            e.dataTransfer.setData("widget-id", this.id);
-            e.dataTransfer.setData("collection-id", this.collectionID);
-            // set dragimage. Dragimage dom element needs to be present before it can be passed
-            // to setDragImage. Div is positioned outside of visible area for this
-            this.dragImage = document.createElement("div");
-            this.dragImage.style.backgroundColor = "grey";
-            this.dragImage.style.height = `${this.height}px`;
-            this.dragImage.style.width = `${this.width}px`;
-            this.dragImage.style.position = "absolute";
-            this.dragImage.style.top = `-${this.width}px`; // positioning outside of visible area
-            document.body.appendChild(this.dragImage);
-            e.dataTransfer.setDragImage(
-                this.dragImage,
-                this.height / 2,
-                this.width / 2
-            );
-        },
-        handleDragEnd: function(e) {
-            // remove dragImage from document
-            if (this.dragImage) {
-                this.dragImage.remove();
-            }
-        },
-        sameCollectionConfig: function(newCollectionData, oldCollectionData) {
-            if (!oldCollectionData) {
-                // no old data -> the widget needs to be freshly initialized
-                return false;
-            }
-            if (
-                newCollectionData["regionID"] !=
-                    oldCollectionData["regionID"] ||
-                newCollectionData["intervalSize"] !=
-                    oldCollectionData["intervalSize"]
-            ) {
-                return false;
-            }
-            return true;
         },
         initializeForFirstTime: function(widgetData, collectionConfig) {
             var data = {
@@ -730,23 +649,6 @@ export default {
             this.registerSortOrderClientHandlers();
             this.registerSortOrderSourceHandlers();
         },
-        registerLifeCycleEventHandlers: function() {
-            // registers event handlers that react to life cycle event such as deletion and serialization
-            EventBus.$on("serialize-widgets", this.serializeWidget);
-            // widget deletion can be trigered via event bus from widget collection
-            EventBus.$on("delete-widget", id => {
-                if (id == this.id) {
-                    this.deleteWidget();
-                }
-            });
-        },
-        removeEventHandlers: function() {
-            EventBus.$off("serialize-widgets", this.serializeWidget);
-        },
-        getCenterOfArray: function(array) {
-            // returns value of center entry in array (rounded down)
-            return Number(array[Math.floor(array.length / 2)]);
-        }
     },
     watch: {
         // watch for changes in store to be able to update intervals
@@ -831,11 +733,7 @@ export default {
         }
     },
     mounted: function() {
-        this.registerLifeCycleEventHandlers();
         this.registerSortOrderEventHandlers();
-    },
-    beforeDestroy: function() {
-        this.removeEventHandlers();
     }
 };
 </script>

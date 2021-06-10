@@ -98,8 +98,8 @@
             <lineprofile
                 v-if="showData"
                 :lineprofileID="id"
-                :width="lineProfileWidth"
-                :height="lineProfileHeight"
+                :width="visualizationWidth"
+                :height="visualizationHeight"
                 :lineprofileNames="lineProfileNames"
                 :lineprofileData="widgetData"
                 :normalized="normalized"
@@ -124,7 +124,6 @@ import lineprofile from "../visualizations/lineprofile";
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
 import EventBus from "../../eventBus";
 
-const TOOLBARHEIGHT = 71;
 
 export default {
     name: "lineprofileWidget",
@@ -132,49 +131,9 @@ export default {
     components: {
         lineprofile
     },
-    props: {
-        width: Number,
-        height: Number,
-        empty: Boolean,
-        id: Number,
-        collectionID: Number,
-        rowIndex: Number,
-        colIndex: Number
-    },
     computed: {
-        lineProfileHeight: function() {
-            return Math.round((this.height - TOOLBARHEIGHT) * 0.75);
-        },
-        lineProfileWidth: function() {
-            return Math.round(this.width * 0.7);
-        },
-        showData: function() {
-            if (this.widgetData) {
-                return true;
-            }
-            return false;
-        },
-        allowDatasetSelection: function() {
-            if (this.intervalSize) {
-                return true;
-            }
-            return false;
-        },
-        allowBinsizeSelection: function() {
-            return Object.keys(this.binsizes).length != 0;
-        },
-        cssStyle: function() {
-            return {
-                height: `${this.height}px`,
-                width: `${this.width}px`
-            };
-        }
     },
     methods: {
-        serializeWidget: function() {
-            var newObject = this.toStoreObject();
-            this.$store.commit("compare/setWidget", newObject);
-        },
         toStoreObject: function() {
             // serialize object for storing its state in the store
             return {
@@ -196,63 +155,6 @@ export default {
                 widgetType: "Lineprofile",
                 normalized: this.normalized
             };
-        },
-        deleteWidget: function() {
-            // delete widget from store
-            var payload = {
-                parentID: this.collectionID,
-                id: this.id
-            };
-            // delete widget from store
-            this.$store.commit("compare/deleteWidget", payload);
-            // remove old dataset ids from used values in store
-            for (let dataset_id_old of this.selectedDataset){
-                this.$store.commit("compare/decrement_usage_dataset", dataset_id_old)
-            }
-
-        },
-        handleDragStart: function(e) {
-            // commit to store once drag starts
-            var newObject = this.toStoreObject();
-            this.$store.commit("compare/setWidget", newObject);
-            // create data transfer object
-            e.dataTransfer.setData("widget-id", this.id);
-            e.dataTransfer.setData("collection-id", this.collectionID);
-            // set dragimage. Dragimage dom element needs to be present before it can be passed
-            // to setDragImage. Div is positioned outside of visible area for this
-            this.dragImage = document.createElement("div");
-            this.dragImage.style.backgroundColor = "grey";
-            this.dragImage.style.height = `${this.height}px`;
-            this.dragImage.style.width = `${this.width}px`;
-            this.dragImage.style.position = "absolute";
-            this.dragImage.style.top = `-${this.width}px`; // positioning outside of visible area
-            document.body.appendChild(this.dragImage);
-            e.dataTransfer.setDragImage(
-                this.dragImage,
-                this.height / 2,
-                this.width / 2
-            );
-        },
-        handleDragEnd: function(e) {
-            // remove dragImage from document
-            if (this.dragImage) {
-                this.dragImage.remove();
-            }
-        },
-        sameCollectionConfig: function(newCollectionData, oldCollectionData) {
-            if (!oldCollectionData) {
-                // no old data -> the widget needs to be freshly initialized
-                return false;
-            }
-            if (
-                (newCollectionData["regionID"] !=
-                oldCollectionData["regionID"]) || 
-                (newCollectionData["intervalSize"] !=
-                oldCollectionData["intervalSize"])
-            ) {
-                return false;
-            }
-            return true;
         },
         initializeForFirstTime: function(widgetData, collectionData) {
             var data = {
@@ -386,8 +288,7 @@ export default {
                 return
             }
             this.binsizes = this.getIdsOfBinsizes()
-            let binsizes = Object.keys(this.binsizes)
-            this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
+            this.selectedBinsize = this.getCenterOfArray(Object.keys(this.binsizes))
             this.updateData()
         },
         intervalSize: function(newVal, oldVal){
@@ -396,8 +297,7 @@ export default {
                 return
             }
             this.binsizes = this.getIdsOfBinsizes()
-            let binsizes = Object.keys(this.binsizes)
-            this.selectedBinsize = Number(binsizes[Math.floor(binsizes.length / 2)])
+            this.selectedBinsize = this.getCenterOfArray(Object.keys(this.binsizes))
             this.updateData()
         },
         selectedDataset: async function(newVal, oldVal) {
@@ -419,8 +319,7 @@ export default {
             }
             // if no binsizes selected, set default and return
             if (!this.selectedBinsize) {
-                let binsizes = Object.keys(this.binsizes)
-                this.selectedBinsize = binsizes[Math.floor(binsizes.length / 2)]
+                this.selectedBinsize = this.getCenterOfArray(Object.keys(this.binsizes))
             }else{
                 this.updateData()
             }
@@ -431,19 +330,6 @@ export default {
             }
             this.updateData()
         }
-    },
-    mounted: function (){
-        EventBus.$on('serialize-widgets', this.serializeWidget)
-        // widget deletion can be trigered via event bus from widget collection
-        EventBus.$on('delete-widget', (id) => {
-            if (id == this.id){
-                this.deleteWidget()
-            }
-        })
-    },
-    beforeDestroy: function(){
-        EventBus.$off('serialize-widgets', this.serializeWidget)
-        // delete widget does not need to be taken off the event bus as ids don't get reused
     }
 };
 </script>
