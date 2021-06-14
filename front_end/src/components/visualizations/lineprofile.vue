@@ -30,7 +30,8 @@ export default {
             margin: { top: 10, right: 50, bottom: 0, left: 20 },
             svg: undefined,
             xScale: undefined,
-            yScale: undefined
+            yScale: undefined,
+            focus: undefined
         };
     },
     computed: {
@@ -84,6 +85,7 @@ export default {
             }
             return val
         },
+        bisectData: d3.bisector(d => d.date).left,
         yAxisGenerator: function(args) {
             return d3
                 .axisLeft(this.yScale)
@@ -99,6 +101,36 @@ export default {
                 .y((d, i) => {
                     return this.yScale(d);
                 })(args);
+        },
+        handleMouseMove: function(event){
+            this.svg.selectAll(".focus")
+                .select(".lineHover")
+                .attr("transform", "translate(" + d3.pointer(event)[0] + ",0)")
+        },
+        createHoverObjects: function(){
+            // create overlay
+            this.svg.append("rect")
+                    .attr("class", "overlayRect")
+                    .attr("x", this.margin.left)
+                    .attr("width", this.width + this.margin.right + this.margin.left)
+                    .attr("height", this.height)
+
+            let focus = this.svg.append("g")
+                .attr("class", "focus")
+                .style("display", "none");
+
+            focus.append("line").attr("class", "lineHover")
+                .style("stroke", "#999")
+                .attr("stroke-width", 2)
+                .style("shape-rendering", "crispEdges")
+                .style("opacity", 0.5)
+                .attr("y1", this.height)
+                .attr("y2",0);
+            // register handlers on top level group
+            this.svg
+                .on("mouseover", function() { focus.style("display", null); })
+                .on("mouseleave", function(e) {console.log(e); focus.style("display", "none")})
+                .on("mousemove", this.handleMouseMove)
         },
         createScales: function(){
             let { minX, maxX, minY, maxY } = this.valueBoundaries;
@@ -134,6 +166,7 @@ export default {
                         this.margin.top +
                         ")"
                 );
+            this.createHoverObjects()
         },
         createAxes: function() {
             this.svg
@@ -202,6 +235,7 @@ export default {
 </script>
 
 <style lang="scss">
+
 .center-horizontal {
     margin: auto;
     display: block;
@@ -217,5 +251,10 @@ export default {
 .axis line {
   shape-rendering: crispEdges;
   stroke-width: 2px;
+}
+
+.overlayRect {
+	fill: none;
+    pointer-events: all;
 }
 </style>
