@@ -2,7 +2,6 @@
     <div>
         <md-list class="md-double-line">
             <md-list-item class="md-alignment-top-center">
-                <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-0">
                     <div :id="lineprofileDivID" class="small-margin" />
                 </md-content>
@@ -26,43 +25,35 @@ export default {
         lineprofileID: Number, // lineprofile ID is needed because I am accessing the div of the lineprofile via id and they must be different for different pilups
         log: Boolean
     },
+    data: function() {
+        return {
+            margin: { top: 10, right: 50, bottom: 0, left: 20 },
+            svg: undefined,
+            xScale: undefined,
+            yScale: undefined
+        };
+    },
     computed: {
         lineprofileDivID: function() {
             // ID for the div containing the lineprofile
             return "lineprofile_" + this.lineprofileID;
         },
         lineData: function() {
-            if (this.normalized){
-                return this.lineprofileData.map((elem) => {
+            if (this.normalized) {
+                return this.lineprofileData.map(elem => {
                     return {
                         data: normalizeLineProfile(elem.data),
                         shape: elem.shape,
                         dtype: elem.dtype
-                    }
+                    };
                 });
             }
-            return this.lineprofileData
+            return this.lineprofileData;
         },
         lineNames: function() {
             return this.lineprofileNames;
-        }
-    },
-    methods: {
-        redrawLinechart: function() {
-            var margin = { top: 10, right: 30, bottom: 20, left: 30 };
-            d3.select(`#${this.lineprofileDivID}Svg`).remove();
-            var line_svg = d3
-                .select(`#${this.lineprofileDivID}`)
-                .append("svg")
-                .attr("id", `${this.lineprofileDivID}Svg`)
-                .attr("width", this.width + margin.left + margin.right)
-                .attr("height", this.height + margin.top + margin.bottom)
-                .append("g")
-                .attr(
-                    "transform",
-                    "translate(" + margin.left + "," + margin.top + ")"
-                );
-            // Add X axis
+        },
+        valueBoundaries: function() {
             var minX = 0;
             var maxX = undefined;
             var minY = undefined;
@@ -78,84 +69,153 @@ export default {
                     maxY = max_array(single_data.data);
                 }
             }
-
-            var x = d3
+            return {
+                minX: minX,
+                maxX: maxX,
+                minY: minY,
+                maxY: maxY
+            };
+        }
+    },
+    methods: {
+        getValueFormat: function(val){
+            if (!this.normalized){
+                return val.toExponential(0)
+            }
+            return val
+        },
+        yAxisGenerator: function(args) {
+            return d3
+                .axisLeft(this.yScale)
+                .tickFormat((val) => this.getValueFormat(val))
+                .ticks(5)(args);
+        },
+        lineGenerator: function(args) {
+            return d3
+                .line()
+                .x((d, i) => {
+                    return this.xScale(i);
+                })
+                .y((d, i) => {
+                    return this.yScale(d);
+                })(args);
+        },
+        createScales: function(){
+            let { minX, maxX, minY, maxY } = this.valueBoundaries;
+            this.xScale = d3
                 .scaleLinear()
                 .domain([minX - 0.1 * (maxX - minX), maxX])
                 .range([0, this.width]);
-            var y = d3
+            this.yScale =  d3
                 .scaleLinear()
                 .domain([minY - 0.05 * (maxY - minY), maxY])
                 .range([this.height, 0]);
-            var line = d3
-                .line()
-                .x(function(d, i) {
-                    return x(i);
-                })
-                .y(function(d, i) {
-                    return y(d);
-                });
-
-            let g = line_svg.append("g");
-            var xAxis = d3.axisBottom().scale(x);
-            // g.append("g")
-            //     .attr("class", "axis")
-            //     .attr("transform", "translate(0," + this.height + ")")
-            //     .call(xAxis);
-
-            var yAxis = d3.axisLeft().scale(y);
-            g.append("g")
-                .attr("class", "axis")
-                .attr("transform", "translate(0,0)")
-                .call(yAxis);
-            var color_index = 0;
-            for (let single_data of this.lineData) {
-                //console.log(single_data)
-                g.append("path")
-                    .attr("d", line(single_data.data))
+        },
+        createSVG: function() {
+            d3.select(`#${this.lineprofileDivID}Svg`).remove();
+            this.svg = d3
+                .select(`#${this.lineprofileDivID}`)
+                .append("svg")
+                .attr("id", `${this.lineprofileDivID}Svg`)
+                .attr(
+                    "width",
+                    this.width + this.margin.left + this.margin.right
+                )
+                .attr(
+                    "height",
+                    this.height + this.margin.top + this.margin.bottom
+                )
+                .append("g")
+                .attr(
+                    "transform",
+                    "translate(" +
+                        this.margin.left +
+                        "," +
+                        this.margin.top +
+                        ")"
+                );
+        },
+        createAxes: function() {
+            this.svg
+                .append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(" + 2 + "0)")
+                .call(this.yAxisGenerator);
+        },
+        addDataLine: function(single_data, color_index){
+            this.svg
+                    .append("path")
+                    .attr("d", this.lineGenerator(single_data.data))
                     .attr("fill", "none")
                     .attr("stroke", d3.schemeDark2[color_index])
                     .attr("stroke-width", 1.5);
-                g.append("text")
+                this.svg
+                    .append("text")
                     .attr(
                         "transform",
-                        "translate(" + (this.width - 40) + "," + (y(single_data.data[single_data.data.length - 1])+10) + ")"
+                        "translate(" +
+                            (this.width - 40) +
+                            "," +
+                            (this.yScale(
+                                single_data.data[single_data.data.length - 1]
+                            ) +
+                                10) +
+                            ")"
                     )
                     .attr("dy", ".35em")
                     .attr("text-anchor", "start")
                     .style("font-size", "12px")
                     .style("fill", d3.schemeDark2[color_index])
                     .text(this.lineNames[color_index]);
+        },
+        drawLinechart: function() {
+            this.createSVG();
+            this.createScales()
+            // add data
+            var color_index = 0;
+            for (let single_data of this.lineData) {
+                this.addDataLine(single_data, color_index)
                 color_index = color_index + 1;
             }
+            // add axes
+            this.createAxes();
         }
     },
     mounted: function() {
-        this.redrawLinechart();
+        this.drawLinechart();
     },
     watch: {
         height: function() {
-            this.redrawLinechart();
+            this.drawLinechart();
         },
         width: function() {
-            this.redrawLinechart();
+            this.drawLinechart();
         },
         lineData: {
             deep: true,
             handler() {
-                this.redrawLinechart();
+                this.drawLinechart();
             }
         }
     }
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .center-horizontal {
     margin: auto;
     display: block;
 }
 .small-margin {
     margin: 5px;
+}
+
+.axis path {
+  stroke-width: 2px;
+}
+
+.axis line {
+  shape-rendering: crispEdges;
+  stroke-width: 2px;
 }
 </style>
