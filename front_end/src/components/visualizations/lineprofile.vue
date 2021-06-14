@@ -82,13 +82,13 @@ export default {
     methods: {
         getValueFromIndex: function(val_index, val_name) {
             let val_array_index = this.lineprofileNames.indexOf(val_name);
-            return this.lineData[val_array_index]["data"][val_index]
+            return this.lineData[val_array_index]["data"][val_index];
         },
-        formatValue: function(value){
+        formatValue: function(value) {
             if (!this.normalized) {
                 return value.toExponential(0);
             }
-            return Math.round(value * 10)/10;
+            return Math.round(value * 10) / 10;
         },
         getValueFormat: function(val) {
             if (!this.normalized) {
@@ -136,7 +136,9 @@ export default {
                         ")"
                 )
                 .text(e => {
-                    return `${e}: ${this.formatValue(this.getValueFromIndex(index, e))}`;
+                    return `${e}: ${this.formatValue(
+                        this.getValueFromIndex(index, e)
+                    )}`;
                 });
             // flip text around
             this.xScale(index) > this.width - this.width / 2
