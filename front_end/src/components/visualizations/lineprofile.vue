@@ -27,11 +27,12 @@ export default {
     },
     data: function() {
         return {
-            margin: { top: 10, right: 50, bottom: 0, left: 20 },
+            margin: { top: 10, right: 10, bottom: 5, left: 40 },
             svg: undefined,
             xScale: undefined,
             yScale: undefined,
-            focus: undefined
+            focus: undefined,
+            colorMapping: new Map()
         };
     },
     computed: {
@@ -79,17 +80,27 @@ export default {
         }
     },
     methods: {
-        getValueFormat: function(val){
-            if (!this.normalized){
-                return val.toExponential(0)
+        getValueFromIndex: function(val_index, val_name) {
+            let val_array_index = this.lineprofileNames.indexOf(val_name);
+            return this.lineData[val_array_index]["data"][val_index]
+        },
+        formatValue: function(value){
+            if (!this.normalized) {
+                return value.toExponential(0);
             }
-            return val
+            return Math.round(value * 10)/10;
+        },
+        getValueFormat: function(val) {
+            if (!this.normalized) {
+                return val.toExponential(0);
+            }
+            return val;
         },
         bisectData: d3.bisector(d => d.date).left,
         yAxisGenerator: function(args) {
             return d3
                 .axisLeft(this.yScale)
-                .tickFormat((val) => this.getValueFormat(val))
+                .tickFormat(val => this.getValueFormat(val))
                 .ticks(5)(args);
         },
         lineGenerator: function(args) {
@@ -102,43 +113,112 @@ export default {
                     return this.yScale(d);
                 })(args);
         },
-        handleMouseMove: function(event){
-            this.svg.selectAll(".focus")
+        handleMouseMove: function(event) {
+            let focus = this.svg.selectAll(".focus");
+            let index = Math.floor(this.xScale.invert(d3.pointer(event)[0]));
+            focus
                 .select(".lineHover")
-                .attr("transform", "translate(" + d3.pointer(event)[0] + ",0)")
+                .attr("transform", "translate(" + this.xScale(index) + ",0)");
+            // update circles
+            focus
+                .selectAll(".hoverCircle")
+                .attr("cy", e => this.yScale(this.getValueFromIndex(index, e)))
+                .attr("cx", this.xScale(index));
+            // update text
+            focus
+                .selectAll(".lineHoverText")
+                .attr(
+                    "transform",
+                    "translate(" +
+                        d3.pointer(event)[0] +
+                        "," +
+                        this.height / 2.5 +
+                        ")"
+                )
+                .text(e => {
+                    return `${e}: ${this.formatValue(this.getValueFromIndex(index, e))}`;
+                });
+            // flip text around
+            this.xScale(index) > this.width - this.width / 2
+                ? focus
+                      .selectAll("text.lineHoverText")
+                      .attr("text-anchor", "end")
+                      .attr("dx", -10)
+                : focus
+                      .selectAll("text.lineHoverText")
+                      .attr("text-anchor", "start")
+                      .attr("dx", 10);
         },
-        createHoverObjects: function(){
+        createHoverObjects: function() {
             // create overlay
-            this.svg.append("rect")
-                    .attr("class", "overlayRect")
-                    .attr("x", this.margin.left)
-                    .attr("width", this.width + this.margin.right + this.margin.left)
-                    .attr("height", this.height)
-
-            let focus = this.svg.append("g")
+            this.svg
+                .append("rect")
+                .attr("class", "overlayRect")
+                .attr("x", 5)
+                .attr("width", this.width - 10)
+                .attr("height", this.height);
+            // create line
+            let focus = this.svg
+                .append("g")
                 .attr("class", "focus")
                 .style("display", "none");
-
-            focus.append("line").attr("class", "lineHover")
+            focus
+                .append("line")
+                .attr("class", "lineHover")
                 .style("stroke", "#999")
                 .attr("stroke-width", 2)
                 .style("shape-rendering", "crispEdges")
                 .style("opacity", 0.5)
                 .attr("y1", this.height)
-                .attr("y2",0);
+                .attr("y2", 0);
+            // add labels
+            var labels = focus
+                .selectAll(".lineHoverText")
+                .data(this.lineprofileNames);
+            // add text labels
+            labels
+                .enter()
+                .append("text")
+                .attr("class", "lineHoverText")
+                .style("fill", d => {
+                    return this.colorMapping.get(d);
+                })
+                .attr("text-anchor", "start")
+                .attr("font-size", 14)
+                .attr("dy", (_, i) => 1 + i * 2 + "em")
+                .merge(labels);
+            // add circles
+            var circles = focus
+                .selectAll(".hoverCircle")
+                .data(this.lineprofileNames);
+            circles
+                .enter()
+                .append("circle")
+                .attr("class", "hoverCircle")
+                .style("fill", d => {
+                    return this.colorMapping.get(d);
+                })
+                .attr("r", 6)
+                .merge(circles);
             // register handlers on top level group
             this.svg
-                .on("mouseover", function() { focus.style("display", null); })
-                .on("mouseleave", function(e) {console.log(e); focus.style("display", "none")})
-                .on("mousemove", this.handleMouseMove)
+                .selectAll(".overlayRect")
+                .on("mouseover", function() {
+                    focus.style("display", null);
+                })
+                .on("mousemove", this.handleMouseMove);
+            // mouseleave is on the group of data -> otherwise moving on rect will trigger mouseleave continuously
+            this.svg.on("mouseleave", function() {
+                focus.style("display", "none");
+            });
         },
-        createScales: function(){
+        createScales: function() {
             let { minX, maxX, minY, maxY } = this.valueBoundaries;
             this.xScale = d3
                 .scaleLinear()
-                .domain([minX - 0.1 * (maxX - minX), maxX])
+                .domain([minX, maxX])
                 .range([0, this.width]);
-            this.yScale =  d3
+            this.yScale = d3
                 .scaleLinear()
                 .domain([minY - 0.05 * (maxY - minY), maxY])
                 .range([this.height, 0]);
@@ -166,52 +246,38 @@ export default {
                         this.margin.top +
                         ")"
                 );
-            this.createHoverObjects()
         },
         createAxes: function() {
             this.svg
                 .append("g")
                 .attr("class", "y axis")
-                .attr("transform", "translate(" + 2 + "0)")
                 .call(this.yAxisGenerator);
         },
-        addDataLine: function(single_data, color_index){
+        addDataLine: function(single_data, color_index) {
             this.svg
-                    .append("path")
-                    .attr("d", this.lineGenerator(single_data.data))
-                    .attr("fill", "none")
-                    .attr("stroke", d3.schemeDark2[color_index])
-                    .attr("stroke-width", 1.5);
-                this.svg
-                    .append("text")
-                    .attr(
-                        "transform",
-                        "translate(" +
-                            (this.width - 40) +
-                            "," +
-                            (this.yScale(
-                                single_data.data[single_data.data.length - 1]
-                            ) +
-                                10) +
-                            ")"
-                    )
-                    .attr("dy", ".35em")
-                    .attr("text-anchor", "start")
-                    .style("font-size", "12px")
-                    .style("fill", d3.schemeDark2[color_index])
-                    .text(this.lineNames[color_index]);
+                .append("path")
+                .attr("d", this.lineGenerator(single_data.data))
+                .attr("fill", "none")
+                .attr("stroke", d3.schemeDark2[color_index])
+                .attr("stroke-width", 1.5);
+            this.colorMapping.set(
+                this.lineNames[color_index],
+                d3.schemeDark2[color_index]
+            );
         },
         drawLinechart: function() {
             this.createSVG();
-            this.createScales()
+            this.createScales();
             // add data
-            var color_index = 0;
+            let color_index = 0;
             for (let single_data of this.lineData) {
-                this.addDataLine(single_data, color_index)
+                this.addDataLine(single_data, color_index);
                 color_index = color_index + 1;
             }
             // add axes
             this.createAxes();
+            // add hover objects
+            this.createHoverObjects();
         }
     },
     mounted: function() {
@@ -235,6 +301,10 @@ export default {
 </script>
 
 <style lang="scss">
+.lineHoverText {
+    text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff,
+        2px 2px 0 #fff;
+}
 
 .center-horizontal {
     margin: auto;
@@ -245,16 +315,16 @@ export default {
 }
 
 .axis path {
-  stroke-width: 2px;
+    stroke-width: 2px;
 }
 
 .axis line {
-  shape-rendering: crispEdges;
-  stroke-width: 2px;
+    shape-rendering: crispEdges;
+    stroke-width: 2px;
 }
 
 .overlayRect {
-	fill: none;
+    fill: none;
     pointer-events: all;
 }
 </style>
