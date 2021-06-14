@@ -182,6 +182,7 @@ import {
     get_indices_center_column
 } from "../../functions";
 import EventBus from "../../eventBus";
+import * as seedrandom from "seedrandom";
 
 export default {
     name: "stackupWidget",
@@ -554,6 +555,13 @@ export default {
             }
             // add by center column
             this.sortorders["center column"] = {};
+            // add random sort order
+            seedrandom("I am a random seed!")
+            let randArray = []
+            for (let index = 0; index < data.shape[0]; index++){
+                randArray.push(Math.random())
+            }
+            this.sortorders["random"] = randArray;
             // emit sort order update event
             this.broadcastSortOrderUpdate();
         },

@@ -19,6 +19,7 @@
     "pixi.js": "^6.0.2",
     "pixi.js-legacy": "^6.0.2",
     "sass": "^1.32.2",
+    "seedrandom": "^3.0.5",
     "vue": "^2.5.2",
     "vue-apexcharts": "^1.6.0",
     "vue-material": "latest",
