@@ -86,17 +86,22 @@ export default {
         },
         formatValue: function(value) {
             if (!this.normalized) {
-                return value.toExponential(0);
+                return value.toExponential(2);
             }
-            return Math.round(value * 10) / 10;
+            return Math.round(value * 100) / 100;
         },
         getValueFormat: function(val) {
             if (!this.normalized) {
-                return val.toExponential(0);
+                return val.toExponential(2);
             }
             return val;
         },
-        bisectData: d3.bisector(d => d.date).left,
+        formatLabel: function(label){
+            if (label.length > 10){
+                return label.slice(0, 10) + "..."
+            }
+            return label
+        },
         yAxisGenerator: function(args) {
             return d3
                 .axisLeft(this.yScale)
@@ -136,9 +141,9 @@ export default {
                         ")"
                 )
                 .text(e => {
-                    return `${e}: ${this.formatValue(
+                    return `${this.formatValue(
                         this.getValueFromIndex(index, e)
-                    )}`;
+                    )} | ${this.formatLabel(e)}`;
                 });
             // flip text around
             this.xScale(index) > this.width - this.width / 2
@@ -231,6 +236,7 @@ export default {
                 .select(`#${this.lineprofileDivID}`)
                 .append("svg")
                 .attr("id", `${this.lineprofileDivID}Svg`)
+                .style("overflow", "visible") // needed for when tooltip goes over borders of svg
                 .attr(
                     "width",
                     this.width + this.margin.left + this.margin.right
