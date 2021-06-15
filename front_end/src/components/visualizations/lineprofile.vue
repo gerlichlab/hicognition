@@ -267,7 +267,7 @@ export default {
                 .attr("d", this.lineGenerator(single_data.data))
                 .attr("fill", "none")
                 .attr("stroke", d3.schemeDark2[color_index])
-                .attr("stroke-width", 1.5);
+                .attr("stroke-width", 2);
             this.colorMapping.set(
                 this.lineNames[color_index],
                 d3.schemeDark2[color_index]
