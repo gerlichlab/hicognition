@@ -1,23 +1,23 @@
-FROM docker.io/gerlichlab/scshic_docker:dev-1.1
+FROM continuumio/miniconda3:4.9.2
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG C.UTF-8  
+ENV LC_ALL C.UTF-8
 
-WORKDIR /temp
-COPY . /temp/install/
+# Update and create base image
+RUN apt-get update -y &&\
+    apt-get install -y gcc g++ make libz-dev &&\
+    apt-get clean
 
-SHELL ["/bin/bash", "-c"]
+# Add yml file for conda environment
+ADD conda_env.yml /temp/install/
 
-# install python packages
+# install packages
+RUN conda install mamba -n base -c conda-forge &&\
+    mamba env update -n base --f /temp/install/conda_env.yml &&\
+    mamba list > software_versions_conda.txt &&\
+    # install version 0.3 of ngs
+    pip install git+git://github.com/gerlichlab/ngs@v0.3
 
-RUN source activate flask &&\
-    cd /temp/install &&\
-    pip install -r requirements.txt
-
-# install things from github
-
-RUN source activate flask &&\
-    pip install git+git://github.com/mirnylab/bioframe@9af1b45e5000e23cdcf7dd94094f963d0141ed44 &&\
-    pip install git+git://github.com/mirnylab/cooltools@78c18f8c4c7e7c088c95ed1d9d2cc0c7e632ba5c &&\
-    pip install git+git://github.com/gerlichlab/ngs.git@hicognition-dev &&\
-    pip install /temp/install/. 
-    #Installs the repo itselve
+WORKDIR /home
 
 CMD ["/bin/bash"]

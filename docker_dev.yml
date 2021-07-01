@@ -34,7 +34,7 @@ services:
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.3
-        command: -c "source activate flask && cd /code && flask db upgrade && flask run --host=0.0.0.0"
+        command: -c "cd /code && flask db upgrade && flask run --host=0.0.0.0"
 
 
     redis-server:
@@ -68,7 +68,7 @@ services:
             hicognition-net:
                 ipv4_address: 172.18.0.5
         # sleeps to wait for redis-server. TODO: make this check nicer!
-        command: -c "sleep 5 && source activate flask && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
+        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
 
     redis-worker2:
         container_name: redis-worker2
@@ -91,7 +91,7 @@ services:
             hicognition-net:
                 ipv4_address: 172.18.0.6
         # sleeps to wait for redis-server. TODO: make this check nicer!
-        command: -c "sleep 5 && source activate flask && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
+        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
 
     redis-worker3:
         container_name: redis-worker3
@@ -114,7 +114,7 @@ services:
             hicognition-net:
                 ipv4_address: 172.18.0.7
         # sleeps to wait for redis-server. TODO: make this check nicer!
-        command: -c "sleep 5 && source activate flask && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
+        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
 
 
     redis-worker4:
@@ -138,7 +138,7 @@ services:
             hicognition-net:
                 ipv4_address: 172.18.0.8
         # sleeps to wait for redis-server. TODO: make this check nicer!
-        command: -c "sleep 5 && source activate flask && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
+        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
 
 networks:
     hicognition-net:
