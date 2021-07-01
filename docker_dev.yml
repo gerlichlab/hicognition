@@ -20,6 +20,7 @@ services:
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -34,7 +35,7 @@ services:
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.3
-        command: -c "cd /code && flask db upgrade && flask run --host=0.0.0.0"
+        command: -c "sleep 10 && cd /code && flask db upgrade && flask run --host=0.0.0.0"
 
 
     redis-server:
@@ -54,6 +55,7 @@ services:
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -77,6 +79,7 @@ services:
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -100,6 +103,7 @@ services:
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -124,6 +128,7 @@ services:
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -139,6 +144,21 @@ services:
                 ipv4_address: 172.18.0.8
         # sleeps to wait for redis-server. TODO: make this check nicer!
         command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
+
+    mysql:
+        container_name: mysql
+        environment:
+            - MYSQL_RANDOM_ROOT_PASSWORD=yes
+            - MYSQL_DATABASE=hicognition
+            - MYSQL_USER=hicognition
+            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        volumes:
+            - ${MYSQL_DATA_DIR}:/var/lib/mysql
+            - ./mysql/mysql.cnf:/etc/my.cnf
+        image: mysql/mysql-server:5.7
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.9
 
 networks:
     hicognition-net:
