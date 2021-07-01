@@ -35,8 +35,7 @@ services:
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.3
-        # TODO: boot script to check whehter mysql is there
-        command: -c "sleep 20 && cd /code && flask db upgrade && flask run --host=0.0.0.0"
+        command: -c "cd /code && ./boot.sh"
 
 
     redis-server:

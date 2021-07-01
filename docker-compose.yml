@@ -9,6 +9,7 @@ services:
         environment:
             - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -18,9 +19,9 @@ services:
             - "5000:5000"
         build:
             context: "./back_end"
-        image: flask:test2
+        image: flask:v1.0
         entrypoint: "/bin/bash"
-        command: -c "cd /code && flask db upgrade && flask run --host=0.0.0.0"
+        command: -c "cd /code && ./boot.sh"
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.3
@@ -70,6 +71,7 @@ services:
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -78,7 +80,7 @@ services:
                 - redis-server
         build:
             context: "./back_end"
-        image: flask:test2
+        image: flask:v1.0
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
@@ -93,6 +95,7 @@ services:
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -101,7 +104,7 @@ services:
                 - redis-server
         build:
             context: "./back_end"
-        image: flask:test2
+        image: flask:v1.0
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
@@ -116,6 +119,7 @@ services:
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -124,7 +128,7 @@ services:
                 - redis-server
         build:
             context: "./back_end"
-        image: flask:test2
+        image: flask:v1.0
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
@@ -132,6 +136,23 @@ services:
         # sleeps to wait for redis-server. TODO: make this check nicer!
         command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
 
+    mysql:
+        container_name: mysql
+        ports:
+            # map port out for diagnostics
+            - "3306:3306"
+        environment:
+            - MYSQL_RANDOM_ROOT_PASSWORD=yes
+            - MYSQL_DATABASE=hicognition
+            - MYSQL_USER=hicognition
+            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        image: mysql/mysql-server:8.0
+        volumes:
+            - ${MYSQL_DATA_DIR}:/var/lib/mysql
+            - ./mysql/mysql.cnf:/etc/my.cnf
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.9
 
 networks:
     hicognition-net:
