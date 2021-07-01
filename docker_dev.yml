@@ -2,7 +2,7 @@ version: "3"
 
 services:
     node:
-        container_name: node-dev
+        container_name: node
         image: node:14-buster
         ports:
             # only map localhost-port
@@ -14,7 +14,7 @@ services:
         command: -c "cd /front_end && npm install && npm run dev"
 
     hicognition:
-        container_name: flask-dev
+        container_name: flask-server
         volumes:  
             - ${HICOGNITION_DIR}:/code
         environment:
@@ -30,7 +30,7 @@ services:
             - "5000:5000"
         build:
             context: "./back_end"
-        image: flask:test2
+        image: flask:v1.0
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
@@ -65,7 +65,7 @@ services:
                 - redis-server
         build:
             context: "./back_end"
-        image: flask:test2
+        image: flask:v1.0
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
@@ -89,7 +89,7 @@ services:
                 - redis-server
         build:
             context: "./back_end"
-        image: flask:test2
+        image: flask:v1.0
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
@@ -113,7 +113,7 @@ services:
                 - redis-server
         build:
             context: "./back_end"
-        image: flask:test2
+        image: flask:v1.0
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
@@ -138,7 +138,7 @@ services:
                 - redis-server
         build:
             context: "./back_end"
-        image: flask:test2
+        image: flask:v1.0
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
