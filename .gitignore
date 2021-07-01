@@ -17,6 +17,7 @@ back_end/data/mysql/*
 *.csv
 workdir/higlass_data/
 workdir/higlass_temp/
+workdir/mysql/*
 
 keys/*
 

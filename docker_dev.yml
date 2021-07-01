@@ -35,7 +35,8 @@ services:
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.3
-        command: -c "sleep 10 && cd /code && flask db upgrade && flask run --host=0.0.0.0"
+        # TODO: boot script to check whehter mysql is there
+        command: -c "sleep 20 && cd /code && flask db upgrade && flask run --host=0.0.0.0"
 
 
     redis-server:
@@ -147,15 +148,18 @@ services:
 
     mysql:
         container_name: mysql
+        ports:
+            # map port out for diagnostics
+            - "3306:3306"
         environment:
             - MYSQL_RANDOM_ROOT_PASSWORD=yes
             - MYSQL_DATABASE=hicognition
             - MYSQL_USER=hicognition
             - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        image: mysql/mysql-server:8.0
         volumes:
             - ${MYSQL_DATA_DIR}:/var/lib/mysql
             - ./mysql/mysql.cnf:/etc/my.cnf
-        image: mysql/mysql-server:5.7
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.9
