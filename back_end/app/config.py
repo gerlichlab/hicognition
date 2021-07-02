@@ -29,7 +29,6 @@ class Config:
         "cooler": ("pipeline_pileup", "run pileup pipeline"),
         "bigwig": ("pipeline_stackup", "run stackup pipeline")
     }
-    BIN_SIZES = [20000, 50000]  # In development mode, 10k hogs too much memory
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled
     OBS_EXP_PROCESSES = 4 # Number of processes to use per worker to calcualte obs/exp matrix of pileups
     PILEUP_PROCESSES = 1 # Number of processes to use per worker to do pileups
