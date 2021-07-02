@@ -127,6 +127,28 @@ There is an additional [docker-compose file](https://github.com/gerlichlab/HiCog
 
 Tests for backend functionality are implemented via the python `unittest` module and run using `pytest`. All api route-handlers as well as redis-queue tasks in `tasks.py` are tested.
 
+### Gate-keeping of files
+
+In order to ensure that preprocessing runs smoothely and all analyses can be performed on uploaded files, we decided to be strict with regards to what files can be uploaded. To this end,
+we implemented a format-checking logic in `hicognition.format_checkers` for all supported file formats. These format checkers need to be passed before datasets are added to the internal database via `POST /dataset/`. The requirements are the following:
+
+#### BED files
+
+The file can contain a header, but only with the prefixes `#`, `track` or `browser`. After the header, an optional column-name row can be present. After this optional column name row, every row needs to contain as first entry a chromosome name, then a start and an end. Additionally, bed files cannot contain entries that do not map to our accepted chromosome names. 
+
+If any of these assumptions are not met, the file is rejected.
+
+#### Cooler files
+
+Cooler files need to be in the `.mcool` format, meaning that the contain data binned at multiple resolutions. Additionally, they need to contain all resolutions defined in the `PREPROCESSING_MAP` config parameters.
+
+If any of these assumptions are not met, the file is rejected.
+
+#### BIGWIG files
+
+Currently no format checking logic is implemented for bigwig files.
+
+
 ## Front-end
 
 We use vue.js in the front-end to manage routing, interactivity and fetching data from the back-end. Here, we employ a template-based design, where each vue-component resides in its own `.vue` file that is included in the distribution build by `webpack`.
