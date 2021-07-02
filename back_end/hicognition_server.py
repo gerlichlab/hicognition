@@ -2,6 +2,7 @@
 import os
 from getpass import getpass
 import click
+from base64 import b64encode
 from app import create_app, db
 from app.models import (
     User,
@@ -46,6 +47,47 @@ def create_user(name, password):
 
 app.cli.add_command(user_group)
 
+# add command line arguments for dataset addition/preprocessing
+
+dataset_group = AppGroup("dataset")
+
+
+@dataset_group.command("add")
+@click.argument("path")
+@click.argument("name")
+@click.argument("filetype")
+@click.argument("user")
+@click.argument("password")
+@click.option("--description", "-d", default=None)
+@click.option("--genotype", "-g", default=None)
+@click.option("--public", "-p", default=False)
+def add_dataset(path, name, filetype, user, password, description, genotype, public):
+    """Adds dataset to database and uploads it."""
+    client = app.test_client()
+    headers = _get_api_headers(user, password)
+    # construct form data
+    with open(path, "rb") as f:
+        data = {
+            "datasetName": name,
+            "description": description,
+            "genotype": genotype,
+            "filetype": filetype,
+            "file": (f, path),
+            "public": public
+        }
+        # dispatch post request
+        response = client.post(
+            "/api/datasets/",
+            data=data,
+            headers=headers,
+            content_type="multipart/form-data",
+        )
+    print(f"Request dispatched with status code {response.status_code} and response {response.json}")
+
+
+
+app.cli.add_command(dataset_group)
+
 
 @app.shell_context_processor
 def make_shell_context():
@@ -59,4 +101,15 @@ def make_shell_context():
         "AverageIntervalData": AverageIntervalData,
         "BedFileMetadata": BedFileMetadata,
         "Session": Session
+    }
+
+
+# Helpers
+
+def _get_api_headers(username, password):
+    return {
+        "Authorization": "Basic "
+        + b64encode((username + ":" + password).encode("utf-8")).decode("utf-8"),
+        "Accept": "application/json",
+        "Content-Type": "application/json",
     }
