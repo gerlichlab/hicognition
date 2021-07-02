@@ -11,7 +11,7 @@ from app.models import (
     Task,
     AverageIntervalData,
     BedFileMetadata,
-    Session
+    Session,
 )
 from flask_migrate import Migrate
 from flask.cli import AppGroup
@@ -73,7 +73,7 @@ def add_dataset(path, name, filetype, user, password, description, genotype, pub
             "genotype": genotype,
             "filetype": filetype,
             "file": (f, path),
-            "public": public
+            "public": public,
         }
         # dispatch post request
         response = client.post(
@@ -82,8 +82,46 @@ def add_dataset(path, name, filetype, user, password, description, genotype, pub
             headers=headers,
             content_type="multipart/form-data",
         )
-    print(f"Request dispatched with status code {response.status_code} and response {response.json}")
+    print(
+        f"Request dispatched with status code {response.status_code} and response {response.json}"
+    )
 
+
+@dataset_group.command("preprocess")
+@click.argument("name")
+@click.argument("user")
+@click.argument("password")
+def add_dataset(name, user, password):
+    """Triggers preprocessing for all datasets with name with all available regions."""
+    client = app.test_client()
+    headers = _get_api_headers(user, password)
+    # get dataset with name
+    datasets = Dataset.query.filter(Dataset.dataset_name == name).all()
+    # check wheter dataset name is unique
+    if len(datasets) > 1:
+        raise ValueError("Name refers to multiple datasets!")
+    dataset = datasets[0]
+    if dataset.filetype not in ["cooler", "bigwig"]:
+        raise ValueError("Source dataset is not a genomic feature dataset!")
+    # get ids of all bedfiles
+    bedfiles = Dataset.query.filter(Dataset.filetype == "bedfile").all()
+    if len(bedfiles) == 0:
+        raise ValueError("No bedfiles available!")
+    # start preprocessing
+    data = {
+        "dataset_id": str(dataset.id),
+        "region_ids": str([bedfile.id for bedfile in bedfiles]),
+    }
+    # dispatch post request
+    response = client.post(
+        "/api/preprocess/",
+        data=data,
+        headers=headers,
+        content_type="multipart/form-data",
+    )
+    print(
+        f"Request dispatched with status code {response.status_code} and response {response.json}"
+    )
 
 
 app.cli.add_command(dataset_group)
@@ -100,11 +138,12 @@ def make_shell_context():
         "Task": Task,
         "AverageIntervalData": AverageIntervalData,
         "BedFileMetadata": BedFileMetadata,
-        "Session": Session
+        "Session": Session,
     }
 
 
 # Helpers
+
 
 def _get_api_headers(username, password):
     return {
