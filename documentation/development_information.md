@@ -123,6 +123,10 @@ Additionally, there are two transient containers that are used:
 
 There is an additional [docker-compose file](https://github.com/gerlichlab/HiCognition_flask/blob/master/docker_dev.yml) that starts hicognition in development mode without nginx, with the flask-server set to `debug` and `node` set-up to server the front-end with hot reload.
 
+### Testing
+
+Tests for backend functionality are implemented via the python `unittest` module and run using `pytest`. All api route-handlers as well as redis-queue tasks in `tasks.py` are tested.
+
 ## Front-end
 
 We use vue.js in the front-end to manage routing, interactivity and fetching data from the back-end. Here, we employ a template-based design, where each vue-component resides in its own `.vue` file that is included in the distribution build by `webpack`.
@@ -176,6 +180,10 @@ Data that needs to be shared among multiple front-end components is stored in a 
 All interactions with the back-end are done via api-calls that are dispatched by [axios](https://github.com/axios/axios). The `axios` instance is bound to `Vue.prototype.$http` so all `Vue` instances and components have access to the client without import.
 
 The api-calls are defined as a mixin in `frontend/src/mixins.js` in `apiMixin`. All components that need interaction with the back-end receive the `apiMixin`. The `apimixin` has a convenience method for fetching and storing the authentication token called `.fetchAndStoreToken` and two more generic methods that allow to dispatch get and post reqeusts, `.fetchData` and `.postData` respectively. These work by return the promise the is returned by axios-requests is there is no error in the call. The caller can then resolve the promise than receive the data. If there is an error, however, the user is redirected to the login-page to get a new token.
+
+### Testing
+
+Front-end tests are implemented via `jest`. Currently, we only test stand-alone functions that are not dependent on a `Vue` instance. In the future we want to extend testing the `Vue` components.
 
 
 ## Git actions and Code tests
