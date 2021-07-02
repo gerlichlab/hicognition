@@ -12,24 +12,26 @@ Flask server for HiCognition with Vue.js frontend. HiCognition is a a data explo
 HiCognition runs on [docker](https://www.docker.com/) and therefore needs docker to be installed on your system.
 
 ## Development
-Start vom development server:
+Start of development server (this server includes hot-reload of the node.js development server and the flask development server):
 ```
 docker-compose -f docker_dev.yml up
 ```
-if you get a network error:
+
+The app is then available on ```http://localhost:8080```.
+
+If you get a network error:
 ```
 docker-compose -f docker_dev.yml down
 ```
 
 To create a user,
-attach a shell to ```flask-dev``` container with
+attach a shell to the ```flask-server``` container with
 ```
-docker exec -it flask-dev bash
+docker exec -it flask-server bash
 ```
 Then
 
 ```
-source activate flask
 cd /code
 ```
 
@@ -48,7 +50,7 @@ db.session.add(new_user)
 db.session.commit()
 ```
 
-or with the new command line tool:
+to add a new user. This can also be done via a command line tool:
 ```
 Usage: flask user define [OPTIONS] NAME
 
@@ -62,24 +64,47 @@ Options:
 Example:
 
 ```
-docker exec -it flask-dev bash
+docker exec -it flask-server bash
 source activate flask
 flask user define dummy -p 1234
 ```
 
+To add datasets you can use the add dataset command line tool:
 
-view the app on ```http://localhost:8080```
+```
+Usage: flask dataset add [OPTIONS] PATH NAME FILETYPE USER PASSWORD
+
+  Adds dataset to database and uploads it.
+
+Options:
+  -d, --description TEXT
+  -g, --genotype TEXT
+  -p, --public TEXT
+  --help                  Show this message and exit.
+```
+
+and then you can preprocess them as follows:
+
+```
+Usage: flask dataset preprocess [OPTIONS] NAME USER PASSWORD
+
+  Triggers preprocessing for all datasets with name with all available
+  regions.
+
+Options:
+  --help  Show this message and exit.
+```
+Note that this preprocessing command line tool will preprocess a given feature dataset with all available region datasets. Additionally, to not have to deal with dataset ids, this tool uses a dataset name. If the name is not unique, it will fail and you have to do the preprocessing via the GUI.
 
 
 ## Running tests backend
 
 ```
-docker exec -it flask-dev bash
+docker exec -it flask-server bash
 ```
 Then
 
 ```
-source activate flask
 cd /code
 pytest .
 ```
@@ -91,7 +116,7 @@ pip install .
 
 ## Running tests frontend
 ```
-docker exec -it node-dev bash
+docker exec -it node bash
 ```
 Then
 
@@ -103,14 +128,13 @@ npm run test
 ## Changing Database
 
 ```
-docker exec -it flask-dev bash
+docker exec -it flask-server bash
 ```
 Then
 
 ```
-source activate flask
 cd /code
-flask db migrate -m "rename fields"
+flask db migrate -m "COMMIT-NAME"
 flask db upgrade
 ```
 
@@ -120,7 +144,7 @@ flask db upgrade
 Clone this repo into a local folder:
 
 ```
-git clone https://github.com/gerlichlab/HiCognition_flask
+git clone https://github.com/gerlichlab/HiCognition
 ```
 
 and you are ready to got!
