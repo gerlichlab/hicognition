@@ -22,7 +22,7 @@ export default {
             id: Math.round(Math.random() * 100000),
             width: undefined,
             height: undefined,
-            margin: { top: 10, right: 0, bottom: 10, left: 30 }
+            margin: { top: 10, right: 10, bottom: 10, left: 30 }
         };
     },
     computed: {

@@ -61,7 +61,7 @@ export default {
     computed: {
         colorBarContainerStyle: function() {
             return {
-                "width": "15%",
+                "width": "17%",
                 "height": this.height + "px",
                 "display": "inline"
             }
