@@ -2,11 +2,13 @@
     <div>
         <md-list class="md-double-line">
             <md-list-item class="md-alignment-top-center">
+                <div :style="colorBarContainerStyle">
+                </div>   
                 <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-0">
                     <div class="small-margin" ref="canvasDiv" />
                     <!-- this prevents drag events to allow slider change without causing widget drag -->
-                    <div
+                    <!-- <div
                         draggable="true"
                         @dragstart.prevent.stop
                         :style="sliderContainerStyle"
@@ -19,7 +21,7 @@
                             :sliderPositionMax="maxValueRobust"
                             @slider-change="handleColorChange"
                         />
-                    </div>
+                    </div> -->
                 </md-content>
             </md-list-item>
         </md-list>
@@ -29,7 +31,7 @@
 import * as PIXI from "pixi.js-legacy";
 import { getScale } from "../../colorScales.js";
 import doubleRangeSlider from "../ui/doubleRangeSlider.vue";
-import { min_array, max_array, getPercentile, getPerMilRank } from "../../functions";
+import { getPercentile, getPerMilRank } from "../../functions";
 
 const NAN_COLOR = [1, 1, 1]; // white nan color
 
@@ -51,6 +53,14 @@ export default {
         log: Boolean
     },
     computed: {
+        colorBarContainerStyle: function() {
+            return {
+                "width": "15%",
+                "background": "red",
+                "height": this.height + "px",
+                "display": "inline"
+            }
+        },
         sliderContainerStyle: function() {
             return {
                 "width": "100%",
@@ -229,6 +239,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
 .center-horizontal {
     margin: auto;
     display: block;
