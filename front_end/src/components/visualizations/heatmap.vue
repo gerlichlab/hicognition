@@ -3,6 +3,7 @@
         <md-list class="md-double-line">
             <md-list-item class="md-alignment-top-center">
                 <div :style="colorBarContainerStyle">
+                    <color-bar-slider/>
                 </div>   
                 <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-0">
@@ -30,7 +31,7 @@
 <script>
 import * as PIXI from "pixi.js-legacy";
 import { getScale } from "../../colorScales.js";
-import doubleRangeSlider from "../ui/doubleRangeSlider.vue";
+import colorBarSlider from "../ui/colorBarSlider.vue"
 import { getPercentile, getPerMilRank } from "../../functions";
 
 const NAN_COLOR = [1, 1, 1]; // white nan color
@@ -38,7 +39,7 @@ const NAN_COLOR = [1, 1, 1]; // white nan color
 export default {
     name: "heatmap",
     components: {
-        doubleRangeSlider
+        colorBarSlider
     },
     props: {
         title: String,
@@ -56,7 +57,6 @@ export default {
         colorBarContainerStyle: function() {
             return {
                 "width": "15%",
-                "background": "red",
                 "height": this.height + "px",
                 "display": "inline"
             }
