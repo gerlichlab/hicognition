@@ -3,7 +3,12 @@
         <md-list class="md-double-line">
             <md-list-item class="md-alignment-top-center">
                 <div :style="colorBarContainerStyle">
-                    <color-bar-slider/>
+                    <color-bar-slider
+                        :colormap="colormap"
+                        :sliderMin="minValue"
+                        :sliderMax="maxValue"
+                    >
+                    </color-bar-slider>
                 </div>   
                 <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-0">

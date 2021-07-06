@@ -4,6 +4,7 @@
 
 <script>
 import * as d3 from "d3";
+import { getScale } from "../../colorScales.js";
 
 export default {
     name: "colorBarSlider",
@@ -13,7 +14,7 @@ export default {
         sliderWidth: Number,
         sliderPositionMin: Number,
         sliderPositionMax: Number,
-        colorMapName: String
+        colormap: String
     },
     data: function() {
         return {
@@ -33,6 +34,9 @@ export default {
         },
         plotHeight: function(){
             return this.height - this.margin.top - this.margin.bottom
+        },
+        colorScale: function(){
+            return getScale(this.sliderMin, this.sliderMax, this.colormap);
         }
     },
     methods: {
@@ -45,6 +49,7 @@ export default {
                 .offsetHeight;
         },
         createChart: function() {
+            d3.select(`#${this.colorBarDivID}Svg`).remove();
             this.svg = d3
                 .select(`#${this.colorBarDivID}`)
                 .append("svg")
@@ -73,12 +78,13 @@ export default {
             return tX + "," + tY;
         },
         colorbar: function(scale, width, height) {
-            var tickValues = scale.domain(),
-                axisGroup = null;
+            let scale_domain = scale.domain()
+            let scale_start = scale_domain[0]
+            let scale_end = scale_domain[scale_domain.length - 1]
             var linearScale = d3
                 .scaleLinear()
-                .domain(scale.domain())
-                .range([0, height]);
+                .domain([scale_start, scale_end])
+                .range([height, 0]);
             var barThickness = width;
             var barRange = height;
 
@@ -93,16 +99,16 @@ export default {
 
                 var interScale = d3
                     .scaleLinear()
-                    .domain([0, barRange])
-                    .range(scale.domain());
+                    .domain([barRange, 0])
+                    .range([scale_start, scale_end]);
 
                 context
                     .selectAll("rect")
                     .data(barData)
                     .enter()
                     .append("rect")
-                    .attr("x", translateX)
-                    .attr("y", translateY)
+                    .attr("x", 0)
+                    .attr("y", (d) => d)
                     .attr(
                         "width",
                         barThickness
@@ -112,14 +118,12 @@ export default {
                         trueDL
                     )
                     .style("stroke-width", "0px")
-                    .style("fill", function(d, i) {
+                    .style("fill", function(d) {
                         return scale(interScale(d));
                     });
 
-                var myAxis = d3.axisLeft(linearScale).ticks(3);
-                if (tickValues == null) tickValues = myAxis.tickValues();
-                else myAxis.tickValues(tickValues);
-                axisGroup = context
+                var myAxis = d3.axisLeft(linearScale).ticks(5);
+                context
                     .append("g")
                     .attr("class", "colorbar axis")
                     .attr(
@@ -129,34 +133,12 @@ export default {
                             ")"
                     )
                     .call(myAxis)
-                    .selectAll(".tick")
-                    .data(tickValues);
-            }
-
-            // set and return for chaining, or get
-            colorbar.scale = function(_) {
-                return arguments.length ? ((scale = _), colorbar) : scale;
-            };
-
-            colorbar.tickValues = function(_) {
-                return arguments.length
-                    ? ((tickValues = _), colorbar)
-                    : tickValues;
-            };
-
-            function translateX(d, i) {
-                return 0;
-            }
-
-            function translateY(d, i) {
-                return d;
             }
 
             return colorbar;
         },
         attachColorbar: function(){
-            var colorScale = d3.scaleSequential(d3.interpolateWarm).domain([-1,1]);
-            var cb = this.colorbar(colorScale, this.plotWidth, this.plotHeight);
+            var cb = this.colorbar(this.colorScale, this.plotWidth, this.plotHeight);
             this.svg.call(cb);
         }
     },
@@ -165,6 +147,20 @@ export default {
         this.width = this.getParentWidth();
         this.createChart();
         this.attachColorbar();
+    },
+    watch: {
+        colormap: function(){
+            this.createChart()
+            this.attachColorbar()
+        },
+        sliderMax: function(){
+            this.createChart()
+            this.attachColorbar()
+        },
+        sliderMin: function(){
+            this.createChart()
+            this.attachColorbar()
+        }
     }
 };
 </script>
