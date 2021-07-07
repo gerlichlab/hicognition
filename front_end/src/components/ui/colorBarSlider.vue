@@ -128,23 +128,35 @@ export default {
 
                 // needs to be defined here because if it is a vue methods this gets everridden; store
                 let dragEventHandler = function(event){
-                    // adjust y position
-                    d3.select(this)
-                        .attr("y", event.y)
+                    // check whether y position is allowed
+                    if ((event.y > 0) && (event.y < barRange)){
+                        // adjust y position
+                        d3.select(this)
+                            .attr("y", event.y)
+                    }
                 }
                 let component = this
                 let dragStopEventHandler = function(event){
+                    // add boundaries for trying to drag further
+                    let y_value = event.y
+                    if (y_value < 0){
+                        y_value = 0
+                    }
+                    if (y_value > barRange){
+                        y_value = barRange
+                    }
+                    let event_value = interScale(y_value)
                     if (this.id == "upper"){
-                        if (interScale(event.y) < component.sliderPositionMin){
-                            component.$emit("slider-change", [interScale(event.y), component.sliderPositionMin]);
+                        if (event_value < component.sliderPositionMin){
+                            component.$emit("slider-change", [event_value, component.sliderPositionMin]);
                         }else{
-                            component.$emit("slider-change", [component.sliderPositionMin, interScale(event.y)]);
+                            component.$emit("slider-change", [component.sliderPositionMin, event_value]);
                         }
                     }else{
-                        if (interScale(event.y) > component.sliderPositionMax){
-                            component.$emit("slider-change", [component.sliderPositionMax, interScale(event.y), ]);
+                        if (event_value > component.sliderPositionMax){
+                            component.$emit("slider-change", [component.sliderPositionMax, event_value, ]);
                         }else{
-                            component.$emit("slider-change", [interScale(event.y), component.sliderPositionMax]);
+                            component.$emit("slider-change", [event_value, component.sliderPositionMax]);
                         }
                     }
                 }
@@ -162,8 +174,8 @@ export default {
                     .attr("id", "lower")
                     .attr("x", 0)
                     .attr("y", (d) => linearScale(d))
-                    .attr("width", barThickness)
-                    .attr("height", "5px")
+                    .attr("width", barThickness + 5)
+                    .attr("height", "7px")
                     .style("fill", "black")
                     .call(drag)
                 
@@ -175,8 +187,8 @@ export default {
                     .attr("id", "upper")
                     .attr("x", 0)
                     .attr("y", (d) => linearScale(d))
-                    .attr("width", barThickness)
-                    .attr("height", "5px")
+                    .attr("width", barThickness + 5)
+                    .attr("height", "7px")
                     .style("fill", "black")
                     .call(drag)
 
