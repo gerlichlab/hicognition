@@ -2,34 +2,21 @@
     <div>
         <md-list class="md-double-line">
             <md-list-item class="md-alignment-top-center">
-                <div :style="colorBarContainerStyle">
+                <!-- this prevents drag events to allow slider change without causing widget drag -->
+                <div :style="colorBarContainerStyle" draggable="true" @dragstart.prevent.stop>
                     <color-bar-slider
                         :colormap="colormap"
                         :sliderMin="minValue"
                         :sliderMax="maxValue"
                         :sliderPositionMax="maxValueRobust"
                         :sliderPositionMin="minValueRobust"
+                        @slider-change="handleColorChange"
                     >
                     </color-bar-slider>
                 </div>   
                 <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-0">
                     <div class="small-margin" ref="canvasDiv" />
-                    <!-- this prevents drag events to allow slider change without causing widget drag -->
-                    <!-- <div
-                        draggable="true"
-                        @dragstart.prevent.stop
-                        :style="sliderContainerStyle"
-                    >
-                        <double-range-slider
-                            :sliderWidth="width / 2"
-                            :sliderMin="minValue"
-                            :sliderMax="maxValue"
-                            :sliderPositionMin="minValueRobust"
-                            :sliderPositionMax="maxValueRobust"
-                            @slider-change="handleColorChange"
-                        />
-                    </div> -->
                 </md-content>
             </md-list-item>
         </md-list>

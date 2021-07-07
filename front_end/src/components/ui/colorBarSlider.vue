@@ -47,6 +47,9 @@ export default {
             return document.getElementById(this.colorBarDivID).parentNode
                 .offsetHeight;
         },
+        dragStopEventHandler: function(event){
+
+        },
         createChart: function() {
             d3.select(`#${this.colorBarDivID}Svg`).remove();
             this.svg = d3
@@ -120,21 +123,54 @@ export default {
                         if ((interScale(d) < initialMin) || (interScale(d) > initialMax)){
                             return "rgba(120,120,120, 0.1)"
                         }
-                        console.log(interScale(d))
                         return scale(interScale(d));
                     });
+
+                // needs to be defined here because if it is a vue methods this gets everridden; store
+                let dragEventHandler = function(event){
+                    // adjust y position
+                    d3.select(this)
+                        .attr("y", event.y)
+                }
+                let component = this
+                let dragStopEventHandler = function(event){
+                    if (this.id == "upper"){
+                        component.$emit("slider-change", [component.sliderPositionMin, interScale(event.y)]);
+                    }else{
+                        component.$emit("slider-change", [interScale(event.y), component.sliderPositionMax]);
+                    }
+                }
+                let drag = d3.drag();
+                drag.on("drag", dragEventHandler);
+                drag.on("end", dragStopEventHandler)
+                                    
 
                 // attach colorbar slider rectangles
                 context
                     .selectAll("colorSlider")
-                    .data([initialMin, initialMax])
+                    .data([initialMin])
                     .enter()
                     .append("rect")
+                    .attr("id", "lower")
                     .attr("x", 0)
                     .attr("y", (d) => linearScale(d))
                     .attr("width", barThickness)
-                    .attr("height", "5px")
+                    .attr("height", "10px")
                     .style("fill", "black")
+                    .call(drag)
+                
+                context
+                    .selectAll("colorSlider")
+                    .data([initialMax])
+                    .enter()
+                    .append("rect")
+                    .attr("id", "upper")
+                    .attr("x", 0)
+                    .attr("y", (d) => linearScale(d))
+                    .attr("width", barThickness)
+                    .attr("height", "10px")
+                    .style("fill", "black")
+                    .call(drag)
 
 
                 var myAxis = d3.axisLeft(linearScale).ticks(5);
@@ -170,6 +206,12 @@ export default {
             this.createChart()
         },
         sliderMin: function(){
+            this.createChart()
+        },
+        sliderPositionMin: function(){
+            this.createChart()
+        },
+        sliderPositionMax: function(){
             this.createChart()
         }
     }
