@@ -135,9 +135,17 @@ export default {
                 let component = this
                 let dragStopEventHandler = function(event){
                     if (this.id == "upper"){
-                        component.$emit("slider-change", [component.sliderPositionMin, interScale(event.y)]);
+                        if (interScale(event.y) < component.sliderPositionMin){
+                            component.$emit("slider-change", [interScale(event.y), component.sliderPositionMin]);
+                        }else{
+                            component.$emit("slider-change", [component.sliderPositionMin, interScale(event.y)]);
+                        }
                     }else{
-                        component.$emit("slider-change", [interScale(event.y), component.sliderPositionMax]);
+                        if (interScale(event.y) > component.sliderPositionMax){
+                            component.$emit("slider-change", [component.sliderPositionMax, interScale(event.y), ]);
+                        }else{
+                            component.$emit("slider-change", [interScale(event.y), component.sliderPositionMax]);
+                        }
                     }
                 }
                 let drag = d3.drag();
@@ -155,7 +163,7 @@ export default {
                     .attr("x", 0)
                     .attr("y", (d) => linearScale(d))
                     .attr("width", barThickness)
-                    .attr("height", "10px")
+                    .attr("height", "5px")
                     .style("fill", "black")
                     .call(drag)
                 
@@ -168,7 +176,7 @@ export default {
                     .attr("x", 0)
                     .attr("y", (d) => linearScale(d))
                     .attr("width", barThickness)
-                    .attr("height", "10px")
+                    .attr("height", "5px")
                     .style("fill", "black")
                     .call(drag)
 
