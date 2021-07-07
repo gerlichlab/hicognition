@@ -7,6 +7,8 @@
                         :colormap="colormap"
                         :sliderMin="minValue"
                         :sliderMax="maxValue"
+                        :sliderPositionMax="maxValueRobust"
+                        :sliderPositionMin="minValueRobust"
                     >
                     </color-bar-slider>
                 </div>   

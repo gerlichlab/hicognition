@@ -11,7 +11,6 @@ export default {
     props: {
         sliderMin: Number,
         sliderMax: Number,
-        sliderWidth: Number,
         sliderPositionMin: Number,
         sliderPositionMax: Number,
         colormap: String
@@ -36,7 +35,7 @@ export default {
             return this.height - this.margin.top - this.margin.bottom
         },
         colorScale: function(){
-            return getScale(this.sliderMin, this.sliderMax, this.colormap);
+            return getScale(this.sliderPositionMin, this.sliderPositionMax, this.colormap);
         }
     },
     methods: {
@@ -71,16 +70,14 @@ export default {
                         this.margin.top +
                         ")"
                 );
+            // attach colorbar
+            this.attachColorbar()
+                
         },
-        translateAxis: function(width) {
-            var tX = width;
-            var tY = 0;
-            return tX + "," + tY;
-        },
-        colorbar: function(scale, width, height) {
+        colorbar: function(scale, width, height, scale_start, scale_end) {
             let scale_domain = scale.domain()
-            let scale_start = scale_domain[0]
-            let scale_end = scale_domain[scale_domain.length - 1]
+            let initialMin = scale_domain[0]
+            let initialMax = scale_domain[scale_domain.length - 1]
             var linearScale = d3
                 .scaleLinear()
                 .domain([scale_start, scale_end])
@@ -102,6 +99,7 @@ export default {
                     .domain([barRange, 0])
                     .range([scale_start, scale_end]);
 
+                // attach gradient rectangles
                 context
                     .selectAll("rect")
                     .data(barData)
@@ -119,8 +117,25 @@ export default {
                     )
                     .style("stroke-width", "0px")
                     .style("fill", function(d) {
+                        if ((interScale(d) < initialMin) || (interScale(d) > initialMax)){
+                            return "rgba(120,120,120, 0.1)"
+                        }
+                        console.log(interScale(d))
                         return scale(interScale(d));
                     });
+
+                // attach colorbar slider rectangles
+                context
+                    .selectAll("colorSlider")
+                    .data([initialMin, initialMax])
+                    .enter()
+                    .append("rect")
+                    .attr("x", 0)
+                    .attr("y", (d) => linearScale(d))
+                    .attr("width", barThickness)
+                    .attr("height", "5px")
+                    .style("fill", "black")
+
 
                 var myAxis = d3.axisLeft(linearScale).ticks(5);
                 context
@@ -138,7 +153,7 @@ export default {
             return colorbar;
         },
         attachColorbar: function(){
-            var cb = this.colorbar(this.colorScale, this.plotWidth, this.plotHeight);
+            var cb = this.colorbar(this.colorScale, this.plotWidth, this.plotHeight, this.sliderMin, this.sliderMax);
             this.svg.call(cb);
         }
     },
@@ -146,20 +161,16 @@ export default {
         this.height = this.getParentHeight();
         this.width = this.getParentWidth();
         this.createChart();
-        this.attachColorbar();
     },
     watch: {
         colormap: function(){
             this.createChart()
-            this.attachColorbar()
         },
         sliderMax: function(){
             this.createChart()
-            this.attachColorbar()
         },
         sliderMin: function(){
             this.createChart()
-            this.attachColorbar()
         }
     }
 };
