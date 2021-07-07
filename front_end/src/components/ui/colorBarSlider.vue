@@ -11,6 +11,7 @@ export default {
     props: {
         sliderMin: Number,
         sliderMax: Number,
+        heatMapWidth: Number, // this is only passed to check when the parent resizes, value is not actually used
         sliderPositionMin: Number,
         sliderPositionMax: Number,
         colormap: String
@@ -21,10 +22,17 @@ export default {
             id: Math.round(Math.random() * 100000),
             width: undefined,
             height: undefined,
-            margin: { top: 10, right: 10, bottom: 10, left: 30 }
         };
     },
     computed: {
+        margin: function(){
+            return {
+                top: this.height * 0.05,
+                right: this.width * 0.1,
+                bottom: this.height * 0.05,
+                left: this.width * 0.6
+            }
+        },
         colorBarDivID: function() {
             return `colorBar${this.id}`;
         },
@@ -174,8 +182,8 @@ export default {
                     .attr("id", "lower")
                     .attr("x", 0)
                     .attr("y", (d) => linearScale(d))
-                    .attr("width", barThickness + 5)
-                    .attr("height", "7px")
+                    .attr("width", barThickness + this.width * 0.1)
+                    .attr("height", this.width * 0.1)
                     .style("fill", "black")
                     .call(drag)
                 
@@ -187,8 +195,8 @@ export default {
                     .attr("id", "upper")
                     .attr("x", 0)
                     .attr("y", (d) => linearScale(d))
-                    .attr("width", barThickness + 5)
-                    .attr("height", "7px")
+                    .attr("width", barThickness + this.width * 0.1)
+                    .attr("height", this.width * 0.1)
                     .style("fill", "black")
                     .call(drag)
 
@@ -232,6 +240,11 @@ export default {
             this.createChart()
         },
         sliderPositionMax: function(){
+            this.createChart()
+        },
+        heatMapWidth: function(){
+            this.height = this.getParentHeight();
+            this.width = this.getParentWidth();
             this.createChart()
         }
     }

@@ -8,6 +8,7 @@
                         :colormap="colormap"
                         :sliderMin="minValue"
                         :sliderMax="maxValue"
+                        :heatMapWidth="width"
                         :sliderPositionMax="maxValueRobust"
                         :sliderPositionMin="minValueRobust"
                         @slider-change="handleColorChange"
