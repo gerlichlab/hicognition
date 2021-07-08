@@ -11,6 +11,8 @@
                         :heatMapWidth="width"
                         :sliderPositionMax="maxValueRobust"
                         :sliderPositionMin="minValueRobust"
+                        :borderColor="valueScaleColor"
+                        :borderStyle="valueScaleBorder"
                         @slider-change="handleColorChange"
                     >
                     </color-bar-slider>
@@ -50,6 +52,8 @@ export default {
         minHeatmapValue: Number,
         maxHeatmapValue: Number,
         colormap: String,
+        valueScaleColor: String,
+        valueScaleBorder: String,
         log: Boolean
     },
     computed: {

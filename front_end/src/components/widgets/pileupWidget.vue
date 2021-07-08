@@ -134,6 +134,7 @@
                 :minHeatmapValue="minHeatmap"
                 :maxHeatmapValue="maxHeatmap"
                 :valueScaleColor="valueScaleColor"
+                :valueScaleBorder="valueScaleBorder"
                 :log="true"
                 @slider-change="handleSliderChange"
             >
@@ -207,7 +208,8 @@ export default {
                 widgetType: "Pileup",
                 minHeatmap: this.minHeatmap,
                 maxHeatmap: this.maxHeatmap,
-                valueScaleColor: this.valueScaleColor
+                valueScaleColor: this.valueScaleColor,
+                valueScaleBorder: this.valueScaleBorder
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -225,7 +227,8 @@ export default {
                 maxHeatmap: undefined,
                 isICCF: true,
                 showMenu: false,
-                valueScaleColor: undefined
+                valueScaleColor: "red",
+                valueScaleBorder: "solid"
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -280,6 +283,7 @@ export default {
                 datasets: collectionConfig["availableData"]["pileup"],
                 isICCF: widgetData["isICCF"],
                 valueScaleColor: widgetData["valueScaleColor"],
+                valueScaleBorder: widgetData["valueScaleBorder"],
                 showMenu: false
             };
         },

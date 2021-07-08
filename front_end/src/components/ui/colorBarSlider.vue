@@ -1,5 +1,5 @@
 <template>
-    <div :id="colorBarDivID" class="fillSpace"></div>
+    <div :id="colorBarDivID" :style="colorBarDivStyle"></div>
 </template>
 
 <script>
@@ -14,7 +14,9 @@ export default {
         heatMapWidth: Number, // this is only passed to check when the parent resizes, value is not actually used
         sliderPositionMin: Number,
         sliderPositionMax: Number,
-        colormap: String
+        colormap: String,
+        borderColor: String,
+        borderStyle: String
     },
     data: function() {
         return {
@@ -30,11 +32,24 @@ export default {
                 top: this.height * 0.05,
                 right: this.width * 0.1,
                 bottom: this.height * 0.05,
-                left: this.width * 0.6
+                left: this.width * 0.7
             }
         },
         colorBarDivID: function() {
             return `colorBar${this.id}`;
+        },
+        colorBarDivStyle: function(){
+            let borderStyle = this.borderStyle ? this.borderStyle : "none"
+            return {
+                width: "100%",
+                height: "100%",
+                "box-sizing": "border-box",
+                "border-style": `none none none ${borderStyle}`,
+                "border-width": "3px",
+                "border-color": this.borderColor
+                    ? this.borderColor
+                    : "none"
+            }
         },
         plotWidth: function(){
             return this.width - this.margin.left - this.margin.right
