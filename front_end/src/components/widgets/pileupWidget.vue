@@ -80,6 +80,7 @@
                                             isICCF = true;
                                             showMenu = false;
                                         "
+                                        :disabled="valueScaleRecipient"
                                     >
                                         <span class="md-body-1">ICCF</span>
                                         <md-icon v-if="isICCF">done</md-icon>
@@ -90,6 +91,7 @@
                                             isICCF = false;
                                             showMenu = false;
                                         "
+                                        :disabled="valueScaleRecipient"
                                     >
                                         <span class="md-body-1">Obs/Exp</span>
                                         <md-icon v-if="!isICCF">done</md-icon>
@@ -196,6 +198,13 @@ export default {
         }
     },
     methods: {
+        handleColormapMissmatch: function(colormap){
+            if (colormap == "fall"){
+                this.isICCF = true
+            }else{
+                this.isICCF = false
+            }
+        },
         handleMouseEnter: function() {
             if (this.allowValueScaleTargetSelection) {
                 this.showSelection = true;
@@ -216,7 +225,8 @@ export default {
                     this.id,
                     this.minHeatmap,
                     this.maxHeatmap,
-                    this.valueScaleColor
+                    this.valueScaleColor,
+                    this.colormap
                 );
                 this.valueScaleRecipients += 1;
                 this.showSelection = false;

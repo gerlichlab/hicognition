@@ -616,7 +616,8 @@ export var valueScaleSharingMixin = {
                 "update-value-scale-sharing",
                 this.id,
                 this.minHeatmap,
-                this.maxHeatmap
+                this.maxHeatmap,
+                this.colormap
             );
         },
         manageValueScaleColorUpdate: function(){
@@ -670,7 +671,7 @@ export var valueScaleSharingMixin = {
             // register event handlers that are relevant when widget is value scale share client
             EventBus.$on(
                 "select-value-scale-end",
-                (target_id, min, max, color) => {
+                (target_id, min, max, color, colormap) => {
                     if (
                         this.acceptValueScaleEndEvent(
                             target_id,
@@ -682,6 +683,11 @@ export var valueScaleSharingMixin = {
                         this.valueScaleTargetID = target_id;
                         this.valueScaleColor = color;
                         this.valueScaleRecipient = true;
+                        if (this.colormap != colormap){
+                            this.handleColormapMissmatch(colormap)
+                        }
+                        this.minHeatmap = min
+                        this.maxHeatmap = max
                     }
                     this.expectingValueScale = false; // switches off expecting recipient
                     this.valueScaleSelectionState = false; // switches off donors
@@ -689,11 +695,14 @@ export var valueScaleSharingMixin = {
             );
             EventBus.$on(
                 "update-value-scale-sharing",
-                (target_id, min, max) => {
+                (target_id, min, max, colormap) => {
                     if (
                         this.valueScaleTargetID &&
                         target_id == this.valueScaleTargetID
                     ) {
+                        if (this.colormap != colormap){
+                            this.handleColormapMissmatch(colormap)
+                        }
                         this.minHeatmap = min;
                         this.maxHeatmap = max;
                     }

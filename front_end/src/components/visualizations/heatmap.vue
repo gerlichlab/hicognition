@@ -223,6 +223,8 @@ export default {
                 this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue);
             } else {
                 this.createColorMap(this.minValueRobust, this.maxValueRobust);
+                // emit slider change to set initial values in pileupWidget
+                this.$emit("slider-change", [this.minValueRobust, this.maxValueRobust]);
             }
             this.drawHeatmap();
         },

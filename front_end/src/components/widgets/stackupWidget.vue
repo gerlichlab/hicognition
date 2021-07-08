@@ -155,7 +155,7 @@
                 :stackupData="sortedMatrix"
                 :minHeatmapValue="minHeatmap"
                 :maxHeatmapValue="maxHeatmap"
-                colormap="red"
+                :colormap="colormap"
                 @slider-change="handleSliderChange"
                 :log="false"
             >
@@ -186,6 +186,9 @@ export default {
         heatmap
     },
     computed: {
+        colormap: function(){
+            return "red"
+        }
     },
     methods: {
         handleMouseEnter: function() {
