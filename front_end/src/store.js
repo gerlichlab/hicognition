@@ -244,7 +244,7 @@ const compareModule = {
 
 // create global store
 
-const SORTORDERCOLORS = ["#AA8F66", "#ED9B40", "#2E5E61", "#BA3B46", "#823021", "#B58D17", "#125d98"]
+const COLORPALETTE = ["#AA8F66", "#ED9B40", "#2E5E61", "#BA3B46", "#823021", "#B58D17", "#125d98"]
 
 const store = new Vuex.Store({
     modules: {
@@ -257,7 +257,8 @@ const store = new Vuex.Store({
         user_id: null,
         resolutions: null,
         datasets: null, // datasets are in the global store because they will be shared for all functionalities for a given user throughout a session
-        usedSortOrders: Array(SORTORDERCOLORS.length).fill(0) // flags for used numbers
+        usedSortOrders: Array(COLORPALETTE.length).fill(0), // flags for used numbers
+        usedValueScales: Array(COLORPALETTE.length).fill(0)
     },
     getters: {
         getNextSortOrderColor: state => {
@@ -265,7 +266,15 @@ const store = new Vuex.Store({
             if (nextEmptyIndex == -1){
                 return undefined
             }
-            var color = SORTORDERCOLORS[nextEmptyIndex]
+            var color = COLORPALETTE[nextEmptyIndex]
+            return color
+        },
+        getNextValueScaleColor: state => {
+            let nextEmptyIndex = state.usedValueScales.indexOf(0)
+            if (nextEmptyIndex == -1){
+                return undefined
+            }
+            var color = COLORPALETTE[nextEmptyIndex]
             return color
         },
         getResolutions: state => {
@@ -309,7 +318,7 @@ const store = new Vuex.Store({
     },
     mutations: {
         setColorUsage(state, color){
-            let colorIndex = SORTORDERCOLORS.indexOf(color)
+            let colorIndex = COLORPALETTE.indexOf(color)
             state.usedSortOrders = state.usedSortOrders.map((val, index) => {
                 if (index == colorIndex){
                     return 1
@@ -317,9 +326,27 @@ const store = new Vuex.Store({
                 return val
             })
         },
+        setValueScaleColorUsage(state, color){
+            let colorIndex = COLORPALETTE.indexOf(color)
+            state.usedValueScales = state.usedValueScales.map((val, index) => {
+                if (index == colorIndex){
+                    return 1
+                }
+                return val
+            })
+        },
         releaseColorUsage(state, color){
-            let colorIndex = SORTORDERCOLORS.indexOf(color)
+            let colorIndex = COLORPALETTE.indexOf(color)
             state.usedSortOrders = state.usedSortOrders.map((val, index) => {
+                if (index == colorIndex){
+                    return 0
+                }
+                return val
+            })
+        },
+        releaseValueScaleColorUsage(state, color){
+            let colorIndex = COLORPALETTE.indexOf(color)
+            state.usedValueScales = state.usedValueScales.map((val, index) => {
                 if (index == colorIndex){
                     return 0
                 }

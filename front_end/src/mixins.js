@@ -449,9 +449,9 @@ export var sortOrderMixin = {
                 this.setBorderColor(returnedColor);
             }
         },
-        colorExhaustionErrorHandler: function() {
+        colorExhaustionErrorHandler: function(kind="sort order shares") {
             // error handler for when there are no more colors to be shared
-            alert("Maximum number of shares reached!");
+            alert(`Maximum number of ${kind} reached!`);
             this.emitEmptySortOrderEnd();
             this.showSelection = false;
             return;
@@ -578,5 +578,26 @@ export var sortOrderMixin = {
 }
 
 export var valueScaleSharingMixin = {
+    methods: {
+        broadcastValueScaleUpdate: function() {
+            // tell client widgets that value scale has changed
+            EventBus.$emit(
+                "update-value-scale-sharing",
+                this.id,
+                this.minHeatmap,
+                this.maxHeatmap
+            );
+        },
+        manageValueScaleColorUpdate: function(){
+            // checks which colors are used for value scale sharing and sets a new one
+            let returnedColor = this.$store.getters.getNextValueScaleColor;
+            if (!returnedColor) {
+                return this.colorExhaustionErrorHandler("value scale shares");
+            } else {
+                this.valueScaleColor = returnedColor
+                this.$store.commit("setValueScaleColorUsage", returnedColor);
+            }
+        }
+    }
     
 }

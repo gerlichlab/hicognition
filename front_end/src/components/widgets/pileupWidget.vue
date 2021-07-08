@@ -92,6 +92,22 @@
                                     </md-list-item>
                                 </md-list>
                             </md-list-item>
+                            <md-list-item md-expand>
+                                <span class="md-body-1">Share</span>
+                                <md-list slot="md-expand">
+                                    <md-list-item
+                                        ><span class="md-body-1"
+                                            >Take value scale from</span
+                                        >
+                                    </md-list-item>
+                                    <md-list-item
+                                    >
+                                        <span class="md-body-1"
+                                            >Release value scale</span
+                                        >
+                                    </md-list-item>
+                                </md-list>
+                            </md-list-item>
                         </md-menu-content>
                     </md-menu>
                 </div>
@@ -117,6 +133,7 @@
                 :colormap="colormap"
                 :minHeatmapValue="minHeatmap"
                 :maxHeatmapValue="maxHeatmap"
+                :valueScaleColor="valueScaleColor"
                 :log="true"
                 @slider-change="handleSliderChange"
             >
@@ -136,12 +153,16 @@
 
 <script>
 import heatmap from "../visualizations/heatmap";
-import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
-import EventBus from "../../eventBus";
+import {
+    apiMixin,
+    formattingMixin,
+    widgetMixin,
+    valueScaleSharingMixin
+} from "../../mixins";
 
 export default {
     name: "pileupWidget",
-    mixins: [apiMixin, formattingMixin, widgetMixin],
+    mixins: [apiMixin, formattingMixin, widgetMixin, valueScaleSharingMixin],
     components: {
         heatmap
     },
@@ -164,6 +185,7 @@ export default {
         handleSliderChange: function(data) {
             this.minHeatmap = data[0];
             this.maxHeatmap = data[1];
+            this.broadcastValueScaleUpdate()
         },
         toStoreObject: function() {
             // serialize object for storing its state in the store
@@ -184,7 +206,8 @@ export default {
                 isICCF: this.isICCF,
                 widgetType: "Pileup",
                 minHeatmap: this.minHeatmap,
-                maxHeatmap: this.maxHeatmap
+                maxHeatmap: this.maxHeatmap,
+                valueScaleColor: this.valueScaleColor
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -201,7 +224,8 @@ export default {
                 minHeatmap: undefined,
                 maxHeatmap: undefined,
                 isICCF: true,
-                showMenu: false
+                showMenu: false,
+                valueScaleColor: undefined
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -255,6 +279,7 @@ export default {
                 binsizes: widgetData["binsizes"],
                 datasets: collectionConfig["availableData"]["pileup"],
                 isICCF: widgetData["isICCF"],
+                valueScaleColor: widgetData["valueScaleColor"],
                 showMenu: false
             };
         },
