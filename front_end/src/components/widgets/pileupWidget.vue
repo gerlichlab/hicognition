@@ -227,8 +227,13 @@ export default {
                 maxHeatmap: undefined,
                 isICCF: true,
                 showMenu: false,
-                valueScaleColor: "red",
-                valueScaleBorder: "solid"
+                expectingValueScale: false,
+                valueScaleSelectionState: false,
+                showSelection: false, // Rename to value scale?
+                valueScaleRecipient: false,
+                valueScaleRecipients: 0,
+                valueScaleTargetID: false,
+                valueScaleColor: undefined,
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -282,9 +287,14 @@ export default {
                 binsizes: widgetData["binsizes"],
                 datasets: collectionConfig["availableData"]["pileup"],
                 isICCF: widgetData["isICCF"],
-                valueScaleColor: widgetData["valueScaleColor"],
-                valueScaleBorder: widgetData["valueScaleBorder"],
-                showMenu: false
+                valueScaleSelectionState: false,
+                valueScaleRecipient: widgetData["sortOrderRecipient"],
+                valueScaleRecipients: widgetData["sortOrderRecipients"],
+                valueScaleTargetID: widgetData["sortOrderTargetID"],
+                valueScaleColor: widgetData["sortOrderColor"],
+                expectingValueScale: false,
+                showMenu: false,
+
             };
         },
         getPileupData: async function(pileupType, id) {

@@ -578,6 +578,24 @@ export var sortOrderMixin = {
 }
 
 export var valueScaleSharingMixin = {
+    computed: {
+        valueScaleBorder: function(){
+            if (this.valueScaleRecipients > 0){
+                return "solid"
+            }else if(this.valueScaleTargetID){
+                return "dashed"
+            }
+            return "none"
+        },
+        cssStyle: function() {
+            let opacity = this.showSelection ? "0.6" : "1";
+            return {
+                height: `${this.height}px`,
+                width: `${this.width}px`,
+                opacity: opacity,
+            };
+        },
+    },
     methods: {
         broadcastValueScaleUpdate: function() {
             // tell client widgets that value scale has changed
@@ -597,6 +615,106 @@ export var valueScaleSharingMixin = {
                 this.valueScaleColor = returnedColor
                 this.$store.commit("setValueScaleColorUsage", returnedColor);
             }
+        },
+        handleStartValueScaleShare: function() {
+            EventBus.$emit(
+                "select-value-scale-start",
+                this.id,
+                this.collectionID
+            );
+            // add event listener to window to catch next click event
+            window.addEventListener("click", this.emitEmptyValueScaleEnd, {
+                once: true
+            });
+            this.expectingValueScale = true; // this needs to be closed after receiving again -> otherwise everything updates
+        },
+        emitEmptyValueScaleEnd: function() {
+            EventBus.$emit("select-value-scale-end", undefined, undefined);
+        },
+        acceptValueScaleEndEvent: function(
+            target_id,
+            min,
+            max,
+            color
+        ) {
+            // checks whether passed event arguments are valid and widget is in right state
+            return (
+                this.expectingValueScale &&
+                (target_id != undefined) &&
+                (min != undefined) &&
+                (max != undefined) &&
+                (color != undefined)
+            );
+        },
+        registerValueScaleClientHandlers: function(){
+            // register event handlers that are relevant when widget is value scale share client
+            EventBus.$on(
+                "select-value-scale-end",
+                (target_id, min, max, color) => {
+                    if (
+                        this.acceptValueScaleEndEvent(
+                            target_id,
+                            min,
+                            max, color
+                        )
+                    ) {
+                        // recipient stores data
+                        this.valueScaleTargetID = target_id;
+                        this.valueScleColor = color;
+                        this.valueScaleRecipient = true;
+                    }
+                    this.expectingValueScale = false; // switches off expecting recipient
+                    this.valueScaleSelectionState = false; // switches off donors
+                }
+            );
+            EventBus.$on(
+                "update-value-scale-sharing",
+                (target_id, min, max) => {
+                    if (
+                        this.valueScaleTargetID &&
+                        target_id == this.valueScaleTargetID
+                    ) {
+                        this.minHeatmapValue = min;
+                        this.maxHeatmapValue = max;
+                    }
+                }
+            );
+            EventBus.$on("widget-id-change", (old_id, new_id) => {
+                if (
+                    this.valueScaleRecipient &&
+                    old_id == this.valueScaleTargetID
+                ) {
+                    this.valueScaleTargetID = new_id;
+                }
+            });
+            EventBus.$on("value-scale-source-deletion", source_id => {
+                if (this.valueScaleTargetID == source_id) {
+                    this.handleStopValueScaleShare(); // TODO: check wheere this is implemented
+                }
+            });
+        },
+        registerValueScaleSourceHandlers: function(){
+            EventBus.$on("select-value-scale-start", (id, parent_id) => {
+                if (id != this.id && parent_id == this.collectionID) {
+                    this.valueScaleSelectionState = true;
+                }
+            });
+            EventBus.$on("stop-value-scale-sharing", target_id => {
+                if (target_id == this.id) {
+                    this.valueScaleRecipients -= 1;
+                    if (this.valueScaleRecipients == 0) {
+                        this.$store.commit(
+                            "releaseValueScaleColorUsage",
+                            this.valueScaleColor
+                        );
+                    }
+                }
+            });
+        },
+        registerValueScaleEventHandlers: function(){
+            // event bus listeners for sort order sharing
+            this.registerValueScaleClientHandlers();
+            this.registerValueScaleSourceHandlers();
         }
     }
     
