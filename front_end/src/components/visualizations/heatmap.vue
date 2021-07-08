@@ -29,7 +29,7 @@ import { getScale } from "../../colorScales.js";
 import colorBarSlider from "../ui/colorBarSlider.vue"
 import { getPercentile, getPerMilRank } from "../../functions";
 
-const NAN_COLOR = [1, 1, 1]; // white nan color
+const NAN_COLOR = [255, 255, 255]; // white nan color
 
 export default {
     name: "heatmap",
@@ -112,13 +112,13 @@ export default {
             // array with rgba values for pixi Texture.fromBuffer
             var bufferArray = [];
             for (var element of this.stackupValues) {
-                // convert rgb values into range between 0 and 1
+                // convert data into rgb values
                 var colorValues;
                 if (element) {
                     colorValues = this.colorScale(element)
                         .split(/[\,,(,)]/)
                         .slice(1, 4)
-                        .map(element => Number(element) / 255);
+                        .map(element => Number(element));
                 } else {
                     colorValues = NAN_COLOR;
                 }
@@ -126,25 +126,49 @@ export default {
                 for (var value of colorValues) {
                     bufferArray.push(value);
                 }
-                // add saturation of rgba to 1
-                bufferArray.push(1.0);
+                // add full saturation
+                bufferArray.push(255);
             }
-            return new Float32Array(bufferArray);
+            return new Uint8ClampedArray(bufferArray);
         }
     },
     data: function() {
         return {
-            renderer: new PIXI.autoDetectRenderer({
+            renderer: new PIXI.CanvasRenderer({
                 width: this.width,
                 height: this.height
             }),
             stage: undefined,
             texture: undefined,
             sprite: undefined,
-            colorScale: undefined
+            colorScale: undefined,
+            imageData: undefined,
+            id : Math.round(Math.random() * 1000000),
+            pseudoCanvasContext: undefined,
+            pseudoCanvas: undefined
+
         };
     },
     methods: {
+        destroyPseudoCanvas: function(){
+            if (this.pseudoCanvas){
+                this.pseudoCanvas.remove()
+            }
+        },
+        createPseudoCanvas: function(){
+            let canvas = document.createElement('canvas');
+            canvas.id =`pseudoCanvas${this.id}`
+            canvas.width = this.stackupDimensions[1];
+            canvas.height = this.stackupDimensions[0];
+            canvas.style.top = "50px"
+            canvas.style.left= `-${this.width + 50}px`
+            canvas.style.position = "absolute";
+            document.body.appendChild(canvas);
+            // store cnavas
+            this.pseudoCanvas = canvas;
+            // get canvas2d context
+            this.pseudoCanvasContext = canvas.getContext('2d');
+        },
         handleColorChange: function(data) {
             this.$emit("slider-change", data); // propagate up to store in store
             this.createColorMap(...data);
@@ -157,11 +181,14 @@ export default {
             this.renderer.resize(width, height)
         },
         drawHeatmap: function() {
-            this.texture = PIXI.Texture.fromBuffer(
-                this.rgbArray,
-                this.stackupDimensions[1],
-                this.stackupDimensions[0]
-            );
+            // destroy old pseudocanvas if existing
+            this.destroyPseudoCanvas()
+            this.createPseudoCanvas()
+            this.imageData = new ImageData(this.rgbArray, this.stackupDimensions[1], this.stackupDimensions[0])
+            // add image to pseudocanvas
+            this.pseudoCanvasContext.putImageData(this.imageData, 0, 0)
+            // create texture form pseudocanvas
+            this.texture = PIXI.Texture.from(this.pseudoCanvas)
             this.sprite = PIXI.Sprite.from(this.texture);
             // position sprite at top left and make it stretch the canvas
             this.sprite.x = 0;
@@ -176,7 +203,7 @@ export default {
             // add the renderer view object into the canvas div
             this.$refs["canvasDiv"].appendChild(this.renderer.view);
             // create stage
-            this.stage = new PIXI.Container();
+            this.stage = new PIXI.Container()
         }
     },
     watch: {
@@ -221,6 +248,7 @@ export default {
             before we reach >16 contexts.
         */
         //
+        this.destroyPseudoCanvas()
         this.stage.destroy();
         this.stage = null;
         // remove renderer view
