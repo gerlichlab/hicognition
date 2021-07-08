@@ -579,6 +579,13 @@ export var sortOrderMixin = {
 
 export var valueScaleSharingMixin = {
     computed: {
+        allowValueScaleTargetSelection: function() {
+            return (
+                this.valueScaleSelectionState &&
+                this.showData &&
+                !this.valueScaleRecipient
+            );
+        },
         valueScaleBorder: function(){
             if (this.valueScaleRecipients > 0){
                 return "solid"
@@ -627,6 +634,13 @@ export var valueScaleSharingMixin = {
                 once: true
             });
             this.expectingValueScale = true; // this needs to be closed after receiving again -> otherwise everything updates
+        },
+        handleStopValueScaleShare: function() {
+            this.minHeatmap = undefined;
+            this.maxHeatmap = undefined;
+            EventBus.$emit("stop-value-scale-sharing", this.valueScaleTargetID);
+            this.valueScaleRecipient = false;
+            this.valueScaleTargetID = undefined;
         },
         emitEmptyValueScaleEnd: function() {
             EventBus.$emit("select-value-scale-end", undefined, undefined);

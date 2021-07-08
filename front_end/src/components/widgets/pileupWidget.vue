@@ -1,5 +1,9 @@
 <template>
-    <div>
+    <div
+        @click="handleWidgetSelection"
+        @mouseenter="handleMouseEnter"
+        @mouseleave="handleMouseLeave"
+    >
         <div
             :style="cssStyle"
             class="smallMargin md-elevation-1 bg"
@@ -96,11 +100,18 @@
                                 <span class="md-body-1">Share</span>
                                 <md-list slot="md-expand">
                                     <md-list-item
+                                        @click="handleStartValueScaleShare"
+                                        :disabled="
+                                            valueScaleRecipient ||
+                                                this.valueScaleRecipients > 0
+                                        "
                                         ><span class="md-body-1"
                                             >Take value scale from</span
                                         >
                                     </md-list-item>
                                     <md-list-item
+                                        @click="handleStopValueScaleShare"
+                                        :disabled="!valueScaleRecipient"
                                     >
                                         <span class="md-body-1"
                                             >Release value scale</span
@@ -153,6 +164,7 @@
 </template>
 
 <script>
+import EventBus from "../../eventBus";
 import heatmap from "../visualizations/heatmap";
 import {
     apiMixin,
@@ -183,6 +195,32 @@ export default {
         }
     },
     methods: {
+        handleMouseEnter: function() {
+            if (this.allowValueScaleTargetSelection) {
+                this.showSelection = true;
+            }
+        },
+        handleMouseLeave: function() {
+            if (this.allowValueScaleTargetSelection) {
+                this.showSelection = false;
+            }
+        },
+        handleWidgetSelection: function() {
+            if (this.allowValueScaleTargetSelection) {
+                if (this.valueScaleRecipients == 0) {
+                    this.manageValueScaleColorUpdate();
+                }
+                EventBus.$emit(
+                    "select-value-scale-end",
+                    this.id,
+                    this.minHeatmap,
+                    this.maxHeatmap,
+                    this.valueScaleColor
+                );
+                this.valueScaleRecipients += 1;
+                this.showSelection = false;
+            }
+        },
         handleSliderChange: function(data) {
             this.minHeatmap = data[0];
             this.maxHeatmap = data[1];
@@ -208,9 +246,44 @@ export default {
                 widgetType: "Pileup",
                 minHeatmap: this.minHeatmap,
                 maxHeatmap: this.maxHeatmap,
-                valueScaleColor: this.valueScaleColor,
-                valueScaleBorder: this.valueScaleBorder
+                valueScaleSelectionState: false,
+                showSelection: false,
+                valueScaleRecipient: this.valueScaleRecipient,
+                valueScaleRecipients: this.valueScaleRecipients,
+                valueScaleTargetID: this.valueScaleTargetID,
+                valueScaleColor: this.valueScaleColor
             };
+        },
+        handleWidgetDeletion: function() {
+            // needs to be separate to distinguish it from moving
+            // emit events for sort-order update
+            if (this.valueScaleRecipient) {
+                // client handling
+                this.handleStopValueScaleShare();
+            } else if (this.valueScaleRecipients > 0) {
+                // source handling
+                EventBus.$emit("value-scale-source-deletion", this.id);
+                this.$store.commit("releaseValueScaleColorUsage", this.valueScaleColor);
+            }
+            this.deleteWidget();
+        },
+        deleteWidget: function() {
+            // release color
+            if (this.valueScaleRecipients > 0) {
+                this.$store.commit("releaseValueScaleColorUsage", this.valueScaleColor);
+            }
+            // delete widget from store
+            var payload = {
+                parentID: this.collectionID,
+                id: this.id
+            };
+            // delete widget from store
+            this.$store.commit("compare/deleteWidget", payload);
+            // decrement dataset from used dataset in store
+            this.$store.commit(
+                "compare/decrement_usage_dataset",
+                this.selectedDataset
+            );
         },
         initializeForFirstTime: function(widgetData, collectionData) {
             var data = {
@@ -229,7 +302,7 @@ export default {
                 showMenu: false,
                 expectingValueScale: false,
                 valueScaleSelectionState: false,
-                showSelection: false, // Rename to value scale?
+                showSelection: false,
                 valueScaleRecipient: false,
                 valueScaleRecipients: 0,
                 valueScaleTargetID: false,
@@ -274,6 +347,8 @@ export default {
                     datasetId
                 );
             }
+            // set color usage in store
+            this.$store.commit("setValueScaleColorUsage", widgetData["valueScaleColor"]);
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
                 dragImage: undefined,
@@ -288,10 +363,10 @@ export default {
                 datasets: collectionConfig["availableData"]["pileup"],
                 isICCF: widgetData["isICCF"],
                 valueScaleSelectionState: false,
-                valueScaleRecipient: widgetData["sortOrderRecipient"],
-                valueScaleRecipients: widgetData["sortOrderRecipients"],
-                valueScaleTargetID: widgetData["sortOrderTargetID"],
-                valueScaleColor: widgetData["sortOrderColor"],
+                valueScaleRecipient: widgetData["valueScaleRecipient"],
+                valueScaleRecipients: widgetData["valueScaleRecipients"],
+                valueScaleTargetID: widgetData["valueScaleTargetID"],
+                valueScaleColor: widgetData["valueScaleColor"],
                 expectingValueScale: false,
                 showMenu: false,
 
@@ -340,6 +415,8 @@ export default {
                 ICCF: iccf_data,
                 ObsExp: obs_exp_data
             };
+            // broadcast value scale update
+            this.broadcastValueScaleUpdate()
         }
     },
     watch: {
@@ -415,6 +492,9 @@ export default {
             this.minHeatmap = undefined;
             this.maxHeatmap = undefined;
         }
+    },
+    mounted: function(){
+        this.registerValueScaleEventHandlers()
     }
 };
 </script>

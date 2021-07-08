@@ -247,6 +247,8 @@ export default {
         }
         this.initializeCanvas();
         this.drawHeatmap();
+        // emit slider change to set initial values in pileupWidget
+        this.$emit("slider-change", [this.minValueRobust, this.maxValueRobust]);
     },
     beforeDestroy: function() {
         /*
