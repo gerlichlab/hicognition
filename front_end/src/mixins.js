@@ -579,6 +579,12 @@ export var sortOrderMixin = {
 
 export var valueScaleSharingMixin = {
     computed: {
+        allowValueScaleChange: function(){
+            if (this.valueScaleTargetID){
+                return false
+            }
+            return true
+        },
         allowValueScaleTargetSelection: function() {
             return (
                 this.valueScaleSelectionState &&
@@ -703,7 +709,7 @@ export var valueScaleSharingMixin = {
             });
             EventBus.$on("value-scale-source-deletion", source_id => {
                 if (this.valueScaleTargetID == source_id) {
-                    this.handleStopValueScaleShare(); // TODO: check wheere this is implemented
+                    this.handleStopValueScaleShare();
                 }
             });
         },

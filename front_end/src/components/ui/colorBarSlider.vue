@@ -16,7 +16,8 @@ export default {
         sliderPositionMax: Number,
         colormap: String,
         borderColor: String,
-        borderStyle: String
+        borderStyle: String,
+        allowValueScaleChange: Boolean
     },
     data: function() {
         return {
@@ -149,73 +150,73 @@ export default {
                         return scale(interScale(d));
                     });
 
-                // needs to be defined here because if it is a vue methods this gets everridden; store
-                let dragEventHandler = function(event){
-                    // check whether y position is allowed
-                    if ((event.y > 0) && (event.y < barRange)){
-                        // adjust y position
-                        d3.select(this)
-                            .attr("y", event.y)
-                    }
-                }
-                let component = this
-                let dragStopEventHandler = function(event){
-                    // add boundaries for trying to drag further
-                    let y_value = event.y
-                    if (y_value < 0){
-                        y_value = 0
-                    }
-                    if (y_value > barRange){
-                        y_value = barRange
-                    }
-                    let event_value = interScale(y_value)
-                    if (this.id == "upper"){
-                        if (event_value < component.sliderPositionMin){
-                            component.$emit("slider-change", [event_value, component.sliderPositionMin]);
-                        }else{
-                            component.$emit("slider-change", [component.sliderPositionMin, event_value]);
-                        }
-                    }else{
-                        if (event_value > component.sliderPositionMax){
-                            component.$emit("slider-change", [component.sliderPositionMax, event_value, ]);
-                        }else{
-                            component.$emit("slider-change", [event_value, component.sliderPositionMax]);
+                if (this.allowValueScaleChange){
+                    // needs to be defined here because if it is a vue methods this gets everridden; store
+                    let dragEventHandler = function(event){
+                        // check whether y position is allowed
+                        if ((event.y > 0) && (event.y < barRange)){
+                            // adjust y position
+                            d3.select(this)
+                                .attr("y", event.y)
                         }
                     }
+                    let component = this
+                    let dragStopEventHandler = function(event){
+                        // add boundaries for trying to drag further
+                        let y_value = event.y
+                        if (y_value < 0){
+                            y_value = 0
+                        }
+                        if (y_value > barRange){
+                            y_value = barRange
+                        }
+                        let event_value = interScale(y_value)
+                        if (this.id == "upper"){
+                            if (event_value < component.sliderPositionMin){
+                                component.$emit("slider-change", [event_value, component.sliderPositionMin]);
+                            }else{
+                                component.$emit("slider-change", [component.sliderPositionMin, event_value]);
+                            }
+                        }else{
+                            if (event_value > component.sliderPositionMax){
+                                component.$emit("slider-change", [component.sliderPositionMax, event_value, ]);
+                            }else{
+                                component.$emit("slider-change", [event_value, component.sliderPositionMax]);
+                            }
+                        }
+                    }
+                    let drag = d3.drag();
+                    drag.on("drag", dragEventHandler);
+                    drag.on("end", dragStopEventHandler)
+                                        
+
+                    // attach colorbar slider rectangles
+                    context
+                        .selectAll("colorSlider")
+                        .data([initialMin])
+                        .enter()
+                        .append("rect")
+                        .attr("id", "lower")
+                        .attr("x", 0)
+                        .attr("y", (d) => linearScale(d))
+                        .attr("width", barThickness + this.width * 0.1)
+                        .attr("height", this.width * 0.1)
+                        .style("fill", "black")
+                        .call(drag)
+                    
+                    context
+                        .selectAll("colorSlider")
+                        .data([initialMax])
+                        .enter()
+                        .append("rect")
+                        .attr("id", "upper")
+                        .attr("x", 0)
+                        .attr("y", (d) => linearScale(d))
+                        .attr("width", barThickness + this.width * 0.1)
+                        .attr("height", this.width * 0.1)
+                        .style("fill", "black")
+                        .call(drag)
                 }
-                let drag = d3.drag();
-                drag.on("drag", dragEventHandler);
-                drag.on("end", dragStopEventHandler)
-                                    
-
-                // attach colorbar slider rectangles
-                context
-                    .selectAll("colorSlider")
-                    .data([initialMin])
-                    .enter()
-                    .append("rect")
-                    .attr("id", "lower")
-                    .attr("x", 0)
-                    .attr("y", (d) => linearScale(d))
-                    .attr("width", barThickness + this.width * 0.1)
-                    .attr("height", this.width * 0.1)
-                    .style("fill", "black")
-                    .call(drag)
-                
-                context
-                    .selectAll("colorSlider")
-                    .data([initialMax])
-                    .enter()
-                    .append("rect")
-                    .attr("id", "upper")
-                    .attr("x", 0)
-                    .attr("y", (d) => linearScale(d))
-                    .attr("width", barThickness + this.width * 0.1)
-                    .attr("height", this.width * 0.1)
-                    .style("fill", "black")
-                    .call(drag)
-
-
                 var myAxis = d3.axisLeft(linearScale).ticks(5);
                 context
                     .append("g")
@@ -242,6 +243,9 @@ export default {
         this.createChart();
     },
     watch: {
+        allowValueScaleChange: function(){
+            this.createChart()
+        },
         colormap: function(){
             this.createChart()
         },

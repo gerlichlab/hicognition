@@ -13,6 +13,7 @@
                         :sliderPositionMin="minValueRobust"
                         :borderColor="valueScaleColor"
                         :borderStyle="valueScaleBorder"
+                        :allowValueScaleChange="allowValueScaleChange"
                         @slider-change="handleColorChange"
                     >
                     </color-bar-slider>
@@ -54,6 +55,7 @@ export default {
         colormap: String,
         valueScaleColor: String,
         valueScaleBorder: String,
+        allowValueScaleChange: Boolean,
         log: Boolean
     },
     computed: {

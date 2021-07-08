@@ -126,7 +126,7 @@
                 <div class="md-layout-item md-size-10">
                     <div class="padding-top-large padding-right">
                         <md-button
-                            @click="deleteWidget"
+                            @click="handleWidgetDeletion"
                             class="md-icon-button md-accent"
                         >
                             <md-icon>delete</md-icon>
@@ -146,6 +146,7 @@
                 :maxHeatmapValue="maxHeatmap"
                 :valueScaleColor="valueScaleColor"
                 :valueScaleBorder="valueScaleBorder"
+                :allowValueScaleChange="allowValueScaleChange"
                 :log="true"
                 @slider-change="handleSliderChange"
             >
@@ -251,7 +252,7 @@ export default {
                 valueScaleRecipient: this.valueScaleRecipient,
                 valueScaleRecipients: this.valueScaleRecipients,
                 valueScaleTargetID: this.valueScaleTargetID,
-                valueScaleColor: this.valueScaleColor
+                valueScaleColor: this.valueScaleColor,
             };
         },
         handleWidgetDeletion: function() {
