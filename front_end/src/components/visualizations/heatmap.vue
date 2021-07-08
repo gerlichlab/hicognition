@@ -236,6 +236,22 @@ export default {
         height: function(){
             this.resizeCanvas(this.width, this.height)
             this.drawHeatmap();
+        },
+        minHeatmapValue: function(){
+            if (this.minHeatmapValue && this.maxHeatmapValue) {
+                this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue);
+            } else {
+                this.createColorMap(this.minValueRobust, this.maxValueRobust);
+            }
+            this.drawHeatmap();
+        },
+        maxHeatmapValue: function(){
+            if (this.minHeatmapValue && this.maxHeatmapValue) {
+                this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue);
+            } else {
+                this.createColorMap(this.minValueRobust, this.maxValueRobust);
+            }
+            this.drawHeatmap();
         }
     },
     mounted: function() {

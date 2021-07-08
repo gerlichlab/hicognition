@@ -674,7 +674,7 @@ export var valueScaleSharingMixin = {
                     ) {
                         // recipient stores data
                         this.valueScaleTargetID = target_id;
-                        this.valueScleColor = color;
+                        this.valueScaleColor = color;
                         this.valueScaleRecipient = true;
                     }
                     this.expectingValueScale = false; // switches off expecting recipient
@@ -688,8 +688,8 @@ export var valueScaleSharingMixin = {
                         this.valueScaleTargetID &&
                         target_id == this.valueScaleTargetID
                     ) {
-                        this.minHeatmapValue = min;
-                        this.maxHeatmapValue = max;
+                        this.minHeatmap = min;
+                        this.maxHeatmap = max;
                     }
                 }
             );
