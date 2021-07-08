@@ -156,6 +156,7 @@
                 :minHeatmapValue="minHeatmap"
                 :maxHeatmapValue="maxHeatmap"
                 :colormap="colormap"
+                :allowValueScaleChange="true"
                 @slider-change="handleSliderChange"
                 :log="false"
             >
