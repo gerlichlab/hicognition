@@ -31,6 +31,10 @@ import { getPercentile, getPerMilRank } from "../../functions";
 
 const NAN_COLOR = [255, 255, 255]; // white nan color
 
+// set pixi scale mode
+
+PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
+
 export default {
     name: "heatmap",
     components: {
