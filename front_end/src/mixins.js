@@ -576,3 +576,7 @@ export var sortOrderMixin = {
         }
     }
 }
+
+export var valueScaleSharingMixin = {
+    
+}
