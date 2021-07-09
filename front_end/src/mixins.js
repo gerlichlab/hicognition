@@ -598,7 +598,7 @@ export var valueScaleSharingMixin = {
             }else if(this.valueScaleTargetID){
                 return "dashed"
             }
-            return "none"
+            return undefined
         },
         cssStyle: function() {
             let opacity = this.showSelection ? "0.6" : "1";
@@ -670,6 +670,7 @@ export var valueScaleSharingMixin = {
             this.maxHeatmap = undefined;
             this.minHeatmapRange = undefined;
             this.maxHeatmapRange = undefined;
+            this.valueScaleColor = undefined;
             EventBus.$emit("stop-value-scale-sharing", this.valueScaleTargetID);
             this.valueScaleRecipient = false;
             this.valueScaleTargetID = undefined;
@@ -772,6 +773,7 @@ export var valueScaleSharingMixin = {
                             "releaseValueScaleColorUsage",
                             this.valueScaleColor
                         );
+                        this.valueScaleColor = undefined;
                     }
                 }
             });

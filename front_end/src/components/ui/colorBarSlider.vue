@@ -40,7 +40,7 @@ export default {
             return `colorBar${this.id}`;
         },
         colorBarDivStyle: function(){
-            let borderStyle = this.borderStyle ? this.borderStyle : "none"
+            let borderStyle = this.borderStyle ? this.borderStyle : "solid"
             return {
                 width: "100%",
                 height: "100%",
@@ -49,7 +49,7 @@ export default {
                 "border-width": "3px",
                 "border-color": this.borderColor
                     ? this.borderColor
-                    : "none"
+                    : "white"
             }
         },
         plotWidth: function(){
