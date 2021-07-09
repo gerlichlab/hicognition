@@ -146,6 +146,8 @@
                 :colormap="colormap"
                 :minHeatmapValue="minHeatmap"
                 :maxHeatmapValue="maxHeatmap"
+                :minHeatmapRange="minHeatmapRange"
+                :maxHeatmapRange="maxHeatmapRange"
                 :valueScaleColor="valueScaleColor"
                 :valueScaleBorder="valueScaleBorder"
                 :allowValueScaleChange="allowValueScaleChange"
@@ -199,6 +201,7 @@ export default {
     },
     methods: {
         handleColormapMissmatch: function(colormap){
+            this.reactToICCFSwitch = false;
             if (colormap == "fall"){
                 this.isICCF = true
             }else{
@@ -226,7 +229,9 @@ export default {
                     this.minHeatmap,
                     this.maxHeatmap,
                     this.valueScaleColor,
-                    this.colormap
+                    this.colormap,
+                    this.minHeatmapRange,
+                    this.maxHeatmapRange
                 );
                 this.valueScaleRecipients += 1;
                 this.showSelection = false;
@@ -235,6 +240,8 @@ export default {
         handleSliderChange: function(data) {
             this.minHeatmap = data[0];
             this.maxHeatmap = data[1];
+            this.minHeatmapRange = data[2]
+            this.maxHeatmapRange = data[3]
             this.broadcastValueScaleUpdate()
         },
         toStoreObject: function() {
@@ -263,6 +270,8 @@ export default {
                 valueScaleRecipients: this.valueScaleRecipients,
                 valueScaleTargetID: this.valueScaleTargetID,
                 valueScaleColor: this.valueScaleColor,
+                minHeatmapRange: this.minHeatmapRange,
+                maxHeatmapRange: this.maxHeatmapRange
             };
         },
         handleWidgetDeletion: function() {
@@ -318,6 +327,9 @@ export default {
                 valueScaleRecipients: 0,
                 valueScaleTargetID: false,
                 valueScaleColor: undefined,
+                minHeatmapRange: undefined,
+                maxHeatmapRange: undefined,
+                reactToICCFSwitch: true
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -380,7 +392,10 @@ export default {
                 valueScaleColor: widgetData["valueScaleColor"],
                 expectingValueScale: false,
                 showMenu: false,
-                showSelection: false
+                showSelection: false,
+                minHeatmapRange: widgetData["minHeatmapRange"],
+                maxHeatmapRange:  widgetData["maxHeatmapRange"],
+                reactToICCFSwitch: true
 
             };
         },
@@ -411,7 +426,8 @@ export default {
         updatedData: async function() {
             // triggers load and storing of both pileuptypes
             // reset min and max colormap values
-            (this.minHeatmap = undefined), (this.maxHeatmap = undefined);
+            (this.minHeatmap = undefined), (this.maxHeatmap = undefined),
+            (this.minHeatmapRange = undefined), (this.maxHeatmapRange = undefined);
             // fetch widget data
             var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"];
             var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
@@ -501,8 +517,14 @@ export default {
         },
         isICCF: function() {
             // reset min and max when this changes
-            this.minHeatmap = undefined;
-            this.maxHeatmap = undefined;
+            if (this.reactToICCFSwitch){
+                this.minHeatmap = undefined;
+                this.maxHeatmap = undefined;
+                this.minHeatmapRange = undefined;
+                this.maxHeatmapRange = undefined;
+            }else{
+                this.reactToICCFSwitch = true
+            }
         }
     },
     mounted: function(){

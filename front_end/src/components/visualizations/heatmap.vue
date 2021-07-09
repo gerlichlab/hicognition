@@ -50,8 +50,10 @@ export default {
         height: Number,
         sliderHeight: Number,
         stackupID: Number,
-        minHeatmapValue: Number,
-        maxHeatmapValue: Number,
+        minHeatmapRange: Number, // min Value for heatmap range
+        maxHeatmapRange: Number, // max Value for heatmap range
+        minHeatmapValue: Number, // minPosition in heatmap
+        maxHeatmapValue: Number, // maxPosition in heatmap
         colormap: String,
         valueScaleColor: String,
         valueScaleBorder: String,
@@ -111,11 +113,17 @@ export default {
         minValue: function() {
             // find minimum by hand because Math.min cannot handle more than
             // a few k elements...
+            if (this.minHeatmapRange){
+                return this.minHeatmapRange
+            }
             return getPerMilRank(this.stackupValues, 1)
         },
         maxValue: function() {
             // maximum value for heatmap lookuptable = maximum value in data
             // filter out nans and extract values into array
+            if (this.maxHeatmapRange){
+                return this.maxHeatmapRange
+            }
             return getPerMilRank(this.stackupValues, 999)
         },
         rgbArray: function() {
@@ -180,7 +188,8 @@ export default {
             this.pseudoCanvasContext = canvas.getContext('2d');
         },
         handleColorChange: function(data) {
-            this.$emit("slider-change", data); // propagate up to store in store
+            let concatenatedValues = data.concat([this.minValue, this.maxValue]);
+            this.$emit("slider-change", concatenatedValues); // propagate up to store in store
             this.createColorMap(...data);
             this.drawHeatmap();
         },
@@ -224,7 +233,7 @@ export default {
             } else {
                 this.createColorMap(this.minValueRobust, this.maxValueRobust);
                 // emit slider change to set initial values in pileupWidget
-                this.$emit("slider-change", [this.minValueRobust, this.maxValueRobust]);
+                this.$emit("slider-change", [this.minValueRobust, this.maxValueRobust, this.minValue, this.maxValue]);
             }
             this.drawHeatmap();
         },
@@ -268,7 +277,7 @@ export default {
         this.initializeCanvas();
         this.drawHeatmap();
         // emit slider change to set initial values in pileupWidget
-        this.$emit("slider-change", [this.minValueRobust, this.maxValueRobust]);
+        this.$emit("slider-change", [this.minValueRobust, this.maxValueRobust, this.minValue, this.maxValue]);
     },
     beforeDestroy: function() {
         /*

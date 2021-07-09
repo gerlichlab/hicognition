@@ -612,13 +612,17 @@ export var valueScaleSharingMixin = {
     methods: {
         broadcastValueScaleUpdate: function() {
             // tell client widgets that value scale has changed
-            EventBus.$emit(
-                "update-value-scale-sharing",
-                this.id,
-                this.minHeatmap,
-                this.maxHeatmap,
-                this.colormap
-            );
+            if (this.valueScaleRecipients > 0){
+                EventBus.$emit(
+                    "update-value-scale-sharing",
+                    this.id,
+                    this.minHeatmap,
+                    this.maxHeatmap,
+                    this.colormap,
+                    this.minHeatmapRange,
+                    this.maxHeatmapRange
+                );
+            }
         },
         manageValueScaleColorUpdate: function(){
             // checks which colors are used for value scale sharing and sets a new one
@@ -645,6 +649,8 @@ export var valueScaleSharingMixin = {
         handleStopValueScaleShare: function() {
             this.minHeatmap = undefined;
             this.maxHeatmap = undefined;
+            this.minHeatmapRange = undefined;
+            this.maxHeatmapRange = undefined;
             EventBus.$emit("stop-value-scale-sharing", this.valueScaleTargetID);
             this.valueScaleRecipient = false;
             this.valueScaleTargetID = undefined;
@@ -656,7 +662,9 @@ export var valueScaleSharingMixin = {
             target_id,
             min,
             max,
-            color
+            color,
+            minRange,
+            maxRange
         ) {
             // checks whether passed event arguments are valid and widget is in right state
             return (
@@ -664,19 +672,24 @@ export var valueScaleSharingMixin = {
                 (target_id != undefined) &&
                 (min != undefined) &&
                 (max != undefined) &&
-                (color != undefined)
+                (color != undefined) &&
+                (minRange != undefined) &&
+                (maxRange != undefined)
             );
         },
         registerValueScaleClientHandlers: function(){
             // register event handlers that are relevant when widget is value scale share client
             EventBus.$on(
                 "select-value-scale-end",
-                (target_id, min, max, color, colormap) => {
+                (target_id, min, max, color, colormap, minRange, maxRange) => {
                     if (
                         this.acceptValueScaleEndEvent(
                             target_id,
                             min,
-                            max, color
+                            max,
+                            color,
+                            minRange,
+                            maxRange
                         )
                     ) {
                         // recipient stores data
@@ -688,6 +701,8 @@ export var valueScaleSharingMixin = {
                         }
                         this.minHeatmap = min
                         this.maxHeatmap = max
+                        this.minHeatmapRange = minRange
+                        this.maxHeatmapRange = maxRange
                     }
                     this.expectingValueScale = false; // switches off expecting recipient
                     this.valueScaleSelectionState = false; // switches off donors
@@ -695,7 +710,7 @@ export var valueScaleSharingMixin = {
             );
             EventBus.$on(
                 "update-value-scale-sharing",
-                (target_id, min, max, colormap) => {
+                (target_id, min, max, colormap, minRange, maxRange) => {
                     if (
                         this.valueScaleTargetID &&
                         target_id == this.valueScaleTargetID
@@ -705,6 +720,8 @@ export var valueScaleSharingMixin = {
                         }
                         this.minHeatmap = min;
                         this.maxHeatmap = max;
+                        this.minHeatmapRange = minRange;
+                        this.maxHeatmapRange = maxRange;
                     }
                 }
             );
