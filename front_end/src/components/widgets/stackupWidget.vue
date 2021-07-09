@@ -130,6 +130,24 @@
                                             >Release sort order</span
                                         >
                                     </md-list-item>
+                                    <md-list-item
+                                        @click="handleStartValueScaleShare"
+                                        :disabled="
+                                            valueScaleRecipient ||
+                                                this.valueScaleRecipients > 0
+                                        "
+                                        ><span class="md-body-1"
+                                            >Take value scale from</span
+                                        >
+                                    </md-list-item>
+                                    <md-list-item
+                                        @click="handleStopValueScaleShare"
+                                        :disabled="!valueScaleRecipient"
+                                    >
+                                        <span class="md-body-1"
+                                            >Release value scale</span
+                                        >
+                                    </md-list-item>
                                 </md-list>
                             </md-list-item>
                         </md-menu-content>
@@ -155,8 +173,12 @@
                 :stackupData="sortedMatrix"
                 :minHeatmapValue="minHeatmap"
                 :maxHeatmapValue="maxHeatmap"
+                :minHeatmapRange="minHeatmapRange"
+                :maxHeatmapRange="maxHeatmapRange"
                 :colormap="colormap"
-                :allowValueScaleChange="true"
+                :valueScaleColor="valueScaleColor"
+                :valueScaleBorder="valueScaleBorder"
+                :allowValueScaleChange="allowValueScaleChange"
                 @slider-change="handleSliderChange"
                 :log="false"
             >
@@ -176,51 +198,91 @@
 
 <script>
 import heatmap from "../visualizations/heatmap";
-import { apiMixin, formattingMixin, widgetMixin, sortOrderMixin } from "../../mixins";
+import {
+    apiMixin,
+    formattingMixin,
+    widgetMixin,
+    sortOrderMixin,
+    valueScaleSharingMixin
+} from "../../mixins";
 import EventBus from "../../eventBus";
 import * as seedrandom from "seedrandom";
 
 export default {
     name: "stackupWidget",
-    mixins: [apiMixin, formattingMixin, widgetMixin, sortOrderMixin],
+    mixins: [
+        apiMixin,
+        formattingMixin,
+        widgetMixin,
+        valueScaleSharingMixin,
+        sortOrderMixin,
+    ],
     components: {
         heatmap
     },
     computed: {
-        colormap: function(){
-            return "red"
+        colormap: function() {
+            return "red";
         }
     },
     methods: {
         handleMouseEnter: function() {
-            if (this.allowSortOrderTargetSelection) {
+            if (
+                this.allowSortOrderTargetSelection ||
+                this.allowValueScaleTargetSelection
+            ) {
                 this.showSelection = true;
             }
         },
         handleMouseLeave: function() {
-            if (this.allowSortOrderTargetSelection) {
+            if (
+                this.allowSortOrderTargetSelection ||
+                this.allowValueScaleTargetSelection
+            ) {
                 this.showSelection = false;
             }
+        },
+        handleWidgetSortOrderSelection: function() {
+            if (this.sortOrderRecipients == 0) {
+                this.manageColorUpdate();
+            }
+            EventBus.$emit(
+                "select-sort-order-end",
+                this.id,
+                this.constructSortOrder(),
+                this.isAscending,
+                this.sortOrderColor
+            );
+            this.sortOrderRecipients += 1;
+            this.showSelection = false;
+        },
+        handleWidgetValueScaleSelection: function() {
+            if (this.valueScaleRecipients == 0) {
+                this.manageValueScaleColorUpdate();
+            }
+            EventBus.$emit(
+                "select-value-scale-end",
+                this.id,
+                this.minHeatmap,
+                this.maxHeatmap,
+                this.valueScaleColor,
+                this.colormap,
+                this.minHeatmapRange,
+                this.maxHeatmapRange
+            );
+            this.valueScaleRecipients += 1;
+            this.showSelection = false;
         },
         handleWidgetSelection: function() {
             if (this.allowSortOrderTargetSelection) {
-                if (this.sortOrderRecipients == 0) {
-                    this.manageColorUpdate();
-                }
-                EventBus.$emit(
-                    "select-sort-order-end",
-                    this.id,
-                    this.constructSortOrder(),
-                    this.isAscending,
-                    this.sortOrderColor
-                );
-                this.sortOrderRecipients += 1;
-                this.showSelection = false;
+                this.handleWidgetSortOrderSelection();
+            } else if (this.allowValueScaleTargetSelection) {
+                this.handleWidgetValueScaleSelection();
             }
         },
         handleSliderChange: function(data) {
-            this.minHeatmap = data[0];
-            this.maxHeatmap = data[1];
+            this.setColorScale(data);
+            this.broadcastValueScaleUpdate();
         },
         toStoreObject: function() {
             // serialize object for storing its state in the store
@@ -250,12 +312,16 @@ export default {
                 sortOrderRecipient: this.sortOrderRecipient,
                 sortOrderRecipients: this.sortOrderRecipients,
                 sortOrderTargetID: this.sortOrderTargetID,
-                sortOrderColor: this.sortOrderColor
+                sortOrderColor: this.sortOrderColor,
+                valueScaleRecipient: this.valueScaleRecipient,
+                valueScaleRecipients: this.valueScaleRecipients,
+                valueScaleTargetID: this.valueScaleTargetID,
+                valueScaleColor: this.valueScaleColor,
+                minHeatmapRange: this.minHeatmapRange,
+                maxHeatmapRange: this.maxHeatmapRange
             };
         },
-        handleWidgetDeletion: function() {
-            // needs to be separate to distinguish it from moving
-            // emit events for sort-order update
+        prepareDeletionSortOrder: function() {
             if (this.sortOrderRecipient) {
                 // client handling
                 this.handleStopSortOrderShare();
@@ -264,12 +330,34 @@ export default {
                 EventBus.$emit("sort-order-source-deletion", this.id);
                 this.$store.commit("releaseColorUsage", this.sortOrderColor);
             }
+        },
+        prepareDeletionValueScale: function() {
+            if (this.valueScaleRecipient) {
+                // client handling
+                this.handleStopValueScaleShare();
+            } else if (this.valueScaleRecipients > 0) {
+                // source handling
+                EventBus.$emit("value-scale-source-deletion", this.id);
+                this.$store.commit(
+                    "releaseValueScaleColorUsage",
+                    this.valueScaleColor
+                );
+            }
+        },
+        handleWidgetDeletion: function() {
+            // needs to be separate to distinguish it from moving
+            // emit events for sort-order update
+            this.prepareDeletionSortOrder();
+            this.prepareDeletionValueScale();
             this.deleteWidget();
         },
         deleteWidget: function() {
             // release color
             if (this.sortOrderRecipients > 0) {
                 this.$store.commit("releaseColorUsage", this.sortOrderColor);
+            }
+            if (this.valueScaleRecipients > 0) {
+                this.$store.commit("releaseValueScaleColorUsage", this.valueScaleColor);
             }
             // delete widget from store
             var payload = {
@@ -307,7 +395,15 @@ export default {
                 sortOrderRecipients: 0,
                 sortOrderTargetID: false,
                 sortOrderColor: undefined,
-                showMenu: false
+                showMenu: false,
+                valueScaleRecipient: false,
+                valueScaleRecipients: 0,
+                valueScaleSelectionState: false,
+                valueScaleTargetID: false,
+                valueScaleColor: undefined,
+                minHeatmapRange: undefined,
+                maxHeatmapRange: undefined,
+                expectingValueScale: false,
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -340,6 +436,7 @@ export default {
             }
             // set color usage in store
             this.$store.commit("setColorUsage", widgetData["sortOrderColor"]);
+            this.$store.commit("setValueScaleColorUsage", widgetData["valueScaleColor"])
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
                 dragImage: undefined,
@@ -362,7 +459,15 @@ export default {
                 sortOrderRecipients: widgetData["sortOrderRecipients"],
                 sortOrderTargetID: widgetData["sortOrderTargetID"],
                 sortOrderColor: widgetData["sortOrderColor"],
-                showMenu: false
+                minHeatmapRange: widgetData["minHeatmapRange"],
+                maxHeatmapRange: widgetData["maxHeatmapRange"],
+                showMenu: false,
+                expectingValueScale: false,
+                valueScaleSelectionState: false,
+                valueScaleRecipient: widgetData["valueScaleRecipient"],
+                valueScaleRecipients: widgetData["valueScaleRecipients"],
+                valueScaleTargetID: widgetData["valueScaleTargetID"],
+                valueScaleColor: widgetData["valueScaleColor"]
             };
         },
         getStackupData: async function(id) {
@@ -412,14 +517,15 @@ export default {
             // add by center column
             this.sortorders["center column"] = {};
             // add random sort order
-            seedrandom("I am a random seed!")
-            let randArray = []
-            for (let index = 0; index < data.shape[0]; index++){
-                randArray.push(Math.random())
+            seedrandom("I am a random seed!");
+            let randArray = [];
+            for (let index = 0; index < data.shape[0]; index++) {
+                randArray.push(Math.random());
             }
             this.sortorders["random"] = randArray;
             // emit sort order update event
             this.broadcastSortOrderUpdate();
+            this.broadcastValueScaleUpdate()
         }
     },
     watch: {
@@ -506,6 +612,7 @@ export default {
     },
     mounted: function() {
         this.registerSortOrderEventHandlers();
+        this.registerValueScaleEventHandlers()
     }
 };
 </script>

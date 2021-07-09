@@ -657,7 +657,7 @@ export var valueScaleSharingMixin = {
             EventBus.$emit(
                 "select-value-scale-start",
                 this.id,
-                this.collectionID
+                this.$options.name // needed to check whether widget type is compatible
             );
             // add event listener to window to catch next click event
             window.addEventListener("click", this.emitEmptyValueScaleEnd, {
@@ -759,8 +759,8 @@ export var valueScaleSharingMixin = {
             });
         },
         registerValueScaleSourceHandlers: function(){
-            EventBus.$on("select-value-scale-start", (id, parent_id) => {
-                if (id != this.id && parent_id == this.collectionID) {
+            EventBus.$on("select-value-scale-start", (id, widgetType) => {
+                if (id != this.id && this.$options.name == widgetType) {
                     this.valueScaleSelectionState = true;
                 }
             });
