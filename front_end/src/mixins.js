@@ -610,6 +610,25 @@ export var valueScaleSharingMixin = {
         },
     },
     methods: {
+        resetColorScale: function(){
+            /*
+                resets colorscale to undefined
+            */
+            this.minHeatmap = undefined;
+            this.maxHeatmap = undefined;
+            this.minHeatmapRange = undefined;
+            this.maxHeatmapRange = undefined;
+        },
+        setColorScale: function(data){
+            /* 
+                sets colorScale based on data array
+                containing minPos, maxPos, minRange, maxRange
+            */
+            this.minHeatmap = data[0];
+            this.maxHeatmap = data[1];
+            this.minHeatmapRange = data[2]
+            this.maxHeatmapRange = data[3]
+        },
         broadcastValueScaleUpdate: function() {
             // tell client widgets that value scale has changed
             if (this.valueScaleRecipients > 0){

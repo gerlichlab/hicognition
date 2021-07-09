@@ -238,10 +238,7 @@ export default {
             }
         },
         handleSliderChange: function(data) {
-            this.minHeatmap = data[0];
-            this.maxHeatmap = data[1];
-            this.minHeatmapRange = data[2]
-            this.maxHeatmapRange = data[3]
+            this.setColorScale(data)
             this.broadcastValueScaleUpdate()
         },
         toStoreObject: function() {
@@ -426,8 +423,7 @@ export default {
         updatedData: async function() {
             // triggers load and storing of both pileuptypes
             // reset min and max colormap values
-            (this.minHeatmap = undefined), (this.maxHeatmap = undefined),
-            (this.minHeatmapRange = undefined), (this.maxHeatmapRange = undefined);
+            this.resetColorScale()
             // fetch widget data
             var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"];
             var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
@@ -518,10 +514,7 @@ export default {
         isICCF: function() {
             // reset min and max when this changes
             if (this.reactToICCFSwitch){
-                this.minHeatmap = undefined;
-                this.maxHeatmap = undefined;
-                this.minHeatmapRange = undefined;
-                this.maxHeatmapRange = undefined;
+                this.resetColorScale()
             }else{
                 this.reactToICCFSwitch = true
             }
