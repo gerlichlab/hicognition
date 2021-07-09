@@ -380,6 +380,7 @@ export default {
                 valueScaleColor: widgetData["valueScaleColor"],
                 expectingValueScale: false,
                 showMenu: false,
+                showSelection: false
 
             };
         },
