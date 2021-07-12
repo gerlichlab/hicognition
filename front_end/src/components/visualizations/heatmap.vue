@@ -2,24 +2,25 @@
     <div>
         <md-list class="md-double-line">
             <md-list-item class="md-alignment-top-center">
+                <!-- this prevents drag events to allow slider change without causing widget drag -->
+                <div :style="colorBarContainerStyle" draggable="true" @dragstart.prevent.stop>
+                    <color-bar-slider
+                        :colormap="colormap"
+                        :sliderMin="minValue"
+                        :sliderMax="maxValue"
+                        :heatMapWidth="width"
+                        :sliderPositionMax="maxValueRobust"
+                        :sliderPositionMin="minValueRobust"
+                        :borderColor="valueScaleColor"
+                        :borderStyle="valueScaleBorder"
+                        :allowValueScaleChange="allowValueScaleChange"
+                        @slider-change="handleColorChange"
+                    >
+                    </color-bar-slider>
+                </div>   
                 <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-0">
                     <div class="small-margin" ref="canvasDiv" />
-                    <!-- this prevents drag events to allow slider change without causing widget drag -->
-                    <div
-                        draggable="true"
-                        @dragstart.prevent.stop
-                        :style="sliderContainerStyle"
-                    >
-                        <double-range-slider
-                            :sliderWidth="width / 2"
-                            :sliderMin="minValue"
-                            :sliderMax="maxValue"
-                            :sliderPositionMin="minValueRobust"
-                            :sliderPositionMax="maxValueRobust"
-                            @slider-change="handleColorChange"
-                        />
-                    </div>
                 </md-content>
             </md-list-item>
         </md-list>
@@ -28,29 +29,44 @@
 <script>
 import * as PIXI from "pixi.js-legacy";
 import { getScale } from "../../colorScales.js";
-import doubleRangeSlider from "../ui/doubleRangeSlider.vue";
-import { min_array, max_array, getPercentile, getPerMilRank } from "../../functions";
+import colorBarSlider from "../ui/colorBarSlider.vue"
+import { getPercentile, getPerMilRank } from "../../functions";
 
-const NAN_COLOR = [1, 1, 1]; // white nan color
+const NAN_COLOR = [255, 255, 255]; // white nan color
+
+// set pixi scale mode
+
+PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
 
 export default {
     name: "heatmap",
     components: {
-        doubleRangeSlider
+        colorBarSlider
     },
     props: {
         title: String,
         stackupData: Object,
         width: Number,
         height: Number,
-        sliderHeight: Number,
         stackupID: Number,
-        minHeatmapValue: Number,
-        maxHeatmapValue: Number,
+        minHeatmapRange: Number, // min Value for heatmap range
+        maxHeatmapRange: Number, // max Value for heatmap range
+        minHeatmapValue: Number, // minPosition in heatmap
+        maxHeatmapValue: Number, // maxPosition in heatmap
         colormap: String,
+        valueScaleColor: String,
+        valueScaleBorder: String,
+        allowValueScaleChange: Boolean,
         log: Boolean
     },
     computed: {
+        colorBarContainerStyle: function() {
+            return {
+                "width": "17%",
+                "height": this.height + "px",
+                "display": "inline"
+            }
+        },
         sliderContainerStyle: function() {
             return {
                 "width": "100%",
@@ -96,24 +112,30 @@ export default {
         minValue: function() {
             // find minimum by hand because Math.min cannot handle more than
             // a few k elements...
+            if (this.minHeatmapRange){
+                return this.minHeatmapRange
+            }
             return getPerMilRank(this.stackupValues, 1)
         },
         maxValue: function() {
             // maximum value for heatmap lookuptable = maximum value in data
             // filter out nans and extract values into array
+            if (this.maxHeatmapRange){
+                return this.maxHeatmapRange
+            }
             return getPerMilRank(this.stackupValues, 999)
         },
         rgbArray: function() {
             // array with rgba values for pixi Texture.fromBuffer
             var bufferArray = [];
             for (var element of this.stackupValues) {
-                // convert rgb values into range between 0 and 1
+                // convert data into rgb values
                 var colorValues;
                 if (element) {
                     colorValues = this.colorScale(element)
                         .split(/[\,,(,)]/)
                         .slice(1, 4)
-                        .map(element => Number(element) / 255);
+                        .map(element => Number(element));
                 } else {
                     colorValues = NAN_COLOR;
                 }
@@ -121,27 +143,52 @@ export default {
                 for (var value of colorValues) {
                     bufferArray.push(value);
                 }
-                // add saturation of rgba to 1
-                bufferArray.push(1.0);
+                // add full saturation
+                bufferArray.push(255);
             }
-            return new Float32Array(bufferArray);
+            return new Uint8ClampedArray(bufferArray);
         }
     },
     data: function() {
         return {
-            renderer: new PIXI.autoDetectRenderer({
+            renderer: new PIXI.CanvasRenderer({
                 width: this.width,
                 height: this.height
             }),
             stage: undefined,
             texture: undefined,
             sprite: undefined,
-            colorScale: undefined
+            colorScale: undefined,
+            imageData: undefined,
+            id : Math.round(Math.random() * 1000000),
+            pseudoCanvasContext: undefined,
+            pseudoCanvas: undefined
+
         };
     },
     methods: {
+        destroyPseudoCanvas: function(){
+            if (this.pseudoCanvas){
+                this.pseudoCanvas.remove()
+            }
+        },
+        createPseudoCanvas: function(){
+            let canvas = document.createElement('canvas');
+            canvas.id =`pseudoCanvas${this.id}`
+            canvas.width = this.stackupDimensions[1];
+            canvas.height = this.stackupDimensions[0];
+            canvas.style.top = "50px"
+            canvas.style.left= `-${this.width + 50}px`
+            canvas.style.position = "absolute";
+            document.body.appendChild(canvas);
+            // store cnavas
+            this.pseudoCanvas = canvas;
+            // get canvas2d context
+            this.pseudoCanvasContext = canvas.getContext('2d');
+        },
         handleColorChange: function(data) {
-            this.$emit("slider-change", data); // propagate up to store in store
+            let concatenatedValues = data.concat([this.minValue, this.maxValue]);
+            this.$emit("slider-change", concatenatedValues); // propagate up to store in store
             this.createColorMap(...data);
             this.drawHeatmap();
         },
@@ -152,11 +199,14 @@ export default {
             this.renderer.resize(width, height)
         },
         drawHeatmap: function() {
-            this.texture = PIXI.Texture.fromBuffer(
-                this.rgbArray,
-                this.stackupDimensions[1],
-                this.stackupDimensions[0]
-            );
+            // destroy old pseudocanvas if existing
+            this.destroyPseudoCanvas()
+            this.createPseudoCanvas()
+            this.imageData = new ImageData(this.rgbArray, this.stackupDimensions[1], this.stackupDimensions[0])
+            // add image to pseudocanvas
+            this.pseudoCanvasContext.putImageData(this.imageData, 0, 0)
+            // create texture form pseudocanvas
+            this.texture = PIXI.Texture.from(this.pseudoCanvas)
             this.sprite = PIXI.Sprite.from(this.texture);
             // position sprite at top left and make it stretch the canvas
             this.sprite.x = 0;
@@ -171,7 +221,7 @@ export default {
             // add the renderer view object into the canvas div
             this.$refs["canvasDiv"].appendChild(this.renderer.view);
             // create stage
-            this.stage = new PIXI.Container();
+            this.stage = new PIXI.Container()
         }
     },
     watch: {
@@ -181,6 +231,8 @@ export default {
                 this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue);
             } else {
                 this.createColorMap(this.minValueRobust, this.maxValueRobust);
+                // emit slider change to set initial values in pileupWidget
+                this.$emit("slider-change", [this.minValueRobust, this.maxValueRobust, this.minValue, this.maxValue]);
             }
             this.drawHeatmap();
         },
@@ -196,6 +248,22 @@ export default {
         height: function(){
             this.resizeCanvas(this.width, this.height)
             this.drawHeatmap();
+        },
+        minHeatmapValue: function(){
+            if (this.minHeatmapValue && this.maxHeatmapValue) {
+                this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue);
+            } else {
+                this.createColorMap(this.minValueRobust, this.maxValueRobust);
+            }
+            this.drawHeatmap();
+        },
+        maxHeatmapValue: function(){
+            if (this.minHeatmapValue && this.maxHeatmapValue) {
+                this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue);
+            } else {
+                this.createColorMap(this.minValueRobust, this.maxValueRobust);
+            }
+            this.drawHeatmap();
         }
     },
     mounted: function() {
@@ -207,6 +275,8 @@ export default {
         }
         this.initializeCanvas();
         this.drawHeatmap();
+        // emit slider change to set initial values in pileupWidget
+        this.$emit("slider-change", [this.minValueRobust, this.maxValueRobust, this.minValue, this.maxValue]);
     },
     beforeDestroy: function() {
         /*
@@ -216,6 +286,7 @@ export default {
             before we reach >16 contexts.
         */
         //
+        this.destroyPseudoCanvas()
         this.stage.destroy();
         this.stage = null;
         // remove renderer view
@@ -229,6 +300,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
 .center-horizontal {
     margin: auto;
     display: block;

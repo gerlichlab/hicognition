@@ -48,7 +48,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=128), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('session_object', sa.String(length=10000), nullable=True),
+    sa.Column('session_object', sa.Text(), nullable=True),
     sa.Column('created_utc', sa.DateTime(), nullable=False),
     sa.Column('session_type', sa.String(length=100), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),

@@ -3,6 +3,11 @@ Collections of mixins that confer functionality to
 Vue components.
 */
 import EventBus from "./eventBus";
+import {
+    sort_matrix_by_index,
+    sort_matrix_by_center_column,
+    get_indices_center_column
+} from "./functions";
 
 export var apiMixin = {
     methods: {
@@ -172,6 +177,8 @@ export var formattingMixin = {
 };
 
 const TOOLBARHEIGHT = 71;
+const MESSAGEHEIGHT = 60;
+
 
 export var widgetMixin = {
     props: {
@@ -189,13 +196,10 @@ export var widgetMixin = {
     },
     computed: {
         visualizationHeight: function() {
-            return Math.round((this.height - TOOLBARHEIGHT) * 0.8);
+            return Math.round((this.height - TOOLBARHEIGHT - MESSAGEHEIGHT));
         },
         visualizationWidth: function() {
             return Math.round(this.width * 0.7);
-        },
-        sliderHeight: function() {
-            return Math.round((this.height - TOOLBARHEIGHT ) * 0.07)
         },
         showData: function() {
             if (this.widgetData) {
@@ -329,4 +333,455 @@ export var widgetMixin = {
     beforeDestroy: function(){
         this.removeEventHandlers()
     }
+}
+
+export var sortOrderMixin = {
+    computed: {
+        sortedMatrix: function() {
+            if (!this.widgetData) {
+                return undefined;
+            }
+            if (this.selectedSortOrder == "center column") {
+                var sorted_matrix = sort_matrix_by_center_column(
+                    this.widgetData["data"],
+                    this.widgetData["shape"],
+                    this.isAscending
+                );
+                return {
+                    data: sorted_matrix,
+                    shape: this.widgetData["shape"],
+                    dtype: this.widgetData["dtype"]
+                };
+            } else {
+                var sorted_matrix = sort_matrix_by_index(
+                    this.widgetData["data"],
+                    this.widgetData["shape"],
+                    this.sortorders[this.selectedSortOrder],
+                    this.isAscending
+                );
+                return {
+                    data: sorted_matrix,
+                    shape: this.widgetData["shape"],
+                    dtype: this.widgetData["dtype"]
+                };
+            }
+        },
+        allowSortOrderSelection: function() {
+            if (this.sortorders) {
+                return true;
+            }
+            return false;
+        },
+        cssStyle: function() {
+            let opacity = this.showSelection ? "0.6" : "1";
+            // define border style
+            let borderStyle;
+            if (this.sortOrderRecipients > 0) {
+                borderStyle = "solid";
+            } else if (this.sortOrderTargetID) {
+                // sort order target id is defined if widget takes sort order from somewhere else
+                borderStyle = "dashed";
+            } else {
+                borderStyle = "none";
+            }
+            return {
+                height: `${this.height}px`,
+                width: `${this.width}px`,
+                opacity: opacity,
+                "box-sizing": "border-box",
+                "border-width": "5px",
+                "border-style": `none none ${borderStyle} none`,
+                "border-color": this.sortOrderColor
+                    ? this.sortOrderColor
+                    : "none"
+            };
+        },
+        sortDirection: function() {
+            if (this.isAscending) {
+                return "Ascending";
+            }
+            return "Descending";
+        },
+        sortKeys: function() {
+            if (this.sortorders) {
+                return Object.keys(this.sortorders);
+            }
+            return {};
+        },
+        allowSortOrderTargetSelection: function() {
+            return (
+                this.sortOrderSelectionState &&
+                this.showData &&
+                !this.sortOrderRecipient
+            );
+        }
+    },
+    methods: {
+        broadcastSortOrderUpdate: function() {
+            // tell client widgets that sort order has changed
+            EventBus.$emit(
+                "update-sort-order-sharing",
+                this.id,
+                this.constructSortOrder(),
+                this.isAscending
+            );
+        },
+        constructSortOrder: function() {
+            // extracts sort order values from current selected sort-order
+            let values;
+            if (this.selectedSortOrder == "center column") {
+                values = get_indices_center_column(
+                    this.widgetData["data"],
+                    this.widgetData["shape"]
+                );
+            } else {
+                values = this.sortorders[this.selectedSortOrder];
+            }
+            return values;
+        },
+        manageColorUpdate: function() {
+            // checks which colors are used for sort order sharing and sets a new one
+            let returnedColor = this.$store.getters.getNextSortOrderColor;
+            if (!returnedColor) {
+                return this.colorExhaustionErrorHandler();
+            } else {
+                this.setBorderColor(returnedColor);
+            }
+        },
+        colorExhaustionErrorHandler: function(kind="sort order shares") {
+            // error handler for when there are no more colors to be shared
+            alert(`Maximum number of ${kind} reached!`);
+            this.emitEmptySortOrderEnd();
+            this.showSelection = false;
+            return;
+        },
+        setBorderColor: function(color) {
+            // sets color for widget and commits to store
+            this.sortOrderColor = color;
+            this.$store.commit("setColorUsage", this.sortOrderColor);
+        },
+        handleStartSortOrderShare: function() {
+            EventBus.$emit(
+                "select-sort-order-start",
+                this.id,
+                this.collectionID
+            );
+            // add event listener to window to catch next click event
+            window.addEventListener("click", this.emitEmptySortOrderEnd, {
+                once: true
+            });
+            this.expectingSortOrder = true; // this needs to be closed after receiving again -> otherwise everything updates
+        },
+        handleStopSortOrderShare: function() {
+            this.selectedSortOrder = "center column";
+            EventBus.$emit("stop-sort-order-sharing", this.sortOrderTargetID);
+            this.$delete(this.sortorders, "shared");
+            this.sortOrderRecipient = false;
+            this.sortOrderTargetID = undefined;
+        },
+        emitEmptySortOrderEnd: function() {
+            EventBus.$emit("select-sort-order-end", undefined, undefined);
+        },
+        acceptSortOrderEndEvent: function(
+            target_id,
+            sortorder,
+            direction,
+            color
+        ) {
+            // checks whether passed event arguments are valid and widget is in right state
+            return (
+                this.expectingSortOrder &&
+                (target_id != undefined) &&
+                (sortorder != undefined) &&
+                (direction != undefined) &&
+                (color != undefined)
+            );
+        },
+        registerSortOrderClientHandlers: function() {
+            // register event handlers that are relevant when widget is a sort order share client
+            EventBus.$on(
+                "select-sort-order-end",
+                (target_id, sortorder, direction, color) => {
+                    if (
+                        this.acceptSortOrderEndEvent(
+                            target_id,
+                            sortorder,
+                            direction,
+                            color
+                        )
+                    ) {
+                        // recipient stores data
+                        this.$set(this.sortorders, "shared", sortorder);
+                        this.selectedSortOrder = "shared";
+                        this.isAscending = direction;
+                        this.sortOrderTargetID = target_id;
+                        this.sortOrderColor = color;
+                        this.sortOrderRecipient = true;
+                    }
+                    this.expectingSortOrder = false; // switches off expecting recipient
+                    this.sortOrderSelectionState = false; // switches off donors
+                }
+            );
+            EventBus.$on(
+                "update-sort-order-sharing",
+                (target_id, sortorder, direction) => {
+                    if (
+                        this.sortOrderTargetID &&
+                        target_id == this.sortOrderTargetID
+                    ) {
+                        this.$set(this.sortorders, "shared", sortorder);
+                        this.selectedSortOrder = "shared";
+                        this.isAscending = direction;
+                    }
+                }
+            );
+            EventBus.$on("widget-id-change", (old_id, new_id) => {
+                if (
+                    this.sortOrderRecipient &&
+                    old_id == this.sortOrderTargetID
+                ) {
+                    this.sortOrderTargetID = new_id;
+                }
+            });
+            EventBus.$on("sort-order-source-deletion", source_id => {
+                if (this.sortOrderTargetID == source_id) {
+                    this.handleStopSortOrderShare();
+                }
+            });
+        },
+        registerSortOrderSourceHandlers: function() {
+            // handlers that are needed if widget is a sort order source
+            EventBus.$on("select-sort-order-start", (id, parent_id) => {
+                if (id != this.id && parent_id == this.collectionID) {
+                    this.sortOrderSelectionState = true;
+                }
+            });
+            EventBus.$on("stop-sort-order-sharing", target_id => {
+                if (target_id == this.id) {
+                    this.sortOrderRecipients -= 1;
+                    if (this.sortOrderRecipients == 0) {
+                        this.$store.commit(
+                            "releaseColorUsage",
+                            this.sortOrderColor
+                        );
+                    }
+                }
+            });
+        },
+        registerSortOrderEventHandlers: function() {
+            // event bus listeners for sort order sharing
+            this.registerSortOrderClientHandlers();
+            this.registerSortOrderSourceHandlers();
+        }
+    }
+}
+
+export var valueScaleSharingMixin = {
+    computed: {
+        allowValueScaleChange: function(){
+            if (this.valueScaleTargetID){
+                return false
+            }
+            return true
+        },
+        allowValueScaleTargetSelection: function() {
+            return (
+                this.valueScaleSelectionState &&
+                this.showData &&
+                !this.valueScaleRecipient
+            );
+        },
+        valueScaleBorder: function(){
+            if (this.valueScaleRecipients > 0){
+                return "solid"
+            }else if(this.valueScaleTargetID){
+                return "dashed"
+            }
+            return undefined
+        },
+        cssStyle: function() {
+            let opacity = this.showSelection ? "0.6" : "1";
+            return {
+                height: `${this.height}px`,
+                width: `${this.width}px`,
+                opacity: opacity,
+            };
+        },
+    },
+    methods: {
+        resetColorScale: function(){
+            /*
+                resets colorscale to undefined
+            */
+            this.minHeatmap = undefined;
+            this.maxHeatmap = undefined;
+            this.minHeatmapRange = undefined;
+            this.maxHeatmapRange = undefined;
+        },
+        setColorScale: function(data){
+            /* 
+                sets colorScale based on data array
+                containing minPos, maxPos, minRange, maxRange
+            */
+            this.minHeatmap = data[0];
+            this.maxHeatmap = data[1];
+            this.minHeatmapRange = data[2]
+            this.maxHeatmapRange = data[3]
+        },
+        broadcastValueScaleUpdate: function() {
+            // tell client widgets that value scale has changed
+            if (this.valueScaleRecipients > 0){
+                EventBus.$emit(
+                    "update-value-scale-sharing",
+                    this.id,
+                    this.minHeatmap,
+                    this.maxHeatmap,
+                    this.colormap,
+                    this.minHeatmapRange,
+                    this.maxHeatmapRange
+                );
+            }
+        },
+        manageValueScaleColorUpdate: function(){
+            // checks which colors are used for value scale sharing and sets a new one
+            let returnedColor = this.$store.getters.getNextValueScaleColor;
+            if (!returnedColor) {
+                return this.colorExhaustionErrorHandler("value scale shares");
+            } else {
+                this.valueScaleColor = returnedColor
+                this.$store.commit("setValueScaleColorUsage", returnedColor);
+            }
+        },
+        handleStartValueScaleShare: function() {
+            EventBus.$emit(
+                "select-value-scale-start",
+                this.id,
+                this.$options.name // needed to check whether widget type is compatible
+            );
+            // add event listener to window to catch next click event
+            window.addEventListener("click", this.emitEmptyValueScaleEnd, {
+                once: true
+            });
+            this.expectingValueScale = true; // this needs to be closed after receiving again -> otherwise everything updates
+        },
+        handleStopValueScaleShare: function() {
+            this.minHeatmap = undefined;
+            this.maxHeatmap = undefined;
+            this.minHeatmapRange = undefined;
+            this.maxHeatmapRange = undefined;
+            this.valueScaleColor = undefined;
+            EventBus.$emit("stop-value-scale-sharing", this.valueScaleTargetID);
+            this.valueScaleRecipient = false;
+            this.valueScaleTargetID = undefined;
+        },
+        emitEmptyValueScaleEnd: function() {
+            EventBus.$emit("select-value-scale-end", undefined, undefined);
+        },
+        acceptValueScaleEndEvent: function(
+            target_id,
+            min,
+            max,
+            color,
+            minRange,
+            maxRange
+        ) {
+            // checks whether passed event arguments are valid and widget is in right state
+            return (
+                this.expectingValueScale &&
+                (target_id != undefined) &&
+                (min != undefined) &&
+                (max != undefined) &&
+                (color != undefined) &&
+                (minRange != undefined) &&
+                (maxRange != undefined)
+            );
+        },
+        registerValueScaleClientHandlers: function(){
+            // register event handlers that are relevant when widget is value scale share client
+            EventBus.$on(
+                "select-value-scale-end",
+                (target_id, min, max, color, colormap, minRange, maxRange) => {
+                    if (
+                        this.acceptValueScaleEndEvent(
+                            target_id,
+                            min,
+                            max,
+                            color,
+                            minRange,
+                            maxRange
+                        )
+                    ) {
+                        // recipient stores data
+                        this.valueScaleTargetID = target_id;
+                        this.valueScaleColor = color;
+                        this.valueScaleRecipient = true;
+                        if (this.colormap != colormap){
+                            this.handleColormapMissmatch(colormap)
+                        }
+                        this.minHeatmap = min
+                        this.maxHeatmap = max
+                        this.minHeatmapRange = minRange
+                        this.maxHeatmapRange = maxRange
+                    }
+                    this.expectingValueScale = false; // switches off expecting recipient
+                    this.valueScaleSelectionState = false; // switches off donors
+                }
+            );
+            EventBus.$on(
+                "update-value-scale-sharing",
+                (target_id, min, max, colormap, minRange, maxRange) => {
+                    if (
+                        this.valueScaleTargetID &&
+                        target_id == this.valueScaleTargetID
+                    ) {
+                        if (this.colormap != colormap){
+                            this.handleColormapMissmatch(colormap)
+                        }
+                        this.minHeatmap = min;
+                        this.maxHeatmap = max;
+                        this.minHeatmapRange = minRange;
+                        this.maxHeatmapRange = maxRange;
+                    }
+                }
+            );
+            EventBus.$on("widget-id-change", (old_id, new_id) => {
+                if (
+                    this.valueScaleRecipient &&
+                    old_id == this.valueScaleTargetID
+                ) {
+                    this.valueScaleTargetID = new_id;
+                }
+            });
+            EventBus.$on("value-scale-source-deletion", source_id => {
+                if (this.valueScaleTargetID == source_id) {
+                    this.handleStopValueScaleShare();
+                }
+            });
+        },
+        registerValueScaleSourceHandlers: function(){
+            EventBus.$on("select-value-scale-start", (id, widgetType) => {
+                if (id != this.id && this.$options.name == widgetType) {
+                    this.valueScaleSelectionState = true;
+                }
+            });
+            EventBus.$on("stop-value-scale-sharing", target_id => {
+                if (target_id == this.id) {
+                    this.valueScaleRecipients -= 1;
+                    if (this.valueScaleRecipients == 0) {
+                        this.$store.commit(
+                            "releaseValueScaleColorUsage",
+                            this.valueScaleColor
+                        );
+                        this.valueScaleColor = undefined;
+                    }
+                }
+            });
+        },
+        registerValueScaleEventHandlers: function(){
+            // event bus listeners for sort order sharing
+            this.registerValueScaleClientHandlers();
+            this.registerValueScaleSourceHandlers();
+        }
+    }
+    
 }

@@ -7,14 +7,11 @@ Repository to collect all the decisions made for the development environment of 
 - The front-end is implemented in [vue.js](https://vuejs.org/) using vue-components from [vue-material](https://vuematerial.io/).
 - All the routing is done in the front-end via [vue-router](https://router.vuejs.org/).
 - The back-end is a pure API implemented using [flask](https://flask.palletsprojects.com/en/1.1.x/)
-- We will use a sql-lite database to store User-data and meta-data about data-sets
+- We will use a MySQL database to store User-data and meta-data about data-sets
 - Results of computations such as matrices will be stored on disk and referenced in the database via filename
 - Authentication with the API is token-based: User presents credentials to receive a token that is valid for 1h.
 - All the expensive computations will be performed by a redis queue that is triggered by the back-end server
 - All computations on datasets will be done before data exploration, and the user sees only preprocessed datasets that can be quickly examined.
-- We will use [higlass](https://higlass.io/) to visualize datasets, but switch off its interactive capabilities since those are handled through our app.
-  - Here, we will run our own higlass-server that serves datasets that are requested by our app
-  - The interface to this higlass-server will be purely through the exposed [REST-API](https://docs.higlass.io/higlass_server.html#api) of the higlass-server and the [Javavscript-API](https://docs.higlass.io/javascript_api.html) or the view-component.
 - All back-end functionalities will be provided by distinct docker containers
 - We will use [Nginx](https://www.nginx.com/) as a [reverse proxy](https://en.wikipedia.org/wiki/Reverse_proxy) to control access to the back-end docker network. This has the following advantages:
   - We can offload TLS-encryption/decryption to the optimized Nginx-server
@@ -27,7 +24,7 @@ The architecture of our app is summarized in the following figure:
 
 
 <p align="center">
-    <img src=assets/container_infrastructure.png>
+    <img src=assets/Architecture_v1-01.png>
 </p>
 <p align="center">
   Figure 1: App-architecture
@@ -39,7 +36,7 @@ The architecture of our app is summarized in the following figure:
 
 The core of our back-end is a flask-server that manages the authorization of users and exchange of data with the Vue.js front-end. This flask-server is a pure REST-API, meaning that it is mostly state-less with regards the user-requests and serves data in json-format. The api-routes are implemented using the [blueprint-pattern](https://flask.palletsprojects.com/en/1.1.x/blueprints/) to allow modularization and easy extension in the future.
 
-The flask-server runs in a custom docker container that is derived from `docker.io/gerlichlab/scshic_docker:release-1.3` by creating a `flask` conda environment and installing all needed flask-extensions from a `requirements.txt` file via pip.
+The flask-server runs in a custom docker container.
 
 The User-authorization is done either by sending the user credentials (username and password) or via a token that can be obtained from the `/tokens/` route. The token is generated using `itsdangerous.TimedJSONWebSignatureSerializer` and is currently valid for 1h. The `/tokens/` route only accepts username/password authorization to prevent malicious actors from obtaining new tokens with an old token indefinitely.
 
@@ -48,31 +45,30 @@ TODO: Look into whether this needs to be changed.
 
 Different configurations of the server are collected in a `config.py` file that defines classes that carry the configuration options as class-variables. These different classes are used in the `create_app` app-factory function to register the relevant config settings via `app.config.from_object()`. The relevant config class can be specified via the env-variable `FLASK_CONFIG` .The different class are:
 
-- `DevelopmentConfig` - This configuration class is used in the development and specifies that flask should be started in development mode and that the sqlite database resides in a file.
-- `TestingConfig` - This configuration class is used during testing and creates the sqlite database in memory
+- `DevelopmentConfig` - This configuration class is used in the development and specifies that flask should be started in development mode.
+- `TestingConfig` - This configuration class is used during testing and creates an sqlite database in memory.
 - `ProductionConfig` - This configuration class is used in production and specifies that the database should be created in the app-directory resides in a file.
 
 The general policy is to provide default values for development but get the values from environment variables in production. This is achieved by using the following pattern for each config-variable: `Config = os.environ.get("ENV_VAR") or default`. The configuration variables are:
 
 - SECRET_KEY - Secret key of flask app that is used to sign the generated token
 - SQLALCHMEY_TRACK_MODIFICATIONS - Whether our ORM (SQLAlchemy) should track database modifications
-- HIGLASS_URL - URL of the higlass server
-- HIGLASS_API - URL of the higlass-api-route for tilesets (datasets) exposed by the higlass docker container in the docker network
 - UPLOAD_DIR - Directory that is used to store uploaded datasets. This filepath is used inside the docker-container and should therefore be in relation to the mounted folder with code and data.
 - CHROM_SIZES - Path to the chromosome sizes file on the server filesystem that is needed for the `hicognition` module. This filepath is used inside the docker-container and should therefore be in relation to the mounted folder with code and data.
 - CHROM_ARMS - Path to the file harboring genomic locations of chromosomal arms on the server filesystem that is needed for pileups in the `tasks.py` file containing different background tasks. This filepath is used inside the docker-container and should therefore be in relation to the mounted folder with code and data.
-- HIGLASS_USER - Username of user allowed to post new datasets to the higlass-server
-- HIGLASS_PWD - Password of user allowed to post new datasets to the higlass-server
 - REDIS_URL - URL of redis server
-- WINDOW_SIZES - Standard window-sizes that are used for pileups on an uploaded cooler and bed-file
+- PREPROCESSING_MAP - Windowsize/binsize combinations that should be precomputed
 - BIN_SIZES - Standard bin-sizes that are used for pileups on an uploaded cooler and bed-file
 - DEBUG - Whether the flask server should be started in debug mode or not
 - TESTING - Flag that indicates whether server is in testing mode or not (Currently unused)
-- SQLALCHEMY_DATABASE_URI - URL of the sqlite database. Note that if only `sqlite://` is specified (as in the `TestingConfig` class, the database is created in memory)
+- STACKUP_THRESHOLD - From how many regions on a stackup should be downsampled
+- OBS_EXP_PROCESSES - How many processes should be used to compute obs/exp
+- PILEUP_PROCESSES - How many processes should be used to construct pileups
+- SQLALCHEMY_DATABASE_URI - URL of the database. Note that if only `sqlite://` is specified (as in the `TestingConfig` class, the database is created in memory)
 
 ### Database
 
-The flask-server and the redis-queue worker use a common database to record and change information about users and datasets. We use [SQLAlchemy](https://www.sqlalchemy.org/) as an Object-relational-mapper (ORM) to abstract details of the underlying database. This allows in principle to quickly change database back-ends and allows interaction with the database via python classes and functions. Currently, we use [sqlite](https://www.sqlite.org/index.html) since we only store meta-information about datasets (file-path, name, etc.) and users directly in the database and large data (images, raw-files, processed-files...) is stored on the filesystem.
+The flask-server and the redis-queue worker use a common database to record and change information about users and datasets. We use [SQLAlchemy](https://www.sqlalchemy.org/) as an Object-relational-mapper (ORM) to abstract details of the underlying database. This allows in principle to quickly change database back-ends and allows interaction with the database via python classes and functions. Currently, we use MySQL to store meta-information about datasets (file-path, name, etc.) and users directly in the database and large data (images, raw-files, processed-files...) is stored on the filesystem.
 
 Database migrations are managed using [FLASK-Migrate](https://flask-migrate.readthedocs.io/en/latest/) that is a wrapper for [alembic](https://alembic.sqlalchemy.org/en/latest/), a database migration tool for SQLAlchemy. Using this set-up, database migrations are scheduled using 'flask db migrate -m $MESSAGE', which creates a migration script in the `./migrations` sub-folder. This migration can then be applied using `flask db upgrade`. The `./migrations` directory is committed to version control and records the migration-history of our database. The development workflow is to define database models in a `models.py` file and commit a migration to version control. Then, on the production server, the newest changes - including the migration script - are pulled and the database migrated to the newest version using `flask db upgrade`.
 
@@ -102,17 +98,10 @@ The tables are used to store the following information:
 
 Resource heavy and long tasks are offloaded to a [redis-queue](https://python-rq.org/) that consists of a redis-server and one or more redis-workers. The redis-server accepts task items and manages distributing them to the redis-workers. The redis-server runs in a docker container that is derived from `redis:6-alpine` with a custom config-file. The redis-workers use the same docker-container as the flask-server as they need access to most modules the server needs.
 
-All tasks that the queue can run are defined in [tasks.py](https://github.com/gerlichlab/HiCognition_flask/blob/master/back_end/app/tasks.py) and consist of the following:
-
-- pipeline_bed - Starts the preprocessing pipeline for bedfiles
-- pipeline_cooler - Starts the preprocessing pipeline for cooler-files
+All tasks that the queue can run are defined in [tasks.py](https://github.com/gerlichlab/HiCognition_flask/blob/master/back_end/app/tasks.py).
 
 Tasks are launched using an instance-method of `User` called `User.launch_task` that accepts the name of the task, a short description as well as the dataset_id of the dataset being processed. This method enqueues the job and adds the `Task` table entry to the current database session.
 
-
-### Higlass
-
-A [higlass](https://higlass.io/) server is running in the vanilla higlass docker-container (`higlass/higlass-docker`). Interactions with this server in the back-end are purely done via the exposed [REST-API](https://docs.higlass.io/higlass_server.html#api). This server is used in the front-end to view data sets.
 
 ### Filesystem interactions
 
@@ -123,17 +112,42 @@ The flask-server and the redis-worker need access to a shared filesytem since al
 All the docker containers that work together in the back-end are coordinated by docker-compose (see [docker-compose file](https://github.com/gerlichlab/HiCognition_flask/blob/master/docker-compose.yml)) and reside within a docker-network called `hicognition-net`, to facilitate networking between them. The docker containers that are used are the following:
 
 - `hicognition` - Container that harbors the flask-server
-- `higlass` - contains higlass server
+- `mysql` - contains Mysql database
 - `nginx` - contains nginx reverse-proxy
 - `redis-server` - contains the redis-server
 - `redis-worker` - redis-worker container
 
 Additionally, there are two transient containers that are used:
 
-- `higlass-usercreation` - Higlass container that is started before the higlass-server to create the admin user if it is not here yet
 - `node` - Node container that is started to build the front-end files
 
 There is an additional [docker-compose file](https://github.com/gerlichlab/HiCognition_flask/blob/master/docker_dev.yml) that starts hicognition in development mode without nginx, with the flask-server set to `debug` and `node` set-up to server the front-end with hot reload.
+
+### Testing
+
+Tests for backend functionality are implemented via the python `unittest` module and run using `pytest`. All api route-handlers as well as redis-queue tasks in `tasks.py` are tested.
+
+### Gate-keeping of files
+
+In order to ensure that preprocessing runs smoothely and all analyses can be performed on uploaded files, we decided to be strict with regards to what files can be uploaded. To this end,
+we implemented a format-checking logic in `hicognition.format_checkers` for all supported file formats. These format checkers need to be passed before datasets are added to the internal database via `POST /dataset/`. The requirements are the following:
+
+#### BED files
+
+The file can contain a header, but only with the prefixes `#`, `track` or `browser`. After the header, an optional column-name row can be present. After this optional column name row, every row needs to contain as first entry a chromosome name, then a start and an end. Additionally, bed files cannot contain entries that do not map to our accepted chromosome names. 
+
+If any of these assumptions are not met, the file is rejected.
+
+#### Cooler files
+
+Cooler files need to be in the `.mcool` format, meaning that the contain data binned at multiple resolutions. Additionally, they need to contain all resolutions defined in the `PREPROCESSING_MAP` config parameters.
+
+If any of these assumptions are not met, the file is rejected.
+
+#### BIGWIG files
+
+Currently no format checking logic is implemented for bigwig files.
+
 
 ## Front-end
 
@@ -148,7 +162,6 @@ Babel is first used to transpile js-files to support all browsers with > 1% mark
 Environment variables for development and production are defined using `frontend/config/dev.env.js` and `frontend/config/prod.env.js` respectively. Variables are:
 
 - `API_URL` - The URL of the flask-api
-- `HIGLASS_URL` - The URL of the higlass-api
 - `STATIC_URL` - The URL of the static directory.
 
 These variables are accessed in js-files using `process.env.VARIABLE` and resolved by webpack during build.
@@ -190,9 +203,9 @@ All interactions with the back-end are done via api-calls that are dispatched by
 
 The api-calls are defined as a mixin in `frontend/src/mixins.js` in `apiMixin`. All components that need interaction with the back-end receive the `apiMixin`. The `apimixin` has a convenience method for fetching and storing the authentication token called `.fetchAndStoreToken` and two more generic methods that allow to dispatch get and post reqeusts, `.fetchData` and `.postData` respectively. These work by return the promise the is returned by axios-requests is there is no error in the call. The caller can then resolve the promise than receive the data. If there is an error, however, the user is redirected to the login-page to get a new token.
 
-### Higlass-integration
+### Testing
 
-`higlass` will be used as a view component only. It will be only accessed via the API. No direct modification to higlass is performed. This means that that the view is instantiated with `editable=false`.
+Front-end tests are implemented via `jest`. Currently, we only test stand-alone functions that are not dependent on a `Vue` instance. In the future we want to extend testing the `Vue` components.
 
 
 ## Git actions and Code tests
