@@ -134,9 +134,9 @@ class Dataset(db.Model):
 class Intervals(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
-    name = db.Column(db.String(64), index=True)
-    file_path = db.Column(db.String(128), index=True)
-    file_path_sub_sample_index = db.Column(db.String(128), index=True)
+    name = db.Column(db.String(512), index=True)
+    file_path = db.Column(db.String(512), index=True)
+    file_path_sub_sample_index = db.Column(db.String(512), index=True)
     windowsize = db.Column(db.Integer, index=True)
     averageIntervalData = db.relationship(
         "AverageIntervalData", backref="source_intervals", lazy="dynamic"
@@ -164,8 +164,8 @@ class Intervals(db.Model):
 class AverageIntervalData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     binsize = db.Column(db.Integer)
-    name = db.Column(db.String(64), index=True)
-    file_path = db.Column(db.String(128), index=True)
+    name = db.Column(db.String(512), index=True)
+    file_path = db.Column(db.String(512), index=True)
     value_type = db.Column(db.String(64))
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
@@ -195,8 +195,8 @@ class IndividualIntervalData(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     binsize = db.Column(db.Integer)
-    name = db.Column(db.String(64), index=True)
-    file_path = db.Column(db.String(128), index=True)
+    name = db.Column(db.String(512), index=True)
+    file_path = db.Column(db.String(512), index=True)
     file_path_small = db.Column(
         db.String(128), index=True
     )  # location of downsampled file
@@ -226,8 +226,8 @@ class IndividualIntervalData(db.Model):
 
 class Task(db.Model):
     id = db.Column(db.String(36), primary_key=True)
-    name = db.Column(db.String(128), index=True)
-    description = db.Column(db.String(128))
+    name = db.Column(db.String(512), index=True)
+    description = db.Column(db.String(512))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     complete = db.Column(db.Boolean, default=False)
@@ -246,8 +246,8 @@ class Task(db.Model):
 
 class BedFileMetadata(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128))
-    file_path = db.Column(db.String(128))
+    name = db.Column(db.String(512))
+    file_path = db.Column(db.String(512))
     metadata_fields = db.Column(db.String(1024))
     dataset_id = db.Column(
         db.Integer, db.ForeignKey("dataset.id")

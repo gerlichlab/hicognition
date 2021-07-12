@@ -17,7 +17,7 @@ from flask_migrate import Migrate
 from flask.cli import AppGroup
 
 app = create_app(os.getenv("FLASK_CONFIG") or "default")
-migrate = Migrate(app, db)
+migrate = Migrate(app, db, compare_type=True)
 
 # add command line arguments for user creation
 

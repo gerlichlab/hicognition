@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 while true; do
     flask db upgrade
     if [ $? -eq 0 ]; then
