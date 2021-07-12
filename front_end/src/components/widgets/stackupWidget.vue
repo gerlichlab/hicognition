@@ -411,6 +411,7 @@ export default {
                 minHeatmapRange: undefined,
                 maxHeatmapRange: undefined,
                 expectingValueScale: false,
+                resetColorScaleFlag: true
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -474,7 +475,8 @@ export default {
                 valueScaleRecipient: widgetData["valueScaleRecipient"],
                 valueScaleRecipients: widgetData["valueScaleRecipients"],
                 valueScaleTargetID: widgetData["valueScaleTargetID"],
-                valueScaleColor: widgetData["valueScaleColor"]
+                valueScaleColor: widgetData["valueScaleColor"],
+                resetColorScaleFlag: true
             };
         },
         getStackupData: async function(id) {
@@ -503,7 +505,11 @@ export default {
         },
         updateData: async function() {
             // reset min and max colormap values
-            (this.minHeatmap = undefined), (this.maxHeatmap = undefined);
+            if (this.resetColorScaleFlag && !this.valueScaleTargetID){
+                this.resetColorScale()
+            }else{
+                this.resetColorScaleFlag = true
+            }
             // fetch widget data
             var stackup_id = this.binsizes[this.selectedBinsize];
             this.widgetDataRef = stackup_id;
@@ -582,7 +588,9 @@ export default {
                 return;
             }
             // reset min and max colormap values
-            (this.minHeatmap = undefined), (this.maxHeatmap = undefined);
+            if (!this.valueScaleTargetID){
+                (this.minHeatmap = undefined), (this.maxHeatmap = undefined);
+            }
             // set binsizes and add default
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
                 this.intervalSize

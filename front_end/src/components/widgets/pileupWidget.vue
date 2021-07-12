@@ -333,7 +333,8 @@ export default {
                 valueScaleColor: undefined,
                 minHeatmapRange: undefined,
                 maxHeatmapRange: undefined,
-                reactToICCFSwitch: true
+                reactToICCFSwitch: true,
+                resetColorScaleFlag: true
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -399,8 +400,8 @@ export default {
                 showSelection: false,
                 minHeatmapRange: widgetData["minHeatmapRange"],
                 maxHeatmapRange:  widgetData["maxHeatmapRange"],
-                reactToICCFSwitch: true
-
+                reactToICCFSwitch: true,
+                resetColorScaleFlag: true
             };
         },
         getPileupData: async function(pileupType, id) {
@@ -430,7 +431,11 @@ export default {
         updatedData: async function() {
             // triggers load and storing of both pileuptypes
             // reset min and max colormap values
-            this.resetColorScale()
+            if (this.resetColorScaleFlag && !this.valueScaleTargetID){
+                this.resetColorScale()
+            }else{
+                this.resetColorScaleFlag = true
+            }
             // fetch widget data
             var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"];
             var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
@@ -497,7 +502,9 @@ export default {
                 return;
             }
             // reset min and max colormap values
-            (this.minHeatmap = undefined), (this.maxHeatmap = undefined);
+            if (!this.valueScaleTargetID){
+                (this.minHeatmap = undefined), (this.maxHeatmap = undefined);
+            }
             // set binsizes from available datasets
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
                 this.intervalSize
