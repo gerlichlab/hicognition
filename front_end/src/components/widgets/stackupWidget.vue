@@ -169,7 +169,6 @@
                 :stackupID="id"
                 :width="visualizationWidth"
                 :height="visualizationHeight"
-                :sliderHeight="sliderHeight"
                 :stackupData="sortedMatrix"
                 :minHeatmapValue="minHeatmap"
                 :maxHeatmapValue="maxHeatmap"
@@ -191,6 +190,11 @@
                 <md-icon class="md-layout-item md-size-50 md-size-5x"
                     >input</md-icon
                 >
+            </div>
+            <div class="flex-container" v-if="showData">
+            <div >
+                <span class="md-caption">{{message}}</span>
+            </div>
             </div>
         </div>
     </div>
@@ -221,6 +225,9 @@ export default {
         heatmap
     },
     computed: {
+        message: function(){
+            return  this.datasets[this.selectedDataset]["name"] +  " | binsize " + this.convertBasePairsToReadable(this.selectedBinsize)
+        },
         colormap: function() {
             return "red";
         }
@@ -624,6 +631,12 @@ export default {
 
 .height-71 {
     height: 71px;
+}
+
+.flex-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .no-padding-right {

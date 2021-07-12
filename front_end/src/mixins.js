@@ -177,6 +177,8 @@ export var formattingMixin = {
 };
 
 const TOOLBARHEIGHT = 71;
+const MESSAGEHEIGHT = 60;
+
 
 export var widgetMixin = {
     props: {
@@ -194,13 +196,10 @@ export var widgetMixin = {
     },
     computed: {
         visualizationHeight: function() {
-            return Math.round((this.height - TOOLBARHEIGHT) * 0.8);
+            return Math.round((this.height - TOOLBARHEIGHT - MESSAGEHEIGHT));
         },
         visualizationWidth: function() {
             return Math.round(this.width * 0.7);
-        },
-        sliderHeight: function() {
-            return Math.round((this.height - TOOLBARHEIGHT ) * 0.07)
         },
         showData: function() {
             if (this.widgetData) {

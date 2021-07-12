@@ -141,7 +141,6 @@
                 :pileupID="id"
                 :width="visualizationWidth"
                 :height="visualizationHeight"
-                :sliderHeight="sliderHeight"
                 :stackupData="widgetData[pileupType]"
                 :colormap="colormap"
                 :minHeatmapValue="minHeatmap"
@@ -163,6 +162,11 @@
                 <md-icon class="md-layout-item md-size-50 md-size-5x"
                     >input</md-icon
                 >
+            </div>
+            <div class="flex-container" v-if="showData">
+            <div >
+                <span class="md-caption">{{message}}</span>
+            </div>
             </div>
         </div>
     </div>
@@ -197,6 +201,9 @@ export default {
             } else {
                 return "ObsExp";
             }
+        },
+        message: function(){
+            return  this.datasets[this.selectedDataset]["name"] +  " | binsize " + this.convertBasePairsToReadable(this.selectedBinsize)
         }
     },
     methods: {
@@ -529,6 +536,17 @@ export default {
 <style scoped>
 .bg {
     background-color: rgba(211, 211, 211, 0.2);
+}
+
+
+.flex-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.align-text-center {
+    text-align: center;
 }
 
 .no-padding-right {

@@ -48,7 +48,6 @@ export default {
         stackupData: Object,
         width: Number,
         height: Number,
-        sliderHeight: Number,
         stackupID: Number,
         minHeatmapRange: Number, // min Value for heatmap range
         maxHeatmapRange: Number, // max Value for heatmap range
