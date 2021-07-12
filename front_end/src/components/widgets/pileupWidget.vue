@@ -401,7 +401,7 @@ export default {
                 minHeatmapRange: widgetData["minHeatmapRange"],
                 maxHeatmapRange:  widgetData["maxHeatmapRange"],
                 reactToICCFSwitch: true,
-                resetColorScaleFlag: true
+                resetColorScaleFlag: false
             };
         },
         getPileupData: async function(pileupType, id) {

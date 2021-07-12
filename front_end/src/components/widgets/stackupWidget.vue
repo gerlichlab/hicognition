@@ -476,7 +476,7 @@ export default {
                 valueScaleRecipients: widgetData["valueScaleRecipients"],
                 valueScaleTargetID: widgetData["valueScaleTargetID"],
                 valueScaleColor: widgetData["valueScaleColor"],
-                resetColorScaleFlag: true
+                resetColorScaleFlag: false
             };
         },
         getStackupData: async function(id) {
@@ -506,6 +506,7 @@ export default {
         updateData: async function() {
             // reset min and max colormap values
             if (this.resetColorScaleFlag && !this.valueScaleTargetID){
+                console.log("   color scale reset called")
                 this.resetColorScale()
             }else{
                 this.resetColorScaleFlag = true
