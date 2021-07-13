@@ -334,7 +334,7 @@ export default {
                 minHeatmapRange: undefined,
                 maxHeatmapRange: undefined,
                 reactToICCFSwitch: true,
-                resetColorScaleFlag: true
+                reactToUpdate: true // whether to react to updates in binsize/dataset
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -401,7 +401,7 @@ export default {
                 minHeatmapRange: widgetData["minHeatmapRange"],
                 maxHeatmapRange:  widgetData["maxHeatmapRange"],
                 reactToICCFSwitch: true,
-                resetColorScaleFlag: false
+                reactToUpdate: false
             };
         },
         getPileupData: async function(pileupType, id) {
@@ -431,11 +431,7 @@ export default {
         updatedData: async function() {
             // triggers load and storing of both pileuptypes
             // reset min and max colormap values
-            if (this.resetColorScaleFlag && !this.valueScaleTargetID){
-                this.resetColorScale()
-            }else{
-                this.resetColorScaleFlag = true
-            }
+            this.resetColorScale()
             // fetch widget data
             var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"];
             var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
@@ -472,7 +468,9 @@ export default {
             }
         },
         datasets: function(oldVal, newVal) {
-            if (!newVal || !oldVal || !this.selectedDataset) {
+            if (!newVal || !oldVal || !this.selectedDataset || !this.reactToUpdate) {
+                // switch on react to update
+                this.reactToUpdate = true
                 return;
             }
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
@@ -485,7 +483,8 @@ export default {
         },
         intervalSize: function(newVal, oldVal) {
             // if interval size changes, reload data
-            if (!newVal || !oldVal || !this.selectedDataset) {
+            if (!newVal || !oldVal || !this.selectedDataset || !this.reactToUpdate) {
+                this.reactToUpdate = true
                 return;
             }
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
