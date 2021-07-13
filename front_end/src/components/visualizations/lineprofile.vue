@@ -25,7 +25,6 @@ export default {
     },
     data: function() {
         return {
-            margin: { top: 5, right: 35, bottom: 0, left: 40 },
             svg: undefined,
             xScale: undefined,
             yScale: undefined,
@@ -34,6 +33,23 @@ export default {
         };
     },
     computed: {
+        margin: function() {
+            return {
+                top: this.height * 0.01,
+                bottom: this.height * 0.01,
+                left: this.width * 0.12,
+                right: this.width * 0.1
+            }
+        },
+        fontSize: function(){
+            let additionalSize = Math.floor((this.width - 350)/50)
+            let fontSize = 10 + additionalSize * 2
+            return `${fontSize}px`
+        },
+        strokeWidth: function(){
+            let additionalSize = Math.floor((this.width - 350)/50)
+            return 2 + 0.5 * additionalSize
+        },
         lineprofileDivID: function() {
             // ID for the div containing the lineprofile
             return "lineprofile_" + this.lineprofileID;
@@ -177,7 +193,7 @@ export default {
                 .append("line")
                 .attr("class", "lineHover")
                 .style("stroke", "#999")
-                .attr("stroke-width", 2)
+                .attr("stroke-width", this.strokeWidth)
                 .style("shape-rendering", "crispEdges")
                 .style("opacity", 0.5)
                 .attr("y1", this.plotHeight)
@@ -195,7 +211,7 @@ export default {
                     return this.colorMapping.get(d);
                 })
                 .attr("text-anchor", "start")
-                .attr("font-size", 14)
+                .attr("font-size", this.fontSize * 1.4)
                 .attr("dy", (_, i) => 1 + i * 2 + "em")
                 .merge(labels);
             // add circles
@@ -209,7 +225,7 @@ export default {
                 .style("fill", d => {
                     return this.colorMapping.get(d);
                 })
-                .attr("r", 6)
+                .attr("r", this.strokeWidth * 3)
                 .merge(circles);
             // register handlers on top level group
             this.svg
@@ -264,6 +280,8 @@ export default {
                 .append("g")
                 .attr("class", "y axis")
                 .call(this.yAxisGenerator);
+            // set font-size
+            this.svg.selectAll("text").style("font-size", this.fontSize);
         },
         addDataLine: function(single_data, color_index) {
             this.svg
@@ -271,7 +289,7 @@ export default {
                 .attr("d", this.lineGenerator(single_data.data))
                 .attr("fill", "none")
                 .attr("stroke", d3.schemeDark2[color_index])
-                .attr("stroke-width", 2);
+                .attr("stroke-width", this.strokeWidth);
             this.colorMapping.set(
                 this.lineNames[color_index],
                 d3.schemeDark2[color_index]
