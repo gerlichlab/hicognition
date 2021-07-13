@@ -60,6 +60,9 @@ export default {
         log: Boolean
     },
     computed: {
+        visualizationSize: function(){
+            return Math.min(this.width, this.height)
+        },
         colorBarContainerStyle: function() {
             return {
                 "width": "17%",
@@ -151,10 +154,7 @@ export default {
     },
     data: function() {
         return {
-            renderer: new PIXI.CanvasRenderer({
-                width: this.width,
-                height: this.height
-            }),
+            renderer: undefined,
             stage: undefined,
             texture: undefined,
             sprite: undefined,
@@ -167,6 +167,12 @@ export default {
         };
     },
     methods: {
+        createRenderer: function(){
+            this.renderer = new PIXI.CanvasRenderer({
+                width: this.visualizationSize,
+                height: this.visualizationSize
+            })
+        },
         destroyPseudoCanvas: function(){
             if (this.pseudoCanvas){
                 this.pseudoCanvas.remove()
@@ -211,8 +217,8 @@ export default {
             // position sprite at top left and make it stretch the canvas
             this.sprite.x = 0;
             this.sprite.y = 0;
-            this.sprite.width = this.width;
-            this.sprite.height = this.height;
+            this.sprite.width = this.visualizationSize;
+            this.sprite.height = this.visualizationSize;
             // add and render
             this.stage.addChild(this.sprite);
             this.renderer.render(this.stage);
@@ -242,11 +248,11 @@ export default {
             this.drawHeatmap();
         },
         height: function(){
-            this.resizeCanvas(this.width, this.height)
+            this.resizeCanvas(this.visualizationSize, this.visualizationSize)
             this.drawHeatmap();
         },
-        height: function(){
-            this.resizeCanvas(this.width, this.height)
+        width: function(){
+            this.resizeCanvas(this.visualizationSize, this.visualizationSize)
             this.drawHeatmap();
         },
         minHeatmapValue: function(){
@@ -273,6 +279,7 @@ export default {
         } else {
             this.createColorMap(this.minValueRobust, this.maxValueRobust);
         }
+        this.createRenderer()
         this.initializeCanvas();
         this.drawHeatmap();
         // emit slider change to set initial values in pileupWidget

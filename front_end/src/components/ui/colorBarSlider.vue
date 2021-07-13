@@ -31,9 +31,9 @@ export default {
         margin: function(){
             return {
                 top: this.height * 0.05,
-                right: this.width * 0.1,
+                right: this.width * 0.15,
                 bottom: this.height * 0.05,
-                left: this.width * 0.7
+                left: this.width * 0.65
             }
         },
         colorBarDivID: function() {
