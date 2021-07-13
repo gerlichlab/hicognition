@@ -146,6 +146,8 @@ export default {
             // fetch and store session token -> this is needed in case unowned datasets are in session
             let response = await this.fetchData(`sessions/${this.selected_session_id}/sessionToken/`)
             this.$store.commit("setSessionToken", response.data["session_token"]);
+            // clear widget collections
+            this.$store.commit("compare/clearAll")
             // fetch data references to put into store
             var parsed_object = JSON.parse(this.selected_session_object);
             for (let collection of Object.values(parsed_object)) {
