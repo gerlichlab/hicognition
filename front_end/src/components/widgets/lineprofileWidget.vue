@@ -133,6 +133,11 @@
                     >input</md-icon
                 >
             </div>
+            <div class="flex-container" v-if="showData">
+            <div >
+                <span class="md-caption">{{message}}</span>
+            </div>
+            </div>
         </div>
     </div>
 </template>
@@ -140,7 +145,6 @@
 <script>
 import lineprofile from "../visualizations/lineprofile";
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
-import EventBus from "../../eventBus";
 
 export default {
     name: "lineprofileWidget",
@@ -148,7 +152,22 @@ export default {
     components: {
         lineprofile
     },
-    computed: {},
+    computed: {
+        visualizationWidth: function(){
+            return this.width
+        },
+        message: function(){
+            let datasetSummary = ""
+            for (let selected of this.selectedDataset){
+                let name = this.datasets[selected]["name"]
+                datasetSummary +=  name + " | "
+            }
+            if (datasetSummary.length > 40){
+                datasetSummary = "multiple datasets | "
+            }
+            return  datasetSummary + "binsize " + this.convertBasePairsToReadable(this.selectedBinsize)
+        }
+    },
     methods: {
         toStoreObject: function() {
             // serialize object for storing its state in the store
@@ -388,6 +407,12 @@ export default {
 
 .height-71 {
     height: 71px;
+}
+
+.flex-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .no-padding-right {

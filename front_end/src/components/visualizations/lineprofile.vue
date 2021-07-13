@@ -2,9 +2,7 @@
     <div>
         <md-list class="md-double-line">
             <md-list-item class="md-alignment-top-center">
-                <md-content class="center-horizontal md-elevation-0">
-                    <div :id="lineprofileDivID" class="small-margin" />
-                </md-content>
+                <div :id="lineprofileDivID" class="small-margin" />
             </md-list-item>
         </md-list>
     </div>
@@ -27,7 +25,7 @@ export default {
     },
     data: function() {
         return {
-            margin: { top: 10, right: 10, bottom: 5, left: 40 },
+            margin: { top: 5, right: 35, bottom: 0, left: 40 },
             svg: undefined,
             xScale: undefined,
             yScale: undefined,
@@ -39,6 +37,12 @@ export default {
         lineprofileDivID: function() {
             // ID for the div containing the lineprofile
             return "lineprofile_" + this.lineprofileID;
+        },
+        plotWidth: function(){
+            return this.width - this.margin.left - this.margin.right
+        },
+        plotHeight: function(){
+            return this.height - this.margin.top - this.margin.bottom
         },
         lineData: function() {
             if (this.normalized) {
@@ -137,7 +141,7 @@ export default {
                     "translate(" +
                         d3.pointer(event)[0] +
                         "," +
-                        this.height / 2.5 +
+                        this.plotHeight / 2.5 +
                         ")"
                 )
                 .text(e => {
@@ -146,7 +150,7 @@ export default {
                     )} | ${this.formatLabel(e)}`;
                 });
             // flip text around
-            this.xScale(index) > this.width - this.width / 2
+            this.xScale(index) > this.plotWidth - this.plotWidth / 2
                 ? focus
                       .selectAll("text.lineHoverText")
                       .attr("text-anchor", "end")
@@ -162,8 +166,8 @@ export default {
                 .append("rect")
                 .attr("class", "overlayRect")
                 .attr("x", 5)
-                .attr("width", this.width - 10)
-                .attr("height", this.height);
+                .attr("width", this.plotWidth - 10)
+                .attr("height", this.plotHeight);
             // create line
             let focus = this.svg
                 .append("g")
@@ -176,7 +180,7 @@ export default {
                 .attr("stroke-width", 2)
                 .style("shape-rendering", "crispEdges")
                 .style("opacity", 0.5)
-                .attr("y1", this.height)
+                .attr("y1", this.plotHeight)
                 .attr("y2", 0);
             // add labels
             var labels = focus
@@ -224,11 +228,11 @@ export default {
             this.xScale = d3
                 .scaleLinear()
                 .domain([minX, maxX])
-                .range([0, this.width]);
+                .range([0, this.plotWidth]);
             this.yScale = d3
                 .scaleLinear()
                 .domain([minY - 0.05 * (maxY - minY), maxY])
-                .range([this.height, 0]);
+                .range([this.plotHeight, 0]);
         },
         createSVG: function() {
             d3.select(`#${this.lineprofileDivID}Svg`).remove();
@@ -239,11 +243,11 @@ export default {
                 .style("overflow", "visible") // needed for when tooltip goes over borders of svg
                 .attr(
                     "width",
-                    this.width + this.margin.left + this.margin.right
+                    this.width
                 )
                 .attr(
                     "height",
-                    this.height + this.margin.top + this.margin.bottom
+                    this.height
                 )
                 .append("g")
                 .attr(
@@ -314,12 +318,8 @@ export default {
         2px 2px 0 #fff;
 }
 
-.center-horizontal {
-    margin: auto;
-    display: block;
-}
 .small-margin {
-    margin: 5px;
+    margin: 3px;
 }
 
 .axis path {
