@@ -32,6 +32,16 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             self.owned_coolerfile,
             self.owned_bigwig,
         ]
+        self.not_owned_bigwig = Dataset(
+            id=5, user_id=2, filetype="bigwig", dataset_name="testfile5"
+        )
+        self.not_owned_cooler = Dataset(
+            id=6, user_id=2, filetype="cooler", dataset_name="testfile6"
+        )
+        self.not_owned_datasets = [
+            self.not_owned_bigwig,
+            self.not_owned_cooler
+        ]
         # create intervals
         self.intervals_owned_bedfile = [
             Intervals(id=1, dataset_id=1, windowsize=10000),
@@ -52,20 +62,27 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             AverageIntervalData(
                 id=4, binsize=2000, dataset_id=3, intervals_id=2, value_type="ICCF"
             ),
+            AverageIntervalData(
+                id=5, binsize=2000, dataset_id=6, intervals_id=2, value_type="ICCF"
+            )
         ]
         # create line profiles
         self.lineprofiles = [
             AverageIntervalData(
-                id=5, binsize=1000, dataset_id=4, intervals_id=1, value_type="line"
+                id=6, binsize=1000, dataset_id=4, intervals_id=1, value_type="line"
             ),
             AverageIntervalData(
-                id=6, binsize=2000, dataset_id=4, intervals_id=2, value_type="line"
+                id=7, binsize=2000, dataset_id=4, intervals_id=2, value_type="line"
             ),
+            AverageIntervalData(
+                id=8, binsize=2000, dataset_id=5, intervals_id=2, value_type="line"
+            )
         ]
         # create stackup
         self.stackups = [
             IndividualIntervalData(id=1, binsize=1000, dataset_id=4, intervals_id=1),
             IndividualIntervalData(id=2, binsize=2000, dataset_id=4, intervals_id=2),
+            IndividualIntervalData(id=3, binsize=2000, dataset_id=5, intervals_id=2)
         ]
 
     def test_no_auth(self):
@@ -154,6 +171,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         token_headers = self.get_token_header(token)
         # add datasets
         db.session.add(self.owned_bedfile)
+        db.session.add_all(self.not_owned_datasets)
         db.session.add_all(self.intervals_owned_bedfile)
         db.session.commit()
         # protected route
@@ -176,6 +194,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         token_headers = self.get_token_header(token)
         # add datasets
         db.session.add_all(self.owned_datasets)
+        db.session.add_all(self.not_owned_datasets)
         db.session.add_all(self.intervals_owned_bedfile)
         db.session.add_all(self.pileups)
         db.session.commit()
@@ -211,6 +230,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         token_headers = self.get_token_header(token)
         # add datasets
         db.session.add_all(self.owned_datasets)
+        db.session.add_all(self.not_owned_datasets)
         db.session.add_all(self.intervals_owned_bedfile)
         db.session.add_all(self.lineprofiles)
         db.session.commit()
@@ -228,7 +248,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
-                    "data_ids": {"10000": {"1000": "5"}, "20000": {"2000": "6"}},
+                    "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
                 }
             },
         }
@@ -243,6 +263,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         token_headers = self.get_token_header(token)
         # add datasets
         db.session.add_all(self.owned_datasets)
+        db.session.add_all(self.not_owned_datasets)
         db.session.add_all(self.intervals_owned_bedfile)
         db.session.add_all(self.stackups)
         db.session.commit()
@@ -275,6 +296,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         token_headers = self.get_token_header(token)
         # add datasets
         db.session.add_all(self.owned_datasets)
+        db.session.add_all(self.not_owned_datasets)
         db.session.add_all(self.intervals_owned_bedfile)
         db.session.add_all(self.pileups)
         db.session.add_all(self.lineprofiles)
@@ -307,7 +329,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
-                    "data_ids": {"10000": {"1000": "5"}, "20000": {"2000": "6"}},
+                    "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
                 }
             },
         }

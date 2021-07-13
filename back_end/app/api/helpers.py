@@ -76,32 +76,41 @@ def parse_binsizes(map):
     return list(binsizes)
 
 
-def add_average_data_to_preprocessed_dataset_map(average_interval_datasets, output_object):
+def add_average_data_to_preprocessed_dataset_map(
+    average_interval_datasets, output_object, request_context
+):
     for average in average_interval_datasets:
         dataset = Dataset.query.get(average.dataset_id)
+        # check whether dataset is owned
+        if is_access_to_dataset_denied(dataset, request_context):
+            continue
         interval = Intervals.query.get(average.intervals_id)
         if average.value_type in ["Obs/Exp", "ICCF"]:
             output_object["pileup"][dataset.id]["name"] = dataset.dataset_name
-            output_object["pileup"][dataset.id]["data_ids"][
-                interval.windowsize
-            ][average.binsize][average.value_type] = str(average.id)
+            output_object["pileup"][dataset.id]["data_ids"][interval.windowsize][
+                average.binsize
+            ][average.value_type] = str(average.id)
         else:
             output_object["lineprofile"][dataset.id]["name"] = dataset.dataset_name
-            output_object["lineprofile"][dataset.id]["data_ids"][
-                interval.windowsize
-            ][average.binsize] = str(average.id)
+            output_object["lineprofile"][dataset.id]["data_ids"][interval.windowsize][
+                average.binsize
+            ] = str(average.id)
 
 
 def add_individual_data_to_preprocessed_dataset_map(
-    individual_interval_datasets, output_object
+    individual_interval_datasets, output_object, request_context
 ):
     for individual in individual_interval_datasets:
         dataset = Dataset.query.get(individual.dataset_id)
+        # check whether dataset is owned
+        if is_access_to_dataset_denied(dataset, request_context):
+            continue
         interval = Intervals.query.get(individual.intervals_id)
         output_object["stackup"][dataset.id]["name"] = dataset.dataset_name
         output_object["stackup"][dataset.id]["data_ids"][interval.windowsize][
-                individual.binsize
-            ] = str(individual.id)
+            individual.binsize
+        ] = str(individual.id)
+
 
 def recDict():
     """Recursive defaultdict that allows deep

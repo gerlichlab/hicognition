@@ -151,8 +151,8 @@ def get_processed_data_mapping_of_dataset(dataset_id):
         average_data = interval.averageIntervalData.all()
         individual_data = interval.individualIntervalData.all()
         # add data
-        add_average_data_to_preprocessed_dataset_map(average_data, output)
-        add_individual_data_to_preprocessed_dataset_map(individual_data, output)
+        add_average_data_to_preprocessed_dataset_map(average_data, output, g)
+        add_individual_data_to_preprocessed_dataset_map(individual_data, output, g)
     return jsonify(output)
 
 
