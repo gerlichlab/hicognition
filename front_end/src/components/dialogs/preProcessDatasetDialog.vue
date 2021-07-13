@@ -8,11 +8,15 @@
                             >Information about preprocessing</span
                         >
                     </div>
-                    <div
-                        v-for="(item, index) in preprocessDataSetText"
-                        :key="index"
-                    >
-                        <span class="md-subheading">{{ item }}</span>
+                    <div class="mainText">
+                        <p>
+                            <span class="md-subheading">
+                                This form allows you to preproces datasets.
+                                Binsizes and windowsizes are selected
+                                automatically based on reasonable presets. Happy
+                                preprocessing!
+                            </span>
+                        </p>
                     </div>
                 </md-tooltip>
             </md-dialog-title>
@@ -30,13 +34,6 @@ export default {
     name: "PreprocessDatasetDialog",
     components: {
         preprocessDatasetForm
-    },
-    data: function() {
-        return {
-            preprocessDataSetText: "\nThis form allows you to preproces datasets. \n Binsize selections and windowsize selections are validated \n to not cause problems in downstream processing. \n First, the produced matrices cannot be too large, \n meaning that you should not select too small \n binsizes with large windowsizes. \n Second, if preprocessing coolers, windowsizes need \n to be divisible by windowsizes. \n\n\n Happy preprocessing!".split(
-                "\n"
-            )
-        };
     },
     props: {
         dialog: Boolean
@@ -59,6 +56,16 @@ export default {
 <style lang="scss" scoped>
 .md-dialog /deep/.md-dialog-container {
     max-width: 1000px;
+}
+
+.mainText {
+    display: block;
+    width: 20vw;
+    min-width: 400px;
+    text-align: justify;
+    text-justify: inter-word;
+    word-wrap: break-word;
+    white-space: normal;
 }
 
 .md-tooltip {

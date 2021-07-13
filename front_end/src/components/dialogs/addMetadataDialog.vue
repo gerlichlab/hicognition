@@ -9,8 +9,16 @@
                             >Information about addition of metadata</span
                         >
                     </div>
-                    <div v-for="(item, index) in addMetadataText" :key="index">
-                        <span class="md-subheading">{{ item }}</span>
+                    <div class="mainText">
+                        <p>
+                            <span class="md-subheading">
+                                Here you can add metadata for your uploaded
+                                region files. You can upload textfiles that have
+                                the same number of rows as your target
+                                regionfile. Only numeric columns will be
+                                displayed.Looking forward to your metadata.
+                            </span>
+                        </p>
                     </div>
                 </md-tooltip>
             </md-dialog-title>
@@ -26,13 +34,6 @@ import addMetadataStepper from "../ui/addMetadataStepper";
 
 export default {
     name: "AddMetaDataDialog",
-    data: function() {
-        return {
-            addMetadataText: "Here you can add metadata for your uploaded region files. \n You can upload textfiles that have the same number of rows as your target regionfile. \n Only numeric columns will be displayed. \n Looking forward to your metadata.".split(
-                "\n"
-            )
-        };
-    },
     components: {
         addMetadataStepper
     },
@@ -57,6 +58,16 @@ export default {
 <style lang="scss" scoped>
 .md-dialog /deep/.md-dialog-container {
     max-width: 1000px;
+}
+
+.mainText {
+    display: block;
+    width: 20vw;
+    min-width: 400px;
+    text-align: justify;
+    text-justify: inter-word;
+    word-wrap: break-word;
+    white-space: normal;
 }
 
 .md-tooltip {

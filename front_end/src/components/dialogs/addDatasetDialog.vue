@@ -12,7 +12,7 @@
                     <div class="mainText">
                         <p>
                             <span class="md-subheading">
-                                Here you can add datasets. Datasets can either
+                                Datasets can either
                                 be genomic intervals or genomic features.
                                 Genomic intervals can be added int form of
                                 bedfiles and genomic features can be added
@@ -51,9 +51,6 @@
                             </span>
                         </p>
                     </div>
-                    <!-- <div v-for="(item, index) in infoText" :key="index">
-                        <span class="md-subheading">{{ item }}</span>
-                    </div> -->
                 </md-tooltip>
             </md-dialog-title>
             <addDatasetForm
@@ -90,8 +87,10 @@ export default {
 .mainText {
     display: block;
     width: 20vw;
+    min-width: 400px;
+    text-align: justify;
+    text-justify: inter-word;
     word-wrap: break-word;
-    word-break: break-all;
     white-space: normal;
 }
 
