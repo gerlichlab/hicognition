@@ -22,7 +22,7 @@
                             </md-button>
                         </div>
                     </div>
-                    <div class="md-layout-item md-size-30 padding-right">
+                    <div :class="regionSelectionClasses">
                         <md-field class="padding-top">
                             <label class="md-primary" for="region"
                                 >Region</label
@@ -42,8 +42,8 @@
                             </md-select>
                         </md-field>
                     </div>
-                    <div class="md-layout-item md-size-25">
-                        <md-field class="padding-top" v-if="allowWindowSizeSelection">
+                    <div class="md-layout-item md-size-25" v-if="allowWindowSizeSelection">
+                        <md-field class="padding-top">
                             <label class="md-primary" for="Size">Windowsize</label>
                             <md-select
                                 v-model="selectedWindowSize"
@@ -175,6 +175,13 @@ export default {
         };
     },
     computed: {
+        regionSelectionClasses: function(){
+            if (this.allowWindowSizeSelection){
+                return ["md-layout-item", "md-size-30", "padding-right"]
+            }else{
+                return ["md-layout-item", "md-size-55", "padding-right"]
+            }
+        },
         widgetContainerBorder: function() {
             return {
                 width: `${this.collectionWidth +
