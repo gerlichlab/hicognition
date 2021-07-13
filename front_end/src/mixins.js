@@ -195,6 +195,13 @@ export var widgetMixin = {
         return this.initializeWidget();
     },
     computed: {
+        genomicFeatureSelectionClasses: function(){
+            if (this.allowBinsizeSelection){
+                return ["md-layout-item", "md-size-30", "padding-left", "padding-right"]
+            }else{
+                return ["md-layout-item", "md-size-60", "padding-left", "padding-right"]
+            }
+        },
         visualizationHeight: function() {
             return Math.round((this.height - TOOLBARHEIGHT - MESSAGEHEIGHT));
         },

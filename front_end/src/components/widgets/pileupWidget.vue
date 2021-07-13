@@ -13,7 +13,7 @@
         >
             <div class="md-layout height-71">
                 <div
-                    class="md-layout-item md-size-30 padding-left padding-right"
+                    :class="genomicFeatureSelectionClasses"
                 >
                     <md-field class="padding-top">
                         <label class="md-primary">Dataset</label>
@@ -35,6 +35,7 @@
                 </div>
                 <div
                     class="md-layout-item md-size-30 padding-left padding-right"
+                    v-if="allowBinsizeSelection"
                 >
                     <md-field class="padding-top">
                         <label class="md-primary">Binsize</label>
