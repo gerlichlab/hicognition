@@ -318,6 +318,11 @@ export default {
             ) {
                 return;
             }
+            // check whether there is any data available
+            if (!this.datasets[this.selectedDataset]){
+                this.blankWidget()
+                return
+            }
             this.binsizes = this.getIdsOfBinsizes();
             this.selectedBinsize = this.getCenterOfArray(
                 Object.keys(this.binsizes)
@@ -336,7 +341,7 @@ export default {
             this.updateData();
         },
         selectedDataset: async function(newVal, oldVal) {
-            if (this.selectedDataset.length == 0) {
+            if (!this.selectedDataset || this.selectedDataset.length == 0) {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
             }

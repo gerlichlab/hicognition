@@ -224,6 +224,13 @@ export var widgetMixin = {
         }
     },
     methods: {
+        blankWidget: function(){
+            // removes all information that the user can set in case a certain region/dataset combination is not available
+            this.widgetData = undefined;
+            this.selectedDataset = undefined;
+            this.selectedBinsize = undefined;
+            this.widgetDataRef = undefined;
+        },
         getCenterOfArray: function(array) {
             // returns value of center entry in array (rounded down)
             return Number(array[Math.floor(array.length / 2)]);

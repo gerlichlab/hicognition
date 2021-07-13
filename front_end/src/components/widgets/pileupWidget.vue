@@ -473,6 +473,11 @@ export default {
                 this.reactToUpdate = true
                 return;
             }
+            // check whether there is any data available
+            if (!this.datasets[this.selectedDataset]){
+                this.blankWidget()
+                return
+            }
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
                 this.intervalSize
             ];
