@@ -43,13 +43,13 @@
                         </md-field>
                     </div>
                     <div class="md-layout-item md-size-25">
-                        <md-field class="padding-top">
-                            <label class="md-primary" for="Size">Size</label>
+                        <md-field class="padding-top" v-if="allowWindowSizeSelection">
+                            <label class="md-primary" for="Size">Windowsize</label>
                             <md-select
                                 v-model="selectedWindowSize"
                                 name="size"
                                 id="size"
-                                placeholder="Size"
+                                placeholder=" "
                                 :disabled="!allowWindowSizeSelection"
                             >
                                 <md-option
