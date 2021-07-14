@@ -71,7 +71,7 @@
                                 md-menu-trigger
                                 :disabled="!allowSortOrderSelection"
                             >
-                                <md-icon>menu_open</md-icon>
+                                <md-icon>more_vert</md-icon>
                             </md-button>
                         </div>
                         <md-menu-content>

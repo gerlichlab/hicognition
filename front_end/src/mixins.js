@@ -176,8 +176,8 @@ export var formattingMixin = {
     }
 };
 
-const TOOLBARHEIGHT = 71;
-const MESSAGEHEIGHT = 60;
+const TOOLBARHEIGHT = 40;
+const MESSAGEHEIGHT = 50;
 
 
 export var widgetMixin = {
@@ -199,7 +199,7 @@ export var widgetMixin = {
             if (this.allowBinsizeSelection){
                 return ["md-layout-item", "md-size-30", "padding-left", "padding-right"]
             }else{
-                return ["md-layout-item", "md-size-60", "padding-left", "padding-right"]
+                return ["md-layout-item", "md-size-30", "padding-left", "padding-right"]
             }
         },
         visualizationHeight: function() {

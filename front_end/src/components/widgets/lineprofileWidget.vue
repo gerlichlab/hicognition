@@ -63,7 +63,7 @@
                     >
                         <div class="padding-top-large">
                             <md-button class="md-icon-button" md-menu-trigger>
-                                <md-icon>menu_open</md-icon>
+                                <md-icon>more_vert</md-icon>
                             </md-button>
                         </div>
                         <md-menu-content>

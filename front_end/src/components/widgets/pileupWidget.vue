@@ -11,63 +11,78 @@
             @dragstart="handleDragStart"
             @dragend="handleDragEnd"
         >
-            <div class="md-layout height-71">
+            <div class="md-layout toolbarheight">
                 <div
-                    :class="genomicFeatureSelectionClasses"
+                    class="md-layout-item md-size-15 padding-left padding-right"
                 >
-                    <md-field class="padding-top">
-                        <label class="md-primary">Dataset</label>
-                        <md-select
-                            v-model="selectedDataset"
-                            name="dataset"
-                            id="dataset"
-                            placeholder="Dataset"
-                            :disabled="!allowDatasetSelection"
-                        >
-                            <md-option
+                    <md-menu
+                        :md-offset-x="50"
+                        :md-offset-y="-36"
+                        md-size="auto"
+                        :md-active.sync="showDatasetSelection"
+                        v-if="allowDatasetSelection"
+                    >
+                        <div class="no-padding-top">
+                            <md-button class="md-icon-button" md-menu-trigger>
+                                <md-icon>menu_open</md-icon>
+                            </md-button>
+                        </div>
+                        <md-menu-content>
+                            <md-menu-item
                                 v-for="(item, id) in datasets"
-                                :value="id"
                                 :key="id"
-                                >{{ item.name }}</md-option
+                                @click="handleDatasetSelection(id)"
                             >
-                        </md-select>
-                    </md-field>
+                                <span class="caption">{{ item.name }}</span>
+                                <md-icon v-if="selectedDataset == id"
+                                    >done</md-icon
+                                >
+                            </md-menu-item>
+                        </md-menu-content>
+                    </md-menu>
                 </div>
                 <div
-                    class="md-layout-item md-size-30 padding-left padding-right"
-                    v-if="allowBinsizeSelection"
+                    class="md-layout-item md-size-60 padding-left padding-right"
                 >
-                    <md-field class="padding-top">
-                        <label class="md-primary">Binsize</label>
-                        <md-select
-                            v-model="selectedBinsize"
-                            name="binsize"
-                            id="binsze"
-                            placeholder="Binsize"
-                            :disabled="!allowBinsizeSelection"
-                        >
-                            <md-option
+                    <md-menu
+                        :md-offset-x="50"
+                        :md-offset-y="-36"
+                        md-size="small"
+                        :md-active.sync="showBinSizeSelection"
+                        v-if="allowBinsizeSelection"
+                    >
+                        <div class="no-padding-top">
+                            <md-button class="md-icon-button" md-menu-trigger>
+                                <md-icon>compare_arrows</md-icon>
+                            </md-button>
+                        </div>
+                        <md-menu-content>
+                            <md-menu-item
                                 v-for="(item, binsize) in binsizes"
-                                :value="binsize"
                                 :key="binsize"
-                                >{{
-                                    convertBasePairsToReadable(binsize)
-                                }}</md-option
+                                @click="handleBinsizeSelection(binsize)"
                             >
-                        </md-select>
-                    </md-field>
+                                <span class="caption">{{
+                                    convertBasePairsToReadable(binsize)
+                                }}</span>
+                                <md-icon v-if="selectedBinsize == binsize"
+                                    >done</md-icon
+                                >
+                            </md-menu-item>
+                        </md-menu-content>
+                    </md-menu>
                 </div>
 
-                <div class="md-layout-item md-size-15">
+                <div class="md-layout-item md-size-10">
                     <md-menu
                         :md-offset-x="50"
                         :md-offset-y="-36"
                         md-size="small"
                         :md-active.sync="showMenu"
                     >
-                        <div class="padding-top-large">
+                        <div class="no-padding-top">
                             <md-button class="md-icon-button" md-menu-trigger>
-                                <md-icon>menu_open</md-icon>
+                                <md-icon>more_vert</md-icon>
                             </md-button>
                         </div>
                         <md-menu-content>
@@ -127,7 +142,7 @@
                 </div>
 
                 <div class="md-layout-item md-size-10">
-                    <div class="padding-top-large padding-right">
+                    <div class="no-padding-top padding-right">
                         <md-button
                             @click="handleWidgetDeletion"
                             class="md-icon-button md-accent"
@@ -158,16 +173,16 @@
             <div
                 v-if="!showData"
                 class="md-layout md-alignment-center-center"
-                style="height: 70%;"
+                style="height: 89%"
             >
                 <md-icon class="md-layout-item md-size-50 md-size-5x"
                     >input</md-icon
                 >
             </div>
             <div class="flex-container" v-if="showData">
-            <div >
-                <span class="md-caption">{{message}}</span>
-            </div>
+                <div>
+                    <span class="md-caption">{{ message }}</span>
+                </div>
             </div>
         </div>
     </div>
@@ -203,17 +218,27 @@ export default {
                 return "ObsExp";
             }
         },
-        message: function(){
-            return  this.datasets[this.selectedDataset]["name"] +  " | binsize " + this.convertBasePairsToReadable(this.selectedBinsize)
+        message: function() {
+            return (
+                this.datasets[this.selectedDataset]["name"] +
+                " | binsize " +
+                this.convertBasePairsToReadable(this.selectedBinsize)
+            );
         }
     },
     methods: {
-        handleColormapMissmatch: function(colormap){
+        handleDatasetSelection: function(id) {
+            this.selectedDataset = id;
+        },
+        handleBinsizeSelection: function(binsize) {
+            this.selectedBinsize = binsize;
+        },
+        handleColormapMissmatch: function(colormap) {
             this.reactToICCFSwitch = false;
-            if (colormap == "fall"){
-                this.isICCF = true
-            }else{
-                this.isICCF = false
+            if (colormap == "fall") {
+                this.isICCF = true;
+            } else {
+                this.isICCF = false;
             }
         },
         handleMouseEnter: function() {
@@ -246,8 +271,8 @@ export default {
             }
         },
         handleSliderChange: function(data) {
-            this.setColorScale(data)
-            this.broadcastValueScaleUpdate()
+            this.setColorScale(data);
+            this.broadcastValueScaleUpdate();
         },
         toStoreObject: function() {
             // serialize object for storing its state in the store
@@ -288,14 +313,20 @@ export default {
             } else if (this.valueScaleRecipients > 0) {
                 // source handling
                 EventBus.$emit("value-scale-source-deletion", this.id);
-                this.$store.commit("releaseValueScaleColorUsage", this.valueScaleColor);
+                this.$store.commit(
+                    "releaseValueScaleColorUsage",
+                    this.valueScaleColor
+                );
             }
             this.deleteWidget();
         },
         deleteWidget: function() {
             // release color
             if (this.valueScaleRecipients > 0) {
-                this.$store.commit("releaseValueScaleColorUsage", this.valueScaleColor);
+                this.$store.commit(
+                    "releaseValueScaleColorUsage",
+                    this.valueScaleColor
+                );
             }
             // delete widget from store
             var payload = {
@@ -335,7 +366,9 @@ export default {
                 minHeatmapRange: undefined,
                 maxHeatmapRange: undefined,
                 reactToICCFSwitch: true,
-                reactToUpdate: true // whether to react to updates in binsize/dataset
+                reactToUpdate: true, // whether to react to updates in binsize/dataset
+                showDatasetSelection: false,
+                showBinSizeSelection: false
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -377,7 +410,10 @@ export default {
                 );
             }
             // set color usage in store
-            this.$store.commit("setValueScaleColorUsage", widgetData["valueScaleColor"]);
+            this.$store.commit(
+                "setValueScaleColorUsage",
+                widgetData["valueScaleColor"]
+            );
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
                 dragImage: undefined,
@@ -400,9 +436,11 @@ export default {
                 showMenu: false,
                 showSelection: false,
                 minHeatmapRange: widgetData["minHeatmapRange"],
-                maxHeatmapRange:  widgetData["maxHeatmapRange"],
+                maxHeatmapRange: widgetData["maxHeatmapRange"],
                 reactToICCFSwitch: true,
-                reactToUpdate: false
+                reactToUpdate: false,
+                showDatasetSelection: false,
+                showBinSizeSelection: false
             };
         },
         getPileupData: async function(pileupType, id) {
@@ -432,7 +470,7 @@ export default {
         updatedData: async function() {
             // triggers load and storing of both pileuptypes
             // reset min and max colormap values
-            this.resetColorScale()
+            this.resetColorScale();
             // fetch widget data
             var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"];
             var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
@@ -449,7 +487,7 @@ export default {
                 ObsExp: obs_exp_data
             };
             // broadcast value scale update
-            this.broadcastValueScaleUpdate()
+            this.broadcastValueScaleUpdate();
         }
     },
     watch: {
@@ -469,15 +507,20 @@ export default {
             }
         },
         datasets: function(oldVal, newVal) {
-            if (!newVal || !oldVal || !this.selectedDataset || !this.reactToUpdate) {
+            if (
+                !newVal ||
+                !oldVal ||
+                !this.selectedDataset ||
+                !this.reactToUpdate
+            ) {
                 // switch on react to update
-                this.reactToUpdate = true
+                this.reactToUpdate = true;
                 return;
             }
             // check whether there is any data available
-            if (!this.datasets[this.selectedDataset]){
-                this.blankWidget()
-                return
+            if (!this.datasets[this.selectedDataset]) {
+                this.blankWidget();
+                return;
             }
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
                 this.intervalSize
@@ -489,8 +532,13 @@ export default {
         },
         intervalSize: function(newVal, oldVal) {
             // if interval size changes, reload data
-            if (!newVal || !oldVal || !this.selectedDataset || !this.reactToUpdate) {
-                this.reactToUpdate = true
+            if (
+                !newVal ||
+                !oldVal ||
+                !this.selectedDataset ||
+                !this.reactToUpdate
+            ) {
+                this.reactToUpdate = true;
                 return;
             }
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
@@ -507,7 +555,7 @@ export default {
                 return;
             }
             // reset min and max colormap values
-            if (!this.valueScaleTargetID){
+            if (!this.valueScaleTargetID) {
                 (this.minHeatmap = undefined), (this.maxHeatmap = undefined);
             }
             // set binsizes from available datasets
@@ -532,15 +580,15 @@ export default {
         },
         isICCF: function() {
             // reset min and max when this changes
-            if (this.reactToICCFSwitch){
-                this.resetColorScale()
-            }else{
-                this.reactToICCFSwitch = true
+            if (this.reactToICCFSwitch) {
+                this.resetColorScale();
+            } else {
+                this.reactToICCFSwitch = true;
             }
         }
     },
-    mounted: function(){
-        this.registerValueScaleEventHandlers()
+    mounted: function() {
+        this.registerValueScaleEventHandlers();
     }
 };
 </script>
@@ -549,7 +597,6 @@ export default {
 .bg {
     background-color: rgba(211, 211, 211, 0.2);
 }
-
 
 .flex-container {
     display: flex;
@@ -561,10 +608,6 @@ export default {
     text-align: center;
 }
 
-.no-padding-right {
-    padding-right: 0px;
-}
-
 .padding-right {
     padding-right: 15px;
 }
@@ -573,12 +616,8 @@ export default {
     padding-left: 10px;
 }
 
-.padding-top {
-    padding-top: 12px;
-}
-
-.padding-top-large {
-    padding-top: 17px;
+.no-padding-top {
+    padding-top: 0px;
 }
 
 .smallMargin {
@@ -589,7 +628,7 @@ export default {
     min-height: 30px;
 }
 
-.height-71 {
-    height: 71px;
+.toolbarheight {
+    height: 40px;
 }
 </style>
