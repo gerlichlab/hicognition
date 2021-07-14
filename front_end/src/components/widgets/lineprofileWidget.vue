@@ -17,6 +17,7 @@
                         md-size="auto"
                         :md-active.sync="showDatasetSelection"
                         v-if="allowDatasetSelection"
+                        :md-close-on-select="false"
                     >
                         <div class="no-padding-top">
                             <md-button class="md-icon-button" md-menu-trigger>
