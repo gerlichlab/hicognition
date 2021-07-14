@@ -11,61 +11,76 @@
             @dragstart="handleDragStart"
             @dragend="handleDragEnd"
         >
-            <div class="md-layout height-71">
+            <div class="md-layout toolbarheight">
                 <div
-                    :class="genomicFeatureSelectionClasses"
+                    class="md-layout-item md-size-15 padding-left padding-right"
                 >
-                    <md-field class="padding-top">
-                        <label class="md-primary">Dataset</label>
-                        <md-select
-                            v-model="selectedDataset"
-                            name="dataset"
-                            id="dataset"
-                            placeholder="Dataset"
-                            :disabled="!allowDatasetSelection"
-                        >
-                            <md-option
+                    <md-menu
+                        :md-offset-x="50"
+                        :md-offset-y="-36"
+                        md-size="auto"
+                        :md-active.sync="showDatasetSelection"
+                        v-if="allowDatasetSelection"
+                    >
+                        <div class="no-padding-top">
+                            <md-button class="md-icon-button" md-menu-trigger>
+                                <md-icon>menu_open</md-icon>
+                            </md-button>
+                        </div>
+                        <md-menu-content>
+                            <md-menu-item
                                 v-for="(item, id) in datasets"
-                                :value="id"
                                 :key="id"
-                                >{{ item.name }}</md-option
+                                @click="handleDatasetSelection(id)"
                             >
-                        </md-select>
-                    </md-field>
+                                <span class="caption">{{ item.name }}</span>
+                                <md-icon v-if="selectedDataset == id"
+                                    >done</md-icon
+                                >
+                            </md-menu-item>
+                        </md-menu-content>
+                    </md-menu>
                 </div>
                 <div
-                    class="md-layout-item md-size-35 padding-left padding-right"
-                    v-if="allowBinsizeSelection"
+                    class="md-layout-item md-size-60 padding-left padding-right"
                 >
-                    <md-field class="padding-top">
-                        <label class="md-primary">Binsize</label>
-                        <md-select
-                            v-model="selectedBinsize"
-                            name="binsize"
-                            id="binsze"
-                            placeholder="Binsize"
-                            :disabled="!allowBinsizeSelection"
-                        >
-                            <md-option
+                    <md-menu
+                        :md-offset-x="50"
+                        :md-offset-y="-36"
+                        md-size="small"
+                        :md-active.sync="showBinSizeSelection"
+                        v-if="allowBinsizeSelection"
+                    >
+                        <div class="no-padding-top">
+                            <md-button class="md-icon-button" md-menu-trigger>
+                                <md-icon>compare_arrows</md-icon>
+                            </md-button>
+                        </div>
+                        <md-menu-content>
+                            <md-menu-item
                                 v-for="(item, binsize) in binsizes"
-                                :value="binsize"
                                 :key="binsize"
-                                >{{
-                                    convertBasePairsToReadable(binsize)
-                                }}</md-option
+                                @click="handleBinsizeSelection(binsize)"
                             >
-                        </md-select>
-                    </md-field>
+                                <span class="caption">{{
+                                    convertBasePairsToReadable(binsize)
+                                }}</span>
+                                <md-icon v-if="selectedBinsize == binsize"
+                                    >done</md-icon
+                                >
+                            </md-menu-item>
+                        </md-menu-content>
+                    </md-menu>
                 </div>
 
-                <div class="md-layout-item md-size-15">
+                <div class="md-layout-item md-size-10">
                     <md-menu
                         md-size="small"
                         :md-offset-x="50"
                         :md-offset-y="-36"
                         :md-active.sync="showMenu"
                     >
-                        <div class="padding-top-large padding-right">
+                        <div class="no-padding-top padding-right">
                             <md-button
                                 class="md-icon-button"
                                 md-menu-trigger
@@ -155,7 +170,7 @@
                     </md-menu>
                 </div>
                 <div class="md-layout-item md-size-10">
-                    <div class="padding-top-large padding-right padding-left">
+                    <div class="no-padding-top padding-right padding-left">
                         <md-button
                             @click="handleWidgetDeletion"
                             class="md-icon-button md-accent"
@@ -186,7 +201,7 @@
             <div
                 v-if="!showData"
                 class="md-layout md-alignment-center-center"
-                style="height: 70%;"
+                style="height: 89%;"
             >
                 <md-icon class="md-layout-item md-size-50 md-size-5x"
                     >input</md-icon
@@ -234,6 +249,12 @@ export default {
         }
     },
     methods: {
+        handleDatasetSelection: function(id) {
+            this.selectedDataset = id;
+        },
+        handleBinsizeSelection: function(binsize) {
+            this.selectedBinsize = binsize;
+        },
         handleMouseEnter: function() {
             if (
                 this.allowSortOrderTargetSelection ||
@@ -412,7 +433,9 @@ export default {
                 minHeatmapRange: undefined,
                 maxHeatmapRange: undefined,
                 expectingValueScale: false,
-                reactToUpdate: true // whether to react to updates in binsize/dataset
+                reactToUpdate: true, // whether to react to updates in binsize/dataset
+                showDatasetSelection: false,
+                showBinSizeSelection: false
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -477,7 +500,9 @@ export default {
                 valueScaleRecipients: widgetData["valueScaleRecipients"],
                 valueScaleTargetID: widgetData["valueScaleTargetID"],
                 valueScaleColor: widgetData["valueScaleColor"],
-                reactToUpdate: false
+                reactToUpdate: false,
+                showDatasetSelection: false,
+                showBinSizeSelection: false
             };
         },
         getStackupData: async function(id) {
@@ -643,8 +668,8 @@ export default {
     background-color: rgba(211, 211, 211, 0.2);
 }
 
-.height-71 {
-    height: 71px;
+.toolbarheight {
+    height: 40px;
 }
 
 .flex-container {
@@ -669,8 +694,8 @@ export default {
     padding-top: 12px;
 }
 
-.padding-top-large {
-    padding-top: 17px;
+.no-padding-top {
+    padding-top: 0px;
 }
 
 .smallMargin {
