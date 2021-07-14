@@ -7,61 +7,75 @@
             @dragstart="handleDragStart"
             @dragend="handleDragEnd"
         >
-            <div class="md-layout height-71">
+            <div class="md-layout toolbarheight">
                 <div
-                    :class="genomicFeatureSelectionClasses"
+                    class="md-layout-item md-size-15 padding-left padding-right"
                 >
-                    <md-field class="padding-top">
-                        <label class="md-primary">Dataset</label>
-                        <md-select
-                            v-model="selectedDataset"
-                            name="dataset"
-                            id="dataset"
-                            placeholder="Dataset"
-                            multiple
-                            :disabled="!allowDatasetSelection"
-                        >
-                            <md-option
+                    <md-menu
+                        :md-offset-x="50"
+                        :md-offset-y="-36"
+                        md-size="auto"
+                        :md-active.sync="showDatasetSelection"
+                        v-if="allowDatasetSelection"
+                    >
+                        <div class="no-padding-top">
+                            <md-button class="md-icon-button" md-menu-trigger>
+                                <md-icon>menu_open</md-icon>
+                            </md-button>
+                        </div>
+                        <md-menu-content>
+                            <md-menu-item
                                 v-for="(item, id) in datasets"
-                                :value="id"
                                 :key="id"
-                                >{{ item.name }}</md-option
+                                @click="handleDatasetSelection(id)"
                             >
-                        </md-select>
-                    </md-field>
+                                <span class="caption">{{ item.name }}</span>
+                                <md-icon v-if="selectedDataset.includes(id)"
+                                    >done</md-icon
+                                >
+                            </md-menu-item>
+                        </md-menu-content>
+                    </md-menu>
                 </div>
                 <div
-                    class="md-layout-item md-size-35 padding-left padding-right"
-                    v-if="allowBinsizeSelection"
+                    class="md-layout-item md-size-60 padding-left padding-right"
                 >
-                    <md-field class="padding-top">
-                        <label class="md-primary">Binsize</label>
-                        <md-select
-                            v-model="selectedBinsize"
-                            name="binsize"
-                            id="binsze"
-                            placeholder="Binsize"
-                            :disabled="!allowBinsizeSelection"
-                        >
-                            <md-option
+                    <md-menu
+                        :md-offset-x="50"
+                        :md-offset-y="-36"
+                        md-size="small"
+                        :md-active.sync="showBinSizeSelection"
+                        v-if="allowBinsizeSelection"
+                    >
+                        <div class="no-padding-top">
+                            <md-button class="md-icon-button" md-menu-trigger>
+                                <md-icon>compare_arrows</md-icon>
+                            </md-button>
+                        </div>
+                        <md-menu-content>
+                            <md-menu-item
                                 v-for="(item, binsize) in binsizes"
-                                :value="binsize"
                                 :key="binsize"
-                                >{{
-                                    convertBasePairsToReadable(binsize)
-                                }}</md-option
+                                @click="handleBinsizeSelection(binsize)"
                             >
-                        </md-select>
-                    </md-field>
+                                <span class="caption">{{
+                                    convertBasePairsToReadable(binsize)
+                                }}</span>
+                                <md-icon v-if="selectedBinsize == binsize"
+                                    >done</md-icon
+                                >
+                            </md-menu-item>
+                        </md-menu-content>
+                    </md-menu>
                 </div>
-                <div class="md-layout-item md-size-15">
+                <div class="md-layout-item md-size-10">
                     <md-menu
                         :md-offset-x="50"
                         :md-offset-y="-36"
                         md-size="small"
                         :md-active.sync="showMenu"
                     >
-                        <div class="padding-top-large">
+                        <div class="no-padding-top">
                             <md-button class="md-icon-button" md-menu-trigger>
                                 <md-icon>more_vert</md-icon>
                             </md-button>
@@ -103,7 +117,7 @@
                     </md-menu>
                 </div>
                 <div class="md-layout-item md-size-10">
-                    <div class="padding-top-large padding-right">
+                    <div class="no-padding-top padding-right">
                         <md-button
                             @click="deleteWidget"
                             class="md-icon-button md-accent"
@@ -117,7 +131,7 @@
                 v-if="showData"
                 :lineprofileID="id"
                 :width="visualizationWidth"
-                :height="visualizationHeight"
+                :height="lineprofileHeight"
                 :lineprofileNames="lineProfileNames"
                 :lineprofileData="widgetData"
                 :normalized="normalized"
@@ -127,7 +141,7 @@
             <div
                 v-if="!showData"
                 class="md-layout md-alignment-center-center"
-                style="height: 70%;"
+                style="height: 89%;"
             >
                 <md-icon class="md-layout-item md-size-50 md-size-5x"
                     >input</md-icon
@@ -156,6 +170,10 @@ export default {
         visualizationWidth: function(){
             return this.width
         },
+        lineprofileHeight: function(){
+            // needs to be adjusted because is not square like heatmap using widgets
+            return this.visualizationHeight - 10
+        },
         message: function(){
             let datasetSummary = ""
             for (let selected of this.selectedDataset){
@@ -169,6 +187,30 @@ export default {
         }
     },
     methods: {
+        blankWidget: function(){
+            // removes all information that the user can set in case a certain region/dataset combination is not available
+            this.widgetData = undefined;
+            this.selectedDataset = [];
+            this.selectedBinsize = undefined;
+            this.widgetDataRef = undefined;
+        },
+        handleDatasetSelection: function(id) {
+            // check whether id is in selected datasets
+            if (this.selectedDataset.includes(id)){
+                this.selectedDataset = this.selectedDataset.filter((val) => {
+                    return Number(val) != id
+                });
+                // check whether empty
+                if (this.selectedDataset.length == 0){
+                    this.blankWidget()
+                }
+            }else{
+                this.selectedDataset.push(id)
+            }
+        },
+        handleBinsizeSelection: function(binsize) {
+            this.selectedBinsize = binsize;
+        },
         toStoreObject: function() {
             // serialize object for storing its state in the store
             return {
@@ -205,7 +247,9 @@ export default {
                 isDefault: true,
                 lineProfileNames: [],
                 showMenu: false,
-                normalized: false
+                normalized: false,
+                showDatasetSelection: false,
+                showBinSizeSelection: false
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -254,7 +298,9 @@ export default {
                 datasets: collectionConfig["availableData"]["lineprofile"],
                 isDefault: widgetData["isDefault"],
                 showMenu: false,
-                normalized: widgetData["normalized"]
+                normalized: widgetData["normalized"],
+                showDatasetSelection: false,
+                showBinSizeSelection: false
             };
         },
         getlineprofileData: async function(id) {
@@ -405,8 +451,8 @@ export default {
     background-color: rgba(211, 211, 211, 0.2);
 }
 
-.height-71 {
-    height: 71px;
+.toolbarheight {
+    height: 40px;
 }
 
 .flex-container {
@@ -431,8 +477,8 @@ export default {
     padding-top: 12px;
 }
 
-.padding-top-large {
-    padding-top: 17px;
+.no-padding-top {
+    padding-top: 0px;
 }
 
 .smallMargin {
