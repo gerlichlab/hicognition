@@ -128,9 +128,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.md-dialog /deep/.md-dialog-container {
-    max-width: 1000px;
-}
 
 .mainText {
     display: block;

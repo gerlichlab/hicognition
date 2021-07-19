@@ -30,6 +30,9 @@
                 :md-editable="false"
                 :md-done.sync="second"
             >
+            <describeBulkDatasetForm
+            :files="selectedFiles"
+            />
                 <md-button
                     class="md-raised md-primary"
                     @click="$emit('close-dialog')"
@@ -42,10 +45,11 @@
 
 <script>
 import selectBulkDatasetForm from '../forms/selectBulkDatasetForm.vue';
+import describeBulkDatasetForm from "../forms/describeBulkDatasetForm.vue"
 
 export default {
     name: "dataset-stepper",
-    components: {selectBulkDatasetForm},
+    components: {selectBulkDatasetForm, describeBulkDatasetForm},
     props: {
         fileTypeMapping: Object
     },
@@ -75,7 +79,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.half-width {
-    width: 50vw;
+
+.md-stepper {
+    padding: 16px 0px
 }
+
 </style>
