@@ -31,6 +31,7 @@
                 :md-done.sync="second"
             >
             <describeBulkDatasetForm
+            :fileTypeMapping="fileTypeMapping"
             :files="selectedFiles"
             />
                 <md-button

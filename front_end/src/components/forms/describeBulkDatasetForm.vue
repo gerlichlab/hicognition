@@ -95,12 +95,15 @@
 <script>
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
+import { apiMixin } from "../../mixins";
+
 
 export default {
     name: "describeBulkDatasetForm",
-    mixins: [validationMixin],
+    mixins: [validationMixin, apiMixin],
     props: {
-        files: FileList
+        files: FileList,
+        fileTypeMapping: Object
     },
     data: () => ({
         datasetSaved: false,
@@ -117,34 +120,51 @@ export default {
         }
     },
     methods: {
-        getValidationClass(fieldName) {
-            // matrial validation class for form field;
-            const field = this.$v.elements[fieldName];
-
-            if (field) {
-                return {
-                    "md-invalid": field.$invalid && field.$dirty
-                };
-            }
+        getFileType: function(filename){
+            let fileEnding = filename.split(".").pop()
+            return this.fileTypeMapping[fileEnding]
         },
         clearForm() {
             this.$v.$reset();
-            console.log("clear form called")
-            for (let i = 0; i < this.files.length; i++) {
-                form[`name-${i}`] = null;
-                form[`genotype-${i}`] = null;
-                form[`description-${i}`] = null;
-                form[`public-${i}`] = true;
+            this.elements = [];
+            for (let i = 0; i < this.files.length; i++){
+                var tempObject = {
+                    id: i,
+                    name: null,
+                    genotype: null,
+                    description: null,
+                    filename: this.files[i].name,
+                    file: this.files[i],
+                    public: true
+                }
+                this.elements.push(tempObject)
             }
-            return form;
         },
-        saveDataset() {
+        saveDataset: async function() {
             this.sending = true; // show progress bar
-            // post forms
-            console.log("sent")
-            setTimeout(() => {
-                this.sending = false;
-            }, 500);
+            // construct form data
+            for (let element of this.elements){
+                // construct form data
+                var formData = new FormData();
+                for (let key in element){
+                    if (key != "id" && key != "fileanme" && key != "file"){
+                        formData.append(key, element[key])
+                    }
+                }
+                // add files
+                formData.append("file", element.file, element.file.name)
+                // add filetype
+                formData.append("filetype", this.getFileType(element.file.name));
+                // send
+                await this.postData("datasets/", formData).then(response => {
+                    if (!response){
+                        this.sending = false;
+                        return
+                    }
+                })
+            }
+            this.sending = false;
+            this.datasetSaved = true;
         },
         validateDataset() {
             this.$v.$touch();
@@ -163,6 +183,7 @@ export default {
                     genotype: null,
                     description: null,
                     filename: this.files[i].name,
+                    file: this.files[i],
                     public: true
                 }
                 this.elements.push(tempObject)
