@@ -42,7 +42,7 @@
                         type="submit"
                         class="md-primary"
                         :disabled="sending"
-                        >Submit dataset</md-button
+                        >Confirm selection</md-button
                     >
                 </md-card-actions>
             </md-card>

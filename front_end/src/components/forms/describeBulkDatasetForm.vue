@@ -11,13 +11,14 @@
                     <div
                         class="md-layout md-gutter"
                         v-for="element in elements"
-                        :set="v = $v.elements.$each[element.id]"
+                        :set="(v = $v.elements.$each[element.id])"
                         :key="element.id"
                     >
                         <div class="md-layout-item md-size-20">
-                            <md-field
-                            >
-                                <label :for="`Filename-${element.id}`">Name</label>
+                            <md-field>
+                                <label :for="`Filename-${element.id}`"
+                                    >Name</label
+                                >
                                 <md-input
                                     :name="`Filename-${element.id}`"
                                     :id="`Filename-${element.id}`"
@@ -28,7 +29,11 @@
                         </div>
                         <div class="md-layout-item md-size-20">
                             <md-field
-                            :class="{ 'md-invalid': v.datasetName.$invalid && v.datasetName.$dirty }"
+                                :class="{
+                                    'md-invalid':
+                                        v.datasetName.$invalid &&
+                                        v.datasetName.$dirty
+                                }"
                             >
                                 <label :for="`name-${element.id}`">Name</label>
                                 <md-input
@@ -45,10 +50,11 @@
                                 >
                             </md-field>
                         </div>
-                        <div class="md-layout-item md-size-20">
-                            <md-field
-                            >
-                                <label :for="`genotype-${element.id}`">Genotype</label>
+                        <div class="md-layout-item md-size-15">
+                            <md-field>
+                                <label :for="`genotype-${element.id}`"
+                                    >Genotype</label
+                                >
                                 <md-input
                                     :name="`genotype-${element.id}`"
                                     :id="`genotype-${element.id}`"
@@ -58,9 +64,10 @@
                             </md-field>
                         </div>
                         <div class="md-layout-item md-size-20">
-                            <md-field
-                            >
-                                <label :for="`description-${element.id}`">Description</label>
+                            <md-field>
+                                <label :for="`description-${element.id}`"
+                                    >Description</label
+                                >
                                 <md-input
                                     :name="`description-${element.id}`"
                                     :id="`description-${element.id}`"
@@ -69,16 +76,29 @@
                                 />
                             </md-field>
                         </div>
-                        <div class="md-layout-item md-size-20">
+                        <div class="md-layout-item md-size-10">
                             <md-checkbox
                                 v-model="element.public"
                                 class="top-margin"
                                 >Public</md-checkbox
                             >
                         </div>
+                        <div class="md-layout-item md-size-5">
+                            <transition name="component-fade" mode="out-in">
+                                <md-icon class="top-margin"
+                                v-if="element.state == `finished`"
+                                    >done</md-icon
+                                >
+                                <md-progress-spinner
+                                    :md-diameter="30"
+                                    md-mode="indeterminate"
+                                    class="top-margin"
+                                    v-if="element.state == 'processing'"
+                                ></md-progress-spinner>
+                            </transition>
+                        </div>
                     </div>
                 </md-card-content>
-                <md-progress-bar md-mode="indeterminate" v-if="sending" />
                 <md-card-actions>
                     <md-button
                         type="submit"
@@ -88,6 +108,10 @@
                     >
                 </md-card-actions>
             </md-card>
+            <md-snackbar :md-active.sync="datasetSaved"
+                >The Datasets were added successfully and are ready for
+                preprocessing!</md-snackbar
+            >
         </form>
     </div>
 </template>
@@ -96,7 +120,6 @@
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
-
 
 export default {
     name: "describeBulkDatasetForm",
@@ -110,24 +133,23 @@ export default {
         sending: false,
         elements: []
     }),
-    computed: {
-    },
+    computed: {},
     validations: {
         elements: {
             $each: {
-                datasetName: {required}
+                datasetName: { required }
             }
         }
     },
     methods: {
-        getFileType: function(filename){
-            let fileEnding = filename.split(".").pop()
-            return this.fileTypeMapping[fileEnding]
+        getFileType: function(filename) {
+            let fileEnding = filename.split(".").pop();
+            return this.fileTypeMapping[fileEnding];
         },
         clearForm() {
             this.$v.$reset();
             this.elements = [];
-            for (let i = 0; i < this.files.length; i++){
+            for (let i = 0; i < this.files.length; i++) {
                 var tempObject = {
                     id: i,
                     datasetName: null,
@@ -135,37 +157,48 @@ export default {
                     description: null,
                     filename: this.files[i].name,
                     file: this.files[i],
-                    public: true
-                }
-                this.elements.push(tempObject)
+                    public: true,
+                    state: undefined,
+                    state: undefined
+                };
+                this.elements.push(tempObject);
             }
         },
         saveDataset: async function() {
             this.sending = true; // show progress bar
-            // construct form data
+            // switch all datasets to processing
             for (let element of this.elements){
+                element.state = "processing"
+            }
+            // construct form data
+            for (let element of this.elements) {
                 // construct form data
                 var formData = new FormData();
-                for (let key in element){
-                    if (key != "id" && key != "fileanme" && key != "file"){
-                        formData.append(key, element[key])
+                for (let key in element) {
+                    if (key != "id" && key != "fileanme" && key != "file") {
+                        formData.append(key, element[key]);
                     }
                 }
                 // add files
-                formData.append("file", element.file, element.file.name)
+                formData.append("file", element.file, element.file.name);
                 // add filetype
-                formData.append("filetype", this.getFileType(element.file.name));
+                formData.append(
+                    "filetype",
+                    this.getFileType(element.file.name)
+                );
                 // send
                 await this.postData("datasets/", formData).then(response => {
-                    if (!response){
+                    if (!response) {
                         this.sending = false;
-                        return
+                        return;
                     }
-                })
+                });
+                // signal finished
+                element.state = "finished"
             }
             this.clearForm();
             this.sending = false;
-            this.datasetSaved = true;
+            setTimeout(() => this.datasetSaved = true, 200)
         },
         validateDataset() {
             this.$v.$touch();
@@ -175,23 +208,24 @@ export default {
         }
     },
     watch: {
-        files: function(val){
-            if (val){
-                for (let i = 0; i < this.files.length; i++){
-                var tempObject = {
-                    id: i,
-                    datasetName: null,
-                    genotype: null,
-                    description: null,
-                    filename: this.files[i].name,
-                    file: this.files[i],
-                    public: true
+        files: function(val) {
+            if (val) {
+                for (let i = 0; i < this.files.length; i++) {
+                    var tempObject = {
+                        id: i,
+                        datasetName: null,
+                        genotype: null,
+                        description: null,
+                        filename: this.files[i].name,
+                        file: this.files[i],
+                        public: true,
+                        state: undefined
+                    };
+                    this.elements.push(tempObject);
                 }
-                this.elements.push(tempObject)
-            }
             }
         }
-    },
+    }
 };
 </script>
 
@@ -206,5 +240,16 @@ export default {
     margin-top: 30px;
 }
 
+.component-fade-enter-active {
+  transition: opacity 0s linear;
+}
+
+.component-fade-leave-active {
+  transition: opacity .1s linear;
+}
+.component-fade-enter, .component-fade-leave-to
+/* .component-fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+}
 
 </style>
