@@ -64,7 +64,13 @@
                         :fileTypeMapping="fileTypeMapping"
                     ></addDatasetForm>
                 </md-tab>
-                <md-tab id="tab-bulk" md-label="Bulk"></md-tab>
+                <md-tab id="tab-bulk" md-label="Bulk">
+                    <addDatasetStepper
+                    @close-dialog="$emit('close-dialog')"
+                    :fileTypeMapping="fileTypeMapping"
+                    >
+                    </addDatasetStepper>
+                </md-tab>
             </md-tabs>
         </md-dialog>
     </div>
@@ -72,11 +78,13 @@
 
 <script>
 import addDatasetForm from "../forms/addDatasetForm";
+import addDatasetStepper from "../ui/addDatasetStepper.vue"
 
 export default {
     name: "AddDatasetDialog",
     components: {
-        addDatasetForm
+        addDatasetForm,
+        addDatasetStepper
     },
     props: {
         dialog: Boolean,
