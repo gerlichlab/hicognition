@@ -77,6 +77,12 @@
                                     v-if="!$v.form.file.required"
                                     >A file is required</span
                                 >
+                                <span
+                                class="md-error"
+                                v-if="!$v.form.file.correctFileType"
+                                >
+                                Wrong filetype!
+                            </span>
                             </md-field>
                         </div>
                     </div>
@@ -120,16 +126,28 @@ import { validationMixin } from "vuelidate";
 import { required, minLength, maxLength } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
+
+
+const correctFileType = function(value) {
+    /* 
+        validator for correct fileype. Note that this is the vue component in this example
+    */
+   // string check is needed because event is first passed into the validator, followed by filename string, which is checked
+    if (typeof value === 'string' || value instanceof String){
+        let splitFileName = value.split(".")
+        let fileEnding = splitFileName[splitFileName.length - 1];
+        return fileEnding in this.fileTypeMapping
+    }
+    return false
+}
+
 export default {
     name: "AddDatasetForm",
     mixins: [validationMixin, apiMixin],
+    props: {
+        fileTypeMapping: Object
+    },
     data: () => ({
-        fileTypeMapping: {
-            bed: "bedfile",
-            mcool: "cooler",
-            bw: "bigwig",
-            bigwig: "bigwig"
-        },
         form: {
             datasetName: null,
             public: false,
@@ -139,7 +157,7 @@ export default {
         },
         datasetSaved: false,
         sending: false,
-        selectedFile: null
+        selectedFile: null,
     }),
     validations: {
         // validators for the form
@@ -151,7 +169,8 @@ export default {
             public: {},
             genotype: {},
             file: {
-                required
+                required,
+                correctFiletype: correctFileType
             },
             description: {
                 maxLength: maxLength(80)

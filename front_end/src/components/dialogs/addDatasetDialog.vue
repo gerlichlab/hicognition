@@ -12,12 +12,11 @@
                     <div class="mainText">
                         <p>
                             <span class="md-subheading">
-                                Datasets can either
-                                be genomic intervals or genomic features.
-                                Genomic intervals can be added int form of
-                                bedfiles and genomic features can be added
-                                either in the form of cooler files (.mcool) or
-                                bigwig files.
+                                Datasets can either be genomic intervals or
+                                genomic features. Genomic intervals can be added
+                                int form of bedfiles and genomic features can be
+                                added either in the form of cooler files
+                                (.mcool) or bigwig files.
                             </span>
                         </p>
                         <br />
@@ -55,6 +54,7 @@
             </md-dialog-title>
             <addDatasetForm
                 @close-dialog="$emit('close-dialog')"
+                :fileTypeMapping="fileTypeMapping"
             ></addDatasetForm>
         </md-dialog>
     </div>
@@ -69,9 +69,30 @@ export default {
         addDatasetForm
     },
     props: {
-        dialog: Boolean
+        dialog: Boolean,
+        datatype: String
     },
     computed: {
+        fileTypeMapping: function() {
+            if (this.datatype == "feature") {
+                return {
+                    mcool: "cooler",
+                    bw: "bigwig",
+                    bigwig: "bigwig"
+                };
+            } else if (this.datatype == "region") {
+                return {
+                    bed: "bedfile"
+                };
+            } else {
+                return {
+                    bed: "bedfile",
+                    mcool: "cooler",
+                    bw: "bigwig",
+                    bigwig: "bigwig"
+                };
+            }
+        },
         showDialog: function() {
             return this.dialog;
         }
