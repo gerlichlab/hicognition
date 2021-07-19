@@ -28,19 +28,19 @@
                         </div>
                         <div class="md-layout-item md-size-20">
                             <md-field
-                            :class="{ 'md-invalid': v.name.$invalid && v.name.$dirty }"
+                            :class="{ 'md-invalid': v.datasetName.$invalid && v.datasetName.$dirty }"
                             >
                                 <label :for="`name-${element.id}`">Name</label>
                                 <md-input
                                     :name="`name-${element.id}`"
                                     :id="`name-${element.id}`"
-                                    v-model="element.name"
+                                    v-model="element.datasetName"
                                     :disabled="sending"
                                     required
                                 />
                                 <span
                                     class="md-error"
-                                    v-if="!v.name.required"
+                                    v-if="!v.datasetName.required"
                                     >A dataset name is required</span
                                 >
                             </md-field>
@@ -115,7 +115,7 @@ export default {
     validations: {
         elements: {
             $each: {
-                name: {required}
+                datasetName: {required}
             }
         }
     },
@@ -130,7 +130,7 @@ export default {
             for (let i = 0; i < this.files.length; i++){
                 var tempObject = {
                     id: i,
-                    name: null,
+                    datasetName: null,
                     genotype: null,
                     description: null,
                     filename: this.files[i].name,
@@ -163,6 +163,7 @@ export default {
                     }
                 })
             }
+            this.clearForm();
             this.sending = false;
             this.datasetSaved = true;
         },
@@ -179,7 +180,7 @@ export default {
                 for (let i = 0; i < this.files.length; i++){
                 var tempObject = {
                     id: i,
-                    name: null,
+                    datasetName: null,
                     genotype: null,
                     description: null,
                     filename: this.files[i].name,
