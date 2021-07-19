@@ -7,11 +7,21 @@
             <md-list-item>
                 <md-button
                     class="md-icon-button"
-                    @click="$emit('add-dataset-click')"
+                    @click="$emit('add-feature-click')"
                 >
                     <md-icon>add</md-icon>
                 </md-button>
-                <span class="md-list-item-text">Add Dataset</span>
+                <span class="md-list-item-text">Add Genomic Feature</span>
+            </md-list-item>
+
+            <md-list-item>
+                <md-button
+                    class="md-icon-button"
+                    @click="$emit('add-region-click')"
+                >
+                    <md-icon>add</md-icon>
+                </md-button>
+                <span class="md-list-item-text">Add Genomic Region</span>
             </md-list-item>
 
             <md-list-item>

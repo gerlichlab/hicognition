@@ -14,8 +14,12 @@
                     showMyDatasetDialog = true;
                     menuVisible = false;
                 "
-                @add-dataset-click="
-                    showAddDatasetDialog = true;
+                @add-region-click="
+                    showAddRegionDialog = true;
+                    menuVisible = false;
+                "
+                @add-feature-click="
+                    showAddFeatureDialog = true;
                     menuVisible = false;
                 "
                 @add-metadata-click="
@@ -32,8 +36,14 @@
         <md-app-content>
             <router-view></router-view>
             <addDatasetDialog
-                :dialog="showAddDatasetDialog"
-                @close-dialog="showAddDatasetDialog = false"
+                :dialog="showAddRegionDialog"
+                @close-dialog="showAddRegionDialog = false"
+                datatype="region"
+            ></addDatasetDialog>
+            <addDatasetDialog
+                :dialog="showAddFeatureDialog"
+                @close-dialog="showAddFeatureDialog = false"
+                datatype="feature"
             ></addDatasetDialog>
             <addMetadataDialog
                 :dialog="showAddMetadataDialog"
@@ -84,7 +94,8 @@ export default {
     data: () => ({
         menuVisible: false,
         showMyDatasetDialog: false,
-        showAddDatasetDialog: false,
+        showAddRegionDialog:false,
+        showAddFeatureDialog: false,
         showAddMetadataDialog: false,
         showPreprocessDatasetDialog: false,
         showAddSessionDialog: false,

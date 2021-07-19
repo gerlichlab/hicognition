@@ -2,7 +2,7 @@
     <div>
         <md-dialog :md-active.sync="showDialog">
             <md-dialog-title
-                >Add Dataset
+                >{{welcomeMessage}}
                 <md-tooltip md-direction="left">
                     <div>
                         <span class="md-title"
@@ -73,6 +73,15 @@ export default {
         datatype: String
     },
     computed: {
+        welcomeMessage: function(){
+            if (this.datatype == "feature"){
+                return "Add genomic feature"
+            }else if (this.datatype == "region"){
+                return "Add genomic region"
+            }else{
+                return "Add dataset"
+            }
+        },
         fileTypeMapping: function() {
             if (this.datatype == "feature") {
                 return {

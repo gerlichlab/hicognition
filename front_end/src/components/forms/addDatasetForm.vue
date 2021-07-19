@@ -79,7 +79,7 @@
                                 >
                                 <span
                                 class="md-error"
-                                v-if="!$v.form.file.correctFileType"
+                                v-else-if="!$v.form.file.correctFileType"
                                 >
                                 Wrong filetype!
                             </span>
