@@ -9,9 +9,15 @@ from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from . import api
 from .. import db
-from ..models import Dataset, BedFileMetadata, Task, Session, Intervals
+from ..models import Dataset, BedFileMetadata, Task, Session, Intervals, Collection
 from .authentication import auth
-from .helpers import is_access_to_dataset_denied, parse_description_and_genotype, remove_failed_tasks, get_all_interval_ids, parse_binsizes
+from .helpers import (
+    is_access_to_dataset_denied,
+    parse_description_and_genotype,
+    remove_failed_tasks,
+    get_all_interval_ids,
+    parse_binsizes,
+)
 from .errors import forbidden, invalid, not_found
 from hicognition.format_checkers import FORMAT_CHECKERS
 
@@ -55,7 +61,7 @@ def add_dataset():
     # check whether description and genotype is there
     description, genotype = parse_description_and_genotype(data)
     # check whether dataset should be public
-    setPublic = ("public" in data and data["public"].lower() == "true")
+    setPublic = "public" in data and data["public"].lower() == "true"
     # add data to Database -> in order to show uploading
     new_entry = Dataset(
         dataset_name=data["datasetName"],
@@ -77,7 +83,9 @@ def add_dataset():
         pd.read_csv(current_app.config["CHROM_SIZES"], header=None, sep="\t")[0]
     )
     needed_resolutions = parse_binsizes(current_app.config["PREPROCESSING_MAP"])
-    if not FORMAT_CHECKERS[request.form["filetype"]](file_path, chromosome_names, needed_resolutions):
+    if not FORMAT_CHECKERS[request.form["filetype"]](
+        file_path, chromosome_names, needed_resolutions
+    ):
         db.session.delete(new_entry)
         db.session.commit()
         os.remove(file_path)
@@ -110,9 +118,7 @@ def preprocess_dataset():
     def is_form_invalid():
         if not hasattr(request, "form"):
             return True
-        if sorted(list(request.form.keys())) != sorted(
-            ["dataset_id", "region_ids"]
-        ):
+        if sorted(list(request.form.keys())) != sorted(["dataset_id", "region_ids"]):
             return True
         return False
 
@@ -130,7 +136,9 @@ def preprocess_dataset():
     if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g):
         return forbidden(f"Dataset is not owned by logged in user!")
     # check whether region datasets exists
-    region_datasets = [Dataset.query.get(region_id) for region_id in region_datasets_ids]
+    region_datasets = [
+        Dataset.query.get(region_id) for region_id in region_datasets_ids
+    ]
     if any(entry is None for entry in region_datasets):
         return not_found("Region dataset does not exist!")
     # check whether region datasets are owned
@@ -143,12 +151,16 @@ def preprocess_dataset():
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
     for interval_id in interval_ids:
-        for binsize in current_app.config["PREPROCESSING_MAP"][Intervals.query.get(interval_id).windowsize]:
+        for binsize in current_app.config["PREPROCESSING_MAP"][
+            Intervals.query.get(interval_id).windowsize
+        ]:
             current_user.launch_task(
-                *current_app.config["PIPELINE_NAMES"][Dataset.query.get(dataset_id).filetype],
+                *current_app.config["PIPELINE_NAMES"][
+                    Dataset.query.get(dataset_id).filetype
+                ],
                 dataset_id,
                 interval_id,
-                binsize
+                binsize,
             )
     # set processing state
     dataset = Dataset.query.get(dataset_id)
@@ -276,7 +288,12 @@ def create_session():
         if len(request.form) == 0:
             return True
         # check attributes
-        if sorted(request.form.keys()) != ["name", "session_object", "session_type", "used_datasets"]:
+        if sorted(request.form.keys()) != [
+            "name",
+            "session_object",
+            "session_type",
+            "used_datasets",
+        ]:
             return True
         return False
 
@@ -295,15 +312,59 @@ def create_session():
         return invalid(f"Some of the datasets in used_datasets do not exist!")
     # check whether dataset is owned or session token is valid
     if any(is_access_to_dataset_denied(dataset, g) for dataset in datasets):
-        return forbidden(f"Some of the datasets associated with this session are not owned!")
+        return forbidden(
+            f"Some of the datasets associated with this session are not owned!"
+        )
     # create session
-    session = Session(user_id=g.current_user.id,
-                      name=name,
-                      session_object=session_object,
-                      session_type=session_type)
+    session = Session(
+        user_id=g.current_user.id,
+        name=name,
+        session_object=session_object,
+        session_type=session_type,
+    )
     # add datasets
 
     session.datasets.extend(datasets)
     db.session.add(session)
     db.session.commit()
     return jsonify({"session_id": f"{session.id}"})
+
+
+@api.route("/collections/", methods=["POST"])
+@auth.login_required
+def create_collection():
+    """Creates a dataset collection"""
+
+    def is_form_invalid():
+        if not hasattr(request, "form"):
+            return True
+        if len(request.form) == 0:
+            return True
+        # check attributes
+        if sorted(request.form.keys()) != ["name", "used_datasets"]:
+            return True
+        return False
+
+    # check form
+    if is_form_invalid():
+        return invalid("Form is not valid!")
+    # get data from form
+    data = request.form
+    name = data["name"]
+    used_datasets = json.loads(data["used_datasets"])
+    # check whether datasets exist
+    datasets = [Dataset.query.get(dataset_id) for dataset_id in used_datasets]
+    if any(dataset is None for dataset in datasets):
+        return invalid(f"Some of the datasets in used_datasets do not exist!")
+    # check whether dataset is owned or session token is valid
+    if any(is_access_to_dataset_denied(dataset, g) for dataset in datasets):
+        return forbidden(
+            f"Some of the datasets associated with this collection are not owned!"
+        )
+    # create collection
+    collection = Collection(user_id=g.current_user.id, name=name)
+    # add datasets
+    collection.datasets.extend(datasets)
+    db.session.add(collection)
+    db.session.commit()
+    return jsonify({"collection_id": f"{collection.id}"})
