@@ -65,9 +65,15 @@
             <md-list-item md-expand>
                 <span class="md-list-item-text">Manage Collections</span>
                 <md-list slot="md-expand">
-                    <md-list-item class="md-inset">World</md-list-item>
-                    <md-list-item class="md-inset">Europe</md-list-item>
-                    <md-list-item class="md-inset">South America</md-list-item>
+                    <md-list-item class="md-inset">
+                        <md-button
+                            class="md-icon-button"
+                            @click="$emit('add-collection-click')"
+                        >
+                            <md-icon>add</md-icon>
+                        </md-button>
+                        <span class="md-list-item-text">Create Dataset Collection</span>
+                    </md-list-item>
                 </md-list>
             </md-list-item>
 

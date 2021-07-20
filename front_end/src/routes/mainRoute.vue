@@ -30,6 +30,10 @@
                     showPreprocessDatasetDialog = true;
                     menuVisible = false;
                 "
+                @add-collection-click="
+                    showAddCollectionDialog = true;
+                    menuVisible = false;
+                "
             ></drawer>
         </md-app-drawer>
 
@@ -65,6 +69,11 @@
                 :dialog="showMySessionsDialog"
                 @close-dialog="showMySessionsDialog = false"
             ></mySessionsDialog>
+            <addCollectionDialog
+                :dialog="showAddCollectionDialog"
+                @close-dialog="showAddCollectionDialog = false"
+            >
+            </addCollectionDialog>
         </md-app-content>
     </md-app>
 </template>
@@ -78,6 +87,7 @@ import addMetadataDialog from "../components/dialogs/addMetadataDialog";
 import preprocessDatasetDialog from "../components/dialogs/preProcessDatasetDialog";
 import addSessionDialog from "../components/dialogs/addSessionDialog";
 import mySessionsDialog from "../components/dialogs/mySessionsDialog";
+import addCollectionDialog from "../components/dialogs/addCollectionDialog.vue"
 
 export default {
     name: "mainRoute",
@@ -89,7 +99,8 @@ export default {
         addMetadataDialog,
         preprocessDatasetDialog,
         addSessionDialog,
-        mySessionsDialog
+        mySessionsDialog,
+        addCollectionDialog
     },
     data: () => ({
         menuVisible: false,
@@ -99,7 +110,8 @@ export default {
         showAddMetadataDialog: false,
         showPreprocessDatasetDialog: false,
         showAddSessionDialog: false,
-        showMySessionsDialog: false
+        showMySessionsDialog: false,
+        showAddCollectionDialog: false
     })
 };
 </script>
