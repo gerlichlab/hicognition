@@ -1,6 +1,5 @@
 import datetime
 import unittest
-from unittest.mock import patch
 from test_helpers import LoginTestCase
 
 # add path to import app

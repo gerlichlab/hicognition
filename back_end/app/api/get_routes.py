@@ -21,6 +21,7 @@ from ..models import (
     AverageIntervalData,
     IndividualIntervalData,
     Session,
+    Collection
 )
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
@@ -362,3 +363,13 @@ def get_session_token(session_id):
             "session_id": session_id,
         }
     )
+
+
+@api.route("/collections/", methods=["GET"])
+@auth.login_required
+def get_all_collections():
+    """Gets all available collections for a given user."""
+    all_available_collections = Collection.query.filter(
+        (Collection.user_id == g.current_user.id)
+    ).all()
+    return jsonify([dfile.to_json() for dfile in all_available_collections])

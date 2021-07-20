@@ -336,6 +336,17 @@ class Collection(db.Model):
         "Dataset", secondary=dataset_collection_assoc_table
     )
 
+    def to_json(self):
+        """Formats json output."""
+        json_session = {
+            "id": self.id,
+            "name": self.name,
+        }
+        return json_session
+
+    def __repr__(self):
+        """Format print output."""
+        return f"<Collection {self.name}>"
 
 # helpers
 
