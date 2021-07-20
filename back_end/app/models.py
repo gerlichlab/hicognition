@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import JSONWebSignatureSerializer
 from flask_login import UserMixin
+from sqlalchemy.dialects import mysql
 import redis
 import rq
 from app import db, login
@@ -258,24 +259,33 @@ class BedFileMetadata(db.Model):
         return f"<Metadata {self.name}>"
 
 
-
-session_dataset_assoc_table = db.Table('session_dataset_assoc_table',
-    db.Column('session_id', db.Integer, db.ForeignKey('session.id')),
-    db.Column('dataset_id', db.Integer, db.ForeignKey('dataset.id'))
+session_dataset_assoc_table = db.Table(
+    "session_dataset_assoc_table",
+    db.Column("session_id", db.Integer, db.ForeignKey("session.id")),
+    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id")),
 )
+
+session_collection_assoc_table = db.Table(
+    "session_collection_assoc_table",
+    db.Column("session_id", db.Integer, db.ForeignKey("session.id")),
+    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id")),
+)
+
 
 class Session(db.Model):
     """Model for session data that represents configurations
     of views. For example, compare views."""
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    session_object = db.Column(db.Text(10**9))
-    created_utc = db.Column(db.DateTime, nullable=False,
-        default=datetime.datetime.utcnow)
+    session_object = db.Column(mysql.LONGTEXT())
+    created_utc = db.Column(
+        db.DateTime, nullable=False, default=datetime.datetime.utcnow
+    )
     session_type = db.Column(db.String(100))
-    datasets = db.relationship("Dataset",
-                               secondary=session_dataset_assoc_table)
+    datasets = db.relationship("Dataset", secondary=session_dataset_assoc_table)
+    collections = db.relationship("Collection", secondary=session_collection_assoc_table)
 
     def generate_session_token(self):
         """generates session token"""
@@ -302,11 +312,29 @@ class Session(db.Model):
         }
         return json_session
 
-
     def __repr__(self):
         """Format print output."""
         return f"<Session {self.name}>"
 
+
+dataset_collection_assoc_table = db.Table(
+    "dataset_collection_assoc_table",
+    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id")),
+    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id")),
+)
+
+
+class Collection(db.Model):
+    """Collections of datasets with optional name and description.
+    One dataset can belong to many collections and one collection can
+    have many datasets."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(1024))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    datasets = db.relationship(
+        "Dataset", secondary=dataset_collection_assoc_table
+    )
 
 
 # helpers
