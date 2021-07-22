@@ -1,8 +1,8 @@
 <template>
     <div>
         <md-table
-            v-model="sessions"
-            md-sort="session_name"
+            v-model="collections"
+            md-sort="name"
             md-sort-order="asc"
             md-card
             md-fixed-header
@@ -15,7 +15,7 @@
                     <div>
                         <md-button
                             class="md-dense md-raised button-margin md-primary md-icon-button"
-                            @click="fetchSessions"
+                            @click="fetchCollections"
                         >
                             <md-icon>cached</md-icon>
                         </md-button>
@@ -25,9 +25,9 @@
 
             <!-- Empty state for table -->
             <md-table-empty-state
-                md-label="No sessions found"
+                md-label="No collections found"
                 :md-description="
-                    `No sessions found for this query. Try a different search term or create a new session.`
+                    `No collections found. Go to add collection to create a new session.`
                 "
             >
             </md-table-empty-state>
@@ -42,9 +42,6 @@
                 <md-table-cell md-label="Name" md-sort-by="name">{{
                     item.name
                 }}</md-table-cell>
-                <md-table-cell md-label="Created" md-sort-by="created">{{
-                    item.created
-                }}</md-table-cell>
             </md-table-row>
         </md-table>
         <md-snackbar :md-active.sync="datasetsDeleted"
@@ -55,14 +52,13 @@
 
 <script>
 import { apiMixin } from "../../mixins";
-import EventBus from "../../eventBus"
 
 export default {
-    name: "sessionTable",
+    name: "collectionTable",
     mixins: [apiMixin],
     data: () => ({
         selected: undefined,
-        sessions: [],
+        collections: [],
         clickedDelete: false,
         datasetsDeleted: false
     }),
@@ -71,14 +67,13 @@ export default {
             this.clickedDelete = true;
         },
         handleDelete: async function() {
-            // TODO: implement!
             return
         },
         onSelect(item) {
             this.selected = item;
         },
         fetchSessions() {
-            this.fetchData("sessions/").then(response => {
+            this.fetchData("collections/").then(response => {
                 if (response) {
                     // update displayed datasets
                     this.sessions = response.data;
@@ -89,19 +84,12 @@ export default {
     watch: {
         selected: function(val){
             if (val != undefined){
-                this.$emit("selection-available", this.selected.session_object, this.selected.id)
+                this.$emit("selection-available", this.selected.id)
             }else{
                 this.$emit("selection-unavailable")
             }
         }
     },
-    created: function() {
-        EventBus.$on("fetch-sessions", this.fetchSessions)
-        this.fetchSessions()
-    },
-    beforeDestroy: function(){
-        EventBus.$off("fetch-sessions")
-    }
 };
 </script>
 
