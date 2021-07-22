@@ -9,9 +9,9 @@
             @md-selected="onSelect"
         >
             <!-- Table toolbar has the update button and the search field -->
-            <md-table-toolbar >
+            <md-table-toolbar>
                 <!-- Update button -->
-                <div >
+                <div>
                     <div>
                         <md-button
                             class="md-dense md-raised button-margin md-primary md-icon-button"
@@ -42,6 +42,27 @@
                 <md-table-cell md-label="Name" md-sort-by="name">{{
                     item.name
                 }}</md-table-cell>
+                <md-table-cell md-label="Type" md-sort-by="kind">{{
+                    item.kind
+                }}</md-table-cell>
+                <md-table-cell
+                    md-label="Number Datasets"
+                    md-sort-by="number_datasets"
+                    >{{ item.number_datasets }}</md-table-cell
+                >
+                <md-table-cell md-label="">
+
+                <md-list >
+                    <!-- stop prevent is needed for table to not change styles based on click event -->
+                    <md-list-item md-expand @click.stop.prevent>
+                        <span class="md-list-item-text" :style="containedDatasetStyle">Contained Datasets</span>
+                    <md-list slot="md-expand">
+                        <md-list-item v-for="name in item.dataset_names" :key="name">{{name}}</md-list-item>
+                    </md-list>
+                    </md-list-item>
+                </md-list>
+
+                </md-table-cell>
             </md-table-row>
         </md-table>
         <md-snackbar :md-active.sync="datasetsDeleted"
@@ -52,6 +73,7 @@
 
 <script>
 import { apiMixin } from "../../mixins";
+import EventBus from "../../eventBus";
 
 export default {
     name: "collectionTable",
@@ -62,34 +84,51 @@ export default {
         clickedDelete: false,
         datasetsDeleted: false
     }),
+    computed: {
+        containedDatasetStyle: function(){
+            if (this.selected){
+                return {
+                    "color": "black"
+                }
+            }
+            return
+        }
+    },
     methods: {
         deleteClicked: function() {
             this.clickedDelete = true;
         },
         handleDelete: async function() {
-            return
+            return;
         },
         onSelect(item) {
             this.selected = item;
         },
-        fetchSessions() {
+        fetchCollections() {
             this.fetchData("collections/").then(response => {
                 if (response) {
                     // update displayed datasets
-                    this.sessions = response.data;
+                    this.collections = response.data;
                 }
             });
         }
     },
     watch: {
-        selected: function(val){
-            if (val != undefined){
-                this.$emit("selection-available", this.selected.id)
-            }else{
-                this.$emit("selection-unavailable")
+        selected: function(val) {
+            if (val != undefined) {
+                this.$emit("selection-available", this.selected.id);
+            } else {
+                this.$emit("selection-unavailable");
             }
         }
     },
+    created: function() {
+        EventBus.$on("fetch-sessions", this.fetchCollections);
+        this.fetchCollections();
+    },
+    beforeDestroy: function() {
+        EventBus.$off("fetch-sessions", this.fetchCollections);
+    }
 };
 </script>
 
@@ -104,4 +143,5 @@ export default {
 .md-table-cell {
     text-align: center;
 }
+
 </style>

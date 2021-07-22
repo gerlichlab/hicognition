@@ -23,14 +23,14 @@
                 <md-tabs class="md-primary">
                 <md-tab id="tab-single" md-label="Regions">
                     <addCollectionForm
-                    fileType="bedfile"
+                    fileType="regions"
                     @close-dialog="$emit('close-dialog')"
                     >
                     </addCollectionForm>
                 </md-tab>
                 <md-tab id="tab-bulk" md-label="Features">
                     <addCollectionForm
-                    fileType="bigwig"
+                    fileType="features"
                     @close-dialog="$emit('close-dialog')"
                     >
                     </addCollectionForm>

@@ -137,7 +137,7 @@ export default {
                 this.availableDatasets = response.data.filter(
                     element =>
                     {
-                        if (this.fileType == "bedfile"){
+                        if (this.fileType == "regions"){
                             return element.filetype == "bedfile"
                         }else{
                             return element.filetype == "bigwig"
@@ -154,30 +154,19 @@ export default {
         saveDataset() {
             this.sending = true; // show progress bar
             // construct form data
-            // var formData = new FormData();
-            // for (var key in this.form) {
-            //     if (key == "file") {
-            //         // file data needs to be included like this because the form data only contains the filename at this stage
-            //         formData.append(
-            //             key,
-            //             this.selectedFile,
-            //             this.selectedFile.name
-            //         );
-            //     } else {
-            //         formData.append(key, this.form[key]);
-            //     }
-            // }
-            // // add filetype
-            // formData.append("filetype", this.selectedFileType);
+            var formData = new FormData();
+            formData.append("kind", this.fileType)
+            formData.append("used_datasets", JSON.stringify(this.form.used_datasets))
+            formData.append("name", this.form.name)
             // // API call including upload is made in the background
-            // this.postData("datasets/", formData).then(response => {
-            //     this.sending = false;
-            //     this.clearForm();
-            //     if (response) {
-            //         // if error happend, global error handler will eat the response
-            //         this.datasetSaved = true;
-            //     }
-            // });
+            this.postData("collections/", formData).then(response => {
+                this.sending = false;
+                this.clearForm();
+                if (response) {
+                    // if error happend, global error handler will eat the response
+                    this.datasetSaved = true;
+                }
+            });
             setTimeout(() => {
                 this.sending = false
             }, 500)

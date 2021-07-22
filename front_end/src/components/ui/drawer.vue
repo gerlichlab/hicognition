@@ -57,7 +57,7 @@
                         >
                             <md-icon>list</md-icon>
                         </md-button>
-                        <span class="md-list-item-text">My Datasets</span>
+                        <span class="md-list-item-text">Show Datasets</span>
                     </md-list-item>
                 </md-list>
             </md-list-item>
@@ -73,6 +73,15 @@
                             <md-icon>add</md-icon>
                         </md-button>
                         <span class="md-list-item-text">Create Dataset Collection</span>
+                    </md-list-item>
+                    <md-list-item class="md-inset">
+                        <md-button
+                            class="md-icon-button"
+                            @click="$emit('show-collection-click')"
+                        >
+                            <md-icon>list</md-icon>
+                        </md-button>
+                        <span class="md-list-item-text">Show Dataset Collections</span>
                     </md-list-item>
                 </md-list>
             </md-list-item>
