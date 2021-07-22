@@ -6,6 +6,7 @@ from . import api
 from .. import db
 from ..models import (
     BedFileMetadata,
+    Collection,
     Intervals,
     Dataset,
     AverageIntervalData,
@@ -82,7 +83,7 @@ def delete_dataset(dataset_id):
 @api.route("/sessions/<session_id>/", methods=["DELETE"])
 @auth.login_required
 def delete_session(session_id):
-    """Deletes """
+    """Deletes Session."""
     # check if data set exists
     session = Session.query.get(session_id)
     if session is None:
@@ -92,6 +93,25 @@ def delete_session(session_id):
         return forbidden(f"Session with id {session_id} is not owned by user!")
     # delete session
     db.session.delete(session)
+    db.session.commit()
+    response = jsonify({"message": "success"})
+    response.status_code = 200
+    return response
+
+
+@api.route("/collections/<collection_id>/", methods=["DELETE"])
+@auth.login_required
+def delete_collection(collection_id):
+    """Deletes Collection."""
+    # check if data set exists
+    collection = Collection.query.get(collection_id)
+    if collection is None:
+        return not_found(f"Collection with id {collection_id} does not exist!")
+    # check if data set can be accessed
+    if collection.user_id != g.current_user.id:
+        return forbidden(f"Collection with id {collection_id} is not owned by user!")
+    # delete session
+    db.session.delete(collection)
     db.session.commit()
     response = jsonify({"message": "success"})
     response.status_code = 200
