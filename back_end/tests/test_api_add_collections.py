@@ -1,6 +1,6 @@
 import sys
 import unittest
-from test_helpers import LoginTestCase, TempDirTestCase
+from test_helpers import LoginTestCase
 
 # add path to import app
 sys.path.append("./")
@@ -8,7 +8,7 @@ from app import db
 from app.models import Dataset, Collection
 
 
-class TextAddCollection(LoginTestCase):
+class TestAddCollection(LoginTestCase):
     """Tests post route for adding collections."""
 
     def setUp(self):
@@ -50,6 +50,7 @@ class TextAddCollection(LoginTestCase):
         token_headers = self.get_token_header(token)
         data = {
             "used_datasets": "[1, 2, 3, 4]",
+            "kind": "regions"
         }
         # dispatch post request
         response = self.client.post(
@@ -66,6 +67,25 @@ class TextAddCollection(LoginTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         data = {
+            "name": "test-collection",
+            "kind": "regions"
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/collections/",
+            content_type="multipart/form-data",
+            headers=token_headers,
+            data=data,
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_invalid_form_no_collection_kind(self):
+        """Test whether post request without used_datasets is rejected."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        token_headers = self.get_token_header(token)
+        data = {
+            "used_datasets": "[1, 2, 3, 4]",
             "name": "test-collection",
         }
         # dispatch post request
@@ -85,6 +105,7 @@ class TextAddCollection(LoginTestCase):
         data = {
             "name": "test-collection",
             "used_datasets": "[1, 2, 3]",
+            "kind": "regions"
         }
         # dispatch post request
         response = self.client.post(
@@ -107,6 +128,7 @@ class TextAddCollection(LoginTestCase):
         data = {
             "name": "test-collection",
             "used_datasets": "[1]",
+            "kind": "regions"
         }
         # dispatch post request
         response = self.client.post(
@@ -129,6 +151,7 @@ class TextAddCollection(LoginTestCase):
         data = {
             "name": "test-collection",
             "used_datasets": "[1, 2]",
+            "kind": "regions"
         }
         # dispatch post request
         response = self.client.post(

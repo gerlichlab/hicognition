@@ -6,7 +6,7 @@ import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Collection
+from app.models import Collection, Dataset
 
 
 
@@ -16,12 +16,15 @@ class TestGetCollections(LoginTestCase):
     def setUp(self):
         super().setUp()
         # define datasets
+        self.owned_dataset_1 = Dataset(dataset_name="test1")
+        self.owned_dataset_2 = Dataset(dataset_name="test2")
+        # define collections
         self.collection_user_1 = Collection(
-            user_id=1, name="test")
+            user_id=1, name="test", datasets=[self.owned_dataset_1, self.owned_dataset_2])
         self.collection_user_1_2 = Collection(
-            user_id=1, name="test2")
+            user_id=1, name="test2", datasets=[self.owned_dataset_1, self.owned_dataset_2])
         self.collection_user_2 = Collection(
-            user_id=2, name="test3")
+            user_id=2, name="test3", datasets=[self.owned_dataset_1, self.owned_dataset_2])
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""

@@ -341,7 +341,7 @@ def create_collection():
         if len(request.form) == 0:
             return True
         # check attributes
-        if sorted(request.form.keys()) != ["name", "used_datasets"]:
+        if sorted(request.form.keys()) != ["kind", "name", "used_datasets"]:
             return True
         return False
 
@@ -352,6 +352,7 @@ def create_collection():
     data = request.form
     name = data["name"]
     used_datasets = json.loads(data["used_datasets"])
+    kind = data["kind"]
     # check whether datasets exist
     datasets = [Dataset.query.get(dataset_id) for dataset_id in used_datasets]
     if any(dataset is None for dataset in datasets):
@@ -362,7 +363,7 @@ def create_collection():
             f"Some of the datasets associated with this collection are not owned!"
         )
     # create collection
-    collection = Collection(user_id=g.current_user.id, name=name)
+    collection = Collection(user_id=g.current_user.id, name=name, kind=kind)
     # add datasets
     collection.datasets.extend(datasets)
     db.session.add(collection)

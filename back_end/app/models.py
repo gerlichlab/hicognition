@@ -332,6 +332,7 @@ class Collection(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(1024))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    kind = db.Column(db.String(256)) # What kind of datasets are collected (regions, features)
     datasets = db.relationship(
         "Dataset", secondary=dataset_collection_assoc_table
     )
@@ -341,6 +342,9 @@ class Collection(db.Model):
         json_session = {
             "id": self.id,
             "name": self.name,
+            "kind": self.kind,
+            "number_datasets": len(self.datasets),
+            "dataset_names": [dataset.dataset_name for dataset in self.datasets]
         }
         return json_session
 
