@@ -60,14 +60,14 @@ export default {
     },
     methods: {
         handleSessionDeletion: function() {
-            this.deleteData(`collections/${this.selected_session_id}/`).then(
+            this.deleteData(`collections/${this.selected_collection_id}/`).then(
                 response => {
                     EventBus.$emit("fetch-sessions");
                 }
             );
         },
-        handleSelectionAvailable: function(session_id) {
-                this.selected_session_id = session_id;
+        handleSelectionAvailable: function(collection_id) {
+                this.selected_collection_id = collection_id;
                 this.showDelete = true
         },
         handleSelectionUnAvailable: function() {
