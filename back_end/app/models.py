@@ -347,12 +347,13 @@ class Collection(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(1024))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    public = db.Column(db.Boolean, default=False)
     kind = db.Column(
         db.String(256)
     )  # What kind of datasets are collected (regions, features)
     datasets = db.relationship("Dataset", secondary=dataset_collection_assoc_table)
     associationData = db.relationship(
-        "AssociationData", backref="source_collection", lazy="dynamic"
+        "AssociationIntervalData", backref="source_collection", lazy="dynamic"
     )
 
     def to_json(self):

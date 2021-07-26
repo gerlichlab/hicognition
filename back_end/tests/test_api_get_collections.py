@@ -25,6 +25,13 @@ class TestGetCollections(LoginTestCase):
             user_id=1, name="test2", datasets=[self.owned_dataset_1, self.owned_dataset_2])
         self.collection_user_2 = Collection(
             user_id=2, name="test3", datasets=[self.owned_dataset_1, self.owned_dataset_2])
+        # add public collection
+        self.public_collection = Collection(
+            name="test4",
+            user_id=2,
+            public=True,
+            datasets=[self.owned_dataset_1, self.owned_dataset_2]
+        )
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
@@ -103,6 +110,24 @@ class TestGetCollections(LoginTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, [self.collection_user_1.to_json()])
+
+    def test_user_gets_public_collection(self):
+        """Tests whether user is able to access public collection."""
+        token1 = self.add_and_authenticate("test", "asdf")
+        # add datasets
+        db.session.add(self.public_collection)
+        db.session.commit()
+        # get datasets with user_token 1
+        token_headers = self.get_token_header(token1)
+        # get datasets
+        response = self.client.get(
+            "/api/collections/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, [self.public_collection.to_json()])
 
 
 if __name__ == "__main__":

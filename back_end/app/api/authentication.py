@@ -38,17 +38,18 @@ def get_token():
         }
     )
 
+
 @api.before_request
 def before_request():
     _verify_and_store_session_token(request)
 
 
-
 # helpers
 def _verify_and_store_session_token(request):
     g.session_datasets = []
+    g.session_collections = []  # TODO: actually implement this
     g.session_id = None
-    session_token = request.args.get('sessionToken')
+    session_token = request.args.get("sessionToken")
     if session_token is None:
         return None
     # check whether session token is valid

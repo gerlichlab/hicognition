@@ -8,6 +8,7 @@ from flask import g, request
 from .helpers import (
     update_processing_state,
     is_access_to_dataset_denied,
+    is_access_to_collection_denied,
     add_average_data_to_preprocessed_dataset_map,
     add_individual_data_to_preprocessed_dataset_map,
     recDict,
@@ -371,5 +372,7 @@ def get_all_collections():
     """Gets all available collections for a given user."""
     all_available_collections = Collection.query.filter(
         (Collection.user_id == g.current_user.id)
+        | Collection.public
+        | (Collection.id.in_(g.session_collections))
     ).all()
     return jsonify([dfile.to_json() for dfile in all_available_collections])

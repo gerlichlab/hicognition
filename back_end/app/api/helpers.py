@@ -17,6 +17,18 @@ def is_access_to_dataset_denied(dataset, g):
     return False
 
 
+def is_access_to_collection_denied(collection, g):
+    """Checks whether access to a certian dataset is denied
+    for a given user."""
+    if collection.public:
+        return False
+    if (collection.user_id != g.current_user.id) and (
+        collection.id not in g.session_collections
+    ):
+        return True
+    return False
+
+
 def is_dataset_deletion_denied(dataset_id, current_user):
     """Checks whether access to a certian dataset is denied
     for a given user."""
