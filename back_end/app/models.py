@@ -225,6 +225,19 @@ class IndividualIntervalData(db.Model):
         return json_individualIntervalData
 
 
+class AssociationIntervalData(db.Model):
+    """Table to hold information and pointers to data for values extracted by calculating
+    association metrics between dataset collections and intervals. E.g.: LOLA enrichment data,
+    Continuous values enrichment."""
+    id = db.Column(db.Integer, primary_key=True)
+    binsize = db.Column(db.Integer)
+    name = db.Column(db.String(512), index=True)
+    file_path = db.Column(db.String(512), index=True)
+    value_type = db.Column(db.String(64))
+    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
+    intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
+
+
 class Task(db.Model):
     id = db.Column(db.String(36), primary_key=True)
     name = db.Column(db.String(512), index=True)
@@ -338,6 +351,9 @@ class Collection(db.Model):
         db.String(256)
     )  # What kind of datasets are collected (regions, features)
     datasets = db.relationship("Dataset", secondary=dataset_collection_assoc_table)
+    associationData = db.relationship(
+        "AssociationData", backref="source_collection", lazy="dynamic"
+    )
 
     def to_json(self):
         """Formats json output."""
