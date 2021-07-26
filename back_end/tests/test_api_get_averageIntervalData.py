@@ -1,7 +1,5 @@
 import os
-import pdb
 import unittest
-import pandas as pd
 import numpy as np
 from test_helpers import LoginTestCase, TempDirTestCase
 

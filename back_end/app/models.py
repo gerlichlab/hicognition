@@ -145,6 +145,9 @@ class Intervals(db.Model):
     individualIntervalData = db.relationship(
         "IndividualIntervalData", backref="source_intervals", lazy="dynamic"
     )
+    associationIntervalData = db.relationship(
+        "AssociationIntervalData", backref="source_intervals", lazy="dynamic"
+    )
 
     def __repr__(self):
         """Format print output."""

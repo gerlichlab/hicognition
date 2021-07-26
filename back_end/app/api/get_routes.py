@@ -21,8 +21,9 @@ from ..models import (
     Dataset,
     AverageIntervalData,
     IndividualIntervalData,
+    AssociationIntervalData,
     Session,
-    Collection
+    Collection,
 )
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
@@ -217,7 +218,7 @@ def get_interval_metadata(interval_id):
 @auth.login_required
 def get_pileup_data(entry_id):
     """returns pileup data for the specified pileup id if it exists and
-    the user is owner."""
+    access is allowed."""
     # Check for existence
     if AverageIntervalData.query.get(entry_id) is None:
         return not_found("Pileup does not exist!")
@@ -242,11 +243,38 @@ def get_pileup_data(entry_id):
     return jsonify(json_data)
 
 
+@api.route("/associationIntervalData/<entry_id>/", methods=["GET"])
+@auth.login_required
+def get_association_data(entry_id):
+    """returns data for the specified association data id if it exists and
+    access is allowed."""
+    # Check for existence
+    if AssociationIntervalData.query.get(entry_id) is None:
+        return not_found("Association data does not exist!")
+    # Check whether datasets are owned
+    association_data = AssociationIntervalData.query.get(entry_id)
+    collection = association_data.source_collection
+    bed_ds = association_data.source_intervals.source_dataset
+    if is_access_to_collection_denied(collection, g) or is_access_to_dataset_denied(
+        bed_ds, g
+    ):
+        return forbidden("Collection or bed dataset is not owned by logged in user!")
+    # Dataset is owned, return the data
+    np_data = np.load(association_data.file_path)
+    # Convert np.nan and np.isinf to None -> this is handeled by jsonify correctly
+    flat_data = [
+        entry if not (np.isnan(entry) or np.isinf(entry)) else None
+        for entry in np_data.flatten()
+    ]
+    json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
+    return jsonify(json_data)
+
+
 @api.route("/individualIntervalData/<entry_id>/", methods=["GET"])
 @auth.login_required
 def get_stackup_data(entry_id):
     """returns stackup data for the specified stackup id if it exists and
-    the user is owner."""
+    access is allowed."""
     # Check for existence
     if IndividualIntervalData.query.get(entry_id) is None:
         return not_found("Stackup does not exist!")
