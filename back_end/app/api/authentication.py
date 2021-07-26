@@ -56,4 +56,7 @@ def _verify_and_store_session_token(request):
     session = Session.verify_auth_token(session_token)
     if session is not None:
         g.session_datasets.extend([dataset.id for dataset in session.datasets])
+        g.session_collections.extend(
+            [collection.id for collection in session.collections]
+        )
         g.session_id = session.id

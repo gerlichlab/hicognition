@@ -6,8 +6,7 @@ import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Collection, Dataset
-
+from app.models import Collection, Dataset, Session
 
 
 class TestGetCollections(LoginTestCase):
@@ -20,18 +19,29 @@ class TestGetCollections(LoginTestCase):
         self.owned_dataset_2 = Dataset(dataset_name="test2")
         # define collections
         self.collection_user_1 = Collection(
-            user_id=1, name="test", datasets=[self.owned_dataset_1, self.owned_dataset_2])
+            user_id=1,
+            name="test",
+            datasets=[self.owned_dataset_1, self.owned_dataset_2],
+        )
         self.collection_user_1_2 = Collection(
-            user_id=1, name="test2", datasets=[self.owned_dataset_1, self.owned_dataset_2])
+            user_id=1,
+            name="test2",
+            datasets=[self.owned_dataset_1, self.owned_dataset_2],
+        )
         self.collection_user_2 = Collection(
-            user_id=2, name="test3", datasets=[self.owned_dataset_1, self.owned_dataset_2])
+            user_id=2,
+            name="test3",
+            datasets=[self.owned_dataset_1, self.owned_dataset_2],
+        )
         # add public collection
         self.public_collection = Collection(
             name="test4",
             user_id=2,
             public=True,
-            datasets=[self.owned_dataset_1, self.owned_dataset_2]
+            datasets=[self.owned_dataset_1, self.owned_dataset_2],
         )
+        # define session that contains unowned collection
+        self.session_unowned_collection = Session(collections=[self.collection_user_2])
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
@@ -128,6 +138,50 @@ class TestGetCollections(LoginTestCase):
         # check response
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, [self.public_collection.to_json()])
+
+    def test_user_can_get_collection_w_session_token(self):
+        """Authenticated user can get datasets that they
+        do not own if they have a session token."""
+        token1 = self.add_and_authenticate("test", "asdf")
+        # add datasets
+        db.session.add_all([self.collection_user_2, self.session_unowned_collection])
+        db.session.commit()
+        # get datasets using session token
+        token_headers = self.get_token_header(token1)
+        token = self.session_unowned_collection.generate_session_token()
+        # get datasets with session token
+        response = self.client.get(
+            f"/api/collections/?sessionToken={token}",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        expected = [
+            collection.to_json()
+            for collection in self.session_unowned_collection.collections
+        ]
+        self.assertEqual(response.json, expected)
+
+    def test_user_cannot_get_collection_w_invalid_session_token(self):
+        """Authenticated user  cannot get other collections with
+        an invalid sessino token."""
+        token1 = self.add_and_authenticate("test", "asdf")
+        # add datasets
+        db.session.add_all([self.collection_user_2, self.session_unowned_collection])
+        db.session.commit()
+        # get datasets with user_token 1
+        token_headers = self.get_token_header(token1)
+        token = "badToken"
+        # get datasets with session token
+        response = self.client.get(
+            f"/api/collections/?sessionToken={token}",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, [])
 
 
 if __name__ == "__main__":
