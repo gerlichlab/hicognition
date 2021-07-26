@@ -279,13 +279,15 @@ class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    session_object = db.Column(db.Text(10**9))
+    session_object = db.Column(db.Text(10 ** 9))
     created_utc = db.Column(
         db.DateTime, nullable=False, default=datetime.datetime.utcnow
     )
     session_type = db.Column(db.String(100))
     datasets = db.relationship("Dataset", secondary=session_dataset_assoc_table)
-    collections = db.relationship("Collection", secondary=session_collection_assoc_table)
+    collections = db.relationship(
+        "Collection", secondary=session_collection_assoc_table
+    )
 
     def generate_session_token(self):
         """generates session token"""
@@ -332,10 +334,10 @@ class Collection(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(1024))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    kind = db.Column(db.String(256)) # What kind of datasets are collected (regions, features)
-    datasets = db.relationship(
-        "Dataset", secondary=dataset_collection_assoc_table
-    )
+    kind = db.Column(
+        db.String(256)
+    )  # What kind of datasets are collected (regions, features)
+    datasets = db.relationship("Dataset", secondary=dataset_collection_assoc_table)
 
     def to_json(self):
         """Formats json output."""
@@ -344,13 +346,14 @@ class Collection(db.Model):
             "name": self.name,
             "kind": self.kind,
             "number_datasets": len(self.datasets),
-            "dataset_names": [dataset.dataset_name for dataset in self.datasets]
+            "dataset_names": [dataset.dataset_name for dataset in self.datasets],
         }
         return json_session
 
     def __repr__(self):
         """Format print output."""
         return f"<Collection {self.name}>"
+
 
 # helpers
 
