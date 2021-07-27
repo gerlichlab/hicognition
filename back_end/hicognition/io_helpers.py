@@ -1,6 +1,5 @@
 """Helper functions to read and convert common
 data formats."""
-import re
 import pandas as pd
 import numpy as np
 import bioframe
@@ -140,3 +139,12 @@ def sort_bed(input_file, output_file, chromsizes):
     output = genome_pos_sorted.iloc[sorted_index, :]
     # write to file
     output.to_csv(output_file, sep="\t", index=False, header=None)
+
+
+def load_chromsizes(path):
+    """load chromosome sizes from
+    a chromosome sizes file into a series
+    with chromosome names as index."""
+    chromsize_frame = pd.read_csv(path, sep="\t", header=None)
+    chromsize_series = pd.Series(chromsize_frame[1].values, index=chromsize_frame[0])
+    return chromsize_series

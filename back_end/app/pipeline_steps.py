@@ -189,28 +189,37 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
     # get target datasets
     collection = Collection.query.get(collection_id)
     target_list = [
-        pd.read_csv(target.file_path, sep="\t", headaer=None)
+        pd.read_csv(target.file_path, sep="\t", header=None)
+        .iloc[:, [0, 1, 2]]
+        .rename(columns={0: "chrom", 1: "start", 2: "end"})
         for target in collection.datasets
     ]
     # get universe -> genome binned with equal binsize
-    chromsize_sizes_frame = pd.read_csv(
-        current_app.config["CHROM_SIZES"], sep="\t", header=None
+    universe = bf.binnify(
+        io_helpers.load_chromsizes(current_app.config["CHROM_SIZES"]), binsize
     )
-    chromsize_series = pd.Series(
-        chromsize_sizes_frame[1].values, index=chromsize_sizes_frame[0]
-    )
-    universe = bf.binnify(chromsize_series, binsize)
     # perform enrichment analysis
-    results = [
-        pylola.run_lola(query, target_list, universe)["p_value_log"].values
+    contingency_tables = [
+        pd.DataFrame(
+            [
+                pylola.utils._get_contingency_table(target, query, universe)
+                for target in target_list
+            ]
+        )
         for query in queries
+    ]
+    # TODO: fix this -> why can contingency table contain negativ numbers? -> queries contain sets outside of universe! -> which are those? -> this is chromosome bounds!!
+    import pdb; pdb.set_trace()
+    results = [
+        table.apply(pylola.utils._do_enrichment_analysis, axis=1, result_type="expand")["odds_ratio"].values for table in contingency_tables
     ]
     # stack results
     stacked = np.stack(results, axis=1)
     # write output
     log.info("      Writing output...")
-    file_uuid = uuid.uuid4().hex
-    file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_uuid + ".npy")
+    file_path = os.path.join(
+        current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + ".npy"
+    )
     np.save(file_path, stacked)
     # add to database
     add_association_data_to_db(file_path, binsize, intervals_id, collection_id)
