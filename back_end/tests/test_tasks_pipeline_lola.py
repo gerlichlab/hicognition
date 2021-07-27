@@ -20,7 +20,9 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         # call setUp of LoginTestCase to initialize app
         super().setUp()
         # load bedfile that is used to derive other bedfiles
-        source_data = pd.read_csv("tests/testfiles/test3_realData_large.bed", sep="\t", header=None)
+        source_data = pd.read_csv(
+            "tests/testfiles/test3_realData_large.bed", sep="\t", header=None
+        )
         self.target_1 = source_data.iloc[8000:12000, :]
         self.target_2 = source_data.iloc[2000:8000, :]
         self.positions = source_data.iloc[4000:10000, :]
@@ -32,44 +34,27 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         pos_file = os.path.join(self.TEMP_PATH, "pos.bed")
         self.positions.to_csv(pos_file, header=None, sep="\t", index=False)
         # create datasets
-        self.query_dataset = Dataset(
-            id=1,
-            file_path=pos_file,
-            filetype="bedfile"
-        )
+        self.query_dataset = Dataset(id=1, file_path=pos_file, filetype="bedfile")
         self.target_dataset_1 = Dataset(
-            id=2,
-            file_path=target_1_file,
-            filetype="bedfile"
+            id=2, file_path=target_1_file, filetype="bedfile"
         )
         self.target_dataset_2 = Dataset(
-            id=3,
-            file_path=target_2_file,
-            filetype="bedfile"
+            id=3, file_path=target_2_file, filetype="bedfile"
         )
         # create intervals
-        self.query_interval = Intervals(
-            id=1,
-            windowsize=100000,
-            dataset_id=1
-        )
+        self.query_interval = Intervals(id=1, windowsize=100000, dataset_id=1)
         # create collections
         self.collection_1 = Collection(
-            id=1,
-            datasets=[self.target_dataset_1, self.target_dataset_2]
+            id=1, datasets=[self.target_dataset_1, self.target_dataset_2]
         )
         # create groupings
         self.datasets = [
             self.query_dataset,
             self.target_dataset_1,
-            self.target_dataset_2
+            self.target_dataset_2,
         ]
-        self.intervals = [
-            self.query_interval
-        ]
-        self.collections = [
-            self.collection_1
-        ]
+        self.intervals = [self.query_interval]
+        self.collections = [self.collection_1]
 
     def test_result_added_correctly_to_db(self):
         """tests whether perform enrichment analysis adds result correctly to db."""
@@ -88,18 +73,24 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         self.assertEqual(result.collection_id, 1)
 
     def test_result_correct(self):
-        """tests whether perform enrichment analysis adds result correctly to db."""
+        """tests whether result added to db is correct"""
         # add everything needed to database
         db.session.add_all(self.datasets)
         db.session.add_all(self.intervals)
         db.session.add_all(self.collections)
         db.session.commit()
         # run enrichment analysis
-        perform_enrichment_analysis(self.collection_1.id, self.query_interval.id, 25000)
+        perform_enrichment_analysis(self.collection_1.id, self.query_interval.id, 50000)
         # load result
         result = AssociationIntervalData.query.first()
         data_result = np.load(result.file_path)
-        import pdb;pdb.set_trace()
+        expected = np.array(
+            [
+                [7.02834217, 8.09706518, 25.87762319, 8.07835162],
+                [15.63264795, 18.78167934, 113.33089378, 18.7916413],
+            ]
+        )
+        self.assertTrue(np.all(np.isclose(data_result, expected)))
 
 
 if __name__ == "__main__":
