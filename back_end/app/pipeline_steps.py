@@ -185,7 +185,20 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
     file_path = intervals.source_dataset.file_path
     window_size = intervals.windowsize
     regions = pd.read_csv(file_path, sep="\t", header=None)
+    # make queries
     queries = interval_operations.chunk_intervals(regions, window_size, binsize)
+    # remove anything that is not in universe and dropduplicates
+    chromsizes = pd.read_csv(current_app.config["CHROM_SIZES"], sep="\t", header=None)
+    chromsizes_regions = pd.DataFrame(
+        {"chrom": chromsizes[0], "start": 0, "end": chromsizes[1]}
+    )
+    filtered_queries = [
+        bf.count_overlaps(query, chromsizes_regions)
+        .query("count > 0")
+        .drop("count", axis="columns")
+        .drop_duplicates()
+        for query in queries
+    ]
     # get target datasets
     collection = Collection.query.get(collection_id)
     target_list = [
@@ -199,19 +212,8 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
         io_helpers.load_chromsizes(current_app.config["CHROM_SIZES"]), binsize
     )
     # perform enrichment analysis
-    contingency_tables = [
-        pd.DataFrame(
-            [
-                pylola.utils._get_contingency_table(target, query, universe)
-                for target in target_list
-            ]
-        )
-        for query in queries
-    ]
-    # TODO: fix this -> why can contingency table contain negativ numbers? -> queries contain sets outside of universe! -> which are those? -> this is chromosome bounds!!
-    import pdb; pdb.set_trace()
     results = [
-        table.apply(pylola.utils._do_enrichment_analysis, axis=1, result_type="expand")["odds_ratio"].values for table in contingency_tables
+        pylola.run_lola(query, target_list, universe)["odds_ratio"].values for query in filtered_queries
     ]
     # stack results
     stacked = np.stack(results, axis=1)

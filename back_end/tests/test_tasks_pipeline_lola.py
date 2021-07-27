@@ -95,7 +95,7 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         db.session.add_all(self.collections)
         db.session.commit()
         # run enrichment analysis
-        perform_enrichment_analysis(self.collection_1.id, self.query_interval.id, 50000)
+        perform_enrichment_analysis(self.collection_1.id, self.query_interval.id, 25000)
         # load result
         result = AssociationIntervalData.query.first()
         data_result = np.load(result.file_path)
