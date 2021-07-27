@@ -188,9 +188,9 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
     # make queries
     queries = interval_operations.chunk_intervals(regions, window_size, binsize)
     # remove anything that is not in universe and dropduplicates
-    chromsizes = pd.read_csv(current_app.config["CHROM_SIZES"], sep="\t", header=None)
+    chromsizes = io_helpers.load_chromsizes(current_app.config["CHROM_SIZES"])
     chromsizes_regions = pd.DataFrame(
-        {"chrom": chromsizes[0], "start": 0, "end": chromsizes[1]}
+        {"chrom": chromsizes.index, "start": 0, "end": chromsizes}
     )
     filtered_queries = [
         bf.count_overlaps(query, chromsizes_regions)
@@ -208,12 +208,11 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
         for target in collection.datasets
     ]
     # get universe -> genome binned with equal binsize
-    universe = bf.binnify(
-        io_helpers.load_chromsizes(current_app.config["CHROM_SIZES"]), binsize
-    )
+    universe = bf.binnify(chromsizes, binsize)
     # perform enrichment analysis
     results = [
-        pylola.run_lola(query, target_list, universe)["odds_ratio"].values for query in filtered_queries
+        pylola.run_lola(query, target_list, universe)["odds_ratio"].values
+        for query in filtered_queries
     ]
     # stack results
     stacked = np.stack(results, axis=1)
