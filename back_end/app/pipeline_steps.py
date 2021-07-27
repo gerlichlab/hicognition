@@ -4,21 +4,26 @@ import uuid
 import logging
 
 from flask.globals import current_app
+from numpy.core.shape_base import stack
 import pandas as pd
 import numpy as np
-from ngs import HiCTools as HT
 import cooler
-from hicognition import io_helpers
+import bioframe as bf
+from ngs import HiCTools as HT
+from hicognition import io_helpers, interval_operations
+import pylola
 import bbi
 from .api.helpers import remove_safely
 from rq import get_current_job
 from . import db
 from .models import (
+    Collection,
     Dataset,
     Intervals,
     AverageIntervalData,
     Task,
     IndividualIntervalData,
+    AssociationIntervalData,
 )
 
 # get logger
@@ -42,8 +47,8 @@ def bed_preprocess_pipeline_step(dataset_id, windowsize):
     # generate subsample index for smaller stackup
     bedpe = pd.read_csv(bedpe_file, sep="\t", header=None)
     index_file = os.path.join(
-            current_app.config["UPLOAD_DIR"], bedpe_file.split(os.sep)[-1] + "_indices.npy"
-        )
+        current_app.config["UPLOAD_DIR"], bedpe_file.split(os.sep)[-1] + "_indices.npy"
+    )
     if len(bedpe) < current_app.config["STACKUP_THRESHOLD"]:
         # if there are less rows than the stackup theshold, index file are the indices of this file
         sub_sample_index = np.arange(len(bedpe))
@@ -104,12 +109,19 @@ def perform_pileup(cooler_dataset_id, interval_id, binsize, arms, pileup_type):
         window_size, int(binsize), regions["chrom"], regions["pos"], arms
     ).dropna()
     if pileup_type == "Obs/Exp":
-        expected = HT.get_expected(cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"])
+        expected = HT.get_expected(
+            cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
+        )
         pileup_array = HT.do_pileup_obs_exp(
-            cooler_file, expected, pileup_windows, proc=current_app.config["PILEUP_PROCESSES"]
+            cooler_file,
+            expected,
+            pileup_windows,
+            proc=current_app.config["PILEUP_PROCESSES"],
         )
     else:
-        pileup_array = HT.do_pileup_iccf(cooler_file, pileup_windows, proc=current_app.config["PILEUP_PROCESSES"])
+        pileup_array = HT.do_pileup_iccf(
+            cooler_file, pileup_windows, proc=current_app.config["PILEUP_PROCESSES"]
+        )
     # prepare dataframe for js reading1
     log.info("      Writing output...")
     file_name = uuid.uuid4().hex + ".npy"
@@ -139,8 +151,12 @@ def perform_stackup(bigwig_dataset_id, intervals_id, binsize):
     sub_sample_index = np.load(intervals.file_path_sub_sample_index)
     regions_small = regions.iloc[sub_sample_index, :]
     log.info("      Doing stackup...")
-    full_size_array = _do_stackup(regions, window_size, binsize, bigwig_dataset.file_path)
-    downsampled_array = _do_stackup(regions_small, window_size, binsize, bigwig_dataset.file_path)
+    full_size_array = _do_stackup(
+        regions, window_size, binsize, bigwig_dataset.file_path
+    )
+    downsampled_array = _do_stackup(
+        regions_small, window_size, binsize, bigwig_dataset.file_path
+    )
     # save full length array to file
     log.info("      Writing output...")
     file_uuid = uuid.uuid4().hex
@@ -153,17 +169,74 @@ def perform_stackup(bigwig_dataset_id, intervals_id, binsize):
     np.save(file_path_line, line_array)
     # save small array to file
     file_name_small = file_uuid + "_small.npy"
-    file_path_small = os.path.join(
-        current_app.config["UPLOAD_DIR"], file_name_small
-    )
+    file_path_small = os.path.join(current_app.config["UPLOAD_DIR"], file_name_small)
     np.save(file_path_small, downsampled_array)
     # add to database
     log.info("      Adding database entry...")
-    add_stackup_db(
-        file_path, file_path_small, binsize, intervals.id, bigwig_dataset.id
-    )
+    add_stackup_db(file_path, file_path_small, binsize, intervals.id, bigwig_dataset.id)
     add_line_db(file_path_line, binsize, intervals.id, bigwig_dataset.id)
     log.info("      Success!")
+
+
+def perform_enrichment_analysis(collection_id, intervals_id, binsize):
+    """Pipeline step to perform enrichment analysis"""
+    # get query regions
+    intervals = Intervals.query.get(intervals_id)
+    file_path = intervals.source_dataset.file_path
+    window_size = intervals.windowsize
+    regions = pd.read_csv(file_path, sep="\t", header=None)
+    queries = interval_operations.chunk_intervals(regions, window_size, binsize)
+    # get target datasets
+    collection = Collection.query.get(collection_id)
+    target_list = [
+        pd.read_csv(target.file_path, sep="\t", headaer=None)
+        for target in collection.datasets
+    ]
+    # get universe -> genome binned with equal binsize
+    chromsize_sizes_frame = pd.read_csv(
+        current_app.config["CHROM_SIZES"], sep="\t", header=None
+    )
+    chromsize_series = pd.Series(
+        chromsize_sizes_frame[1].values, index=chromsize_sizes_frame[0]
+    )
+    universe = bf.binnify(chromsize_series, binsize)
+    # perform enrichment analysis
+    results = [
+        pylola.run_lola(query, target_list, universe)["p_value_log"].values
+        for query in queries
+    ]
+    # stack results
+    stacked = np.stack(results, axis=1)
+    # write output
+    log.info("      Writing output...")
+    file_uuid = uuid.uuid4().hex
+    file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_uuid + ".npy")
+    np.save(file_path, stacked)
+    # add to database
+    add_association_data_to_db(file_path, binsize, intervals_id, collection_id)
+
+
+def add_association_data_to_db(file_path, binsize, intervals_id, collection_id):
+    """Adds association data set to db"""
+    # check if old association interval data exists and delete them
+    test_query = AssociationIntervalData.query.filter(
+        (AssociationIntervalData.binsize == int(binsize))
+        & (AssociationIntervalData.intervals_id == intervals_id)
+        & (AssociationIntervalData.collection_id == collection_id)
+    ).all()
+    for entry in test_query:
+        remove_safely(entry.file_path)
+        db.session.delete(entry)
+    # add new entry
+    new_entry = AssociationIntervalData(
+        binsize=int(binsize),
+        name=os.path.basename(file_path),
+        file_path=file_path,
+        intervals_id=intervals_id,
+        collection_id=collection_id,
+    )
+    db.session.add(new_entry)
+    db.session.commit()
 
 
 def add_stackup_db(
@@ -286,6 +359,7 @@ def _do_stackup(regions, window_size, binsize, bigwig_dataset):
     # put extracted data back in target array
     target_array[good_chromosome_indices, :] = stackup_array
     return target_array
+
 
 def _set_task_progress(progress):
     job = get_current_job()

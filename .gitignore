@@ -19,6 +19,8 @@ workdir/higlass_data/
 workdir/higlass_temp/
 workdir/mysql/*
 
+*.egg-info
+
 keys/*
 
 .DS_Store

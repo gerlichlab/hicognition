@@ -54,7 +54,7 @@ def pipeline_bed(dataset_id):
 
 def pipeline_pileup(dataset_id, intervals_id, binsize):
     """Start pileup pipeline for specified combination of
-    dataset_id (cooler_file), binsizes and intervals_id"""
+    dataset_id (cooler_file), binsize and intervals_id"""
     chromosome_arms = pd.read_csv(app.config["CHROM_ARMS"])
     pipeline_steps.perform_pileup(
         dataset_id, intervals_id, binsize, chromosome_arms, "ICCF"
@@ -67,6 +67,13 @@ def pipeline_pileup(dataset_id, intervals_id, binsize):
 
 def pipeline_stackup(dataset_id, intervals_id, binsize):
     """Start stackup pipeline for specified combination of
-    dataset_id (bigwig file), binsizes and intervals_id"""
+    dataset_id (bigwig file), binsize and intervals_id"""
     pipeline_steps.perform_stackup(dataset_id, intervals_id, binsize)
+    pipeline_steps._set_task_progress(100)
+
+
+def pipeline_lola(collection_id, intervals_id, binsize):
+    """Starts lola enrichment calculation pipeline step for a specific
+    collection_id, binsize and intervals_id"""
+    pipeline_steps.perform_enrichment_analysis(collection_id, intervals_id, binsize)
     pipeline_steps._set_task_progress(100)

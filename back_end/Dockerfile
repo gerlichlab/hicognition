@@ -16,7 +16,9 @@ RUN conda install mamba -n base -c conda-forge &&\
     mamba env update -n base --f /temp/install/conda_env.yml &&\
     mamba list > software_versions_conda.txt &&\
     # install version 0.3 of ngs
-    pip install git+git://github.com/gerlichlab/ngs@v0.3
+    pip install git+git://github.com/gerlichlab/ngs@v0.3 &&\
+    # install pylola
+    pip install git+git://github.com/Mittmich/pylola
 
 WORKDIR /home
 
