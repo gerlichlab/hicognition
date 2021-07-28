@@ -37,6 +37,11 @@
                         @click="setLineprofile"
                         >Lineprofile</md-button
                     >
+                    <md-button
+                        class="md-raised md-primary"
+                        @click="setLola"
+                        >Lola</md-button
+                    >
                 </div>
             </div>
         </div>
@@ -70,6 +75,16 @@
             :rowIndex="rowIndex"
             :colIndex="colIndex"
         />
+        <lolaWidget
+            v-else-if="this.widgetType == 'Lola'"
+            :height="height"
+            :width="width"
+            :empty="empty"
+            :id="id"
+            :collectionID="collectionID"
+            :rowIndex="rowIndex"
+            :colIndex="colIndex"
+        />
     </div>
 </template>
 
@@ -77,13 +92,15 @@
 import pileupWidget from "./widgets/pileupWidget";
 import stackupWidget from "./widgets/stackupWidget";
 import lineprofileWidget from "./widgets/lineprofileWidget";
+import lolaWidget from "./widgets/lolaWidget.vue"
 
 export default {
     name: "widgetContainer",
     components: {
         stackupWidget,
         pileupWidget,
-        lineprofileWidget
+        lineprofileWidget,
+        lolaWidget
     },
     data: function() {
         // get widget type from store
@@ -203,6 +220,21 @@ export default {
             this.$store.commit("compare/setWidgetType", mutationObject);
             // set widget Type in this container
             this.widgetType = "Lineprofile";
+        },
+        setLola: function() {
+            // check if widget is in store
+            if (!this.widgetIDExists()) {
+                this.initializeWidgetFromEmpty();
+            }
+            // set widgetType in store
+            var mutationObject = {
+                parentID: this.collectionID,
+                id: this.id,
+                widgetType: "Lola"
+            };
+            this.$store.commit("compare/setWidgetType", mutationObject);
+            // set widget Type in this container
+            this.widgetType = "Lola";
         },
         propagateDrop: function() {
             // propagates widgetDrop up to widgetCollection

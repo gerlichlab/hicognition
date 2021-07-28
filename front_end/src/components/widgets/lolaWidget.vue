@@ -100,6 +100,7 @@
                 </div>
             </div>
             <associationPlot
+                v-if="showData"
             />
             <div
                 v-if="!showData"
@@ -124,15 +125,15 @@ import associationPlot from "../visualizations/associationPlot";
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
 
 export default {
-    name: lolaWidget,
+    name: "lolaWidget",
     mixins: [apiMixin, formattingMixin, widgetMixin],
     components: {
         associationPlot
     },
     computed: {
         message: function(){
-            return  this.collection[selected]["name"] + "binsize " + this.convertBasePairsToReadable(this.selectedBinsize)
-        }
+            return  this.datasets[this.selectedDataset]["name"] +  " | binsize " + this.convertBasePairsToReadable(this.selectedBinsize)
+        },
     },
     methods: {
         blankWidget: function(){
@@ -164,7 +165,7 @@ export default {
                 binsizes: this.binsizes,
                 binsize: this.selectedBinsize,
                 widgetDataRef: this.widgetDataRef,
-                widgetType: "LOLA",
+                widgetType: "Lola",
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -240,7 +241,7 @@ export default {
             // save it in store
             var mutationObject = {
                 id: id,
-                data: resonse.data
+                data: response.data
             };
             this.$store.commit("compare/setWidgetDataLola", mutationObject);
             // return it
@@ -252,7 +253,7 @@ export default {
             // store widget data ref
             this.widgetDataRef = selected_id;
             // fetch data
-            this.widgetData = await this.getLolaData(stackup_id)
+            this.widgetData = await this.getLolaData(selected_id)
         },
     },
     watch: {
@@ -285,7 +286,9 @@ export default {
                 this.blankWidget()
                 return
             }
-            this.binsizes = this.getIdsOfBinsizes();
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
             this.selectedBinsize = this.getCenterOfArray(
                 Object.keys(this.binsizes)
             );
@@ -296,7 +299,9 @@ export default {
             if (!newVal || !oldVal || this.selectedDataset.length == 0) {
                 return;
             }
-            this.binsizes = this.getIdsOfBinsizes();
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
             this.selectedBinsize = this.getCenterOfArray(
                 Object.keys(this.binsizes)
             );
@@ -307,23 +312,10 @@ export default {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
             }
-            // set binsizes -> there can be multiple datasets, binsizes need to be collected for them
-            this.binsizes = this.getIdsOfBinsizes();
-            // remove old dataset ids from used values in store
-            for (let dataset_id_old of oldVal) {
-                this.$store.commit(
-                    "compare/decrement_usage_dataset",
-                    dataset_id_old
-                );
-            }
-            // add new datasets to used values in store
-            for (let dataset_id_new of newVal) {
-                this.$store.commit(
-                    "compare/increment_usage_dataset",
-                    dataset_id_new
-                );
-            }
-            // if no binsizes selected, set default and return
+            // set binsizes and add default
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
             if (!this.selectedBinsize) {
                 this.selectedBinsize = this.getCenterOfArray(
                     Object.keys(this.binsizes)
