@@ -38,6 +38,10 @@
                     showCollectionDialog = true;
                     menuVisible = false;
                 "
+                @preprocess-collection-click="
+                    showPreprocessCollectionsDialog = true;
+                    menuVisible = false;
+                "
             ></drawer>
         </md-app-drawer>
 
@@ -82,6 +86,10 @@
                 :dialog="showCollectionDialog"
                 @close-dialog="showCollectionDialog = false"
             />
+            <preprocess-collections-dialog
+                :dialog="showPreprocessCollectionsDialog"
+                @close-dialog="showPreprocessCollectionsDialog = false"
+            />
         </md-app-content>
     </md-app>
 </template>
@@ -97,6 +105,7 @@ import addSessionDialog from "../components/dialogs/addSessionDialog";
 import mySessionsDialog from "../components/dialogs/mySessionsDialog";
 import addCollectionDialog from "../components/dialogs/addCollectionDialog.vue"
 import collectionsDialog from "../components/dialogs/collectionsDialog.vue"
+import preprocessCollectionsDialog from "../components/dialogs/preProcessCollectionsDialog.vue"
 
 export default {
     name: "mainRoute",
@@ -110,7 +119,8 @@ export default {
         addSessionDialog,
         mySessionsDialog,
         addCollectionDialog,
-        collectionsDialog
+        collectionsDialog,
+        preprocessCollectionsDialog
     },
     data: () => ({
         menuVisible: false,
@@ -122,7 +132,8 @@ export default {
         showAddSessionDialog: false,
         showMySessionsDialog: false,
         showAddCollectionDialog: false,
-        showCollectionDialog: false
+        showCollectionDialog: false,
+        showPreprocessCollectionsDialog: false
     })
 };
 </script>

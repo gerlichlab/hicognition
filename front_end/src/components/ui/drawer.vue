@@ -47,7 +47,7 @@
                         >
                             <md-icon>launch</md-icon>
                         </md-button>
-                        <span class="md-list-item-text">Preprocess</span>
+                        <span class="md-list-item-text">Preprocess Datasets</span>
                     </md-list-item>
 
                     <md-list-item class="md-inset">
@@ -73,6 +73,15 @@
                             <md-icon>add</md-icon>
                         </md-button>
                         <span class="md-list-item-text">Create Dataset Collection</span>
+                    </md-list-item>
+                    <md-list-item class="md-inset">
+                        <md-button
+                            class="md-icon-button"
+                            @click="$emit('preprocess-collection-click')"
+                        >
+                            <md-icon>launch</md-icon>
+                        </md-button>
+                        <span class="md-list-item-text">Preprocess Collections</span>
                     </md-list-item>
                     <md-list-item class="md-inset">
                         <md-button
