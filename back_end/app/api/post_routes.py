@@ -354,6 +354,7 @@ def create_session():
             "name",
             "session_object",
             "session_type",
+            "used_collections",
             "used_datasets",
         ]:
             return True
@@ -368,6 +369,7 @@ def create_session():
     session_object = data["session_object"]
     session_type = data["session_type"]
     used_datasets = json.loads(data["used_datasets"])
+    used_collections = json.loads(data["used_collections"])
     # check whether datasets exist
     datasets = [Dataset.query.get(dataset_id) for dataset_id in used_datasets]
     if any(dataset is None for dataset in datasets):
@@ -377,16 +379,23 @@ def create_session():
         return forbidden(
             f"Some of the datasets associated with this session are not owned!"
         )
+    # check whether collections exist
+    collections = [Collection.query.get(collection_id) for collection_id in used_collections]
+    if any(collection is None for collection in collections):
+        return invalid(f"Some of the collections in used_collections do not exist!")
+    if any(is_access_to_collection_denied(collection, g) for collection in collections):
+        return forbidden(
+            f"Some of the collections associated with this session are not owned!"
+        )
     # create session
     session = Session(
         user_id=g.current_user.id,
         name=name,
         session_object=session_object,
         session_type=session_type,
+        datasets=datasets,
+        collections=collections
     )
-    # add datasets
-
-    session.datasets.extend(datasets)
     db.session.add(session)
     db.session.commit()
     return jsonify({"session_id": f"{session.id}"})
