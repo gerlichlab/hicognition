@@ -412,4 +412,5 @@ def get_all_collections():
         | Collection.public
         | (Collection.id.in_(g.session_collections))
     ).all()
+    update_processing_state(all_available_collections, db)
     return jsonify([dfile.to_json() for dfile in all_available_collections])

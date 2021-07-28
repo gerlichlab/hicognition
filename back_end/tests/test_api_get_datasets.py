@@ -378,7 +378,7 @@ class TestProcessingStateIsUpdated(LoginTestCase):
         dataset = Dataset.query.get(self.uploading_dataset.id)
         self.assertEqual(dataset.processing_state, "uploading")
 
-    def test_uploading_dataset_no_update_wo_task(self):
+    def test_uploading_dataset_no_update_w_task(self):
         # add new user
         token = self.add_and_authenticate("test", "asdf")
         # create token header

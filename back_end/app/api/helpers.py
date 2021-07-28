@@ -35,10 +35,10 @@ def is_dataset_deletion_denied(dataset_id, current_user):
     return dataset_id.user_id != current_user.id
 
 
-def update_processing_state(datasets, db):
-    """updates processing state of all datasets in the supplied iterable"""
-    for dataset in datasets:
-        dataset.set_processing_state(db)
+def update_processing_state(entries, db):
+    """updates processing state of all entries (must implement set_processing_state) in the supplied iterable"""
+    for entry in entries:
+        entry.set_processing_state(db)
 
 
 def parse_description_and_genotype(form_data):
