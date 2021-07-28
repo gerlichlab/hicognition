@@ -118,6 +118,7 @@ def get_processed_data_mapping_of_dataset(dataset_id):
         processed_data_type: {
             associated_dataset_id/associated_collection_id: {
                 name: NAME_OF_ASSOCIATED_DATASET/NAME_OF_ASSOCIATED_COLLECTION,
+                (collection_dataset_names: [...names...],)
                 data_ids: {
                     interval_size: {
                         binsize: {
@@ -148,7 +149,12 @@ def get_processed_data_mapping_of_dataset(dataset_id):
     if dataset.filetype != "bedfile":
         return invalid(f"Dataset with id '{dataset_id}' is not a bedfile!")
     # create output object
-    output = {"pileup": recDict(), "stackup": recDict(), "lineprofile": recDict()}
+    output = {
+        "pileup": recDict(),
+        "stackup": recDict(),
+        "lineprofile": recDict(),
+        "lola": recDict(),
+    }
     # populate output object
     associated_intervals = dataset.intervals.all()
     for interval in associated_intervals:

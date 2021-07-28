@@ -129,11 +129,14 @@ def add_association_data_to_preprocessed_dataset_map(
 ):
     for assoc in association_interval_datasets:
         collection = Collection.query.get(assoc.collection_id)
-        # check whether dataset is owned
+        # check whether collection is owned
         if is_access_to_collection_denied(collection, request_context):
             continue
         interval = Intervals.query.get(assoc.intervals_id)
         output_object["lola"][collection.id]["name"] = collection.name
+        output_object["lola"][collection.id][
+            "collection_dataset_names"
+        ] = collection.to_json()["dataset_names"]
         output_object["lola"][collection.id]["data_ids"][interval.windowsize][
             assoc.binsize
         ] = str(assoc.id)

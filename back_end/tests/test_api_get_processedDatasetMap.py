@@ -6,7 +6,14 @@ import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, AverageIntervalData, IndividualIntervalData
+from app.models import (
+    Dataset,
+    Intervals,
+    AverageIntervalData,
+    IndividualIntervalData,
+    Collection,
+    AssociationIntervalData,
+)
 
 
 class TestGetProcessedDatasetMap(LoginTestCase):
@@ -38,10 +45,20 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         self.not_owned_cooler = Dataset(
             id=6, user_id=2, filetype="cooler", dataset_name="testfile6"
         )
-        self.not_owned_datasets = [
-            self.not_owned_bigwig,
-            self.not_owned_cooler
-        ]
+        self.owned_bedfile2 = Dataset(
+            id=7, user_id=1, filetype="bedfile", dataset_name="testfile7"
+        )
+        self.owned_bedfile3 = Dataset(
+            id=8, user_id=1, filetype="bedfile", dataset_name="testfile8"
+        )
+        self.not_owned_datasets = [self.not_owned_bigwig, self.not_owned_cooler]
+        # create colledtions
+        self.owned_collection = Collection(
+            id=1,
+            user_id=1,
+            name="test_collection",
+            datasets=[self.owned_bedfile, self.owned_bedfile2, self.owned_bedfile3],
+        )
         # create intervals
         self.intervals_owned_bedfile = [
             Intervals(id=1, dataset_id=1, windowsize=10000),
@@ -64,7 +81,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             ),
             AverageIntervalData(
                 id=5, binsize=2000, dataset_id=6, intervals_id=2, value_type="ICCF"
-            )
+            ),
         ]
         # create line profiles
         self.lineprofiles = [
@@ -76,13 +93,25 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             ),
             AverageIntervalData(
                 id=8, binsize=2000, dataset_id=5, intervals_id=2, value_type="line"
-            )
+            ),
         ]
         # create stackup
         self.stackups = [
             IndividualIntervalData(id=1, binsize=1000, dataset_id=4, intervals_id=1),
             IndividualIntervalData(id=2, binsize=2000, dataset_id=4, intervals_id=2),
-            IndividualIntervalData(id=3, binsize=2000, dataset_id=5, intervals_id=2)
+            IndividualIntervalData(id=3, binsize=2000, dataset_id=5, intervals_id=2),
+        ]
+        # create association data
+        self.association_data = [
+            AssociationIntervalData(
+                id=1, binsize=10000, collection_id=1, intervals_id=1
+            ),
+            AssociationIntervalData(
+                id=2, binsize=20000, collection_id=1, intervals_id=1
+            ),
+            AssociationIntervalData(
+                id=3, binsize=20000, collection_id=1, intervals_id=2
+            ),
         ]
 
     def test_no_auth(self):
@@ -159,7 +188,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether response is correct
-        expected = {"pileup": {}, "stackup": {}, "lineprofile": {}}
+        expected = {"pileup": {}, "stackup": {}, "lineprofile": {}, "lola": {}}
         self.assertEqual(response.json, expected)
 
     def test_structure_of_mapping_w_intervals_wo_data(self):
@@ -182,7 +211,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether response is correct
-        expected = {"pileup": {}, "stackup": {}, "lineprofile": {}}
+        expected = {"pileup": {}, "stackup": {}, "lineprofile": {}, "lola": {}}
         self.assertEqual(response.json, expected)
 
     def test_structure_of_mapping_w_intervals_w_pileups(self):
@@ -218,6 +247,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             },
             "stackup": {},
             "lineprofile": {},
+            "lola": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -245,6 +275,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         expected = {
             "pileup": {},
             "stackup": {},
+            "lola": {},
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
@@ -254,7 +285,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         }
         self.assertEqual(response.json, expected)
 
-    def test_structure_of_mapping_w_intervals_w_stackupes(self):
+    def test_structure_of_mapping_w_intervals_w_stackups(self):
         """Test whether the structure of the returned object is correct for
         bedfile associated with pileups"""
         # authenticate
@@ -284,10 +315,50 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 }
             },
             "lineprofile": {},
+            "lola": {},
         }
         self.assertEqual(response.json, expected)
 
-    def test_structure_of_mapping_w_intervals_w_all_datataypes(self):
+    def test_structure_of_mapping_w_intervals_w_association_data(self):
+        """Test whether the structure of the returned object is correct for
+        bedfile associated with pileups"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add datasets
+        db.session.add_all(self.owned_datasets)
+        db.session.add(self.owned_collection)
+        db.session.add_all(self.not_owned_datasets)
+        db.session.add_all(self.intervals_owned_bedfile)
+        db.session.add_all(self.association_data)
+        db.session.commit()
+        # protected route
+        response = self.client.get(
+            "/api/datasets/1/processedDataMap/",
+            content_type="application/json",
+            headers=token_headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether response is correct
+        expected = {
+            "pileup": {},
+            "stackup": {},
+            "lineprofile": {},
+            "lola": {
+                "1": {
+                    "name": "test_collection",
+                    "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                    "data_ids": {
+                        "10000": {"10000": "1", "20000": "2"},
+                        "20000": {"20000": "3"},
+                    },
+                }
+            },
+        }
+        self.assertEqual(response.json, expected)
+
+    def test_structure_of_mapping_w_intervals_w_all_datatypes(self):
         """Test whether the structure of the returned object is correct for
         bedfile associated with pileups"""
         # authenticate
@@ -297,10 +368,12 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         # add datasets
         db.session.add_all(self.owned_datasets)
         db.session.add_all(self.not_owned_datasets)
+        db.session.add(self.owned_collection)
         db.session.add_all(self.intervals_owned_bedfile)
         db.session.add_all(self.pileups)
         db.session.add_all(self.lineprofiles)
         db.session.add_all(self.stackups)
+        db.session.add_all(self.association_data)
         db.session.commit()
         # protected route
         response = self.client.get(
@@ -330,6 +403,16 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
+                }
+            },
+            "lola": {
+                "1": {
+                    "name": "test_collection",
+                    "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                    "data_ids": {
+                        "10000": {"10000": "1", "20000": "2"},
+                        "20000": {"20000": "3"},
+                    },
                 }
             },
         }
