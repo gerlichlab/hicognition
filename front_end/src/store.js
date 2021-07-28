@@ -90,6 +90,12 @@ const compareModule = {
             }
             return state.widgetData["lineprofile"][payload.id];
         },
+        getWidgetDataLola: state => payload => {
+            if (!("lola" in state.widgetData)) {
+                return undefined;
+            }
+            return state.widgetData["lola"][payload.id];
+        },
         widgetExists: state => payload => {
             // checks whether widget with id exists
             return payload.id in state.widgetCollections[payload.parentID]["children"]
@@ -112,6 +118,14 @@ const compareModule = {
             }
             return (
                 payload.id in state.widgetData["stackup"]
+            );
+        },
+        associationDataExists: state => payload => {
+            if (!("lola" in state.widgetData)) {
+                return false;
+            }
+            return (
+                payload.id in state.widgetData["lola"]
             );
         },
         getWidgetType: state => payload => {
@@ -228,6 +242,14 @@ const compareModule = {
                 state.widgetData["lineprofile"] = [];
             }
             state.widgetData["lineprofile"][payload.id] =
+                payload.data;
+        },
+        setWidgetDataLola(state, payload) {
+            if (!("lola" in state.widgetData)) {
+                // initialize data
+                state.widgetData["lola"] = {};
+            }
+            state.widgetData["lola"][payload.id] =
                 payload.data;
         },
         setWidgetType(state, payload) {
