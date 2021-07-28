@@ -17,15 +17,9 @@ class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):
     def setUp(self):
         super().setUp()
         # add owned collection
-        self.owned_collection = Collection(
-            id=1,
-            user_id=1
-        )
+        self.owned_collection = Collection(id=1, user_id=1)
         # add unowned collection
-        self.unowned_collection = Collection(
-            id=2,
-            user_id=2
-        )
+        self.unowned_collection = Collection(id=2, user_id=2)
         # add owned bedfile
         self.owned_bedfile = Dataset(
             id=3,
@@ -69,11 +63,7 @@ class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, self.test_data)
         self.assocData_owned = AssociationIntervalData(
-            id=3,
-            binsize=10000,
-            file_path=data_path,
-            collection_id=1,
-            intervals_id=1
+            id=3, binsize=10000, file_path=data_path, collection_id=1, intervals_id=1
         )
 
     def test_no_auth(self):
@@ -174,6 +164,7 @@ class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):
             "dtype": "float32",
         }
         self.assertEqual(response.json, expected)
+
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

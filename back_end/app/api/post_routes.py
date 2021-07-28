@@ -206,7 +206,9 @@ def preprocess_collections():
     if any(is_access_to_dataset_denied(entry, g) for entry in region_datasets):
         return forbidden(f"Region dataset is not owned by logged in user!")
     # delete all jobs that are in database and have failed
-    associated_tasks = Task.query.filter_by(collection=Collection.query.get(collection_id)).all()
+    associated_tasks = Task.query.filter_by(
+        collection=Collection.query.get(collection_id)
+    ).all()
     remove_failed_tasks(associated_tasks, db)
     # get interval ids of selected regions
     interval_ids = get_all_interval_ids(region_datasets)

@@ -246,6 +246,7 @@ class AssociationIntervalData(db.Model):
     """Table to hold information and pointers to data for values extracted by calculating
     association metrics between dataset collections and intervals. E.g.: LOLA enrichment data,
     Continuous values enrichment."""
+
     id = db.Column(db.Integer, primary_key=True)
     binsize = db.Column(db.Integer)
     name = db.Column(db.String(512), index=True)
@@ -406,7 +407,7 @@ class Collection(db.Model):
             "kind": self.kind,
             "number_datasets": len(self.datasets),
             "dataset_names": [dataset.dataset_name for dataset in self.datasets],
-            "processing_state": self.processing_state
+            "processing_state": self.processing_state,
         }
         return json_session
 

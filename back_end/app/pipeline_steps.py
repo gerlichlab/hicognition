@@ -180,7 +180,9 @@ def perform_stackup(bigwig_dataset_id, intervals_id, binsize):
 
 def perform_enrichment_analysis(collection_id, intervals_id, binsize):
     """Pipeline step to perform enrichment analysis"""
-    log.info(f"Doing enrichment analysis with collection {collection_id} on inverals {intervals_id} with binsize {binsize}")
+    log.info(
+        f"Doing enrichment analysis with collection {collection_id} on inverals {intervals_id} with binsize {binsize}"
+    )
     # get query regions
     intervals = Intervals.query.get(intervals_id)
     file_path = intervals.source_dataset.file_path

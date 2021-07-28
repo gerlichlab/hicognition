@@ -20,7 +20,6 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         open(file_path, "w").close()
         return file_path
 
-
     def setUp(self):
         """Add test dataset"""
         # call setUp of LoginTestCase to initialize app
@@ -56,10 +55,7 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         # create AssociationIntervalData
         test_file = self._create_empty_file_in_tempdir("asdf.npy")
         self.assoc_data_1 = AssociationIntervalData(
-            file_path=test_file,
-            binsize=50000,
-            collection_id=1,
-            intervals_id=1
+            file_path=test_file, binsize=50000, collection_id=1, intervals_id=1
         )
         # create groupings
         self.datasets = [
@@ -85,7 +81,6 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         self.assertEqual(result.intervals_id, 1)
         self.assertEqual(result.binsize, 50000)
         self.assertEqual(result.collection_id, 1)
-
 
     def test_old_association_data_removed_when_retriggered(self):
         """tests whether perform enrichment analysis adds result correctly to db."""

@@ -52,16 +52,38 @@
                 >
                 <md-table-cell md-label="">
 
-                <md-list >
-                    <!-- stop prevent is needed for table to not change styles based on click event -->
-                    <md-list-item md-expand @click.stop.prevent>
-                        <span class="md-list-item-text" :style="containedDatasetStyle">Contained Datasets</span>
-                    <md-list slot="md-expand">
-                        <md-list-item v-for="name in item.dataset_names" :key="name">{{name}}</md-list-item>
+                    <md-list >
+                        <!-- stop prevent is needed for table to not change styles based on click event -->
+                        <md-list-item md-expand @click.stop.prevent>
+                            <span class="md-list-item-text" :style="containedDatasetStyle">Contained Datasets</span>
+                        <md-list slot="md-expand">
+                            <md-list-item v-for="name in item.dataset_names" :key="name">{{name}}</md-list-item>
+                        </md-list>
+                        </md-list-item>
                     </md-list>
-                    </md-list-item>
-                </md-list>
 
+                </md-table-cell>
+                <md-table-cell
+                    md-label="Progress"
+                    md-sort-by="processing_state"
+                >
+                    <md-icon v-if="item.processing_state == 'finished'"
+                        >done</md-icon
+                    >
+                    <md-progress-spinner
+                        :md-diameter="30"
+                        md-mode="indeterminate"
+                        v-else-if="item.processing_state == 'processing'"
+                    ></md-progress-spinner>
+                    <md-icon v-else-if="item.processing_state == 'failed'"
+                        >error</md-icon
+                    >
+                    <md-icon v-else-if="item.processing_state == 'uploaded'"
+                        >cloud_done</md-icon
+                    >
+                    <md-icon v-else-if="item.processing_state == 'uploading'"
+                        >cloud_upload</md-icon
+                    >
                 </md-table-cell>
             </md-table-row>
         </md-table>

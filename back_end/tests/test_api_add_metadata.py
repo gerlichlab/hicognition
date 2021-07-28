@@ -30,7 +30,6 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         test_data_len_6.to_csv(test_filepath_len_6, sep="\t", header=None)
         self.dataset_len_6 = Dataset(id=1, user_id=1, file_path=test_filepath_len_6)
 
-
     def test_access_denied_without_token(self):
         """Test whether post request results in 401 error
         if no token is provided."""
@@ -323,7 +322,9 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
             }
         )
         metadata_data.to_csv(metadata_filepath, index=False)
-        self.owned_metadata_with_file = BedFileMetadata(id=1, dataset_id=2, file_path=metadata_filepath)
+        self.owned_metadata_with_file = BedFileMetadata(
+            id=1, dataset_id=2, file_path=metadata_filepath
+        )
         self.owned_with_file = [self.owned_dataset, self.owned_metadata_with_file]
 
     def test_access_denied_without_token(self):

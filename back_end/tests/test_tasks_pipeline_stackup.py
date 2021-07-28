@@ -185,5 +185,6 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
         )
         np.testing.assert_array_almost_equal(loaded_dataset, expected_dataset)
 
+
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

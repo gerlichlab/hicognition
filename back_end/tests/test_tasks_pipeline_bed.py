@@ -144,7 +144,9 @@ class TestBedPreprocessPipelineStep(LoginTestCase, TempDirTestCase):
         # check whehter unique entries in associated index file is equally long as regions
         intervals = Intervals.query.first()
         sub_sample_index = np.load(intervals.file_path_sub_sample_index)
-        self.assertEqual(self.app.config["STACKUP_THRESHOLD"], len(set(sub_sample_index)))
+        self.assertEqual(
+            self.app.config["STACKUP_THRESHOLD"], len(set(sub_sample_index))
+        )
 
 
 if __name__ == "__main__":

@@ -16,8 +16,7 @@ class TestAddCollection(LoginTestCase):
         # add datasets
         self.empty_owned_dataset_1 = Dataset(id=1, user_id=1)
         self.empty_owned_dataset_2 = Dataset(id=2, user_id=1)
-        self.owned_datasets = [self.empty_owned_dataset_1,
-                               self.empty_owned_dataset_2]
+        self.owned_datasets = [self.empty_owned_dataset_1, self.empty_owned_dataset_2]
         self.empty_unowned_dataset = Dataset(id=1, user_id=2)
 
     def test_access_denied_without_token(self):
@@ -48,10 +47,7 @@ class TestAddCollection(LoginTestCase):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
-        data = {
-            "used_datasets": "[1, 2, 3, 4]",
-            "kind": "regions"
-        }
+        data = {"used_datasets": "[1, 2, 3, 4]", "kind": "regions"}
         # dispatch post request
         response = self.client.post(
             "/api/collections/",
@@ -66,10 +62,7 @@ class TestAddCollection(LoginTestCase):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
-        data = {
-            "name": "test-collection",
-            "kind": "regions"
-        }
+        data = {"name": "test-collection", "kind": "regions"}
         # dispatch post request
         response = self.client.post(
             "/api/collections/",
@@ -105,7 +98,7 @@ class TestAddCollection(LoginTestCase):
         data = {
             "name": "test-collection",
             "used_datasets": "[1, 2, 3]",
-            "kind": "regions"
+            "kind": "regions",
         }
         # dispatch post request
         response = self.client.post(
@@ -125,11 +118,7 @@ class TestAddCollection(LoginTestCase):
         # add dataset
         db.session.add(self.empty_unowned_dataset)
         db.session.commit()
-        data = {
-            "name": "test-collection",
-            "used_datasets": "[1]",
-            "kind": "regions"
-        }
+        data = {"name": "test-collection", "used_datasets": "[1]", "kind": "regions"}
         # dispatch post request
         response = self.client.post(
             "/api/collections/",
@@ -148,11 +137,7 @@ class TestAddCollection(LoginTestCase):
         # add dataset
         db.session.add_all(self.owned_datasets)
         db.session.commit()
-        data = {
-            "name": "test-collection",
-            "used_datasets": "[1, 2]",
-            "kind": "regions"
-        }
+        data = {"name": "test-collection", "used_datasets": "[1, 2]", "kind": "regions"}
         # dispatch post request
         response = self.client.post(
             "/api/collections/",

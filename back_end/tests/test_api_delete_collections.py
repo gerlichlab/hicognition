@@ -15,15 +15,9 @@ class TestDeleteCollection(LoginTestCase):
     def setUp(self):
         super().setUp()
         # define datasets
-        self.collection_user_1 = Collection(
-            user_id=1, name="test"
-        )
-        self.collection_user_1_2 = Collection(
-            user_id=1, name="test2"
-        )
-        self.collection_user_2 = Collection(
-            user_id=2, name="test3"
-        )
+        self.collection_user_1 = Collection(user_id=1, name="test")
+        self.collection_user_1_2 = Collection(user_id=1, name="test2")
+        self.collection_user_2 = Collection(user_id=2, name="test3")
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
@@ -35,7 +29,9 @@ class TestDeleteCollection(LoginTestCase):
 
     def test_delete_wo_collection_id(self):
         """Should return 405 since delete is not allowed for /api/collections"""
-        response = self.client.delete("/api/collections/", content_type="application/json")
+        response = self.client.delete(
+            "/api/collections/", content_type="application/json"
+        )
         self.assertEqual(response.status_code, 405)
 
     def test_delete_collection_does_not_exist(self):

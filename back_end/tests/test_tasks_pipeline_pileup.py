@@ -86,13 +86,11 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         call_args = self.get_call_args_without_index(mock_perform_pileup, 3)
         # compare expected call arguments with actual call arguments
         for pileup_type in pileup_types:
-                # check whether the current combination is in call args list
-                expected_call_args = [dataset_id, intervals_id, binsize, pileup_type]
-                self.assertTrue(expected_call_args in call_args)
+            # check whether the current combination is in call args list
+            expected_call_args = [dataset_id, intervals_id, binsize, pileup_type]
+            self.assertTrue(expected_call_args in call_args)
         # check whether number of calls was as expected
-        self.assertEqual(
-            len(call_args), len(pileup_types)
-        )
+        self.assertEqual(len(call_args), len(pileup_types))
         # check whether last call to set task progress was 100
         mock_set_progress.assert_called_with(100)
 

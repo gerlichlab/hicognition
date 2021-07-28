@@ -11,7 +11,7 @@ from ..models import (
     Dataset,
     AverageIntervalData,
     IndividualIntervalData,
-    Session
+    Session,
 )
 from .authentication import auth
 from .errors import forbidden, invalid, not_found
@@ -63,14 +63,21 @@ def delete_dataset(dataset_id):
     sessions = Session.query.filter(Session.datasets.any(id=dataset.id)).all()
     # delete files and remove from database
     deletion_queue = (
-        [dataset] + intervals + averageIntervalData + individualIntervalData + metadata + sessions
+        [dataset]
+        + intervals
+        + averageIntervalData
+        + individualIntervalData
+        + metadata
+        + sessions
     )
     for entry in deletion_queue:
         if isinstance(entry, IndividualIntervalData):
             remove_safely(entry.file_path_small)
         if hasattr(entry, "file_path") and (entry.file_path is not None):
             remove_safely(entry.file_path)
-        if hasattr(entry, "file_path_sub_sample_index") and (entry.file_path_sub_sample_index is not None):
+        if hasattr(entry, "file_path_sub_sample_index") and (
+            entry.file_path_sub_sample_index is not None
+        ):
             remove_safely(entry.file_path_sub_sample_index)
         db.session.delete(
             entry
@@ -79,6 +86,7 @@ def delete_dataset(dataset_id):
     response = jsonify({"message": "success"})
     response.status_code = 200
     return response
+
 
 @api.route("/sessions/<session_id>/", methods=["DELETE"])
 @auth.login_required

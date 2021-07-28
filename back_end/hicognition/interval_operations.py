@@ -17,7 +17,7 @@ def chunk_intervals(regions, window_size, binsize):
         regions = regions.rename(columns={0: "chrom", 1: "pos"})
     # get bounds for chunks
     chroms = regions["chrom"]
-    starts = ((regions["pos"] - window_size)//binsize) * binsize
+    starts = ((regions["pos"] - window_size) // binsize) * binsize
     # construct output
     return [
         pd.DataFrame(

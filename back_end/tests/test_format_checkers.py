@@ -30,7 +30,8 @@ class TestIsBedFileCorrectlyFormatted(TempDirTestCase):
     def test_real_data_named_columns(self):
         result = format_checkers.is_bed_file_correctly_formatted(
             "tests/testfiles/real_data_tricky_header_named_columns.bed",
-            self.chrom_names, [],
+            self.chrom_names,
+            [],
         )
         self.assertTrue(result)
 
@@ -45,7 +46,8 @@ class TestIsBedFileCorrectlyFormatted(TempDirTestCase):
         """Tests formatchecking of bedfile with header containing track and browser"""
         result = format_checkers.is_bed_file_correctly_formatted(
             "tests/testfiles/real_data_tricky_header_w_track_and_browser.bed",
-            self.chrom_names, [],
+            self.chrom_names,
+            [],
         )
         self.assertTrue(result)
 
@@ -54,7 +56,8 @@ class TestIsBedFileCorrectlyFormatted(TempDirTestCase):
         as well as named columns."""
         result = format_checkers.is_bed_file_correctly_formatted(
             "tests/testfiles/real_data_tricky_header_named_columns_w_track_and_browser.bed",
-            self.chrom_names, [],
+            self.chrom_names,
+            [],
         )
         self.assertTrue(result)
 
@@ -91,15 +94,27 @@ class TestIsCoolerCorrectlyFormatted(unittest.TestCase):
 
     def test_good_cooler(self):
         """Good cooler should return True"""
-        self.assertTrue(format_checkers.is_mcooler("./tests/testfiles/test.mcool",self.chrom_names, []))
+        self.assertTrue(
+            format_checkers.is_mcooler(
+                "./tests/testfiles/test.mcool", self.chrom_names, []
+            )
+        )
 
     def test_bad_cooler(self):
         """bad cooler should return false"""
-        self.assertFalse(format_checkers.is_mcooler("./tests/testfiles/bad_cooler.mcool",self.chrom_names, []))
+        self.assertFalse(
+            format_checkers.is_mcooler(
+                "./tests/testfiles/bad_cooler.mcool", self.chrom_names, []
+            )
+        )
 
     def test_good_cooler_resolution_not_available(self):
         """Good cooler without required resolutions should return false."""
-        self.assertFalse(format_checkers.is_mcooler("./tests/testfiles/test.mcool",self.chrom_names, [42]))
+        self.assertFalse(
+            format_checkers.is_mcooler(
+                "./tests/testfiles/test.mcool", self.chrom_names, [42]
+            )
+        )
 
 
 if __name__ == "__main__":
