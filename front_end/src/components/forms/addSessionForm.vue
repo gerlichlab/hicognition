@@ -103,6 +103,7 @@ export default {
             formData.append("name", this.form["sessionName"])
             // get session data
             var session_object = Object.assign({}, this.$store.getters["compare/getWidgetCollections"])
+            // construct array from used dataset map
             var used_datasets = this.$store.getters["compare/getUsedDatasets"]
             var used_dataset_array;
             if (used_datasets.size == 0){
@@ -110,9 +111,18 @@ export default {
             }else{
                 used_dataset_array = Array.from(used_datasets.keys())
             }
+            // construct array from used collections map
+            var used_collections = this.$store.getters["compare/getUsedCollections"]
+            var used_collections_array;
+            if (used_collections.size == 0){
+                used_collections_array = []
+            }else{
+                used_collections_array = Array.from(used_collections.keys())
+            }
             formData.append("session_object", JSON.stringify(session_object))
             formData.append("session_type", "compare")
             formData.append("used_datasets", JSON.stringify(used_dataset_array))
+            formData.append("used_collections", JSON.stringify(used_collections_array))
             // API call including upload is made in the background
             this.postData("sessions/", formData).then(response => {
                 if (response){
