@@ -15,6 +15,12 @@ from app.pipeline_steps import perform_enrichment_analysis
 class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
     """Tests bed_preprocess_pipeline_step"""
 
+    def _create_empty_file_in_tempdir(self, file_name):
+        file_path = os.path.join(self.TEMP_PATH, file_name)
+        open(file_path, "w").close()
+        return file_path
+
+
     def setUp(self):
         """Add test dataset"""
         # call setUp of LoginTestCase to initialize app
@@ -47,6 +53,14 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         self.collection_1 = Collection(
             id=1, datasets=[self.target_dataset_1, self.target_dataset_2]
         )
+        # create AssociationIntervalData
+        test_file = self._create_empty_file_in_tempdir("asdf.npy")
+        self.assoc_data_1 = AssociationIntervalData(
+            file_path=test_file,
+            binsize=50000,
+            collection_id=1,
+            intervals_id=1
+        )
         # create groupings
         self.datasets = [
             self.query_dataset,
@@ -62,6 +76,24 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         db.session.add_all(self.datasets)
         db.session.add_all(self.intervals)
         db.session.add_all(self.collections)
+        db.session.commit()
+        # run enrichment analysis
+        perform_enrichment_analysis(self.collection_1.id, self.query_interval.id, 50000)
+        # check database state
+        self.assertEqual(len(AssociationIntervalData.query.all()), 1)
+        result = AssociationIntervalData.query.first()
+        self.assertEqual(result.intervals_id, 1)
+        self.assertEqual(result.binsize, 50000)
+        self.assertEqual(result.collection_id, 1)
+
+
+    def test_old_association_data_removed_when_retriggered(self):
+        """tests whether perform enrichment analysis adds result correctly to db."""
+        # add everything needed to database
+        db.session.add_all(self.datasets)
+        db.session.add_all(self.intervals)
+        db.session.add_all(self.collections)
+        db.session.add(self.assoc_data_1)
         db.session.commit()
         # run enrichment analysis
         perform_enrichment_analysis(self.collection_1.id, self.query_interval.id, 50000)
