@@ -170,6 +170,11 @@ export default {
                                     await this.fetchStackupData(
                                         child_vals.widgetDataRef
                                     );
+                                    break
+                                case "Lola":
+                                    await this.fetchAssociationData(
+                                        child_vals.widgetDataRef
+                                    ); 
                             }
                         }
                     }
@@ -232,6 +237,26 @@ export default {
                 data: piling_data
             };
             this.$store.commit("compare/setWidgetDataStackup", mutationObject);
+        },
+        fetchAssociationData: async function(id) {
+            // checks whether association data is in store and fetches it if it is not
+            var queryObject = {
+                id: id
+            };
+            if (this.$store.getters["compare/associationDataExists"](queryObject)) {
+                return;
+            }
+            // pileup does not exists in store, fetch it
+            var response = await this.fetchData(
+                `associationIntervalData/${id}/`
+            );
+            var piling_data = response.data;
+            // save it in store
+            var mutationObject = {
+                id: id,
+                data: piling_data
+            };
+            this.$store.commit("compare/setWidgetDataLola", mutationObject);
         },
         fetchPileupData: async function(dataRef) {
             for (let [pileupType, id] of Object.entries(dataRef)) {
