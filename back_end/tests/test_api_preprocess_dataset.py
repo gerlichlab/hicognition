@@ -13,7 +13,7 @@ from app.models import Dataset, Task, Intervals
 
 class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
     """Tests correct launching of
-    pipelines after posting parameters to /preprocess route.
+    pipelines after posting parameters to /preprocess/datasets/ route.
     Inherits both from LoginTest and TempDirTestCase
     to be able to login and make temporary directory"""
 
