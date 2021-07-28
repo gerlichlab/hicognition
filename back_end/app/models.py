@@ -247,6 +247,7 @@ class Task(db.Model):
     description = db.Column(db.String(512))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
+    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
     complete = db.Column(db.Boolean, default=False)
 
     def get_rq_job(self):
@@ -354,6 +355,7 @@ class Collection(db.Model):
     kind = db.Column(
         db.String(256)
     )  # What kind of datasets are collected (regions, features)
+    tasks = db.relationship("Task", backref="collection", lazy="dynamic")
     datasets = db.relationship("Dataset", secondary=dataset_collection_assoc_table)
     associationData = db.relationship(
         "AssociationIntervalData", backref="source_collection", lazy="dynamic"
