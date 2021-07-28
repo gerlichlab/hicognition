@@ -26,22 +26,51 @@
                     class="md-layout md-gutter md-alignment-center-center fill-height no-margin"
                     v-else
                 >
-                    <md-button @click="setPileup" class="md-raised md-primary"
-                        >Pileup</md-button
-                    >
-                    <md-button class="md-raised md-primary" @click="setStackup"
-                        >Stackup</md-button
-                    >
-                    <md-button
-                        class="md-raised md-primary"
-                        @click="setLineprofile"
-                        >Lineprofile</md-button
-                    >
-                    <md-button
-                        class="md-raised md-primary"
-                        @click="setLola"
-                        >Lola</md-button
-                    >
+                    <div class="list">
+                        <md-list :md-expand-single="true">
+                            <md-list-item md-expand>
+                                <span class="md-list-item-text">Summary</span>
+                                <md-list slot="md-expand">
+                                    <md-list-item
+                                        class="md-inset"
+                                        @click="setPileup"
+                                        >Average 2d</md-list-item
+                                    >
+                                    <md-list-item
+                                        class="md-inset"
+                                        @click="setLineprofile"
+                                        >Lineprofile</md-list-item
+                                    >
+                                </md-list>
+                            </md-list-item>
+
+                            <md-list-item md-expand>
+                                <span class="md-list-item-text"
+                                    >Individual</span
+                                >
+                                <md-list slot="md-expand">
+                                    <md-list-item
+                                        class="md-inset"
+                                        @click="setStackup"
+                                        >Stacked lineprofiles</md-list-item
+                                    >
+                                </md-list>
+                            </md-list-item>
+
+                            <md-list-item md-expand>
+                                <span class="md-list-item-text"
+                                    >Association</span
+                                >
+                                <md-list slot="md-expand">
+                                    <md-list-item
+                                        class="md-inset"
+                                        @click="setLola"
+                                        >Lola</md-list-item
+                                    >
+                                </md-list>
+                            </md-list-item>
+                        </md-list>
+                    </div>
                 </div>
             </div>
         </div>
@@ -92,7 +121,7 @@
 import pileupWidget from "./widgets/pileupWidget";
 import stackupWidget from "./widgets/stackupWidget";
 import lineprofileWidget from "./widgets/lineprofileWidget";
-import lolaWidget from "./widgets/lolaWidget.vue"
+import lolaWidget from "./widgets/lolaWidget.vue";
 
 export default {
     name: "widgetContainer",
