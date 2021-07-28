@@ -215,7 +215,7 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
     # perform enrichment analysis
     log.info("      Run enrichment analysis...")
     results = [
-        pylola.run_lola(query, target_list, universe)["odds_ratio"].values
+        pylola.run_lola(query, target_list, universe, processes=4)["odds_ratio"].values
         for query in filtered_queries
     ]
     # stack results
