@@ -2,7 +2,7 @@
 import os
 from collections import defaultdict
 from flask import current_app
-from ..models import Intervals, Dataset
+from ..models import Intervals, Dataset, Collection
 
 
 def is_access_to_dataset_denied(dataset, g):
@@ -122,6 +122,21 @@ def add_individual_data_to_preprocessed_dataset_map(
         output_object["stackup"][dataset.id]["data_ids"][interval.windowsize][
             individual.binsize
         ] = str(individual.id)
+
+
+def add_association_data_to_preprocessed_dataset_map(
+    association_interval_datasets, output_object, request_context
+):
+    for assoc in association_interval_datasets:
+        collection = Collection.query.get(assoc.collection_id)
+        # check whether dataset is owned
+        if is_access_to_collection_denied(collection, request_context):
+            continue
+        interval = Intervals.query.get(assoc.intervals_id)
+        output_object["lola"][collection.id]["name"] = collection.name
+        output_object["lola"][collection.id]["data_ids"][interval.windowsize][
+            assoc.binsize
+        ] = str(assoc.id)
 
 
 def recDict():

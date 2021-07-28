@@ -11,6 +11,7 @@ from .helpers import (
     is_access_to_collection_denied,
     add_average_data_to_preprocessed_dataset_map,
     add_individual_data_to_preprocessed_dataset_map,
+    add_association_data_to_preprocessed_dataset_map,
     recDict,
 )
 from . import api
@@ -115,8 +116,8 @@ def get_processed_data_mapping_of_dataset(dataset_id):
     This object has the following structure:
     {
         processed_data_type: {
-            associated_dataset_id: {
-                name: NAME_OF_ASSOCIATED_DATASET,
+            associated_dataset_id/associated_collection_id: {
+                name: NAME_OF_ASSOCIATED_DATASET/NAME_OF_ASSOCIATED_COLLECTION,
                 data_ids: {
                     interval_size: {
                         binsize: {
@@ -128,7 +129,7 @@ def get_processed_data_mapping_of_dataset(dataset_id):
         }
     }
 
-    Processed_data_type is in [pileup, stackup, lineprofile]. All entries
+    Processed_data_type is in [pileup, stackup, lineprofile, lola]. All entries
     for a given processed_data_type key are available processed_datasets.
     The values for each processed_dataset hold information about their name
     and which id in the target table corresponds to which interval and binsize
@@ -153,9 +154,11 @@ def get_processed_data_mapping_of_dataset(dataset_id):
     for interval in associated_intervals:
         average_data = interval.averageIntervalData.all()
         individual_data = interval.individualIntervalData.all()
+        association_data = interval.associationIntervalData.all()
         # add data
         add_average_data_to_preprocessed_dataset_map(average_data, output, g)
         add_individual_data_to_preprocessed_dataset_map(individual_data, output, g)
+        add_association_data_to_preprocessed_dataset_map(association_data, output, g)
     return jsonify(output)
 
 
