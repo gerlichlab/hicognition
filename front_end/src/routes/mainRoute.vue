@@ -38,8 +38,8 @@
                     showCollectionDialog = true;
                     menuVisible = false;
                 "
-                @preprocess-collection-click="
-                    showPreprocessCollectionsDialog = true;
+                @calculate-associations-click="
+                    showCalculateAssociations = true;
                     menuVisible = false;
                 "
             ></drawer>
@@ -87,8 +87,9 @@
                 @close-dialog="showCollectionDialog = false"
             />
             <preprocess-collections-dialog
-                :dialog="showPreprocessCollectionsDialog"
-                @close-dialog="showPreprocessCollectionsDialog = false"
+                :dialog="showCalculateAssociations"
+                @close-dialog="showCalculateAssociations = false"
+                datatype="regions"
             />
         </md-app-content>
     </md-app>
@@ -133,7 +134,7 @@ export default {
         showMySessionsDialog: false,
         showAddCollectionDialog: false,
         showCollectionDialog: false,
-        showPreprocessCollectionsDialog: false
+        showCalculateAssociations: false
     })
 };
 </script>

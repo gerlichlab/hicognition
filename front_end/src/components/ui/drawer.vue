@@ -77,11 +77,11 @@
                     <md-list-item class="md-inset">
                         <md-button
                             class="md-icon-button"
-                            @click="$emit('preprocess-collection-click')"
+                            @click="$emit('calculate-associations-click')"
                         >
                             <md-icon>launch</md-icon>
                         </md-button>
-                        <span class="md-list-item-text">Preprocess Collections</span>
+                        <span class="md-list-item-text">Calculate associations</span>
                     </md-list-item>
                     <md-list-item class="md-inset">
                         <md-button

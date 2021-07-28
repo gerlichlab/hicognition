@@ -105,6 +105,9 @@ import { apiMixin, formattingMixin } from "../../mixins";
 export default {
     name: "PreprocessDatasetForm",
     mixins: [validationMixin, apiMixin, formattingMixin],
+    props: {
+        datatype: String
+    },
     data: () => ({
         availableCollections: [],
         availableBedFiles: [],
@@ -151,7 +154,10 @@ export default {
         fetchCollections: function(){
             this.fetchData("collections/").then(response => {
                 // update bedfiles
-                this.availableCollections = response.data
+                this.availableCollections = response.data.filter(
+                    element => 
+                        element.kind == this.datatype
+                )
             })
         },
         getValidationClass(fieldName) {

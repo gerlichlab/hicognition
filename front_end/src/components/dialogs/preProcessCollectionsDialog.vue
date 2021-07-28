@@ -2,7 +2,7 @@
     <div>
         <md-dialog :md-active.sync="showDialog">
             <md-dialog-title
-                >Preprocess Collections<md-tooltip md-direction="left">
+                >{{dialogName}}<md-tooltip md-direction="left">
                     <div>
                         <span class="md-title"
                             >Information about preprocessing</span
@@ -22,6 +22,7 @@
             </md-dialog-title>
             <preprocessCollectionsForm
                 @close-dialog="$emit('close-dialog')"
+                :datatype="datatype"
             ></preprocessCollectionsForm>
         </md-dialog>
     </div>
@@ -36,9 +37,17 @@ export default {
         preprocessCollectionsForm
     },
     props: {
-        dialog: Boolean
+        dialog: Boolean,
+        datatype: String
     },
     computed: {
+        dialogName: function(){
+            if (this.datatype == "regions"){
+                return "Calculate Associations"
+            }else{
+                return "Calculate Embeddings"
+            }
+        },
         showDialog: {
             set: function(value) {
                 if (!value) {

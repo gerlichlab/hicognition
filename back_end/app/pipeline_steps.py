@@ -180,12 +180,14 @@ def perform_stackup(bigwig_dataset_id, intervals_id, binsize):
 
 def perform_enrichment_analysis(collection_id, intervals_id, binsize):
     """Pipeline step to perform enrichment analysis"""
+    log.info(f"Doing enrichment analysis with collection {collection_id} on inverals {intervals_id} with binsize {binsize}")
     # get query regions
     intervals = Intervals.query.get(intervals_id)
     file_path = intervals.source_dataset.file_path
     window_size = intervals.windowsize
     regions = pd.read_csv(file_path, sep="\t", header=None)
     # make queries
+    log.info("      Constructing queries...")
     queries = interval_operations.chunk_intervals(regions, window_size, binsize)
     # remove anything that is not in universe and dropduplicates
     chromsizes = io_helpers.load_chromsizes(current_app.config["CHROM_SIZES"])
@@ -200,6 +202,7 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
         for query in queries
     ]
     # get target datasets
+    log.info("      Calculate target list...")
     collection = Collection.query.get(collection_id)
     target_list = [
         pd.read_csv(target.file_path, sep="\t", header=None)
@@ -210,6 +213,7 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
     # get universe -> genome binned with equal binsize
     universe = bf.binnify(chromsizes, binsize)
     # perform enrichment analysis
+    log.info("      Run enrichment analysis...")
     results = [
         pylola.run_lola(query, target_list, universe)["odds_ratio"].values
         for query in filtered_queries
