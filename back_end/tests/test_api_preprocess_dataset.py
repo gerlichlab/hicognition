@@ -64,7 +64,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         }
         # dispatch post request
         response = self.client.post(
-            "/api/preprocess/",
+            "/api/preprocess/datasets/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
@@ -100,7 +100,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         }
         # dispatch post request
         response = self.client.post(
-            "/api/preprocess/",
+            "/api/preprocess/datasets/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
@@ -120,7 +120,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         }
         # dispatch post request
         response = self.client.post(
-            "/api/preprocess/",
+            "/api/preprocess/datasets/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
@@ -139,7 +139,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         }
         # dispatch post request
         response = self.client.post(
-            "/api/preprocess/",
+            "/api/preprocess/datasets/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
@@ -162,7 +162,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         }
         # dispatch post request
         response = self.client.post(
-            "/api/preprocess/",
+            "/api/preprocess/datasets/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
@@ -198,7 +198,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         }
         # dispatch post request
         response = self.client.post(
-            "/api/preprocess/",
+            "/api/preprocess/datasets/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
@@ -241,7 +241,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         data = {"dataset_id": "1", "region_ids": "[4]"}
         # dispatch post request
         response = self.client.post(
-            "/api/preprocess/",
+            "/api/preprocess/datasets/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",

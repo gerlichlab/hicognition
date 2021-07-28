@@ -48,6 +48,20 @@ class User(db.Model, UserMixin):
         db.session.add(task)
         return task
 
+    def launch_collection_task(self, name, description, collection_id, *args, **kwargs):
+        rq_job = current_app.task_queue.enqueue(
+            "app.tasks." + name, collection_id, job_timeout="10h", *args, **kwargs
+        )
+        task = Task(
+            id=rq_job.get_id(),
+            name=name,
+            description=description,
+            user_id=self.id,
+            collection_id=collection_id,
+        )
+        db.session.add(task)
+        return task
+
     def get_tasks_in_progress(self):
         return Task.query.filter_by(user=self, complete=False).all()
 
@@ -360,6 +374,29 @@ class Collection(db.Model):
     associationData = db.relationship(
         "AssociationIntervalData", backref="source_collection", lazy="dynamic"
     )
+    processing_state = db.Column(db.String(64))
+
+    def get_tasks_in_progress(self):
+        return Task.query.filter_by(collection=self, complete=False).all()
+
+    def set_processing_state(self, db):
+        """sets the current processing state of the collection instance.
+        Launching task sets processing state, this sets finished/failed state"""
+        if self.processing_state not in ["processing", "finished", "failed"]:
+            return
+        # check if there are any unfinished tasks
+        tasks = self.tasks.filter(Task.complete == False).all()
+        if len(tasks) == 0:
+            self.processing_state = "finished"
+        else:
+            if all_tasks_finished(tasks):
+                self.processing_state = "finished"
+            elif any_tasks_failed(tasks):
+                self.processing_state = "failed"
+            else:
+                self.processing_state = "processing"
+        db.session.add(self)
+        db.session.commit()
 
     def to_json(self):
         """Formats json output."""
@@ -369,6 +406,7 @@ class Collection(db.Model):
             "kind": self.kind,
             "number_datasets": len(self.datasets),
             "dataset_names": [dataset.dataset_name for dataset in self.datasets],
+            "processing_state": self.processing_state
         }
         return json_session
 

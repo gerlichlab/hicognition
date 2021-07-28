@@ -27,7 +27,8 @@ class Config:
     # mapping of pipeline names to filetypes
     PIPELINE_NAMES = {
         "cooler": ("pipeline_pileup", "run pileup pipeline"),
-        "bigwig": ("pipeline_stackup", "run stackup pipeline")
+        "bigwig": ("pipeline_stackup", "run stackup pipeline"),
+        "lola": ("pipeline_lola", "run lola pipeline")
     }
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled
     OBS_EXP_PROCESSES = 4 # Number of processes to use per worker to calcualte obs/exp matrix of pileups

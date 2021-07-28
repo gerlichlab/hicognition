@@ -218,7 +218,7 @@ export default {
                 formData.append(key, prepared_data[key]);
             }
             // API call
-            this.postData("preprocess/", formData).then(response => {
+            this.postData("preprocess/datasets/", formData).then(response => {
                 if (response) {
                     this.datasetSaved = true;
                 }

@@ -13,6 +13,7 @@ from ..models import Dataset, BedFileMetadata, Task, Session, Intervals, Collect
 from .authentication import auth
 from .helpers import (
     is_access_to_dataset_denied,
+    is_access_to_collection_denied,
     parse_description_and_genotype,
     remove_failed_tasks,
     get_all_interval_ids,
@@ -109,7 +110,7 @@ def add_dataset():
     return jsonify({"message": "success! Preprocessing triggered."})
 
 
-@api.route("/preprocess/", methods=["POST"])
+@api.route("/preprocess/datasets/", methods=["POST"])
 @auth.login_required
 def preprocess_dataset():
     """Starts preprocessing pipeline
@@ -165,6 +166,64 @@ def preprocess_dataset():
     # set processing state
     dataset = Dataset.query.get(dataset_id)
     dataset.processing_state = "processing"
+    db.session.commit()
+    return jsonify({"message": "success! Preprocessing triggered."})
+
+
+@api.route("/preprocess/collections/", methods=["POST"])
+@auth.login_required
+def preprocess_collections():
+    """Starts preprocessing pipeline
+    for collections specified in the request body"""
+
+    def is_form_invalid():
+        if not hasattr(request, "form"):
+            return True
+        if sorted(list(request.form.keys())) != sorted(["collection_id", "region_ids"]):
+            return True
+        return False
+
+    current_user = g.current_user
+    # check form
+    if is_form_invalid():
+        return invalid("Form is not valid!")
+    # get data from form
+    data = request.form
+    collection_id = json.loads(data["collection_id"])
+    region_datasets_ids = json.loads(data["region_ids"])
+    # check whether collection exists
+    if Collection.query.get(collection_id) is None:
+        return not_found("Collection does not exist!")
+    if is_access_to_collection_denied(Dataset.query.get(collection_id), g):
+        return forbidden(f"Collection is not owned by logged in user!")
+    # check whether region datasets exists
+    region_datasets = [
+        Dataset.query.get(region_id) for region_id in region_datasets_ids
+    ]
+    if any(entry is None for entry in region_datasets):
+        return not_found("Region dataset does not exist!")
+    # check whether region datasets are owned
+    if any(is_access_to_dataset_denied(entry, g) for entry in region_datasets):
+        return forbidden(f"Region dataset is not owned by logged in user!")
+    # delete all jobs that are in database and have failed
+    associated_tasks = Task.query.filter_by(collection=Collection.query.get(collection_id)).all()
+    remove_failed_tasks(associated_tasks, db)
+    # get interval ids of selected regions
+    interval_ids = get_all_interval_ids(region_datasets)
+    # dispatch appropriate pipelines
+    for interval_id in interval_ids:
+        for binsize in current_app.config["PREPROCESSING_MAP"][
+            Intervals.query.get(interval_id).windowsize
+        ]:
+            current_user.launch_collection_task(
+                *current_app.config["PIPELINE_NAMES"]["LOLA"],
+                collection_id,
+                interval_id,
+                binsize,
+            )
+    # set processing state
+    collection = Collection.query.get(collection_id)
+    collection.processing_state = "processing"
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 
