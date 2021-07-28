@@ -188,6 +188,20 @@ export default {
             this.$store.commit("compare/setWidget", newObject);
             return data;
         },
+        deleteWidget: function() {
+            /*
+                Needs to be overriden because drement mutation is different from mixin
+            */
+            // delete widget from store
+            var payload = {
+                parentID: this.collectionID,
+                id: this.id
+            };
+            // delete widget from store
+            this.$store.commit("compare/deleteWidget", payload);
+            // decrement dataset from used dataset in store
+            this.$store.commit("compare/decrement_usage_collections", this.selectedDataset)
+        },
         initializeFromStore: function(widgetData, collectionConfig) {
             var widgetDataValues;
             if (widgetData["widgetDataRef"]) {
@@ -209,6 +223,13 @@ export default {
                 widgetDataValues = undefined;
             }
             // increment dataset usage in store. TODO: these are collections!
+            if (widgetData["dataset"]) {
+                let datasetId = widgetData["dataset"];
+                this.$store.commit(
+                    "compare/increment_usage_collection",
+                    datasetId
+                );
+            }
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
                 dragImage: undefined,
@@ -323,6 +344,9 @@ export default {
             } else {
                 this.updateData();
             }
+            // add collections to store for tallying used_collections
+            this.$store.commit("compare/decrement_usage_collections", oldVal);
+            this.$store.commit("compare/increment_usage_collections", newVal);
         },
         selectedBinsize: async function() {
             if (!this.selectedBinsize) {
