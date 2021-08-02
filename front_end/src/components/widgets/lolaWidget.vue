@@ -101,6 +101,9 @@
             </div>
             <associationPlot
                 v-if="showData"
+                :plotData="widgetData"
+                :width="visualizationWidth"
+                :height="visualizationHeight"
             />
             <div
                 v-if="!showData"
