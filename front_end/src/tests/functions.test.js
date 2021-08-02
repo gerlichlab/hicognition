@@ -5,9 +5,9 @@ import {
     max_array,
     min_array,
     normalizeLineProfile,
-    interQuartileRange,
-    getQuartile,
-    getPercentile
+    getPercentile,
+    max_array_along_rows,
+    select_column
 } from "../functions.js";
 import { toBeDeepCloseTo } from "jest-matcher-deep-close-to";
 
@@ -205,3 +205,52 @@ describe("When normalize lineProfile is called", function() {
         ]);
     });
 });
+
+// test max_array_along_rows
+
+describe("When max_array_along_rows is called, it", function() {
+    it("Should return undefined if array is length 0", () => {
+        expect(max_array_along_rows([], [1, 2])).toEqual(undefined)
+    });
+    it("Should return undefined if shape is length 0", () => {
+        expect(max_array_along_rows([1, 2], [])).toEqual(undefined)
+    });
+    it("Should return undefined if array and shape do not match", () => {
+        expect(max_array_along_rows([1, 2], [3, 4])).toEqual(undefined)
+    });
+    it("Should return correct maximum along rows of rectangular array", () => {
+        expect(max_array_along_rows([1, 5, 3, 4, 2, 6], [2, 3])).toEqual([4, 5, 6])
+    });
+    it("Should return correct maximum along rows of rectangular array with undefined values", () => {
+        expect(max_array_along_rows([1, 5, 3, undefined, 2, 6], [2, 3])).toEqual([1, 5, 6])
+    });
+    it("Should return correct maximum along rows of rectangular array if an entire column is undefined", () => {
+        expect(max_array_along_rows([undefined, 5, 3, undefined, 2, 6], [2, 3])).toEqual([undefined, 5, 6])
+    });
+})
+
+describe("When select_column is called, it", function(){
+    it("Should return undefined if array is length 0", () => {
+        expect(select_column([], [1, 2], 2)).toEqual(undefined)
+    });
+    it("Should return undefined if shape is length 0", () => {
+        expect(select_column([1, 2], [], 2)).toEqual(undefined)
+    });
+    it("Should return undefined if array and shape do not match", () => {
+        expect(select_column([1, 2], [3, 4], 2)).toEqual(undefined)
+    });
+    it("Should return undefined if col_Index is not defined", () => {
+        expect(select_column([1, 2, 3, 4], [2, 2])).toEqual(undefined)
+    });
+    it("Should return undefined if col_index is < 0", () => {
+        expect(select_column([1, 2, 3, 4], [2, 2], -2)).toEqual(undefined)
+    });
+    it("Should return undefined if col_index is > col_number", () => {
+        expect(select_column([1, 2, 3, 4], [2, 2], 3)).toEqual(undefined)
+    });
+    it("Should return correct column", () => {
+        expect(select_column([1, 2, 3, 4, 5, 6], [2, 3], 0)).toEqual([1, 4])
+        expect(select_column([1, 2, 3, 4, 5, 6], [2, 3], 1)).toEqual([2, 5])
+        expect(select_column([1, 2, 3, 4, 5, 6], [2, 3], 2)).toEqual([3, 6])
+    });
+})

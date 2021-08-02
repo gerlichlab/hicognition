@@ -58,6 +58,52 @@ export function max_array(array) {
     return max;
 }
 
+export function max_array_along_rows(array, shape){
+    /*
+        Calculates maximum element in a C-style (row-major) flattened array along every row.
+        e.g. [1,5,3,4,2,6] with shape [row, column] = [2,3] would result in [4,5,6]
+    */
+   if (array.length == 0 || shape.length != 2 || array.length != shape[0] * shape[1]) {
+       return undefined
+   }
+   let [row_number, col_number] = shape;
+   let output = Array(col_number).fill(-Infinity)
+   // calculate maximum for each column along its rows
+    for(let j=0; j < col_number; j++){
+        for (let i=0; i < row_number; i++){
+           let candidate = array[i * col_number + j]
+           if (candidate > output[j]){
+               output[j] = candidate
+           }
+       }
+   }
+   // clean -Infinity
+   return output.map((elem) => elem == -Infinity ? undefined: elem)
+}
+
+export function select_column(array, shape, col_index){
+    /*
+        returns all values in column col_index for a flattened array of a given shape
+    */
+   // check array
+    if (array.length == 0 || shape.length != 2 || array.length != shape[0] * shape[1]) {
+       return undefined
+   }
+   let [row_number, col_number] = shape;
+   // check col_index
+   if (col_index == undefined || col_index < 0 || col_index >= col_number){
+       return undefined
+   }
+   // select column
+   let output = Array()
+   for (let i = 0; i < row_number; i ++){
+       output.push(array[i * col_number + col_index])
+   }
+   return output
+}
+
+
+
 export function min_array(array) {
     /*
         returns minimum element of array
