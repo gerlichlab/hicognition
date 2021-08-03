@@ -1,6 +1,6 @@
 <template>
     <div>
-        <md-list class="md-double-line">
+        <md-list class="md-double-line no-padding">
             <md-list-item class="md-alignment-top-center">
                 <enrichment-distribution
                 :data="enrichmentData"
@@ -8,10 +8,13 @@
                 :height="distributionPlotHeight"
                 :intervalSize="intervalSize"
                 />
+            </md-list-item>
+            <md-list-item class="md-alignment-top-center">
                 <enrichment-ranks 
                 :data="rankData"
                 :width="width"
                 :height="rankPlotHeight"
+                :collectionNames="collectionNames"
                 />
             </md-list-item>
         </md-list>
@@ -63,3 +66,11 @@ export default {
 }
 
 </script>
+
+<style scoped>
+
+.no-padding {
+    padding: 0px
+}
+
+</style>
