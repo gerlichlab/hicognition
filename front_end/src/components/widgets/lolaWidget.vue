@@ -104,6 +104,8 @@
                 :plotData="widgetData"
                 :width="visualizationWidth"
                 :height="visualizationHeight"
+                :collectionNames="datasetNames"
+                :intervalSize="Number(intervalSize)"
             />
             <div
                 v-if="!showData"
@@ -136,6 +138,12 @@ export default {
     computed: {
         message: function(){
             return  this.datasets[this.selectedDataset]["name"] +  " | binsize " + this.convertBasePairsToReadable(this.selectedBinsize)
+        },
+        datasetNames: function(){
+            return this.datasets[this.selectedDataset]["collection_dataset_names"]
+        },
+        visualizationWidth: function() {
+            return Math.round(this.width * 0.9);
         },
     },
     methods: {

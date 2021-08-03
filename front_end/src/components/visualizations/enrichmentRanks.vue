@@ -6,7 +6,7 @@
 export default {
     name: "enrichmentRanks",
     props: {
-        plotData: Array,
+        data: Array,
         width: Number,
         height: Number
     },

@@ -3,10 +3,13 @@
         <md-list class="md-double-line">
             <md-list-item class="md-alignment-top-center">
                 <enrichment-distribution
+                :data="enrichmentData"
                 :width="width"
                 :height="distributionPlotHeight"
+                :intervalSize="intervalSize"
                 />
                 <enrichment-ranks 
+                :data="rankData"
                 :width="width"
                 :height="rankPlotHeight"
                 />
@@ -29,7 +32,14 @@ export default {
     props: {
         plotData: Object,
         width: Number,
-        height: Number
+        height: Number,
+        collectionNames: Array,
+        intervalSize: Number
+    },
+    data: function(){
+        return {
+            selectedColumn: undefined
+        }
     },
     computed: {
         rankPlotHeight: function(){
@@ -40,6 +50,14 @@ export default {
         },
         enrichmentData: function(){
             return max_array_along_rows(this.plotData["data"], this.plotData["shape"])
+        },
+        rankData: function(){
+            if (this.selectedColumn == undefined){
+                // take center
+                let center_column = Math.floor(this.plotData["shape"][1]/2)
+                return select_column(this.plotData["data"], this.plotData["shape"], center_column)
+            }
+            return select_column(this.plotData["data"], this.plotData["shape"], this.selectedColumn)
         }
     }
 }
