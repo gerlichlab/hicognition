@@ -1,5 +1,5 @@
 <template>
-    <div :id="divName" class="small-margin"/>
+    <div :id="divName" class="small-margin" />
 </template>
 
 <script>
@@ -95,7 +95,10 @@ export default {
             }
         },
         xAxisFormatter: function (val, index) {
-            if (index % (this.data.length/5) == 0 || index == this.data.length - 1) {
+            if (
+                index % (this.data.length / 5) == 0 ||
+                index == this.data.length - 1
+            ) {
                 return (
                     Math.floor(
                         (-this.intervalSize +
@@ -168,19 +171,14 @@ export default {
                 .attr("height", 0)
                 .transition()
                 .delay((d, i) => {
-                    return (
-                        (this.xScale(i) / 150 / this.data.length) *
-                        1000
-                    );
+                    return (this.xScale(i) / 150 / this.data.length) * 1000;
                 })
                 .duration(500)
                 .attr("y", (d) => {
                     return this.plotHeight - this.yScale(d);
                 })
                 .attr("height", (d) => {
-                    return this.yScale(d);            this.createScales()
-            this.updateAxes()
-            this.updateBarChart()
+                    return this.yScale(d);
                 });
             // reposition old bars
             rect.transition()
@@ -217,11 +215,9 @@ export default {
                 .call(this.yAxisGenerator);
         },
         createAxes: function () {
-            /*            this.createScales()
-            this.updateAxes()
-            this.updateBarChart()
-        Adds axes to an svg object at this.svg
-      */
+            /*       
+               Adds axes to an svg object at this.svg
+            */
             // add x axes
             this.svg
                 .append("g")
@@ -269,29 +265,27 @@ export default {
         this.createChart();
     },
     watch: {
-        height: function(){
-            d3.select(`#${this.svgName}`).remove()
-            this.createScales()
-            this.createChart()
+        height: function () {
+            d3.select(`#${this.svgName}`).remove();
+            this.createScales();
+            this.createChart();
         },
-        width: function(){
-            d3.select(`#${this.svgName}`).remove()
-            this.createScales()
-            this.createChart()
+        width: function () {
+            d3.select(`#${this.svgName}`).remove();
+            this.createScales();
+            this.createChart();
         },
-        data: function(){
-            this.createScales()
-            this.updateAxes()
-            this.updateBarChart()
-        }
-    }
+        data: function () {
+            this.createScales();
+            this.updateAxes();
+            this.updateBarChart();
+        },
+    },
 };
 </script>
 
 <style>
-
 .small-margin {
     margin: 0px;
 }
-
 </style>

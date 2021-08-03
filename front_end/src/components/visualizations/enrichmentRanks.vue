@@ -136,7 +136,6 @@ export default {
                 .attr("cy", () => {
                     return this.plotHeight;
                 })
-                .attr("height", 0)
                 .transition()
                 .delay((d) => {
                     return (
@@ -150,9 +149,71 @@ export default {
                     }
                     return 0;
                 })
-                .attr("height", (d) => {
-                    return this.yScale(d.value);
-                });
+        },
+        updateBarChart: function () {
+            /*
+        Updates bar chart with new data
+      */
+            // put in new data and store selection
+            let rect = this.svg.selectAll("circles").data(this.data);
+            // remove old data
+            rect.exit()
+                .transition()
+                .duration(500)
+                .attr("y", () => {
+                    return this.plotHeight;
+                })
+                .attr("height", 0)
+                .remove();
+            // add new ones
+            rect.enter()
+                .append("circles")
+                .attr("cx", (d) => {
+                    return this.xScale(d.name);
+                })
+                .attr("width", this.xScale.bandwidth())
+                .attr("fill", "red")
+                .attr("cy", () => {
+                    return this.plotHeight;
+                })
+                .transition()
+                .delay((d) => {
+                    return (this.xScale(d.name) / 150 / this.data.length) * 1000;
+                })
+                .duration(500)
+                .attr("cy", (d) => {
+                    return this.plotHeight - this.yScale(d.value);
+                })
+            // reposition old bars
+            rect.transition()
+                .duration(500)
+                .attr("cx", (d) => {
+                    return this.xScale(d.name);
+                })
+                .attr("width", this.xScale.bandwidth())
+                .attr("cy", (d) => {
+                    return this.plotHeight - this.yScale(d.value);
+                })
+        },
+        updateAxes: function () {
+            /*
+        updates axes with new data
+      */
+            //Update x-axis
+            this.svg
+                .select(".x.axis")
+                .transition()
+                .duration(500)
+                .call(this.xAxisGenerator)
+                .selectAll("text")
+                .attr("y", 10)
+                .attr("x", 0);
+            //Update y-axis
+            this.svg
+                .select(".y.axis")
+                .transition()
+                .duration(500)
+                .call(this.yAxisGenerator);
         },
         createAxes: function () {
             /*          
@@ -203,6 +264,23 @@ export default {
     mounted: function () {
         this.createScales();
         this.createChart();
+    },
+    watch: {
+        height: function () {
+            d3.select(`#${this.svgName}`).remove();
+            this.createScales();
+            this.createChart();
+        },
+        width: function () {
+            d3.select(`#${this.svgName}`).remove();
+            this.createScales();
+            this.createChart();
+        },
+        data: function () {
+            this.createScales();
+            this.updateAxes();
+            this.updateBarChart();
+        },
     },
 };
 </script>
