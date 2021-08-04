@@ -224,19 +224,14 @@ export default {
             var widgetDataValues;
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
-                var widgetDataRef = widgetData["widgetDataRef"];
-                var widgetDataValues = [];
-                for (var widget_data_id of widgetDataRef) {
-                    // deinfe store queries
-                    var payload = {
-                        id: widget_data_id
-                    };
-                    // get widget data from store
-                    var new_widgetDataValues = this.$store.getters[
-                        "compare/getWidgetDataLola"
-                    ](payload);
-                    widgetDataValues.push(new_widgetDataValues);
-                }
+                // deinfe store queries
+                var payload = {
+                    id: widgetData["widgetDataRef"]
+                };
+                // get widget data from store
+                var widgetDataValues = this.$store.getters[
+                    "compare/getWidgetDataLola"
+                ](payload);
             } else {
                 widgetDataValues = undefined;
             }
@@ -244,7 +239,7 @@ export default {
             if (widgetData["dataset"]) {
                 let datasetId = widgetData["dataset"];
                 this.$store.commit(
-                    "compare/increment_usage_collection",
+                    "compare/increment_usage_collections",
                     datasetId
                 );
             }
