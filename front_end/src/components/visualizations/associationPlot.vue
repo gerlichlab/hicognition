@@ -3,15 +3,16 @@
         <md-list class="md-double-line no-padding">
             <md-list-item class="md-alignment-top-center">
                 <enrichment-distribution
-                :data="enrichmentData"
+                :plotData="enrichmentData"
                 :width="width"
                 :height="distributionPlotHeight"
                 :intervalSize="intervalSize"
+                :currentColumn="currentColumn"
                 />
             </md-list-item>
             <md-list-item class="md-alignment-top-center">
                 <enrichment-ranks 
-                :data="rankData"
+                :rawData="rankData"
                 :width="width"
                 :height="rankPlotHeight"
                 :collectionNames="collectionNames"
@@ -46,21 +47,23 @@ export default {
     },
     computed: {
         rankPlotHeight: function(){
-            return this.height * 0.8
+            return this.height * 0.7
         },
         distributionPlotHeight: function(){
-            return this.height * 0.2
+            return this.height * 0.3
         },
         enrichmentData: function(){
             return max_array_along_rows(this.plotData["data"], this.plotData["shape"])
         },
-        rankData: function(){
+        currentColumn: function(){
             if (this.selectedColumn == undefined){
-                // take center
-                let center_column = Math.floor(this.plotData["shape"][1]/2)
-                return select_column(this.plotData["data"], this.plotData["shape"], center_column)
+                return Math.floor(this.plotData["shape"][1]/2)
+            }else{
+                return this.selectedColumn
             }
-            return select_column(this.plotData["data"], this.plotData["shape"], this.selectedColumn)
+        },
+        rankData: function(){
+            return select_column(this.plotData["data"], this.plotData["shape"], this.currentColumn)
         }
     }
 }

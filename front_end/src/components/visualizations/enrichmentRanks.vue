@@ -8,7 +8,7 @@ import * as d3 from "d3";
 export default {
     name: "enrichmentRanks",
     props: {
-        data: Array,
+        rawData: Array,
         width: Number,
         height: Number,
         collectionNames: Array,
@@ -40,7 +40,7 @@ export default {
             /*
                 Construct rank data
             */
-            let namedData = this.data.map((elem, index) => {
+            let namedData = this.rawData.map((elem, index) => {
                 return {
                     value: elem,
                     name: this.collectionNames[index],
@@ -52,7 +52,7 @@ export default {
         maxVal: function () {
             // computes maximum value of data passed
             let maxVal = -Infinity;
-            for (let elem of this.data) {
+            for (let elem of this.rawData) {
                 if (elem > maxVal) {
                     maxVal = elem;
                 }
@@ -107,7 +107,7 @@ export default {
             return Math.floor((this.maxVal - val) * 10) / 10;
         },
         xAxisFormatter: function (val, index) {
-            if (this.data.length < 5){
+            if (this.plotData.length < 5){
                 return val
             }
             if (index % 2 == 0) {
@@ -132,14 +132,14 @@ export default {
                 .attr("cx", (d) => {
                     return this.xScale(d.name) + this.xScale.bandwidth() / 2;
                 })
-                .attr("fill", "red")
+                .attr("fill", "black")
                 .attr("cy", () => {
                     return this.plotHeight;
                 })
                 .transition()
                 .delay((d) => {
                     return (
-                        (this.xScale(d.name) / 150 / this.data.length) * 1000
+                        (this.xScale(d.name) / 150 / this.plotData.length) * 1000
                     );
                 })
                 .duration(500)
@@ -155,7 +155,7 @@ export default {
         Updates bar chart with new data
       */
             // put in new data and store selection
-            let rect = this.svg.selectAll("circles").data(this.data);
+            let rect = this.svg.selectAll("circles").data(this.plotData);
             // remove old data
             rect.exit()
                 .transition()
@@ -172,13 +172,13 @@ export default {
                     return this.xScale(d.name);
                 })
                 .attr("width", this.xScale.bandwidth())
-                .attr("fill", "red")
+                .attr("fill", "black")
                 .attr("cy", () => {
                     return this.plotHeight;
                 })
                 .transition()
                 .delay((d) => {
-                    return (this.xScale(d.name) / 150 / this.data.length) * 1000;
+                    return (this.xScale(d.name) / 150 / this.plotData.length) * 1000;
                 })
                 .duration(500)
                 .attr("cy", (d) => {
@@ -276,7 +276,7 @@ export default {
             this.createScales();
             this.createChart();
         },
-        data: function () {
+        rawData: function () {
             this.createScales();
             this.updateAxes();
             this.updateBarChart();

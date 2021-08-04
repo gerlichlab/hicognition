@@ -10,10 +10,11 @@ export default {
     name: "enrichmentDistribution",
     mixins: [formattingMixin],
     props: {
-        data: Array,
+        plotData: Array,
         width: Number,
         height: Number,
         intervalSize: Number,
+        currentColumn: Number,
     },
     data: function () {
         return {
@@ -38,7 +39,7 @@ export default {
         maxVal: function () {
             // computes maximum value of data passed
             let maxVal = -Infinity;
-            for (let elem of this.data) {
+            for (let elem of this.plotData) {
                 if (elem > maxVal) {
                     maxVal = elem;
                 }
@@ -65,7 +66,7 @@ export default {
       */
             this.xScale = d3
                 .scaleBand()
-                .domain(d3.range(0, this.data.length))
+                .domain(d3.range(0, this.plotData.length))
                 .range([0, this.plotWidth])
                 .paddingInner(0.2)
                 .paddingOuter(0.05);
@@ -96,15 +97,15 @@ export default {
         },
         xAxisFormatter: function (val, index) {
             if (
-                index % (this.data.length / 5) == 0 ||
-                index == this.data.length - 1
+                index % (this.plotData.length / 5) == 0 ||
+                index == this.plotData.length - 1
             ) {
                 return (
                     Math.floor(
                         (-this.intervalSize +
                             index *
                                 Math.floor(
-                                    (this.intervalSize * 2) / this.data.length
+                                    (this.intervalSize * 2) / this.plotData.length
                                 )) /
                             1000
                     ) + " kb"
@@ -118,7 +119,7 @@ export default {
       */
             this.svg
                 .selectAll("rect")
-                .data(this.data)
+                .data(this.plotData)
                 .enter()
                 .append("rect")
                 .attr("x", (d, i) => {
@@ -132,7 +133,7 @@ export default {
                 .attr("height", 0)
                 .transition()
                 .delay((d, i) => {
-                    return (this.xScale(i) / 150 / this.data.length) * 1000;
+                    return (this.xScale(i) / 150 / this.plotData.length) * 1000;
                 })
                 .duration(500)
                 .attr("y", (d) => {
@@ -147,7 +148,7 @@ export default {
         Updates bar chart with new data
       */
             // put in new data and store selection
-            let rect = this.svg.selectAll("rect").data(this.data);
+            let rect = this.svg.selectAll("rect").data(this.plotData);
             // remove old data
             rect.exit()
                 .transition()
@@ -171,7 +172,7 @@ export default {
                 .attr("height", 0)
                 .transition()
                 .delay((d, i) => {
-                    return (this.xScale(i) / 150 / this.data.length) * 1000;
+                    return (this.xScale(i) / 150 / this.plotData.length) * 1000;
                 })
                 .duration(500)
                 .attr("y", (d) => {
@@ -275,7 +276,7 @@ export default {
             this.createScales();
             this.createChart();
         },
-        data: function () {
+        plotData: function () {
             this.createScales();
             this.updateAxes();
             this.updateBarChart();
