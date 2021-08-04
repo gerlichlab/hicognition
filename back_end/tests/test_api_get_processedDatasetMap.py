@@ -23,16 +23,16 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         super().setUp()
         # create datasets
         self.owned_bedfile = Dataset(
-            id=1, user_id=1, filetype="bedfile", dataset_name="testfile"
+            id=1, user_id=1, filetype="bedfile", dataset_name="testfile", processing_state="finished"
         )
         self.not_owned_bedfile = Dataset(
-            id=2, user_id=2, filetype="bedfile", dataset_name="testfile2"
+            id=2, user_id=2, filetype="bedfile", dataset_name="testfile2", processing_state="finished"
         )
         self.owned_coolerfile = Dataset(
-            id=3, user_id=1, filetype="cooler", dataset_name="testfile3"
+            id=3, user_id=1, filetype="cooler", dataset_name="testfile3", processing_state="finished"
         )
         self.owned_bigwig = Dataset(
-            id=4, user_id=1, filetype="bigwig", dataset_name="testfile4"
+            id=4, user_id=1, filetype="bigwig", dataset_name="testfile4", processing_state="finished"
         )
         self.owned_datasets = [
             self.owned_bedfile,
@@ -40,16 +40,16 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             self.owned_bigwig,
         ]
         self.not_owned_bigwig = Dataset(
-            id=5, user_id=2, filetype="bigwig", dataset_name="testfile5"
+            id=5, user_id=2, filetype="bigwig", dataset_name="testfile5", processing_state="finished"
         )
         self.not_owned_cooler = Dataset(
-            id=6, user_id=2, filetype="cooler", dataset_name="testfile6"
+            id=6, user_id=2, filetype="cooler", dataset_name="testfile6", processing_state="finished"
         )
         self.owned_bedfile2 = Dataset(
-            id=7, user_id=1, filetype="bedfile", dataset_name="testfile7"
+            id=7, user_id=1, filetype="bedfile", dataset_name="testfile7", processing_state="finished"
         )
         self.owned_bedfile3 = Dataset(
-            id=8, user_id=1, filetype="bedfile", dataset_name="testfile8"
+            id=8, user_id=1, filetype="bedfile", dataset_name="testfile8", processing_state="finished"
         )
         self.not_owned_datasets = [self.not_owned_bigwig, self.not_owned_cooler]
         # create colledtions
@@ -58,6 +58,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             user_id=1,
             name="test_collection",
             datasets=[self.owned_bedfile, self.owned_bedfile2, self.owned_bedfile3],
+            processing_state="finished"
         )
         # create intervals
         self.intervals_owned_bedfile = [

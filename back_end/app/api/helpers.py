@@ -1,5 +1,6 @@
 """Helper functions for api routes"""
 import os
+from .. import db
 from collections import defaultdict
 from flask import current_app
 from ..models import Intervals, Dataset, Collection
@@ -96,6 +97,10 @@ def add_average_data_to_preprocessed_dataset_map(
         # check whether dataset is owned
         if is_access_to_dataset_denied(dataset, request_context):
             continue
+        # check whether dataset is finished
+        dataset.set_processing_state(db)
+        if dataset.processing_state != "finished":
+            continue
         interval = Intervals.query.get(average.intervals_id)
         if average.value_type in ["Obs/Exp", "ICCF"]:
             output_object["pileup"][dataset.id]["name"] = dataset.dataset_name
@@ -117,6 +122,10 @@ def add_individual_data_to_preprocessed_dataset_map(
         # check whether dataset is owned
         if is_access_to_dataset_denied(dataset, request_context):
             continue
+        # check whether dataset is finished
+        dataset.set_processing_state(db)
+        if dataset.processing_state != "finished":
+            continue
         interval = Intervals.query.get(individual.intervals_id)
         output_object["stackup"][dataset.id]["name"] = dataset.dataset_name
         output_object["stackup"][dataset.id]["data_ids"][interval.windowsize][
@@ -131,6 +140,10 @@ def add_association_data_to_preprocessed_dataset_map(
         collection = Collection.query.get(assoc.collection_id)
         # check whether collection is owned
         if is_access_to_collection_denied(collection, request_context):
+            continue
+        # check whetehr collection is finished; TODO: this needs to be done in a more sophisticated way to check whether all tasks associated with the current region are finished
+        collection.set_processing_state(db)
+        if collection.processing_state != "finished":
             continue
         interval = Intervals.query.get(assoc.intervals_id)
         output_object["lola"][collection.id]["name"] = collection.name
