@@ -105,7 +105,8 @@ export default {
                         (-this.intervalSize +
                             index *
                                 Math.floor(
-                                    (this.intervalSize * 2) / this.plotData.length
+                                    (this.intervalSize * 2) /
+                                        this.plotData.length
                                 )) /
                             1000
                     ) + " kb"
@@ -126,7 +127,12 @@ export default {
                     return this.xScale(i);
                 })
                 .attr("width", this.xScale.bandwidth())
-                .attr("fill", "red")
+                .attr("fill", (d, i) => {
+                    if (i == this.currentColumn) {
+                        return "red";
+                    }
+                    return "grey";
+                })
                 .attr("y", () => {
                     return this.plotHeight;
                 })
@@ -165,7 +171,12 @@ export default {
                     return this.xScale(i);
                 })
                 .attr("width", this.xScale.bandwidth())
-                .attr("fill", "red")
+                .attr("fill", (d, i) => {
+                    if (i == this.currentColumn) {
+                        return "red";
+                    }
+                    return "grey";
+                })
                 .attr("y", () => {
                     return this.plotHeight;
                 })
@@ -186,6 +197,12 @@ export default {
                 .duration(500)
                 .attr("x", (d, i) => {
                     return this.xScale(i);
+                })
+                .attr("fill", (d, i) => {
+                    if (i == this.currentColumn) {
+                        return "red";
+                    }
+                    return "grey";
                 })
                 .attr("width", this.xScale.bandwidth())
                 .attr("y", (d) => {
