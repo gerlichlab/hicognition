@@ -14,17 +14,9 @@
                         :set="(v = $v.elements.$each[element.id])"
                         :key="element.id"
                     >
-                        <div class="md-layout-item md-size-20">
+                        <div class="md-layout-item md-size-30">
                             <md-field>
-                                <label :for="`Filename-${element.id}`"
-                                    >Name</label
-                                >
-                                <md-input
-                                    :name="`Filename-${element.id}`"
-                                    :id="`Filename-${element.id}`"
-                                    :placeholder="element.filename"
-                                    :disabled="true"
-                                />
+                                {{element.filename}}
                             </md-field>
                         </div>
                         <div class="md-layout-item md-size-20">

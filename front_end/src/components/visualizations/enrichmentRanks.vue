@@ -5,10 +5,9 @@
 <script>
 import * as d3 from "d3";
 
-
 const key = (d) => {
-    return d.name
-}
+    return d.name;
+};
 
 export default {
     name: "enrichmentRanks",
@@ -23,6 +22,7 @@ export default {
             svg: undefined,
             xScale: undefined,
             yScale: undefined,
+            tooltip: undefined,
             id: Math.round(Math.random() * 1000000),
         };
     },
@@ -93,15 +93,92 @@ export default {
                 .domain([0, this.maxVal])
                 .range([0, this.plotHeight]);
         },
+        createTooltip: function () {
+            this.tooltip = d3
+                .select(`#${this.divName}`)
+                .append("div")
+                .attr("id", `tooltip${this.id}`)
+                .style("opacity", 0)
+                .attr("class", "tooltip")
+                .style("position", "absolute")
+                .style("pointer-events", "none")
+                .style("background-color", "black")
+                .style("border-radius", "5px")
+                .style("padding", "10px")
+                .style("border", "2px solid white")
+                .style("color", "white")
+                .style("font-size", "10px");
+        },
+        makeSelectCircleStandOut: function(selectedData){
+            this.svg.selectAll("circle")
+                .filter((d) => {
+                    return d == selectedData
+
+                })
+                .attr("fill", "red")
+        },
+        restoreCircleStyle: function(){
+            this.svg.selectAll("circle")
+                    .attr("fill", "black")
+        },
+        showTooltip: function (event, d) {
+            this.makeSelectCircleStandOut(d)
+            // switch to left or right
+            let centerX = this.plotWidth/2
+            let centerY = this.plotHeight/2
+            let xCoord;
+            let yCoord;
+            // get x coord
+            if (event.offsetX > centerX){
+                xCoord = event.offsetX - 6 * d.name.length
+            }else{
+                xCoord = event.offsetX + 4 * d.name.length
+            }
+            // get ycoord
+            if (event.offsetY > centerY){
+                yCoord = event.offsetY - 40
+            }else{
+                yCoord = event.offsetY + 20
+            }
+            this.tooltip
+                .style("opacity", 1)
+                .html(`${d.name}`)
+                .style("left", xCoord + "px")
+                .style("top", yCoord + "px");
+        },
+        moveTooltip: function (event, d) {
+            let centerX = this.plotWidth/2
+            let centerY = this.plotHeight/2
+            let xCoord;
+            let yCoord;
+            // get x coord
+            if (event.offsetX > centerX){
+                xCoord = event.offsetX - 6 * d.name.length
+            }else{
+                xCoord = event.offsetX + 4 * d.name.length
+            }
+            // get ycoord
+            if (event.offsetY > centerY){
+                yCoord = event.offsetY - 40
+            }else{
+                yCoord = event.offsetY + 20
+            }
+            this.tooltip
+                .style("opacity", 1)
+                .style("left", xCoord + "px")
+                .style("top", yCoord + "px");
+        },
+        hideTooltip: function (e) {
+            this.restoreCircleStyle();
+            this.tooltip.transition().style("opacity", 0);
+        },
         xAxisGenerator: function (args) {
-            // x-axis generator function
             return d3
                 .axisBottom(this.xScale)
                 .tickFormat(this.xAxisFormatter)
                 .tickSize(0)(args);
         },
         yAxisGenerator: function (args) {
-            // y-axis generator function
             return d3
                 .axisLeft(this.yScale)
                 .tickSize(0)
@@ -112,11 +189,11 @@ export default {
             return Math.floor((this.maxVal - val) * 10) / 10;
         },
         xAxisFormatter: function (val, index) {
-            if (this.plotData.length < 5){
-                return val
+            if (this.plotData.length < 5) {
+                return val;
             }
             if (index % 2 == 0) {
-                return `Rank ${index}`;
+                return `Rank ${this.plotData.length - index}`;
             }
         },
         createCircles: function () {
@@ -130,7 +207,7 @@ export default {
                 .append("circle")
                 .attr("r", (d) => {
                     if (d.value) {
-                        return 5;
+                        return 7;
                     }
                     return 0;
                 })
@@ -144,7 +221,8 @@ export default {
                 .transition()
                 .delay((d) => {
                     return (
-                        (this.xScale(d.name) / 150 / this.plotData.length) * 1000
+                        (this.xScale(d.name) / 150 / this.plotData.length) *
+                        1000
                     );
                 })
                 .duration(500)
@@ -153,7 +231,13 @@ export default {
                         return this.plotHeight - this.yScale(d.value);
                     }
                     return 0;
-                })
+                });
+            // attach event handler
+            this.svg
+                .selectAll("circle")
+                .on("mouseover", this.showTooltip)
+                .on("mousemove", this.moveTooltip)
+                .on("mouseleave", this.hideTooltip);
         },
         updateCircles: function () {
             /*
@@ -162,7 +246,8 @@ export default {
             // put in new data and store selection
             let circles = this.svg.selectAll("circle").data(this.plotData, key);
             // remove old data
-            circles.exit()
+            circles
+                .exit()
                 .transition()
                 .duration(500)
                 .attr("cy", () => {
@@ -170,15 +255,16 @@ export default {
                 })
                 .remove();
             // add new ones
-            circles.enter()
+            circles
+                .enter()
                 .append("circle")
                 .attr("cx", (d) => {
-                    return this.xScale(d.name) + this.xScale.bandwidth()/2;
+                    return this.xScale(d.name) + this.xScale.bandwidth() / 2;
                 })
                 .attr("fill", "black")
                 .attr("r", (d) => {
                     if (d.value) {
-                        return 5;
+                        return 7;
                     }
                     return 0;
                 })
@@ -187,7 +273,10 @@ export default {
                 })
                 .transition()
                 .delay((d) => {
-                    return (this.xScale(d.name) / 150 / this.plotData.length) * 1000;
+                    return (
+                        (this.xScale(d.name) / 150 / this.plotData.length) *
+                        1000
+                    );
                 })
                 .duration(500)
                 .attr("cy", (d) => {
@@ -195,18 +284,19 @@ export default {
                         return this.plotHeight - this.yScale(d.value);
                     }
                     return 0;
-                })
+                });
             // reposition old bars
-            circles.transition()
+            circles
+                .transition()
                 .duration(500)
                 .attr("r", (d) => {
                     if (d.value) {
-                        return 5;
+                        return 7;
                     }
                     return 0;
                 })
                 .attr("cx", (d) => {
-                    return this.xScale(d.name) + this.xScale.bandwidth()/2;
+                    return this.xScale(d.name) + this.xScale.bandwidth() / 2;
                 })
                 .attr("width", this.xScale.bandwidth())
                 .attr("cy", (d) => {
@@ -214,7 +304,13 @@ export default {
                         return this.plotHeight - this.yScale(d.value);
                     }
                     return 0;
-                })
+                });
+            // attach event handler
+            this.svg
+                .selectAll("circle")
+                .on("mouseover", this.showTooltip)
+                .on("mousemove", this.moveTooltip)
+                .on("mouseleave", this.hideTooltip);
         },
         updateAxes: function () {
             /*
@@ -279,6 +375,7 @@ export default {
             // draw chart
             this.createScales();
             this.createAxes();
+            this.createTooltip();
             this.createCircles();
         },
     },
@@ -289,11 +386,13 @@ export default {
     watch: {
         height: function () {
             d3.select(`#${this.svgName}`).remove();
+            d3.select(`#tooltip${this.id}`).remove();
             this.createScales();
             this.createChart();
         },
         width: function () {
             d3.select(`#${this.svgName}`).remove();
+            d3.select(`#tooltip${this.id}`).remove();
             this.createScales();
             this.createChart();
         },
