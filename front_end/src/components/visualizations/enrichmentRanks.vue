@@ -5,6 +5,11 @@
 <script>
 import * as d3 from "d3";
 
+
+const key = (d) => {
+    return d.name
+}
+
 export default {
     name: "enrichmentRanks",
     props: {
@@ -120,7 +125,7 @@ export default {
       */
             this.svg
                 .selectAll("circle")
-                .data(this.plotData)
+                .data(this.plotData, key)
                 .enter()
                 .append("circle")
                 .attr("r", (d) => {
@@ -150,29 +155,33 @@ export default {
                     return 0;
                 })
         },
-        updateBarChart: function () {
+        updateCircles: function () {
             /*
         Updates bar chart with new data
       */
             // put in new data and store selection
-            let rect = this.svg.selectAll("circles").data(this.plotData);
+            let circles = this.svg.selectAll("circle").data(this.plotData, key);
             // remove old data
-            rect.exit()
+            circles.exit()
                 .transition()
                 .duration(500)
-                .attr("y", () => {
+                .attr("cy", () => {
                     return this.plotHeight;
                 })
-                .attr("height", 0)
                 .remove();
             // add new ones
-            rect.enter()
-                .append("circles")
+            circles.enter()
+                .append("circle")
                 .attr("cx", (d) => {
-                    return this.xScale(d.name);
+                    return this.xScale(d.name) + this.xScale.bandwidth()/2;
                 })
-                .attr("width", this.xScale.bandwidth())
                 .attr("fill", "black")
+                .attr("r", (d) => {
+                    if (d.value) {
+                        return 5;
+                    }
+                    return 0;
+                })
                 .attr("cy", () => {
                     return this.plotHeight;
                 })
@@ -182,17 +191,29 @@ export default {
                 })
                 .duration(500)
                 .attr("cy", (d) => {
-                    return this.plotHeight - this.yScale(d.value);
+                    if (d.value) {
+                        return this.plotHeight - this.yScale(d.value);
+                    }
+                    return 0;
                 })
             // reposition old bars
-            rect.transition()
+            circles.transition()
                 .duration(500)
+                .attr("r", (d) => {
+                    if (d.value) {
+                        return 5;
+                    }
+                    return 0;
+                })
                 .attr("cx", (d) => {
-                    return this.xScale(d.name);
+                    return this.xScale(d.name) + this.xScale.bandwidth()/2;
                 })
                 .attr("width", this.xScale.bandwidth())
                 .attr("cy", (d) => {
-                    return this.plotHeight - this.yScale(d.value);
+                    if (d.value) {
+                        return this.plotHeight - this.yScale(d.value);
+                    }
+                    return 0;
                 })
         },
         updateAxes: function () {
@@ -279,7 +300,7 @@ export default {
         rawData: function () {
             this.createScales();
             this.updateAxes();
-            this.updateBarChart();
+            this.updateCircles();
         },
     },
 };

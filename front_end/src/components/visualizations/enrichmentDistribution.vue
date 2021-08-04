@@ -10,7 +10,7 @@ export default {
     name: "enrichmentDistribution",
     mixins: [formattingMixin],
     props: {
-        plotData: Array,
+        rawData: Array,
         width: Number,
         height: Number,
         intervalSize: Number,
@@ -28,6 +28,15 @@ export default {
         divName: function () {
             return `enrichmentDistribution${this.id}`;
         },
+        plotData: function(){
+            // encode index in data
+            return this.rawData.map((elem, i) => {
+                return {
+                    "value": elem,
+                    "index": i
+                }
+            })
+        },
         margin: function () {
             return {
                 top: this.height * 0.09,
@@ -39,7 +48,7 @@ export default {
         maxVal: function () {
             // computes maximum value of data passed
             let maxVal = -Infinity;
-            for (let elem of this.plotData) {
+            for (let elem of this.rawData) {
                 if (elem > maxVal) {
                     maxVal = elem;
                 }
@@ -123,12 +132,12 @@ export default {
                 .data(this.plotData)
                 .enter()
                 .append("rect")
-                .attr("x", (d, i) => {
-                    return this.xScale(i);
+                .attr("x", (d) => {
+                    return this.xScale(d.index);
                 })
                 .attr("width", this.xScale.bandwidth())
-                .attr("fill", (d, i) => {
-                    if (i == this.currentColumn) {
+                .attr("fill", (d) => {
+                    if (d.index == this.currentColumn) {
                         return "red";
                     }
                     return "grey";
@@ -138,16 +147,23 @@ export default {
                 })
                 .attr("height", 0)
                 .transition()
-                .delay((d, i) => {
-                    return (this.xScale(i) / 150 / this.plotData.length) * 1000;
+                .delay((d) => {
+                    return (this.xScale(d.index) / 150 / this.plotData.length) * 1000;
                 })
                 .duration(500)
                 .attr("y", (d) => {
-                    return this.plotHeight - this.yScale(d);
+                    return this.plotHeight - this.yScale(d.value);
                 })
                 .attr("height", (d) => {
-                    return this.yScale(d);
+                    return this.yScale(d.value);
                 });
+            // add event listener
+            this.svg
+                .selectAll("rect")
+                .on("click", this.handleBarClick)
+        },
+        handleBarClick: function(e, d){
+            this.$emit("barclick", d.index)
         },
         updateBarChart: function () {
             /*
@@ -167,12 +183,12 @@ export default {
             // add new ones
             rect.enter()
                 .append("rect")
-                .attr("x", (d, i) => {
-                    return this.xScale(i);
+                .attr("x", (d) => {
+                    return this.xScale(d.index);
                 })
                 .attr("width", this.xScale.bandwidth())
-                .attr("fill", (d, i) => {
-                    if (i == this.currentColumn) {
+                .attr("fill", (d) => {
+                    if (d.index == this.currentColumn) {
                         return "red";
                     }
                     return "grey";
@@ -182,35 +198,39 @@ export default {
                 })
                 .attr("height", 0)
                 .transition()
-                .delay((d, i) => {
-                    return (this.xScale(i) / 150 / this.plotData.length) * 1000;
+                .delay((d) => {
+                    return (this.xScale(d.index) / 150 / this.plotData.length) * 1000;
                 })
                 .duration(500)
                 .attr("y", (d) => {
-                    return this.plotHeight - this.yScale(d);
+                    return this.plotHeight - this.yScale(d.value);
                 })
                 .attr("height", (d) => {
-                    return this.yScale(d);
+                    return this.yScale(d.value);
                 });
             // reposition old bars
             rect.transition()
                 .duration(500)
-                .attr("x", (d, i) => {
-                    return this.xScale(i);
+                .attr("x", (d) => {
+                    return this.xScale(d.index);
                 })
-                .attr("fill", (d, i) => {
-                    if (i == this.currentColumn) {
+                .attr("fill", (d) => {
+                    if (d.index == this.currentColumn) {
                         return "red";
                     }
                     return "grey";
                 })
                 .attr("width", this.xScale.bandwidth())
                 .attr("y", (d) => {
-                    return this.plotHeight - this.yScale(d);
+                    return this.plotHeight - this.yScale(d.value);
                 })
                 .attr("height", (d) => {
-                    return this.yScale(d);
+                    return this.yScale(d.value);
                 });
+            // add event listener
+            this.svg
+                .selectAll("rect")
+                .on("click", this.handleBarClick)
         },
         updateAxes: function () {
             /*
@@ -298,6 +318,11 @@ export default {
             this.updateAxes();
             this.updateBarChart();
         },
+        currentColumn: function(){
+            this.createScales();
+            this.updateAxes();
+            this.updateBarChart();
+        }
     },
 };
 </script>

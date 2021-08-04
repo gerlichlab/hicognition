@@ -3,11 +3,12 @@
         <md-list class="md-double-line no-padding">
             <md-list-item class="md-alignment-top-center">
                 <enrichment-distribution
-                :plotData="enrichmentData"
+                :rawData="enrichmentData"
                 :width="width"
                 :height="distributionPlotHeight"
                 :intervalSize="intervalSize"
                 :currentColumn="currentColumn"
+                @barclick="transmitEvent"
                 />
             </md-list-item>
             <md-list-item class="md-alignment-top-center">
@@ -38,12 +39,8 @@ export default {
         width: Number,
         height: Number,
         collectionNames: Array,
-        intervalSize: Number
-    },
-    data: function(){
-        return {
-            selectedColumn: undefined
-        }
+        intervalSize: Number,
+        selectedColumn: Number
     },
     computed: {
         rankPlotHeight: function(){
@@ -64,6 +61,11 @@ export default {
         },
         rankData: function(){
             return select_column(this.plotData["data"], this.plotData["shape"], this.currentColumn)
+        }
+    },
+    methods: {
+        transmitEvent: function(index){
+            this.$emit("barclick", index)
         }
     }
 }

@@ -106,6 +106,8 @@
                 :height="visualizationHeight"
                 :collectionNames="datasetNames"
                 :intervalSize="Number(intervalSize)"
+                :selectedColumn="selectedColumn"
+                @barclick="handleLocationChange"
             />
             <div
                 v-if="!showData"
@@ -147,6 +149,9 @@ export default {
         },
     },
     methods: {
+        handleLocationChange: function(index){
+            this.selectedColumn = index
+        },
         blankWidget: function(){
             // removes all information that the user can set in case a certain region/dataset combination is not available
             this.widgetData = undefined;
@@ -177,6 +182,7 @@ export default {
                 binsize: this.selectedBinsize,
                 widgetDataRef: this.widgetDataRef,
                 widgetType: "Lola",
+                selectedColumn: this.selectedColumn
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -192,7 +198,8 @@ export default {
                 datasets: collectionData["availableData"]["lola"],
                 showMenu: false,
                 showDatasetSelection: false,
-                showBinSizeSelection: false
+                showBinSizeSelection: false,
+                selectedColumn: undefined
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -253,7 +260,8 @@ export default {
                 datasets: collectionConfig["availableData"]["lola"],
                 showMenu: false,
                 showDatasetSelection: false,
-                showBinSizeSelection: false
+                showBinSizeSelection: false,
+                selectedColumn: widgetData["selectedColumn"]
             };
         },
         getLolaData: async function(id) {
@@ -286,6 +294,8 @@ export default {
             this.widgetDataRef = selected_id;
             // fetch data
             this.widgetData = await this.getLolaData(selected_id)
+            // blank selected column
+            this.selectedColumn = undefined
         },
     },
     watch: {
