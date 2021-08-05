@@ -186,15 +186,25 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
     intervals = Intervals.query.get(intervals_id)
     file_path = intervals.source_dataset.file_path
     window_size = intervals.windowsize
-    regions = pd.read_csv(file_path, sep="\t", header=None)
+    regions = (
+        pd.read_csv(file_path, sep="\t", header=None)
+        .iloc[:, [0, 1, 2]]
+        .rename(columns={0: "chrom", 1: "start", 2: "end"})
+    )
     # make queries
     log.info("      Constructing queries...")
-    queries = interval_operations.chunk_intervals(regions, window_size, binsize)
     # remove anything that is not in universe and dropduplicates
     chromsizes = io_helpers.load_chromsizes(current_app.config["CHROM_SIZES"])
     chromsizes_regions = pd.DataFrame(
         {"chrom": chromsizes.index, "start": 0, "end": chromsizes}
     )
+    # filter based on whether the original regions are in chromosomes
+    filtered = (
+        bf.count_overlaps(regions, chromsizes_regions)
+        .query("count > 0")
+        .drop("count", axis="columns")
+    )
+    queries = interval_operations.chunk_intervals(filtered, window_size, binsize)
     filtered_queries = [
         bf.count_overlaps(query, chromsizes_regions)
         .query("count > 0")
@@ -211,12 +221,20 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
         .rename(columns={0: "chrom", 1: "start", 2: "end"})
         for target in collection.datasets
     ]
+    filtered_target_list = [
+        bf.count_overlaps(target, chromsizes_regions)
+        .query("count > 0")
+        .drop("count", axis="columns")
+        for target in target_list
+    ]
     # get universe -> genome binned with equal binsize
     universe = bf.binnify(chromsizes, binsize)
     # perform enrichment analysis
     log.info("      Run enrichment analysis...")
     results = [
-        pylola.run_lola(query, target_list, universe, processes=4)["odds_ratio"].values
+        pylola.run_lola(query, filtered_target_list, universe, processes=4)[
+            "odds_ratio"
+        ].values
         for query in filtered_queries
     ]
     # stack results
