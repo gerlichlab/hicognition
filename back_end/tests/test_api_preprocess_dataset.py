@@ -79,8 +79,8 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     "pipeline_pileup",
                     "run pileup pipeline",
                     1,
-                    interval,
-                    binsize,
+                    interval_id=interval,
+                    binsize=binsize,
                 )
         # check whether number of calls was correct
         self.assertEqual(
@@ -177,8 +177,8 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     "pipeline_pileup",
                     "run pileup pipeline",
                     5,
-                    interval,
-                    binsize,
+                    interval_id=interval,
+                    binsize=binsize,
                 )
         # check whether number of calls was correct
         self.assertEqual(
@@ -213,8 +213,8 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     "pipeline_stackup",
                     "run stackup pipeline",
                     6,
-                    interval,
-                    binsize,
+                    interval_id=interval,
+                    binsize=binsize,
                 )
         # check whether number of calls was correct
         self.assertEqual(

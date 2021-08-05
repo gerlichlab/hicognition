@@ -160,8 +160,8 @@ def preprocess_dataset():
                     Dataset.query.get(dataset_id).filetype
                 ],
                 dataset_id,
-                interval_id,
-                binsize,
+                interval_id=interval_id,
+                binsize=binsize,
             )
     # set processing state
     dataset = Dataset.query.get(dataset_id)
@@ -220,8 +220,8 @@ def preprocess_collections():
             current_user.launch_collection_task(
                 *current_app.config["PIPELINE_NAMES"]["lola"],
                 collection_id,
-                interval_id,
-                binsize,
+                interval_id=interval_id,
+                binsize=binsize,
             )
     # set processing state
     collection = Collection.query.get(collection_id)

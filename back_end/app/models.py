@@ -263,6 +263,7 @@ class Task(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
+    intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
     complete = db.Column(db.Boolean, default=False)
 
     def get_rq_job(self):
