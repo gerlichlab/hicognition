@@ -4,7 +4,6 @@ import uuid
 import logging
 
 from flask.globals import current_app
-from numpy.core.shape_base import stack
 import pandas as pd
 import numpy as np
 import cooler

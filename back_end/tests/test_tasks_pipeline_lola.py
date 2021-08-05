@@ -20,11 +20,7 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         open(file_path, "w").close()
         return file_path
 
-    def setUp(self):
-        """Add test dataset"""
-        # call setUp of LoginTestCase to initialize app
-        super().setUp()
-        # load bedfile that is used to derive other bedfiles
+    def _populate_with_data(self):
         source_data = pd.read_csv(
             "tests/testfiles/test3_realData_large.bed", sep="\t", header=None
         )
@@ -57,14 +53,32 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         self.assoc_data_1 = AssociationIntervalData(
             file_path=test_file, binsize=50000, collection_id=1, intervals_id=1
         )
-        # create groupings
+
+    def _add_tad_boundaries(self):
+        """populate database with real data"""
+        self.tad_boundaries = Dataset(id=4, file_path="tests/testfiles/tad_boundaries.bed", filetype="bedfile")
+        self.tad_boundaries_interval = Intervals(id=2, windowsize=200000, dataset_id=4)
+        self.collection_2 = Collection(
+            id=2, datasets=[self.tad_boundaries]
+        )
+
+    def _create_groupings(self):
         self.datasets = [
             self.query_dataset,
+            self.tad_boundaries,
             self.target_dataset_1,
             self.target_dataset_2,
         ]
-        self.intervals = [self.query_interval]
-        self.collections = [self.collection_1]
+        self.intervals = [self.query_interval, self.tad_boundaries_interval]
+        self.collections = [self.collection_1, self.collection_2]
+
+    def setUp(self):
+        """Add test dataset"""
+        # call setUp of LoginTestCase to initialize app
+        super().setUp()
+        self._populate_with_data()
+        self._add_tad_boundaries()
+        self._create_groupings()
 
     def test_result_added_correctly_to_db(self):
         """tests whether perform enrichment analysis adds result correctly to db."""
@@ -118,6 +132,15 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
             ]
         )
         self.assertTrue(np.all(np.isclose(data_result, expected)))
+
+    def test_query_w_query_in_targets_does_not_crash(self):
+        """Tests whether query with duplicates is handled correctly."""
+        db.session.add_all(self.datasets)
+        db.session.add_all(self.intervals)
+        db.session.add_all(self.collections)
+        db.session.commit()
+        # run enrichment analysis
+        perform_enrichment_analysis(self.collection_2.id, self.tad_boundaries_interval.id, 50000)
 
 
 if __name__ == "__main__":
