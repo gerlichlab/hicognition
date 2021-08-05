@@ -338,7 +338,6 @@ def add_bedfile_metadata_fields(metadata_id):
     return jsonify({"message": "Success! Field map added."})
 
 
-# TODO: add handling of collections
 @api.route("/sessions/", methods=["POST"])
 @auth.login_required
 def create_session():

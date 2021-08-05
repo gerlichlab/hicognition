@@ -13,6 +13,7 @@ from app.models import (
     IndividualIntervalData,
     Collection,
     AssociationIntervalData,
+    Task,
 )
 
 
@@ -23,16 +24,32 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         super().setUp()
         # create datasets
         self.owned_bedfile = Dataset(
-            id=1, user_id=1, filetype="bedfile", dataset_name="testfile", processing_state="finished"
+            id=1,
+            user_id=1,
+            filetype="bedfile",
+            dataset_name="testfile",
+            processing_state="finished",
         )
         self.not_owned_bedfile = Dataset(
-            id=2, user_id=2, filetype="bedfile", dataset_name="testfile2", processing_state="finished"
+            id=2,
+            user_id=2,
+            filetype="bedfile",
+            dataset_name="testfile2",
+            processing_state="finished",
         )
         self.owned_coolerfile = Dataset(
-            id=3, user_id=1, filetype="cooler", dataset_name="testfile3", processing_state="finished"
+            id=3,
+            user_id=1,
+            filetype="cooler",
+            dataset_name="testfile3",
+            processing_state="finished",
         )
         self.owned_bigwig = Dataset(
-            id=4, user_id=1, filetype="bigwig", dataset_name="testfile4", processing_state="finished"
+            id=4,
+            user_id=1,
+            filetype="bigwig",
+            dataset_name="testfile4",
+            processing_state="finished",
         )
         self.owned_datasets = [
             self.owned_bedfile,
@@ -40,16 +57,32 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             self.owned_bigwig,
         ]
         self.not_owned_bigwig = Dataset(
-            id=5, user_id=2, filetype="bigwig", dataset_name="testfile5", processing_state="finished"
+            id=5,
+            user_id=2,
+            filetype="bigwig",
+            dataset_name="testfile5",
+            processing_state="finished",
         )
         self.not_owned_cooler = Dataset(
-            id=6, user_id=2, filetype="cooler", dataset_name="testfile6", processing_state="finished"
+            id=6,
+            user_id=2,
+            filetype="cooler",
+            dataset_name="testfile6",
+            processing_state="finished",
         )
         self.owned_bedfile2 = Dataset(
-            id=7, user_id=1, filetype="bedfile", dataset_name="testfile7", processing_state="finished"
+            id=7,
+            user_id=1,
+            filetype="bedfile",
+            dataset_name="testfile7",
+            processing_state="finished",
         )
         self.owned_bedfile3 = Dataset(
-            id=8, user_id=1, filetype="bedfile", dataset_name="testfile8", processing_state="finished"
+            id=8,
+            user_id=1,
+            filetype="bedfile",
+            dataset_name="testfile8",
+            processing_state="finished",
         )
         self.not_owned_datasets = [self.not_owned_bigwig, self.not_owned_cooler]
         # create colledtions
@@ -58,7 +91,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             user_id=1,
             name="test_collection",
             datasets=[self.owned_bedfile, self.owned_bedfile2, self.owned_bedfile3],
-            processing_state="finished"
+            processing_state="finished",
         )
         # create intervals
         self.intervals_owned_bedfile = [
@@ -114,6 +147,25 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 id=3, binsize=20000, collection_id=1, intervals_id=2
             ),
         ]
+        # create tasks
+        self.processing_bigwig_task = Task(
+            id="asdf", dataset_id=self.owned_bigwig.id, complete=False
+        )
+        self.completed_bigiwg_task = Task(
+            id="asdf1", dataset_id=self.owned_bigwig.id, complete=True
+        )
+        self.processing_cooler_task = Task(
+            id="asdf2", dataset_id=self.owned_coolerfile.id, complete=False
+        )
+        self.completed_cooler_task = Task(
+            id="asdf3", dataset_id=self.owned_coolerfile.id, complete=True
+        )
+        self.processing_collection_task = Task(
+            id="asdf4", collection_id=self.owned_collection.id, complete=False
+        )
+        self.completed_collection_task = Task(
+            id="asdf5", collection_id=self.owned_collection.id, complete=True
+        )
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
@@ -416,6 +468,171 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
+        }
+        self.assertEqual(response.json, expected)
+
+    def test_bigwig_dataset_not_sent_when_not_finished(self):
+        """Tests whehter only datasets are included in preprocessed dataset map
+        that have finished processing for the query region."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add datasets
+        db.session.add_all(self.owned_datasets)
+        db.session.add_all(self.not_owned_datasets)
+        db.session.add(self.owned_collection)
+        db.session.add_all(self.intervals_owned_bedfile)
+        db.session.add_all(self.pileups)
+        db.session.add_all(self.lineprofiles)
+        db.session.add_all(self.stackups)
+        db.session.add_all(self.association_data)
+        db.session.add(self.processing_bigwig_task)
+        db.session.add(self.completed_bigiwg_task)
+        db.session.add(self.completed_cooler_task)
+        db.session.add(self.completed_collection_task)
+        db.session.commit()
+        # protected route
+        response = self.client.get(
+            "/api/datasets/1/processedDataMap/",
+            content_type="application/json",
+            headers=token_headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether response is correct
+        expected = {
+            "pileup": {
+                "3": {
+                    "name": "testfile3",
+                    "data_ids": {
+                        "10000": {"1000": {"ICCF": "2", "Obs/Exp": "1"}},
+                        "20000": {"2000": {"ICCF": "4", "Obs/Exp": "3"}},
+                    },
+                }
+            },
+            "stackup": {},
+            "lineprofile": {},
+            "lola": {
+                "1": {
+                    "name": "test_collection",
+                    "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                    "data_ids": {
+                        "10000": {"10000": "1", "20000": "2"},
+                        "20000": {"20000": "3"},
+                    },
+                }
+            },
+        }
+        self.assertEqual(response.json, expected)
+
+    def test_cooler_dataset_not_sent_when_not_finished(self):
+        """Tests whehter only datasets are included in preprocessed dataset map
+        that have finished processing for the query region."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add datasets
+        db.session.add_all(self.owned_datasets)
+        db.session.add_all(self.not_owned_datasets)
+        db.session.add(self.owned_collection)
+        db.session.add_all(self.intervals_owned_bedfile)
+        db.session.add_all(self.pileups)
+        db.session.add_all(self.lineprofiles)
+        db.session.add_all(self.stackups)
+        db.session.add_all(self.association_data)
+        db.session.add(self.processing_cooler_task)
+        db.session.add(self.completed_bigiwg_task)
+        db.session.add(self.completed_cooler_task)
+        db.session.add(self.completed_collection_task)
+        db.session.commit()
+        # protected route
+        response = self.client.get(
+            "/api/datasets/1/processedDataMap/",
+            content_type="application/json",
+            headers=token_headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether response is correct
+        expected = {
+            "pileup": {},
+            "stackup": {
+                "4": {
+                    "name": "testfile4",
+                    "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
+                }
+            },
+            "lineprofile": {
+                "4": {
+                    "name": "testfile4",
+                    "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
+                }
+            },
+            "lola": {
+                "1": {
+                    "name": "test_collection",
+                    "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                    "data_ids": {
+                        "10000": {"10000": "1", "20000": "2"},
+                        "20000": {"20000": "3"},
+                    },
+                }
+            },
+        }
+        self.assertEqual(response.json, expected)
+
+    def test_collection_not_sent_when_not_finished(self):
+        """Tests whehter only collections are included in preprocessed dataset map
+        that have finished processing for the query region."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add datasets
+        db.session.add_all(self.owned_datasets)
+        db.session.add_all(self.not_owned_datasets)
+        db.session.add(self.owned_collection)
+        db.session.add_all(self.intervals_owned_bedfile)
+        db.session.add_all(self.pileups)
+        db.session.add_all(self.lineprofiles)
+        db.session.add_all(self.stackups)
+        db.session.add_all(self.association_data)
+        db.session.add(self.processing_collection_task)
+        db.session.add(self.completed_bigiwg_task)
+        db.session.add(self.completed_cooler_task)
+        db.session.add(self.completed_collection_task)
+        db.session.commit()
+        # protected route
+        response = self.client.get(
+            "/api/datasets/1/processedDataMap/",
+            content_type="application/json",
+            headers=token_headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether response is correct
+        expected = {
+            "pileup": {
+                "3": {
+                    "name": "testfile3",
+                    "data_ids": {
+                        "10000": {"1000": {"ICCF": "2", "Obs/Exp": "1"}},
+                        "20000": {"2000": {"ICCF": "4", "Obs/Exp": "3"}},
+                    },
+                }
+            },
+            "stackup": {
+                "4": {
+                    "name": "testfile4",
+                    "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
+                }
+            },
+            "lineprofile": {
+                "4": {
+                    "name": "testfile4",
+                    "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
+                }
+            },
+            "lola": {},
         }
         self.assertEqual(response.json, expected)
 

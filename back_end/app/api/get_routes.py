@@ -4,7 +4,7 @@ from flask.globals import current_app
 import pandas as pd
 import numpy as np
 from flask.json import jsonify
-from flask import g, request
+from flask import g
 from .helpers import (
     update_processing_state,
     is_access_to_dataset_denied,
