@@ -97,11 +97,17 @@ def add_average_data_to_preprocessed_dataset_map(
         # check whether dataset is owned
         if is_access_to_dataset_denied(dataset, request_context):
             continue
-        # check whether there are any uncompleted tasks for the feature dataset
-        tasks = Task.query.filter(Task.dataset_id == dataset.id).all()
-        if len(tasks) != 0 and any(not task.complete for task in tasks):
-            continue
+        # check whether there are any uncompleted tasks for the region dataset associated with these features
         interval = Intervals.query.get(average.intervals_id)
+        region_dataset = interval.source_dataset
+        tasks_on_interval = (
+            Task.query.join(Intervals)
+            .join(Dataset)
+            .filter((Task.dataset_id == dataset.id) & (Dataset.id == region_dataset.id))
+            .all()
+        )
+        if len(tasks_on_interval) != 0 and any(not task.complete for task in tasks_on_interval):
+            continue
         if average.value_type in ["Obs/Exp", "ICCF"]:
             output_object["pileup"][dataset.id]["name"] = dataset.dataset_name
             output_object["pileup"][dataset.id]["data_ids"][interval.windowsize][
@@ -123,10 +129,16 @@ def add_individual_data_to_preprocessed_dataset_map(
         if is_access_to_dataset_denied(dataset, request_context):
             continue
         # check whether there are any uncompleted tasks for the feature dataset
-        tasks = Task.query.filter(Task.dataset_id == dataset.id).all()
-        if len(tasks) != 0 and any(not task.complete for task in tasks):
-            continue
         interval = Intervals.query.get(individual.intervals_id)
+        region_dataset = interval.source_dataset
+        tasks_on_interval = (
+            Task.query.join(Intervals)
+            .join(Dataset)
+            .filter((Task.dataset_id == dataset.id) & (Dataset.id == region_dataset.id))
+            .all()
+        )
+        if len(tasks_on_interval) != 0 and any(not task.complete for task in tasks_on_interval):
+            continue
         output_object["stackup"][dataset.id]["name"] = dataset.dataset_name
         output_object["stackup"][dataset.id]["data_ids"][interval.windowsize][
             individual.binsize
@@ -141,11 +153,17 @@ def add_association_data_to_preprocessed_dataset_map(
         # check whether collection is owned
         if is_access_to_collection_denied(collection, request_context):
             continue
-        # check whether there are any uncompleted tasks for the feature collections
-        tasks = Task.query.filter(Task.collection_id == collection.id).all()
-        if len(tasks) != 0 and any(not task.complete for task in tasks):
-            continue
+        # check whether there are any uncompleted tasks for the feature dataset
         interval = Intervals.query.get(assoc.intervals_id)
+        region_dataset = interval.source_dataset
+        tasks_on_interval = (
+            Task.query.join(Intervals)
+            .join(Dataset)
+            .filter((Task.collection_id == collection.id) & (Dataset.id == region_dataset.id))
+            .all()
+        )
+        if len(tasks_on_interval) != 0 and any(not task.complete for task in tasks_on_interval):
+            continue
         output_object["lola"][collection.id]["name"] = collection.name
         output_object["lola"][collection.id][
             "collection_dataset_names"

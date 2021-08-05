@@ -38,12 +38,18 @@ class User(db.Model, UserMixin):
         rq_job = current_app.task_queue.enqueue(
             "app.tasks." + name, dataset_id, job_timeout="10h", *args, **kwargs
         )
+        # check whether inverals_id is in kwargs
+        if "intervals_id" in kwargs:
+            intervals_id = kwargs["intervals_id"]
+        else:
+            intervals_id = None
         task = Task(
             id=rq_job.get_id(),
             name=name,
             description=description,
             user_id=self.id,
             dataset_id=dataset_id,
+            intervals_id=intervals_id
         )
         db.session.add(task)
         return task
@@ -52,12 +58,18 @@ class User(db.Model, UserMixin):
         rq_job = current_app.task_queue.enqueue(
             "app.tasks." + name, collection_id, job_timeout="10h", *args, **kwargs
         )
+        # check whether inverals_id is in kwargs
+        if "intervals_id" in kwargs:
+            intervals_id = kwargs["intervals_id"]
+        else:
+            intervals_id = None
         task = Task(
             id=rq_job.get_id(),
             name=name,
             description=description,
             user_id=self.id,
             collection_id=collection_id,
+            intervals_id=intervals_id
         )
         db.session.add(task)
         return task
