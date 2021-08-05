@@ -62,7 +62,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
                     "pipeline_lola",
                     "run lola pipeline",
                     1,
-                    interval_id=interval,
+                    intervals_id=interval,
                     binsize=binsize,
                 )
         # check whether number of calls was correct

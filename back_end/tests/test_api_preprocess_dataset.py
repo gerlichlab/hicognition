@@ -79,7 +79,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     "pipeline_pileup",
                     "run pileup pipeline",
                     1,
-                    interval_id=interval,
+                    intervals_id=interval,
                     binsize=binsize,
                 )
         # check whether number of calls was correct
@@ -177,7 +177,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     "pipeline_pileup",
                     "run pileup pipeline",
                     5,
-                    interval_id=interval,
+                    intervals_id=interval,
                     binsize=binsize,
                 )
         # check whether number of calls was correct
@@ -213,7 +213,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     "pipeline_stackup",
                     "run stackup pipeline",
                     6,
-                    interval_id=interval,
+                    intervals_id=interval,
                     binsize=binsize,
                 )
         # check whether number of calls was correct
