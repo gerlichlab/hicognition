@@ -1,5 +1,5 @@
 <template>
-    <div :id="divName" class="small-margin" />
+    <div :id="divName" class="no-margin" />
 </template>
 
 <script>
@@ -406,7 +406,7 @@ export default {
 </script>
 
 <style>
-.small-margin {
+.no-margin {
     margin: 0px;
 }
 </style>
