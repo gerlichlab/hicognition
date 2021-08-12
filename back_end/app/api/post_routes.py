@@ -196,6 +196,8 @@ def preprocess_collections():
         return not_found("Collection does not exist!")
     if is_access_to_collection_denied(Collection.query.get(collection_id), g):
         return forbidden(f"Collection is not owned by logged in user!")
+    # load collection
+    collection = Collection.query.get(collection_id)
     # check whether region datasets exists
     region_datasets = [
         Dataset.query.get(region_id) for region_id in region_datasets_ids
@@ -218,7 +220,7 @@ def preprocess_collections():
             Intervals.query.get(interval_id).windowsize
         ]:
             current_user.launch_collection_task(
-                *current_app.config["PIPELINE_NAMES"]["lola"],
+                *current_app.config["PIPELINE_NAMES"]["collections"][collection.kind],
                 collection_id,
                 intervals_id=interval_id,
                 binsize=binsize,

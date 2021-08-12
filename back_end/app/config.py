@@ -28,7 +28,10 @@ class Config:
     PIPELINE_NAMES = {
         "cooler": ("pipeline_pileup", "run pileup pipeline"),
         "bigwig": ("pipeline_stackup", "run stackup pipeline"),
-        "lola": ("pipeline_lola", "run lola pipeline"),
+        "collections": {
+            "region": ("pipeline_lola", "run lola pipeline"),
+            "1d-feature": ("pipeline_1d_embedding", "run 1d embedding pipeline")
+        }
     }
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled
     OBS_EXP_PROCESSES = 4  # Number of processes to use per worker to calcualte obs/exp matrix of pileups

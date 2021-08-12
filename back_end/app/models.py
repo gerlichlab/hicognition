@@ -399,7 +399,7 @@ class Collection(db.Model):
     public = db.Column(db.Boolean, default=False)
     kind = db.Column(
         db.String(256)
-    )  # What kind of datasets are collected (regions, features)
+    )  # What kind of datasets are collected (regions, 1d-features, 2d-features)
     tasks = db.relationship("Task", backref="collection", lazy="dynamic")
     datasets = db.relationship("Dataset", secondary=dataset_collection_assoc_table)
     associationData = db.relationship(

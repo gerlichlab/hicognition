@@ -77,3 +77,7 @@ def pipeline_lola(collection_id, intervals_id, binsize):
     collection_id, binsize and intervals_id"""
     pipeline_steps.perform_enrichment_analysis(collection_id, intervals_id, binsize)
     pipeline_steps._set_task_progress(100)
+
+def pipeline_embedding_1d(collection_id, intervals_id, binsize):
+    """Starts embedding pipeline steps for feature collections refering to
+    1 dimensional features per regions (e.g. bigwig tracks)"""
