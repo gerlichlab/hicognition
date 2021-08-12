@@ -23,6 +23,7 @@ from ..models import (
     AverageIntervalData,
     IndividualIntervalData,
     AssociationIntervalData,
+    EmbeddingIntervalData,
     Session,
     Collection,
 )
@@ -278,6 +279,32 @@ def get_association_data(entry_id):
     json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
     return jsonify(json_data)
 
+
+@api.route("/embeddingIntervalData/<entry_id>/", methods=["GET"])
+@auth.login_required
+def get_embedding_data(entry_id):
+    """returns data for the specified embedding data id if it exists and
+    access is allowed."""
+    # Check for existence
+    if EmbeddingIntervalData.query.get(entry_id) is None:
+        return not_found("Embedding data does not exist!")
+    # Check whether datasets are owned
+    embedding_data = EmbeddingIntervalData.query.get(entry_id)
+    collection = embedding_data.source_collection
+    bed_ds = embedding_data.source_intervals.source_dataset
+    if is_access_to_collection_denied(collection, g) or is_access_to_dataset_denied(
+        bed_ds, g
+    ):
+        return forbidden("Collection or bed dataset is not owned by logged in user!")
+    # Dataset is owned, return the data
+    np_data = np.load(embedding_data.file_path)
+    # Convert np.nan and np.isinf to None -> this is handeled by jsonify correctly
+    flat_data = [
+        entry if not (np.isnan(entry) or np.isinf(entry)) else None
+        for entry in np_data.flatten()
+    ]
+    json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
+    return jsonify(json_data)
 
 @api.route("/individualIntervalData/<entry_id>/", methods=["GET"])
 @auth.login_required
