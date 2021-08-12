@@ -12,6 +12,7 @@ from .helpers import (
     add_average_data_to_preprocessed_dataset_map,
     add_individual_data_to_preprocessed_dataset_map,
     add_association_data_to_preprocessed_dataset_map,
+    add_embedding_data_to_preprocessed_dataset_map,
     recDict,
 )
 from . import api
@@ -131,7 +132,7 @@ def get_processed_data_mapping_of_dataset(dataset_id):
         }
     }
 
-    Processed_data_type is in [pileup, stackup, lineprofile, lola]. All entries
+    Processed_data_type is in [pileup, stackup, lineprofile, lola, embedding]. All entries
     for a given processed_data_type key are available processed_datasets.
     The values for each processed_dataset hold information about their name
     and which id in the target table corresponds to which interval and binsize
@@ -155,6 +156,7 @@ def get_processed_data_mapping_of_dataset(dataset_id):
         "stackup": recDict(),
         "lineprofile": recDict(),
         "lola": recDict(),
+        "embedding": recDict()
     }
     # populate output object
     associated_intervals = dataset.intervals.all()
@@ -162,10 +164,12 @@ def get_processed_data_mapping_of_dataset(dataset_id):
         average_data = interval.averageIntervalData.all()
         individual_data = interval.individualIntervalData.all()
         association_data = interval.associationIntervalData.all()
+        embedding_data = interval.embeddingIntervalData.all()
         # add data
         add_average_data_to_preprocessed_dataset_map(average_data, output, g)
         add_individual_data_to_preprocessed_dataset_map(individual_data, output, g)
         add_association_data_to_preprocessed_dataset_map(association_data, output, g)
+        add_embedding_data_to_preprocessed_dataset_map(embedding_data, output, g)
     return jsonify(output)
 
 

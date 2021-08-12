@@ -13,6 +13,7 @@ from app.models import (
     IndividualIntervalData,
     Collection,
     AssociationIntervalData,
+    EmbeddingIntervalData,
     Task,
 )
 
@@ -152,6 +153,12 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 id=3, binsize=20000, collection_id=1, intervals_id=2
             ),
         ]
+        # create embedding data
+        self.embedding_data = [
+            EmbeddingIntervalData(id=1, binsize=10000, collection_id=1, intervals_id=1),
+            EmbeddingIntervalData(id=2, binsize=20000, collection_id=1, intervals_id=1),
+            EmbeddingIntervalData(id=3, binsize=20000, collection_id=1, intervals_id=2),
+        ]
         # create tasks
         self.processing_bigwig_task = Task(
             id="asdf", dataset_id=self.owned_bigwig.id, complete=False, intervals_id=1
@@ -169,7 +176,10 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             intervals_id=1,
         )
         self.processing_cooler_task_unused_intervals = Task(
-            id="asdf", dataset_id=self.owned_coolerfile.id, complete=False, intervals_id=4
+            id="asdf",
+            dataset_id=self.owned_coolerfile.id,
+            complete=False,
+            intervals_id=4,
         )
         self.completed_cooler_task = Task(
             id="asdf3",
@@ -270,7 +280,13 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether response is correct
-        expected = {"pileup": {}, "stackup": {}, "lineprofile": {}, "lola": {}}
+        expected = {
+            "pileup": {},
+            "stackup": {},
+            "lineprofile": {},
+            "lola": {},
+            "embedding": {},
+        }
         self.assertEqual(response.json, expected)
 
     def test_structure_of_mapping_w_intervals_wo_data(self):
@@ -293,7 +309,13 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether response is correct
-        expected = {"pileup": {}, "stackup": {}, "lineprofile": {}, "lola": {}}
+        expected = {
+            "pileup": {},
+            "stackup": {},
+            "lineprofile": {},
+            "lola": {},
+            "embedding": {},
+        }
         self.assertEqual(response.json, expected)
 
     def test_structure_of_mapping_w_intervals_w_pileups(self):
@@ -330,6 +352,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "stackup": {},
             "lineprofile": {},
             "lola": {},
+            "embedding": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -364,6 +387,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
                 }
             },
+            "embedding": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -398,6 +422,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             },
             "lineprofile": {},
             "lola": {},
+            "embedding": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -437,6 +462,47 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
+            "embedding": {},
+        }
+        self.assertEqual(response.json, expected)
+
+    def test_structure_of_mapping_w_intervals_w_embedding_data(self):
+        """Test whether the structure of the returned object is correct for
+        bedfile associated with pileups"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add datasets
+        db.session.add_all(self.owned_datasets)
+        db.session.add(self.owned_collection)
+        db.session.add_all(self.not_owned_datasets)
+        db.session.add_all(self.intervals_owned_bedfile)
+        db.session.add_all(self.embedding_data)
+        db.session.commit()
+        # protected route
+        response = self.client.get(
+            "/api/datasets/1/processedDataMap/",
+            content_type="application/json",
+            headers=token_headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether response is correct
+        expected = {
+            "pileup": {},
+            "stackup": {},
+            "lineprofile": {},
+            "lola": {},
+            "embedding": {
+                "1": {
+                    "name": "test_collection",
+                    "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                    "data_ids": {
+                        "10000": {"10000": "1", "20000": "2"},
+                        "20000": {"20000": "3"},
+                    },
+                }
+            },
         }
         self.assertEqual(response.json, expected)
 
@@ -456,6 +522,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         db.session.add_all(self.lineprofiles)
         db.session.add_all(self.stackups)
         db.session.add_all(self.association_data)
+        db.session.add_all(self.embedding_data)
         db.session.commit()
         # protected route
         response = self.client.get(
@@ -488,6 +555,16 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 }
             },
             "lola": {
+                "1": {
+                    "name": "test_collection",
+                    "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                    "data_ids": {
+                        "10000": {"10000": "1", "20000": "2"},
+                        "20000": {"20000": "3"},
+                    },
+                }
+            },
+            "embedding": {
                 "1": {
                     "name": "test_collection",
                     "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
@@ -551,6 +628,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
+            "embedding": {}
         }
         self.assertEqual(response.json, expected)
 
@@ -615,6 +693,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
+            "embedding": {}
         }
         self.assertEqual(response.json, expected)
 
@@ -679,6 +758,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
+            "embedding": {}
         }
         self.assertEqual(response.json, expected)
 
@@ -735,6 +815,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
+            "embedding": {}
         }
         self.assertEqual(response.json, expected)
 
@@ -799,6 +880,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
+            "embedding": {}
         }
         self.assertEqual(response.json, expected)
 
@@ -854,6 +936,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 }
             },
             "lola": {},
+            "embedding": {}
         }
         self.assertEqual(response.json, expected)
 

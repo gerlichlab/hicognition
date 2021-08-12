@@ -172,6 +172,33 @@ def add_association_data_to_preprocessed_dataset_map(
             assoc.binsize
         ] = str(assoc.id)
 
+def add_embedding_data_to_preprocessed_dataset_map(
+    embedding_interval_datasets, output_object, request_context
+):
+    for embed in embedding_interval_datasets:
+        collection = Collection.query.get(embed.collection_id)
+        # check whether collection is owned
+        if is_access_to_collection_denied(collection, request_context):
+            continue
+        # check whether there are any uncompleted tasks for the feature dataset
+        interval = Intervals.query.get(embed.intervals_id)
+        region_dataset = interval.source_dataset
+        tasks_on_interval = (
+            Task.query.join(Intervals)
+            .join(Dataset)
+            .filter((Task.collection_id == collection.id) & (Dataset.id == region_dataset.id))
+            .all()
+        )
+        if len(tasks_on_interval) != 0 and any(not task.complete for task in tasks_on_interval):
+            continue
+        output_object["embedding"][collection.id]["name"] = collection.name
+        output_object["embedding"][collection.id][
+            "collection_dataset_names"
+        ] = collection.to_json()["dataset_names"]
+        output_object["embedding"][collection.id]["data_ids"][interval.windowsize][
+            embed.binsize
+        ] = str(embed.id)
+
 
 def recDict():
     """Recursive defaultdict that allows deep
