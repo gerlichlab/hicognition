@@ -174,6 +174,9 @@ class Intervals(db.Model):
     associationIntervalData = db.relationship(
         "AssociationIntervalData", backref="source_intervals", lazy="dynamic"
     )
+    embeddingIntervalData = db.relationship(
+        "EmbeddingIntervalData", backref="source_intervals", lazy="dynamic"
+    )
 
     def __repr__(self):
         """Format print output."""
@@ -258,6 +261,20 @@ class AssociationIntervalData(db.Model):
     """Table to hold information and pointers to data for values extracted by calculating
     association metrics between dataset collections and intervals. E.g.: LOLA enrichment data,
     Continuous values enrichment."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    binsize = db.Column(db.Integer)
+    name = db.Column(db.String(512), index=True)
+    file_path = db.Column(db.String(512), index=True)
+    value_type = db.Column(db.String(64))
+    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
+    intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
+
+
+class EmbeddingIntervalData(db.Model):
+    """Table to hold information and pointers to data for values extracted by calculating
+    embeddings of intervals based on values in dataset collections and intervals. E.g.: 1D-embeddings based
+    on chip-seq data, 2d-embeddings based on Hi-C data."""
 
     id = db.Column(db.Integer, primary_key=True)
     binsize = db.Column(db.Integer)
@@ -387,6 +404,9 @@ class Collection(db.Model):
     datasets = db.relationship("Dataset", secondary=dataset_collection_assoc_table)
     associationData = db.relationship(
         "AssociationIntervalData", backref="source_collection", lazy="dynamic"
+    )
+    embeddingData = db.relationship(
+        "EmbeddingIntervalData", backref="source_collection", lazy="dynamic"
     )
     processing_state = db.Column(db.String(64))
 
