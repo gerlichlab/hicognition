@@ -69,22 +69,89 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
         # trigger embedding
         pipeline_embedding_1d(self.collection_1.id, self.intervals_1.id, 10000)
         # assert that perform stackup was called with right parameters
-        expected_calls = [(ds_id, 1, 10000) for ds_id in [self.feature_2.id, self.feature_3.id]]
+        expected_calls = [
+            (ds_id, 1, 10000) for ds_id in [self.feature_2.id, self.feature_3.id]
+        ]
         for args in expected_calls:
             mock_stackup.assert_any_call(*args)
         # check whether perform embedding is called correctly
-        mock_embedding.assert_called_with(self.collection_1.id, self.intervals_1.id, 10000)
+        mock_embedding.assert_called_with(
+            self.collection_1.id, self.intervals_1.id, 10000
+        )
         # trigger embedding with different binsize -> all stackups should be retriggered
         pipeline_embedding_1d(self.collection_1.id, self.intervals_1.id, 20000)
         # assert that perform stackup was called with right parameters
-        expected_calls = [(ds_id, 1, 20000) for ds_id in [self.feature_1.id, self.feature_2.id, self.feature_3.id]]
+        expected_calls = [
+            (ds_id, 1, 20000)
+            for ds_id in [self.feature_1.id, self.feature_2.id, self.feature_3.id]
+        ]
         for args in expected_calls:
             mock_stackup.assert_any_call(*args)
         # check whether perform embedding is called correctly
-        mock_embedding.assert_called_with(self.collection_1.id, self.intervals_1.id, 20000)
+        mock_embedding.assert_called_with(
+            self.collection_1.id, self.intervals_1.id, 20000
+        )
+
 
 class TestPerformEmbedding1d(LoginTestCase, TempDirTestCase):
     """Tests whether pipeline step perform_1d_embedding is called correctly."""
+
+    def setUp(self):
+        """Add test dataset"""
+        # call setUp of LoginTestCase to initialize app
+        super().setUp()
+        # create bed dataset
+        self.bed_file = Dataset(id=1, user_id=1, filetype="bedfile")
+        # create intervals
+        self.intervals_1 = Intervals(id=1, windowsize=100000, dataset_id=1)
+        # create feature datasets
+        self.feature_1 = Dataset(id=2, user_id=1, filetype="bigwig")
+        self.feature_2 = Dataset(id=3, user_id=1, filetype="bigwig")
+        self.feature_3 = Dataset(id=4, user_id=1, filetype="bigwig")
+        # create collection
+        self.collection_1 = Collection(
+            id=1, datasets=[self.feature_1, self.feature_2, self.feature_3]
+        )
+        # create stackupdata
+        self.data_1 = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])
+        data_path_1 = os.path.join(self.TEMP_PATH, "data_1.npy")
+        np.save(data_path_1, self.data_1)
+        self.data_2 = np.array(
+            [[0.1, 0.2, 0.3, 0.4], [0.5, 0.6, 0.7, 0.8], [0.9, 1, 1.1, 1.2]]
+        )
+        data_path_2 = os.path.join(self.TEMP_PATH, "data_2.npy")
+        np.save(data_path_2, self.data_2)
+        self.data_3 = np.array(
+            [[0.2, 0.3, 0.4, 0.5], [0.6, 0.7, 0.8, 0.9], [1, 1.1, 1.2, 1.3]]
+        )
+        data_path_3 = os.path.join(self.TEMP_PATH, "data_3.npy")
+        np.save(data_path_3, self.data_3)
+        # create stackups
+        self.ind_data_1 = IndividualIntervalData(
+            id=1,
+            dataset_id=self.feature_1.id,
+            intervals_id=self.intervals_1.id,
+            binsize=10000,
+            file_path_small=data_path_1,
+        )
+        self.ind_data_2 = IndividualIntervalData(
+            id=1,
+            dataset_id=self.feature_2.id,
+            intervals_id=self.intervals_1.id,
+            binsize=10000,
+            file_path_small=data_path_2,
+        )
+        self.ind_data_3 = IndividualIntervalData(
+            id=1,
+            dataset_id=self.feature_3.id,
+            intervals_id=self.intervals_1.id,
+            binsize=10000,
+            file_path_small=data_path_3,
+        )
+
+    def test_correct_embedding_produced(self):
+        """Test whehter test data produces correct embedding."""
+        pass
 
 
 if __name__ == "__main__":
