@@ -249,6 +249,10 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
     add_association_data_to_db(file_path, binsize, intervals_id, collection_id)
 
 
+def perform_1d_embedding(collection_id, intervals_id, binsize):
+    """Performs embedding on each binsize-sized bin of the window specified in intervals_id using
+    the features in collection_id"""
+
 def add_association_data_to_db(file_path, binsize, intervals_id, collection_id):
     """Adds association data set to db"""
     # check if old association interval data exists and delete them

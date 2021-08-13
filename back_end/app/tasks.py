@@ -6,7 +6,7 @@ import logging
 import pandas as pd
 from hicognition import io_helpers
 from . import create_app, db
-from .models import Dataset
+from .models import Dataset, IndividualIntervalData, Collection
 from . import pipeline_steps
 from .api.helpers import remove_safely
 
@@ -81,3 +81,12 @@ def pipeline_lola(collection_id, intervals_id, binsize):
 def pipeline_embedding_1d(collection_id, intervals_id, binsize):
     """Starts embedding pipeline steps for feature collections refering to
     1 dimensional features per regions (e.g. bigwig tracks)"""
+    # check whether stackups exist and perform stackup if not
+    for source_dataset in Collection.query.get(collection_id).datasets:
+        stackup = IndividualIntervalData.query.filter((IndividualIntervalData.dataset_id == source_dataset.id)
+                                                     & (IndividualIntervalData.intervals_id == intervals_id)
+                                                     & (IndividualIntervalData.binsize == binsize)).first()
+        if stackup is None:
+            pipeline_steps.perform_stackup(source_dataset.id, intervals_id, binsize)
+    # perform embedding
+    pipeline_steps.perform_1d_embedding(collection_id, intervals_id, binsize)
