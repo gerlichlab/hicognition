@@ -62,8 +62,16 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         self.test_data = np.array([[1.66, 2.2, 3.8, 4.5]])
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, self.test_data)
+        self.feature_data = np.array([[5., 6., 7., 8.]])
+        feature_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_features.npy")
+        np.save(feature_path, self.feature_data)
         self.assocData_owned = EmbeddingIntervalData(
-            id=3, binsize=10000, file_path=data_path, collection_id=1, intervals_id=1
+            id=3,
+            binsize=10000,
+            file_path=data_path,
+            collection_id=1,
+            intervals_id=1,
+            file_path_feature_values=feature_path,
         )
 
     def test_no_auth(self):
@@ -159,9 +167,16 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
             content_type="application/json",
         )
         expected = {
-            "data": self.test_data.flatten().tolist(),
-            "shape": list(self.test_data.shape),
-            "dtype": "float32",
+            "embedding": {
+                "data": self.test_data.flatten().tolist(),
+                "shape": list(self.test_data.shape),
+                "dtype": "float32",
+            },
+            "features": {
+                "data": self.feature_data.flatten().tolist(),
+                "shape": list(self.feature_data.shape),
+                "dtype": "float32",
+            },
         }
         self.assertEqual(response.json, expected)
 
