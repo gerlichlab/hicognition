@@ -169,16 +169,16 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         expected = {
             "embedding": {
                 "data": self.test_data.flatten().tolist(),
-                "shape": list(self.test_data.shape),
+                "shape": tuple(self.test_data.shape),
                 "dtype": "float32",
             },
             "features": {
                 "data": self.feature_data.flatten().tolist(),
-                "shape": list(self.feature_data.shape),
+                "shape": tuple(self.feature_data.shape),
                 "dtype": "float32",
             },
         }
-        self.assertEqual(response.json, expected)
+        self.assertEqual(response.json, str(expected))
 
 
 if __name__ == "__main__":

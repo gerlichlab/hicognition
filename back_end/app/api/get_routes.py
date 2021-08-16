@@ -322,7 +322,7 @@ def get_embedding_data(entry_id):
         "embedding":   {"data": flat_data, "shape": np_data.shape, "dtype": "float32"},
         "features":   {"data": flat_feature_data, "shape": feature_shape, "dtype": "float32"}
     }
-    return jsonify(json_data)
+    return jsonify(str(json_data))
 
 @api.route("/individualIntervalData/<entry_id>/", methods=["GET"])
 @auth.login_required

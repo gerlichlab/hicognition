@@ -90,3 +90,4 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
             pipeline_steps.perform_stackup(source_dataset.id, intervals_id, binsize)
     # perform embedding
     pipeline_steps.perform_1d_embedding(collection_id, intervals_id, binsize)
+    pipeline_steps._set_task_progress(100)
