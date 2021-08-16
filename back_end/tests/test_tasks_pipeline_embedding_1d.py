@@ -178,7 +178,7 @@ class TestPerformEmbedding1d(LoginTestCase, TempDirTestCase):
         self.assertEqual(embedding.intervals_id, self.intervals_1.id)
 
     def test_correct_embedding_produced(self):
-        """Tests whether database entry is added correctly"""
+        """Tests whether produced embedding is correct"""
         # add data to database
         db.session.add_all(
             [
@@ -220,6 +220,29 @@ class TestPerformEmbedding1d(LoginTestCase, TempDirTestCase):
             dtype=np.float32,
         )
         self.assertTrue(np.array_equal(data, expected))
+        # test whether feature frame used is correct
+        feature_data = np.load(embedding.file_path_feature_values)
+        expected_features = np.array(
+            [
+                [2.0, 0.2, 0.3],
+                [6.0, 0.6, 0.7],
+                [10.0, 0.1, 1.1],
+                [2.0, 0.2, 0.3],
+                [6.0, 0.6, 0.7],
+                [10.0, 0.1, 1.1],
+                [2.0, 0.2, 0.3],
+                [6.0, 0.6, 0.7],
+                [10.0, 0.1, 1.1],
+                [2.0, 0.2, 0.3],
+                [6.0, 0.6, 0.7],
+                [10.0, 0.1, 1.1],
+                [2.0, 0.2, 0.3],
+                [6.0, 0.6, 0.7],
+                [10.0, 0.1, 1.1],
+            ]
+        )
+        self.assertTrue(np.array_equal(feature_data, expected_features))
+
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

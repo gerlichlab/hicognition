@@ -277,14 +277,19 @@ def perform_1d_embedding(collection_id, intervals_id, binsize):
     # write output for embedding
     log.info("      Writing output...")
     file_path = os.path.join(
-        current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + ".npy"
+        current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + "_embedding.npy"
     )
     np.save(file_path, embedding)
+    # write output for feature_overlay
+    file_path_features = os.path.join(
+        current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + "_features.npy"
+    )
+    np.save(file_path_features, feature_frame)
     # add to database
-    add_embedding_1d_to_db(file_path, binsize, intervals_id, collection_id)
+    add_embedding_1d_to_db(file_path, file_path_features, binsize, intervals_id, collection_id)
     
 
-def add_embedding_1d_to_db(file_path, binsize, intervals_id, collection_id):
+def add_embedding_1d_to_db(file_path,file_path_features, binsize, intervals_id, collection_id):
     """Adds association data set to db"""
     # check if old association interval data exists and delete them
     test_query = EmbeddingIntervalData.query.filter(
@@ -300,6 +305,7 @@ def add_embedding_1d_to_db(file_path, binsize, intervals_id, collection_id):
         binsize=int(binsize),
         name=os.path.basename(file_path),
         file_path=file_path,
+        file_path_feature_values=file_path_features,
         intervals_id=intervals_id,
         collection_id=collection_id,
         value_type="1d-embedding"
