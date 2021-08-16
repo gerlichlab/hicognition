@@ -28,9 +28,9 @@
                     >
                     </addCollectionForm>
                 </md-tab>
-                <md-tab id="tab-bulk" md-label="Features">
+                <md-tab id="tab-bulk" md-label="1d-features">
                     <addCollectionForm
-                    fileType="features"
+                    fileType="1d-features"
                     @close-dialog="$emit('close-dialog')"
                     >
                     </addCollectionForm>

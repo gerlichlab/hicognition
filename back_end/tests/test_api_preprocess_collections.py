@@ -35,7 +35,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         collection2 = Collection(datasets=[dataset3], user_id=2, id=2, kind="region")
         # create feature collections
         collection3 = Collection(
-            datasets=[dataset5, dataset6], user_id=1, id=3, kind="1d-feature"
+            datasets=[dataset5, dataset6], user_id=1, id=3, kind="1d-features"
         )
         db.session.add_all(
             [
@@ -108,7 +108,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         for binsize in binsizes:
             for interval in intervals:
                 mock_launch.assert_any_call(
-                    "pipeline_1d_embedding",
+                    "pipeline_embedding_1d",
                     "run 1d embedding pipeline",
                     3,
                     intervals_id=interval,

@@ -139,8 +139,10 @@ export default {
                     {
                         if (this.fileType == "regions"){
                             return element.filetype == "bedfile"
-                        }else{
+                        }else if (this.fileType == "1d-features"){
                             return element.filetype == "bigwig"
+                        }else{
+                            return element.filetype == "cooler"
                         }
                     }
                 );
