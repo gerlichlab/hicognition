@@ -5,8 +5,6 @@
         >
 
         <md-list :md-expand-single="true">
-
-
             <md-list-item md-expand>
                 <span class="md-list-item-text">Manage Datasets</span>
                 <md-list slot="md-expand">
@@ -17,7 +15,9 @@
                         >
                             <md-icon>add</md-icon>
                         </md-button>
-                        <span class="md-list-item-text">Add Genomic Feature</span>
+                        <span class="md-list-item-text"
+                            >Add Genomic Feature</span
+                        >
                     </md-list-item>
 
                     <md-list-item class="md-inset">
@@ -27,7 +27,9 @@
                         >
                             <md-icon>add</md-icon>
                         </md-button>
-                        <span class="md-list-item-text">Add Genomic Region</span>
+                        <span class="md-list-item-text"
+                            >Add Genomic Region</span
+                        >
                     </md-list-item>
 
                     <md-list-item class="md-inset">
@@ -47,7 +49,9 @@
                         >
                             <md-icon>launch</md-icon>
                         </md-button>
-                        <span class="md-list-item-text">Preprocess Datasets</span>
+                        <span class="md-list-item-text"
+                            >Preprocess Datasets</span
+                        >
                     </md-list-item>
 
                     <md-list-item class="md-inset">
@@ -72,7 +76,9 @@
                         >
                             <md-icon>add</md-icon>
                         </md-button>
-                        <span class="md-list-item-text">Create Dataset Collection</span>
+                        <span class="md-list-item-text"
+                            >Create Dataset Collection</span
+                        >
                     </md-list-item>
                     <md-list-item class="md-inset">
                         <md-button
@@ -81,7 +87,20 @@
                         >
                             <md-icon>launch</md-icon>
                         </md-button>
-                        <span class="md-list-item-text">Calculate associations</span>
+                        <span class="md-list-item-text"
+                            >Calculate associations</span
+                        >
+                    </md-list-item>
+                    <md-list-item class="md-inset">
+                        <md-button
+                            class="md-icon-button"
+                            @click="$emit('embedding-1d-click')"
+                        >
+                            <md-icon>launch</md-icon>
+                        </md-button>
+                        <span class="md-list-item-text"
+                            >Calculate 1D embedding</span
+                        >
                     </md-list-item>
                     <md-list-item class="md-inset">
                         <md-button
@@ -90,17 +109,18 @@
                         >
                             <md-icon>list</md-icon>
                         </md-button>
-                        <span class="md-list-item-text">Show Dataset Collections</span>
+                        <span class="md-list-item-text"
+                            >Show Dataset Collections</span
+                        >
                     </md-list-item>
                 </md-list>
             </md-list-item>
-
         </md-list>
     </div>
 </template>
 
 <script>
 export default {
-    name: "drawer"
+    name: "drawer",
 };
 </script>
