@@ -29,12 +29,27 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         dataset6 = Dataset(id=6, filetype="bigwig", user_id=1)
         interval1 = Intervals(id=1, name="interval1", windowsize=100000, dataset_id=3)
         # create region collections
-        collection = Collection(datasets=[dataset1, dataset2], user_id=1, id=1, kind="region")
+        collection = Collection(
+            datasets=[dataset1, dataset2], user_id=1, id=1, kind="region"
+        )
         collection2 = Collection(datasets=[dataset3], user_id=2, id=2, kind="region")
         # create feature collections
-        collection3 = Collection(datasets=[dataset5, dataset6], user_id=1, id=3, kind="1d-feature")
+        collection3 = Collection(
+            datasets=[dataset5, dataset6], user_id=1, id=3, kind="1d-feature"
+        )
         db.session.add_all(
-            [dataset1, dataset2, dataset3, dataset4, dataset5, dataset6, interval1, collection, collection2, collection3]
+            [
+                dataset1,
+                dataset2,
+                dataset3,
+                dataset4,
+                dataset5,
+                dataset6,
+                interval1,
+                collection,
+                collection2,
+                collection3,
+            ]
         )
         db.session.commit()
 
@@ -45,10 +60,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # define call arguments
-        data = {
-            "collection_id": "1",
-            "region_ids": "[3]",
-        }
+        data = {"collection_id": "1", "region_ids": "[3]", "kind": "region"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",
@@ -74,8 +86,6 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
             len(mock_launch.call_args_list), len(intervals) * len(binsizes)
         )
 
-
-
     @patch("app.models.User.launch_collection_task")
     def test_pipeline_1d_embedding_is_called_correctly(self, mock_launch):
         """Tests whether embedding analysis is called correctly"""
@@ -83,10 +93,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # define call arguments
-        data = {
-            "collection_id": "3",
-            "region_ids": "[3]",
-        }
+        data = {"collection_id": "3", "region_ids": "[3]", "kind": "region"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",
@@ -119,10 +126,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {
-            "collection_id": "2",
-            "region_ids": "[3]",
-        }
+        data = {"collection_id": "2", "region_ids": "[3]", "kind": "region"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",
@@ -139,10 +143,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {
-            "collection_id": "100",
-            "region_ids": "[3]",
-        }
+        data = {"collection_id": "100", "region_ids": "[3]", "kind": "region"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",
@@ -190,7 +191,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         )
         db.session.add_all([task1, task2])
         db.session.commit()
-        data = {"collection_id": "1", "region_ids": "[3]"}
+        data = {"collection_id": "1", "region_ids": "[3]", "kind": "region"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",

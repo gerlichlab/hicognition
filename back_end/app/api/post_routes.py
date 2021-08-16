@@ -179,7 +179,7 @@ def preprocess_collections():
     def is_form_invalid():
         if not hasattr(request, "form"):
             return True
-        if sorted(list(request.form.keys())) != sorted(["collection_id", "region_ids"]):
+        if sorted(list(request.form.keys())) != sorted(["collection_id", "region_ids", "kind"]):
             return True
         return False
 
