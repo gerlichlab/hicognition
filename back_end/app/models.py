@@ -280,6 +280,7 @@ class EmbeddingIntervalData(db.Model):
     binsize = db.Column(db.Integer)
     name = db.Column(db.String(512), index=True)
     file_path = db.Column(db.String(512), index=True)
+    file_path_feature_values = db.Column(db.String(512), index=True)
     value_type = db.Column(db.String(64))
     collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
     intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
