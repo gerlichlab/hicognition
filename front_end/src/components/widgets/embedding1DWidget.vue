@@ -82,73 +82,62 @@
                     </div>
                 </div>
             </div>
-            <associationPlot
-                v-if="showData"
-                :plotData="widgetData"
-                :width="visualizationWidth"
-                :height="visualizationHeight"
-                :collectionNames="datasetNames"
-                :intervalSize="Number(intervalSize)"
-                :selectedColumn="selectedColumn"
-                @barclick="handleLocationChange"
-            />
             <div
                 v-if="!showData"
                 class="md-layout md-alignment-center-center"
-                style="height: 89%;"
+                style="height: 89%"
             >
                 <md-icon class="md-layout-item md-size-50 md-size-5x"
                     >input</md-icon
                 >
             </div>
             <div class="flex-container" v-if="showData">
-            <div >
-                <span class="md-caption">{{message}}</span>
-            </div>
+                <div>
+                    <span class="md-caption">{{ message }}</span>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-import associationPlot from "../visualizations/associationPlot";
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
 
 export default {
-    name: "lolaWidget",
+    name: "Embedding1D",
     mixins: [apiMixin, formattingMixin, widgetMixin],
-    components: {
-        associationPlot
-    },
     computed: {
-        message: function(){
-            return  this.datasets[this.selectedDataset]["name"] +  " | binsize " + this.convertBasePairsToReadable(this.selectedBinsize)
+        message: function () {
+            return (
+                this.datasets[this.selectedDataset]["name"] +
+                " | binsize " +
+                this.convertBasePairsToReadable(this.selectedBinsize)
+            );
         },
-        datasetNames: function(){
-            return this.datasets[this.selectedDataset]["collection_dataset_names"]
+        datasetNames: function () {
+            return this.datasets[this.selectedDataset][
+                "collection_dataset_names"
+            ];
         },
-        visualizationWidth: function() {
+        visualizationWidth: function () {
             return Math.round(this.width * 0.9);
         },
     },
     methods: {
-        handleLocationChange: function(index){
-            this.selectedColumn = index
-        },
-        blankWidget: function(){
+        blankWidget: function () {
             // removes all information that the user can set in case a certain region/dataset combination is not available
             this.widgetData = undefined;
             this.selectedDataset = [];
             this.selectedBinsize = undefined;
             this.widgetDataRef = undefined;
         },
-        handleDatasetSelection: function(id) {
+        handleDatasetSelection: function (id) {
             this.selectedDataset = id;
         },
-        handleBinsizeSelection: function(binsize) {
+        handleBinsizeSelection: function (binsize) {
             this.selectedBinsize = binsize;
         },
-        toStoreObject: function() {
+        toStoreObject: function () {
             // serialize object for storing its state in the store
             return {
                 // collection Data is needed if widget is dropped on new collection
@@ -164,11 +153,10 @@ export default {
                 binsizes: this.binsizes,
                 binsize: this.selectedBinsize,
                 widgetDataRef: this.widgetDataRef,
-                widgetType: "Lola",
-                selectedColumn: this.selectedColumn
+                widgetType: "Embedding1D",
             };
         },
-        initializeForFirstTime: function(widgetData, collectionData) {
+        initializeForFirstTime: function (widgetData, collectionData) {
             var data = {
                 widgetDataRef: undefined,
                 dragImage: undefined,
@@ -178,43 +166,46 @@ export default {
                 intervalSize: collectionData["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: {},
-                datasets: collectionData["availableData"]["lola"],
+                datasets: collectionData["availableData"]["embedding"],
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
-                selectedColumn: undefined
             };
             // write properties to store
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
             return data;
         },
-        deleteWidget: function() {
+        deleteWidget: function () {
             /*
                 Needs to be overriden because decrement mutation is different from mixin
             */
             // delete widget from store
             var payload = {
                 parentID: this.collectionID,
-                id: this.id
+                id: this.id,
             };
             // delete widget from store
             this.$store.commit("compare/deleteWidget", payload);
             // decrement dataset from used dataset in store
-            this.$store.commit("compare/decrement_usage_collections", this.selectedDataset)
+            this.$store.commit(
+                "compare/decrement_usage_collections",
+                this.selectedDataset
+            );
         },
-        initializeFromStore: function(widgetData, collectionConfig) {
+        initializeFromStore: function (widgetData, collectionConfig) {
             var widgetDataValues;
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
                 // deinfe store queries
                 var payload = {
-                    id: widgetData["widgetDataRef"]
+                    id: widgetData["widgetDataRef"],
                 };
                 // get widget data from store
-                var widgetDataValues = this.$store.getters[
-                    "compare/getWidgetDataLola"
-                ](payload);
+                var widgetDataValues =
+                    this.$store.getters["compare/getWidgetDataEmbedding1d"](
+                        payload
+                    );
             } else {
                 widgetDataValues = undefined;
             }
@@ -235,64 +226,63 @@ export default {
                 intervalSize: collectionConfig["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
-                datasets: collectionConfig["availableData"]["lola"],
+                datasets: collectionConfig["availableData"]["embedding"],
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
-                selectedColumn: widgetData["selectedColumn"]
             };
         },
-        getLolaData: async function(id) {
+        getEmbeddingData: async function (id) {
             // checks whether association data is in store and fetches it if it is not
             var queryObject = {
-                id: id
+                id: id,
             };
-            if (this.$store.getters["compare/associationDataExists"](queryObject)) {
-                return this.$store.getters["compare/getWidgetDataLola"](
+            if (
+                this.$store.getters["compare/embedding1dDataExists"](
+                    queryObject
+                )
+            ) {
+                return this.$store.getters["compare/getWidgetDataEmbedding1d"](
                     queryObject
                 );
             }
             // pileup does not exists in store, fetch it
-            var response = await this.fetchData(
-                `associationIntervalData/${id}/`
-            );
+            var response = await this.fetchData(`embeddingIntervalData/${id}/`);
             // save it in store
             var mutationObject = {
                 id: id,
-                data: response.data
+                data: response.data,
             };
-            this.$store.commit("compare/setWidgetDataLola", mutationObject);
+            this.$store.commit("compare/setWidgetDataEmbedding1d", mutationObject);
             // return it
             return response.data;
         },
-        updateData: async function() {
+        updateData: async function () {
             // construct data ids to be fecthed
             let selected_id = this.binsizes[this.selectedBinsize];
             // store widget data ref
             this.widgetDataRef = selected_id;
             // fetch data
-            this.widgetData = await this.getLolaData(selected_id)
-            // blank selected column
-            this.selectedColumn = undefined
+            this.widgetData = await this.getEmbeddingData(selected_id);
         },
     },
     watch: {
         // watch for changes in store to be able to update intervals
         "$store.state.compare.widgetCollections": {
             deep: true,
-            handler: function(newValue) {
+            handler: function (newValue) {
                 // update availability object
                 this.datasets =
                     newValue[this.collectionID]["collectionConfig"][
                         "availableData"
-                    ]["lola"];
+                    ]["embedding"];
                 this.intervalSize =
                     newValue[this.collectionID]["collectionConfig"][
                         "intervalSize"
                     ];
-            }
+            },
         },
-        datasets: function(newVal, oldVal) {
+        datasets: function (newVal, oldVal) {
             if (
                 !newVal ||
                 !oldVal ||
@@ -302,40 +292,43 @@ export default {
                 return;
             }
             // check whether there is any data available
-            if (!this.datasets[this.selectedDataset]){
-                this.blankWidget()
-                return
+            if (!this.datasets[this.selectedDataset]) {
+                this.blankWidget();
+                return;
             }
-            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
-                this.intervalSize
-            ];
+            this.binsizes =
+                this.datasets[this.selectedDataset]["data_ids"][
+                    this.intervalSize
+                ];
             this.selectedBinsize = this.getCenterOfArray(
                 Object.keys(this.binsizes)
             );
             this.updateData();
         },
-        intervalSize: function(newVal, oldVal) {
+        intervalSize: function (newVal, oldVal) {
             // if interval size changes, reload data
             if (!newVal || !oldVal || this.selectedDataset.length == 0) {
                 return;
             }
-            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
-                this.intervalSize
-            ];
+            this.binsizes =
+                this.datasets[this.selectedDataset]["data_ids"][
+                    this.intervalSize
+                ];
             this.selectedBinsize = this.getCenterOfArray(
                 Object.keys(this.binsizes)
             );
             this.updateData();
         },
-        selectedDataset: async function(newVal, oldVal) {
+        selectedDataset: async function (newVal, oldVal) {
             if (!this.selectedDataset || this.selectedDataset.length == 0) {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
             }
             // set binsizes and add default
-            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
-                this.intervalSize
-            ];
+            this.binsizes =
+                this.datasets[this.selectedDataset]["data_ids"][
+                    this.intervalSize
+                ];
             if (!this.selectedBinsize) {
                 this.selectedBinsize = this.getCenterOfArray(
                     Object.keys(this.binsizes)
@@ -347,19 +340,15 @@ export default {
             this.$store.commit("compare/decrement_usage_collections", oldVal);
             this.$store.commit("compare/increment_usage_collections", newVal);
         },
-        selectedBinsize: async function() {
+        selectedBinsize: async function () {
             if (!this.selectedBinsize) {
                 return;
             }
             this.updateData();
-        }
-    }
-}
-
+        },
+    },
+};
 </script>
-
-
-
 
 
 <style scoped>

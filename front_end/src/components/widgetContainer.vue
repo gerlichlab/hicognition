@@ -54,6 +54,11 @@
                                         @click="setStackup"
                                         >Stacked lineprofiles</md-list-item
                                     >
+                                    <md-list-item
+                                        class="md-inset"
+                                        @click="setEmbedding1d"
+                                        >1D-Embedding</md-list-item
+                                    >
                                 </md-list>
                             </md-list-item>
 
@@ -114,6 +119,16 @@
             :rowIndex="rowIndex"
             :colIndex="colIndex"
         />
+        <embedding-1d-widget
+            v-else-if="this.widgetType == 'Embedding1D'"
+            :height="height"
+            :width="width"
+            :empty="empty"
+            :id="id"
+            :collectionID="collectionID"
+            :rowIndex="rowIndex"
+            :colIndex="colIndex"
+        />
     </div>
 </template>
 
@@ -122,6 +137,7 @@ import pileupWidget from "./widgets/pileupWidget";
 import stackupWidget from "./widgets/stackupWidget";
 import lineprofileWidget from "./widgets/lineprofileWidget";
 import lolaWidget from "./widgets/lolaWidget.vue";
+import embedding1dWidget from "./widgets/embedding1DWidget.vue"
 
 export default {
     name: "widgetContainer",
@@ -129,7 +145,8 @@ export default {
         stackupWidget,
         pileupWidget,
         lineprofileWidget,
-        lolaWidget
+        lolaWidget,
+        embedding1dWidget
     },
     data: function() {
         // get widget type from store
@@ -264,6 +281,21 @@ export default {
             this.$store.commit("compare/setWidgetType", mutationObject);
             // set widget Type in this container
             this.widgetType = "Lola";
+        },
+        setEmbedding1d: function() {
+            // check if widget is in store
+            if (!this.widgetIDExists()) {
+                this.initializeWidgetFromEmpty();
+            }
+            // set widgetType in store
+            var mutationObject = {
+                parentID: this.collectionID,
+                id: this.id,
+                widgetType: "Embedding1D"
+            };
+            this.$store.commit("compare/setWidgetType", mutationObject);
+            // set widget Type in this container
+            this.widgetType = "Embedding1D";
         },
         propagateDrop: function() {
             // propagates widgetDrop up to widgetCollection
