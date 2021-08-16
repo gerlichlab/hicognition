@@ -143,7 +143,7 @@ const compareModule = {
                 return false;
             }
             return (
-                payload.id in state.widgetData["lola"]
+                payload.id in state.widgetData["embedding1d"]
             );
         },
         getWidgetType: state => payload => {

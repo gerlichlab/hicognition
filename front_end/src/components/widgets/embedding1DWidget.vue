@@ -82,6 +82,12 @@
                     </div>
                 </div>
             </div>
+            <embedding-plot
+                v-if="showData"
+                :rawData="widgetData"
+                :width="visualizationWidth"
+                :height="visualizationHeight"
+            />
             <div
                 v-if="!showData"
                 class="md-layout md-alignment-center-center"
@@ -102,8 +108,10 @@
 
 <script>
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
+import embeddingPlot from '../visualizations/embeddingPlot.vue';
 
 export default {
+  components: { embeddingPlot },
     name: "Embedding1D",
     mixins: [apiMixin, formattingMixin, widgetMixin],
     computed: {
