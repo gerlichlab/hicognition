@@ -33,42 +33,42 @@ export default {
         plotData: function () {
             let embedding = this.rawData["embedding"]["data"];
             // get x and y coordinates
-            let x_vals = []
-            let y_vals = []
-            for (let i = 0; i < embedding.length; i++){
-                if (i % 2 == 0){
-                    x_vals.push(embedding[i])
-                }else{
-                    y_vals.push(embedding[i])
+            let x_vals = [];
+            let y_vals = [];
+            for (let i = 0; i < embedding.length; i++) {
+                if (i % 2 == 0) {
+                    x_vals.push(embedding[i]);
+                } else {
+                    y_vals.push(embedding[i]);
                 }
             }
             // construct plot objects
-            let points = []
-            for (let j = 0; j < x_vals.length; j++){
+            let points = [];
+            for (let j = 0; j < x_vals.length; j++) {
                 points.push({
-                    "x": x_vals[j],
-                    "y": y_vals[j]
-                })
+                    x: x_vals[j],
+                    y: y_vals[j],
+                });
             }
-            return points
+            return points;
         },
         plotBoundaries: function () {
-            let minX = Infinity
-            let maxX = -Infinity
-            let minY = Infinity
-            let maxY = -Infinity
-            for (let el of this.plotData){
-                if (el.x < minX){
-                    minX = el.x
+            let minX = Infinity;
+            let maxX = -Infinity;
+            let minY = Infinity;
+            let maxY = -Infinity;
+            for (let el of this.plotData) {
+                if (el.x < minX) {
+                    minX = el.x;
                 }
-                if (el.x > maxX){
-                    maxX = el.x
+                if (el.x > maxX) {
+                    maxX = el.x;
                 }
-                if(el.y < minY){
-                    minY = el.y
+                if (el.y < minY) {
+                    minY = el.y;
                 }
-                if (el.y > maxY){
-                    maxY = el.y
+                if (el.y > maxY) {
+                    maxY = el.y;
                 }
             }
             return {
@@ -154,6 +154,10 @@ export default {
                 .attr("class", "y axis")
                 .call(this.yAxisGenerator);
         },
+        updateChart: function () {
+            this.createScales();
+            this.updatePoints();
+        },
         createChart: function () {
             /*
         Wrapper function that creates svg and adds
@@ -175,24 +179,42 @@ export default {
                         this.margin.top +
                         ")"
                 );
-            this.createAxes()
-            this.drawPoints()
+            this.createAxes();
+            this.drawPoints();
         },
-        drawPoints: function(){
-            this.svg.selectAll("circels")
+        drawPoints: function () {
+            this.svg
+                .selectAll("circels")
                 .data(this.plotData)
                 .enter()
                 .append("circle")
                 .attr("r", 5)
                 .attr("fill", "red")
-                .attr("opacity", 0.3)
+                .attr("opacity", 0)
                 .attr("cx", (d) => this.xScale(d.x))
                 .attr("cy", (d) => this.yScale(d.y))
-        }
+                .transition()
+                .duration(500)
+                .attr("opacity", 0.3);
+        },
+        updatePoints: function () {
+            let circels = this.svg.selectAll("circle").data(this.plotData);
+            // reposition old ones
+            circels
+                .transition()
+                .duration(500)
+                .attr("cx", (d) => this.xScale(d.x))
+                .attr("cy", (d) => this.yScale(d.y));
+        },
     },
     mounted: function () {
         this.createScales();
         this.createChart();
-    }
+    },
+    watch: {
+        rawData: function () {
+            this.updateChart();
+        },
+    },
 };
 </script>
