@@ -87,6 +87,7 @@
                 :rawData="widgetData"
                 :width="visualizationWidth"
                 :height="visualizationHeight"
+                overlay="density"
             />
             <div
                 v-if="!showData"
