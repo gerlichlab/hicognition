@@ -58,48 +58,48 @@ export function max_array(array) {
     return max;
 }
 
-export function max_array_along_rows(array, shape){
+export function max_array_along_rows(array, shape) {
     /*
         Calculates maximum element in a C-style (row-major) flattened array along every row.
         e.g. [1,5,3,4,2,6] with shape [row, column] = [2,3] would result in [4,5,6]
     */
-   if (array.length == 0 || shape.length != 2 || array.length != shape[0] * shape[1]) {
-       return undefined
-   }
-   let [row_number, col_number] = shape;
-   let output = Array(col_number).fill(-Infinity)
-   // calculate maximum for each column along its rows
-    for(let j=0; j < col_number; j++){
-        for (let i=0; i < row_number; i++){
-           let candidate = array[i * col_number + j]
-           if (candidate > output[j]){
-               output[j] = candidate
-           }
-       }
-   }
-   // clean -Infinity
-   return output.map((elem) => elem == -Infinity ? undefined: elem)
+    if (array.length == 0 || shape.length != 2 || array.length != shape[0] * shape[1]) {
+        return undefined
+    }
+    let [row_number, col_number] = shape;
+    let output = Array(col_number).fill(-Infinity)
+    // calculate maximum for each column along its rows
+    for (let j = 0; j < col_number; j++) {
+        for (let i = 0; i < row_number; i++) {
+            let candidate = array[i * col_number + j]
+            if (candidate > output[j]) {
+                output[j] = candidate
+            }
+        }
+    }
+    // clean -Infinity
+    return output.map((elem) => elem == -Infinity ? undefined : elem)
 }
 
-export function select_column(array, shape, col_index){
+export function select_column(array, shape, col_index) {
     /*
         returns all values in column col_index for a flattened array of a given shape
     */
-   // check array
+    // check array
     if (array.length == 0 || shape.length != 2 || array.length != shape[0] * shape[1]) {
-       return undefined
-   }
-   let [row_number, col_number] = shape;
-   // check col_index
-   if (col_index == undefined || col_index < 0 || col_index >= col_number){
-       return undefined
-   }
-   // select column
-   let output = Array()
-   for (let i = 0; i < row_number; i ++){
-       output.push(array[i * col_number + col_index])
-   }
-   return output
+        return undefined
+    }
+    let [row_number, col_number] = shape;
+    // check col_index
+    if (col_index == undefined || col_index < 0 || col_index >= col_number) {
+        return undefined
+    }
+    // select column
+    let output = Array()
+    for (let i = 0; i < row_number; i++) {
+        output.push(array[i * col_number + col_index])
+    }
+    return output
 }
 
 
@@ -203,6 +203,71 @@ export function getPerMilRank(array, p) {
     let sorted_array = cleaned_array.sort((a, b) => a - b);
     let index = Math.ceil(((sorted_array.length - 1) * p) / 1000);
     return sorted_array[index];
+}
+
+
+export function rectBin(size, points, value_boundaries) {
+    /*
+        Bins data points into a square of size x size.
+        Points should be of a form
+        [
+            {
+                x: x_val,
+                y: y_val
+            }
+        ]
+        n_points x 2 with the first column encapsulating x
+        and the second column encapsulating y.
+        Will return an array of the form:
+        [
+            {
+                x: x_bin
+                y: y_bin
+                value: desnity
+            },
+            .
+            .
+            .
+        ]
+    */
+    // handle input
+    if (size < 0){
+        return undefined
+    }
+    // create output array
+    let output = {}
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            output[`${i}-${j}`] =
+            {
+                x: i,
+                y: j,
+                value: 0
+            }
+        }
+    }
+    let x_stepsize = (value_boundaries.maxX - value_boundaries.minX)/size
+    let y_stepsize = (value_boundaries.maxY - value_boundaries.minY)/size
+    // iterate over points and add them
+    for (let point of points){
+        // handle case where point.x is max
+        let x_bin, y_bin;
+        if (point.x == value_boundaries.maxX){
+            x_bin = Math.floor((point.x - value_boundaries.minX)/x_stepsize) - 1
+        }else{
+            x_bin = Math.floor((point.x - value_boundaries.minX)/x_stepsize)
+        }
+        // handle case where point.y is max
+        if (point.y == value_boundaries.maxY){
+            y_bin = Math.floor((point.y - value_boundaries.minY)/y_stepsize) - 1
+        }else{
+            y_bin = Math.floor((point.y - value_boundaries.minY)/y_stepsize)
+        }
+        let temp_point = output[`${x_bin}-${y_bin}`]
+        temp_point["value"] = temp_point["value"] + 1
+        output[`${x_bin}-${y_bin}`] = temp_point
+    }
+    return Object.values(output)
 }
 
 // Helpers for datasetTable

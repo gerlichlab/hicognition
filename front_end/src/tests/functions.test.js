@@ -7,7 +7,8 @@ import {
     normalizeLineProfile,
     getPercentile,
     max_array_along_rows,
-    select_column
+    select_column,
+    rectBin
 } from "../functions.js";
 import { toBeDeepCloseTo } from "jest-matcher-deep-close-to";
 
@@ -253,4 +254,134 @@ describe("When select_column is called, it", function(){
         expect(select_column([1, 2, 3, 4, 5, 6], [2, 3], 1)).toEqual([2, 5])
         expect(select_column([1, 2, 3, 4, 5, 6], [2, 3], 2)).toEqual([3, 6])
     });
+})
+
+// test rectBin
+
+describe("When rectBin is called, it", function() {
+    const value_boundaries = {
+        minX: 50,
+        minY: 50,
+        maxX: 100,
+        maxY: 100
+    }
+    const value_boundaries_floats = {
+        minX: 0.1,
+        minY: 1.1,
+        maxX: 1.0,
+        maxY: 2.1
+    }
+    it("Should return undefined if size is negatvie", () => {
+        expect(rectBin(-100,[{x:1, y:1}], value_boundaries)).toEqual(undefined)
+    });
+    it("Should return empty array of size size if no points are passed", () => {
+        expect(rectBin(2, [], value_boundaries)).toEqual([
+            {
+                x: 0,
+                y: 0,
+                value: 0
+            },
+            {
+                x:0,
+                y:1,
+                value:0
+            },
+            {
+                x:1,
+                y:0,
+                value:0
+            },
+            {
+                x:1,
+                y:1,
+                value:0
+            }
+        ])
+    });
+    it("Should bin values correctly if integers are passed", () => {
+        expect(rectBin(2, [
+            {
+                x: 60,
+                y: 100
+            },
+            {
+                x:80,
+                y: 50
+            },
+            {
+                x:99,
+                y: 100
+            },
+            {
+                x: 50,
+                y:50
+            }
+        ], value_boundaries)).toEqual(
+            [
+                {
+                    x: 0,
+                    y: 0,
+                    value: 1
+                },
+                {
+                    x:0,
+                    y:1,
+                    value:1
+                },
+                {
+                    x:1,
+                    y:0,
+                    value:1
+                },
+                {
+                    x:1,
+                    y:1,
+                    value:1
+                }
+            ]
+        )
+    });
+    it("Should bin values correctly if floats are passed", () => {
+        expect(rectBin(2, [
+            {
+                x: 0.4,
+                y: 1.8
+            },
+            {
+                x:0.5,
+                y: 1.55
+            },
+            {
+                x:0.75,
+                y: 2.0
+            },
+            {
+                x: 0.1,
+                y:1.1
+            }
+        ], value_boundaries_floats)).toEqual(
+            [
+                {
+                    x: 0,
+                    y: 0,
+                    value: 2
+                },
+                {
+                    x:0,
+                    y:1,
+                    value:1
+                },
+                {
+                    x:1,
+                    y:0,
+                    value:0
+                },
+                {
+                    x:1,
+                    y:1,
+                    value:1
+                }
+            ]
+        )
+    })
 })
