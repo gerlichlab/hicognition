@@ -9,6 +9,7 @@
 <script>
 import * as d3 from "d3";
 import { formattingMixin } from "../../mixins";
+import { rectBin } from "../../functions";
 
 export default {
     name: "embeddingPlot",
@@ -23,12 +24,23 @@ export default {
             svg: undefined,
             xScale: undefined,
             yScale: undefined,
+            valueScale: undefined,
             id: Math.round(Math.random() * 1000000),
+            size: 50
         };
     },
     computed: {
         divName: function () {
             return `embedding${this.id}`;
+        },
+        maxDensity: function(){
+            let max = -Infinity
+            for (let el of this.rectBin){
+                if (el.value > max){
+                    max = el.value
+                }
+            }
+            return max
         },
         plotData: function () {
             let embedding = this.rawData["embedding"]["data"];
@@ -51,6 +63,9 @@ export default {
                 });
             }
             return points;
+        },
+        rectBin: function(){
+            return rectBin(this.size, this.plotData, this.plotBoundaries)
         },
         plotBoundaries: function () {
             let minX = Infinity;
@@ -80,10 +95,10 @@ export default {
         },
         margin: function () {
             return {
-                top: this.height * 0.09,
-                bottom: this.height * 0.1,
-                right: this.width * 0.1,
-                left: this.width * 0.1,
+                top: this.height * 0,
+                bottom: this.height * 0,
+                right: this.width * 0,
+                left: this.width * 0,
             };
         },
         svgName: function () {
@@ -105,54 +120,14 @@ export default {
         coordinates on the plot
       */
             this.xScale = d3
-                .scaleLinear()
-                .domain([this.plotBoundaries.minX, this.plotBoundaries.maxX])
+                .scaleBand()
+                .domain(d3.range(0, this.size))
                 .range([0, this.plotWidth]);
             this.yScale = d3
-                .scaleLinear()
-                .domain([this.plotBoundaries.minY, this.plotBoundaries.maxY])
+                .scaleBand()
+                .domain(d3.range(0, this.size))
                 .range([0, this.plotHeight]);
-        },
-        xAxisFormatter: function (val) {
-            return Math.floor(val * 10) / 10;
-        },
-        yAxisFormatter: function (val) {
-            return Math.floor((this.plotBoundaries.maxY - val) * 10) / 10;
-        },
-        xAxisGenerator: function (args) {
-            // x-axis generator function
-            return d3
-                .axisBottom(this.xScale)
-                .tickFormat(this.xAxisFormatter)
-                .tickSize(0)
-                .ticks(4)(args);
-        },
-        yAxisGenerator: function (args) {
-            // y-axis generator function
-            return d3
-                .axisLeft(this.yScale)
-                .tickFormat(this.yAxisFormatter)
-                .tickSize(0)
-                .ticks(4)(args);
-        },
-        createAxes: function () {
-            /*          
-                Adds axes to an svg object at this.svg
-            */
-            // add x axes
-            this.svg
-                .append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0," + this.plotHeight + ")")
-                .call(this.xAxisGenerator)
-                .selectAll("text")
-                .attr("y", 10)
-                .attr("x", 0);
-            // add yaxes
-            this.svg
-                .append("g")
-                .attr("class", "y axis")
-                .call(this.yAxisGenerator);
+            this.valueScale = d3.scaleSequential(d3.interpolateReds).domain([0, this.maxDensity])
         },
         updateChart: function () {
             this.createScales();
@@ -179,32 +154,30 @@ export default {
                         this.margin.top +
                         ")"
                 );
-            this.createAxes();
-            this.drawPoints();
+            this.drawRects();
         },
-        drawPoints: function () {
+        updateRects: function(){
+            this.svg.selectAll("rect").data(this.rectBin)
+                    .transition()
+                    .attr("x", (d) => Math.floor(Math.random() * this.plotWidth))
+                    .attr("y", (d) => Math.floor(Math.random() * this.plotHeight))
+                    .attr("fill", (d) => this.valueScale(d.value))
+                    .transition()
+                    .delay((d) => Math.sqrt( (this.xScale(d.x) * this.xScale(d.x)) + (this.yScale(d.y) * this.yScale(d.y))) * 2   )
+                    .attr("x", (d) => this.xScale(d.x))
+                    .attr("y", (d) => this.yScale(d.y))
+        },
+        drawRects: function () {
             this.svg
-                .selectAll("circels")
-                .data(this.plotData)
+                .selectAll("rect")
+                .data(this.rectBin)
                 .enter()
-                .append("circle")
-                .attr("r", 5)
-                .attr("fill", "red")
-                .attr("opacity", 0)
-                .attr("cx", (d) => this.xScale(d.x))
-                .attr("cy", (d) => this.yScale(d.y))
-                .transition()
-                .duration(500)
-                .attr("opacity", 0.3);
-        },
-        updatePoints: function () {
-            let circels = this.svg.selectAll("circle").data(this.plotData);
-            // reposition old ones
-            circels
-                .transition()
-                .duration(500)
-                .attr("cx", (d) => this.xScale(d.x))
-                .attr("cy", (d) => this.yScale(d.y));
+                .append("rect")
+                .attr("fill", (d) => this.valueScale(d.value))
+                .attr("x", (d) => this.xScale(d.x))
+                .attr("y", (d) => this.yScale(d.y))
+                .attr("width", this.xScale.bandwidth())
+                .attr("height", this.yScale.bandwidth())
         },
     },
     mounted: function () {
@@ -212,9 +185,10 @@ export default {
         this.createChart();
     },
     watch: {
-        rawData: function () {
-            this.updateChart();
-        },
+        rawData: function(){
+            this.createScales()
+            this.updateRects()
+        }
     },
 };
 </script>
