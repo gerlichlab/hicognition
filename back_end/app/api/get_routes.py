@@ -1,10 +1,11 @@
 """GET API endpoints for hicognition"""
 import json
+import gzip
 from flask.globals import current_app
 import pandas as pd
 import numpy as np
 from flask.json import jsonify
-from flask import g
+from flask import g, make_response
 from .helpers import (
     update_processing_state,
     is_access_to_dataset_denied,
@@ -322,7 +323,12 @@ def get_embedding_data(entry_id):
         "embedding":   {"data": flat_data, "shape": np_data.shape, "dtype": "float32"},
         "features":   {"data": flat_feature_data, "shape": feature_shape, "dtype": "float32"}
     }
-    return jsonify(json_data)
+    # compress
+    content = gzip.compress(json.dumps(json_data).encode('utf8'), 9)
+    response = make_response(content)
+    response.headers['Content-length'] = len(content)
+    response.headers['Content-Encoding'] = 'gzip'
+    return response
 
 @api.route("/individualIntervalData/<entry_id>/", methods=["GET"])
 @auth.login_required
