@@ -222,6 +222,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+.md-card {
+    max-height: none;
+}
+
 .md-progress-bar {
     position: absolute;
     top: 0;

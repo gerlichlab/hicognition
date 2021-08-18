@@ -213,7 +213,8 @@ export function rectBin(size, points, value_boundaries) {
         [
             {
                 x: x_val,
-                y: y_val
+                y: y_val,
+                value: Number
             }
         ]
         n_points x 2 with the first column encapsulating x
@@ -223,7 +224,7 @@ export function rectBin(size, points, value_boundaries) {
             {
                 x: x_bin
                 y: y_bin
-                value: desnity
+                value: accumulated_value
             },
             .
             .
@@ -242,7 +243,7 @@ export function rectBin(size, points, value_boundaries) {
             {
                 x: i,
                 y: j,
-                value: 0
+                value: undefined // this is background color
             }
         }
     }
@@ -264,7 +265,11 @@ export function rectBin(size, points, value_boundaries) {
             y_bin = Math.floor((point.y - value_boundaries.minY)/y_stepsize)
         }
         let temp_point = output[`${x_bin}-${y_bin}`]
-        temp_point["value"] = temp_point["value"] + 1
+        if (temp_point["value"] == undefined){
+            temp_point["value"] = point.value
+        }else{
+            temp_point["value"] = temp_point["value"] + point.value
+        }
         output[`${x_bin}-${y_bin}`] = temp_point
     }
     return Object.values(output)
