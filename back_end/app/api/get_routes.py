@@ -301,13 +301,27 @@ def get_embedding_data(entry_id):
     ):
         return forbidden("Collection or bed dataset is not owned by logged in user!")
     # Dataset is owned, return the data
-    np_data = np.load(embedding_data.file_path)
+    np_data = np.load(embedding_data.file_path).astype(np.float64) # this as float32 and that cannot be put into a list via iterator easily
     # Convert np.nan and np.isinf to None -> this is handeled by jsonify correctly
     flat_data = [
         entry if not (np.isnan(entry) or np.isinf(entry)) else None
         for entry in np_data.flatten()
     ]
-    json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
+    # convert feature data
+    if (embedding_data.file_path_feature_values is not None):
+        feature_data = np.load(embedding_data.file_path_feature_values).astype(np.float64)
+        feature_shape = feature_data.shape
+        flat_feature_data = [
+            entry if not (np.isnan(entry) or np.isinf(entry)) else None
+            for entry in feature_data.flatten()
+        ]
+    else:
+        flat_feature_data = None
+        feature_shape = None
+    json_data = {
+        "embedding":   {"data": flat_data, "shape": np_data.shape, "dtype": "float32"},
+        "features":   {"data": flat_feature_data, "shape": feature_shape, "dtype": "float32"}
+    }
     return jsonify(json_data)
 
 @api.route("/individualIntervalData/<entry_id>/", methods=["GET"])

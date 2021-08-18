@@ -30,7 +30,7 @@ class Config:
         "bigwig": ("pipeline_stackup", "run stackup pipeline"),
         "collections": {
             "region": ("pipeline_lola", "run lola pipeline"),
-            "1d-feature": ("pipeline_1d_embedding", "run 1d embedding pipeline")
+            "1d-features": ("pipeline_embedding_1d", "run 1d embedding pipeline")
         }
     }
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled

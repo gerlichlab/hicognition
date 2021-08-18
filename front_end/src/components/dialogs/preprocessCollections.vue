@@ -5,7 +5,7 @@
                 >{{dialogName}}<md-tooltip md-direction="left">
                     <div>
                         <span class="md-title"
-                            >Information about preprocessing</span
+                            >Information about calculating associations</span
                         >
                     </div>
                     <div class="mainText">

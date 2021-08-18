@@ -42,6 +42,10 @@
                     showCalculateAssociations = true;
                     menuVisible = false;
                 "
+                @embedding-1d-click="
+                    showEmbedding1d = true;
+                    menuVisible = false;
+                "
             ></drawer>
         </md-app-drawer>
 
@@ -91,6 +95,11 @@
                 @close-dialog="showCalculateAssociations = false"
                 datatype="regions"
             />
+            <preprocess-collections-dialog
+                :dialog="showEmbedding1d"
+                @close-dialog="showEmbedding1d = false"
+                datatype="1d-features"
+            />
         </md-app-content>
     </md-app>
 </template>
@@ -106,7 +115,7 @@ import addSessionDialog from "../components/dialogs/addSessionDialog";
 import mySessionsDialog from "../components/dialogs/mySessionsDialog";
 import addCollectionDialog from "../components/dialogs/addCollectionDialog.vue"
 import collectionsDialog from "../components/dialogs/collectionsDialog.vue"
-import preprocessCollectionsDialog from "../components/dialogs/preProcessCollectionsDialog.vue"
+import preprocessCollectionsDialog from "../components/dialogs/preprocessCollections.vue"
 
 export default {
     name: "mainRoute",
@@ -134,7 +143,8 @@ export default {
         showMySessionsDialog: false,
         showAddCollectionDialog: false,
         showCollectionDialog: false,
-        showCalculateAssociations: false
+        showCalculateAssociations: false,
+        showEmbedding1d: false
     })
 };
 </script>

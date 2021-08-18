@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import cooler
 import bioframe as bf
+import umap
 from ngs import HiCTools as HT
 from hicognition import io_helpers, interval_operations
 import pylola
@@ -23,6 +24,7 @@ from .models import (
     Task,
     IndividualIntervalData,
     AssociationIntervalData,
+    EmbeddingIntervalData
 )
 
 # get logger
@@ -252,6 +254,66 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
 def perform_1d_embedding(collection_id, intervals_id, binsize):
     """Performs embedding on each binsize-sized bin of the window specified in intervals_id using
     the features in collection_id"""
+    # get all features in collection
+    features = Collection.query.get(collection_id).datasets
+    # extract stackups
+    log.info("      Construct feature frame...")
+    data = []
+    for feature in features:
+        stackup = IndividualIntervalData.query.filter(
+            (IndividualIntervalData.dataset_id == feature.id)
+            & (IndividualIntervalData.intervals_id == intervals_id)
+            & (IndividualIntervalData.binsize == binsize)
+        ).first()
+        # load data and extract center column
+        temp = np.load(stackup.file_path_small)
+        data.append(temp[:, temp.shape[1]//2])
+    # construct feature frame
+    feature_frame = np.stack(data).transpose()
+    # calculate embedding
+    log.info("      Running embedding...")
+    embedder = umap.UMAP(random_state=42)
+    embedding = embedder.fit_transform(feature_frame)
+    # write output for embedding
+    log.info("      Writing output...")
+    file_path = os.path.join(
+        current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + "_embedding.npy"
+    )
+    np.save(file_path, embedding)
+    # write output for feature_overlay
+    file_path_features = os.path.join(
+        current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + "_features.npy"
+    )
+    np.save(file_path_features, feature_frame)
+    # add to database
+    add_embedding_1d_to_db(file_path, file_path_features, binsize, intervals_id, collection_id)
+    
+
+def add_embedding_1d_to_db(file_path,file_path_features, binsize, intervals_id, collection_id):
+    """Adds association data set to db"""
+    # check if old association interval data exists and delete them
+    test_query = EmbeddingIntervalData.query.filter(
+        (EmbeddingIntervalData.binsize == int(binsize))
+        & (EmbeddingIntervalData.intervals_id == intervals_id)
+        & (EmbeddingIntervalData.collection_id == collection_id)
+    ).all()
+    for entry in test_query:
+        remove_safely(entry.file_path)
+        db.session.delete(entry)
+    # add new entry
+    new_entry = EmbeddingIntervalData(
+        binsize=int(binsize),
+        name=os.path.basename(file_path),
+        file_path=file_path,
+        file_path_feature_values=file_path_features,
+        intervals_id=intervals_id,
+        collection_id=collection_id,
+        value_type="1d-embedding"
+    )
+    db.session.add(new_entry)
+    db.session.commit()
+
+
 
 def add_association_data_to_db(file_path, binsize, intervals_id, collection_id):
     """Adds association data set to db"""

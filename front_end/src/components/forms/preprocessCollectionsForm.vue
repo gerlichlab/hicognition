@@ -204,6 +204,7 @@ export default {
             var form_data = {};
             form_data["collection_id"] = JSON.stringify(this.form["collectionID"]);
             form_data["region_ids"] = JSON.stringify(this.form["bedfileIDs"]);
+            form_data["kind"] = this.datatype
             return form_data;
         },
         validateDataset() {

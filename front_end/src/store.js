@@ -100,6 +100,12 @@ const compareModule = {
             }
             return state.widgetData["lola"][payload.id];
         },
+        getWidgetDataEmbedding1d: state => payload => {
+            if (!("embedding1d" in state.widgetData)) {
+                return undefined;
+            }
+            return state.widgetData["embedding1d"][payload.id];
+        },
         widgetExists: state => payload => {
             // checks whether widget with id exists
             return payload.id in state.widgetCollections[payload.parentID]["children"]
@@ -130,6 +136,14 @@ const compareModule = {
             }
             return (
                 payload.id in state.widgetData["lola"]
+            );
+        },
+        embedding1dDataExists: state => payload => {
+            if (!("embedding1d" in state.widgetData)) {
+                return false;
+            }
+            return (
+                payload.id in state.widgetData["embedding1d"]
             );
         },
         getWidgetType: state => payload => {
@@ -279,6 +293,14 @@ const compareModule = {
                 state.widgetData["lola"] = {};
             }
             state.widgetData["lola"][payload.id] =
+                payload.data;
+        },
+        setWidgetDataEmbedding1d(state, payload) {
+            if (!("embedding1d" in state.widgetData)) {
+                // initialize data
+                state.widgetData["embedding1d"] = {};
+            }
+            state.widgetData["embedding1d"][payload.id] =
                 payload.data;
         },
         setWidgetType(state, payload) {
