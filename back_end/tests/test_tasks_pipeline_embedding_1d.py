@@ -177,7 +177,7 @@ class TestPerformEmbedding1d(LoginTestCase, TempDirTestCase):
         self.assertEqual(embedding.collection_id, self.collection_1.id)
         self.assertEqual(embedding.intervals_id, self.intervals_1.id)
 
-    def test_correct_embedding_produced(self):
+    def test_correct_features_saved(self):
         """Tests whether produced embedding is correct"""
         # add data to database
         db.session.add_all(
@@ -198,28 +198,6 @@ class TestPerformEmbedding1d(LoginTestCase, TempDirTestCase):
         embeddings = EmbeddingIntervalData.query.all()
         # test whether dataset is correct
         embedding = embeddings[0]
-        data = np.load(embedding.file_path)
-        expected = np.array(
-            [
-                [9.005026, -19.724148],
-                [8.464312, -20.689943],
-                [9.376196, -22.456],
-                [9.890633, -19.460945],
-                [10.471338, -22.216688],
-                [8.601276, -22.058147],
-                [9.632968, -20.021662],
-                [9.211276, -20.681519],
-                [9.928377, -21.786366],
-                [10.563622, -19.949081],
-                [10.5394335, -21.080627],
-                [9.414719, -21.755327],
-                [10.064036, -20.341558],
-                [9.769243, -21.013653],
-                [8.984867, -21.444807],
-            ],
-            dtype=np.float32,
-        )
-        self.assertTrue(np.array_equal(data, expected))
         # test whether feature frame used is correct
         feature_data = np.load(embedding.file_path_feature_values)
         expected_features = np.array(

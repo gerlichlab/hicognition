@@ -272,7 +272,7 @@ def perform_1d_embedding(collection_id, intervals_id, binsize):
     # construct feature frame
     feature_frame = np.stack(data).transpose()
     # do imputation
-    imputed_frame = SimpleImputer.fit_transform(feature_frame)
+    imputed_frame = SimpleImputer().fit_transform(feature_frame)
     # calculate embedding
     log.info("      Running embedding...")
     embedder = umap.UMAP(random_state=42)

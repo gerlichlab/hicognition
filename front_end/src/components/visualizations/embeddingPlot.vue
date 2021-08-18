@@ -11,6 +11,8 @@ import * as d3 from "d3";
 import { formattingMixin } from "../../mixins";
 import { rectBin, select_column } from "../../functions";
 
+const UNDEFINED_COLOR = "rgb(255,255,255)";
+
 export default {
     name: "embeddingPlot",
     mixins: [formattingMixin],
@@ -18,23 +20,23 @@ export default {
         rawData: Object,
         width: Number,
         height: Number,
-        overlay: String,
+        overlay: String
     },
-    data: function () {
+    data: function() {
         return {
             svg: undefined,
             xScale: undefined,
             yScale: undefined,
             valueScale: undefined,
             id: Math.round(Math.random() * 1000000),
-            size: 50,
+            size: 50
         };
     },
     computed: {
-        divName: function () {
+        divName: function() {
             return `embedding${this.id}`;
         },
-        overlayValues: function () {
+        overlayValues: function() {
             if (this.overlay == "density") {
                 return undefined;
             }
@@ -44,7 +46,7 @@ export default {
                 Number(this.overlay)
             );
         },
-        maxDensity: function () {
+        maxDensity: function() {
             let max = -Infinity;
             for (let el of this.rectBin) {
                 if (el.value > max) {
@@ -53,7 +55,7 @@ export default {
             }
             return max;
         },
-        plotData: function () {
+        plotData: function() {
             let embedding = this.rawData["embedding"]["data"];
             // get x and y coordinates
             let x_vals = [];
@@ -68,17 +70,24 @@ export default {
             // construct plot objects
             let points = [];
             for (let j = 0; j < x_vals.length; j++) {
+                let densityValue;
+                if (this.overlay == "density") {
+                    densityValue = 1;
+                } else {
+                    densityValue = this.overlayValues[j];
+                }
                 points.push({
                     x: x_vals[j],
                     y: y_vals[j],
+                    value: densityValue
                 });
             }
             return points;
         },
-        rectBin: function () {
+        rectBin: function() {
             return rectBin(this.size, this.plotData, this.plotBoundaries);
         },
-        plotBoundaries: function () {
+        plotBoundaries: function() {
             let minX = Infinity;
             let maxX = -Infinity;
             let minY = Infinity;
@@ -101,31 +110,31 @@ export default {
                 minX: minX,
                 maxX: maxX,
                 minY: minY,
-                maxY: maxY,
+                maxY: maxY
             };
         },
-        margin: function () {
+        margin: function() {
             return {
                 top: this.height * 0,
                 bottom: this.height * 0,
                 right: this.width * 0,
-                left: this.width * 0,
+                left: this.width * 0
             };
         },
-        svgName: function () {
+        svgName: function() {
             return `svg${this.id}`;
         },
-        plotWidth: function () {
+        plotWidth: function() {
             // width of the plotting area without margins
             return this.width - this.margin.left - this.margin.right;
         },
-        plotHeight: function () {
+        plotHeight: function() {
             // height of the plotting area without margins
             return this.height - this.margin.top - this.margin.bottom;
-        },
+        }
     },
     methods: {
-        createScales: function () {
+        createScales: function() {
             /*
         Creates scaling functions for plot. Map data values into
         coordinates on the plot
@@ -142,11 +151,11 @@ export default {
                 .scaleSequential(d3.interpolateReds)
                 .domain([0, this.maxDensity]);
         },
-        updateChart: function () {
+        updateChart: function() {
             this.createScales();
             this.updatePoints();
         },
-        createChart: function () {
+        createChart: function() {
             /*
         Wrapper function that creates svg and adds
         chosen visualization
@@ -169,55 +178,57 @@ export default {
                 );
             this.drawRects();
         },
-        updateRects: function () {
+        updateRects: function() {
             this.svg
                 .selectAll("rect")
                 .data(this.rectBin)
                 .transition()
-                .attr("x", (d) => Math.floor(Math.random() * this.plotWidth))
-                .attr("y", (d) => Math.floor(Math.random() * this.plotHeight))
+                .attr("x", d => Math.floor(Math.random() * this.plotWidth))
+                .attr("y", d => Math.floor(Math.random() * this.plotHeight))
                 .attr("fill", (d, i) => {
-                    if (this.overlay == "density") {
-                        return this.valueScale(d.value);
+                    if (!d.value) {
+                        return UNDEFINED_COLOR;
                     }
+                    return this.valueScale(d.value);
                 })
                 .transition()
                 .delay(
-                    (d) =>
+                    d =>
                         Math.sqrt(
                             this.xScale(d.x) * this.xScale(d.x) +
                                 this.yScale(d.y) * this.yScale(d.y)
                         ) * 2
                 )
-                .attr("x", (d) => this.xScale(d.x))
-                .attr("y", (d) => this.yScale(d.y));
+                .attr("x", d => this.xScale(d.x))
+                .attr("y", d => this.yScale(d.y));
         },
-        drawRects: function () {
+        drawRects: function() {
             this.svg
                 .selectAll("rect")
                 .data(this.rectBin)
                 .enter()
                 .append("rect")
                 .attr("fill", (d, i) => {
-                    if (this.overlay == "density") {
-                        return this.valueScale(d.value);
+                    if (!d.value) {
+                        return UNDEFINED_COLOR;
                     }
+                    return this.valueScale(d.value);
                 })
-                .attr("x", (d) => this.xScale(d.x))
-                .attr("y", (d) => this.yScale(d.y))
+                .attr("x", d => this.xScale(d.x))
+                .attr("y", d => this.yScale(d.y))
                 .attr("width", this.xScale.bandwidth())
                 .attr("height", this.yScale.bandwidth());
-        },
+        }
     },
-    mounted: function () {
+    mounted: function() {
         this.createScales();
         this.createChart();
     },
     watch: {
-        rawData: function () {
+        rawData: function() {
             this.createScales();
             this.updateRects();
-        },
-    },
+        }
+    }
 };
 </script>
