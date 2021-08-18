@@ -12,6 +12,8 @@ export function getScale(min, max, scaleType) {
         return d3
             .scaleDiverging(t => d3.interpolateRdBu(1 - t))
             .domain([min, 0, max]);
+    } else if (scaleType == "plasma") {
+        return d3.scaleSequential(d3.interpolatePlasma).domain([min, max]);
     } else {
         // default is reds
         return d3.scaleSequential(d3.interpolateReds).domain([min, max]);

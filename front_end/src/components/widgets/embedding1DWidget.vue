@@ -174,7 +174,10 @@ export default {
     mixins: [apiMixin, formattingMixin, widgetMixin],
     computed: {
         colormap: function() {
-            return "red";
+            if (this.overlay == "density"){
+                return "plasma"
+            }
+            return "reds";
         },
         message: function() {
             return (
