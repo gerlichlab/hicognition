@@ -174,17 +174,26 @@ export default {
     mixins: [apiMixin, formattingMixin, widgetMixin],
     computed: {
         colormap: function() {
-            if (this.overlay == "density"){
-                return "plasma"
-            }
-            return "reds";
+            return "plasma";
         },
         message: function() {
+            let overlayMessage;
+            if (this.overlay == "density"){
+                overlayMessage = "point density"
+            }else{
+                overlayMessage = this.datasetNames[Number(this.overlay)].name
+            }
             return (
                 this.datasets[this.selectedDataset]["name"] +
-                " | binsize " +
+                " | " + `${overlayMessage}` + " | binsize " + 
                 this.convertBasePairsToReadable(this.selectedBinsize)
             );
+        },
+        size: function(){
+            if (this.widgetData["embedding"]["shape"][0] > 10000){
+                return 150
+            }
+            return 50
         },
         overlayValues: function() {
             if (this.overlay == "density") {
@@ -327,7 +336,6 @@ export default {
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
                 overlay: "density",
-                size: 50,
                 minHeatmap: undefined,
                 maxHeatmap: undefined,
                 minHeatmapRange: undefined,
@@ -396,7 +404,6 @@ export default {
                 maxHeatmap: widgetData["maxHeatmap"],
                 minHeatmapRange: widgetData["minHeatmapRange"],
                 maxHeatmapRange: widgetData["maxHeatmapRange"],
-                size: 50
             };
         },
         handleSliderChange: function(data) {
@@ -536,6 +543,9 @@ export default {
                 return;
             }
             this.updateData();
+        },
+        overlay: function(){
+            this.resetColorScale()
         }
     }
 };

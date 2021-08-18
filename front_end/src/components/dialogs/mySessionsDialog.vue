@@ -8,19 +8,31 @@
                     @selection-unavailable="handleSelectionUnAvailable"
                 ></sessionsTable>
             </md-content>
-                <div class="md-layout md-gutter md-alignment-center-center no-margin" v-if="showShareableUrl">
-                    <div class="md-layout-item md-elevation-0 large-margin md-size-60">
-                        <md-field>
+            <div
+                class="md-layout md-gutter md-alignment-center-center no-margin"
+                v-if="showShareableUrl"
+            >
+                <div
+                    class="md-layout-item md-elevation-0 large-margin md-size-60"
+                >
+                    <md-field>
                         <label>Shareable Url</label>
-                            <md-input v-model="shareableUrl" readonly ref="urlInput"></md-input>
-                        </md-field>
-                    </div>
-                    <div class="md-layout-item md-size-10">
-                        <md-button class="md-icon-button md-raised md-primary" @click="copyToClipboard">
-                            <md-icon>content_copy</md-icon>
-                        </md-button>
-                    </div>
+                        <md-input
+                            v-model="shareableUrl"
+                            readonly
+                            ref="urlInput"
+                        ></md-input>
+                    </md-field>
                 </div>
+                <div class="md-layout-item md-size-10">
+                    <md-button
+                        class="md-icon-button md-raised md-primary"
+                        @click="copyToClipboard"
+                    >
+                        <md-icon>content_copy</md-icon>
+                    </md-button>
+                </div>
+            </div>
             <md-dialog-actions>
                 <div class="full-width">
                     <div class="float-left">
@@ -61,7 +73,12 @@
                 </div>
             </md-dialog-actions>
         </md-dialog>
-        <md-snackbar md-position="center" :md-duration="1000" :md-active.sync="copySuccesful" md-persistent >
+        <md-snackbar
+            md-position="center"
+            :md-duration="1000"
+            :md-active.sync="copySuccesful"
+            md-persistent
+        >
             <div class="full-width-flexbox-center">
                 <span>Copied!</span>
             </div>
@@ -96,33 +113,32 @@ export default {
         showDialog: function() {
             return this.dialog;
         },
-        showShareableUrl: function(){
-            if (this.selected_session_object && this.shareableUrl){
-                return true
+        showShareableUrl: function() {
+            if (this.selected_session_object && this.shareableUrl) {
+                return true;
             }
-            return false
+            return false;
         }
     },
     watch: {
-        selected_session_object: function(newVal, oldVal){
-            if (newVal != oldVal){
+        selected_session_object: function(newVal, oldVal) {
+            if (newVal != oldVal) {
                 // blank url
-                this.shareableUrl = null
-                this.copySuccesful = false
+                this.shareableUrl = null;
+                this.copySuccesful = false;
             }
         }
     },
     methods: {
-        copyToClipboard: function (){
-            try{
-                this.$refs["urlInput"].$el.focus()
-                this.$refs["urlInput"].$el.select()
-                document.execCommand("copy")
-                this.copySuccesful = true
-            } catch(err){
-                console.log("Copying did not work...")
+        copyToClipboard: function() {
+            try {
+                this.$refs["urlInput"].$el.focus();
+                this.$refs["urlInput"].$el.select();
+                document.execCommand("copy");
+                this.copySuccesful = true;
+            } catch (err) {
+                console.log("Copying did not work...");
             }
-
         },
         handleSessionDeletion: function() {
             this.deleteData(`sessions/${this.selected_session_id}/`).then(
@@ -139,15 +155,20 @@ export default {
                 var shareableUrl =
                     window.location.host +
                     `/#/main/session?sessionToken=${sessionToken}&sessionID=${this.selected_session_id}`;
-                this.shareableUrl = shareableUrl
+                this.shareableUrl = shareableUrl;
             });
         },
         handleSessionRestoration: async function() {
             // fetch and store session token -> this is needed in case unowned datasets are in session
-            let response = await this.fetchData(`sessions/${this.selected_session_id}/sessionToken/`)
-            this.$store.commit("setSessionToken", response.data["session_token"]);
+            let response = await this.fetchData(
+                `sessions/${this.selected_session_id}/sessionToken/`
+            );
+            this.$store.commit(
+                "setSessionToken",
+                response.data["session_token"]
+            );
             // clear widget collections
-            this.$store.commit("compare/clearAll")
+            this.$store.commit("compare/clearAll");
             // fetch data references to put into store
             var parsed_object = JSON.parse(this.selected_session_object);
             for (let collection of Object.values(parsed_object)) {
@@ -170,11 +191,16 @@ export default {
                                     await this.fetchStackupData(
                                         child_vals.widgetDataRef
                                     );
-                                    break
+                                    break;
                                 case "Lola":
                                     await this.fetchAssociationData(
                                         child_vals.widgetDataRef
-                                    ); 
+                                    );
+                                    break;
+                                case "Embedding1D":
+                                    await this.fetchEmbeddingData(
+                                        child_vals.widgetDataRef
+                                    );
                             }
                         }
                     }
@@ -186,7 +212,7 @@ export default {
                 JSON.parse(this.selected_session_object)
             );
             // event session loaded fro compare route
-            EventBus.$emit("session-loaded")
+            EventBus.$emit("session-loaded");
             this.selected_session_object = null;
             this.showRestore = false;
             this.shareableUrl = null;
@@ -243,7 +269,11 @@ export default {
             var queryObject = {
                 id: id
             };
-            if (this.$store.getters["compare/associationDataExists"](queryObject)) {
+            if (
+                this.$store.getters["compare/associationDataExists"](
+                    queryObject
+                )
+            ) {
                 return;
             }
             // pileup does not exists in store, fetch it
@@ -257,6 +287,31 @@ export default {
                 data: piling_data
             };
             this.$store.commit("compare/setWidgetDataLola", mutationObject);
+        },
+        fetchEmbeddingData: async function(id) {
+            // checks whether association data is in store and fetches it if it is not
+            var queryObject = {
+                id: id
+            };
+            if (
+                this.$store.getters["compare/embedding1dDataExists"](
+                    queryObject
+                )
+            ) {
+                return;
+            }
+            // pileup does not exists in store, fetch it
+            var response = await this.fetchData(`embeddingIntervalData/${id}/`);
+            var piling_data = response.data;
+            // save it in store
+            var mutationObject = {
+                id: id,
+                data: piling_data
+            };
+            this.$store.commit(
+                "compare/setWidgetDataEmbedding1d",
+                mutationObject
+            );
         },
         fetchPileupData: async function(dataRef) {
             for (let [pileupType, id] of Object.entries(dataRef)) {
@@ -297,12 +352,11 @@ export default {
     max-width: 80vw;
 }
 
-.full-width-flexbox-center{
+.full-width-flexbox-center {
     display: flex;
     justify-content: center;
     width: 100%;
 }
-
 
 .no-margin {
     margin: 0px;
@@ -327,5 +381,4 @@ export default {
 .content {
     margin: 10px;
 }
-
 </style>

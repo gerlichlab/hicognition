@@ -25,7 +25,7 @@ from .models import (
     Task,
     IndividualIntervalData,
     AssociationIntervalData,
-    EmbeddingIntervalData
+    EmbeddingIntervalData,
 )
 
 # get logger
@@ -267,8 +267,8 @@ def perform_1d_embedding(collection_id, intervals_id, binsize):
             & (IndividualIntervalData.binsize == binsize)
         ).first()
         # load data and extract center column
-        temp = np.load(stackup.file_path_small)
-        data.append(temp[:, temp.shape[1]//2])
+        temp = np.load(stackup.file_path)
+        data.append(temp[:, temp.shape[1] // 2])
     # construct feature frame
     feature_frame = np.stack(data).transpose()
     # do imputation
@@ -289,10 +289,14 @@ def perform_1d_embedding(collection_id, intervals_id, binsize):
     )
     np.save(file_path_features, feature_frame)
     # add to database
-    add_embedding_1d_to_db(file_path, file_path_features, binsize, intervals_id, collection_id)
-    
+    add_embedding_1d_to_db(
+        file_path, file_path_features, binsize, intervals_id, collection_id
+    )
 
-def add_embedding_1d_to_db(file_path,file_path_features, binsize, intervals_id, collection_id):
+
+def add_embedding_1d_to_db(
+    file_path, file_path_features, binsize, intervals_id, collection_id
+):
     """Adds association data set to db"""
     # check if old association interval data exists and delete them
     test_query = EmbeddingIntervalData.query.filter(
@@ -311,11 +315,10 @@ def add_embedding_1d_to_db(file_path,file_path_features, binsize, intervals_id, 
         file_path_feature_values=file_path_features,
         intervals_id=intervals_id,
         collection_id=collection_id,
-        value_type="1d-embedding"
+        value_type="1d-embedding",
     )
     db.session.add(new_entry)
     db.session.commit()
-
 
 
 def add_association_data_to_db(file_path, binsize, intervals_id, collection_id):

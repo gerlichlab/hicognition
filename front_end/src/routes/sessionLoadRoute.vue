@@ -72,6 +72,11 @@ export default {
                                     await this.fetchAssociationData(
                                         child_vals.widgetDataRef
                                     ); 
+                                    break
+                                case "Embedding1D":
+                                    await this.fetchEmbeddingData(
+                                        child_vals.widgetDataRef
+                                    ); 
                             }
                         }
                     }
@@ -147,6 +152,26 @@ export default {
                 data: piling_data
             };
             this.$store.commit("compare/setWidgetDataLola", mutationObject);
+        },
+        fetchEmbeddingData: async function(id) {
+            // checks whether association data is in store and fetches it if it is not
+            var queryObject = {
+                id: id
+            };
+            if (this.$store.getters["compare/embedding1dDataExists"](queryObject)) {
+                return;
+            }
+            // pileup does not exists in store, fetch it
+            var response = await this.fetchData(
+                `embeddingIntervalData/${id}/`
+            );
+            var piling_data = response.data;
+            // save it in store
+            var mutationObject = {
+                id: id,
+                data: piling_data
+            };
+            this.$store.commit("compare/setWidgetDataEmbedding1d", mutationObject);
         },
         fetchPileupData: async function(dataRef) {
             for (let [pileupType, id] of Object.entries(dataRef)) {
