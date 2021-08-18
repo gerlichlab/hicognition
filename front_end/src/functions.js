@@ -259,6 +259,19 @@ export function rectBin(size, points, value_boundaries) {
     return output
 }
 
+export function flatten(matrix){
+    /*
+        Takes an array of arrays and returns a row-major flattened version
+    */
+   let output = []
+   for (let row of matrix){
+       for (let element of row){
+           output.push(element)
+       }
+   }
+   return output
+}
+
 // Helpers for datasetTable
 
 export function toLower(text) {

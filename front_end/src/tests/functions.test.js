@@ -8,7 +8,8 @@ import {
     getPercentile,
     max_array_along_rows,
     select_column,
-    rectBin
+    rectBin,
+    flatten
 } from "../functions.js";
 import { toBeDeepCloseTo } from "jest-matcher-deep-close-to";
 
@@ -421,3 +422,13 @@ describe("When rectBin is called, it", function() {
         ]);
     });
 });
+
+
+describe("When flatten is called, it", function() {
+    it("should handle a square matrix correctly", () => {
+        expect(flatten([[1, 2], [3, 4]])).toEqual([1, 2, 3, 4])
+    });
+    it("should handle a rectangular matrix correctly", () => {
+        expect(flatten([[1, 2, 3, 4], [5, 6, 7, 8]])).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+    })
+})
