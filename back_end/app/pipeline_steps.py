@@ -6,6 +6,7 @@ import logging
 from flask.globals import current_app
 import pandas as pd
 import numpy as np
+from sklearn.impute import SimpleImputer
 import cooler
 import bioframe as bf
 import umap
@@ -270,10 +271,12 @@ def perform_1d_embedding(collection_id, intervals_id, binsize):
         data.append(temp[:, temp.shape[1]//2])
     # construct feature frame
     feature_frame = np.stack(data).transpose()
+    # do imputation
+    imputed_frame = SimpleImputer.fit_transform(feature_frame)
     # calculate embedding
     log.info("      Running embedding...")
     embedder = umap.UMAP(random_state=42)
-    embedding = embedder.fit_transform(feature_frame)
+    embedding = embedder.fit_transform(imputed_frame)
     # write output for embedding
     log.info("      Writing output...")
     file_path = os.path.join(
