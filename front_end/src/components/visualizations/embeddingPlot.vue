@@ -228,6 +228,10 @@ export default {
         rawData: function() {
             this.createScales();
             this.updateRects();
+        },
+        overlay: function(){
+            this.createScales()
+            this.updateRects()
         }
     }
 };
