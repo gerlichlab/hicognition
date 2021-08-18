@@ -107,7 +107,9 @@
                                         v-for="element in datasetNames"
                                         :key="element.index"
                                     >
-                                        <span class="md-body-1">{{element.name}}</span>
+                                        <span class="md-body-1">{{
+                                            element.name
+                                        }}</span>
                                         <md-icon v-if="overlay == element.index"
                                             >done</md-icon
                                         >
@@ -128,12 +130,20 @@
                     </div>
                 </div>
             </div>
-            <embedding-plot
+            <heatmap
                 v-if="showData"
-                :rawData="widgetData"
+                :stackupID="id"
                 :width="visualizationWidth"
                 :height="visualizationHeight"
-                :overlay="overlay"
+                :stackupData="embeddingData"
+                :minHeatmapValue="minHeatmap"
+                :maxHeatmapValue="maxHeatmap"
+                :minHeatmapRange="minHeatmapRange"
+                :maxHeatmapRange="maxHeatmapRange"
+                :colormap="colormap"
+                :allowValueScaleChange="true"
+                @slider-change="handleSliderChange"
+                :log="false"
             />
             <div
                 v-if="!showData"
@@ -155,13 +165,17 @@
 
 <script>
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
-import embeddingPlot from "../visualizations/embeddingPlot.vue";
+import { rectBin, select_column, flatten } from "../../functions";
+import heatmap from "../visualizations/heatmap.vue";
 
 export default {
-    components: { embeddingPlot },
+    components: { heatmap },
     name: "Embedding1D",
     mixins: [apiMixin, formattingMixin, widgetMixin],
     computed: {
+        colormap: function() {
+            return "red";
+        },
         message: function() {
             return (
                 this.datasets[this.selectedDataset]["name"] +
@@ -169,9 +183,83 @@ export default {
                 this.convertBasePairsToReadable(this.selectedBinsize)
             );
         },
+        overlayValues: function() {
+            if (this.overlay == "density") {
+                return undefined;
+            }
+            return select_column(
+                this.widgetData["features"]["data"],
+                this.widgetData["features"]["shape"],
+                Number(this.overlay)
+            );
+        },
+        plotBoundaries: function() {
+            let minX = Infinity;
+            let maxX = -Infinity;
+            let minY = Infinity;
+            let maxY = -Infinity;
+            for (let el of this.points) {
+                if (el.x < minX) {
+                    minX = el.x;
+                }
+                if (el.x > maxX) {
+                    maxX = el.x;
+                }
+                if (el.y < minY) {
+                    minY = el.y;
+                }
+                if (el.y > maxY) {
+                    maxY = el.y;
+                }
+            }
+            return {
+                minX: minX,
+                maxX: maxX,
+                minY: minY,
+                maxY: maxY
+            };
+        },
+        points: function() {
+            let embedding = this.widgetData["embedding"]["data"];
+            // get x and y coordinates
+            let x_vals = [];
+            let y_vals = [];
+            for (let i = 0; i < embedding.length; i++) {
+                if (i % 2 == 0) {
+                    x_vals.push(embedding[i]);
+                } else {
+                    y_vals.push(embedding[i]);
+                }
+            }
+            // construct plot objects
+            let points = [];
+            for (let j = 0; j < x_vals.length; j++) {
+                let densityValue;
+                if (this.overlay == "density") {
+                    densityValue = 1;
+                } else {
+                    densityValue = this.overlayValues[j];
+                }
+                points.push({
+                    x: x_vals[j],
+                    y: y_vals[j],
+                    value: densityValue
+                });
+            }
+            return points;
+        },
+        embeddingData: function() {
+            return {
+                data: flatten(
+                    rectBin(this.size, this.points, this.plotBoundaries)
+                ),
+                shape: [this.size, this.size],
+                dtype: "float32"
+            };
+        },
         datasetNames: function() {
-            if (this.selectedDataset.length == 0){
-                return []
+            if (this.selectedDataset.length == 0) {
+                return [];
             }
             return this.datasets[this.selectedDataset][
                 "collection_dataset_names"
@@ -181,9 +269,6 @@ export default {
                     index: String(i)
                 };
             });
-        },
-        visualizationWidth: function() {
-            return Math.round(this.width * 0.9);
         }
     },
     methods: {
@@ -217,7 +302,11 @@ export default {
                 binsize: this.selectedBinsize,
                 widgetDataRef: this.widgetDataRef,
                 overlay: this.overlay,
-                widgetType: "Embedding1D"
+                widgetType: "Embedding1D",
+                minHeatmap: this.minHeatmap,
+                maxHeatmap: this.maxHeatmap,
+                minHeatmapRange: this.minHeatmapRange,
+                maxHeatmapRange: this.maxHeatmapRange
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -234,7 +323,12 @@ export default {
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
-                overlay: "density"
+                overlay: "density",
+                size: 50,
+                minHeatmap: undefined,
+                maxHeatmap: undefined,
+                minHeatmapRange: undefined,
+                maxHeatmapRange: undefined
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -294,8 +388,35 @@ export default {
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
-                overlay: widgetData["overlay"]
+                overlay: widgetData["overlay"],
+                minHeatmap: widgetData["minHeatmap"],
+                maxHeatmap: widgetData["maxHeatmap"],
+                minHeatmapRange: widgetData["minHeatmapRange"],
+                maxHeatmapRange: widgetData["maxHeatmapRange"],
+                size: 50
             };
+        },
+        handleSliderChange: function(data) {
+            this.setColorScale(data);
+        },
+        setColorScale: function(data) {
+            /* 
+                sets colorScale based on data array
+                containing minPos, maxPos, minRange, maxRange
+            */
+            this.minHeatmap = data[0];
+            this.maxHeatmap = data[1];
+            this.minHeatmapRange = data[2];
+            this.maxHeatmapRange = data[3];
+        },
+        resetColorScale: function() {
+            /*
+                resets colorscale to undefined
+            */
+            this.minHeatmap = undefined;
+            this.maxHeatmap = undefined;
+            this.minHeatmapRange = undefined;
+            this.maxHeatmapRange = undefined;
         },
         getEmbeddingData: async function(id) {
             // checks whether association data is in store and fetches it if it is not
@@ -326,6 +447,8 @@ export default {
             return response.data;
         },
         updateData: async function() {
+            // reset color scale
+            this.resetColorScale();
             // construct data ids to be fecthed
             let selected_id = this.binsizes[this.selectedBinsize];
             // store widget data ref
