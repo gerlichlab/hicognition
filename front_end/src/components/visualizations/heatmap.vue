@@ -184,7 +184,7 @@ export default {
             canvas.width = this.stackupDimensions[1];
             canvas.height = this.stackupDimensions[0];
             canvas.style.top = "50px"
-            canvas.style.left= `-${this.width + 50}px`
+            canvas.style.left= `-${this.width + 200}px`
             canvas.style.position = "absolute";
             document.body.appendChild(canvas);
             // store cnavas
