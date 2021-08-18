@@ -219,33 +219,18 @@ export function rectBin(size, points, value_boundaries) {
         ]
         n_points x 2 with the first column encapsulating x
         and the second column encapsulating y.
-        Will return an array of the form:
-        [
-            {
-                x: x_bin
-                y: y_bin
-                value: accumulated_value
-            },
-            .
-            .
-            .
-        ]
+        Will return a dense array of size x size with the accumulated values
+        at the x and y position
     */
     // handle input
     if (size < 0){
         return undefined
     }
     // create output array
-    let output = {}
+    let output = Array(size)
     for (let i = 0; i < size; i++) {
-        for (let j = 0; j < size; j++) {
-            output[`${i}-${j}`] =
-            {
-                x: i,
-                y: j,
-                value: undefined // this is background color
-            }
-        }
+        let tempArray = Array(size).fill(undefined)
+        output[i] = tempArray
     }
     let x_stepsize = (value_boundaries.maxX - value_boundaries.minX)/size
     let y_stepsize = (value_boundaries.maxY - value_boundaries.minY)/size
@@ -264,15 +249,14 @@ export function rectBin(size, points, value_boundaries) {
         }else{
             y_bin = Math.floor((point.y - value_boundaries.minY)/y_stepsize)
         }
-        let temp_point = output[`${x_bin}-${y_bin}`]
-        if (temp_point["value"] == undefined){
-            temp_point["value"] = point.value
+
+        if (output[size - 1 - x_bin][y_bin] == undefined){
+            output[size - 1- x_bin][y_bin] = point.value
         }else{
-            temp_point["value"] = temp_point["value"] + point.value
+            output[size - 1 -x_bin][y_bin] = output[size - 1 - x_bin][y_bin] + point.value
         }
-        output[`${x_bin}-${y_bin}`] = temp_point
     }
-    return Object.values(output)
+    return output
 }
 
 // Helpers for datasetTable

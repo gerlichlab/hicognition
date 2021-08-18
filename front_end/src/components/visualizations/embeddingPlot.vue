@@ -183,8 +183,6 @@ export default {
                 .selectAll("rect")
                 .data(this.rectBin)
                 .transition()
-                .attr("x", d => Math.floor(Math.random() * this.plotWidth))
-                .attr("y", d => Math.floor(Math.random() * this.plotHeight))
                 .attr("fill", (d, i) => {
                     if (!d.value) {
                         return UNDEFINED_COLOR;
@@ -192,13 +190,6 @@ export default {
                     return this.valueScale(d.value);
                 })
                 .transition()
-                .delay(
-                    d =>
-                        Math.sqrt(
-                            this.xScale(d.x) * this.xScale(d.x) +
-                                this.yScale(d.y) * this.yScale(d.y)
-                        ) * 2
-                )
                 .attr("x", d => this.xScale(d.x))
                 .attr("y", d => this.yScale(d.y));
         },

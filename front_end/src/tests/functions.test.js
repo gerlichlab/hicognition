@@ -110,7 +110,7 @@ describe("When max array is called", function() {
         expect(max_array([])).toEqual(undefined);
     });
     it("Should return 0 from an array of all 0s", () => {
-        expect(max_array([0,0,0])).toEqual(0);
+        expect(max_array([0, 0, 0])).toEqual(0);
     });
 });
 
@@ -133,7 +133,7 @@ describe("When min array is called", function() {
         expect(min_array([])).toEqual(undefined);
     });
     it("Should return 0 from an array of all 0s", () => {
-        expect(min_array([0,0,0])).toEqual(0);
+        expect(min_array([0, 0, 0])).toEqual(0);
     });
 });
 
@@ -141,26 +141,90 @@ describe("When min array is called", function() {
 
 describe("When get percentile is called", function() {
     it("Should return undefined if percentile is  < 0", () => {
-        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], -1)).toEqual(undefined);
+        expect(
+            getPercentile(
+                [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+                -1
+            )
+        ).toEqual(undefined);
     });
     it("Should return undefined if percentile is  > 100", () => {
-        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 101)).toEqual(undefined);
+        expect(
+            getPercentile(
+                [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+                101
+            )
+        ).toEqual(undefined);
     });
     it("Should return correct percentiles", () => {
-        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 0)).toBeCloseTo(0.0);
-        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 10)).toBeCloseTo(1.0);
-        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 20)).toBeCloseTo(2.0);
-        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 30)).toBeCloseTo(3.0);
-        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 40)).toBeCloseTo(4.0);
-        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 50)).toBeCloseTo(5.0);
-        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 60)).toBeCloseTo(6.0);
-        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 70)).toBeCloseTo(7.0);
-        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 80)).toBeCloseTo(8.0);
-        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 90)).toBeCloseTo(9.0);
-        expect(getPercentile([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], 100)).toBeCloseTo(10.0);
+        expect(
+            getPercentile(
+                [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+                0
+            )
+        ).toBeCloseTo(0.0);
+        expect(
+            getPercentile(
+                [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+                10
+            )
+        ).toBeCloseTo(1.0);
+        expect(
+            getPercentile(
+                [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+                20
+            )
+        ).toBeCloseTo(2.0);
+        expect(
+            getPercentile(
+                [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+                30
+            )
+        ).toBeCloseTo(3.0);
+        expect(
+            getPercentile(
+                [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+                40
+            )
+        ).toBeCloseTo(4.0);
+        expect(
+            getPercentile(
+                [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+                50
+            )
+        ).toBeCloseTo(5.0);
+        expect(
+            getPercentile(
+                [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+                60
+            )
+        ).toBeCloseTo(6.0);
+        expect(
+            getPercentile(
+                [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+                70
+            )
+        ).toBeCloseTo(7.0);
+        expect(
+            getPercentile(
+                [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+                80
+            )
+        ).toBeCloseTo(8.0);
+        expect(
+            getPercentile(
+                [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+                90
+            )
+        ).toBeCloseTo(9.0);
+        expect(
+            getPercentile(
+                [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+                100
+            )
+        ).toBeCloseTo(10.0);
     });
 });
-
 
 // test normalize array
 
@@ -211,50 +275,58 @@ describe("When normalize lineProfile is called", function() {
 
 describe("When max_array_along_rows is called, it", function() {
     it("Should return undefined if array is length 0", () => {
-        expect(max_array_along_rows([], [1, 2])).toEqual(undefined)
+        expect(max_array_along_rows([], [1, 2])).toEqual(undefined);
     });
     it("Should return undefined if shape is length 0", () => {
-        expect(max_array_along_rows([1, 2], [])).toEqual(undefined)
+        expect(max_array_along_rows([1, 2], [])).toEqual(undefined);
     });
     it("Should return undefined if array and shape do not match", () => {
-        expect(max_array_along_rows([1, 2], [3, 4])).toEqual(undefined)
+        expect(max_array_along_rows([1, 2], [3, 4])).toEqual(undefined);
     });
     it("Should return correct maximum along rows of rectangular array", () => {
-        expect(max_array_along_rows([1, 5, 3, 4, 2, 6], [2, 3])).toEqual([4, 5, 6])
+        expect(max_array_along_rows([1, 5, 3, 4, 2, 6], [2, 3])).toEqual([
+            4,
+            5,
+            6
+        ]);
     });
     it("Should return correct maximum along rows of rectangular array with undefined values", () => {
-        expect(max_array_along_rows([1, 5, 3, undefined, 2, 6], [2, 3])).toEqual([1, 5, 6])
+        expect(
+            max_array_along_rows([1, 5, 3, undefined, 2, 6], [2, 3])
+        ).toEqual([1, 5, 6]);
     });
     it("Should return correct maximum along rows of rectangular array if an entire column is undefined", () => {
-        expect(max_array_along_rows([undefined, 5, 3, undefined, 2, 6], [2, 3])).toEqual([undefined, 5, 6])
+        expect(
+            max_array_along_rows([undefined, 5, 3, undefined, 2, 6], [2, 3])
+        ).toEqual([undefined, 5, 6]);
     });
-})
+});
 
-describe("When select_column is called, it", function(){
+describe("When select_column is called, it", function() {
     it("Should return undefined if array is length 0", () => {
-        expect(select_column([], [1, 2], 2)).toEqual(undefined)
+        expect(select_column([], [1, 2], 2)).toEqual(undefined);
     });
     it("Should return undefined if shape is length 0", () => {
-        expect(select_column([1, 2], [], 2)).toEqual(undefined)
+        expect(select_column([1, 2], [], 2)).toEqual(undefined);
     });
     it("Should return undefined if array and shape do not match", () => {
-        expect(select_column([1, 2], [3, 4], 2)).toEqual(undefined)
+        expect(select_column([1, 2], [3, 4], 2)).toEqual(undefined);
     });
     it("Should return undefined if col_Index is not defined", () => {
-        expect(select_column([1, 2, 3, 4], [2, 2])).toEqual(undefined)
+        expect(select_column([1, 2, 3, 4], [2, 2])).toEqual(undefined);
     });
     it("Should return undefined if col_index is < 0", () => {
-        expect(select_column([1, 2, 3, 4], [2, 2], -2)).toEqual(undefined)
+        expect(select_column([1, 2, 3, 4], [2, 2], -2)).toEqual(undefined);
     });
     it("Should return undefined if col_index is > col_number", () => {
-        expect(select_column([1, 2, 3, 4], [2, 2], 3)).toEqual(undefined)
+        expect(select_column([1, 2, 3, 4], [2, 2], 3)).toEqual(undefined);
     });
     it("Should return correct column", () => {
-        expect(select_column([1, 2, 3, 4, 5, 6], [2, 3], 0)).toEqual([1, 4])
-        expect(select_column([1, 2, 3, 4, 5, 6], [2, 3], 1)).toEqual([2, 5])
-        expect(select_column([1, 2, 3, 4, 5, 6], [2, 3], 2)).toEqual([3, 6])
+        expect(select_column([1, 2, 3, 4, 5, 6], [2, 3], 0)).toEqual([1, 4]);
+        expect(select_column([1, 2, 3, 4, 5, 6], [2, 3], 1)).toEqual([2, 5]);
+        expect(select_column([1, 2, 3, 4, 5, 6], [2, 3], 2)).toEqual([3, 6]);
     });
-})
+});
 
 // test rectBin
 
@@ -264,124 +336,88 @@ describe("When rectBin is called, it", function() {
         minY: 50,
         maxX: 100,
         maxY: 100
-    }
+    };
     const value_boundaries_floats = {
         minX: 0.1,
         minY: 1.1,
         maxX: 1.0,
         maxY: 2.1
-    }
+    };
     it("Should return undefined if size is negatvie", () => {
-        expect(rectBin(-100,[{x:1, y:1}], value_boundaries)).toEqual(undefined)
+        expect(rectBin(-100, [{ x: 1, y: 1 }], value_boundaries)).toEqual(
+            undefined
+        );
     });
     it("Should return empty array of size size if no points are passed", () => {
         expect(rectBin(2, [], value_boundaries)).toEqual([
-            {
-                x: 0,
-                y: 0,
-                value: 0
-            },
-            {
-                x:0,
-                y:1,
-                value:0
-            },
-            {
-                x:1,
-                y:0,
-                value:0
-            },
-            {
-                x:1,
-                y:1,
-                value:0
-            }
-        ])
+            [undefined, undefined],
+            [undefined, undefined]
+        ]);
     });
     it("Should bin values correctly if integers are passed", () => {
-        expect(rectBin(2, [
-            {
-                x: 60,
-                y: 100
-            },
-            {
-                x:80,
-                y: 50
-            },
-            {
-                x:99,
-                y: 100
-            },
-            {
-                x: 50,
-                y:50
-            }
-        ], value_boundaries)).toEqual(
-            [
-                {
-                    x: 0,
-                    y: 0,
-                    value: 1
-                },
-                {
-                    x:0,
-                    y:1,
-                    value:1
-                },
-                {
-                    x:1,
-                    y:0,
-                    value:1
-                },
-                {
-                    x:1,
-                    y:1,
-                    value:1
-                }
-            ]
-        )
+        expect(
+            rectBin(
+                2,
+                [
+                    {
+                        x: 60,
+                        y: 100,
+                        value: 1
+                    },
+                    {
+                        x: 80,
+                        y: 50, 
+                        value: 1
+                    },
+                    {
+                        x: 99,
+                        y: 100, 
+                        value: 0
+                    },
+                    {
+                        x: 50,
+                        y: 50,
+                        value: 1
+                    }
+                ],
+                value_boundaries
+            )
+        ).toEqual([
+            [1, 0],
+            [1, 1]
+        ]);
     });
     it("Should bin values correctly if floats are passed", () => {
-        expect(rectBin(2, [
-            {
-                x: 0.4,
-                y: 1.8
-            },
-            {
-                x:0.5,
-                y: 1.55
-            },
-            {
-                x:0.75,
-                y: 2.0
-            },
-            {
-                x: 0.1,
-                y:1.1
-            }
-        ], value_boundaries_floats)).toEqual(
-            [
-                {
-                    x: 0,
-                    y: 0,
-                    value: 2
-                },
-                {
-                    x:0,
-                    y:1,
-                    value:1
-                },
-                {
-                    x:1,
-                    y:0,
-                    value:0
-                },
-                {
-                    x:1,
-                    y:1,
-                    value:1
-                }
-            ]
-        )
-    })
-})
+        expect(
+            rectBin(
+                2,
+                [
+                    {
+                        x: 0.4,
+                        y: 1.8,
+                        value: 1
+                    },
+                    {
+                        x: 0.5,
+                        y: 1.55,
+                        value: 1
+                    },
+                    {
+                        x: 0.75,
+                        y: 2.0,
+                        value: 1
+                    },
+                    {
+                        x: 0.1,
+                        y: 1.1,
+                        value: 1
+                    }
+                ],
+                value_boundaries_floats
+            )
+        ).toEqual([
+            [undefined, 1],
+            [2, 1]
+        ]);
+    });
+});
