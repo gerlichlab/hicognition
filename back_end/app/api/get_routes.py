@@ -308,27 +308,22 @@ def get_embedding_data(entry_id):
         entry if not (np.isnan(entry) or np.isinf(entry)) else None
         for entry in np_data.flatten()
     ]
-    # convert feature data
-    if (embedding_data.file_path_feature_values is not None):
-        feature_data = np.load(embedding_data.file_path_feature_values).astype(np.float64)
-        feature_shape = feature_data.shape
-        flat_feature_data = [
-            entry if not (np.isnan(entry) or np.isinf(entry)) else None
-            for entry in feature_data.flatten()
-        ]
-    else:
-        flat_feature_data = None
-        feature_shape = None
     json_data = {
-        "embedding":   {"data": flat_data, "shape": np_data.shape, "dtype": "float32"},
-        "features":   {"data": flat_feature_data, "shape": feature_shape, "dtype": "float32"}
+        "embedding":   {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
     }
     # compress
-    content = gzip.compress(json.dumps(json_data).encode('utf8'), 9)
+    content = gzip.compress(json.dumps(json_data).encode('utf8'), 4)
     response = make_response(content)
     response.headers['Content-length'] = len(content)
     response.headers['Content-Encoding'] = 'gzip'
     return response
+
+@api.route("/embeddingIntervalData/<entry_id>/<feature_index>", methods=["GET"])
+@auth.login_required
+def get_embedding_feature(entry_id, feature_index):
+    """Gets feature vector with feature_index for entry_id"""
+    return jsonify(["asdf"])
+
 
 @api.route("/individualIntervalData/<entry_id>/", methods=["GET"])
 @auth.login_required

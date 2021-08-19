@@ -111,6 +111,7 @@ def delete_session(session_id):
 @auth.login_required
 def delete_collection(collection_id):
     """Deletes Collection."""
+    # TODO: delete everything associated!
     # check if data set exists
     collection = Collection.query.get(collection_id)
     if collection is None:
