@@ -63,22 +63,26 @@ export function max_array_along_rows(array, shape) {
         Calculates maximum element in a C-style (row-major) flattened array along every row.
         e.g. [1,5,3,4,2,6] with shape [row, column] = [2,3] would result in [4,5,6]
     */
-    if (array.length == 0 || shape.length != 2 || array.length != shape[0] * shape[1]) {
-        return undefined
+    if (
+        array.length == 0 ||
+        shape.length != 2 ||
+        array.length != shape[0] * shape[1]
+    ) {
+        return undefined;
     }
     let [row_number, col_number] = shape;
-    let output = Array(col_number).fill(-Infinity)
+    let output = Array(col_number).fill(-Infinity);
     // calculate maximum for each column along its rows
     for (let j = 0; j < col_number; j++) {
         for (let i = 0; i < row_number; i++) {
-            let candidate = array[i * col_number + j]
+            let candidate = array[i * col_number + j];
             if (candidate > output[j]) {
-                output[j] = candidate
+                output[j] = candidate;
             }
         }
     }
     // clean -Infinity
-    return output.map((elem) => elem == -Infinity ? undefined : elem)
+    return output.map(elem => (elem == -Infinity ? undefined : elem));
 }
 
 export function select_column(array, shape, col_index) {
@@ -86,23 +90,25 @@ export function select_column(array, shape, col_index) {
         returns all values in column col_index for a flattened array of a given shape
     */
     // check array
-    if (array.length == 0 || shape.length != 2 || array.length != shape[0] * shape[1]) {
-        return undefined
+    if (
+        array.length == 0 ||
+        shape.length != 2 ||
+        array.length != shape[0] * shape[1]
+    ) {
+        return undefined;
     }
     let [row_number, col_number] = shape;
     // check col_index
     if (col_index == undefined || col_index < 0 || col_index >= col_number) {
-        return undefined
+        return undefined;
     }
     // select column
-    let output = Array()
+    let output = Array();
     for (let i = 0; i < row_number; i++) {
-        output.push(array[i * col_number + col_index])
+        output.push(array[i * col_number + col_index]);
     }
-    return output
+    return output;
 }
-
-
 
 export function min_array(array) {
     /*
@@ -147,7 +153,7 @@ export function sort_matrix_by_center_column(
         or descending.
     */
     // center column
-    var sort_values = get_indices_center_column(flattened_matrix, shape)
+    var sort_values = get_indices_center_column(flattened_matrix, shape);
     return sort_matrix_by_index(
         flattened_matrix,
         shape,
@@ -205,92 +211,136 @@ export function getPerMilRank(array, p) {
     return sorted_array[index];
 }
 
+export function getBoundaries(x_vals, y_vals){
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (let j = 0; j < x_vals.length; j++) {
+        let x = x_vals[j]
+        let y = y_vals[j]
+        if (x < minX) {
+            minX = x;
+        }
+        if (x > maxX) {
+            maxX = x;
+        }
+        if (y < minY) {
+            minY = y;
+        }
+        if (y > maxY) {
+            maxY = y;
+        }
+    }
+    return {
+        minX: minX,
+        maxX: maxX,
+        minY: minY,
+        maxY: maxY
+    };
+}
 
-export function rectBin(size, points, value_boundaries, aggregation="sum") {
+export function rectBin(
+    size,
+    points,
+    overlay_values,
+    aggregation = "sum"
+) {
     /*
         Bins data points into a square of size x size.
-        Points should be of a form
-        [
-            {
-                x: x_val,
-                y: y_val,
-                value: Number
-            }
-        ]
+        Points should be a flattened array with shape
         n_points x 2 with the first column encapsulating x
         and the second column encapsulating y.
         Will return a dense array of size x size with the accumulated values
         at the x and y position
     */
     // handle input
-    if (size < 0){
-        return undefined
+    if (size < 0) {
+        return undefined;
     }
     // create output array
-    let output = Array(size)
+    let output = Array(size);
     for (let i = 0; i < size; i++) {
-        let tempArray = Array(size).fill(undefined)
-        output[i] = tempArray
+        let tempArray = Array(size).fill(undefined);
+        output[i] = tempArray;
     }
-    if (aggregation == "mean"){
+    if (aggregation == "mean") {
         // create count array
-        var count = Array(size)
+        var count = Array(size);
         for (let i = 0; i < size; i++) {
-            let tempArray = Array(size).fill(0)
-            count[i] = tempArray
+            let tempArray = Array(size).fill(0);
+            count[i] = tempArray;
         }
     }
-    let x_stepsize = (value_boundaries.maxX - value_boundaries.minX)/size
-    let y_stepsize = (value_boundaries.maxY - value_boundaries.minY)/size
+    // get x and y coordinates
+    let x_vals = [];
+    let y_vals = [];
+    for (let i = 0; i < points.length; i++) {
+        if (i % 2 == 0) {
+            x_vals.push(points[i]);
+        } else {
+            y_vals.push(points[i]);
+        }
+    }
+    // get value boundaries
+    let value_boundaries = getBoundaries(x_vals, y_vals)
+    let x_stepsize = (value_boundaries.maxX - value_boundaries.minX) / size;
+    let y_stepsize = (value_boundaries.maxY - value_boundaries.minY) / size;
     // iterate over points and add them
-    for (let point of points){
+    for (let i = 0; i < x_vals.length; i++) {
         // handle case where point.x is max
         let x_bin, y_bin;
-        if (point.x == value_boundaries.maxX){
-            x_bin = Math.floor((point.x - value_boundaries.minX)/x_stepsize) - 1
-        }else{
-            x_bin = Math.floor((point.x - value_boundaries.minX)/x_stepsize)
+        let x_val = x_vals[i];
+        let y_val = y_vals[i];
+        let value = overlay_values ? overlay_values[i] : 1
+        if (x_val == value_boundaries.maxX) {
+            x_bin =
+                Math.floor((x_val - value_boundaries.minX) / x_stepsize) - 1;
+        } else {
+            x_bin = Math.floor((x_val - value_boundaries.minX) / x_stepsize);
         }
         // handle case where point.y is max
-        if (point.y == value_boundaries.maxY){
-            y_bin = Math.floor((point.y - value_boundaries.minY)/y_stepsize) - 1
-        }else{
-            y_bin = Math.floor((point.y - value_boundaries.minY)/y_stepsize)
+        if (y_val == value_boundaries.maxY) {
+            y_bin =
+                Math.floor((y_val - value_boundaries.minY) / y_stepsize) - 1;
+        } else {
+            y_bin = Math.floor((y_val - value_boundaries.minY) / y_stepsize);
         }
 
-        if (output[size - 1 - y_bin][x_bin] == undefined){
-            output[size - 1- y_bin][x_bin] = point.value
-        }else{
-            output[size - 1 -y_bin][x_bin] = output[size - 1 - y_bin][x_bin] + point.value
+        if (output[size - 1 - y_bin][x_bin] == undefined) {
+            output[size - 1 - y_bin][x_bin] = value;
+        } else {
+            output[size - 1 - y_bin][x_bin] =
+                output[size - 1 - y_bin][x_bin] + value;
         }
-        if (aggregation == "mean"){
-            count[size -1 -y_bin][x_bin] += 1
+        if (aggregation == "mean") {
+            count[size - 1 - y_bin][x_bin] += 1;
         }
     }
     // calculate mean if needed
-    if (aggregation == "mean"){
-        for (let i =0; i < size; i++){
-            for (let j = 0; j < size; j ++){
-                if (count[i][j] != 0){
-                    output[i][j] = output[i][j]/count[i][j]
+    if (aggregation == "mean") {
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                if (count[i][j] != 0) {
+                    output[i][j] = output[i][j] / count[i][j];
                 }
             }
         }
     }
-    return output
+    return output;
 }
 
-export function flatten(matrix){
+export function flatten(matrix) {
     /*
         Takes an array of arrays and returns a row-major flattened version
     */
-   let output = []
-   for (let row of matrix){
-       for (let element of row){
-           output.push(element)
-       }
-   }
-   return output
+    let output = [];
+    for (let row of matrix) {
+        for (let element of row) {
+            output.push(element);
+        }
+    }
+    return output;
 }
 
 // Helpers for datasetTable

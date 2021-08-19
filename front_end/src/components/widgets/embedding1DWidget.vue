@@ -198,74 +198,16 @@ export default {
             }
             return 50
         },
-        plotBoundaries: function() {
-            let minX = Infinity;
-            let maxX = -Infinity;
-            let minY = Infinity;
-            let maxY = -Infinity;
-            for (let el of this.points) {
-                if (el.x < minX) {
-                    minX = el.x;
-                }
-                if (el.x > maxX) {
-                    maxX = el.x;
-                }
-                if (el.y < minY) {
-                    minY = el.y;
-                }
-                if (el.y > maxY) {
-                    maxY = el.y;
-                }
-            }
-            return {
-                minX: minX,
-                maxX: maxX,
-                minY: minY,
-                maxY: maxY
-            };
-        },
         aggregationType: function(){
-            if (!this.showOverlay){
+            if (this.overlay == "density"){
                 return "sum"
             }
             return "mean"
         },
-        showOverlay: function(){
-            return this.overlay != "density" && (this.overlayValues != undefined)
-        },
-        points: function() {
-            let embedding = this.widgetData["data"];
-            // get x and y coordinates
-            let x_vals = [];
-            let y_vals = [];
-            for (let i = 0; i < embedding.length; i++) {
-                if (i % 2 == 0) {
-                    x_vals.push(embedding[i]);
-                } else {
-                    y_vals.push(embedding[i]);
-                }
-            }
-            // construct plot objects
-            let points = [];
-            for (let j = 0; j < x_vals.length; j++) {
-                let densityValue;
-                if (this.showOverlay) {
-                    densityValue = this.overlayValues[j];
-                } else{
-                    densityValue = 1
-                }
-                points.push({
-                    x: x_vals[j],
-                    y: y_vals[j],
-                    value: densityValue
-                });
-            }
-            return points;
-        },
         embeddingData: function() {
             return {
                 data: flatten(
-                    rectBin(this.size, this.points, this.plotBoundaries, this.aggregationType)
+                    rectBin(this.size, this.widgetData["data"], this.overlayValues, this.aggregationType)
                 ),
                 shape: [this.size, this.size],
                 dtype: "float32"
@@ -611,10 +553,11 @@ export default {
                 let selected_id = this.binsizes[this.selectedBinsize];
                 this.getOverlayData(selected_id, Number(this.overlay)).then((response) => {
                     this.overlayValues = response
-                    this.resetColorScale()
+                    setTimeout(() => this.resetColorScale(), 200)
                 })
             }else{
                 this.resetColorScale()
+                this.overlayValues = undefined
             }
         }
     }
