@@ -1,4 +1,6 @@
 import os
+import gzip
+import json
 import unittest
 import numpy as np
 from test_helpers import LoginTestCase, TempDirTestCase
@@ -166,6 +168,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
             headers=token_headers,
             content_type="application/json",
         )
+        data = json.loads(gzip.decompress(response.data))
         expected = {
             "embedding": {
                 "data": self.test_data.flatten().tolist(),
@@ -178,7 +181,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
                 "dtype": "float32",
             },
         }
-        self.assertEqual(response.json, expected)
+        self.assertEqual(data, expected)
 
 
 if __name__ == "__main__":
