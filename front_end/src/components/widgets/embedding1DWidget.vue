@@ -231,6 +231,12 @@ export default {
                 maxY: maxY
             };
         },
+        aggregationType: function(){
+            if (this.overlay == "density"){
+                return "sum"
+            }
+            return "mean"
+        },
         points: function() {
             let embedding = this.widgetData["embedding"]["data"];
             // get x and y coordinates
@@ -263,7 +269,7 @@ export default {
         embeddingData: function() {
             return {
                 data: flatten(
-                    rectBin(this.size, this.points, this.plotBoundaries)
+                    rectBin(this.size, this.points, this.plotBoundaries, this.aggregationType)
                 ),
                 shape: [this.size, this.size],
                 dtype: "float32"
