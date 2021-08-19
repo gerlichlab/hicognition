@@ -165,7 +165,7 @@
 
 <script>
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
-import { rectBin, select_column, flatten } from "../../functions";
+import { rectBin, flatten } from "../../functions";
 import heatmap from "../visualizations/heatmap.vue";
 
 export default {
@@ -190,20 +190,13 @@ export default {
             );
         },
         size: function(){
-            if (this.widgetData["embedding"]["shape"][0] > 10000){
+            if (!this.widgetData){
+                return
+            }
+            if (this.widgetData["shape"][0] > 10000){
                 return 150
             }
             return 50
-        },
-        overlayValues: function() {
-            if (this.overlay == "density") {
-                return undefined;
-            }
-            return select_column(
-                this.widgetData["features"]["data"],
-                this.widgetData["features"]["shape"],
-                Number(this.overlay)
-            );
         },
         plotBoundaries: function() {
             let minX = Infinity;
@@ -232,13 +225,16 @@ export default {
             };
         },
         aggregationType: function(){
-            if (this.overlay == "density"){
+            if (!this.showOverlay){
                 return "sum"
             }
             return "mean"
         },
+        showOverlay: function(){
+            return this.overlay != "density" && (this.overlayValues != undefined)
+        },
         points: function() {
-            let embedding = this.widgetData["embedding"]["data"];
+            let embedding = this.widgetData["data"];
             // get x and y coordinates
             let x_vals = [];
             let y_vals = [];
@@ -253,10 +249,10 @@ export default {
             let points = [];
             for (let j = 0; j < x_vals.length; j++) {
                 let densityValue;
-                if (this.overlay == "density") {
-                    densityValue = 1;
-                } else {
+                if (this.showOverlay) {
                     densityValue = this.overlayValues[j];
+                } else{
+                    densityValue = 1
                 }
                 points.push({
                     x: x_vals[j],
@@ -345,7 +341,8 @@ export default {
                 minHeatmap: undefined,
                 maxHeatmap: undefined,
                 minHeatmapRange: undefined,
-                maxHeatmapRange: undefined
+                maxHeatmapRange: undefined,
+                overlayValues: undefined
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -371,6 +368,7 @@ export default {
         },
         initializeFromStore: function(widgetData, collectionConfig) {
             var widgetDataValues;
+            var overlayValues;
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
                 // deinfe store queries
@@ -381,8 +379,18 @@ export default {
                 var widgetDataValues = this.$store.getters[
                     "compare/getWidgetDataEmbedding1d"
                 ](payload);
+                // get overlay data from store
+                var payloadOverlay = {
+                    id: widgetData["widgetDataRef"],
+                    overlayIndex: Number(widgetData["overlay"])
+                }
+                // get overlay data from store
+                var overlayValues = this.$store.getters[
+                    "compare/getWidgetDataEmbedding1d"
+                ](payloadOverlay);
             } else {
                 widgetDataValues = undefined;
+                overlayValues = undefined;
             }
             // increment dataset usage in store. TODO: these are collections!
             if (widgetData["dataset"]) {
@@ -406,6 +414,7 @@ export default {
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
                 overlay: widgetData["overlay"],
+                overlayValues: overlayValues,
                 minHeatmap: widgetData["minHeatmap"],
                 maxHeatmap: widgetData["maxHeatmap"],
                 minHeatmapRange: widgetData["minHeatmapRange"],
@@ -434,10 +443,47 @@ export default {
             this.minHeatmapRange = undefined;
             this.maxHeatmapRange = undefined;
         },
+        getOverlayData: async function(id, index) {
+            var queryObject = {
+                id: id,
+                overlayIndex: index
+            };
+            if (
+                this.$store.getters["compare/embedding1dDataExists"](
+                    queryObject
+                )
+            ) {
+                return this.$store.getters["compare/getWidgetDataEmbedding1d"](
+                    queryObject
+                );
+            }
+            // overlay data does not exist, check whether request has been dispatched
+            let url = `embeddingIntervalData/${id}/${index}/`
+            let requestData = this.$store.getters["compare/getRequest"](url)
+            let response;
+            if (requestData){
+                response = await requestData
+            }else{
+                // request has not been dispatched => put it in store
+                this.$store.commit("compare/setRequest", {url:url, data: this.fetchData(url)})
+                response = await this.$store.getters["compare/getRequest"](url);
+                // save it in store -> only first request needs to persist it
+                var mutationObject = {
+                    id: id,
+                    overlayIndex: index,
+                    data: response.data["data"]
+                };
+                this.$store.commit(
+                    "compare/setWidgetDataEmbedding1d",
+                    mutationObject
+                );
+            }
+            return response.data["data"]
+        },
         getEmbeddingData: async function(id) {
             // checks whether association data is in store and fetches it if it is not
             var queryObject = {
-                id: id
+                id: id,
             };
             if (
                 this.$store.getters["compare/embedding1dDataExists"](
@@ -456,7 +502,7 @@ export default {
                 response = await requestData
             }else{
                 // request has not been dispatched => put it in store
-                this.$store.commit("compare/setRequest", {url:url, data: this.fetchData(`embeddingIntervalData/${id}/`)})
+                this.$store.commit("compare/setRequest", {url:url, data: this.fetchData(url)})
                 response = await this.$store.getters["compare/getRequest"](url);
                 // save it in store -> only first request needs to persist it
                 var mutationObject = {
@@ -560,7 +606,16 @@ export default {
             this.updateData();
         },
         overlay: function(){
-            this.resetColorScale()
+            // fetch data if needed
+            if (this.overlay != "density"){
+                let selected_id = this.binsizes[this.selectedBinsize];
+                this.getOverlayData(selected_id, Number(this.overlay)).then((response) => {
+                    this.overlayValues = response
+                    this.resetColorScale()
+                })
+            }else{
+                this.resetColorScale()
+            }
         }
     }
 };

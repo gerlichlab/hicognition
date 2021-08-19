@@ -105,7 +105,11 @@ const compareModule = {
             if (!("embedding1d" in state.widgetData)) {
                 return undefined;
             }
-            return state.widgetData["embedding1d"][payload.id];
+            // check whether overlay index if present and get overlay in that case
+            if ("overlayIndex" in payload){
+                return state.widgetData["embedding1d"][payload.id]["overlays"][payload.overlayIndex];
+            }
+            return state.widgetData["embedding1d"][payload.id]["points"];
         },
         widgetExists: state => payload => {
             // checks whether widget with id exists
@@ -142,6 +146,13 @@ const compareModule = {
         embedding1dDataExists: state => payload => {
             if (!("embedding1d" in state.widgetData)) {
                 return false;
+            }
+            // check first whether the request is for an overlayIndex or not
+            if ("overlayIndex" in payload){
+                if (!(payload.id in state.widgetData["embedding1d"])){
+                    return false
+                }
+                return payload.overlayIndex in state.widgetData["embedding1d"][payload.id]["overlays"]
             }
             return (
                 payload.id in state.widgetData["embedding1d"]
@@ -310,8 +321,15 @@ const compareModule = {
                 // initialize data
                 state.widgetData["embedding1d"] = {};
             }
-            state.widgetData["embedding1d"][payload.id] =
-                payload.data;
+            // check whether this is for overlayIndex or not
+            if ("overlayIndex" in payload){
+                state.widgetData["embedding1d"][payload.id]["overlays"][payload.overlayIndex] = payload.data
+            }else{
+                state.widgetData["embedding1d"][payload.id] = {
+                    "overlays": {},
+                    "points": payload.data
+                }
+            }
         },
         setWidgetType(state, payload) {
             Vue.set(

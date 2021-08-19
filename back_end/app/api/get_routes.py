@@ -311,7 +311,7 @@ def get_embedding_data(entry_id):
         for entry in np_data.flatten()
     ]
     json_data = {
-        "embedding": {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
+        "data": flat_data, "shape": np_data.shape, "dtype": "float32"
     }
     # compress
     content = gzip.compress(json.dumps(json_data).encode("utf8"), 4)
