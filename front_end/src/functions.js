@@ -206,7 +206,7 @@ export function getPerMilRank(array, p) {
 }
 
 
-export function rectBin(size, points, value_boundaries) {
+export function rectBin(size, points, value_boundaries, aggregation="sum") {
     /*
         Bins data points into a square of size x size.
         Points should be of a form
@@ -232,6 +232,14 @@ export function rectBin(size, points, value_boundaries) {
         let tempArray = Array(size).fill(undefined)
         output[i] = tempArray
     }
+    if (aggregation == "mean"){
+        // create count array
+        var count = Array(size)
+        for (let i = 0; i < size; i++) {
+            let tempArray = Array(size).fill(0)
+            count[i] = tempArray
+        }
+    }
     let x_stepsize = (value_boundaries.maxX - value_boundaries.minX)/size
     let y_stepsize = (value_boundaries.maxY - value_boundaries.minY)/size
     // iterate over points and add them
@@ -250,10 +258,24 @@ export function rectBin(size, points, value_boundaries) {
             y_bin = Math.floor((point.y - value_boundaries.minY)/y_stepsize)
         }
 
-        if (output[size - 1 - x_bin][y_bin] == undefined){
-            output[size - 1- x_bin][y_bin] = point.value
+        if (output[size - 1 - y_bin][x_bin] == undefined){
+            output[size - 1- y_bin][x_bin] = point.value
         }else{
-            output[size - 1 -x_bin][y_bin] = output[size - 1 - x_bin][y_bin] + point.value
+            output[size - 1 -y_bin][x_bin] = output[size - 1 - y_bin][x_bin] + point.value
+        }
+        if (aggregation == "mean"){
+            count[size -1 -y_bin][x_bin] += 1
+        }
+
+    }
+    // calculate mean if needed
+    if (aggregation == "mean"){
+        for (let i =0; i < size; i++){
+            for (let j = 0; j < size; j ++){
+                if (count[i][j] != 0){
+                    output[i][j] = output[i][j]/count[i][j]
+                }
+            }
         }
     }
     return output

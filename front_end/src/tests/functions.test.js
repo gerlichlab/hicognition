@@ -417,8 +417,42 @@ describe("When rectBin is called, it", function() {
                 value_boundaries_floats
             )
         ).toEqual([
-            [undefined, 1],
-            [2, 1]
+            [1, 1],
+            [2, undefined]
+        ]);
+    });
+    it("Should bin values correctly if floats are passed in mean mode", () => {
+        expect(
+            rectBin(
+                2,
+                [
+                    {
+                        x: 0.4,
+                        y: 1.8,
+                        value: 1
+                    },
+                    {
+                        x: 0.5,
+                        y: 1.55,
+                        value: 1
+                    },
+                    {
+                        x: 0.75,
+                        y: 2.0,
+                        value: 1
+                    },
+                    {
+                        x: 0.1,
+                        y: 1.1,
+                        value: 0
+                    }
+                ],
+                value_boundaries_floats,
+                "mean"
+            )
+        ).toEqual([
+            [1, 1],
+            [0.5, undefined]
         ]);
     });
 });
