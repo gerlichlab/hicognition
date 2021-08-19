@@ -266,7 +266,6 @@ export function rectBin(size, points, value_boundaries, aggregation="sum") {
         if (aggregation == "mean"){
             count[size -1 -y_bin][x_bin] += 1
         }
-
     }
     // calculate mean if needed
     if (aggregation == "mean"){
