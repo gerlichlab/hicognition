@@ -133,21 +133,21 @@ class TestPerformEmbedding1d(LoginTestCase, TempDirTestCase):
             dataset_id=self.feature_1.id,
             intervals_id=self.intervals_1.id,
             binsize=10000,
-            file_path_small=data_path_1,
+            file_path=data_path_1,
         )
         self.ind_data_2 = IndividualIntervalData(
             id=2,
             dataset_id=self.feature_2.id,
             intervals_id=self.intervals_1.id,
             binsize=10000,
-            file_path_small=data_path_2,
+            file_path=data_path_2,
         )
         self.ind_data_3 = IndividualIntervalData(
             id=3,
             dataset_id=self.feature_3.id,
             intervals_id=self.intervals_1.id,
             binsize=10000,
-            file_path_small=data_path_3,
+            file_path=data_path_3,
         )
 
     def test_dastabase_entry_added_correctly(self):
