@@ -460,14 +460,20 @@ export default {
             return response.data;
         },
         updateData: async function() {
-            // reset color scale
-            this.resetColorScale();
             // construct data ids to be fecthed
             let selected_id = this.binsizes[this.selectedBinsize];
             // store widget data ref
             this.widgetDataRef = selected_id;
             // fetch data
             this.widgetData = await this.getEmbeddingData(selected_id);
+            // fetch overlay if needed
+            if (this.overlay != "density"){
+                this.overlayValues = await this.getOverlayData(selected_id, Number(this.overlay))
+            }else{
+                this.overlayValues = undefined
+            }
+            // reset color scale
+            this.resetColorScale();
         }
     },
     watch: {
@@ -547,18 +553,15 @@ export default {
             }
             this.updateData();
         },
-        overlay: function(){
-            // fetch data if needed
+        overlay: async function(){
+            // fetch overlay if needed
             if (this.overlay != "density"){
                 let selected_id = this.binsizes[this.selectedBinsize];
-                this.getOverlayData(selected_id, Number(this.overlay)).then((response) => {
-                    this.overlayValues = response
-                    setTimeout(() => this.resetColorScale(), 200)
-                })
+                this.overlayValues = await this.getOverlayData(selected_id, Number(this.overlay))
             }else{
-                this.resetColorScale()
                 this.overlayValues = undefined
             }
+            this.resetColorScale()
         }
     }
 };
