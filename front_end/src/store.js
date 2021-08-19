@@ -40,7 +40,8 @@ const compareModule = {
             widgetCollections: {}, // collections of widgets that are currently displayed. Has structure {id: {children: {child_id: childProperties}}}
             widgetData: {}, // data that is displayed by the widgets, is referenced by widgetCollections -> separate for performance reasons
             used_datasets: new Map(), // ids of datasets used in this config with usage numbers
-            used_collections: new Map() // ids of collections used in this config with usage numbers
+            used_collections: new Map(), // ids of collections used in this config with usage numbers
+            request_pool: new Map() // map for requests that acts as semaphores for certain requests
         };
     },
     getters: {
@@ -156,9 +157,18 @@ const compareModule = {
                 ]["widgetType"];
             }
             return undefined;
-        }
+        },
+        getRequest: state => url => {
+            if (!state.request_pool.has(url)){
+                return undefined
+            }
+            return state.request_pool.get(url)
+        },
     },
     mutations: {
+        setRequest(state, payload){
+            state.request_pool.set(payload.url, payload.data)
+        },
         clearAll(state){
           state.widgetCollections = {},
           state.used_datasets = new Map(),

@@ -448,17 +448,26 @@ export default {
                     queryObject
                 );
             }
-            // pileup does not exists in store, fetch it
-            var response = await this.fetchData(`embeddingIntervalData/${id}/`);
-            // save it in store
-            var mutationObject = {
-                id: id,
-                data: response.data
-            };
-            this.$store.commit(
-                "compare/setWidgetDataEmbedding1d",
-                mutationObject
-            );
+            // pileup does not exists in store, check whether request has been dispatched
+            let url = `embeddingIntervalData/${id}/`
+            let requestData = this.$store.getters["compare/getRequest"](url)
+            let response;
+            if (requestData){
+                response = await requestData
+            }else{
+                // request has not been dispatched => put it in store
+                this.$store.commit("compare/setRequest", {url:url, data: this.fetchData(`embeddingIntervalData/${id}/`)})
+                response = await this.$store.getters["compare/getRequest"](url);
+                // save it in store -> only first request needs to persist it
+                var mutationObject = {
+                    id: id,
+                    data: response.data
+                };
+                this.$store.commit(
+                    "compare/setWidgetDataEmbedding1d",
+                    mutationObject
+                );
+            }
             // return it
             return response.data;
         },
