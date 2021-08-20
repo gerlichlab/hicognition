@@ -18,7 +18,7 @@ expect.extend({ toBeDeepCloseTo });
 
 // test argsort
 
-describe("Argsort testing suite", function() {
+describe("Argsort testing suite", function () {
     it("Test ascending argsort unordered array", () => {
         expect(argsort([4, 2, 6, 1, 3])).toEqual([3, 1, 4, 0, 2]);
     });
@@ -35,7 +35,7 @@ describe("Argsort testing suite", function() {
 
 // test sort matrix by index
 
-describe("Sort matrix by index testing suite", function() {
+describe("Sort matrix by index testing suite", function () {
     it("Test sort matrix ascending square", () => {
         expect(sort_matrix_by_index([1, 2, 3, 4], [2, 2], [10, 1])).toEqual([
             3,
@@ -66,7 +66,7 @@ describe("Sort matrix by index testing suite", function() {
 
 // test sort matrix by center column
 
-describe("Test sort matrix by center testing suite", function() {
+describe("Test sort matrix by center testing suite", function () {
     it("Test sort matrix by center column ascending square", () => {
         expect(
             sort_matrix_by_center_column([1, 2, 3, 4], [2, 2], true)
@@ -94,7 +94,7 @@ describe("Test sort matrix by center testing suite", function() {
 
 // test max array
 
-describe("When max array is called", function() {
+describe("When max array is called", function () {
     it("Should return the maximum element of a sorted array", () => {
         expect(max_array([1, 2, 3, 4])).toEqual(4);
     });
@@ -117,7 +117,7 @@ describe("When max array is called", function() {
 
 // test min array
 
-describe("When min array is called", function() {
+describe("When min array is called", function () {
     it("Should return the max element of a sorted array", () => {
         expect(min_array([1, 2, 3, 4])).toEqual(1);
     });
@@ -140,7 +140,7 @@ describe("When min array is called", function() {
 
 // test get percentile
 
-describe("When get percentile is called", function() {
+describe("When get percentile is called", function () {
     it("Should return undefined if percentile is  < 0", () => {
         expect(
             getPercentile(
@@ -229,7 +229,7 @@ describe("When get percentile is called", function() {
 
 // test normalize array
 
-describe("When normalize lineProfile is called", function() {
+describe("When normalize lineProfile is called", function () {
     it("Should return a normalized array when called on integers", () => {
         expect(normalizeLineProfile([1, 2, 3, 4])).toBeDeepCloseTo([
             0,
@@ -274,7 +274,7 @@ describe("When normalize lineProfile is called", function() {
 
 // test max_array_along_rows
 
-describe("When max_array_along_rows is called, it", function() {
+describe("When max_array_along_rows is called, it", function () {
     it("Should return undefined if array is length 0", () => {
         expect(max_array_along_rows([], [1, 2])).toEqual(undefined);
     });
@@ -303,7 +303,7 @@ describe("When max_array_along_rows is called, it", function() {
     });
 });
 
-describe("When select_column is called, it", function() {
+describe("When select_column is called, it", function () {
     it("Should return undefined if array is length 0", () => {
         expect(select_column([], [1, 2], 2)).toEqual(undefined);
     });
@@ -331,26 +331,14 @@ describe("When select_column is called, it", function() {
 
 // test rectBin
 
-describe("When rectBin is called, it", function() {
-    const value_boundaries = {
-        minX: 50,
-        minY: 50,
-        maxX: 100,
-        maxY: 100
-    };
-    const value_boundaries_floats = {
-        minX: 0.1,
-        minY: 1.1,
-        maxX: 1.0,
-        maxY: 2.1
-    };
+describe("When rectBin is called, it", function () {
     it("Should return undefined if size is negatvie", () => {
-        expect(rectBin(-100, [{ x: 1, y: 1 }], value_boundaries)).toEqual(
+        expect(rectBin(-100, flatten([[1, 1]]), undefined)).toEqual(
             undefined
         );
     });
     it("Should return empty array of size size if no points are passed", () => {
-        expect(rectBin(2, [], value_boundaries)).toEqual([
+        expect(rectBin(2, [], undefined)).toEqual([
             [undefined, undefined],
             [undefined, undefined]
         ]);
@@ -359,32 +347,14 @@ describe("When rectBin is called, it", function() {
         expect(
             rectBin(
                 2,
-                [
-                    {
-                        x: 60,
-                        y: 100,
-                        value: 1
-                    },
-                    {
-                        x: 80,
-                        y: 50, 
-                        value: 1
-                    },
-                    {
-                        x: 99,
-                        y: 100, 
-                        value: 0
-                    },
-                    {
-                        x: 50,
-                        y: 50,
-                        value: 1
-                    }
-                ],
-                value_boundaries
+
+                flatten([[60, 100],
+                [80, 50],
+                [50, 50]]),
+
             )
         ).toEqual([
-            [1, 0],
+            [1, undefined],
             [1, 1]
         ]);
     });
@@ -392,29 +362,12 @@ describe("When rectBin is called, it", function() {
         expect(
             rectBin(
                 2,
-                [
-                    {
-                        x: 0.4,
-                        y: 1.8,
-                        value: 1
-                    },
-                    {
-                        x: 0.5,
-                        y: 1.55,
-                        value: 1
-                    },
-                    {
-                        x: 0.75,
-                        y: 2.0,
-                        value: 1
-                    },
-                    {
-                        x: 0.1,
-                        y: 1.1,
-                        value: 1
-                    }
-                ],
-                value_boundaries_floats
+                flatten([
+                    [0.4, 1.8],
+                    [0.5, 1.55],
+                    [1.1, 2.1],
+                    [0.1, 1.1]
+                ])
             )
         ).toEqual([
             [1, 1],
@@ -425,29 +378,14 @@ describe("When rectBin is called, it", function() {
         expect(
             rectBin(
                 2,
-                [
-                    {
-                        x: 0.4,
-                        y: 1.8,
-                        value: 1
-                    },
-                    {
-                        x: 0.5,
-                        y: 1.55,
-                        value: 1
-                    },
-                    {
-                        x: 0.75,
-                        y: 2.0,
-                        value: 1
-                    },
-                    {
-                        x: 0.1,
-                        y: 1.1,
-                        value: 0
-                    }
-                ],
-                value_boundaries_floats,
+
+                flatten([
+                    [0.4, 1.8],
+                    [0.5, 1.55],
+                    [1.1, 2.1],
+                    [0.1, 1.1]
+                ]),
+                [1, 1, 1, 0],
                 "mean"
             )
         ).toEqual([
@@ -458,7 +396,7 @@ describe("When rectBin is called, it", function() {
 });
 
 
-describe("When flatten is called, it", function() {
+describe("When flatten is called, it", function () {
     it("should handle a square matrix correctly", () => {
         expect(flatten([[1, 2], [3, 4]])).toEqual([1, 2, 3, 4])
     });
