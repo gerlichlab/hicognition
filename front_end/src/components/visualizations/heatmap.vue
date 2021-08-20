@@ -23,8 +23,8 @@
                     </color-bar-slider>
                 </div>
                 <!-- Pileup display -->
-                <md-content class="center-horizontal md-elevation-0">
-                    <div class="small-margin md-elevation-4" ref="canvasDiv"/>
+                <md-content class="center-horizontal md-elevation-4">
+                    <div class="small-margin"  ref="canvasDiv"/>
                 </md-content>
             </md-list-item>
         </md-list>

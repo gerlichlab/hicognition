@@ -214,8 +214,11 @@ export default {
             if (!this.widgetData) {
                 return;
             }
+            if (this.widgetData["shape"][0] > 50000){
+                return 150
+            }
             if (this.widgetData["shape"][0] > 10000) {
-                return 150;
+                return 100;
             }
             return 50;
         },
