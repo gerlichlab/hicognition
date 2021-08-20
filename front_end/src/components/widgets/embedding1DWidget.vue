@@ -153,7 +153,7 @@
                 ></md-progress-spinner>
             </div>
             <div
-                v-if="!showData"
+                v-if="!showData && !loading"
                 class="md-layout md-alignment-center-center"
                 style="height: 89%"
             >
@@ -161,7 +161,7 @@
                     >input</md-icon
                 >
             </div>
-            <div class="flex-container" v-if="showData">
+            <div class="flex-container" v-if="showData || loading">
                 <div>
                     <span class="md-caption">{{ message }}</span>
                 </div>

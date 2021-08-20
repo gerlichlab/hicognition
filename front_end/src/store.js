@@ -9,7 +9,7 @@ Vue.use(Vuex);
 
 const predefinedModule = {
     namespaced: true, // otherwise mutations are registered globally, this way mutations are available as "predefined/*"
-    state: function() {
+    state: function () {
         return {
             Intervals: null,
             averageIntervalData: null,
@@ -35,7 +35,7 @@ const predefinedModule = {
 
 const compareModule = {
     namespaced: true, // otherwise mutations are registered globally, this way mutations are available as "compare/*"
-    state: function() {
+    state: function () {
         return {
             widgetCollections: {}, // collections of widgets that are currently displayed. Has structure {id: {children: {child_id: childProperties}}}
             widgetData: {}, // data that is displayed by the widgets, is referenced by widgetCollections -> separate for performance reasons
@@ -58,7 +58,7 @@ const compareModule = {
             return Object.assign(
                 {},
                 state.widgetCollections[payload.parentID]["children"][
-                    payload.id
+                payload.id
                 ]
             );
         },
@@ -106,7 +106,7 @@ const compareModule = {
                 return undefined;
             }
             // check whether overlay index if present and get overlay in that case
-            if ("overlayIndex" in payload){
+            if ("overlayIndex" in payload) {
                 return state.widgetData["embedding1d"][payload.id]["overlays"][payload.overlayIndex];
             }
             return state.widgetData["embedding1d"][payload.id]["points"];
@@ -148,8 +148,8 @@ const compareModule = {
                 return false;
             }
             // check first whether the request is for an overlayIndex or not
-            if ("overlayIndex" in payload){
-                if (!(payload.id in state.widgetData["embedding1d"])){
+            if ("overlayIndex" in payload) {
+                if (!(payload.id in state.widgetData["embedding1d"])) {
                     return false
                 }
                 return payload.overlayIndex in state.widgetData["embedding1d"][payload.id]["overlays"]
@@ -170,79 +170,80 @@ const compareModule = {
             return undefined;
         },
         getRequest: state => url => {
-            if (!state.request_pool.has(url)){
+            if (!state.request_pool.has(url)) {
                 return undefined
             }
             return state.request_pool.get(url)
         },
     },
     mutations: {
-        setRequest(state, payload){
+        setRequest(state, payload) {
             state.request_pool.set(payload.url, payload.data)
         },
-        clearAll(state){
-          state.widgetCollections = {},
-          state.used_datasets = new Map(),
-          state.used_collections = new Map(),
-          state.widgetData = {} 
+        clearAll(state) {
+            state.widgetCollections = {},
+                state.used_datasets = new Map(),
+                state.used_collections = new Map(),
+                state.widgetData = {},
+                state.request_pool = new Map()
         },
-        decrement_usage_dataset(state, id){
-            if (state.used_datasets.has(id)){
+        decrement_usage_dataset(state, id) {
+            if (state.used_datasets.has(id)) {
                 var old_value = state.used_datasets.get(id)
                 // decrement
-                var new_value = old_value -=1
+                var new_value = old_value -= 1
                 // delete is 0
-                if (new_value == 0){
+                if (new_value == 0) {
                     state.used_datasets.delete(id)
-                }else{
+                } else {
                     state.used_datasets.set(id, new_value)
                 }
-            } 
+            }
         },
-        decrement_usage_collections(state, id){
-            if (state.used_collections.has(id)){
+        decrement_usage_collections(state, id) {
+            if (state.used_collections.has(id)) {
                 var old_value = state.used_collections.get(id)
                 // decrement
-                var new_value = old_value -=1
+                var new_value = old_value -= 1
                 // delete is 0
-                if (new_value == 0){
+                if (new_value == 0) {
                     state.used_collections.delete(id)
-                }else{
+                } else {
                     state.used_collections.set(id, new_value)
                 }
-            } 
+            }
         },
-        increment_usage_dataset(state, id){
-            if (state.used_datasets.has(id)){
+        increment_usage_dataset(state, id) {
+            if (state.used_datasets.has(id)) {
                 var old_value = state.used_datasets.get(id)
                 // decrement
                 var new_value = old_value += 1
                 state.used_datasets.set(id, new_value)
-            }else{
+            } else {
                 // initialize to one if not in there
                 state.used_datasets.set(id, 1)
             }
         },
-        increment_usage_collections(state, id){
-            if (state.used_collections.has(id)){
+        increment_usage_collections(state, id) {
+            if (state.used_collections.has(id)) {
                 var old_value = state.used_collections.get(id)
                 // decrement
                 var new_value = old_value += 1
                 state.used_collections.set(id, new_value)
-            }else{
+            } else {
                 // initialize to one if not in there
                 state.used_collections.set(id, 1)
             }
         },
-        setWidgetCollections(state, payload){
+        setWidgetCollections(state, payload) {
             state.widgetCollections = payload
         },
         clearWidgetCollections(state) {
             state.widgetCollections = {};
         },
-        createEmptyWidgetCollection(state, id){
+        createEmptyWidgetCollection(state, id) {
             Vue.set(state.widgetCollections, id, {
-                children: { }
+                children: {}
             });
         },
         setWidgetCollectionWithChild(state, payload) {
@@ -319,22 +320,32 @@ const compareModule = {
         setWidgetDataEmbedding1d(state, payload) {
             if (!("embedding1d" in state.widgetData)) {
                 // initialize data
-                state.widgetData["embedding1d"] = {};
+                state.widgetData["embedding1d"] = {}
             }
             // check whether this is for overlayIndex or not
-            if ("overlayIndex" in payload){
+            if ("overlayIndex" in payload) {
+                if (!(payload.id in state.widgetData["embedding1d"])) {
+                    state.widgetData["embedding1d"][payload.id] = {
+                        "overlays": {},
+                        "points": undefined
+                    }
+                }
                 state.widgetData["embedding1d"][payload.id]["overlays"][payload.overlayIndex] = payload.data
-            }else{
-                state.widgetData["embedding1d"][payload.id] = {
-                    "overlays": {},
-                    "points": payload.data
+            } else {
+                if (payload.id in state.widgetData["embedding1d"]) {
+                    state.widgetData["embedding1d"][payload.id]["points"] = payload.data
+                } else {
+                    state.widgetData["embedding1d"][payload.id] = {
+                        "overlays": {},
+                        "points": payload.data
+                    }
                 }
             }
         },
         setWidgetType(state, payload) {
             Vue.set(
                 state.widgetCollections[payload.parentID]["children"][
-                    payload.id
+                payload.id
                 ],
                 "widgetType",
                 payload.widgetType
@@ -364,7 +375,7 @@ const store = new Vuex.Store({
     getters: {
         getNextSortOrderColor: state => {
             let nextEmptyIndex = state.usedSortOrders.indexOf(0)
-            if (nextEmptyIndex == -1){
+            if (nextEmptyIndex == -1) {
                 return undefined
             }
             var color = COLORPALETTE[nextEmptyIndex]
@@ -372,7 +383,7 @@ const store = new Vuex.Store({
         },
         getNextValueScaleColor: state => {
             let nextEmptyIndex = state.usedValueScales.indexOf(0)
-            if (nextEmptyIndex == -1){
+            if (nextEmptyIndex == -1) {
                 return undefined
             }
             var color = COLORPALETTE[nextEmptyIndex]
@@ -418,43 +429,43 @@ const store = new Vuex.Store({
         }
     },
     mutations: {
-        setColorUsage(state, color){
+        setColorUsage(state, color) {
             let colorIndex = COLORPALETTE.indexOf(color)
             state.usedSortOrders = state.usedSortOrders.map((val, index) => {
-                if (index == colorIndex){
+                if (index == colorIndex) {
                     return 1
                 }
                 return val
             })
         },
-        setValueScaleColorUsage(state, color){
+        setValueScaleColorUsage(state, color) {
             let colorIndex = COLORPALETTE.indexOf(color)
             state.usedValueScales = state.usedValueScales.map((val, index) => {
-                if (index == colorIndex){
+                if (index == colorIndex) {
                     return 1
                 }
                 return val
             })
         },
-        releaseColorUsage(state, color){
+        releaseColorUsage(state, color) {
             let colorIndex = COLORPALETTE.indexOf(color)
             state.usedSortOrders = state.usedSortOrders.map((val, index) => {
-                if (index == colorIndex){
+                if (index == colorIndex) {
                     return 0
                 }
                 return val
             })
         },
-        releaseValueScaleColorUsage(state, color){
+        releaseValueScaleColorUsage(state, color) {
             let colorIndex = COLORPALETTE.indexOf(color)
             state.usedValueScales = state.usedValueScales.map((val, index) => {
-                if (index == colorIndex){
+                if (index == colorIndex) {
                     return 0
                 }
                 return val
             })
         },
-        setSessionToken(state, tokenValue){
+        setSessionToken(state, tokenValue) {
             state.sessionToken = tokenValue
         },
         setToken(state, tokenValue) {
@@ -466,7 +477,7 @@ const store = new Vuex.Store({
             state.user_id = id;
             localStorage.setItem("hicognition-User", id);
         },
-        clearSessionToken(state){
+        clearSessionToken(state) {
             state.sessionToken = null
         },
         clearToken(state) {
@@ -478,7 +489,7 @@ const store = new Vuex.Store({
         setDatasets(state, datasets) {
             state.datasets = datasets;
         },
-        setResolutions(state, resolutions){
+        setResolutions(state, resolutions) {
             state.resolutions = resolutions
         }
     }
