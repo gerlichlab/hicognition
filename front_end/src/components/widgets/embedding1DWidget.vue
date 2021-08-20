@@ -190,7 +190,10 @@ export default {
             };
         },
         colormap: function () {
-            return "plasma";
+            if (this.overlay == "density"){
+                return "viridis";
+            }
+            return "magma"
         },
         message: function () {
             let overlayMessage;

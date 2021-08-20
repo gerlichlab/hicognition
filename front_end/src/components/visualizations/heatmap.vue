@@ -24,7 +24,7 @@
                 </div>
                 <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-0">
-                    <div class="small-margin" ref="canvasDiv" />
+                    <div class="small-margin md-elevation-4" ref="canvasDiv"/>
                 </md-content>
             </md-list-item>
         </md-list>
@@ -36,7 +36,6 @@ import { getScale } from "../../colorScales.js";
 import colorBarSlider from "../ui/colorBarSlider.vue";
 import { getPercentile, getPerMilRank } from "../../functions";
 
-const NAN_COLOR = [255, 255, 255]; // white nan color
 
 // set pixi scale mode
 
@@ -69,6 +68,9 @@ export default {
         log: Boolean
     },
     computed: {
+        nan_color: function(){
+            return [255, 255, 255]
+        },
         visualizationSize: function() {
             return Math.min(this.width, this.height);
         },
@@ -153,7 +155,7 @@ export default {
                             .map(element => Number(element));
                     }
                 } else {
-                    colorValues = NAN_COLOR;
+                    colorValues = this.nan_color;
                 }
                 // add to bufferarray
                 for (var value of colorValues) {

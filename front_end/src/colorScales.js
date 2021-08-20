@@ -14,6 +14,12 @@ export function getScale(min, max, scaleType) {
             .domain([min, 0, max]);
     } else if (scaleType == "plasma") {
         return d3.scaleSequential(d3.interpolatePlasma).domain([min, max]);
+    } else if (scaleType == "magma") {
+        return d3.scaleSequential(d3.interpolateMagma).domain([min, max]);
+    
+    } else if (scaleType == "viridis") {
+        return d3.scaleSequential(d3.interpolateViridis).domain([min, max]);
+    
     } else {
         // default is reds
         return d3.scaleSequential(d3.interpolateReds).domain([min, max]);
