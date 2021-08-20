@@ -199,7 +199,8 @@ export default {
                                     break;
                                 case "Embedding1D":
                                     await this.fetchEmbeddingData(
-                                        child_vals.widgetDataRef
+                                        child_vals.widgetDataRef,
+                                        child_vals.overlay
                                     );
                             }
                         }
@@ -288,30 +289,86 @@ export default {
             };
             this.$store.commit("compare/setWidgetDataLola", mutationObject);
         },
-        fetchEmbeddingData: async function(id) {
-            // checks whether association data is in store and fetches it if it is not
+        fetchEmbeddingPoints: async function(id){
             var queryObject = {
-                id: id
+                id: id,
             };
             if (
-                this.$store.getters["compare/embedding1dDataExists"](
+                !this.$store.getters["compare/embedding1dDataExists"](
                     queryObject
                 )
             ) {
-                return;
+                // points do not exist in store, check whether request for them has been dispatched
+                let url = `embeddingIntervalData/${id}/`;
+                let requestData =
+                    this.$store.getters["compare/getRequest"](url);
+                let response;
+                if (!requestData) {
+                    // request has not been dispatched => put it in store
+                    this.$store.commit("compare/setRequest", {
+                        url: url,
+                        data: this.fetchData(url),
+                    });
+                    response = await this.$store.getters["compare/getRequest"](
+                        url
+                    );
+                    // save it in store
+                    var mutationObject = {
+                        id: id,
+                        data: response.data,
+                    };
+                    this.$store.commit(
+                        "compare/setWidgetDataEmbedding1d",
+                        mutationObject
+                    );
+                }
             }
-            // pileup does not exists in store, fetch it
-            var response = await this.fetchData(`embeddingIntervalData/${id}/`);
-            var piling_data = response.data;
-            // save it in store
-            var mutationObject = {
-                id: id,
-                data: piling_data
-            };
-            this.$store.commit(
-                "compare/setWidgetDataEmbedding1d",
-                mutationObject
-            );
+        },
+        fetchEmbeddingOverlays: async function(id, overlayIndex){
+            if (overlayIndex != "density") {
+                var queryObject = {
+                    id: id,
+                    overlayIndex: overlayIndex,
+                };
+                if (
+                    this.$store.getters["compare/embedding1dDataExists"](
+                        queryObject
+                    )
+                ) {
+                    return this.$store.getters[
+                        "compare/getWidgetDataEmbedding1d"
+                    ](queryObject);
+                }
+                // overlay data does not exist, check whether request has been dispatched
+                let url = `embeddingIntervalData/${id}/${overlayIndex}/`;
+                let requestData =
+                    this.$store.getters["compare/getRequest"](url);
+                let response;
+                if (!requestData) {
+                    // request has not been dispatched => put it in store
+                    this.$store.commit("compare/setRequest", {
+                        url: url,
+                        data: this.fetchData(url),
+                    });
+                    response = await this.$store.getters["compare/getRequest"](
+                        url
+                    );
+                    // save it in store -> only first request needs to persist it
+                    var mutationObject = {
+                        id: id,
+                        overlayIndex: overlayIndex,
+                        data: response.data["data"],
+                    };
+                    this.$store.commit(
+                        "compare/setWidgetDataEmbedding1d",
+                        mutationObject
+                    );
+                }
+            }
+        },
+        fetchEmbeddingData: async function (id, overlayIndex) {
+            await this.fetchEmbeddingPoints(id)
+            await this.fetchEmbeddingOverlays(id, overlayIndex)
         },
         fetchPileupData: async function(dataRef) {
             for (let [pileupType, id] of Object.entries(dataRef)) {
