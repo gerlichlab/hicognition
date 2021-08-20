@@ -131,7 +131,7 @@
                 </div>
             </div>
             <heatmap
-                v-if="showData"
+                v-if="showData && !loading"
                 :stackupID="id"
                 :width="visualizationWidth"
                 :height="visualizationHeight"
@@ -145,6 +145,13 @@
                 @slider-change="handleSliderChange"
                 :log="false"
             />
+            <div v-if="loading" :style="waitSpinnerContainer">
+                <md-progress-spinner
+                    :md-diameter="100"
+                    :md-stroke="10"
+                    md-mode="indeterminate"
+                ></md-progress-spinner>
+            </div>
             <div
                 v-if="!showData"
                 class="md-layout md-alignment-center-center"
@@ -173,47 +180,63 @@ export default {
     name: "Embedding1D",
     mixins: [apiMixin, formattingMixin, widgetMixin],
     computed: {
-        colormap: function() {
+        waitSpinnerContainer: function () {
+            return {
+                height: this.visualizationHeight + "px",
+                width: this.width+ "px",
+                display: "flex",
+                "justify-content": "center",
+                "align-items": "center"
+            };
+        },
+        colormap: function () {
             return "plasma";
         },
-        message: function() {
+        message: function () {
             let overlayMessage;
-            if (this.overlay == "density"){
-                overlayMessage = "point density"
-            }else{
-                overlayMessage = this.datasetNames[Number(this.overlay)].name
+            if (this.overlay == "density") {
+                overlayMessage = "point density";
+            } else {
+                overlayMessage = this.datasetNames[Number(this.overlay)].name;
             }
             return (
                 this.datasets[this.selectedDataset]["name"] +
-                " | " + `${overlayMessage}` + " | binsize " + 
+                " | " +
+                `${overlayMessage}` +
+                " | binsize " +
                 this.convertBasePairsToReadable(this.selectedBinsize)
             );
         },
-        size: function(){
-            if (!this.widgetData){
-                return
+        size: function () {
+            if (!this.widgetData) {
+                return;
             }
-            if (this.widgetData["shape"][0] > 10000){
-                return 150
+            if (this.widgetData["shape"][0] > 10000) {
+                return 150;
             }
-            return 50
+            return 50;
         },
-        aggregationType: function(){
-            if (this.overlay == "density"){
-                return "sum"
+        aggregationType: function () {
+            if (this.overlay == "density") {
+                return "sum";
             }
-            return "mean"
+            return "mean";
         },
-        embeddingData: function() {
+        embeddingData: function () {
             return {
                 data: flatten(
-                    rectBin(this.size, this.widgetData["data"], this.overlayValues, this.aggregationType)
+                    rectBin(
+                        this.size,
+                        this.widgetData["data"],
+                        this.overlayValues,
+                        this.aggregationType
+                    )
                 ),
                 shape: [this.size, this.size],
-                dtype: "float32"
+                dtype: "float32",
             };
         },
-        datasetNames: function() {
+        datasetNames: function () {
             if (this.selectedDataset.length == 0) {
                 return [];
             }
@@ -222,26 +245,26 @@ export default {
             ].map((el, i) => {
                 return {
                     name: el,
-                    index: String(i)
+                    index: String(i),
                 };
             });
-        }
+        },
     },
     methods: {
-        blankWidget: function() {
+        blankWidget: function () {
             // removes all information that the user can set in case a certain region/dataset combination is not available
             this.widgetData = undefined;
             this.selectedDataset = [];
             this.selectedBinsize = undefined;
             this.widgetDataRef = undefined;
         },
-        handleDatasetSelection: function(id) {
+        handleDatasetSelection: function (id) {
             this.selectedDataset = id;
         },
-        handleBinsizeSelection: function(binsize) {
+        handleBinsizeSelection: function (binsize) {
             this.selectedBinsize = binsize;
         },
-        toStoreObject: function() {
+        toStoreObject: function () {
             // serialize object for storing its state in the store
             return {
                 // collection Data is needed if widget is dropped on new collection
@@ -262,10 +285,10 @@ export default {
                 minHeatmap: this.minHeatmap,
                 maxHeatmap: this.maxHeatmap,
                 minHeatmapRange: this.minHeatmapRange,
-                maxHeatmapRange: this.maxHeatmapRange
+                maxHeatmapRange: this.maxHeatmapRange,
             };
         },
-        initializeForFirstTime: function(widgetData, collectionData) {
+        initializeForFirstTime: function (widgetData, collectionData) {
             var data = {
                 widgetDataRef: undefined,
                 dragImage: undefined,
@@ -284,21 +307,22 @@ export default {
                 maxHeatmap: undefined,
                 minHeatmapRange: undefined,
                 maxHeatmapRange: undefined,
-                overlayValues: undefined
+                overlayValues: undefined,
+                loading: false,
             };
             // write properties to store
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
             return data;
         },
-        deleteWidget: function() {
+        deleteWidget: function () {
             /*
                 Needs to be overriden because decrement mutation is different from mixin
             */
             // delete widget from store
             var payload = {
                 parentID: this.collectionID,
-                id: this.id
+                id: this.id,
             };
             // delete widget from store
             this.$store.commit("compare/deleteWidget", payload);
@@ -308,28 +332,30 @@ export default {
                 this.selectedDataset
             );
         },
-        initializeFromStore: function(widgetData, collectionConfig) {
+        initializeFromStore: function (widgetData, collectionConfig) {
             var widgetDataValues;
             var overlayValues;
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
                 // deinfe store queries
                 var payload = {
-                    id: widgetData["widgetDataRef"]
+                    id: widgetData["widgetDataRef"],
                 };
                 // get widget data from store
-                var widgetDataValues = this.$store.getters[
-                    "compare/getWidgetDataEmbedding1d"
-                ](payload);
+                var widgetDataValues =
+                    this.$store.getters["compare/getWidgetDataEmbedding1d"](
+                        payload
+                    );
                 // get overlay data from store
                 var payloadOverlay = {
                     id: widgetData["widgetDataRef"],
-                    overlayIndex: Number(widgetData["overlay"])
-                }
+                    overlayIndex: Number(widgetData["overlay"]),
+                };
                 // get overlay data from store
-                var overlayValues = this.$store.getters[
-                    "compare/getWidgetDataEmbedding1d"
-                ](payloadOverlay);
+                var overlayValues =
+                    this.$store.getters["compare/getWidgetDataEmbedding1d"](
+                        payloadOverlay
+                    );
             } else {
                 widgetDataValues = undefined;
                 overlayValues = undefined;
@@ -361,12 +387,13 @@ export default {
                 maxHeatmap: widgetData["maxHeatmap"],
                 minHeatmapRange: widgetData["minHeatmapRange"],
                 maxHeatmapRange: widgetData["maxHeatmapRange"],
+                loading: false,
             };
         },
-        handleSliderChange: function(data) {
+        handleSliderChange: function (data) {
             this.setColorScale(data);
         },
-        setColorScale: function(data) {
+        setColorScale: function (data) {
             /* 
                 sets colorScale based on data array
                 containing minPos, maxPos, minRange, maxRange
@@ -376,7 +403,7 @@ export default {
             this.minHeatmapRange = data[2];
             this.maxHeatmapRange = data[3];
         },
-        resetColorScale: function() {
+        resetColorScale: function () {
             /*
                 resets colorscale to undefined
             */
@@ -385,10 +412,10 @@ export default {
             this.minHeatmapRange = undefined;
             this.maxHeatmapRange = undefined;
         },
-        getOverlayData: async function(id, index) {
+        getOverlayData: async function (id, index) {
             var queryObject = {
                 id: id,
-                overlayIndex: index
+                overlayIndex: index,
             };
             if (
                 this.$store.getters["compare/embedding1dDataExists"](
@@ -400,29 +427,32 @@ export default {
                 );
             }
             // overlay data does not exist, check whether request has been dispatched
-            let url = `embeddingIntervalData/${id}/${index}/`
-            let requestData = this.$store.getters["compare/getRequest"](url)
+            let url = `embeddingIntervalData/${id}/${index}/`;
+            let requestData = this.$store.getters["compare/getRequest"](url);
             let response;
-            if (requestData){
-                response = await requestData
-            }else{
+            if (requestData) {
+                response = await requestData;
+            } else {
                 // request has not been dispatched => put it in store
-                this.$store.commit("compare/setRequest", {url:url, data: this.fetchData(url)})
+                this.$store.commit("compare/setRequest", {
+                    url: url,
+                    data: this.fetchData(url),
+                });
                 response = await this.$store.getters["compare/getRequest"](url);
                 // save it in store -> only first request needs to persist it
                 var mutationObject = {
                     id: id,
                     overlayIndex: index,
-                    data: response.data["data"]
+                    data: response.data["data"],
                 };
                 this.$store.commit(
                     "compare/setWidgetDataEmbedding1d",
                     mutationObject
                 );
             }
-            return response.data["data"]
+            return response.data["data"];
         },
-        getEmbeddingData: async function(id) {
+        getEmbeddingData: async function (id) {
             // checks whether association data is in store and fetches it if it is not
             var queryObject = {
                 id: id,
@@ -437,19 +467,22 @@ export default {
                 );
             }
             // pileup does not exists in store, check whether request has been dispatched
-            let url = `embeddingIntervalData/${id}/`
-            let requestData = this.$store.getters["compare/getRequest"](url)
+            let url = `embeddingIntervalData/${id}/`;
+            let requestData = this.$store.getters["compare/getRequest"](url);
             let response;
-            if (requestData){
-                response = await requestData
-            }else{
+            if (requestData) {
+                response = await requestData;
+            } else {
                 // request has not been dispatched => put it in store
-                this.$store.commit("compare/setRequest", {url:url, data: this.fetchData(url)})
+                this.$store.commit("compare/setRequest", {
+                    url: url,
+                    data: this.fetchData(url),
+                });
                 response = await this.$store.getters["compare/getRequest"](url);
                 // save it in store -> only first request needs to persist it
                 var mutationObject = {
                     id: id,
-                    data: response.data
+                    data: response.data,
                 };
                 this.$store.commit(
                     "compare/setWidgetDataEmbedding1d",
@@ -459,7 +492,8 @@ export default {
             // return it
             return response.data;
         },
-        updateData: async function() {
+        updateData: async function () {
+            this.loading = true;
             // construct data ids to be fecthed
             let selected_id = this.binsizes[this.selectedBinsize];
             // store widget data ref
@@ -467,20 +501,24 @@ export default {
             // fetch data
             this.widgetData = await this.getEmbeddingData(selected_id);
             // fetch overlay if needed
-            if (this.overlay != "density"){
-                this.overlayValues = await this.getOverlayData(selected_id, Number(this.overlay))
-            }else{
-                this.overlayValues = undefined
+            if (this.overlay != "density") {
+                this.overlayValues = await this.getOverlayData(
+                    selected_id,
+                    Number(this.overlay)
+                );
+            } else {
+                this.overlayValues = undefined;
             }
             // reset color scale
             this.resetColorScale();
-        }
+            this.loading = false
+        },
     },
     watch: {
         // watch for changes in store to be able to update intervals
         "$store.state.compare.widgetCollections": {
             deep: true,
-            handler: function(newValue) {
+            handler: function (newValue) {
                 // update availability object
                 this.datasets =
                     newValue[this.collectionID]["collectionConfig"][
@@ -490,9 +528,9 @@ export default {
                     newValue[this.collectionID]["collectionConfig"][
                         "intervalSize"
                     ];
-            }
+            },
         },
-        datasets: function(newVal, oldVal) {
+        datasets: function (newVal, oldVal) {
             if (
                 !newVal ||
                 !oldVal ||
@@ -506,36 +544,39 @@ export default {
                 this.blankWidget();
                 return;
             }
-            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
-                this.intervalSize
-            ];
+            this.binsizes =
+                this.datasets[this.selectedDataset]["data_ids"][
+                    this.intervalSize
+                ];
             this.selectedBinsize = this.getCenterOfArray(
                 Object.keys(this.binsizes)
             );
             this.updateData();
         },
-        intervalSize: function(newVal, oldVal) {
+        intervalSize: function (newVal, oldVal) {
             // if interval size changes, reload data
             if (!newVal || !oldVal || this.selectedDataset.length == 0) {
                 return;
             }
-            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
-                this.intervalSize
-            ];
+            this.binsizes =
+                this.datasets[this.selectedDataset]["data_ids"][
+                    this.intervalSize
+                ];
             this.selectedBinsize = this.getCenterOfArray(
                 Object.keys(this.binsizes)
             );
             this.updateData();
         },
-        selectedDataset: async function(newVal, oldVal) {
+        selectedDataset: async function (newVal, oldVal) {
             if (!this.selectedDataset || this.selectedDataset.length == 0) {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
             }
             // set binsizes and add default
-            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
-                this.intervalSize
-            ];
+            this.binsizes =
+                this.datasets[this.selectedDataset]["data_ids"][
+                    this.intervalSize
+                ];
             if (!this.selectedBinsize) {
                 this.selectedBinsize = this.getCenterOfArray(
                     Object.keys(this.binsizes)
@@ -547,23 +588,28 @@ export default {
             this.$store.commit("compare/decrement_usage_collections", oldVal);
             this.$store.commit("compare/increment_usage_collections", newVal);
         },
-        selectedBinsize: async function() {
+        selectedBinsize: async function () {
             if (!this.selectedBinsize) {
                 return;
             }
             this.updateData();
         },
-        overlay: async function(){
+        overlay: async function () {
             // fetch overlay if needed
-            if (this.overlay != "density"){
+            this.loading = true;
+            if (this.overlay != "density") {
                 let selected_id = this.binsizes[this.selectedBinsize];
-                this.overlayValues = await this.getOverlayData(selected_id, Number(this.overlay))
-            }else{
-                this.overlayValues = undefined
+                this.overlayValues = await this.getOverlayData(
+                    selected_id,
+                    Number(this.overlay)
+                );
+            } else {
+                this.overlayValues = undefined;
             }
-            this.resetColorScale()
-        }
-    }
+            this.resetColorScale();
+            this.loading = false;
+        },
+    },
 };
 </script>
 
