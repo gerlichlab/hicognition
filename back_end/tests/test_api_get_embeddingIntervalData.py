@@ -166,11 +166,9 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         )
         data = json.loads(gzip.decompress(response.data))
         expected = {
-            "embedding": {
-                "data": self.test_data.flatten().tolist(),
-                "shape": list(self.test_data.shape),
-                "dtype": "float32",
-            }
+            "data": self.test_data.flatten().tolist(),
+            "shape": list(self.test_data.shape),
+            "dtype": "float32",
         }
         self.assertEqual(data, expected)
 

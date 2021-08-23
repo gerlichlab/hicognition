@@ -1,7 +1,7 @@
 """DELETE API endpoints for hicognition"""
 from flask.json import jsonify
 from flask import g
-from .helpers import is_dataset_deletion_denied, remove_safely
+from .helpers import is_dataset_deletion_denied, delete_collection, delete_dataset
 from . import api
 from .. import db
 from ..models import (
@@ -12,6 +12,7 @@ from ..models import (
     AverageIntervalData,
     IndividualIntervalData,
     Session,
+    dataset_collection_assoc_table,
 )
 from .authentication import auth
 from .errors import forbidden, invalid, not_found
@@ -19,8 +20,8 @@ from .errors import forbidden, invalid, not_found
 
 @api.route("/datasets/<dataset_id>/", methods=["DELETE"])
 @auth.login_required
-def delete_dataset(dataset_id):
-    """Deletes """
+def delete_dataset_handler(dataset_id):
+    """Deletes"""
     # check if data set exists
     dataset = Dataset.query.get(dataset_id)
     if dataset is None:
@@ -31,57 +32,17 @@ def delete_dataset(dataset_id):
     # check if data set is processing
     if dataset.processing_state == "processing":
         return invalid(f"Dataset is in processing state!")
-    intervals = []
-    averageIntervalData = []
-    individualIntervalData = []
-    metadata = []
-    # cooler only needs deletion of derived averageIntervalData
-    if dataset.filetype == "cooler":
-        averageIntervalData = AverageIntervalData.query.filter(
-            AverageIntervalData.dataset_id == dataset_id
+    # delete dataset
+    delete_dataset(dataset, db)
+    # delete associated collections
+    collections = [
+        Collection.query.get(ds.collection_id)
+        for ds in db.session.query(dataset_collection_assoc_table).filter_by(
+            dataset_id=dataset.id
         ).all()
-    # bedfile needs deletion of intervals and averageIntervalData
-    if dataset.filetype == "bedfile":
-        intervals = Intervals.query.filter(Intervals.dataset_id == dataset_id).all()
-        averageIntervalData = AverageIntervalData.query.filter(
-            AverageIntervalData.intervals_id.in_([entry.id for entry in intervals])
-        ).all()
-        individualIntervalData = IndividualIntervalData.query.filter(
-            IndividualIntervalData.intervals_id.in_([entry.id for entry in intervals])
-        ).all()
-        metadata = BedFileMetadata.query.filter(
-            BedFileMetadata.dataset_id == dataset_id
-        ).all()
-    if dataset.filetype == "bigwig":
-        averageIntervalData = AverageIntervalData.query.filter(
-            AverageIntervalData.dataset_id == dataset_id
-        ).all()
-        individualIntervalData = IndividualIntervalData.query.filter(
-            IndividualIntervalData.dataset_id == dataset_id
-        ).all()
-    # get all associated sessions
-    sessions = Session.query.filter(Session.datasets.any(id=dataset.id)).all()
-    # delete files and remove from database
-    deletion_queue = (
-        [dataset]
-        + intervals
-        + averageIntervalData
-        + individualIntervalData
-        + metadata
-        + sessions
-    )
-    for entry in deletion_queue:
-        if isinstance(entry, IndividualIntervalData):
-            remove_safely(entry.file_path_small)
-        if hasattr(entry, "file_path") and (entry.file_path is not None):
-            remove_safely(entry.file_path)
-        if hasattr(entry, "file_path_sub_sample_index") and (
-            entry.file_path_sub_sample_index is not None
-        ):
-            remove_safely(entry.file_path_sub_sample_index)
-        db.session.delete(
-            entry
-        )  # TODO: this leaves the session invalid for a short time for some reason -> fix!
+    ]
+    for collection in collections:
+        delete_collection(collection, db)
     db.session.commit()
     response = jsonify({"message": "success"})
     response.status_code = 200
@@ -90,7 +51,7 @@ def delete_dataset(dataset_id):
 
 @api.route("/sessions/<session_id>/", methods=["DELETE"])
 @auth.login_required
-def delete_session(session_id):
+def delete_session_handler(session_id):
     """Deletes Session."""
     # check if data set exists
     session = Session.query.get(session_id)
@@ -109,7 +70,7 @@ def delete_session(session_id):
 
 @api.route("/collections/<collection_id>/", methods=["DELETE"])
 @auth.login_required
-def delete_collection(collection_id):
+def delete_collection_handler(collection_id):
     """Deletes Collection."""
     # TODO: delete everything associated!
     # check if data set exists
@@ -120,7 +81,7 @@ def delete_collection(collection_id):
     if collection.user_id != g.current_user.id:
         return forbidden(f"Collection with id {collection_id} is not owned by user!")
     # delete session
-    db.session.delete(collection)
+    delete_collection(collection, db)
     db.session.commit()
     response = jsonify({"message": "success"})
     response.status_code = 200

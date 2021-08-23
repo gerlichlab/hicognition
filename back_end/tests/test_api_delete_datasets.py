@@ -15,6 +15,7 @@ from app.models import (
     AverageIntervalData,
     IndividualIntervalData,
     Session,
+    Collection
 )
 
 
@@ -136,7 +137,9 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         # create sessions
         self.session_owned_cooler = Session(datasets=[self.owned_cooler])
         self.session_unowned_cooler = Session(datasets=[self.unowned_cooler])
-        # create collections
+        # create collection
+        self.owned_collection = Collection(datasets=[self.owned_cooler])
+        # groupings
         self.datasets = [
             self.owned_cooler,
             self.unowned_cooler,
@@ -422,6 +425,27 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(Dataset.query.first(), self.unowned_cooler)
         self.assertEqual(len(Session.query.all()), 1)
         self.assertEqual(Session.query.first(), self.session_unowned_cooler)
+
+    def test_deletion_of_dataset_causes_deletion_of_collection(self):
+        """Test whether deletion of dataset causes deletion of containing collection"""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        db.session.add_all(
+            [
+                self.owned_cooler,
+                self.owned_collection
+            ]
+        )
+        db.session.commit()
+        # delete data set
+        self.client.delete(
+            f"/api/datasets/{self.owned_cooler.id}/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check whether collection was deleted
+        self.assertEqual(len(Collection.query.all()),0)
 
 
 if __name__ == "__main__":

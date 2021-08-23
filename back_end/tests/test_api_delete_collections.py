@@ -1,23 +1,41 @@
-from test_helpers import LoginTestCase
+import os
 import unittest
+from test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Collection
+from app.models import Collection, AssociationIntervalData, EmbeddingIntervalData
 
 
-class TestDeleteCollection(LoginTestCase):
-    """ Tests for deletion of datasets."""
+class TestDeleteCollection(LoginTestCase, TempDirTestCase):
+    """Tests for deletion of datasets."""
+
+    def _create_empty_file_in_tempdir(self, file_name):
+        file_path = os.path.join(self.TEMP_PATH, file_name)
+        open(file_path, "w").close()
+        return file_path
 
     def setUp(self):
         super().setUp()
         # define datasets
-        self.collection_user_1 = Collection(user_id=1, name="test")
-        self.collection_user_1_2 = Collection(user_id=1, name="test2")
-        self.collection_user_2 = Collection(user_id=2, name="test3")
+        self.collection_user_1 = Collection(id=1, user_id=1, name="test")
+        self.collection_user_1_2 = Collection(id=2, user_id=1, name="test2")
+        self.collection_user_2 = Collection(id=3, user_id=2, name="test3")
+        # define associated data
+        self.assoc_path = self._create_empty_file_in_tempdir("test.npy")
+        self.assocData = AssociationIntervalData(
+            file_path=self.assoc_path, collection_id=self.collection_user_1.id
+        )
+        self.embed_path = self._create_empty_file_in_tempdir("test2.npy")
+        self.feature_path = self._create_empty_file_in_tempdir("test3.npy")
+        self.embedData = EmbeddingIntervalData(
+            file_path=self.embed_path,
+            file_path_feature_values=self.feature_path,
+            collection_id=self.collection_user_1.id,
+        )
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
@@ -57,7 +75,7 @@ class TestDeleteCollection(LoginTestCase):
         db.session.commit()
         # by user id 2
         response = self.client.delete(
-            "/api/collections/1/",
+            "/api/collections/3/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -80,6 +98,27 @@ class TestDeleteCollection(LoginTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(Collection.query.all()), 1)
         self.assertEqual(Collection.query.first(), self.collection_user_1_2)
+
+    def test_delete_collection_deletes_associated_entries(self):
+        """Tests whether deletion of collection causes deletion of associated entries."""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        # add session
+        db.session.add_all([self.collection_user_1, self.assocData, self.embedData])
+        db.session.commit()
+        # make call
+        response = self.client.delete(
+            "/api/collections/1/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check whether associated data was deleted
+        self.assertEqual(len(Collection.query.all()), 0)
+        self.assertEqual(len(AssociationIntervalData.query.all()), 0)
+        self.assertEqual(len(EmbeddingIntervalData.query.all()), 0)
+        # check wehtehr tempdir is empty
+        self.assertEqual(len(os.listdir(self.TEMP_PATH)), 0)
 
 
 if __name__ == "__main__":

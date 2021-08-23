@@ -3,7 +3,16 @@ import os
 from .. import db
 from collections import defaultdict
 from flask import current_app
-from ..models import Intervals, Dataset, Collection, Task
+from ..models import (
+    Intervals,
+    Dataset,
+    Collection,
+    Task,
+    IndividualIntervalData,
+    AverageIntervalData,
+    Session,
+    BedFileMetadata,
+)
 
 
 def is_access_to_dataset_denied(dataset, g):
@@ -52,6 +61,76 @@ def parse_description_and_genotype(form_data):
     else:
         description = form_data["description"]
     return description, genotype
+
+
+def delete_collection(collection, db):
+    """deletes collection and associated data."""
+    assoc_data = collection.associationData.all()
+    embed_data = collection.embeddingData.all()
+    deletion_queue = assoc_data + embed_data
+    for entry in deletion_queue:
+        # remove files
+        remove_safely(entry.file_path)
+        if hasattr(entry, "file_path_feature_values"):
+            remove_safely(entry.file_path_feature_values)
+        # remove entry
+        db.session.delete(entry)
+    db.session.delete(collection)
+
+
+def delete_dataset(dataset, db):
+    """deletes dataset and associated data."""
+    intervals = []
+    averageIntervalData = []
+    individualIntervalData = []
+    metadata = []
+    # cooler only needs deletion of derived averageIntervalData
+    if dataset.filetype == "cooler":
+        averageIntervalData = AverageIntervalData.query.filter(
+            AverageIntervalData.dataset_id == dataset.id
+        ).all()
+    # bedfile needs deletion of intervals and averageIntervalData
+    if dataset.filetype == "bedfile":
+        intervals = Intervals.query.filter(Intervals.dataset_id == dataset.id).all()
+        averageIntervalData = AverageIntervalData.query.filter(
+            AverageIntervalData.intervals_id.in_([entry.id for entry in intervals])
+        ).all()
+        individualIntervalData = IndividualIntervalData.query.filter(
+            IndividualIntervalData.intervals_id.in_([entry.id for entry in intervals])
+        ).all()
+        metadata = BedFileMetadata.query.filter(
+            BedFileMetadata.dataset_id == dataset.id
+        ).all()
+    if dataset.filetype == "bigwig":
+        averageIntervalData = AverageIntervalData.query.filter(
+            AverageIntervalData.dataset_id == dataset.id
+        ).all()
+        individualIntervalData = IndividualIntervalData.query.filter(
+            IndividualIntervalData.dataset_id == dataset.id
+        ).all()
+    # get all associated sessions
+    sessions = Session.query.filter(Session.datasets.any(id=dataset.id)).all()
+    # delete files and remove from database
+    deletion_queue = (
+        [dataset]
+        + intervals
+        + averageIntervalData
+        + individualIntervalData
+        + metadata
+        + sessions
+    )
+    for entry in deletion_queue:
+        if isinstance(entry, IndividualIntervalData):
+            remove_safely(entry.file_path_small)
+        if hasattr(entry, "file_path") and (entry.file_path is not None):
+            remove_safely(entry.file_path)
+        if hasattr(entry, "file_path_sub_sample_index") and (
+            entry.file_path_sub_sample_index is not None
+        ):
+            remove_safely(entry.file_path_sub_sample_index)
+        db.session.delete(
+            entry
+        )  # TODO: this leaves the session invalid for a short time for some reason -> fix!
 
 
 def remove_safely(file_path):
@@ -106,7 +185,9 @@ def add_average_data_to_preprocessed_dataset_map(
             .filter((Task.dataset_id == dataset.id) & (Dataset.id == region_dataset.id))
             .all()
         )
-        if len(tasks_on_interval) != 0 and any(not task.complete for task in tasks_on_interval):
+        if len(tasks_on_interval) != 0 and any(
+            not task.complete for task in tasks_on_interval
+        ):
             continue
         if average.value_type in ["Obs/Exp", "ICCF"]:
             output_object["pileup"][dataset.id]["name"] = dataset.dataset_name
@@ -137,7 +218,9 @@ def add_individual_data_to_preprocessed_dataset_map(
             .filter((Task.dataset_id == dataset.id) & (Dataset.id == region_dataset.id))
             .all()
         )
-        if len(tasks_on_interval) != 0 and any(not task.complete for task in tasks_on_interval):
+        if len(tasks_on_interval) != 0 and any(
+            not task.complete for task in tasks_on_interval
+        ):
             continue
         output_object["stackup"][dataset.id]["name"] = dataset.dataset_name
         output_object["stackup"][dataset.id]["data_ids"][interval.windowsize][
@@ -159,10 +242,15 @@ def add_association_data_to_preprocessed_dataset_map(
         tasks_on_interval = (
             Task.query.join(Intervals)
             .join(Dataset)
-            .filter((Task.collection_id == collection.id) & (Dataset.id == region_dataset.id))
+            .filter(
+                (Task.collection_id == collection.id)
+                & (Dataset.id == region_dataset.id)
+            )
             .all()
         )
-        if len(tasks_on_interval) != 0 and any(not task.complete for task in tasks_on_interval):
+        if len(tasks_on_interval) != 0 and any(
+            not task.complete for task in tasks_on_interval
+        ):
             continue
         output_object["lola"][collection.id]["name"] = collection.name
         output_object["lola"][collection.id][
@@ -171,6 +259,7 @@ def add_association_data_to_preprocessed_dataset_map(
         output_object["lola"][collection.id]["data_ids"][interval.windowsize][
             assoc.binsize
         ] = str(assoc.id)
+
 
 def add_embedding_data_to_preprocessed_dataset_map(
     embedding_interval_datasets, output_object, request_context
@@ -186,10 +275,15 @@ def add_embedding_data_to_preprocessed_dataset_map(
         tasks_on_interval = (
             Task.query.join(Intervals)
             .join(Dataset)
-            .filter((Task.collection_id == collection.id) & (Dataset.id == region_dataset.id))
+            .filter(
+                (Task.collection_id == collection.id)
+                & (Dataset.id == region_dataset.id)
+            )
             .all()
         )
-        if len(tasks_on_interval) != 0 and any(not task.complete for task in tasks_on_interval):
+        if len(tasks_on_interval) != 0 and any(
+            not task.complete for task in tasks_on_interval
+        ):
             continue
         output_object["embedding"][collection.id]["name"] = collection.name
         output_object["embedding"][collection.id][
