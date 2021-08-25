@@ -204,6 +204,13 @@ class Assembly(db.Model):
     chrom_arms = db.Column(db.String(512), index=True)
     organism_id = db.Column(db.Integer, db.ForeignKey("organism.id"))
 
+    def to_json(self):
+        json_dataset = {
+            "id": self.id,
+            "name": self.name
+        }
+        return json_dataset
+
 
 class Intervals(db.Model):
     id = db.Column(db.Integer, primary_key=True)

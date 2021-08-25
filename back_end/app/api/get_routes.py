@@ -28,6 +28,8 @@ from ..models import (
     EmbeddingIntervalData,
     Session,
     Collection,
+    Assembly,
+    Organism,
 )
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
@@ -52,6 +54,18 @@ def get_resolutions():
     """Gets available combinations of windowsizes and binsizes
     from config file"""
     return jsonify(current_app.config["PREPROCESSING_MAP"])
+
+
+@api.route("/assemblies/", methods=["GET"])
+@auth.login_required
+def get_assemblies():
+    """Gets all assemblies in the database."""
+    output = {}
+    for organism in Organism.query.all():
+        output[organism.name] = [
+            assembly.to_json() for assembly in organism.assemblies.all()
+        ]
+    return output
 
 
 @api.route("/datasets/", methods=["GET"])
@@ -310,9 +324,7 @@ def get_embedding_data(entry_id):
         entry if not (np.isnan(entry) or np.isinf(entry)) else None
         for entry in np_data.flatten()
     ]
-    json_data = {
-        "data": flat_data, "shape": np_data.shape, "dtype": "float32"
-    }
+    json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
     # compress
     content = gzip.compress(json.dumps(json_data).encode("utf8"), 4)
     response = make_response(content)
