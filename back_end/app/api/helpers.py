@@ -12,6 +12,7 @@ from ..models import (
     AverageIntervalData,
     Session,
     BedFileMetadata,
+    session_collection_assoc_table,
 )
 
 
@@ -73,13 +74,12 @@ def delete_collection(collection, db):
         remove_safely(entry.file_path)
         if hasattr(entry, "file_path_feature_values"):
             remove_safely(entry.file_path_feature_values)
-        # remove entry
-        db.session.delete(entry)
     db.session.delete(collection)
 
 
-def delete_dataset(dataset, db):
-    """deletes dataset and associated data."""
+def delete_associated_data_of_dataset(dataset):
+    """deletes associated data of database entries. Actual deletion of entries
+    is handeled by database cascades"""
     intervals = []
     averageIntervalData = []
     individualIntervalData = []
@@ -108,17 +108,8 @@ def delete_dataset(dataset, db):
         individualIntervalData = IndividualIntervalData.query.filter(
             IndividualIntervalData.dataset_id == dataset.id
         ).all()
-    # get all associated sessions
-    sessions = Session.query.filter(Session.datasets.any(id=dataset.id)).all()
     # delete files and remove from database
-    deletion_queue = (
-        [dataset]
-        + intervals
-        + averageIntervalData
-        + individualIntervalData
-        + metadata
-        + sessions
-    )
+    deletion_queue = [dataset] + intervals + averageIntervalData + individualIntervalData + metadata
     for entry in deletion_queue:
         if isinstance(entry, IndividualIntervalData):
             remove_safely(entry.file_path_small)
@@ -128,9 +119,6 @@ def delete_dataset(dataset, db):
             entry.file_path_sub_sample_index is not None
         ):
             remove_safely(entry.file_path_sub_sample_index)
-        db.session.delete(
-            entry
-        )  # TODO: this leaves the session invalid for a short time for some reason -> fix!
 
 
 def remove_safely(file_path):

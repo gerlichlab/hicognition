@@ -1,7 +1,7 @@
 """DELETE API endpoints for hicognition"""
 from flask.json import jsonify
 from flask import g
-from .helpers import is_dataset_deletion_denied, delete_collection, delete_dataset
+from .helpers import is_dataset_deletion_denied, delete_collection, delete_associated_data_of_dataset
 from . import api
 from .. import db
 from ..models import (
@@ -32,17 +32,20 @@ def delete_dataset_handler(dataset_id):
     # check if data set is processing
     if dataset.processing_state == "processing":
         return invalid(f"Dataset is in processing state!")
-    # delete dataset
-    delete_dataset(dataset, db)
+    # delete associated data of dataset
+    delete_associated_data_of_dataset(dataset)
+    # get collections and sessions
+    collections = dataset.collections
+    sessions = dataset.sessions
+    # delete dataset, will trigger all cascades
+    db.session.delete(dataset)
+    db.session.commit()
     # delete associated collections
-    collections = [
-        Collection.query.get(ds.collection_id)
-        for ds in db.session.query(dataset_collection_assoc_table).filter_by(
-            dataset_id=dataset.id
-        ).all()
-    ]
     for collection in collections:
         delete_collection(collection, db)
+    # delete associated sessions
+    for session in sessions:
+        db.session.delete(session)
     db.session.commit()
     response = jsonify({"message": "success"})
     response.status_code = 200
@@ -72,7 +75,6 @@ def delete_session_handler(session_id):
 @auth.login_required
 def delete_collection_handler(collection_id):
     """Deletes Collection."""
-    # TODO: delete everything associated!
     # check if data set exists
     collection = Collection.query.get(collection_id)
     if collection is None:

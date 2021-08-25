@@ -5,10 +5,29 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import JSONWebSignatureSerializer
 from flask_login import UserMixin
-from sqlalchemy.dialects import mysql
 import redis
 import rq
 from app import db, login
+
+# define association tables
+
+session_dataset_assoc_table = db.Table(
+    "session_dataset_assoc_table",
+    db.Column("session_id", db.Integer, db.ForeignKey("session.id")),
+    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id")),
+)
+
+session_collection_assoc_table = db.Table(
+    "session_collection_assoc_table",
+    db.Column("session_id", db.Integer, db.ForeignKey("session.id")),
+    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id")),
+)
+
+dataset_collection_assoc_table = db.Table(
+    "dataset_collection_assoc_table",
+    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id")),
+    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id")),
+)
 
 
 class User(db.Model, UserMixin):
@@ -18,8 +37,8 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
-    datasets = db.relationship("Dataset", backref="owner", lazy="dynamic")
-    tasks = db.relationship("Task", backref="user", lazy="dynamic")
+    datasets = db.relationship("Dataset", backref="owner", lazy="dynamic", cascade="all, delete-orphan")
+    tasks = db.relationship("Task", backref="user", lazy="dynamic", cascade="all, delete-orphan")
 
     def set_password(self, password):
         """set password helper."""
@@ -95,6 +114,7 @@ class User(db.Model, UserMixin):
 
 
 class Dataset(db.Model):
+    # fields
     id = db.Column(db.Integer, primary_key=True)
     dataset_name = db.Column(db.String(64), index=True)
     genotype = db.Column(db.String(64), default="undefined")
@@ -112,18 +132,23 @@ class Dataset(db.Model):
     filetype = db.Column(db.String(64), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     available_binsizes = db.Column(db.String(500))
-    intervals = db.relationship("Intervals", backref="source_dataset", lazy="dynamic")
+    processing_state = db.Column(db.String(64))
+    # Relationships
+    intervals = db.relationship("Intervals", backref="source_dataset", lazy="dynamic", cascade="all, delete-orphan")
+    collections = db.relationship(
+        "Collection", secondary=dataset_collection_assoc_table
+    )
+    sessions = db.relationship("Session", secondary=session_dataset_assoc_table)
     averageIntervalData = db.relationship(
-        "AverageIntervalData", backref="source_dataset", lazy="dynamic"
+        "AverageIntervalData", backref="source_dataset", lazy="dynamic", cascade="all, delete-orphan"
     )
     individualIntervalData = db.relationship(
-        "IndividualIntervalData", backref="source_dataset", lazy="dynamic"
+        "IndividualIntervalData", backref="source_dataset", lazy="dynamic", cascade="all, delete-orphan"
     )
     bedFileMetadata = db.relationship(
-        "BedFileMetadata", backref="associated_dataset", lazy="dynamic"
+        "BedFileMetadata", backref="associated_dataset", lazy="dynamic", cascade="all, delete-orphan"
     )
     tasks = db.relationship("Task", backref="dataset", lazy="dynamic")
-    processing_state = db.Column(db.String(64))
 
     def get_tasks_in_progress(self):
         return Task.query.filter_by(dataset=self, complete=False).all()
@@ -169,7 +194,7 @@ class Dataset(db.Model):
 class Organism(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512))
-    assemblies = db.relationship("Assembly", backref="source_organism", lazy="dynamic")
+    assemblies = db.relationship("Assembly", backref="source_organism", lazy="dynamic", cascade="all, delete-orphan")
 
 
 class Assembly(db.Model):
@@ -188,17 +213,18 @@ class Intervals(db.Model):
     file_path_sub_sample_index = db.Column(db.String(512), index=True)
     windowsize = db.Column(db.Integer, index=True)
     averageIntervalData = db.relationship(
-        "AverageIntervalData", backref="source_intervals", lazy="dynamic"
+        "AverageIntervalData", backref="source_intervals", lazy="dynamic", cascade="all, delete-orphan"
     )
     individualIntervalData = db.relationship(
-        "IndividualIntervalData", backref="source_intervals", lazy="dynamic"
+        "IndividualIntervalData", backref="source_intervals", lazy="dynamic", cascade="all, delete-orphan"
     )
     associationIntervalData = db.relationship(
-        "AssociationIntervalData", backref="source_intervals", lazy="dynamic"
+        "AssociationIntervalData", backref="source_intervals", lazy="dynamic", cascade="all, delete-orphan"
     )
     embeddingIntervalData = db.relationship(
-        "EmbeddingIntervalData", backref="source_intervals", lazy="dynamic"
+        "EmbeddingIntervalData", backref="source_intervals", lazy="dynamic", cascade="all, delete-orphan"
     )
+    tasks = db.relationship("Task", backref="intervals", lazy="dynamic", cascade="all, delete-orphan")
 
     def __repr__(self):
         """Format print output."""
@@ -344,19 +370,6 @@ class BedFileMetadata(db.Model):
         return f"<Metadata {self.name}>"
 
 
-session_dataset_assoc_table = db.Table(
-    "session_dataset_assoc_table",
-    db.Column("session_id", db.Integer, db.ForeignKey("session.id")),
-    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id")),
-)
-
-session_collection_assoc_table = db.Table(
-    "session_collection_assoc_table",
-    db.Column("session_id", db.Integer, db.ForeignKey("session.id")),
-    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id")),
-)
-
-
 class Session(db.Model):
     """Model for session data that represents configurations
     of views. For example, compare views."""
@@ -404,13 +417,6 @@ class Session(db.Model):
         return f"<Session {self.name}>"
 
 
-dataset_collection_assoc_table = db.Table(
-    "dataset_collection_assoc_table",
-    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id")),
-    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id")),
-)
-
-
 class Collection(db.Model):
     """Collections of datasets with optional name and description.
     One dataset can belong to many collections and one collection can
@@ -425,11 +431,12 @@ class Collection(db.Model):
     )  # What kind of datasets are collected (regions, 1d-features, 2d-features)
     tasks = db.relationship("Task", backref="collection", lazy="dynamic")
     datasets = db.relationship("Dataset", secondary=dataset_collection_assoc_table)
+    sessions = db.relationship("Session", secondary=session_collection_assoc_table)
     associationData = db.relationship(
-        "AssociationIntervalData", backref="source_collection", lazy="dynamic"
+        "AssociationIntervalData", backref="source_collection", lazy="dynamic", cascade="all, delete-orphan"
     )
     embeddingData = db.relationship(
-        "EmbeddingIntervalData", backref="source_collection", lazy="dynamic"
+        "EmbeddingIntervalData", backref="source_collection", lazy="dynamic", cascade="all, delete-orphan"
     )
     processing_state = db.Column(db.String(64))
 
