@@ -16,7 +16,7 @@ class Config:
     )
     CHROM_ARMS = os.environ.get("CHROM_ARMS") or os.path.join(basedir, "data/arms.hg19")
     REDIS_URL = os.environ.get("REDIS_URL") or "redis://"
-    # allowed binsizes for given windowsizes of regions -> pileups still fail for some combinations cannot be pickled -> FIXME: fix this
+    # allowed binsizes for given windowsizes of regions
     PREPROCESSING_MAP = {
         50000: [1000, 2000, 5000],
         100000: [2000, 5000, 10000],
@@ -30,7 +30,43 @@ class Config:
         "bigwig": ("pipeline_stackup", "run stackup pipeline"),
         "collections": {
             "region": ("pipeline_lola", "run lola pipeline"),
-            "1d-features": ("pipeline_embedding_1d", "run 1d embedding pipeline")
+            "1d-features": ("pipeline_embedding_1d", "run 1d embedding pipeline"),
+        },
+    }
+    # dataset-option mapping -> puts different optionvalues for dataset into relation
+    DATASET_OPTION_MAPPING = {
+        "DatasetType": {
+            "Region": {
+                "ValueType": {
+                    "SetIdentity": {
+                        "Method": ["GenomeAnnotation", "HiC", "ChipSeq"],
+                        "SizeType": ["Point", "Interval"],
+                    }
+                }
+            },
+            "Feature1D": {
+                "ValueType": {
+                    "Derived": {
+                        "Normalization": ["Base-line-correct"],
+                        "DerivationType": ["InsulationScore", "PairingScore"],
+                        "Method": ["HiC"],
+                    },
+                    "ProteinBinding": {
+                        "Protein": "freetext",
+                        "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
+                        "Normalization": ["NormToControl", "RPM"],
+                    },
+                    "GeneExpression": {
+                        "Normalization": ["NormToControl", "RPM", "RPKM"],
+                        "Method": ["RNAseq", "GroSeq", "SLAMseq", "NETseq"],
+                    },
+                }
+            },
+            "Feature2D": {
+                "ValueType": {
+                    "Interaction": {"Method": ["HiC"], "Normalization": ["ICCF"]}
+                }
+            },
         }
     }
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled

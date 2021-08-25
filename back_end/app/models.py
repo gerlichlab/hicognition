@@ -49,7 +49,7 @@ class User(db.Model, UserMixin):
             description=description,
             user_id=self.id,
             dataset_id=dataset_id,
-            intervals_id=intervals_id
+            intervals_id=intervals_id,
         )
         db.session.add(task)
         return task
@@ -69,7 +69,7 @@ class User(db.Model, UserMixin):
             description=description,
             user_id=self.id,
             collection_id=collection_id,
-            intervals_id=intervals_id
+            intervals_id=intervals_id,
         )
         db.session.add(task)
         return task
@@ -99,6 +99,14 @@ class Dataset(db.Model):
     dataset_name = db.Column(db.String(64), index=True)
     genotype = db.Column(db.String(64), default="undefined")
     description = db.Column(db.String(81), default="undefined")
+    perturbation = db.Column(db.String(64), default="undefined")
+    assembly = db.Column(db.Integer, db.ForeignKey("assembly.id"))
+    cellCycleStage = db.Column(db.String(64), default="undefined")
+    valueType = db.Column(db.String(64), default="undefined")
+    method = db.Column(db.String(64), default="undefined")
+    normalization = db.Column(db.String(64), default="undefined")
+    derivationType = db.Column(db.String(64), default="undefined")
+    sizeType = db.Column(db.String(64), default="undefined")
     file_path = db.Column(db.String(128), index=True)
     public = db.Column(db.Boolean, default=False)
     filetype = db.Column(db.String(64), index=True)
@@ -156,6 +164,19 @@ class Dataset(db.Model):
             "public": self.public,
         }
         return json_dataset
+
+
+class Organism(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(512))
+    assemblies = db.relationship("Assembly", backref="source_organism", lazy="dynamic")
+
+
+class Assembly(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(512))
+    chrom_sizes = db.Column(db.Text(10 ** 9))
+    organism_id = db.Column(db.Integer, db.ForeignKey("organism.id"))
 
 
 class Intervals(db.Model):
