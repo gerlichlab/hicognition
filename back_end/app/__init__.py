@@ -23,6 +23,5 @@ def create_app(config_name):
     app.task_queue = rq.Queue("hicognition-tasks", connection=app.redis)
     # register api blueprint
     from .api import api as api_blueprint
-
     app.register_blueprint(api_blueprint, url_prefix="/api/")
     return app

@@ -14,7 +14,9 @@ from app.models import (
     Session,
     Collection,
     EmbeddingIntervalData,
-    AssociationIntervalData
+    AssociationIntervalData,
+    Organism,
+    Assembly
 )
 from flask_migrate import Migrate
 from flask.cli import AppGroup
@@ -144,7 +146,9 @@ def make_shell_context():
         "Session": Session,
         "Collection": Collection,
         "EmbeddingIntervalData": EmbeddingIntervalData,
-        "AssociationIntervalData": AssociationIntervalData
+        "AssociationIntervalData": AssociationIntervalData,
+        "Organism": Organism,
+        "Assembly": Assembly
     }
 
 
