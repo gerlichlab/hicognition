@@ -1,5 +1,6 @@
 """Pipeline steps for redis queue"""
 import os
+import io
 import uuid
 import logging
 

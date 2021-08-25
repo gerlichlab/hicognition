@@ -175,7 +175,8 @@ class Organism(db.Model):
 class Assembly(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512))
-    chrom_sizes = db.Column(db.Text(10 ** 9))
+    chrom_sizes = db.Column(db.String(512), index=True)
+    chrom_arms = db.Column(db.String(512), index=True)
     organism_id = db.Column(db.Integer, db.ForeignKey("organism.id"))
 
 
