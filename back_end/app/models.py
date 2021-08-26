@@ -117,7 +117,6 @@ class Dataset(db.Model):
     # fields
     id = db.Column(db.Integer, primary_key=True)
     dataset_name = db.Column(db.String(64), index=True)
-    genotype = db.Column(db.String(64), default="undefined")
     description = db.Column(db.String(81), default="undefined")
     perturbation = db.Column(db.String(64), default="undefined")
     assembly = db.Column(db.Integer, db.ForeignKey("assembly.id"))
@@ -129,9 +128,10 @@ class Dataset(db.Model):
     sizeType = db.Column(db.String(64), default="undefined")
     file_path = db.Column(db.String(128), index=True)
     public = db.Column(db.Boolean, default=False)
+    protein = db.Column(db.String(64), default="undefined")
     filetype = db.Column(db.String(64), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    available_binsizes = db.Column(db.String(500))
+    available_binsizes = db.Column(db.String(500), default="undefined")
     processing_state = db.Column(db.String(64))
     # Relationships
     intervals = db.relationship("Intervals", backref="source_dataset", lazy="dynamic", cascade="all, delete-orphan")
@@ -177,17 +177,10 @@ class Dataset(db.Model):
         db.session.commit()
 
     def to_json(self):
-        json_dataset = {
-            "id": self.id,
-            "dataset_name": self.dataset_name,
-            "genotype": self.genotype,
-            "description": self.description,
-            "file_path": self.file_path,
-            "filetype": self.filetype,
-            "user_id": self.user_id,
-            "processing_state": self.processing_state,
-            "public": self.public,
-        }
+        json_dataset = {}
+        for key, value in self.__dict__.items():
+            if (key[0] != "_") and (value != "undefined"):
+                json_dataset[key] = value
         return json_dataset
 
 

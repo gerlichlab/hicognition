@@ -1,6 +1,5 @@
 """Helper functions for api routes"""
 import os
-from .. import db
 from collections import defaultdict
 from flask import current_app
 from ..models import (
@@ -10,10 +9,61 @@ from ..models import (
     Task,
     IndividualIntervalData,
     AverageIntervalData,
-    Session,
     BedFileMetadata,
-    session_collection_assoc_table,
 )
+
+COMMON_REQUIRED_KEYS = [
+    "assembly",
+    "cellCycleStage",
+    "datasetName",
+    "filetype",
+    "perturbation",
+    "ValueType",
+]
+
+DATASET_META_FIELDS = {
+    "assembly": "assembly",
+    "cellCycleStage": "cellCycleStage",
+    "perturbation": "perturbation",
+    "ValueType": "valueType",
+    "Method": "method",
+    "SizeType": "sizeType",
+    "Normalization": "normalization",
+    "DerivationType": "derivationType",
+    "Protein": "protein",
+}
+
+
+def dataset_requirements_fullfilled(form):
+    """checks whether form containing information to create dataset conforms
+    with the passed dataset_attribute_mapping."""
+    # check common things
+    form_keys = set(form.keys())
+    if any(key not in form_keys for key in COMMON_REQUIRED_KEYS):
+        return False
+    # check value type
+    datasetTypeMapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
+    value_types = datasetTypeMapping[form["filetype"]]["ValueType"]
+    if form["ValueType"] not in value_types.keys():
+        return False
+    # check value type members
+    for key, possible_values in value_types[form["ValueType"]].items():
+        if key not in form_keys:
+            return False
+        # check whether field is freetext
+        if possible_values == "freetext":
+            continue
+        # check that value in form corresponds to possible values
+        if form[key] not in possible_values:
+            return False
+    return True
+
+
+def add_fields_to_dataset(entry, form):
+    """adds dataset fields that exist in form to entry."""
+    for form_key, dataset_field in DATASET_META_FIELDS.items():
+        if form_key in form:
+            entry.__setattr__(dataset_field, form[form_key])
 
 
 def is_access_to_dataset_denied(dataset, g):
@@ -52,16 +102,12 @@ def update_processing_state(entries, db):
         entry.set_processing_state(db)
 
 
-def parse_description_and_genotype(form_data):
-    if ("genotype" not in form_data) or (form_data["genotype"] == "null"):
-        genotype = "No genotype provided"
-    else:
-        genotype = form_data["genotype"]
+def parse_description(form_data):
     if ("description" not in form_data) or (form_data["description"] == "null"):
         description = "No description provided"
     else:
         description = form_data["description"]
-    return description, genotype
+    return description
 
 
 def delete_collection(collection, db):
@@ -109,7 +155,9 @@ def delete_associated_data_of_dataset(dataset):
             IndividualIntervalData.dataset_id == dataset.id
         ).all()
     # delete files and remove from database
-    deletion_queue = [dataset] + intervals + averageIntervalData + individualIntervalData + metadata
+    deletion_queue = (
+        [dataset] + intervals + averageIntervalData + individualIntervalData + metadata
+    )
     for entry in deletion_queue:
         if isinstance(entry, IndividualIntervalData):
             remove_safely(entry.file_path_small)

@@ -23,10 +23,12 @@ from .authentication import auth
 from .helpers import (
     is_access_to_dataset_denied,
     is_access_to_collection_denied,
-    parse_description_and_genotype,
+    parse_description,
     remove_failed_tasks,
     get_all_interval_ids,
     parse_binsizes,
+    dataset_requirements_fullfilled,
+    add_fields_to_dataset
 )
 from .errors import forbidden, invalid, not_found
 from hicognition.format_checkers import FORMAT_CHECKERS
@@ -39,11 +41,6 @@ def add_dataset():
 
     def is_form_invalid():
         if not hasattr(request, "form"):
-            return True
-        # check attributes
-        if "datasetName" not in request.form.keys():
-            return True
-        if "filetype" not in request.form.keys():
             return True
         # check whether fileObject is there
         if len(request.files) == 0:
@@ -59,6 +56,9 @@ def add_dataset():
             return True
         if fileEnding.lower() not in correctFileEndings[request.form["filetype"]]:
             return True
+        # check attributes
+        if not dataset_requirements_fullfilled(request.form):
+            return True
         return False
 
     current_user = g.current_user
@@ -68,20 +68,20 @@ def add_dataset():
     # get data from form
     data = request.form
     fileObject = request.files["file"]
-    # check whether description and genotype is there
-    description, genotype = parse_description_and_genotype(data)
+    # check whether description is there
+    description = parse_description(data)
     # check whether dataset should be public
     setPublic = "public" in data and data["public"].lower() == "true"
-    # add data to Database -> in order to show uploading
+    # add data to Database -> in order to get id for filename
     new_entry = Dataset(
         dataset_name=data["datasetName"],
-        genotype=genotype,
         description=description,
         public=setPublic,
         processing_state="uploading",
         filetype=data["filetype"],
         user_id=current_user.id,
     )
+    add_fields_to_dataset(new_entry, data)
     db.session.add(new_entry)
     db.session.commit()
     # save file in upload directory with database_id as prefix
@@ -486,9 +486,7 @@ def create_assembly():
     chrom_arms = request.files["chromArms"]
     # add data to Database -> needed to obtain next id for filename
     new_entry = Assembly(
-        name=data["name"],
-        organism_id=int(data["organism"]),
-        user_id=g.current_user.id
+        name=data["name"], organism_id=int(data["organism"]), user_id=g.current_user.id
     )
     db.session.add(new_entry)
     db.session.commit()

@@ -36,7 +36,7 @@ class Config:
     # dataset-option mapping -> puts different optionvalues for dataset into relation
     DATASET_OPTION_MAPPING = {
         "DatasetType": {
-            "Region": {
+            "bedfile": {
                 "ValueType": {
                     "SetIdentity": {
                         "Method": ["GenomeAnnotation", "HiC", "ChipSeq"],
@@ -44,7 +44,7 @@ class Config:
                     }
                 }
             },
-            "Feature1D": {
+            "bigwig": {
                 "ValueType": {
                     "Derived": {
                         "Normalization": ["Base-line-correct"],
@@ -62,7 +62,7 @@ class Config:
                     },
                 }
             },
-            "Feature2D": {
+            "cooler": {
                 "ValueType": {
                     "Interaction": {"Method": ["HiC"], "Normalization": ["ICCF"]}
                 }
