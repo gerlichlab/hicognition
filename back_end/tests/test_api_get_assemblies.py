@@ -49,8 +49,8 @@ class TestGetAssemblies(LoginTestCase):
         # check response
         self.assertEqual(response.status_code, 200)
         expected = {
-            "Human": [{"id": 1, "name": "hg19"}, {"id": 2, "name": "hg38"}],
-            "Drosophila": [{"id": 3, "name": "dm1"}, {"id": 4, "name": "dm2"}],
+            "Human": [{"id": 1, "name": "hg19", "user_id": None}, {"id": 2, "name": "hg38", "user_id": None}],
+            "Drosophila": [{"id": 3, "name": "dm1", "user_id": None}, {"id": 4, "name": "dm2", "user_id": None}],
         }
         self.assertEqual(expected, response.json)
 

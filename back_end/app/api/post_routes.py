@@ -488,6 +488,7 @@ def create_assembly():
     new_entry = Assembly(
         name=data["name"],
         organism_id=int(data["organism"]),
+        user_id=g.current_user.id
     )
     db.session.add(new_entry)
     db.session.commit()

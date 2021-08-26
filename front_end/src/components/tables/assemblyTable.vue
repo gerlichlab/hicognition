@@ -38,6 +38,7 @@
                 md-selectable="single"
                 class="md-primary"
                 md-auto-select
+                :md-disabled="isSelectionDisabled(item)"
             >
                 <md-table-cell md-label="Organism" md-sort-by="organism">{{
                     item.organism
@@ -67,6 +68,14 @@ export default {
         datasetsDeleted: false
     }),
     methods: {
+        isSelectionDisabled: function(item) {
+            // check if assembly is owned
+            var user_id = this.$store.getters.getUserId;
+            if (user_id == item.user_id) {
+                return false;
+            }
+            return true;
+        },
         deleteClicked: function() {
             this.clickedDelete = true;
         },

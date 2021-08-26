@@ -11,7 +11,12 @@ def create_hg19():
         org = Organism(name="Human")
         db.session.add(org)
         db.session.commit()
-        assembly = Assembly(name="hg19", chrom_sizes=current_app.config["CHROM_SIZES"], chrom_arms=current_app.config["CHROM_ARMS"], organism_id=org.id)
+        assembly = Assembly(
+            name="hg19",
+            chrom_sizes=current_app.config["CHROM_SIZES"],
+            chrom_arms=current_app.config["CHROM_ARMS"],
+            organism_id=org.id,
+        )
         db.session.add_all([org, assembly])
         db.session.commit()
 
