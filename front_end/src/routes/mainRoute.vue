@@ -50,6 +50,10 @@
                     showAddAssemblies = true;
                     menuVisible = false;
                 "
+                @show-assembly-click="
+                    showAssemblyDialog = true;
+                    menuVisible = false
+                "
             ></drawer>
         </md-app-drawer>
 
@@ -108,6 +112,10 @@
                 :dialog="showAddAssemblies"
                 @close-dialog="showAddAssemblies = false"
             />
+            <assemblyDialog
+                :dialog="showAssemblyDialog"
+                @close-dialog="showAssemblyDialog = false"
+            />
         </md-app-content>
     </md-app>
 </template>
@@ -125,6 +133,7 @@ import addCollectionDialog from "../components/dialogs/addCollectionDialog.vue"
 import collectionsDialog from "../components/dialogs/collectionsDialog.vue"
 import preprocessCollectionsDialog from "../components/dialogs/preprocessCollections.vue"
 import addAssemblyDialog from "../components/dialogs/addAssemblyDialog.vue"
+import assemblyDialog from "../components/dialogs/assemblyDialog.vue"
 
 export default {
     name: "mainRoute",
@@ -140,7 +149,8 @@ export default {
         addCollectionDialog,
         collectionsDialog,
         preprocessCollectionsDialog,
-        addAssemblyDialog
+        addAssemblyDialog,
+        assemblyDialog
     },
     data: () => ({
         menuVisible: false,
@@ -155,7 +165,8 @@ export default {
         showCollectionDialog: false,
         showCalculateAssociations: false,
         showEmbedding1d: false,
-        showAddAssemblies: false
+        showAddAssemblies: false,
+        showAssemblyDialog: false
     })
 };
 </script>

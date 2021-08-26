@@ -129,6 +129,15 @@
                             >Add Genome Assembly</span
                         >
                     </md-list-item>
+                    <md-list-item class="md-inset">
+                        <md-button
+                            class="md-icon-button"
+                            @click="$emit('show-assembly-click')"
+                        >
+                            <md-icon>list</md-icon>
+                        </md-button>
+                        <span class="md-list-item-text">Show Genomes</span>
+                    </md-list-item>
                 </md-list>
             </md-list-item>
         </md-list>
