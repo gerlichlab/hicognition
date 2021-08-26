@@ -12,6 +12,8 @@ back_end/temp/*.bw
 back_end/temp/*.npy
 back_end/temp/*.bigwig
 back_end/temp/*.bigWig
+back_end/temp/*.chrom.sizes
+back_end/temp/*arms*
 back_end/data/mysql/*
 .vscode/*
 *.csv
