@@ -115,6 +115,22 @@
                     </md-list-item>
                 </md-list>
             </md-list-item>
+            <md-list-item md-expand>
+                <span class="md-list-item-text">Manage Genomes</span>
+                <md-list slot="md-expand">
+                    <md-list-item class="md-inset">
+                        <md-button
+                            class="md-icon-button"
+                            @click="$emit('add-assembly-click')"
+                        >
+                            <md-icon>add</md-icon>
+                        </md-button>
+                        <span class="md-list-item-text"
+                            >Add Genome Assembly</span
+                        >
+                    </md-list-item>
+                </md-list>
+            </md-list-item>
         </md-list>
     </div>
 </template>

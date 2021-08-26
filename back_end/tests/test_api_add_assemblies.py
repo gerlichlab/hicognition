@@ -35,11 +35,11 @@ class TestAddAssembly(LoginTestCase, TempDirTestCase):
         # construct form data
         data = {
             "name": "test",
-            "chrom_sizes": (
+            "chromSizes": (
                 open("tests/testfiles/hg19.chrom.sizes", "rb"),
                 "hg19.chrom.sizes",
             ),
-            "chrom_arms": (open("tests/testfiles/arms.hg19", "rb"), "arms.hg19"),
+            "chromArms": (open("tests/testfiles/arms.hg19", "rb"), "arms.hg19"),
         }
         # dispatch post request
         response = self.client.post(
@@ -58,11 +58,11 @@ class TestAddAssembly(LoginTestCase, TempDirTestCase):
         # construct form data
         data = {
             "organism": "1",
-            "chrom_sizes": (
+            "chromSizes": (
                 open("tests/testfiles/hg19.chrom.sizes", "rb"),
                 "hg19.chrom.sizes",
             ),
-            "chrom_arms": (open("tests/testfiles/arms.hg19", "rb"), "arms.hg19"),
+            "chromArms": (open("tests/testfiles/arms.hg19", "rb"), "arms.hg19"),
         }
         # dispatch post request
         response = self.client.post(
@@ -82,11 +82,11 @@ class TestAddAssembly(LoginTestCase, TempDirTestCase):
         data = {
             "organism": "5",
             "name": "hg19",
-            "chrom_sizes": (
+            "chromSizes": (
                 open("tests/testfiles/hg19.chrom.sizes", "rb"),
                 "hg19.chrom.sizes",
             ),
-            "chrom_arms": (open("tests/testfiles/arms.hg19", "rb"), "arms.hg19"),
+            "chromArms": (open("tests/testfiles/arms.hg19", "rb"), "arms.hg19"),
         }
         # dispatch post request
         response = self.client.post(
@@ -106,7 +106,7 @@ class TestAddAssembly(LoginTestCase, TempDirTestCase):
         data = {
             "organism": "1",
             "name": "hg19",
-            "chrom_arms": (open("tests/testfiles/arms.hg19", "rb"), "arms.hg19"),
+            "chromArms": (open("tests/testfiles/arms.hg19", "rb"), "arms.hg19"),
         }
         # dispatch post request
         response = self.client.post(
@@ -126,7 +126,7 @@ class TestAddAssembly(LoginTestCase, TempDirTestCase):
         data = {
             "organism": "1",
             "name": "hg19",
-            "chrom_sizes": (
+            "chromSizes": (
                 open("tests/testfiles/hg19.chrom.sizes", "rb"),
                 "hg19.chrom.sizes",
             ),
@@ -149,7 +149,7 @@ class TestAddAssembly(LoginTestCase, TempDirTestCase):
         data = {
             "organism": "1",
             "name": "hg19",
-            "chrom_sizes": (
+            "chromSizes": (
                 open("tests/testfiles/hg19.chrom.sizes", "rb"),
                 "hg19.chrom.sizes",
             ),
@@ -168,11 +168,11 @@ class TestAddAssembly(LoginTestCase, TempDirTestCase):
         data = {
             "organism": "1",
             "name": "test",
-            "chrom_sizes": (
+            "chromSizes": (
                 open("tests/testfiles/hg19.chrom.sizes", "rb"),
                 "hg19.chrom.sizes",
             ),
-            "chrom_arms": (open("tests/testfiles/arms.hg19", "rb"), "arms.hg19"),
+            "chromArms": (open("tests/testfiles/arms.hg19", "rb"), "arms.hg19"),
         }
         # dispatch post request
         response = self.client.post(

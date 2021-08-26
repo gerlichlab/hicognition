@@ -467,7 +467,7 @@ def create_assembly():
         if len(request.form) == 0:
             return True
         # check whether fileObject is there
-        if sorted(request.files.keys()) != ["chrom_arms", "chrom_sizes"]:
+        if sorted(request.files.keys()) != ["chromArms", "chromSizes"]:
             return True
         # check attributes
         if sorted(request.form.keys()) != ["name", "organism"]:
@@ -482,8 +482,8 @@ def create_assembly():
         return invalid("Form is not valid!")
     # get data from form
     data = request.form
-    chrom_sizes = request.files["chrom_sizes"]
-    chrom_arms = request.files["chrom_arms"]
+    chrom_sizes = request.files["chromSizes"]
+    chrom_arms = request.files["chromArms"]
     # add data to Database -> needed to obtain next id for filename
     new_entry = Assembly(
         name=data["name"],

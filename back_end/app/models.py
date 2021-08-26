@@ -196,6 +196,12 @@ class Organism(db.Model):
     name = db.Column(db.String(512))
     assemblies = db.relationship("Assembly", backref="source_organism", lazy="dynamic", cascade="all, delete-orphan")
 
+    def to_json(self):
+        return {
+            "id": self.id,
+            "name": self.name
+        }
+
 
 class Assembly(db.Model):
     id = db.Column(db.Integer, primary_key=True)

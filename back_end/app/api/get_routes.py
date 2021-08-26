@@ -55,6 +55,14 @@ def get_resolutions():
     from config file"""
     return jsonify(current_app.config["PREPROCESSING_MAP"])
 
+@api.route("/organisms/", methods=["GET"])
+@auth.login_required
+def get_organisms():
+    """Get route for available organisms"""
+    return jsonify([
+        org.to_json() for org in Organism.query.all()
+    ])
+
 
 @api.route("/assemblies/", methods=["GET"])
 @auth.login_required

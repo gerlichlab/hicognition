@@ -46,6 +46,10 @@
                     showEmbedding1d = true;
                     menuVisible = false;
                 "
+                @add-assembly-click="
+                    showAddAssemblies = true;
+                    menuVisible = false;
+                "
             ></drawer>
         </md-app-drawer>
 
@@ -100,6 +104,10 @@
                 @close-dialog="showEmbedding1d = false"
                 datatype="1d-features"
             />
+            <addAssemblyDialog
+                :dialog="showAddAssemblies"
+                @close-dialog="showAddAssemblies = false"
+            />
         </md-app-content>
     </md-app>
 </template>
@@ -116,6 +124,7 @@ import mySessionsDialog from "../components/dialogs/mySessionsDialog";
 import addCollectionDialog from "../components/dialogs/addCollectionDialog.vue"
 import collectionsDialog from "../components/dialogs/collectionsDialog.vue"
 import preprocessCollectionsDialog from "../components/dialogs/preprocessCollections.vue"
+import addAssemblyDialog from "../components/dialogs/addAssemblyDialog.vue"
 
 export default {
     name: "mainRoute",
@@ -130,7 +139,8 @@ export default {
         mySessionsDialog,
         addCollectionDialog,
         collectionsDialog,
-        preprocessCollectionsDialog
+        preprocessCollectionsDialog,
+        addAssemblyDialog
     },
     data: () => ({
         menuVisible: false,
@@ -144,7 +154,8 @@ export default {
         showAddCollectionDialog: false,
         showCollectionDialog: false,
         showCalculateAssociations: false,
-        showEmbedding1d: false
+        showEmbedding1d: false,
+        showAddAssemblies: false
     })
 };
 </script>
