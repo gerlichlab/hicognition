@@ -10,14 +10,6 @@
             </md-content>
             <md-dialog-actions>
                 <div class="full-width">
-                    <div class="float-left">
-                        <md-button
-                            class="md-secondary md-raised md-accent"
-                            @click="handleAssemblyDeletion"
-                            v-if="showDelete"
-                            >Delete</md-button
-                        >
-                    </div>
                     <div class="float-right">
                         <md-button
                             class="md-secondary"

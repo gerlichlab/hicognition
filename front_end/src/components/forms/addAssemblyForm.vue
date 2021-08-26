@@ -15,12 +15,12 @@
                         <!-- dataset name -->
                         <div class="md-layout-item md-small-size-100">
                             <md-field
-                                :class="getValidationClass('datasetName')"
+                                :class="getValidationClass('name')"
                             >
-                                <label for="dataset-name">Name</label>
+                                <label for="name">Name</label>
                                 <md-input
-                                    name="dataset-name"
-                                    id="dataset-name"
+                                    name="name"
+                                    id="name"
                                     v-model="form.name"
                                     :disabled="sending || organisms.length == 0"
                                     required
