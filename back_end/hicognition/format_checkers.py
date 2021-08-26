@@ -71,4 +71,6 @@ FORMAT_CHECKERS = {
     "bedfile": is_bed_file_correctly_formatted,
     "cooler": is_mcooler,
     "bigwig": lambda x, y, z: True,
+    "chromsizes": lambda x: True,
+    "chromarms": lambda x: True
 }

@@ -19,4 +19,5 @@ def create_hg19():
 @api.before_app_first_request
 def init_database():
     """Populate database"""
-    create_hg19()
+    if not current_app.config["TESTING"]:
+        create_hg19()

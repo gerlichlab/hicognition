@@ -9,7 +9,16 @@ from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from . import api
 from .. import db
-from ..models import Dataset, BedFileMetadata, Task, Session, Intervals, Collection
+from ..models import (
+    Assembly,
+    Dataset,
+    BedFileMetadata,
+    Organism,
+    Task,
+    Session,
+    Intervals,
+    Collection,
+)
 from .authentication import auth
 from .helpers import (
     is_access_to_dataset_denied,
@@ -179,7 +188,9 @@ def preprocess_collections():
     def is_form_invalid():
         if not hasattr(request, "form"):
             return True
-        if sorted(list(request.form.keys())) != sorted(["collection_id", "region_ids", "kind"]):
+        if sorted(list(request.form.keys())) != sorted(
+            ["collection_id", "region_ids", "kind"]
+        ):
             return True
         return False
 
@@ -381,7 +392,9 @@ def create_session():
             f"Some of the datasets associated with this session are not owned!"
         )
     # check whether collections exist
-    collections = [Collection.query.get(collection_id) for collection_id in used_collections]
+    collections = [
+        Collection.query.get(collection_id) for collection_id in used_collections
+    ]
     if any(collection is None for collection in collections):
         return invalid(f"Some of the collections in used_collections do not exist!")
     if any(is_access_to_collection_denied(collection, g) for collection in collections):
@@ -395,7 +408,7 @@ def create_session():
         session_object=session_object,
         session_type=session_type,
         datasets=datasets,
-        collections=collections
+        collections=collections,
     )
     db.session.add(session)
     db.session.commit()
@@ -441,3 +454,66 @@ def create_collection():
     db.session.add(collection)
     db.session.commit()
     return jsonify({"collection_id": f"{collection.id}"})
+
+
+@api.route("/assemblies/", methods=["POST"])
+@auth.login_required
+def create_assembly():
+    """Creates a genome assembly."""
+
+    def is_form_invalid():
+        if not hasattr(request, "form"):
+            return True
+        if len(request.form) == 0:
+            return True
+        # check whether fileObject is there
+        if sorted(request.files.keys()) != ["chrom_arms", "chrom_sizes"]:
+            return True
+        # check attributes
+        if sorted(request.form.keys()) != ["name", "organism"]:
+            return True
+        # check whether organism exists
+        if Organism.query.get(int(request.form["organism"])) is None:
+            return True
+        return False
+
+    # check form
+    if is_form_invalid():
+        return invalid("Form is not valid!")
+    # get data from form
+    data = request.form
+    chrom_sizes = request.files["chrom_sizes"]
+    chrom_arms = request.files["chrom_arms"]
+    # add data to Database -> needed to obtain next id for filename
+    new_entry = Assembly(
+        name=data["name"],
+        organism_id=int(data["organism"]),
+    )
+    db.session.add(new_entry)
+    db.session.commit()
+    # save file in upload folder
+    chrom_sizes_path = os.path.join(
+        current_app.config["UPLOAD_DIR"],
+        f"{new_entry.id}_{secure_filename(chrom_sizes.filename)}",
+    )
+    chrom_sizes.save(chrom_sizes_path)
+    chrom_arms_path = os.path.join(
+        current_app.config["UPLOAD_DIR"],
+        f"{new_entry.id}_{secure_filename(chrom_arms.filename)}",
+    )
+    chrom_arms.save(chrom_arms_path)
+    # check formats
+    if (not FORMAT_CHECKERS["chromsizes"](chrom_sizes_path)) or (
+        not FORMAT_CHECKERS["chromarms"](chrom_arms_path)
+    ):
+        db.session.delete(new_entry)
+        db.session.commit()
+        os.remove(chrom_sizes_path)
+        os.remove(chrom_arms_path)
+        return invalid("Wrong dataformat for chromosome sizes or chromosome arms!")
+    # add file_paths to database entry
+    new_entry.chrom_sizes = chrom_sizes_path
+    new_entry.chrom_arms = chrom_arms_path
+    db.session.add(new_entry)
+    db.session.commit()
+    return jsonify({"message": "success! Assembly added."})
