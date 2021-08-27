@@ -70,9 +70,12 @@ def get_assemblies():
     """Gets all assemblies in the database."""
     output = {}
     for organism in Organism.query.all():
-        output[organism.name] = [
-            assembly.to_json() for assembly in organism.assemblies.all()
-        ]
+        temp_list = []
+        for assembly in organism.assemblies.all():
+            temp_dict = assembly.to_json()
+            temp_dict["dependent_datasets"] = len(Dataset.query.filter(Dataset.assembly == assembly.id).all())
+            temp_list.append(temp_dict)
+        output[organism.name] = temp_list
     return output
 
 

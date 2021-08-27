@@ -1,12 +1,13 @@
 """Helpers to populate database"""
-from ..models import Organism, Assembly
+from ..models import Organism, Assembly, Dataset
 from . import api
 from flask.globals import current_app
 from .. import db
 
 
 def create_hg19():
-    """creates entry for standard hg19 assembly."""
+    """creates entry for standard hg19 assembly and
+    associates it with all available datasets."""
     if Assembly.query.first() is None:
         org = Organism(name="Human")
         db.session.add(org)
@@ -18,6 +19,10 @@ def create_hg19():
             organism_id=org.id,
         )
         db.session.add_all([org, assembly])
+        db.session.commit()
+        # add assembly id to all datasets
+        for dataset in Dataset.query.all():
+            dataset.assembly = assembly.id
         db.session.commit()
 
 

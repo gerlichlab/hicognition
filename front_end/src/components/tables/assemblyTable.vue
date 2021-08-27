@@ -46,6 +46,9 @@
                 <md-table-cell md-label="name" md-sort-by="name">{{
                     item.name
                 }}</md-table-cell>
+                <md-table-cell md-label="Dependent datasets" md-sort-by="dependent_datasets">{{
+                    item.dependent_datasets
+                }}</md-table-cell>
             </md-table-row>
         </md-table>
         <md-snackbar :md-active.sync="datasetsDeleted"
@@ -71,10 +74,13 @@ export default {
         isSelectionDisabled: function(item) {
             // check if assembly is owned
             var user_id = this.$store.getters.getUserId;
-            if (user_id == item.user_id) {
-                return false;
+            if (user_id != item.user_id) {
+                return true;
             }
-            return true;
+            if (item.dependent_dastasets != "0"){
+                return true
+            }
+            return false;
         },
         deleteClicked: function() {
             this.clickedDelete = true;
