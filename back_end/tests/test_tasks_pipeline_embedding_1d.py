@@ -14,6 +14,7 @@ from app.models import (
     Collection,
     IndividualIntervalData,
     EmbeddingIntervalData,
+    Assembly
 )
 from app.tasks import pipeline_embedding_1d
 from app.pipeline_steps import perform_1d_embedding
@@ -31,14 +32,23 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
         """Add test dataset"""
         # call setUp of LoginTestCase to initialize app
         super().setUp()
+        # add assembly
+        self.hg19 = Assembly(
+            id=1,
+            name="hg19",
+            chrom_sizes=self.app.config["CHROM_SIZES"],
+            chrom_arms=self.app.config["CHROM_ARMS"],
+        )
+        db.session.add(self.hg19)
+        db.session.commit()
         # create bed dataset
-        self.bed_file = Dataset(id=1, user_id=1, filetype="bedfile")
+        self.bed_file = Dataset(id=1, user_id=1, filetype="bedfile", assembly=1)
         # create intervals
         self.intervals_1 = Intervals(id=1, windowsize=100000, dataset_id=1)
         # create feature datasets
-        self.feature_1 = Dataset(id=2, user_id=1, filetype="bigwig")
-        self.feature_2 = Dataset(id=3, user_id=1, filetype="bigwig")
-        self.feature_3 = Dataset(id=4, user_id=1, filetype="bigwig")
+        self.feature_1 = Dataset(id=2, user_id=1, filetype="bigwig", assembly=1)
+        self.feature_2 = Dataset(id=3, user_id=1, filetype="bigwig", assembly=1)
+        self.feature_3 = Dataset(id=4, user_id=1, filetype="bigwig", assembly=1)
         # create collection
         self.collection_1 = Collection(
             id=1, datasets=[self.feature_1, self.feature_2, self.feature_3]

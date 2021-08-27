@@ -8,7 +8,7 @@ from test_helpers import LoginTestCase, TempDirTestCase
 # add path to import app
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals
+from app.models import Dataset, Intervals, Assembly
 from app.tasks import pipeline_bed
 from app.pipeline_steps import bed_preprocess_pipeline_step
 
@@ -21,6 +21,15 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
         """Add test dataset"""
         # call setUp of LoginTestCase to initialize app
         super(TestPipelineBed, self).setUp()
+        # add assembly
+        self.hg19 = Assembly(
+            id=1,
+            name="hg19",
+            chrom_sizes=self.app.config["CHROM_SIZES"],
+            chrom_arms=self.app.config["CHROM_ARMS"],
+        )
+        db.session.add(self.hg19)
+        db.session.commit()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token_header
@@ -34,6 +43,7 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
             filetype="bedfile",
             processing_state="finished",
             user_id=1,
+            assembly=1
         )
         db.session.add(self.dataset)
         db.session.commit()
@@ -76,6 +86,15 @@ class TestBedPreprocessPipelineStep(LoginTestCase, TempDirTestCase):
         """Add test dataset"""
         # call setUp of LoginTestCase to initialize app
         super(TestBedPreprocessPipelineStep, self).setUp()
+        # add assembly
+        self.hg19 = Assembly(
+            id=1,
+            name="hg19",
+            chrom_sizes=self.app.config["CHROM_SIZES"],
+            chrom_arms=self.app.config["CHROM_ARMS"],
+        )
+        db.session.add(self.hg19)
+        db.session.commit()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token_header
@@ -89,6 +108,7 @@ class TestBedPreprocessPipelineStep(LoginTestCase, TempDirTestCase):
             filetype="bedfile",
             processing_state="finished",
             user_id=1,
+            assembly=1
         )
         db.session.add(self.dataset)
         db.session.commit()
@@ -106,7 +126,7 @@ class TestBedPreprocessPipelineStep(LoginTestCase, TempDirTestCase):
         # check whehter convert bed to bedpe is called correctly
         target_file = "/test/path/test3.bed" + f".{window}" + ".bedpe"
         mock_convert_bed.assert_called_with(
-            *["/test/path/test3.bed", target_file, window]
+            *["/test/path/test3.bed", target_file, window, self.hg19.chrom_sizes]
         )
 
     @patch("app.tasks.pd.read_csv")

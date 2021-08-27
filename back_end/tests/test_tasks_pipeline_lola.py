@@ -8,7 +8,7 @@ from test_helpers import LoginTestCase, TempDirTestCase
 # add path to import app
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, Collection, AssociationIntervalData
+from app.models import Dataset, Intervals, Collection, AssociationIntervalData, Assembly
 from app.pipeline_steps import perform_enrichment_analysis
 
 
@@ -35,12 +35,12 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         pos_file = os.path.join(self.TEMP_PATH, "pos.bed")
         self.positions.to_csv(pos_file, header=None, sep="\t", index=False)
         # create datasets
-        self.query_dataset = Dataset(id=1, file_path=pos_file, filetype="bedfile")
+        self.query_dataset = Dataset(id=1, file_path=pos_file, filetype="bedfile", assembly=1)
         self.target_dataset_1 = Dataset(
-            id=2, file_path=target_1_file, filetype="bedfile"
+            id=2, file_path=target_1_file, filetype="bedfile", assembly=1
         )
         self.target_dataset_2 = Dataset(
-            id=3, file_path=target_2_file, filetype="bedfile"
+            id=3, file_path=target_2_file, filetype="bedfile", assembly=1
         )
         # create intervals
         self.query_interval = Intervals(id=1, windowsize=100000, dataset_id=1)
@@ -56,7 +56,7 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
 
     def _add_tad_boundaries(self):
         """populate database with real data"""
-        self.tad_boundaries = Dataset(id=4, file_path="tests/testfiles/tad_boundaries.bed", filetype="bedfile")
+        self.tad_boundaries = Dataset(id=4, file_path="tests/testfiles/tad_boundaries.bed", filetype="bedfile", assembly=1)
         self.tad_boundaries_interval = Intervals(id=2, windowsize=200000, dataset_id=4)
         self.collection_2 = Collection(
             id=2, datasets=[self.tad_boundaries]
@@ -76,6 +76,15 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         """Add test dataset"""
         # call setUp of LoginTestCase to initialize app
         super().setUp()
+        # add assembly
+        self.hg19 = Assembly(
+            id=1,
+            name="hg19",
+            chrom_sizes=self.app.config["CHROM_SIZES"],
+            chrom_arms=self.app.config["CHROM_ARMS"],
+        )
+        db.session.add(self.hg19)
+        db.session.commit()
         self._populate_with_data()
         self._add_tad_boundaries()
         self._create_groupings()
