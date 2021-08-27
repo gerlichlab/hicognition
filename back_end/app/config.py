@@ -41,6 +41,7 @@ class Config:
                     "SetIdentity": {
                         "Method": ["GenomeAnnotation", "HiC", "ChipSeq"],
                         "SizeType": ["Point", "Interval"],
+                        "Directionality": ["+", "-", "no directionality"]
                     }
                 }
             },

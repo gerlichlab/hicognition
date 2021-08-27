@@ -299,6 +299,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
+            "Directionality": "-"
         }
         # dispatch post request
         response = self.client.post(
@@ -326,6 +327,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "method": "HiC",
             "user_id": 1,
             "id": 1,
+            "directionality": "-"
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
@@ -350,6 +352,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bad",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
+            "Directionality": "-"
         }
         # dispatch post request
         response = self.client.post(
@@ -375,6 +378,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
+            "Directionality": "-"
         }
         # dispatch post request
         response = self.client.post(
@@ -399,6 +403,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
+            "Directionality": "-"
         }
         # dispatch post request
         response = self.client.post(
@@ -422,6 +427,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "Method": "HiC",
             "SizeType": "Interval",
             "filetype": "bedfile",
+            "Directionality": "-"
         }
         # dispatch post request
         response = self.client.post(
@@ -446,6 +452,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.mcool"),
+            "Directionality": "-"
         }
         # dispatch post request
         response = self.client.post(
@@ -480,7 +487,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_badform_not_fileending_rejected(self):
+    def test_badform_no_fileending_rejected(self):
         """Tests whether form with file without ending is rejected."""
         # construct form data
         data = {
@@ -494,6 +501,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test"),
+            "Directionality": "-"
         }
         # dispatch post request
         response = self.client.post(
@@ -518,6 +526,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bedfile",
              "file": open("tests/testfiles/wrongly_formatted_bedfile.bed", "rb"),
+             "Directionality": "-"
         }
         # dispatch post request
         response = self.client.post(
@@ -587,6 +596,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
+            "Directionality": "-"
         }
         # dispatch post request
         response = self.client.post(
@@ -616,6 +626,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
+            "Directionality": "-"
         }
         # dispatch post request
         response = self.client.post(

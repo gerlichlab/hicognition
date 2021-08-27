@@ -130,6 +130,7 @@ class Dataset(db.Model):
     file_path = db.Column(db.String(128), index=True)
     public = db.Column(db.Boolean, default=False)
     protein = db.Column(db.String(64), default="undefined")
+    directionality = db.Column(db.String(64), default="undefined")
     filetype = db.Column(db.String(64), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     available_binsizes = db.Column(db.String(500), default="undefined")

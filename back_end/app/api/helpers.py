@@ -31,6 +31,7 @@ DATASET_META_FIELDS = {
     "Normalization": "normalization",
     "DerivationType": "derivationType",
     "Protein": "protein",
+    "Directionality": "directionality"
 }
 
 
