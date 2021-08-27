@@ -2,6 +2,7 @@
 import datetime
 from flask.globals import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import inspect
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import JSONWebSignatureSerializer
 from flask_login import UserMixin
@@ -178,8 +179,9 @@ class Dataset(db.Model):
 
     def to_json(self):
         json_dataset = {}
-        for key, value in self.__dict__.items():
-            if (key[0] != "_") and (value != "undefined"):
+        for key in inspect(Dataset).columns.keys():
+            value = self.__getattribute__(key)
+            if value != "undefined":
                 json_dataset[key] = value
         return json_dataset
 
