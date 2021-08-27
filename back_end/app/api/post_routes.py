@@ -88,9 +88,10 @@ def add_dataset():
     filename = f"{new_entry.id}_{secure_filename(fileObject.filename)}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     fileObject.save(file_path)
+    assembly = Assembly.query.get(data["assembly"])
     # check format -> this cannot be done in form checker since file needs to be available
     chromosome_names = set(
-        pd.read_csv(current_app.config["CHROM_SIZES"], header=None, sep="\t")[0]
+        pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0]
     )
     needed_resolutions = parse_binsizes(current_app.config["PREPROCESSING_MAP"])
     if not FORMAT_CHECKERS[request.form["filetype"]](

@@ -19,6 +19,7 @@ from .api.helpers import remove_safely
 from rq import get_current_job
 from . import db
 from .models import (
+    Assembly,
     Collection,
     Dataset,
     Intervals,
@@ -46,7 +47,7 @@ def bed_preprocess_pipeline_step(dataset_id, windowsize):
     file_path = dataset.file_path
     # generate bedpe file
     bedpe_file = file_path + f".{windowsize}" + ".bedpe"
-    io_helpers.convert_bed_to_bedpe(file_path, bedpe_file, windowsize)
+    io_helpers.convert_bed_to_bedpe(file_path, bedpe_file, windowsize, Assembly.query.get(dataset.assembly).chrom_sizes)
     # generate subsample index for smaller stackup
     bedpe = pd.read_csv(bedpe_file, sep="\t", header=None)
     index_file = os.path.join(
@@ -197,8 +198,9 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
     )
     # make queries
     log.info("      Constructing queries...")
-    # remove anything that is not in universe and dropduplicates
-    chromsizes = io_helpers.load_chromsizes(current_app.config["CHROM_SIZES"])
+    # get chromosome sizes -> this will be the same for all datasets of the collection
+    assembly = Assembly.query.get(Collection.query.get(collection_id).datasets[0].assembly)
+    chromsizes = io_helpers.load_chromsizes(assembly.chrom_sizes)
     chromsizes_regions = pd.DataFrame(
         {"chrom": chromsizes.index, "start": 0, "end": chromsizes}
     )

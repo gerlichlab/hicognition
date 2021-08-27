@@ -6,7 +6,7 @@ import logging
 import pandas as pd
 from hicognition import io_helpers
 from . import create_app, db
-from .models import Dataset, IndividualIntervalData, Collection
+from .models import Assembly, Dataset, IndividualIntervalData, Collection
 from . import pipeline_steps
 from .api.helpers import remove_safely
 
@@ -55,7 +55,9 @@ def pipeline_bed(dataset_id):
 def pipeline_pileup(dataset_id, intervals_id, binsize):
     """Start pileup pipeline for specified combination of
     dataset_id (cooler_file), binsize and intervals_id"""
-    chromosome_arms = pd.read_csv(app.config["CHROM_ARMS"])
+    chromosome_arms = pd.read_csv(
+        Assembly.query.get(Dataset.query.get(dataset_id).assembly).chrom_arms
+    )
     pipeline_steps.perform_pileup(
         dataset_id, intervals_id, binsize, chromosome_arms, "ICCF"
     )
@@ -78,14 +80,17 @@ def pipeline_lola(collection_id, intervals_id, binsize):
     pipeline_steps.perform_enrichment_analysis(collection_id, intervals_id, binsize)
     pipeline_steps._set_task_progress(100)
 
+
 def pipeline_embedding_1d(collection_id, intervals_id, binsize):
     """Starts embedding pipeline steps for feature collections refering to
     1 dimensional features per regions (e.g. bigwig tracks)"""
     # check whether stackups exist and perform stackup if not
     for source_dataset in Collection.query.get(collection_id).datasets:
-        stackup = IndividualIntervalData.query.filter((IndividualIntervalData.dataset_id == source_dataset.id)
-                                                     & (IndividualIntervalData.intervals_id == intervals_id)
-                                                     & (IndividualIntervalData.binsize == binsize)).first()
+        stackup = IndividualIntervalData.query.filter(
+            (IndividualIntervalData.dataset_id == source_dataset.id)
+            & (IndividualIntervalData.intervals_id == intervals_id)
+            & (IndividualIntervalData.binsize == binsize)
+        ).first()
         if stackup is None:
             pipeline_steps.perform_stackup(source_dataset.id, intervals_id, binsize)
     # perform embedding

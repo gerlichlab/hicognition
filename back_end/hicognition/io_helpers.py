@@ -8,7 +8,7 @@ from functools import partial
 from .format_checkers import _is_bed_row
 
 
-def convert_bed_to_bedpe(input_file, target_file, halfwindowsize):
+def convert_bed_to_bedpe(input_file, target_file, halfwindowsize, chromsize_path):
     """Converts bedfile at inputFile to a bedpefile,
     expanding the point of interest up- and downstream
     by halfwindowsize basepairs.
@@ -16,6 +16,7 @@ def convert_bed_to_bedpe(input_file, target_file, halfwindowsize):
     Only intervals that fall within the bounds of
     chromosomes are written out.
     """
+    # TODO: handle chromsizes
     # load input_file
     input_frame = pd.read_csv(input_file, sep="\t", header=None)
     # handle case that positions are specified in two columns
@@ -35,11 +36,7 @@ def convert_bed_to_bedpe(input_file, target_file, halfwindowsize):
         {"chrom": temp_frame["chrom"], "start1": left_pos, "end1": right_pos}
     )
     # filter by chromosome sizes
-    chrom_sizes = (
-        pd.DataFrame(bioframe.fetch_chromsizes("hg19"))
-        .reset_index()
-        .rename(columns={"index": "chrom"})
-    )
+    chrom_sizes = load_chromsizes(chromsize_path)
     half_frame_chromo = pd.merge(half_frame, chrom_sizes, on="chrom")
     # generate filter expression
     retained_rows = (half_frame_chromo["start1"] > 0) & (
