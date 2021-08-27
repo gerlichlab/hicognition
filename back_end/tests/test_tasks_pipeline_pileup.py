@@ -9,7 +9,7 @@ from test_helpers import LoginTestCase, TempDirTestCase
 # add path to import app
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals
+from app.models import Dataset, Intervals, Assembly
 from app.tasks import pipeline_pileup
 from app.pipeline_steps import perform_pileup
 
@@ -22,6 +22,15 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         """Add test dataset"""
         # call setUp of LoginTestCase to initialize app
         super(TestPipelinePileup, self).setUp()
+        # add assembly
+        self.hg19 = Assembly(
+            id=1,
+            name="hg19",
+            chrom_sizes=self.app.config["CHROM_SIZES"],
+            chrom_arms=self.app.config["CHROM_ARMS"],
+        )
+        db.session.add(self.hg19)
+        db.session.commit()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token_header
@@ -35,6 +44,7 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
             filetype="cooler",
             processing_state="finished",
             user_id=1,
+            assembly=1
         )
         # add intervals
         self.intervals1 = Intervals(
@@ -100,6 +110,15 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         """Add test dataset"""
         # call setUp of LoginTestCase to initialize app
         super(TestPerformPileup, self).setUp()
+        # add assembly
+        self.hg19 = Assembly(
+            id=1,
+            name="hg19",
+            chrom_sizes=self.app.config["CHROM_SIZES"],
+            chrom_arms=self.app.config["CHROM_ARMS"],
+        )
+        db.session.add(self.hg19)
+        db.session.commit()
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token_header
@@ -113,6 +132,7 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
             filetype="cooler",
             processing_state="finished",
             user_id=1,
+            assembly=1
         )
         self.dataset2 = Dataset(
             dataset_name="test4",
@@ -120,6 +140,7 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
             filetype="cooler",
             processing_state="finished",
             user_id=1,
+            assembly=1
         )
         # add intervals
         self.intervals1 = Intervals(
