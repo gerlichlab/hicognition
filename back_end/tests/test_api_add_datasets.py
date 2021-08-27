@@ -21,7 +21,12 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
     def setUp(self):
         super().setUp()
         # add assembly
-        self.hg19 = Assembly(id=1, name="hg19")
+        self.hg19 = Assembly(
+            id=1,
+            name="hg19",
+            chrom_sizes=self.app.config["CHROM_SIZES"],
+            chrom_arms=self.app.config["CHROM_ARMS"],
+        )
         db.session.add(self.hg19)
         db.session.commit()
         # add token headers
@@ -299,7 +304,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
-            "Directionality": "-"
+            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -327,7 +332,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "method": "HiC",
             "user_id": 1,
             "id": 1,
-            "directionality": "-"
+            "directionality": "-",
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
@@ -352,7 +357,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bad",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
-            "Directionality": "-"
+            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -378,7 +383,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
-            "Directionality": "-"
+            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -403,7 +408,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
-            "Directionality": "-"
+            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -427,7 +432,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "Method": "HiC",
             "SizeType": "Interval",
             "filetype": "bedfile",
-            "Directionality": "-"
+            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -452,7 +457,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.mcool"),
-            "Directionality": "-"
+            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -501,7 +506,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test"),
-            "Directionality": "-"
+            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -525,8 +530,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "Method": "HiC",
             "SizeType": "Interval",
             "filetype": "bedfile",
-             "file": open("tests/testfiles/wrongly_formatted_bedfile.bed", "rb"),
-             "Directionality": "-"
+            "file": open("tests/testfiles/wrongly_formatted_bedfile.bed", "rb"),
+            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -596,7 +601,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
-            "Directionality": "-"
+            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -626,7 +631,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "SizeType": "Interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
-            "Directionality": "-"
+            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
