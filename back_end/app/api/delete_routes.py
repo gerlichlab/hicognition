@@ -1,18 +1,14 @@
 """DELETE API endpoints for hicognition"""
 from flask.json import jsonify
 from flask import g
-from .helpers import is_dataset_deletion_denied, delete_collection, delete_associated_data_of_dataset
+from .helpers import is_dataset_deletion_denied, delete_collection, delete_associated_data_of_dataset, remove_safely
 from . import api
 from .. import db
 from ..models import (
-    BedFileMetadata,
+    Assembly,
     Collection,
-    Intervals,
     Dataset,
-    AverageIntervalData,
-    IndividualIntervalData,
     Session,
-    dataset_collection_assoc_table,
 )
 from .authentication import auth
 from .errors import forbidden, invalid, not_found
@@ -84,6 +80,30 @@ def delete_collection_handler(collection_id):
         return forbidden(f"Collection with id {collection_id} is not owned by user!")
     # delete session
     delete_collection(collection, db)
+    db.session.commit()
+    response = jsonify({"message": "success"})
+    response.status_code = 200
+    return response
+
+
+@api.route("/assemblies/<assembly_id>/", methods=["DELETE"])
+@auth.login_required
+def delete_assembly_handler(assembly_id):
+    """Deletes assemblies. Assemblies can only be deleted if no datasets are associated.."""
+    # check if assembly exists
+    assembly = Assembly.query.get(assembly_id)
+    if assembly is None:
+        return not_found(f"Assembly with id {assembly_id} does not exist!")
+    # check if data set can be accessed
+    if assembly.user_id != g.current_user.id:
+        return forbidden(f"Assembly with id {assembly_id} is not owned by user!")
+    # check whether assembly is associated with datasets
+    if len(Dataset.query.filter(Dataset.assembly == assembly.id).all()) != 0:
+        return forbidden(f"Assembly can only be deleted if it is not associated with any datasets!")
+    # delete assembly
+    remove_safely(assembly.chrom_sizes)
+    remove_safely(assembly.chrom_arms)
+    db.session.delete(assembly)
     db.session.commit()
     response = jsonify({"message": "success"})
     response.status_code = 200
