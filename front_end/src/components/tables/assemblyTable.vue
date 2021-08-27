@@ -62,7 +62,7 @@ import { apiMixin } from "../../mixins";
 import EventBus from "../../eventBus"
 
 export default {
-    name: "sessionTable",
+    name: "assemblyTable",
     mixins: [apiMixin],
     data: () => ({
         selected: undefined,
@@ -77,7 +77,7 @@ export default {
             if (user_id != item.user_id) {
                 return true;
             }
-            if (item.dependent_dastasets != "0"){
+            if (item.dependent_datasets != 0){
                 return true
             }
             return false;

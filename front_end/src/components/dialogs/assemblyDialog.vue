@@ -10,12 +10,18 @@
             </md-content>
             <md-dialog-actions>
                 <div class="full-width">
+                    <div class="float-left">
+                        <md-button
+                            class="md-secondary md-raised md-accent"
+                            @click="handleAssemblyDeletion"
+                            v-if="showDelete"
+                            >Delete</md-button
+                        >
+                    </div>
                     <div class="float-right">
                         <md-button
                             class="md-secondary"
-                            @click="
-                                $emit('close-dialog');
-                            "
+                            @click="$emit('close-dialog')"
                             >Close</md-button
                         >
                     </div>
@@ -28,39 +34,44 @@
 <script>
 import assemblyTable from "../tables/assemblyTable";
 import { apiMixin } from "../../mixins";
+import EventBus from "../../eventBus"
 
 export default {
-    name: "collectionsDialog",
+    name: "assemblyDialog",
     mixins: [apiMixin],
-    data: function() {
+    data: function () {
         return {
             selected_assembly_id: null,
-            showDelete: false
+            showDelete: false,
         };
     },
     components: {
-        assemblyTable
+        assemblyTable,
     },
     props: {
-        dialog: Boolean
+        dialog: Boolean,
     },
     computed: {
-        showDialog: function() {
+        showDialog: function () {
             return this.dialog;
         },
     },
     methods: {
-        handleAssemblyDeletion: function() {
-            return
+        handleAssemblyDeletion: function () {
+            this.deleteData(`assemblies/${this.selected_assembly_id}/`).then(
+                (response) => {
+                    EventBus.$emit("fetch-assemblies");
+                }
+            );
         },
-        handleSelectionAvailable: function(assembly_id) {
-                this.selected_assembly_id = assembly_id;
-                this.showDelete = true
+        handleSelectionAvailable: function (assembly_id) {
+            this.selected_assembly_id = assembly_id;
+            this.showDelete = true;
         },
-        handleSelectionUnAvailable: function() {
-            (this.showDelete = false);
-        }
-    }
+        handleSelectionUnAvailable: function () {
+            this.showDelete = false;
+        },
+    },
 };
 </script>
 
@@ -69,12 +80,11 @@ export default {
     max-width: 80vw;
 }
 
-.full-width-flexbox-center{
+.full-width-flexbox-center {
     display: flex;
     justify-content: center;
     width: 100%;
 }
-
 
 .no-margin {
     margin: 0px;
@@ -99,5 +109,4 @@ export default {
 .content {
     margin: 10px;
 }
-
 </style>
