@@ -236,6 +236,7 @@
                                                 v-model="form[field]"
                                                 required
                                                 :disabled="sending"
+                                                v-if="fieldOptions[field] != 'freetext'"
                                             >
                                                 <md-option
                                                     v-for="option in fieldOptions[
@@ -246,6 +247,14 @@
                                                     >{{ option }}</md-option
                                                 >
                                             </md-select>
+                                            <md-input
+                                                :name="field"
+                                                :id="field"
+                                                v-model="form[field]"
+                                                :disabled="sending"
+                                                required
+                                                v-else
+                                            />
                                             <span
                                                 class="md-error"
                                                 v-if="!$v.form[field].required"
@@ -324,7 +333,7 @@ export default {
             assembly: null,
             file: null,
             description: null,
-            valueType: null,
+            ValueType: null,
             Normalization: null,
             Method: null,
             SizeType: null,
@@ -408,11 +417,16 @@ export default {
         },
         valueTypes: function () {
             if (this.fileEnding) {
-                return Object.keys(
+                let valueTypes= Object.keys(
                     this.datasetMetadataMapping[this.selectedFileType][
                         "ValueType"
                     ]
                 );
+                // if there is only one value type, select it
+                if (valueTypes.length == 1){
+                    this.$set(this.form, "ValueType", valueTypes[0])
+                }
+                return valueTypes
             }
             return undefined;
         },
