@@ -48,6 +48,14 @@ export default {
                 }
             })
         },
+        fetchDatasetMetadataMapping: function(){
+            this.fetchData("datasetMetadataMapping/").then(response => {
+                // success, store resolutions
+                if (response){
+                    this.$store.commit("setDatasetMetadataMapping", response.data)
+                }
+            })
+        },
         addCollection: function() {
             // add newEntry to store for collection
             this.$store.commit(
@@ -93,6 +101,7 @@ export default {
         EventBus.$on("session-loaded", this.updateMaxID)
         this.fetchDatasets()
         this.fetchResolutions()
+        this.fetchDatasetMetadataMapping()
     },
     beforeDestroy: function(){
         if (this.$globalFlags["serializeCompare"]){

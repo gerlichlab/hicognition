@@ -55,6 +55,12 @@ def get_resolutions():
     from config file"""
     return jsonify(current_app.config["PREPROCESSING_MAP"])
 
+@api.route("/datasetMetadataMapping/", methods=["get"])
+@auth.login_required
+def get_metadata_mapping():
+    """Get route for metadata mapping"""
+    return jsonify(current_app.config["DATASET_OPTION_MAPPING"])
+
 @api.route("/organisms/", methods=["GET"])
 @auth.login_required
 def get_organisms():

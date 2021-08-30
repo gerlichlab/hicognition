@@ -39,14 +39,32 @@
                         </div>
                         <!-- Genotype field -->
                         <div class="md-layout-item md-small-size-100">
-                            <md-field :class="getValidationClass('genotype')">
-                                <label for="genotype">Genotype</label>
-                                <md-input
-                                    name="genotype"
-                                    id="genotype"
-                                    v-model="form.genotype"
+                            <md-field :class="getValidationClass('assembly')">
+                                <label for="assembly">Genome assembly</label>
+                                <md-select
+                                    name="assembly"
+                                    id="assembly"
+                                    v-model="form.assembly"
                                     :disabled="sending"
-                                />
+                                >
+                                    <md-optgroup
+                                        v-for="(values, org) in assemblies"
+                                        :key="org"
+                                        :label="org"
+                                    >
+                                        <md-option
+                                            v-for="assembly in values"
+                                            :key="assembly.id"
+                                            :value="assembly.id"
+                                            >{{ assembly.name }}</md-option
+                                        >
+                                    </md-optgroup>
+                                </md-select>
+                                <span
+                                    class="md-error"
+                                    v-if="!$v.form.assembly.required"
+                                    >A genome assembly is required</span
+                                >
                             </md-field>
                         </div>
                     </div>
@@ -78,13 +96,80 @@
                                     >A file is required</span
                                 >
                                 <span
-                                class="md-error"
-                                v-else-if="!$v.form.file.correctFileType"
+                                    class="md-error"
+                                    v-else-if="!$v.form.file.correctFileType"
                                 >
-                                Wrong filetype!
-                            </span>
+                                    Wrong filetype!
+                                </span>
                             </md-field>
                         </div>
+                    </div>
+                    <!-- metadata -->
+                    <div v-if="showMetadata">
+                        <md-divider />
+                        <md-list>
+                            <md-subheader>Metadata</md-subheader>
+                            <md-list-item>
+                                <div class="md-layout md-gutter">
+                                    <div
+                                        class="md-layout-item md-small-size-100"
+                                    >
+                                        <md-field
+                                            :class="getValidationClass('valueType')"
+                                        >
+                                            <label for="valueType"
+                                                >Value Type</label
+                                            >
+                                            <md-select
+                                                name="valueType"
+                                                id="valueType"
+                                                v-model="form.valueType"
+                                                :disabled="sending"
+                                            >
+                                                <md-option
+                                                    v-for="valueType in valueTypes"
+                                                    :key="valueType"
+                                                    >{{ valueType }}</md-option
+                                                >
+                                            </md-select>
+                                            <span
+                                                class="md-error"
+                                                v-if="
+                                                    !$v.form.valueType
+                                                        .required
+                                                "
+                                                >A ValueType is
+                                                required</span
+                                            >
+                                        </md-field>
+                                    </div>
+                                    <div
+                                        class="md-layout-item md-small-size-100"
+                                    >
+                                        <md-field>
+                                            <label for="valueType"
+                                                >Method</label
+                                            >
+                                            <md-select
+                                                name="valueType"
+                                                id="valueType"
+                                                :disabled="
+                                                    sending ||
+                                                    !valueTypeSelected
+                                                "
+                                            >
+                                                <md-option
+                                                    v-for="valueType in valueTypes"
+                                                    :key="valueType"
+                                                    >{{ valueType }}</md-option
+                                                >
+                                            </md-select>
+                                        </md-field>
+                                    </div>
+                                </div>
+                            </md-list-item>
+                        </md-list>
+                        <md-divider />
                     </div>
                     <!-- Short description field -->
                     <md-field :class="getValidationClass('description')">
@@ -126,71 +211,100 @@ import { validationMixin } from "vuelidate";
 import { required, minLength, maxLength } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
-
-
-const correctFileType = function(value) {
+const correctFileType = function (value) {
     /* 
         validator for correct fileype. Note that this is the vue component in this example
     */
-   // string check is needed because event is first passed into the validator, followed by filename string, which is checked
-    if (typeof value === 'string' || value instanceof String){
-        let splitFileName = value.split(".")
+    // string check is needed because event is first passed into the validator, followed by filename string, which is checked
+    if (typeof value === "string" || value instanceof String) {
+        let splitFileName = value.split(".");
         let fileEnding = splitFileName[splitFileName.length - 1];
-        return fileEnding in this.fileTypeMapping
+        return fileEnding in this.fileTypeMapping;
     }
-    return false
-}
+    return false;
+};
 
 export default {
     name: "AddDatasetForm",
     mixins: [validationMixin, apiMixin],
     props: {
-        fileTypeMapping: Object
+        fileTypeMapping: Object,
     },
     data: () => ({
         form: {
             datasetName: null,
             public: false,
-            genotype: null,
+            assembly: null,
             file: null,
-            description: null
+            description: null,
+            valueType: null,
         },
+        datasetMetadataMapping: null,
         datasetSaved: false,
         sending: false,
         selectedFile: null,
+        assemblies: {},
     }),
     validations: {
         // validators for the form
         form: {
             datasetName: {
                 required,
-                minLength: minLength(3)
+                minLength: minLength(3),
             },
             public: {},
-            genotype: {},
+            assembly: {
+                required,
+            },
+            valueType: {
+                required,
+            },
             file: {
                 required,
-                correctFiletype: correctFileType
+                correctFiletype: correctFileType,
             },
             description: {
-                maxLength: maxLength(80)
-            }
-        }
+                maxLength: maxLength(80),
+            },
+        },
     },
     computed: {
-        selectedFileType: function() {
+        valueTypeSelected: function () {
+            return false;
+        },
+        valueTypes: function () {
+            if (this.fileEnding) {
+                return Object.keys(
+                    this.datasetMetadataMapping[this.selectedFileType][
+                        "ValueType"
+                    ]
+                );
+            }
+            return undefined;
+        },
+        showMetadata: function () {
+            // whether to show metadata fields
+            if (this.fileEnding) {
+                return true;
+            }
+            return false;
+        },
+        selectedFileType: function () {
             if (this.fileEnding) {
                 return this.fileTypeMapping[this.fileEnding.toLowerCase()];
             }
             return undefined;
         },
-        fileEnding: function() {
-            if (this.form.file) {
+        fileEnding: function () {
+            if (
+                typeof this.form.file === "string" ||
+                this.form.file instanceof String
+            ) {
                 var splitFileName = this.form.file.split(".");
                 return splitFileName[splitFileName.length - 1];
             }
             return undefined;
-        }
+        },
     },
     methods: {
         getValidationClass(fieldName) {
@@ -199,7 +313,7 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty
+                    "md-invalid": field.$invalid && field.$dirty,
                 };
             }
         },
@@ -210,10 +324,11 @@ export default {
         clearForm() {
             this.$v.$reset();
             this.form.datasetName = null;
-            this.form.genotype = null;
+            this.form.assembly = null;
             this.form.file = null;
             this.form.description = null;
             this.form.public = false;
+            this.form.valueType = null;
         },
         saveDataset() {
             this.sending = true; // show progress bar
@@ -234,7 +349,7 @@ export default {
             // add filetype
             formData.append("filetype", this.selectedFileType);
             // API call including upload is made in the background
-            this.postData("datasets/", formData).then(response => {
+            this.postData("datasets/", formData).then((response) => {
                 this.sending = false;
                 this.clearForm();
                 if (response) {
@@ -248,8 +363,20 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        }
-    }
+        },
+        fetchAssemblies() {
+            this.fetchData("assemblies/").then((response) => {
+                if (response) {
+                    this.assemblies = response.data;
+                }
+            });
+        },
+    },
+    mounted: function () {
+        this.datasetMetadataMapping =
+            this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
+        this.assemblies = this.fetchAssemblies();
+    },
 };
 </script>
 

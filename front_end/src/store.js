@@ -368,6 +368,7 @@ const store = new Vuex.Store({
         sessionToken: null,
         user_id: null,
         resolutions: null,
+        datasetMetadataMapping: null,
         datasets: null, // datasets are in the global store because they will be shared for all functionalities for a given user throughout a session
         usedSortOrders: Array(COLORPALETTE.length).fill(0), // flags for used numbers
         usedValueScales: Array(COLORPALETTE.length).fill(0)
@@ -392,6 +393,9 @@ const store = new Vuex.Store({
         getResolutions: state => {
             return state.resolutions
         },
+        getDatasetMetadataMapping: state => {
+            return state.datasetMetadataMapping
+        },
         isTokenEmpty: state => {
             return state.token == null;
         },
@@ -401,32 +405,6 @@ const store = new Vuex.Store({
         getUserId: state => {
             return state.user_id;
         },
-        getCoolersDirty: state => {
-            // gets cooler files that can be in the state of processing -> for compare view
-            return state.datasets.filter(
-                element => element.filetype == "cooler"
-            );
-        },
-        getCoolers: state => {
-            return state.datasets.filter(
-                element =>
-                    element.filetype == "cooler" &&
-                    element.processing_state == "finished"
-            );
-        },
-        getBigwigsDirty: state => {
-            // gets bigwig files that can be in the state of processing -> for compare view
-            return state.datasets.filter(
-                element => element.filetype == "bigwig"
-            );
-        },
-        getBigwigs: state => {
-            return state.datasets.filter(
-                element =>
-                    element.filetype == "bigwig" &&
-                    element.processing_state == "finished"
-            );
-        }
     },
     mutations: {
         setColorUsage(state, color) {
@@ -491,6 +469,9 @@ const store = new Vuex.Store({
         },
         setResolutions(state, resolutions) {
             state.resolutions = resolutions
+        },
+        setDatasetMetadataMapping(state, mapping){
+            state.datasetMetadataMapping = mapping
         }
     }
 });
