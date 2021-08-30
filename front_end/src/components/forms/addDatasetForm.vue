@@ -392,7 +392,7 @@ export default {
     },
     computed: {
         valueTypeFields: function () {
-            if (this.valueTypeSelected) {
+            if (this.valueTypeSelected && this.selectedFileType) {
                 return Object.keys(
                     this.datasetMetadataMapping[this.selectedFileType][
                         "ValueType"
@@ -402,7 +402,7 @@ export default {
             return [];
         },
         fieldOptions: function () {
-            if (this.valueTypeSelected) {
+            if (this.valueTypeSelected && this.selectedFileType) {
                 return this.datasetMetadataMapping[this.selectedFileType][
                     "ValueType"
                 ][this.form.ValueType];
@@ -410,13 +410,13 @@ export default {
             return undefined;
         },
         valueTypeSelected: function () {
-            if (this.form.ValueType) {
+            if (this.form.ValueType && this.selectedFileType) {
                 return true;
             }
             return false;
         },
         valueTypes: function () {
-            if (this.fileEnding) {
+            if (this.selectedFileType) {
                 let valueTypes= Object.keys(
                     this.datasetMetadataMapping[this.selectedFileType][
                         "ValueType"
@@ -432,14 +432,18 @@ export default {
         },
         showMetadata: function () {
             // whether to show metadata fields
-            if (this.fileEnding) {
+            if (this.selectedFileType) {
                 return true;
             }
             return false;
         },
         selectedFileType: function () {
             if (this.fileEnding) {
-                return this.fileTypeMapping[this.fileEnding.toLowerCase()];
+                if (this.fileEnding.toLowerCase() in this.fileTypeMapping){
+                    return this.fileTypeMapping[this.fileEnding.toLowerCase()];
+                }
+                // show rerror
+                this.$v.form.file.$touch()
             }
             return undefined;
         },
