@@ -108,14 +108,82 @@
                     <div v-if="showMetadata">
                         <md-divider />
                         <md-list>
-                            <md-subheader>Metadata</md-subheader>
+                            <md-subheader>Dataset descriptions</md-subheader>
                             <md-list-item>
                                 <div class="md-layout md-gutter">
                                     <div
                                         class="md-layout-item md-small-size-100"
                                     >
                                         <md-field
-                                            :class="getValidationClass('valueType')"
+                                            :class="
+                                                getValidationClass(
+                                                    'perturbation'
+                                                )
+                                            "
+                                        >
+                                            <label for="perturbation"
+                                                >Perturbation</label
+                                            >
+                                            <md-input
+                                                name="perturbation"
+                                                id="perturbation"
+                                                v-model="form.perturbation"
+                                                :disabled="sending"
+                                                required
+                                            />
+                                            <span
+                                                class="md-error"
+                                                v-if="
+                                                    !$v.form.perturbation
+                                                        .required
+                                                "
+                                                >Perturbation information is
+                                                required is required</span
+                                            >
+                                        </md-field>
+                                    </div>
+                                    <div
+                                        class="md-layout-item md-small-size-100"
+                                    >
+                                        <md-field
+                                            :class="
+                                                getValidationClass(
+                                                    'cellCycleStage'
+                                                )
+                                            "
+                                        >
+                                            <label for="perturbation"
+                                                >Cell cycle Stage</label
+                                            >
+                                            <md-input
+                                                name="cellcycleStage"
+                                                id="cellcycleStage"
+                                                v-model="form.cellCycleStage"
+                                                :disabled="sending"
+                                                required
+                                            />
+                                            <span
+                                                class="md-error"
+                                                v-if="
+                                                    !$v.form.cellCycleStage
+                                                        .required
+                                                "
+                                                >Cell cycle stage is
+                                                required</span
+                                            >
+                                        </md-field>
+                                    </div>
+                                </div>
+                            </md-list-item>
+                            <md-list-item>
+                                <div class="md-layout md-gutter">
+                                    <div
+                                        class="md-layout-item md-small-size-100"
+                                    >
+                                        <md-field
+                                            :class="
+                                                getValidationClass('valueType')
+                                            "
                                         >
                                             <label for="valueType"
                                                 >Value Type</label
@@ -123,47 +191,66 @@
                                             <md-select
                                                 name="valueType"
                                                 id="valueType"
-                                                v-model="form.valueType"
+                                                v-model="form.ValueType"
+                                                required
                                                 :disabled="sending"
                                             >
                                                 <md-option
                                                     v-for="valueType in valueTypes"
                                                     :key="valueType"
+                                                    :value="valueType"
                                                     >{{ valueType }}</md-option
                                                 >
                                             </md-select>
                                             <span
                                                 class="md-error"
                                                 v-if="
-                                                    !$v.form.valueType
-                                                        .required
+                                                    !$v.form.ValueType.required
                                                 "
-                                                >A ValueType is
-                                                required</span
+                                                >A ValueType is required</span
                                             >
                                         </md-field>
                                     </div>
+                                </div>
+                            </md-list-item>
+                            <md-list-item>
+                                <div
+                                    class="md-layout md-gutter"
+                                    v-if="valueTypeSelected"
+                                >
                                     <div
                                         class="md-layout-item md-small-size-100"
+                                        v-for="field in valueTypeFields"
+                                        :key="field"
                                     >
-                                        <md-field>
-                                            <label for="valueType"
-                                                >Method</label
-                                            >
+                                        <md-field
+                                            :class="getValidationClass(field)"
+                                        >
+                                            <label for="valueType">{{
+                                                field
+                                            }}</label>
+
                                             <md-select
-                                                name="valueType"
-                                                id="valueType"
-                                                :disabled="
-                                                    sending ||
-                                                    !valueTypeSelected
-                                                "
+                                                :name="field"
+                                                :id="field"
+                                                v-model="form[field]"
+                                                required
+                                                :disabled="sending"
                                             >
                                                 <md-option
-                                                    v-for="valueType in valueTypes"
-                                                    :key="valueType"
-                                                    >{{ valueType }}</md-option
+                                                    v-for="option in fieldOptions[
+                                                        field
+                                                    ]"
+                                                    :key="option"
+                                                    :value="option"
+                                                    >{{ option }}</md-option
                                                 >
                                             </md-select>
+                                            <span
+                                                class="md-error"
+                                                v-if="!$v.form[field].required"
+                                                >{{ field }} is required</span
+                                            >
                                         </md-field>
                                     </div>
                                 </div>
@@ -238,6 +325,14 @@ export default {
             file: null,
             description: null,
             valueType: null,
+            Normalization: null,
+            Method: null,
+            SizeType: null,
+            Directionality: null,
+            DerivationType: null,
+            Protein: null,
+            cellCycleStage: null,
+            perturbation: null,
         },
         datasetMetadataMapping: null,
         datasetSaved: false,
@@ -245,31 +340,70 @@ export default {
         selectedFile: null,
         assemblies: {},
     }),
-    validations: {
+    validations() {
         // validators for the form
-        form: {
-            datasetName: {
-                required,
-                minLength: minLength(3),
+        let outputObject = {
+            form: {
+                datasetName: {
+                    required,
+                    minLength: minLength(3),
+                },
+                public: {},
+                assembly: {
+                    required,
+                },
+                ValueType: {
+                    required,
+                },
+                cellCycleStage: {
+                    required,
+                },
+                perturbation: {
+                    required,
+                },
+                file: {
+                    required,
+                    correctFiletype: correctFileType,
+                },
+                description: {
+                    maxLength: maxLength(80),
+                },
             },
-            public: {},
-            assembly: {
-                required,
-            },
-            valueType: {
-                required,
-            },
-            file: {
-                required,
-                correctFiletype: correctFileType,
-            },
-            description: {
-                maxLength: maxLength(80),
-            },
-        },
+        };
+        if (this.valueTypeSelected) {
+            for (let key of Object.keys(
+                this.datasetMetadataMapping[this.selectedFileType]["ValueType"][
+                    this.form.ValueType
+                ]
+            )) {
+                outputObject["form"][key] = { required };
+            }
+        }
+        return outputObject;
     },
     computed: {
+        valueTypeFields: function () {
+            if (this.valueTypeSelected) {
+                return Object.keys(
+                    this.datasetMetadataMapping[this.selectedFileType][
+                        "ValueType"
+                    ][this.form.ValueType]
+                );
+            }
+            return [];
+        },
+        fieldOptions: function () {
+            if (this.valueTypeSelected) {
+                return this.datasetMetadataMapping[this.selectedFileType][
+                    "ValueType"
+                ][this.form.ValueType];
+            }
+            return undefined;
+        },
         valueTypeSelected: function () {
+            if (this.form.ValueType) {
+                return true;
+            }
             return false;
         },
         valueTypes: function () {
@@ -323,27 +457,31 @@ export default {
         },
         clearForm() {
             this.$v.$reset();
-            this.form.datasetName = null;
-            this.form.assembly = null;
-            this.form.file = null;
-            this.form.description = null;
-            this.form.public = false;
-            this.form.valueType = null;
+            for (let key of Object.keys(this.form)) {
+                if (key == "public") {
+                    this.form[key] = false;
+                } else {
+                    this.form[key] = null;
+                }
+            }
         },
         saveDataset() {
             this.sending = true; // show progress bar
             // construct form data
             var formData = new FormData();
             for (var key in this.form) {
-                if (key == "file") {
-                    // file data needs to be included like this because the form data only contains the filename at this stage
-                    formData.append(
-                        key,
-                        this.selectedFile,
-                        this.selectedFile.name
-                    );
-                } else {
-                    formData.append(key, this.form[key]);
+                // only include fields if they are not null
+                if (this.form[key]) {
+                    if (key == "file") {
+                        // file data needs to be included like this because the form data only contains the filename at this stage
+                        formData.append(
+                            key,
+                            this.selectedFile,
+                            this.selectedFile.name
+                        );
+                    } else {
+                        formData.append(key, this.form[key]);
+                    }
                 }
             }
             // add filetype

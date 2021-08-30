@@ -48,17 +48,17 @@ class Config:
             "bigwig": {
                 "ValueType": {
                     "Derived": {
-                        "Normalization": ["Base-line-correct"],
+                        "Normalization": ["Base-line-correct", "No Normalization"],
                         "DerivationType": ["InsulationScore", "PairingScore"],
                         "Method": ["HiC"],
                     },
                     "ProteinBinding": {
                         "Protein": "freetext",
                         "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
-                        "Normalization": ["NormToControl", "RPM"],
+                        "Normalization": ["NormToControl", "RPM", "No Normalization"],
                     },
                     "GeneExpression": {
-                        "Normalization": ["NormToControl", "RPM", "RPKM"],
+                        "Normalization": ["NormToControl", "RPM", "RPKM", "none"],
                         "Method": ["RNAseq", "GroSeq", "SLAMseq", "NETseq"],
                     },
                 }
