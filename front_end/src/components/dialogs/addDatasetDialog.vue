@@ -130,7 +130,7 @@ export default {
 
 .md-dialog-content {
     padding: 0px;
-    min-width: 50vw;
+    min-width: 70vw;
 }
 
 .mainText {
