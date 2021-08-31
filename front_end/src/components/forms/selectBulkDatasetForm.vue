@@ -42,7 +42,7 @@
                         type="submit"
                         class="md-primary"
                         :disabled="sending"
-                        >Confirm selection</md-button
+                        >Continue</md-button
                     >
                 </md-card-actions>
             </md-card>

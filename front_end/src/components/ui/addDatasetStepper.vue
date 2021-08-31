@@ -13,12 +13,6 @@
                 ></selectBulkDatasetForm>
                 <md-button
                     class="md-raised md-primary"
-                    @click="setDone('first', 'second')"
-                    :disabled="blockSecondStep"
-                    >Continue</md-button
-                >
-                <md-button
-                    class="md-raised md-primary"
                     @click="$emit('close-dialog')"
                     >Close</md-button
                 >
@@ -26,13 +20,14 @@
 
             <md-step
                 id="second"
-                md-label="Genome and conditions"
+                md-label="Name and genome"
                 :md-editable="false"
                 :md-done.sync="second"
             >
                 <step2BulkDatasetForm
                     :fileTypeMapping="fileTypeMapping"
                     :files="selectedFiles"
+                    @step-completion="handleStepCompletion"
                 />
                 <md-button
                     class="md-raised md-primary"
@@ -42,9 +37,16 @@
             </md-step>
             <md-step
                 id="third"
+                md-label="Conditions"
+                :md-editable="false"
+                :md-done.sync="third"
+            >
+            </md-step>
+            <md-step
+                id="fourth"
                 md-label="Technical information"
                 :md-editable="false"
-                :md-done.sync="second"
+                :md-done.sync="fourth"
             >
             </md-step>
         </md-steppers>
@@ -65,15 +67,21 @@ export default {
         active: "first",
         first: false,
         second: false,
-        blockSecondStep: true,
+        third: false,
+        fourth: false,
         selectedFiles: null,
+        elements: undefined
     }),
     methods: {
         handleFileSelectionSuccessful: function (files) {
-            console.log(files);
             this.selectedFiles = files;
-            this.blockSecondStep = false;
             this.first = true;
+            this.setDone('first', 'second')
+        },
+        handleStepCompletion: function(elements){
+            if (!this.elements){
+                this.elements = elements
+            }
         },
         setDone(id, index) {
             this[id] = true;

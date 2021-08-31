@@ -3,7 +3,10 @@
         <md-dialog :md-active.sync="showDialog">
             <md-dialog-title
                 >{{ welcomeMessage }}
-                <md-tooltip md-direction="left">
+
+                <md-icon>info
+
+                    <md-tooltip md-direction="right">
                     <div>
                         <span class="md-title"
                             >Information about addition of data</span
@@ -51,6 +54,7 @@
                         </p>
                     </div>
                 </md-tooltip>
+                </md-icon>
             </md-dialog-title>
             <md-dialog-content>
                 <md-tabs class="md-primary">
@@ -130,12 +134,12 @@ export default {
 
 .md-dialog-content {
     padding: 0px;
-    min-width: 70vw;
+    min-width: 60vw;
 }
 
 .mainText {
     display: block;
-    width: 20vw;
+    width: 5vw;
     min-width: 400px;
     text-align: justify;
     text-justify: inter-word;

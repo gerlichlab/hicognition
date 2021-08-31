@@ -20,7 +20,7 @@
                             </md-field>
                         </div>
 
-                        <div class="md-layout-item md-size-30">
+                        <div class="md-layout-item md-size-10">
                             <md-field
                                 :class="{
                                     'md-invalid':
@@ -59,7 +59,37 @@
                             </md-field>
                         </div>
 
-                        <div class="md-layout-item md-size-30">
+                        <div class="md-layout-item md-size-15">
+                            <md-field
+                                :class="{
+                                    'md-invalid':
+                                        v.assembly.$invalid && v.assembly.$dirty
+                                }"
+                            >
+                                <label :for="`valueType-${element.id}`">Value Type</label>
+                                <md-select
+                                    :name="`valueType-${element.id}`"
+                                    :id="`valueType-${element.id}`"
+                                    v-model="element.ValueType"
+                                    required
+                                    :disabled="sending"
+                                >
+                                    <md-option
+                                        v-for="valueType in getValueTypes(element.filename)"
+                                        :key="valueType"
+                                        :value="valueType"
+                                        >{{ valueType }}</md-option
+                                    >
+                                </md-select>
+                                <span
+                                    class="md-error"
+                                    v-if="!v.ValueType.required"
+                                    >A ValueType is required</span
+                                >
+                            </md-field>
+                        </div>
+
+                        <div class="md-layout-item md-size-10">
                             <md-field
                                 :class="{
                                     'md-invalid':
@@ -84,6 +114,58 @@
                         </div>
 
                         <div class="md-layout-item md-size-10">
+                            <md-field
+                                :class="{
+                                    'md-invalid':
+                                        v.perturbation.$invalid &&
+                                        v.perturbation.$dirty
+                                }"
+                            >
+                                <label :for="`perturbation-${element.id}`"
+                                    >Perturbation</label
+                                >
+                                <md-input
+                                    :name="`perturbation-${element.id}`"
+                                    :id="`perturbation-${element.id}`"
+                                    v-model="element.perturbation"
+                                    :disabled="sending"
+                                    required
+                                />
+                                <span
+                                    class="md-error"
+                                    v-if="!v.perturbation.required"
+                                    >Perturbation information is required</span
+                                >
+                            </md-field>
+                        </div>
+
+                        <div class="md-layout-item md-size-10">
+                            <md-field
+                                :class="{
+                                    'md-invalid':
+                                        v.cellCycleStage.$invalid &&
+                                        v.cellCycleStage.$dirty
+                                }"
+                            >
+                                <label :for="`cellCycleStage-${element.id}`"
+                                    >Cell Cycle Stage</label
+                                >
+                                <md-input
+                                    :name="`cellCycleStage-${element.id}`"
+                                    :id="`cellCycleStage-${element.id}`"
+                                    v-model="element.cellCycleStage"
+                                    :disabled="sending"
+                                    required
+                                />
+                                <span
+                                    class="md-error"
+                                    v-if="!v.cellCycleStage.required"
+                                    >Cell cycle information is required</span
+                                >
+                            </md-field>
+                        </div>
+
+                        <div class="md-layout-item md-size-5">
                             <md-checkbox
                                 v-model="element.public"
                                 class="top-margin"
@@ -114,8 +196,7 @@ export default {
     name: "describeBulkDatasetForm",
     mixins: [validationMixin, apiMixin],
     props: {
-        files: FileList,
-        fileTypeMapping: Object
+        fileInformation: Object,
     },
     data: () => ({
         datasetSaved: false,
@@ -128,22 +209,15 @@ export default {
     validations: {
         elements: {
             $each: {
-                datasetName: { required },
-                assembly: { required },
+                perturbation: { required },
+                ValueType: { required },
+                cellCycleStage: { required }
             }
         }
     },
     methods: {
-        fetchAssemblies() {
-            this.fetchData("assemblies/").then(response => {
-                if (response) {
-                    this.assemblies = response.data;
-                }
-            });
-        },
-        getFileType: function(filename) {
-            let fileEnding = filename.split(".").pop();
-            return this.fileTypeMapping[fileEnding];
+        getValueTypes: function(filename){
+            return Object.keys(this.datasetMetadataMapping[this.getFileType(filename)]['ValueType'])
         },
         clearForm() {
             this.$v.$reset();
@@ -153,6 +227,9 @@ export default {
                     id: i,
                     datasetName: null,
                     assembly: null,
+                    perturbation: null,
+                    cellCycleStage: null,
+                    ValueType: null,
                     filename: this.files[i].name,
                     file: this.files[i],
                     public: true
@@ -179,7 +256,6 @@ export default {
         }
     },
     mounted: function() {
-        this.assemblies = this.fetchAssemblies();
         this.datasetMetadataMapping = this.$store.getters[
             "getDatasetMetadataMapping"
         ]["DatasetType"];
@@ -194,6 +270,10 @@ export default {
                         assembly: null,
                         filename: this.files[i].name,
                         file: this.files[i],
+                        ValueType: null,
+                        public: true,
+                        perturbation: null,
+                        cellCycleStage: null
                     };
                     this.elements.push(tempObject);
                 }
