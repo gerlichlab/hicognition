@@ -111,7 +111,7 @@ import { required } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 export default {
-    name: "describeBulkDatasetForm",
+    name: "step2BulkDatasetForm",
     mixins: [validationMixin, apiMixin],
     props: {
         files: FileList,

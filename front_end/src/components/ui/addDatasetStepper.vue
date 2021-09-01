@@ -27,7 +27,7 @@
                 <step2BulkDatasetForm
                     :fileTypeMapping="fileTypeMapping"
                     :files="selectedFiles"
-                    @step-completion="handleStepCompletion"
+                    @step-completion="handleStepCompletion($event, 'second', 'third')"
                 />
                 <md-button
                     class="md-raised md-primary"
@@ -41,6 +41,16 @@
                 :md-editable="false"
                 :md-done.sync="third"
             >
+                <step-3-bulk-dataset-form
+                    :fileInformation="elements"
+                    :fileTypeMapping="fileTypeMapping"
+                    @step-completion="handleStepCompletion($event, 'third', 'fourth')"
+                />
+                <md-button
+                    class="md-raised md-primary"
+                    @click="$emit('close-dialog')"
+                    >Close</md-button
+                >
             </md-step>
             <md-step
                 id="fourth"
@@ -56,12 +66,17 @@
 <script>
 import selectBulkDatasetForm from "../forms/selectBulkDatasetForm.vue";
 import step2BulkDatasetForm from "../forms/step2BulkDatasetForm.vue";
+import step3BulkDatasetForm from "../forms/step3BulkDatasetForm.vue";
 
 export default {
     name: "dataset-stepper",
-    components: { selectBulkDatasetForm, step2BulkDatasetForm },
+    components: {
+        selectBulkDatasetForm,
+        step2BulkDatasetForm,
+        step3BulkDatasetForm
+    },
     props: {
-        fileTypeMapping: Object,
+        fileTypeMapping: Object
     },
     data: () => ({
         active: "first",
@@ -73,15 +88,20 @@ export default {
         elements: undefined
     }),
     methods: {
-        handleFileSelectionSuccessful: function (files) {
+        handleFileSelectionSuccessful: function(files) {
             this.selectedFiles = files;
             this.first = true;
-            this.setDone('first', 'second')
+            this.setDone("first", "second");
         },
-        handleStepCompletion: function(elements){
-            if (!this.elements){
-                this.elements = elements
+        handleStepCompletion: function(elements, currentStep, nextStep) {
+            if (!this.elements) {
+                this.elements = elements;
+            }else{
+                for (let [value, id] of Object.entries(elements)){
+                    this.elements[id] = value
+                }
             }
+            this.setDone(currentStep, nextStep)
         },
         setDone(id, index) {
             this[id] = true;
@@ -89,8 +109,8 @@ export default {
             if (index) {
                 this.active = index;
             }
-        },
-    },
+        }
+    }
 };
 </script>
 

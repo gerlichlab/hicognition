@@ -14,59 +14,31 @@
                         :set="(v = $v.elements.$each[element.id])"
                         :key="element.id"
                     >
-                        <div class="md-layout-item md-size-30">
+                        <div class="md-layout-item md-size-25">
                             <md-field>
-                                {{ element.filename }}
+                                <label :for="`name-${element.id}`"
+                                    >Dataset name</label
+                                >
+                                <md-input
+                                    :name="`name-${element.id}`"
+                                    :id="`name-${element.id}`"
+                                    v-model="element.datasetName"
+                                    :disabled="true"
+                                />
                             </md-field>
                         </div>
 
-                        <div class="md-layout-item md-size-10">
+                        <div class="md-layout-item md-size-25">
                             <md-field
                                 :class="{
                                     'md-invalid':
-                                        v.assembly.$invalid && v.assembly.$dirty
+                                        v.ValueType.$invalid &&
+                                        v.ValueType.$dirty
                                 }"
                             >
-                                <label :for="`assembly-${element.id}`"
-                                    >Assembly</label
+                                <label :for="`valueType-${element.id}`"
+                                    >Value Type</label
                                 >
-
-                                <md-select
-                                    :name="`assembly-${element.id}`"
-                                    :id="`assembly-${element.id}`"
-                                    v-model="element.assembly"
-                                    required
-                                    :disabled="sending"
-                                >
-                                    <md-optgroup
-                                        v-for="(values, org) in assemblies"
-                                        :key="org"
-                                        :label="org"
-                                    >
-                                        <md-option
-                                            v-for="assembly in values"
-                                            :key="assembly.id"
-                                            :value="assembly.id"
-                                            >{{ assembly.name }}</md-option
-                                        >
-                                    </md-optgroup>
-                                </md-select>
-                                <span
-                                    class="md-error"
-                                    v-if="!v.assembly.required"
-                                    >A genome assembly is required</span
-                                >
-                            </md-field>
-                        </div>
-
-                        <div class="md-layout-item md-size-15">
-                            <md-field
-                                :class="{
-                                    'md-invalid':
-                                        v.assembly.$invalid && v.assembly.$dirty
-                                }"
-                            >
-                                <label :for="`valueType-${element.id}`">Value Type</label>
                                 <md-select
                                     :name="`valueType-${element.id}`"
                                     :id="`valueType-${element.id}`"
@@ -75,7 +47,9 @@
                                     :disabled="sending"
                                 >
                                     <md-option
-                                        v-for="valueType in getValueTypes(element.filename)"
+                                        v-for="valueType in getValueTypes(
+                                            element.id
+                                        )"
                                         :key="valueType"
                                         :value="valueType"
                                         >{{ valueType }}</md-option
@@ -89,31 +63,7 @@
                             </md-field>
                         </div>
 
-                        <div class="md-layout-item md-size-10">
-                            <md-field
-                                :class="{
-                                    'md-invalid':
-                                        v.datasetName.$invalid &&
-                                        v.datasetName.$dirty
-                                }"
-                            >
-                                <label :for="`name-${element.id}`">Name</label>
-                                <md-input
-                                    :name="`name-${element.id}`"
-                                    :id="`name-${element.id}`"
-                                    v-model="element.datasetName"
-                                    :disabled="sending"
-                                    required
-                                />
-                                <span
-                                    class="md-error"
-                                    v-if="!v.datasetName.required"
-                                    >A dataset name is required</span
-                                >
-                            </md-field>
-                        </div>
-
-                        <div class="md-layout-item md-size-10">
+                        <div class="md-layout-item md-size-25">
                             <md-field
                                 :class="{
                                     'md-invalid':
@@ -139,7 +89,7 @@
                             </md-field>
                         </div>
 
-                        <div class="md-layout-item md-size-10">
+                        <div class="md-layout-item md-size-25">
                             <md-field
                                 :class="{
                                     'md-invalid':
@@ -164,14 +114,6 @@
                                 >
                             </md-field>
                         </div>
-
-                        <div class="md-layout-item md-size-5">
-                            <md-checkbox
-                                v-model="element.public"
-                                class="top-margin"
-                                >Public</md-checkbox
-                            >
-                        </div>
                     </div>
                 </md-card-content>
                 <md-card-actions>
@@ -193,15 +135,15 @@ import { required } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 export default {
-    name: "describeBulkDatasetForm",
+    name: "step3BulkDatasetForm",
     mixins: [validationMixin, apiMixin],
     props: {
         fileInformation: Object,
+        fileTypeMapping: Object
     },
     data: () => ({
         datasetSaved: false,
         sending: false,
-        assemblies: {},
         elements: [],
         datasetMetadataMapping: undefined
     }),
@@ -216,23 +158,29 @@ export default {
         }
     },
     methods: {
-        getValueTypes: function(filename){
-            return Object.keys(this.datasetMetadataMapping[this.getFileType(filename)]['ValueType'])
+        getValueTypes: function(id) {
+            const filename = this.fileInformation[id].filename;
+            return Object.keys(
+                this.datasetMetadataMapping[this.getFileType(filename)][
+                    "ValueType"
+                ]
+            );
+        },
+        getFileType: function(filename) {
+            let fileEnding = filename.split(".").pop();
+            return this.fileTypeMapping[fileEnding];
         },
         clearForm() {
             this.$v.$reset();
+            const numElements = this.elements.length;
             this.elements = [];
-            for (let i = 0; i < this.files.length; i++) {
+            for (let i = 0; i < numElements; i++) {
                 var tempObject = {
+                    datasetName: this.fileInformation[i].datasetName,
                     id: i,
-                    datasetName: null,
-                    assembly: null,
                     perturbation: null,
                     cellCycleStage: null,
-                    ValueType: null,
-                    filename: this.files[i].name,
-                    file: this.files[i],
-                    public: true
+                    ValueType: null
                 };
                 this.elements.push(tempObject);
             }
@@ -242,7 +190,10 @@ export default {
             // emit data
             let information = {};
             for (let element of this.elements) {
-                information[element.id] = element;
+                information[element.id] = Object.assign(
+                    this.fileInformation[element.id],
+                    element
+                );
             }
             this.$emit("step-completion", information);
             this.clearForm();
@@ -261,17 +212,13 @@ export default {
         ]["DatasetType"];
     },
     watch: {
-        files: function(val) {
+        fileInformation: function(val) {
             if (val) {
-                for (let i = 0; i < this.files.length; i++) {
+                for (let id of Object.keys(this.fileInformation)) {
                     var tempObject = {
-                        id: i,
-                        datasetName: null,
-                        assembly: null,
-                        filename: this.files[i].name,
-                        file: this.files[i],
+                        id: id,
+                        datasetName: this.fileInformation[id].datasetName,
                         ValueType: null,
-                        public: true,
                         perturbation: null,
                         cellCycleStage: null
                     };
