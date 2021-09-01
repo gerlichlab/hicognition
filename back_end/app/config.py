@@ -38,11 +38,20 @@ class Config:
         "DatasetType": {
             "bedfile": {
                 "ValueType": {
-                    "SetIdentity": {
-                        "Method": ["GenomeAnnotation", "HiC", "ChipSeq"],
+                    "Peak": {
+                        "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
                         "SizeType": ["Point", "Interval"],
-                        "Directionality": ["+", "-", "no directionality"]
-                    }
+                        "Protein": "freetext",
+                        "Directionality": ["+", "-", "No directionality"],
+                    },
+                    "GenomeAnnotation": {
+                        "SizeType": ["Point", "Interval"],
+                        "Directionality": ["+", "-", "No directionality"],
+                    },
+                    "Derived": {
+                        "Method": ["HiC"],
+                        "SizeType": ["Point", "Interval"],
+                    },
                 }
             },
             "bigwig": {
@@ -52,7 +61,7 @@ class Config:
                         "DerivationType": ["InsulationScore", "PairingScore"],
                         "Method": ["HiC"],
                     },
-                    "ProteinBinding": {
+                    "ChromatinAssociation": {
                         "Protein": "freetext",
                         "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
                         "Normalization": ["NormToControl", "RPM", "No Normalization"],
