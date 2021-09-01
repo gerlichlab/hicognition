@@ -8,13 +8,12 @@
         >
             <md-card class="md-layout-item">
                 <md-card-content>
-                    <!-- <div
+                    <div
                         class="md-layout md-gutter"
                         v-for="element in elements"
-                        :set="(v = $v.elements.$each[element.id])"
                         :key="element.id"
                     >
-                        <div class="md-layout-item md-size-25">
+                        <div class="md-layout-item md-size-20">
                             <md-field>
                                 <label :for="`name-${element.id}`"
                                     >Dataset name</label
@@ -27,94 +26,79 @@
                                 />
                             </md-field>
                         </div>
+                        <!-- Now, iteration over fields of element --->
 
-                        <div class="md-layout-item md-size-25">
+                        <div
+                            class="md-layout-item md-size-20"
+                            v-for="field in getFields(element.id)"
+                            :key="`${field}-${element.id}`"
+                        >
                             <md-field
                                 :class="{
                                     'md-invalid':
-                                        v.ValueType.$invalid &&
-                                        v.ValueType.$dirty
+                                        $v.elements[element.id][field]
+                                            .$invalid &&
+                                        $v.elements[element.id][field].$dirty
                                 }"
                             >
-                                <label :for="`valueType-${element.id}`"
-                                    >Value Type</label
-                                >
+                                <label :for="`${field}-${element.id}`">{{
+                                    field
+                                }}</label>
+
                                 <md-select
-                                    :name="`valueType-${element.id}`"
-                                    :id="`valueType-${element.id}`"
-                                    v-model="element.ValueType"
+                                    :name="`${field}-${element.id}`"
+                                    :id="`${field}-${element.id}`"
+                                    v-model="element[field]"
                                     required
                                     :disabled="sending"
+                                    v-if="
+                                        getFieldOptions(element.id, field) !=
+                                            'freetext'
+                                    "
                                 >
                                     <md-option
-                                        v-for="valueType in getValueTypes(
-                                            element.id
+                                        v-for="option in getFieldOptions(
+                                            element.id,
+                                            field
                                         )"
-                                        :key="valueType"
-                                        :value="valueType"
-                                        >{{ valueType }}</md-option
+                                        :key="option"
+                                        :value="option"
+                                        >{{ option }}</md-option
                                     >
                                 </md-select>
+                                <md-input
+                                    :name="`${field}-${element.id}`"
+                                    :id="`${field}-${element.idid}`"
+                                    v-model="element[field]"
+                                    :disabled="sending"
+                                    required
+                                    v-else
+                                />
                                 <span
                                     class="md-error"
-                                    v-if="!v.ValueType.required"
+                                    v-if="
+                                        !$v.elements[element.id][field].required
+                                    "
                                     >A ValueType is required</span
                                 >
                             </md-field>
+                            <div class="md-layout-item md-size-5">
+                                <transition name="component-fade" mode="out-in">
+                                    <md-icon
+                                        class="top-margin"
+                                        v-if="element.state == `finished`"
+                                        >done</md-icon
+                                    >
+                                    <md-progress-spinner
+                                        :md-diameter="30"
+                                        md-mode="indeterminate"
+                                        class="top-margin"
+                                        v-if="element.state == 'processing'"
+                                    ></md-progress-spinner>
+                                </transition>
+                            </div>
                         </div>
-
-                        <div class="md-layout-item md-size-25">
-                            <md-field
-                                :class="{
-                                    'md-invalid':
-                                        v.perturbation.$invalid &&
-                                        v.perturbation.$dirty
-                                }"
-                            >
-                                <label :for="`perturbation-${element.id}`"
-                                    >Perturbation</label
-                                >
-                                <md-input
-                                    :name="`perturbation-${element.id}`"
-                                    :id="`perturbation-${element.id}`"
-                                    v-model="element.perturbation"
-                                    :disabled="sending"
-                                    required
-                                />
-                                <span
-                                    class="md-error"
-                                    v-if="!v.perturbation.required"
-                                    >Perturbation information is required</span
-                                >
-                            </md-field>
-                        </div>
-
-                        <div class="md-layout-item md-size-25">
-                            <md-field
-                                :class="{
-                                    'md-invalid':
-                                        v.cellCycleStage.$invalid &&
-                                        v.cellCycleStage.$dirty
-                                }"
-                            >
-                                <label :for="`cellCycleStage-${element.id}`"
-                                    >Cell Cycle Stage</label
-                                >
-                                <md-input
-                                    :name="`cellCycleStage-${element.id}`"
-                                    :id="`cellCycleStage-${element.id}`"
-                                    v-model="element.cellCycleStage"
-                                    :disabled="sending"
-                                    required
-                                />
-                                <span
-                                    class="md-error"
-                                    v-if="!v.cellCycleStage.required"
-                                    >Cell cycle information is required</span
-                                >
-                            </md-field>
-                        </div>
-                    </div> -->
+                    </div>
                 </md-card-content>
                 <md-card-actions>
                     <md-button
@@ -149,32 +133,38 @@ export default {
     }),
     computed: {},
     validations: function() {
-        let outputObject = {"elements": {}}
-        for (let element of this.elements){
-            let fields = this.getFields(element.id)
-            for (let field of fields){
-                if (! (element.id in outputObject["elements"])){
-                    outputObject["elements"][element.id] = {
-                        field: {required}
-                    }
-                }else{
-                    outputObject["elements"][element.id][field] = {required}
+        let outputObject = { elements: {} };
+        for (let element of this.elements) {
+            let fields = this.getFields(element.id);
+            for (let field of fields) {
+                if (!(element.id in outputObject["elements"])) {
+                    outputObject["elements"][element.id] = {};
                 }
+                outputObject["elements"][element.id][field] = { required };
             }
         }
-        return outputObject
+        return outputObject;
     },
     methods: {
         getFields: function(id) {
-            let filename = this.fileInformation[id].filename
-            let valueType = this.fileInformation[id].ValueType
-            if (!valueType){
-                return []
+            let filename = this.fileInformation[id].filename;
+            let valueType = this.fileInformation[id].ValueType;
+            if (!valueType) {
+                return [];
             }
             const fileType = this.getFileType(filename);
-            return Object.keys(this.datasetMetadataMapping[fileType]["ValueType"][
+            return Object.keys(
+                this.datasetMetadataMapping[fileType]["ValueType"][valueType]
+            );
+        },
+        getFieldOptions: function(id, field) {
+            const valueType = this.fileInformation[id].ValueType;
+            const fileType = this.getFileType(
+                this.fileInformation[id].filename
+            );
+            return this.datasetMetadataMapping[fileType]["ValueType"][
                 valueType
-            ]);
+            ][field];
         },
         getFileType: function(filename) {
             let fileEnding = filename.split(".").pop();
@@ -215,11 +205,12 @@ export default {
                 this.saveDataset();
             }
         },
-        initializeFields(){
+        initializeFields() {
             for (let id of Object.keys(this.fileInformation)) {
                 let tempObject = {
                     id: id,
-                    datasetName: this.fileInformation[id].datasetName
+                    datasetName: this.fileInformation[id].datasetName,
+                    state: undefined
                 };
                 for (let field of this.getFields(id)) {
                     tempObject[field] = null;
@@ -232,10 +223,9 @@ export default {
         this.datasetMetadataMapping = this.$store.getters[
             "getDatasetMetadataMapping"
         ]["DatasetType"];
-        this.initializeFields()
+        this.initializeFields();
     },
-    watch: {
-    }
+    watch: {}
 };
 </script>
 
