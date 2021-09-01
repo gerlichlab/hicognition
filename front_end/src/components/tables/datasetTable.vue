@@ -1,122 +1,133 @@
 <template>
-    <div>
-        <md-table
-            v-model="datasets"
-            md-sort="dataset_name"
-            md-sort-order="asc"
-            md-card
-            md-fixed-header
-            @md-selected="onSelect"
+    <div class="intermediate-margin">
+        <div
+            v-if="datasets === undefined || assemblies === undefined"
+            class="wait-spinner-container"
         >
-            <!-- Table toolbar has the update button and the search field -->
-            <md-table-toolbar>
-                <!-- Update button -->
-                <div class="md-toolbar-section-start">
-                    <md-button
-                        class="md-dense md-raised button-margin md-primary md-icon-button"
-                        @click="fetchDatasets"
+            <md-progress-spinner
+                :md-diameter="100"
+                :md-stroke="10"
+                md-mode="indeterminate"
+            ></md-progress-spinner>
+        </div>
+        <div v-else>
+            <!--assembly and region type--->
+            <div class="md-layout md-gutter md-alignment-center-center">
+                <div class="md-layout-item md-size-25 small-vertical-margin">
+                    <md-field class="small-vertical-margin">
+                        <label for="assembly">Genome assembly</label>
+                        <md-select
+                            name="assembly"
+                            id="assembly"
+                            v-model="selectedAssembly"
+                        >
+                            <md-optgroup
+                                v-for="(values, org) in assemblies"
+                                :key="org"
+                                :label="org"
+                            >
+                                <md-option
+                                    v-for="assembly in values"
+                                    :key="assembly.id"
+                                    :value="assembly.id"
+                                    >{{ assembly.name }}</md-option
+                                >
+                            </md-optgroup>
+                        </md-select>
+                    </md-field>
+                </div>
+                <div class="md-layout-item md-size-75 small-vertical-margin">
+                    <md-radio v-model="datasetType" value="bedfile"
+                        >Region</md-radio
                     >
-                        <md-icon>cached</md-icon>
+                    <md-radio v-model="datasetType" value="bigwig"
+                        >1D-feature</md-radio
+                    >
+                    <md-radio v-model="datasetType" value="cooler"
+                        >2D-feature</md-radio
+                    >
+                </div>
+            </div>
+            <!-- Filters --->
+            <div class="md-layout md-gutter md-alignment-center-left selection-field md-elevation-2">
+                <div class="md-layout-item md-size-10 small-vertical-margin">
+                    <md-button class="md-icon-button">
+                        <md-icon>filter_alt</md-icon>
                     </md-button>
                 </div>
-            </md-table-toolbar>
-
-            <md-table-toolbar
-                slot="md-table-alternate-header"
-                slot-scope="{ count }"
-            >
-                <div class="md-toolbar-section-start">
-                    {{ getAlternateLabel(count) }}
+                <div class="md-layout-item">
+                    <span class="md-caption">Filter</span>
                 </div>
-
-                <div class="md-toolbar-section-end">
-                    <md-button
-                        class="md-icon-button"
-                        @click="deleteClicked"
-                        v-if="!clickedDelete"
-                    >
-                        <md-icon>delete</md-icon>
-                    </md-button>
-                    <md-button class="md-raised" v-if="clickedDelete">
-                        Are you sure?
-                    </md-button>
-                    <md-button
-                        class="md-raised md-accent"
-                        v-if="clickedDelete"
-                        @click="handleDelete"
-                    >
-                        Yes
-                    </md-button>
-                    <md-button
-                        class="md-raised md-primary"
-                        v-if="clickedDelete"
-                        @click="clickedDelete = false"
-                    >
-                        No
+            </div>
+            <!-- Fields --->
+            <div class="md-layout md-gutter md-alignment-center-left selection-field md-elevation-2 top-margin">
+                <div class="md-layout-item md-size-10 small-vertical-margin">
+                    <md-button class="md-icon-button">
+                        <md-icon>tune</md-icon>
                     </md-button>
                 </div>
-            </md-table-toolbar>
-            <!-- Empty state for table -->
-            <md-table-empty-state
-                md-label="No datasets found"
-                :md-description="
-                    `No datasets found for this query. Try a different search term or create a new dataset.`
-                "
-            >
-            </md-table-empty-state>
-            <!-- Definition of how table should look -->
-            <md-table-row
-                slot="md-table-row"
-                slot-scope="{ item }"
-                md-selectable="multiple"
-                class="md-primary"
-                md-auto-select
-                :md-disabled="isSelectionDisabled(item)"
-            >
-                <md-table-cell md-label="Name" md-sort-by="dataset_name">{{
-                    item.dataset_name
-                }}</md-table-cell>
-                <md-table-cell md-label="Filetype" md-sort-by="filetype">{{
-                    item.filetype
-                }}</md-table-cell>
-                <md-table-cell md-label="Genotype" md-sort-by="genotype">{{
-                    item.genotype
-                }}</md-table-cell>
-                <md-table-cell md-label="Public" md-sort-by="public">{{
-                    item.public
-                }}</md-table-cell>
-                <md-table-cell
-                    md-label="Description"
-                    md-sort-by="description"
-                    >{{ item.description }}</md-table-cell
+                <div class="md-layout-item">
+                    <span class="md-caption">Fields</span>
+                </div>
+            </div>
+            <!--Table--->
+            <transition name="fade" mode="out-in">
+                <md-table v-if="selected.length != 0" class="top-margin">
+                    <md-table-row>
+                        <md-table-head
+                            v-for="(value, key) in fields"
+                            :key="key"
+                            >{{ value }}</md-table-head
+                        >
+                        <md-table-head>Status</md-table-head>
+                    </md-table-row>
+                    <md-table-row v-for="dataset in selected" :key="dataset.id">
+                        <md-table-cell
+                            v-for="(value, key) of fields"
+                            :key="`${dataset.id}-${key}`"
+                            >{{ dataset[key] }}</md-table-cell
+                        >
+                        <md-table-cell>
+                            <md-icon
+                                v-if="dataset.processing_state == 'finished'"
+                                >done</md-icon
+                            >
+                            <md-progress-spinner
+                                :md-diameter="30"
+                                md-mode="indeterminate"
+                                v-else-if="
+                                    dataset.processing_state == 'processing'
+                                "
+                            ></md-progress-spinner>
+                            <md-icon
+                                v-else-if="dataset.processing_state == 'failed'"
+                                >error</md-icon
+                            >
+                            <md-icon
+                                v-else-if="
+                                    dataset.processing_state == 'uploaded'
+                                "
+                                >cloud_done</md-icon
+                            >
+                            <md-icon
+                                v-else-if="
+                                    dataset.processing_state == 'uploading'
+                                "
+                                >cloud_upload</md-icon
+                            >
+                        </md-table-cell>
+                    </md-table-row>
+                </md-table>
+                <md-empty-state
+                    v-else
+                    md-label="No datasets found"
+                    :md-description="
+                        `No datasets found for this query. Try a different search term or create a new dataset.`
+                    "
                 >
-                <md-table-cell
-                    md-label="Progress"
-                    md-sort-by="processing_state"
-                >
-                    <md-icon v-if="item.processing_state == 'finished'"
-                        >done</md-icon
-                    >
-                    <md-progress-spinner
-                        :md-diameter="30"
-                        md-mode="indeterminate"
-                        v-else-if="item.processing_state == 'processing'"
-                    ></md-progress-spinner>
-                    <md-icon v-else-if="item.processing_state == 'failed'"
-                        >error</md-icon
-                    >
-                    <md-icon v-else-if="item.processing_state == 'uploaded'"
-                        >cloud_done</md-icon
-                    >
-                    <md-icon v-else-if="item.processing_state == 'uploading'"
-                        >cloud_upload</md-icon
-                    >
-                </md-table-cell>
-            </md-table-row>
-        </md-table>
-        <md-snackbar :md-active.sync="datasetsDeleted"
-            >Deletion done!</md-snackbar
-        >
+                </md-empty-state>
+            </transition>
+        </div>
     </div>
 </template>
 
@@ -127,10 +138,10 @@ export default {
     name: "datasetTable",
     mixins: [apiMixin],
     data: () => ({
-        selected: [],
-        datasets: [],
-        clickedDelete: false,
-        datasetsDeleted: false
+        datasets: undefined,
+        assemblies: undefined,
+        selectedAssembly: undefined,
+        datasetType: "bedfile"
     }),
     methods: {
         isSelectionDisabled: function(item) {
@@ -144,64 +155,92 @@ export default {
             }
             return true;
         },
-        deleteClicked: function() {
-            this.clickedDelete = true;
-        },
-        handleDelete: async function() {
-            this.clickedDelete = false;
-            for (var dataset of this.selected) {
-                var result = await this.deleteData(`datasets/${dataset.id}/`);
-            }
-            this.datasetsDeleted = true;
-            this.selected = [];
-            this.fetchDatasets();
-        },
-        getAlternateLabel(count) {
-            let plural = "";
-
-            if (count > 1) {
-                plural = "s";
-            }
-
-            return `${count} data set${plural} selected`;
-        },
-        onSelect(item) {
-            this.selected = item;
-        },
         fetchDatasets() {
             this.fetchData("datasets/").then(response => {
                 if (response) {
                     // success, store datasets
                     this.$store.commit("setDatasets", response.data);
                     // update displayed datasets
-                    this.datasets = response.data;
+                    setTimeout(() => {
+                        this.datasets = response.data;
+                    }, 100);
+                }
+            });
+        },
+        fetchAssemblies() {
+            this.fetchData("assemblies/").then(response => {
+                if (response) {
+                    this.assemblies = response.data;
+                    // set default
+                    this.selectedAssembly = this.assemblies["Human"][0].id;
                 }
             });
         }
     },
     computed: {
-        anyProcessing: function() {
-            for (var dataset of this.datasets) {
-                if (dataset.processing_state == "processing") {
-                    return true;
-                }
-            }
-            return false;
+        fields: function() {
+            return {
+                dataset_name: "Name",
+                perturbation: "Perturbation",
+                cellCycleStage: "Cell cycle Stage"
+            };
         },
-        showDelete: function() {
-            if (this.selected.length != 0) {
-                return true;
-            }
-            return false;
+        selected: function() {
+            return this.datasets.filter(el => {
+                return (
+                    el.filetype == this.datasetType &&
+                    el.assembly == this.selectedAssembly
+                );
+            });
         }
     },
     created: function() {
-        this.fetchDatasets()
+        this.fetchDatasets();
+        this.datasetMetadataMapping = this.$store.getters[
+            "getDatasetMetadataMapping"
+        ]["DatasetType"];
+        this.assemblies = this.fetchAssemblies();
     }
 };
 </script>
 
 <style lang="scss" scoped>
+
+.intermediate-margin {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.small-vertical-margin {
+    margin-top: 2px;
+    margin-bottom: 4px;
+}
+
+.selection-field {
+    background: var(--md-theme-default-primary);
+}
+
+.top-margin {
+    margin-top: 2px;
+}
+
+.wait-spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+.fade-enter, .fade-leave-to
+/* .component-fade-leave-active below version 2.1.8 */ {
+    opacity: 0;
+}
+
 .md-field {
     max-width: 200px;
 }
