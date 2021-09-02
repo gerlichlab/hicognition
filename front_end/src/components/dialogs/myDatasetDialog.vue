@@ -1,7 +1,7 @@
 <template>
     <div>
         <md-dialog :md-active.sync="showDialog">
-            <md-dialog-title>My Datasets</md-dialog-title>
+            <md-dialog-title>Datasets</md-dialog-title>
             <md-content class="content">
                 <datasetTable></datasetTable>
             </md-content>
@@ -44,6 +44,7 @@ export default {
 <style lang="scss" scoped>
 .md-dialog /deep/.md-dialog-container {
     max-width: 80vw;
+    width: 1200px;
 }
 
 .content {
