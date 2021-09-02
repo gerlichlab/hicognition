@@ -8,9 +8,14 @@
 @import "~vue-material/dist/theme/all"; // Apply the theme
 
 .button-container .md-table-head-container {
-    height: 70px !important;
+    height: 50px !important;
+    padding: 0px;
 }
 
 .button-container .md-table-head-label {
-    height: 70px !important;
+    height: 50px !important;
+}
+
+.md-table table {
+    overflow: visible
 }

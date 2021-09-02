@@ -45,7 +45,7 @@ export default {
 .md-dialog /deep/.md-dialog-container {
     max-width: 80vw;
     width: 1200px;
-    min-height: 800px;
+    min-height: 70vh;
 }
 
 .content {

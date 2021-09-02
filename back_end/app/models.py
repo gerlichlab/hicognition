@@ -117,7 +117,7 @@ class User(db.Model, UserMixin):
 class Dataset(db.Model):
     # fields
     id = db.Column(db.Integer, primary_key=True)
-    dataset_name = db.Column(db.String(64), index=True)
+    dataset_name = db.Column(db.String(512), index=True)
     description = db.Column(db.String(81), default="undefined")
     perturbation = db.Column(db.String(64), default="undefined")
     assembly = db.Column(db.Integer, db.ForeignKey("assembly.id"))

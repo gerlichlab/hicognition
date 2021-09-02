@@ -55,6 +55,7 @@
                     selection-field
                     md-elevation-2
                 "
+                style="max-height: 50px; overflow: visible"
             >
                 <div class="md-layout-item md-size-10 small-vertical-margin">
                     <md-button
@@ -71,30 +72,29 @@
                     <span class="md-caption">Filter</span>
                 </div>
                 <div
-                    class="md-layout-item md-gutter md-size-100"
+                    class="md-layout-item md-layout md-gutter md-size-100 small-vertical-margin selection-field"
                     v-if="showFilters"
+                    style="z-index: 500; max-height: 30vh; overflow:auto;"
                 >
-                    <md-field class="small-vertical-margin">
-                        <label for="assembly">Genome assembly</label>
-                        <md-select
-                            name="assembly"
-                            id="assembly"
-                            v-model="selectedAssembly"
+                    <div class="md-layout-item md-layout md-gutter md-size-50">
+                        <div
+                            class="md-layout-item md-size-50"
+                            v-for="(value, key) in possibleFields"
+                            :key="key"
+                            v-if="getFieldOptions(value) !== undefined"
                         >
-                            <md-optgroup
-                                v-for="(values, org) in assemblies"
-                                :key="org"
-                                :label="org"
-                            >
-                                <md-option
-                                    v-for="assembly in values"
-                                    :key="assembly.id"
-                                    :value="assembly.id"
-                                    >{{ assembly.name }}</md-option
-                                >
-                            </md-optgroup>
-                        </md-select>
-                    </md-field>
+                            <md-field>
+                                <label :for="key">{{ value }}</label>
+                                <md-select :name="key" :id="key" multiple>
+                                    <md-option
+                                        v-for="option in getFieldOptions(value)"
+                                        :key="option"
+                                        >{{ option }}</md-option
+                                    >
+                                </md-select>
+                            </md-field>
+                        </div>
+                    </div>
                 </div>
             </div>
             <!-- Fields --->
@@ -123,12 +123,12 @@
                 </div>
                 <div
                     class="
-                        md-layout-item md-gutter md-size-100
+                        md-layout-item md-layout md-gutter md-size-100
                         small-vertical-margin
                         selection-field
                     "
                     v-if="showFields"
-                    style="z-index: 500"
+                    style="z-index: 500; max-height: 30vh; overflow:auto;"
                 >
                     <div
                         class="md-layout-item md-size-20"
@@ -144,10 +144,12 @@
             <!--Table--->
             <transition name="fade" mode="out-in">
                 <md-table
-                    style="max-height: 700px; overflow: auto"
+                    style="max-height: 40vh;"
                     v-if="selected.length != 0 && selectedFields.length != 0"
                 >
-                    <md-table-row>
+                    <md-table-row
+                        style="position: sticky; top:0; background: white; z-index:100;"
+                    >
                         <md-table-head
                             v-for="(value, key) in fields"
                             :key="key"
@@ -208,7 +210,9 @@
                     v-else
                     md-label="No datasets found"
                     style="flexgrow: true"
-                    :md-description="`No datasets found for this query. Try a different search term or create a new dataset.`"
+                    :md-description="
+                        `No datasets found for this query. Try a different search term or create a new dataset.`
+                    "
                 >
                 </md-empty-state>
             </transition>
@@ -225,7 +229,7 @@ const fieldToPropertyMapping = {
     Normalization: "normalization",
     DerivationType: "derivationType",
     Protein: "protein",
-    Directionality: "directionality",
+    Directionality: "directionality"
 };
 
 export default {
@@ -241,14 +245,36 @@ export default {
             "valueType",
             "perturbation",
             "cellCycleStage",
-            "status",
+            "status"
         ],
         showFilters: false,
         showFields: false,
-        datasetType: "bedfile",
+        datasetType: "bedfile"
     }),
     methods: {
-        isSelectionDisabled: function (item) {
+        getFieldOptions: function(field) {
+            if (field == "ValueType"){
+                return Object.keys(this.datasetMetadataMapping[this.datasetType]["ValueType"])
+            }
+            if (field == "Protein"){
+                return undefined
+            }
+            let fieldValues = new Set();
+            for (let options of Object.values(
+                this.datasetMetadataMapping[this.datasetType]["ValueType"]
+            )) {
+                if (field in options) {
+                    options[field].forEach(element =>
+                        fieldValues.add(element)
+                    );
+                }
+            }
+            if (fieldValues.size == 0){
+                return undefined
+            }
+            return Array.from(fieldValues);
+        },
+        isSelectionDisabled: function(item) {
             if (this.anyProcessing) {
                 return true;
             }
@@ -260,7 +286,7 @@ export default {
             return true;
         },
         fetchDatasets() {
-            this.fetchData("datasets/").then((response) => {
+            this.fetchData("datasets/").then(response => {
                 if (response) {
                     // success, store datasets
                     this.$store.commit("setDatasets", response.data);
@@ -272,25 +298,25 @@ export default {
             });
         },
         fetchAssemblies() {
-            this.fetchData("assemblies/").then((response) => {
+            this.fetchData("assemblies/").then(response => {
                 if (response) {
                     this.assemblies = response.data;
                     // set default
                     this.selectedAssembly = this.assemblies["Human"][0].id;
                 }
             });
-        },
+        }
     },
     computed: {
-        showStatus: function () {
+        showStatus: function() {
             return this.selectedFields.includes("status");
         },
-        possibleFields: function () {
+        possibleFields: function() {
             const outputFields = {
                 dataset_name: "Name",
                 valueType: "ValueType",
                 perturbation: "Perturbation",
-                cellCycleStage: "Cell cycle Stage",
+                cellCycleStage: "Cell cycle Stage"
             };
             let fields = new Set();
             // go through possible fields of this value type
@@ -301,17 +327,17 @@ export default {
                     this.datasetMetadataMapping[this.datasetType]["ValueType"][
                         valueType
                     ]
-                ).forEach((element) => fields.add(element));
+                ).forEach(element => fields.add(element));
             }
             Array.from(fields.values()).forEach(
-                (element) =>
+                element =>
                     (outputFields[fieldToPropertyMapping[element]] = element)
             );
             // put in status
             outputFields["status"] = "Status";
             return outputFields;
         },
-        fields: function () {
+        fields: function() {
             const outputFields = {};
             for (let [key, value] of Object.entries(this.possibleFields)) {
                 if (this.selectedFields.includes(key)) {
@@ -320,21 +346,22 @@ export default {
             }
             return outputFields;
         },
-        selected: function () {
-            return this.datasets.filter((el) => {
+        selected: function() {
+            return this.datasets.filter(el => {
                 return (
                     el.filetype == this.datasetType &&
                     el.assembly == this.selectedAssembly
                 );
             });
-        },
+        }
     },
-    created: function () {
+    created: function() {
         this.fetchDatasets();
-        this.datasetMetadataMapping =
-            this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
+        this.datasetMetadataMapping = this.$store.getters[
+            "getDatasetMetadataMapping"
+        ]["DatasetType"];
         this.assemblies = this.fetchAssemblies();
-    },
+    }
 };
 </script>
 
@@ -381,6 +408,6 @@ export default {
     max-width: 90vw;
 }
 .md-table-cell {
-    text-align: left;
+    text-align: center;
 }
 </style>
