@@ -6,3 +6,11 @@
 ));
 
 @import "~vue-material/dist/theme/all"; // Apply the theme
+
+.button-container .md-table-head-container {
+    height: 70px !important;
+}
+
+.button-container .md-table-head-label {
+    height: 70px !important;
+}

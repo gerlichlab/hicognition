@@ -45,9 +45,11 @@ export default {
 .md-dialog /deep/.md-dialog-container {
     max-width: 80vw;
     width: 1200px;
+    min-height: 800px;
 }
 
 .content {
     margin: 10px;
+    flex: 1 1;
 }
 </style>
