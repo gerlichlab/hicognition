@@ -152,10 +152,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+
 .md-dialog /deep/.md-dialog-container {
     max-width: 90vw;
-    min-width: 60vw;
-    min-height: 50vh;
+    min-width: 90vw;
+    min-height: 90vh;
 }
 
 .full-width {

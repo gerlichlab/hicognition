@@ -543,8 +543,11 @@ export default {
             this.selectedIds = [];
             this.$emit("selection-changed", this.selectedIds);
         },
+        selectedAssembly: function(){
+            this.selectedIds = [];
+            this.$emit("selection-changed", this.selectedIds);
+        },
         datasets: function () {
-            console.log("ran");
             this.selectedIds = [];
             this.$emit("selection-changed", this.selectedIds);
         },
