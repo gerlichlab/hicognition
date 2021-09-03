@@ -3,7 +3,7 @@
         <md-dialog :md-active.sync="showDialog">
             <md-dialog-title>Datasets</md-dialog-title>
             <md-content class="content">
-                <datasetTable :datasets="datasets"></datasetTable>
+                <datasetTable :datasets="datasets" @load-datasets="this.fetchDatasets"></datasetTable>
             </md-content>
             <md-dialog-actions>
                 <md-button class="md-primary" @click="$emit('close-dialog')"
@@ -34,6 +34,7 @@ export default {
     },
     methods: {
         fetchDatasets() {
+            this.datasets = undefined
             this.fetchData("datasets/").then((response) => {
                 if (response) {
                     // success, store datasets
@@ -65,7 +66,6 @@ export default {
     watch: {
         showDialog: function(val){
             if (val){
-                this.datasets = undefined
                 this.fetchDatasets()
             }
         }
