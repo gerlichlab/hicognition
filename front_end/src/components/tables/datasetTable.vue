@@ -218,7 +218,7 @@
                             >
                         </md-table-head>
                     </md-table-row>
-                    <md-table-row v-for="dataset in selected" :key="dataset.id">
+                    <md-table-row v-for="dataset in selected" :key="dataset.id" @click="handleTableRowClicked(dataset.id)" :class="getTableRowClass(dataset.id)">
                         <md-table-cell
                             v-for="(value, key) of fields"
                             :key="`${dataset.id}-${key}`"
@@ -297,6 +297,7 @@ export default {
         searchTerm: "",
         matchCase: false,
         selectedAssembly: undefined,
+        selectedIds: [],
         datasetMetadataMapping: undefined,
         filterSelection: [],
         filterFields: {},
@@ -312,6 +313,20 @@ export default {
         datasetType: "bedfile",
     }),
     methods: {
+        getTableRowClass: function(id){
+            if (this.selectedIds.includes(id)){
+                return "blue-background"
+            }
+            return ""
+        },
+        handleTableRowClicked: function(id){
+            if (this.selectedIds.includes(id)){
+                this.selectedIds.splice(this.selectedIds.indexOf(id), 1)
+            }else{
+                this.selectedIds.push(id)
+            }
+            this.$emit("selection-changed", this.selectedIds)
+        },
         getOptionClass: function (field, value) {
             let filterString = `${field}-${value}`
             if (this.filterSelection.includes(filterString)) {
