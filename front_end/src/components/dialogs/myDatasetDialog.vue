@@ -3,7 +3,11 @@
         <md-dialog :md-active.sync="showDialog">
             <md-dialog-title>Datasets</md-dialog-title>
             <md-content class="content">
-                <datasetTable :datasets="datasets" @load-datasets="this.fetchDatasets"></datasetTable>
+                <datasetTable
+                    :datasets="datasets"
+                    @load-datasets="this.fetchDatasets"
+                    @selection-changed="handleSelectionChange"
+                ></datasetTable>
             </md-content>
             <md-dialog-actions>
                 <md-button class="md-primary" @click="$emit('close-dialog')"
@@ -22,19 +26,23 @@ export default {
     name: "MyDatasetDialog",
     mixins: [apiMixin],
     components: {
-        datasetTable
+        datasetTable,
     },
-    data: function(){
+    data: function () {
         return {
-            datasets: undefined
-        }
+            datasets: undefined,
+            selection: []
+        };
     },
     props: {
-        dialog: Boolean
+        dialog: Boolean,
     },
     methods: {
+        handleSelectionChange: function(selection){
+            this.selection = selection
+        },
         fetchDatasets() {
-            this.datasets = undefined
+            this.datasets = undefined;
             this.fetchData("datasets/").then((response) => {
                 if (response) {
                     // success, store datasets
@@ -48,28 +56,31 @@ export default {
         },
     },
     computed: {
-        showDialog: function() {
+        showControls: function(){
+            return this.selection.length !== 0
+        },
+        showDialog: function () {
             return this.dialog;
-        }
+        },
     },
     watch: {
-        showDialog: function(val) {
+        showDialog: function (val) {
             if (val) {
                 // switched on
                 this.$emit("get-datasets");
             }
-        }
+        },
     },
-    mounted: function() {
-        this.fetchDatasets()
+    mounted: function () {
+        this.fetchDatasets();
     },
     watch: {
-        showDialog: function(val){
-            if (val){
-                this.fetchDatasets()
+        showDialog: function (val) {
+            if (val) {
+                this.fetchDatasets();
             }
-        }
-    }
+        },
+    },
 };
 </script>
 

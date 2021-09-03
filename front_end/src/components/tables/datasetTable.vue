@@ -17,36 +17,46 @@
             <div class="md-layout md-gutter md-alignment-center-center">
                 <div class="md-layout-item md-size-5 small-vertical-margin">
                     <md-button
-                        class="md-dense md-raised button-margin md-primary md-icon-button"
+                        class="
+                            md-dense md-raised
+                            button-margin
+                            md-primary md-icon-button
+                        "
                         @click="$emit('load-datasets')"
                     >
                         <md-icon>cached</md-icon>
                     </md-button>
                 </div>
                 <div class="md-layout-item md-size-25 small-vertical-margin">
-                        <md-field class="small-vertical-margin">
-                            <label for="assembly">Genome assembly</label>
-                            <md-select
-                                name="assembly"
-                                id="assembly"
-                                v-model="selectedAssembly"
+                    <md-field class="small-vertical-margin">
+                        <label for="assembly">Genome assembly</label>
+                        <md-select
+                            name="assembly"
+                            id="assembly"
+                            v-model="selectedAssembly"
+                        >
+                            <md-optgroup
+                                v-for="(values, org) in assemblies"
+                                :key="org"
+                                :label="org"
                             >
-                                <md-optgroup
-                                    v-for="(values, org) in assemblies"
-                                    :key="org"
-                                    :label="org"
+                                <md-option
+                                    v-for="assembly in values"
+                                    :key="assembly.id"
+                                    :value="assembly.id"
+                                    >{{ assembly.name }}</md-option
                                 >
-                                    <md-option
-                                        v-for="assembly in values"
-                                        :key="assembly.id"
-                                        :value="assembly.id"
-                                        >{{ assembly.name }}</md-option
-                                    >
-                                </md-optgroup>
-                            </md-select>
-                        </md-field>
+                            </md-optgroup>
+                        </md-select>
+                    </md-field>
                 </div>
-                <div class="md-layout-item md-layout md-gutter md-size-45 small-vertical-margin md-alignment-center-center">
+                <div
+                    class="
+                        md-layout-item md-layout md-gutter md-size-45
+                        small-vertical-margin
+                        md-alignment-center-center
+                    "
+                >
                     <div class="md-layout-item md-size-80">
                         <md-radio v-model="datasetType" value="bedfile"
                             >Region</md-radio
@@ -67,10 +77,15 @@
                         </md-field>
                     </div>
                     <div class="md-layout-item md-size-20 small-padding">
-                            <md-button :class="caseButtonClass" @click="matchCase = !matchCase">
-                                <md-icon>text_fields</md-icon>
-                                <md-tooltip md-direction="top">Match Case</md-tooltip>
-                            </md-button>
+                        <md-button
+                            :class="caseButtonClass"
+                            @click="matchCase = !matchCase"
+                        >
+                            <md-icon>text_fields</md-icon>
+                            <md-tooltip md-direction="top"
+                                >Match Case</md-tooltip
+                            >
+                        </md-button>
                     </div>
                 </div>
             </div>
@@ -91,7 +106,7 @@
                             showFields = false;
                         "
                     >
-                        <md-icon >filter_alt</md-icon>
+                        <md-icon>filter_alt</md-icon>
                     </md-button>
                 </div>
                 <div class="md-layout-item">
@@ -120,11 +135,9 @@
                                 :mdCloseOnClick="false"
                                 :mdCloseOnSelect="false"
                             >
-                                <md-button
-                                    md-menu-trigger
-                                    class="md-raised"
-                                    >{{ value }}</md-button
-                                >
+                                <md-button md-menu-trigger class="md-raised">{{
+                                    value
+                                }}</md-button>
 
                                 <md-menu-content
                                     style="z-index: 500"
@@ -143,8 +156,9 @@
                             </md-menu>
                         </div>
                     </div>
-                    <div class="md-layout-item md-layout md-gutter md-size-45">
-                    </div>
+                    <div
+                        class="md-layout-item md-layout md-gutter md-size-45"
+                    ></div>
                 </div>
             </div>
             <!-- Fields --->
@@ -178,11 +192,11 @@
                         selection-field
                     "
                     v-if="showFields"
-                    style="z-index: 500; max-height: 30vh; overflow: auto;"
+                    style="z-index: 500; max-height: 30vh; overflow: auto"
                 >
                     <div
                         class="md-layout-item md-size-15"
-                        style="padding: 0px;"
+                        style="padding: 0px"
                         v-for="(value, key) in possibleFields"
                         :key="key"
                     >
@@ -218,7 +232,12 @@
                             >
                         </md-table-head>
                     </md-table-row>
-                    <md-table-row v-for="dataset in selected" :key="dataset.id" @click="handleTableRowClicked(dataset.id)" :class="getTableRowClass(dataset.id)">
+                    <md-table-row
+                        v-for="dataset in selected"
+                        :key="dataset.id"
+                        @click="handleTableRowClicked(dataset.id)"
+                        :class="getTableRowClass(dataset.id)"
+                    >
                         <md-table-cell
                             v-for="(value, key) of fields"
                             :key="`${dataset.id}-${key}`"
@@ -290,7 +309,7 @@ export default {
     name: "datasetTable",
     mixins: [apiMixin],
     props: {
-        datasets: Array
+        datasets: Array,
     },
     data: () => ({
         assemblies: undefined,
@@ -313,33 +332,36 @@ export default {
         datasetType: "bedfile",
     }),
     methods: {
-        getTableRowClass: function(id){
-            if (this.selectedIds.includes(id)){
-                return "blue-background"
+        getTableRowClass: function (id) {
+            if (this.selectedIds.includes(id)) {
+                return "blue-background";
             }
-            return ""
+            return "";
         },
-        handleTableRowClicked: function(id){
-            if (this.selectedIds.includes(id)){
-                this.selectedIds.splice(this.selectedIds.indexOf(id), 1)
-            }else{
-                this.selectedIds.push(id)
+        handleTableRowClicked: function (id) {
+            if (this.selectedIds.includes(id)) {
+                this.selectedIds.splice(this.selectedIds.indexOf(id), 1);
+            } else {
+                this.selectedIds.push(id);
             }
-            this.$emit("selection-changed", this.selectedIds)
+            this.$emit("selection-changed", this.selectedIds);
         },
         getOptionClass: function (field, value) {
-            let filterString = `${field}-${value}`
+            let filterString = `${field}-${value}`;
             if (this.filterSelection.includes(filterString)) {
                 return "blue-background";
             }
             return "";
         },
         setFilterSelection: function (field, value) {
-            let filterString = `${field}-${value}`
+            let filterString = `${field}-${value}`;
             if (this.filterSelection.includes(filterString)) {
-                this.filterSelection.splice(this.filterSelection.indexOf(filterString), 1)
+                this.filterSelection.splice(
+                    this.filterSelection.indexOf(filterString),
+                    1
+                );
             } else {
-                this.filterSelection.push(filterString)
+                this.filterSelection.push(filterString);
             }
         },
         getFieldOptions: function (field) {
@@ -396,64 +418,68 @@ export default {
         },
         filterDatasetsOnMetadata(datasets) {
             return datasets.filter((el) => {
-                let output = true
-                let atLeastOne = false
+                let output = true;
+                let atLeastOne = false;
                 for (let [key, value] of Object.entries(this.filterFields)) {
-                    if (!el[key]){
-                        continue
+                    if (!el[key]) {
+                        continue;
                     }
-                    let filterString = `${value}-${el[key]}`
-                    atLeastOne = true
+                    let filterString = `${value}-${el[key]}`;
+                    atLeastOne = true;
                     if (!this.filterSelection.includes(filterString)) {
-                        output = false
+                        output = false;
                     }
                 }
-                return output && atLeastOne
+                return output && atLeastOne;
             });
         },
-        filterDatasetsOnSearchTerm(datasets){
-            if (this.searchTerm === ""){
-                return datasets
+        filterDatasetsOnSearchTerm(datasets) {
+            if (this.searchTerm === "") {
+                return datasets;
             }
             return datasets.filter((el) => {
-                var included = false
-                for (let key of Object.keys(this.fields)){
-                    if (typeof el[key] == 'string'){
-                        if (this.matchCase){
-                            if (el[key].includes(this.searchTerm)){
-                                included = true
+                var included = false;
+                for (let key of Object.keys(this.fields)) {
+                    if (typeof el[key] == "string") {
+                        if (this.matchCase) {
+                            if (el[key].includes(this.searchTerm)) {
+                                included = true;
                             }
-                        }else{
-                            if (el[key].toLowerCase().includes(this.searchTerm.toLowerCase())){
-                                included = true
+                        } else {
+                            if (
+                                el[key]
+                                    .toLowerCase()
+                                    .includes(this.searchTerm.toLowerCase())
+                            ) {
+                                included = true;
                             }
                         }
                     }
                 }
-                return included
-            })
+                return included;
+            });
         },
-        createFilterFields(){
+        createFilterFields() {
             let fields = {};
             this.filterSelection = [];
             for (let [key, value] of Object.entries(this.possibleFields)) {
                 if (this.getFieldOptions(value)) {
                     this.getFieldOptions(value).map((option) => {
-                        let filterString = `${value}-${option}`
-                        this.filterSelection.push(filterString)
-                    } )
+                        let filterString = `${value}-${option}`;
+                        this.filterSelection.push(filterString);
+                    });
                     fields[key] = value;
                 }
             }
-            this.filterFields = fields
-        }
+            this.filterFields = fields;
+        },
     },
     computed: {
-        caseButtonClass: function(){
-            if (this.matchCase){
-                return "md-icon-button md-accent md-raised large-top-margin"
-            }else{
-                return "md-icon-button large-top-margin"
+        caseButtonClass: function () {
+            if (this.matchCase) {
+                return "md-icon-button md-accent md-raised large-top-margin";
+            } else {
+                return "md-icon-button large-top-margin";
             }
         },
         showStatus: function () {
@@ -495,25 +521,37 @@ export default {
             return outputFields;
         },
         selected: function () {
-            if (this.datasets){
-                let fieldFiltered = this.filterDatasetsOnFields(this.datasets)
-                let metadataFiltered = this.filterDatasetsOnMetadata(fieldFiltered)
-                return this.filterDatasetsOnSearchTerm(metadataFiltered)
+            if (this.datasets) {
+                // if filters run reset selection
+                let fieldFiltered = this.filterDatasetsOnFields(this.datasets);
+                let metadataFiltered =
+                    this.filterDatasetsOnMetadata(fieldFiltered);
+                return this.filterDatasetsOnSearchTerm(metadataFiltered);
             }
-            return []
+            return [];
         },
     },
     watch: {
-        datasetType: function(){
-            this.createFilterFields()
-            this.searchTerm = ""
-        }
+        datasetType: function () {
+            this.createFilterFields();
+            this.searchTerm = "";
+            this.selectedIds = [];
+            this.$emit("selection-changed", this.selectedIds);
+        },
+        searchTerm: function () {
+            this.selectedIds = [];
+            this.$emit("selection-changed", this.selectedIds);
+        },
+        filterFields: function () {
+            this.selectedIds = [];
+            this.$emit("selection-changed", this.selectedIds);
+        },
     },
     created: function () {
         this.datasetMetadataMapping =
             this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
         this.assemblies = this.fetchAssemblies();
-        this.createFilterFields()
+        this.createFilterFields();
     },
 };
 </script>
@@ -527,7 +565,6 @@ export default {
 .large-top-margin {
     margin-top: 20px;
 }
-
 
 .small-vertical-margin {
     margin-top: 2px;
