@@ -110,9 +110,9 @@
                     v-if="showFilters"
                     style="z-index: 500; max-height: 30vh; overflow: auto"
                 >
-                    <div class="md-layout-item md-layout md-gutter md-size-33">
+                    <div class="md-layout-item md-layout md-gutter md-size-100">
                         <div
-                            class="md-layout-item md-size-50 small-padding"
+                            class="md-layout-item md-size-20 small-padding"
                             v-for="(value, key) in filterFields"
                             :key="key"
                         >
@@ -144,9 +144,6 @@
                             </md-menu>
                         </div>
                     </div>
-                    <div
-                        class="md-layout-item md-layout md-gutter md-size-45"
-                    ></div>
                 </div>
             </div>
             <!-- Fields --->
