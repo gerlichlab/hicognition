@@ -10,11 +10,63 @@
                 ></datasetTable>
             </md-content>
             <md-dialog-actions>
-                <md-button class="md-primary" @click="$emit('close-dialog')"
-                    >Close</md-button
-                >
+
+                <div class="full-width">
+                    <div class="float-left">
+                        <md-button
+                            class="md-secondary md-raised md-accent"
+                            @click="showDelete = true"
+                            v-if="showControls && !showDelete"
+                            >Delete</md-button
+                        >
+                    </div>
+                    <div class="float-left">
+                        <md-button
+                            class="md-raised"
+                            v-if="showDelete"
+                            >Are you sure?</md-button
+                        >
+                    </div>
+                    <div class="float-left">
+                        <md-button
+                            class="md-raised md-accent"
+                            @click="handleDelete"
+                            v-if="showDelete"
+                            >Yes</md-button
+                        >
+                    </div>
+                    <div class="float-left">
+                        <md-button
+                            class="md-raised md-primary"
+                            @click="showDelete = false"
+                            v-if="showDelete"
+                            >No</md-button
+                        >
+                    </div>
+                    <div class="float-left">
+                        <md-button
+                            class="md-primary"
+                            @click="handleEditClick"
+                            v-if="showControls && !showDelete"
+                            >Edit</md-button
+                        >
+                    </div>
+                    <div class="float-right">
+                        <md-button
+                            class="md-secondary"
+                            @click="
+                                $emit('close-dialog');
+                                selection = []
+                            "
+                            >Close</md-button
+                        >
+                    </div>
+                </div>
             </md-dialog-actions>
         </md-dialog>
+        <md-snackbar :md-active.sync="datasetsDeleted"
+            >Deletion done!</md-snackbar
+        >
     </div>
 </template>
 
@@ -30,19 +82,34 @@ export default {
     },
     data: function () {
         return {
-            datasets: undefined,
-            selection: []
+            datasets: [],
+            showDelete: false,
+            clickedDelete: false,
+            datasetsDeleted: false,
+            selection: [],
         };
     },
     props: {
         dialog: Boolean,
     },
     methods: {
-        handleSelectionChange: function(selection){
-            this.selection = selection
+        handleSelectionChange: function (selection) {
+            this.selection = selection;
+        },
+        handleEditClick: function(){
+            console.log("IE")
+        },
+        handleDelete: async function() {
+            this.showDelete = false;
+            for (let id of this.selection) {
+                await this.deleteData(`datasets/${id}/`);
+            }
+            this.datasetsDeleted = true;
+            this.selection = [];
+            this.fetchDatasets();
         },
         fetchDatasets() {
-            this.datasets = undefined;
+            this.datasets = [];
             this.fetchData("datasets/").then((response) => {
                 if (response) {
                     // success, store datasets
@@ -56,8 +123,8 @@ export default {
         },
     },
     computed: {
-        showControls: function(){
-            return this.selection.length !== 0
+        showControls: function () {
+            return this.selection.length !== 0;
         },
         showDialog: function () {
             return this.dialog;
@@ -90,6 +157,20 @@ export default {
     min-width: 60vw;
     min-height: 50vh;
 }
+
+.full-width {
+    width: 100%;
+}
+
+.float-left {
+    float: left;
+    margin: 5px;
+}
+
+.float-right {
+    float: right;
+}
+
 
 .content {
     margin: 10px;

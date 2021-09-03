@@ -1,18 +1,6 @@
 <template>
     <div class="intermediate-margin">
-        <div
-            v-if="datasets === undefined || assemblies === undefined"
-            class="wait-spinner-container"
-        >
-            <div>
-                <md-progress-spinner
-                    :md-diameter="100"
-                    :md-stroke="10"
-                    md-mode="indeterminate"
-                ></md-progress-spinner>
-            </div>
-        </div>
-        <div v-else>
+        <div>
             <!--assembly and region type--->
             <div class="md-layout md-gutter md-alignment-center-center">
                 <div class="md-layout-item md-size-5 small-vertical-margin">
@@ -281,6 +269,18 @@
                         </md-table-cell>
                     </md-table-row>
                 </md-table>
+                <div
+                    v-else-if="datasets.length == 0 || assemblies === undefined"
+                    class="wait-spinner-container"
+                >
+                    <div>
+                        <md-progress-spinner
+                            :md-diameter="100"
+                            :md-stroke="10"
+                            md-mode="indeterminate"
+                        ></md-progress-spinner>
+                    </div>
+                </div>
                 <md-empty-state
                     v-else
                     md-label="No datasets found"
@@ -546,6 +546,11 @@ export default {
             this.selectedIds = [];
             this.$emit("selection-changed", this.selectedIds);
         },
+        datasets: function () {
+            console.log("ran");
+            this.selectedIds = [];
+            this.$emit("selection-changed", this.selectedIds);
+        },
     },
     created: function () {
         this.datasetMetadataMapping =
@@ -601,7 +606,7 @@ export default {
 
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.3s ease;
+    transition: opacity 0.1s ease;
 }
 .fade-enter, .fade-leave-to
 /* .component-fade-leave-active below version 2.1.8 */ {
