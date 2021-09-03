@@ -171,7 +171,7 @@
                     style="z-index: 500; max-height: 30vh; overflow: auto;"
                 >
                     <div
-                        class="md-layout-item md-large-size-15"
+                        class="md-layout-item md-size-15"
                         style="padding: 0px;"
                         v-for="(value, key) in possibleFields"
                         :key="key"
@@ -279,8 +279,10 @@ const fieldToPropertyMapping = {
 export default {
     name: "datasetTable",
     mixins: [apiMixin],
+    props: {
+        datasets: Array
+    },
     data: () => ({
-        datasets: undefined,
         assemblies: undefined,
         searchTerm: "",
         matchCase: false,
@@ -349,18 +351,6 @@ export default {
                 return false;
             }
             return true;
-        },
-        fetchDatasets() {
-            this.fetchData("datasets/").then((response) => {
-                if (response) {
-                    // success, store datasets
-                    this.$store.commit("setDatasets", response.data);
-                    // update displayed datasets
-                    setTimeout(() => {
-                        this.datasets = response.data;
-                    }, 100);
-                }
-            });
         },
         fetchAssemblies() {
             this.fetchData("assemblies/").then((response) => {
@@ -495,7 +485,6 @@ export default {
         }
     },
     created: function () {
-        this.fetchDatasets();
         this.datasetMetadataMapping =
             this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
         this.assemblies = this.fetchAssemblies();
