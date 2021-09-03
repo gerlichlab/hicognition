@@ -59,7 +59,7 @@
             >
                 <div class="md-layout-item md-size-10 small-vertical-margin">
                     <md-button
-                        class="md-icon-button"
+                        class="md-icon-button md-accent"
                         @click="
                             showFilters = !showFilters;
                             showFields = false;
@@ -69,30 +69,52 @@
                     </md-button>
                 </div>
                 <div class="md-layout-item">
-                    <span class="md-caption">Filter</span>
+                    <span class="md-caption md-accent">Filter</span>
                 </div>
                 <div
-                    class="md-layout-item md-layout md-gutter md-size-100 small-vertical-margin selection-field"
+                    class="
+                        md-layout-item md-layout md-gutter md-size-100
+                        small-vertical-margin
+                        selection-field
+                        small-padding
+                    "
                     v-if="showFilters"
-                    style="z-index: 500; max-height: 30vh; overflow:auto;"
+                    style="z-index: 500; max-height: 30vh; overflow: auto"
                 >
-                    <div class="md-layout-item md-layout md-gutter md-size-50">
+                    <div class="md-layout-item md-layout md-gutter md-size-33">
                         <div
-                            class="md-layout-item md-size-50"
-                            v-for="(value, key) in possibleFields"
+                            class="md-layout-item md-size-50 small-padding"
+                            v-for="(value, key) in filterFields"
                             :key="key"
-                            v-if="getFieldOptions(value) !== undefined"
                         >
-                            <md-field>
-                                <label :for="key">{{ value }}</label>
-                                <md-select :name="key" :id="key" multiple>
-                                    <md-option
+                            <md-menu
+                                md-direction="bottom-start"
+                                md-size="auto"
+                                md-align-trigger
+                                :mdCloseOnClick="false"
+                                :mdCloseOnSelect="false"
+                            >
+                                <md-button
+                                    md-menu-trigger
+                                    class="md-raised"
+                                    >{{ value }}</md-button
+                                >
+
+                                <md-menu-content
+                                    style="z-index: 500"
+                                    class="blue-background"
+                                >
+                                    <md-menu-item
                                         v-for="option in getFieldOptions(value)"
                                         :key="option"
-                                        >{{ option }}</md-option
+                                        @click="
+                                            setFilterSelection(value, option)
+                                        "
+                                        :class="getOptionClass(value, option)"
+                                        >{{ option }}</md-menu-item
                                     >
-                                </md-select>
-                            </md-field>
+                                </md-menu-content>
+                            </md-menu>
                         </div>
                     </div>
                 </div>
@@ -109,7 +131,7 @@
             >
                 <div class="md-layout-item md-size-10 small-vertical-margin">
                     <md-button
-                        class="md-icon-button"
+                        class="md-icon-button md-accent"
                         @click="
                             showFields = !showFields;
                             showFilters = false;
@@ -119,7 +141,7 @@
                     </md-button>
                 </div>
                 <div class="md-layout-item">
-                    <span class="md-caption">Fields</span>
+                    <span class="md-caption md-accent">Fields</span>
                 </div>
                 <div
                     class="
@@ -128,7 +150,7 @@
                         selection-field
                     "
                     v-if="showFields"
-                    style="z-index: 500; max-height: 30vh; overflow:auto;"
+                    style="z-index: 500; max-height: 30vh; overflow: auto"
                 >
                     <div
                         class="md-layout-item md-size-20"
@@ -144,11 +166,16 @@
             <!--Table--->
             <transition name="fade" mode="out-in">
                 <md-table
-                    style="max-height: 40vh;"
+                    style="max-height: 40vh"
                     v-if="selected.length != 0 && selectedFields.length != 0"
                 >
                     <md-table-row
-                        style="position: sticky; top:0; background: white; z-index:100;"
+                        style="
+                            position: sticky;
+                            top: 0;
+                            background: white;
+                            z-index: 100;
+                        "
                     >
                         <md-table-head
                             v-for="(value, key) in fields"
@@ -210,9 +237,7 @@
                     v-else
                     md-label="No datasets found"
                     style="flexgrow: true"
-                    :md-description="
-                        `No datasets found for this query. Try a different search term or create a new dataset.`
-                    "
+                    :md-description="`No datasets found for this query. Try a different search term or create a new dataset.`"
                 >
                 </md-empty-state>
             </transition>
@@ -229,7 +254,7 @@ const fieldToPropertyMapping = {
     Normalization: "normalization",
     DerivationType: "derivationType",
     Protein: "protein",
-    Directionality: "directionality"
+    Directionality: "directionality",
 };
 
 export default {
@@ -240,41 +265,60 @@ export default {
         assemblies: undefined,
         selectedAssembly: undefined,
         datasetMetadataMapping: undefined,
+        filterSelection: [],
+        filterFields: {},
         selectedFields: [
             "dataset_name",
             "valueType",
             "perturbation",
             "cellCycleStage",
-            "status"
+            "status",
         ],
         showFilters: false,
         showFields: false,
-        datasetType: "bedfile"
+        datasetType: "bedfile",
     }),
     methods: {
-        getFieldOptions: function(field) {
-            if (field == "ValueType"){
-                return Object.keys(this.datasetMetadataMapping[this.datasetType]["ValueType"])
+        getOptionClass: function (field, value) {
+            let filterString = `${field}-${value}`
+            if (this.filterSelection.includes(filterString)) {
+                return "blue-background";
             }
-            if (field == "Protein"){
-                return undefined
+            return "";
+        },
+        setFilterSelection: function (field, value) {
+            let filterString = `${field}-${value}`
+            if (this.filterSelection.includes(filterString)) {
+                this.filterSelection.splice(this.filterSelection.indexOf(filterString), 1)
+            } else {
+                this.filterSelection.push(filterString)
+            }
+        },
+        getFieldOptions: function (field) {
+            if (field == "ValueType") {
+                return Object.keys(
+                    this.datasetMetadataMapping[this.datasetType]["ValueType"]
+                );
+            }
+            if (field == "Protein") {
+                return undefined;
             }
             let fieldValues = new Set();
             for (let options of Object.values(
                 this.datasetMetadataMapping[this.datasetType]["ValueType"]
             )) {
                 if (field in options) {
-                    options[field].forEach(element =>
+                    options[field].forEach((element) =>
                         fieldValues.add(element)
                     );
                 }
             }
-            if (fieldValues.size == 0){
-                return undefined
+            if (fieldValues.size == 0) {
+                return undefined;
             }
             return Array.from(fieldValues);
         },
-        isSelectionDisabled: function(item) {
+        isSelectionDisabled: function (item) {
             if (this.anyProcessing) {
                 return true;
             }
@@ -286,7 +330,7 @@ export default {
             return true;
         },
         fetchDatasets() {
-            this.fetchData("datasets/").then(response => {
+            this.fetchData("datasets/").then((response) => {
                 if (response) {
                     // success, store datasets
                     this.$store.commit("setDatasets", response.data);
@@ -298,25 +342,64 @@ export default {
             });
         },
         fetchAssemblies() {
-            this.fetchData("assemblies/").then(response => {
+            this.fetchData("assemblies/").then((response) => {
                 if (response) {
                     this.assemblies = response.data;
                     // set default
                     this.selectedAssembly = this.assemblies["Human"][0].id;
                 }
             });
+        },
+        filterDatasetsOnFields(datasets) {
+            return datasets.filter((el) => {
+                return (
+                    el.filetype == this.datasetType &&
+                    el.assembly == this.selectedAssembly
+                );
+            });
+        },
+        filterDatasetsOnMetadata(datasets) {
+            return datasets.filter((el) => {
+                let output = true
+                let atLeastOne = false
+                for (let [key, value] of Object.entries(this.filterFields)) {
+                    if (!el[key]){
+                        continue
+                    }
+                    let filterString = `${value}-${el[key]}`
+                    atLeastOne = true
+                    if (!this.filterSelection.includes(filterString)) {
+                        output = false
+                    }
+                }
+                return output && atLeastOne
+            });
+        },
+        createFilterFields(){
+            let fields = {};
+            this.filterSelection = [];
+            for (let [key, value] of Object.entries(this.possibleFields)) {
+                if (this.getFieldOptions(value)) {
+                    this.getFieldOptions(value).map((option) => {
+                        let filterString = `${value}-${option}`
+                        this.filterSelection.push(filterString)
+                    } )
+                    fields[key] = value;
+                }
+            }
+            this.filterFields = fields
         }
     },
     computed: {
-        showStatus: function() {
+        showStatus: function () {
             return this.selectedFields.includes("status");
         },
-        possibleFields: function() {
+        possibleFields: function () {
             const outputFields = {
                 dataset_name: "Name",
                 valueType: "ValueType",
                 perturbation: "Perturbation",
-                cellCycleStage: "Cell cycle Stage"
+                cellCycleStage: "Cell cycle Stage",
             };
             let fields = new Set();
             // go through possible fields of this value type
@@ -327,17 +410,17 @@ export default {
                     this.datasetMetadataMapping[this.datasetType]["ValueType"][
                         valueType
                     ]
-                ).forEach(element => fields.add(element));
+                ).forEach((element) => fields.add(element));
             }
             Array.from(fields.values()).forEach(
-                element =>
+                (element) =>
                     (outputFields[fieldToPropertyMapping[element]] = element)
             );
             // put in status
             outputFields["status"] = "Status";
             return outputFields;
         },
-        fields: function() {
+        fields: function () {
             const outputFields = {};
             for (let [key, value] of Object.entries(this.possibleFields)) {
                 if (this.selectedFields.includes(key)) {
@@ -346,22 +429,26 @@ export default {
             }
             return outputFields;
         },
-        selected: function() {
-            return this.datasets.filter(el => {
-                return (
-                    el.filetype == this.datasetType &&
-                    el.assembly == this.selectedAssembly
-                );
-            });
+        selected: function () {
+            if (this.datasets){
+                let fieldFiltered = this.filterDatasetsOnFields(this.datasets)
+                return this.filterDatasetsOnMetadata(fieldFiltered)
+            }
+            return []
+        },
+    },
+    watch: {
+        datasetType: function(){
+            this.createFilterFields()
         }
     },
-    created: function() {
+    created: function () {
         this.fetchDatasets();
-        this.datasetMetadataMapping = this.$store.getters[
-            "getDatasetMetadataMapping"
-        ]["DatasetType"];
+        this.datasetMetadataMapping =
+            this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
         this.assemblies = this.fetchAssemblies();
-    }
+        this.createFilterFields()
+    },
 };
 </script>
 
@@ -376,7 +463,15 @@ export default {
     margin-bottom: 5px;
 }
 
+.small-padding {
+    padding: 5px !important;
+}
+
 .selection-field {
+    background: rgba(200, 200, 200, 1);
+}
+
+.blue-background {
     background: var(--md-theme-default-primary);
 }
 
