@@ -27,7 +27,7 @@ from .helpers import (
     remove_failed_tasks,
     get_all_interval_ids,
     parse_binsizes,
-    dataset_requirements_fullfilled,
+    post_dataset_requirements_fullfilled,
     add_fields_to_dataset
 )
 from .errors import forbidden, invalid, not_found
@@ -57,7 +57,7 @@ def add_dataset():
         if fileEnding.lower() not in correctFileEndings[request.form["filetype"]]:
             return True
         # check attributes
-        if not dataset_requirements_fullfilled(request.form):
+        if not post_dataset_requirements_fullfilled(request.form):
             return True
         return False
 

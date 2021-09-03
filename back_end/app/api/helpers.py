@@ -13,12 +13,15 @@ from ..models import (
 )
 
 COMMON_REQUIRED_KEYS = [
-    "assembly",
     "cellCycleStage",
     "datasetName",
-    "filetype",
     "perturbation",
     "ValueType",
+]
+
+ADD_REQUIRED_KEYS = [
+    "assembly",
+    "filetype",
 ]
 
 DATASET_META_FIELDS = {
@@ -31,18 +34,55 @@ DATASET_META_FIELDS = {
     "Normalization": "normalization",
     "DerivationType": "derivationType",
     "Protein": "protein",
-    "Directionality": "directionality"
+    "Directionality": "directionality",
+}
+
+DATASET_META_FIELDS_MODIFY = {
+    "public": "public",
+    "cellCycleStage": "cellCycleStage",
+    "perturbation": "perturbation",
+    "ValueType": "valueType",
+    "Method": "method",
+    "Normalization": "normalization",
+    "DerivationType": "derivationType",
+    "Protein": "protein",
+    "Directionality": "directionality",
 }
 
 
-def dataset_requirements_fullfilled(form):
+def modify_dataset_requirements_fulfilled(form):
+    """Checks whether all fields that are needed to modiy a dataset are fulfilled"""
+    form_keys = set(form.keys())
+    if any(key not in form_keys for key in COMMON_REQUIRED_KEYS):
+        return False
+    # check metadata
+    datasetTypeMapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
+    value_types = datasetTypeMapping[form["filetype"]]["ValueType"]
+    if form["ValueType"] not in value_types.keys():
+        return False
+    # check value type members
+    for key, possible_values in value_types[form["ValueType"]].items():
+        if key not in form_keys:
+            return False
+        # check whether field is freetext
+        if possible_values == "freetext":
+            continue
+        # check that value in form corresponds to possible values
+        if form[key] not in possible_values:
+            return False
+    return True
+
+
+def post_dataset_requirements_fullfilled(form):
     """checks whether form containing information to create dataset conforms
     with the passed dataset_attribute_mapping."""
     # check common things
     form_keys = set(form.keys())
     if any(key not in form_keys for key in COMMON_REQUIRED_KEYS):
         return False
-    # check value type
+    if any(key not in form_keys for key in ADD_REQUIRED_KEYS):
+        return False
+    # check metadata
     datasetTypeMapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
     value_types = datasetTypeMapping[form["filetype"]]["ValueType"]
     if form["ValueType"] not in value_types.keys():
@@ -65,6 +105,16 @@ def add_fields_to_dataset(entry, form):
     for form_key, dataset_field in DATASET_META_FIELDS.items():
         if form_key in form:
             entry.__setattr__(dataset_field, form[form_key])
+
+
+def blank_dataset(entry):
+    """blanks metadata fields of dataset"""
+    # common fields
+    for field in COMMON_REQUIRED_KEYS:
+        entry[field] = "undefined"
+    # metadata_fields
+    for key, value in DATASET_META_FIELDS_MODIFY.items():
+        entry[key] = "undefined"
 
 
 def is_access_to_dataset_denied(dataset, g):
