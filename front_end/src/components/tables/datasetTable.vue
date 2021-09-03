@@ -14,38 +14,54 @@
             <!--assembly and region type--->
             <div class="md-layout md-gutter md-alignment-center-center">
                 <div class="md-layout-item md-size-25 small-vertical-margin">
-                    <md-field class="small-vertical-margin">
-                        <label for="assembly">Genome assembly</label>
-                        <md-select
-                            name="assembly"
-                            id="assembly"
-                            v-model="selectedAssembly"
-                        >
-                            <md-optgroup
-                                v-for="(values, org) in assemblies"
-                                :key="org"
-                                :label="org"
+                        <md-field class="small-vertical-margin">
+                            <label for="assembly">Genome assembly</label>
+                            <md-select
+                                name="assembly"
+                                id="assembly"
+                                v-model="selectedAssembly"
                             >
-                                <md-option
-                                    v-for="assembly in values"
-                                    :key="assembly.id"
-                                    :value="assembly.id"
-                                    >{{ assembly.name }}</md-option
+                                <md-optgroup
+                                    v-for="(values, org) in assemblies"
+                                    :key="org"
+                                    :label="org"
                                 >
-                            </md-optgroup>
-                        </md-select>
-                    </md-field>
+                                    <md-option
+                                        v-for="assembly in values"
+                                        :key="assembly.id"
+                                        :value="assembly.id"
+                                        >{{ assembly.name }}</md-option
+                                    >
+                                </md-optgroup>
+                            </md-select>
+                        </md-field>
                 </div>
-                <div class="md-layout-item md-size-75 small-vertical-margin">
-                    <md-radio v-model="datasetType" value="bedfile"
-                        >Region</md-radio
-                    >
-                    <md-radio v-model="datasetType" value="bigwig"
-                        >1D-feature</md-radio
-                    >
-                    <md-radio v-model="datasetType" value="cooler"
-                        >2D-feature</md-radio
-                    >
+                <div class="md-layout-item md-layout md-gutter md-size-50 small-vertical-margin md-alignment-center-center">
+                    <div class="md-layout-item md-size-80">
+                        <md-radio v-model="datasetType" value="bedfile"
+                            >Region</md-radio
+                        >
+                        <md-radio v-model="datasetType" value="bigwig"
+                            >1D-feature</md-radio
+                        >
+                        <md-radio v-model="datasetType" value="cooler"
+                            >2D-feature</md-radio
+                        >
+                    </div>
+                </div>
+                <div class="md-layout-item md-layout md-gutter md-size-25">
+                    <div class="md-layout-item md-size-80 no-padding-right">
+                        <md-field>
+                            <label>Search</label>
+                            <md-input v-model="searchTerm"></md-input>
+                        </md-field>
+                    </div>
+                    <div class="md-layout-item md-size-20 small-padding">
+                            <md-button :class="caseButtonClass" @click="matchCase = !matchCase">
+                                <md-icon>text_fields</md-icon>
+                                <md-tooltip md-direction="top">Match Case</md-tooltip>
+                            </md-button>
+                    </div>
                 </div>
             </div>
             <!-- Filters --->
@@ -65,7 +81,7 @@
                             showFields = false;
                         "
                     >
-                        <md-icon>filter_alt</md-icon>
+                        <md-icon >filter_alt</md-icon>
                     </md-button>
                 </div>
                 <div class="md-layout-item">
@@ -117,6 +133,8 @@
                             </md-menu>
                         </div>
                     </div>
+                    <div class="md-layout-item md-layout md-gutter md-size-45">
+                    </div>
                 </div>
             </div>
             <!-- Fields --->
@@ -150,10 +168,11 @@
                         selection-field
                     "
                     v-if="showFields"
-                    style="z-index: 500; max-height: 30vh; overflow: auto"
+                    style="z-index: 500; max-height: 30vh; overflow: auto;"
                 >
                     <div
-                        class="md-layout-item md-size-20"
+                        class="md-layout-item md-large-size-15"
+                        style="padding: 0px;"
                         v-for="(value, key) in possibleFields"
                         :key="key"
                     >
@@ -263,6 +282,8 @@ export default {
     data: () => ({
         datasets: undefined,
         assemblies: undefined,
+        searchTerm: "",
+        matchCase: false,
         selectedAssembly: undefined,
         datasetMetadataMapping: undefined,
         filterSelection: [],
@@ -375,6 +396,28 @@ export default {
                 return output && atLeastOne
             });
         },
+        filterDatasetsOnSearchTerm(datasets){
+            if (this.searchTerm === ""){
+                return datasets
+            }
+            return datasets.filter((el) => {
+                var included = false
+                for (let key of Object.keys(this.fields)){
+                    if (typeof el[key] == 'string'){
+                        if (this.matchCase){
+                            if (el[key].includes(this.searchTerm)){
+                                included = true
+                            }
+                        }else{
+                            if (el[key].toLowerCase().includes(this.searchTerm.toLowerCase())){
+                                included = true
+                            }
+                        }
+                    }
+                }
+                return included
+            })
+        },
         createFilterFields(){
             let fields = {};
             this.filterSelection = [];
@@ -391,6 +434,13 @@ export default {
         }
     },
     computed: {
+        caseButtonClass: function(){
+            if (this.matchCase){
+                return "md-icon-button md-accent md-raised large-top-margin"
+            }else{
+                return "md-icon-button large-top-margin"
+            }
+        },
         showStatus: function () {
             return this.selectedFields.includes("status");
         },
@@ -432,7 +482,8 @@ export default {
         selected: function () {
             if (this.datasets){
                 let fieldFiltered = this.filterDatasetsOnFields(this.datasets)
-                return this.filterDatasetsOnMetadata(fieldFiltered)
+                let metadataFiltered = this.filterDatasetsOnMetadata(fieldFiltered)
+                return this.filterDatasetsOnSearchTerm(metadataFiltered)
             }
             return []
         },
@@ -440,6 +491,7 @@ export default {
     watch: {
         datasetType: function(){
             this.createFilterFields()
+            this.searchTerm = ""
         }
     },
     created: function () {
@@ -458,6 +510,11 @@ export default {
     margin-right: 20px;
 }
 
+.large-top-margin {
+    margin-top: 20px;
+}
+
+
 .small-vertical-margin {
     margin-top: 2px;
     margin-bottom: 5px;
@@ -465,6 +522,10 @@ export default {
 
 .small-padding {
     padding: 5px !important;
+}
+
+.no-padding-right {
+    padding-right: 0px !important;
 }
 
 .selection-field {
