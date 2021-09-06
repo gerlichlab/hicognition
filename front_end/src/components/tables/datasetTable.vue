@@ -349,7 +349,7 @@ export default {
         },
         getSortOrderIcon(fieldName){
             if (fieldName != this.sortBy){
-                return "arrow_upward"
+                return "sort"
             }
             if (this.sortOrder == "ascending"){
                 return "arrow_downward"
