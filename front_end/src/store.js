@@ -405,6 +405,9 @@ const store = new Vuex.Store({
         getUserId: state => {
             return state.user_id;
         },
+        getDataset: state => id => {
+            return state.datasets.filter((el) => el.id === id)[0]
+        }
     },
     mutations: {
         setColorUsage(state, color) {

@@ -116,6 +116,11 @@
                 :dialog="showAssemblyDialog"
                 @close-dialog="showAssemblyDialog = false"
             />
+            <modify-dataset-dialog
+                :dialog="showModifyDialog"
+                :datasetID="modifyId"
+                @close-dialog="showModifyDialog = false; showMyDatasetDialog = true;"
+            />
         </md-app-content>
     </md-app>
 </template>
@@ -134,6 +139,9 @@ import collectionsDialog from "../components/dialogs/collectionsDialog.vue"
 import preprocessCollectionsDialog from "../components/dialogs/preprocessCollections.vue"
 import addAssemblyDialog from "../components/dialogs/addAssemblyDialog.vue"
 import assemblyDialog from "../components/dialogs/assemblyDialog.vue"
+import modifyDatasetDialog from "../components/dialogs/modifyDatasetDialog.vue"
+
+import EventBus from "../eventBus"
 
 export default {
     name: "mainRoute",
@@ -150,7 +158,8 @@ export default {
         collectionsDialog,
         preprocessCollectionsDialog,
         addAssemblyDialog,
-        assemblyDialog
+        assemblyDialog,
+        modifyDatasetDialog
     },
     data: () => ({
         menuVisible: false,
@@ -166,7 +175,16 @@ export default {
         showCalculateAssociations: false,
         showEmbedding1d: false,
         showAddAssemblies: false,
-        showAssemblyDialog: false
-    })
+        showAssemblyDialog: false,
+        showModifyDialog: false,
+        modifyId: undefined
+    }),
+    mounted: function(){
+        EventBus.$on("show-modify-dialog", (id) => {
+            this.modifyId = id
+            this.showModifyDialog = true;
+            this.showMyDatasetDialog = false;
+        })
+    }
 };
 </script>

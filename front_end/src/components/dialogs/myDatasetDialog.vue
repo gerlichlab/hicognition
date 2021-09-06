@@ -74,6 +74,8 @@
 import datasetTable from "../tables/datasetTable";
 import { apiMixin } from "../../mixins";
 
+import EventBus from "../../eventBus"
+
 export default {
     name: "MyDatasetDialog",
     mixins: [apiMixin],
@@ -97,7 +99,7 @@ export default {
             this.selection = selection;
         },
         handleEditClick: function(){
-            console.log("IE")
+            EventBus.$emit("show-modify-dialog", this.selection[0])
         },
         handleDelete: async function() {
             this.showDelete = false;
