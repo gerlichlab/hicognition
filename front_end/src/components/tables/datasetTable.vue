@@ -210,7 +210,10 @@
                             :key="key"
                             class="button-container"
                         >
-                            <md-button>
+                            <md-button :class="getSortOrderClass(getSortOrderKey(key))" @click="sortByValue(getSortOrderKey(key))">
+                                <md-icon>{{ getSortOrderIcon(getSortOrderKey(key)) }}</md-icon>
+                            </md-button>
+                            <md-button @click="sortByValue(getSortOrderKey(key))">
                                 <span class="md-caption">{{
                                     value
                                 }}</span></md-button
@@ -317,6 +320,8 @@ export default {
         datasetMetadataMapping: undefined,
         filterSelection: [],
         filterFields: {},
+        sortBy: undefined,
+        sortOrder: "ascending",
         selectedFields: [
             "dataset_name",
             "valueType",
@@ -329,6 +334,36 @@ export default {
         datasetType: "bedfile",
     }),
     methods: {
+        getSortOrderKey(fieldName){
+            if (fieldName == "status"){
+                return "processing_state"
+            }
+            return fieldName
+        },
+        getSortOrderClass(fieldName){
+            if (fieldName == this.sortBy){
+                return "md-icon-button md-accent"
+            }else{
+                return "md-icon-button"
+            }
+        },
+        getSortOrderIcon(fieldName){
+            if (fieldName != this.sortBy){
+                return "arrow_upward"
+            }
+            if (this.sortOrder == "ascending"){
+                return "arrow_downward"
+            }
+            return "arrow_upward"
+        },
+        sortByValue: function (fieldName) {
+            if (this.sortBy == fieldName && this.sortOrder == "ascending") {
+                this.sortOrder = "descending";
+            } else {
+                this.sortOrder = "ascending";
+            }
+            this.sortBy = fieldName;
+        },
         getTableRowClass: function (id) {
             if (this.selectedIds.includes(id)) {
                 return "blue-background";
@@ -456,6 +491,35 @@ export default {
                 return included;
             });
         },
+        sortAscending(datasets) {
+            return datasets.sort((a, b) => {
+                if (
+                    a[this.sortBy].toLowerCase() < b[this.sortBy].toLowerCase()
+                ) {
+                    return -1;
+                }
+                return 1;
+            });
+        },
+        sortDescending(datasets) {
+            return datasets.sort((a, b) => {
+                if (
+                    a[this.sortBy].toLowerCase() > b[this.sortBy].toLowerCase()
+                ) {
+                    return -1;
+                }
+                return 1;
+            });
+        },
+        sortDatasets(datasets) {
+            if (!this.sortBy) {
+                return datasets;
+            }
+            if (this.sortOrder == "ascending") {
+                return this.sortAscending(datasets);
+            }
+            return this.sortDescending(datasets);
+        },
         createFilterFields() {
             let fields = {};
             this.filterSelection = [];
@@ -523,7 +587,9 @@ export default {
                 let fieldFiltered = this.filterDatasetsOnFields(this.datasets);
                 let metadataFiltered =
                     this.filterDatasetsOnMetadata(fieldFiltered);
-                return this.filterDatasetsOnSearchTerm(metadataFiltered);
+                let filteredOnSearchTerm =
+                    this.filterDatasetsOnSearchTerm(metadataFiltered);
+                return this.sortDatasets(filteredOnSearchTerm);
             }
             return [];
         },
@@ -543,7 +609,7 @@ export default {
             this.selectedIds = [];
             this.$emit("selection-changed", this.selectedIds);
         },
-        selectedAssembly: function(){
+        selectedAssembly: function () {
             this.selectedIds = [];
             this.$emit("selection-changed", this.selectedIds);
         },
