@@ -124,6 +124,51 @@ export var apiMixin = {
                     }
                 });
         },
+        putData: function(url, formData) {
+            /*
+                Will put the provided form data to the specified url.
+            */
+            // Check whether token exists
+            var token = this.$store.state.token;
+            if (!token) {
+                // redirect to login page if token does not exist
+                this.$router.push("/login");
+            }
+            // base64 encoding of token
+            var encodedToken = btoa(token + ":");
+            // check whether session token exists
+            var sessionToken = this.$store.getters.sessionToken
+            if (sessionToken){
+                if(url.includes("?")){
+                    url = url + `&sessionToken=${sessionToken}`
+                }else{
+                    url = url + `?sessionToken=${sessionToken}`
+                }
+            }
+            return this.$http
+                .put(process.env.API_URL + url, formData, {
+                    headers: {
+                        Authorization: `Basic ${encodedToken}`,
+                        "Content-Type": "multipart/form-data"
+                    }
+                })
+                .catch(error => {
+                    if (!error.response) {
+                        alert(`HTTP error: ${error}`);
+                    } else if (
+                        error.response.status == 403 ||
+                        error.response.status == 401
+                    ) {
+                        // if forbidden error is returned, redirect to login page
+                        this.$router.push("/login");
+                    } else {
+                        // this helps to look into [object Object] errors: ${JSON.stringify(error.response)}
+                        alert(
+                            `HTTP error: ${error.response.status} - Error: ${error.response.data.error} - ${error.response.data.message}`
+                        );
+                    }
+                });
+        },
         deleteData: function(url) {
             /*
                 Will make a delete call to the specified url.

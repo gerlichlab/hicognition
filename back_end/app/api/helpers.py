@@ -38,7 +38,7 @@ DATASET_META_FIELDS = {
 }
 
 DATASET_META_FIELDS_MODIFY = {
-    "datasetName": "datasetName",
+    "datasetName": "dataset_name",
     "cellCycleStage": "cellCycleStage",
     "perturbation": "perturbation",
     "ValueType": "valueType",
@@ -47,6 +47,7 @@ DATASET_META_FIELDS_MODIFY = {
     "DerivationType": "derivationType",
     "Protein": "protein",
     "Directionality": "directionality",
+    "public": "public"
 }
 
 
@@ -117,7 +118,10 @@ def add_fields_to_dataset_modify(entry, form):
     """adds dataset fields that exist in form to entry."""
     for form_key, dataset_field in DATASET_META_FIELDS_MODIFY.items():
         if form_key in form:
-            entry.__setattr__(dataset_field, form[form_key])
+            if form_key == "public":
+                entry.__setattr__(dataset_field, "public" in form and form["public"].lower() == "true")
+            else:
+                entry.__setattr__(dataset_field, form[form_key])
 
 
 
@@ -128,6 +132,8 @@ def blank_dataset(entry):
         entry.__setattr__(field, "undefined")
     # metadata_fields
     for key in DATASET_META_FIELDS_MODIFY.keys():
+        if key == "public":
+            continue
         entry.__setattr__(key, "undefined")
 
 

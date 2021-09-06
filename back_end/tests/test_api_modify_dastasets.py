@@ -28,7 +28,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # create field form mapping
         self.fieldFormMapping = {
-            "datasetName": "datasetName",
+            "datasetName": "dataset_name",
             "cellCycleStage": "cellCycleStage",
             "perturbation": "perturbation",
             "ValueType": "valueType",
@@ -37,6 +37,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "DerivationType": "derivationType",
             "Protein": "protein",
             "Directionality": "directionality",
+            "public": "public"
         }
         # add token headers
         token = self.add_and_authenticate("test", "asdf")
@@ -63,8 +64,17 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             user_id=1,
             assembly=1
         )
-        self.bigwig_1 = Dataset(
+        self.bedfile_2 = Dataset(
             id=3,
+            dataset_name="test1",
+            file_path="/test/path/1",
+            filetype="bedfile",
+            processing_state="finished",
+            user_id=1,
+            assembly=1
+        )
+        self.bigwig_1 = Dataset(
+            id=4,
             dataset_name="test1",
             file_path="/test/path/1",
             filetype="bigwig",
@@ -313,6 +323,67 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # check whether fields that should be undefined are undefined
         for field in ["protein", "directionality"]:
             self.assertEqual(dataset.__getattribute__(field), "undefined")
+        # check whether assembly and filetype are unchanged
+        self.assertEqual(dataset.assembly, 1)
+        self.assertEqual(dataset.filetype, "bedfile")
+
+    def test_modification_goes_through_bedfile_genome_annotation(self):
+       # add datasets
+        db.session.add(self.bedfile_2)
+        db.session.commit()
+        # construct form data
+        data = {
+            "datasetName": "fdsa",
+            "ValueType": "GenomeAnnotation",
+            "Directionality": "No directionality",
+            "cellCycleStage": "none",
+            "perturbation": "none"
+        }
+        # put datasets
+        response = self.client.put(
+            f"/api/datasets/{self.bedfile_2.id}/",
+            headers=self.token_headers,
+            data=data,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether modificaiton fields were modified
+        dataset = Dataset.query.get(self.bedfile_2.id)
+        for field in data.keys():
+            self.assertEqual(
+                dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+            )
+        # check whether assembly and filetype are unchanged
+        self.assertEqual(dataset.assembly, 1)
+        self.assertEqual(dataset.filetype, "bedfile")
+
+    def test_public_flag_set_correctly(self):
+       # add datasets
+        db.session.add(self.bedfile_2)
+        db.session.commit()
+        # construct form data
+        data = {
+            "datasetName": "fdsa",
+            "ValueType": "GenomeAnnotation",
+            "Directionality": "No directionality",
+            "cellCycleStage": "none",
+            "perturbation": "none",
+            "public": True
+        }
+        # put datasets
+        response = self.client.put(
+            f"/api/datasets/{self.bedfile_2.id}/",
+            headers=self.token_headers,
+            data=data,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether modificaiton fields were modified
+        dataset = Dataset.query.get(self.bedfile_2.id)
+        for field in data.keys():
+            self.assertEqual(
+                dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+            )
         # check whether assembly and filetype are unchanged
         self.assertEqual(dataset.assembly, 1)
         self.assertEqual(dataset.filetype, "bedfile")

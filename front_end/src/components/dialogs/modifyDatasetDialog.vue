@@ -7,6 +7,7 @@
             <md-content class="content">
                 <modify-dataset-form
                 :datasetID="datasetID"
+                @close-dialog="$emit('close-dialog')"
                 />
             </md-content>
             <md-dialog-actions>

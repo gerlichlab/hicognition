@@ -83,7 +83,7 @@
                                                         .required
                                                 "
                                                 >Perturbation information is
-                                                required is required</span
+                                                required</span
                                             >
                                         </md-field>
                                     </div>
@@ -227,8 +227,7 @@
             </md-card>
             <!-- Submission notification -->
             <md-snackbar :md-active.sync="datasetSaved"
-                >The Dataset was added successfully and is ready for
-                preprocessing!</md-snackbar
+                >The dataset was modified succesfully!</md-snackbar
             >
         </form>
     </div>
@@ -276,9 +275,6 @@ export default {
                     minLength: minLength(3),
                 },
                 public: {},
-                assembly: {
-                    required,
-                },
                 ValueType: {
                     required,
                 },
@@ -295,7 +291,7 @@ export default {
                 this.datasetMetadataMapping[this.selectedFileType]["ValueType"][
                     this.form.ValueType
                 ]
-            )) {
+            ).filter((el) => el != "SizeType")) {
                 outputObject["form"][key] = { required };
             }
         }
@@ -369,16 +365,6 @@ export default {
                 };
             }
         },
-        clearForm() {
-            this.$v.$reset();
-            for (let key of Object.keys(this.form)) {
-                if (key == "public") {
-                    this.form[key] = true;
-                } else {
-                    this.form[key] = null;
-                }
-            }
-        },
         saveDataset() {
             this.sending = true; // show progress bar
             // construct form data
@@ -390,12 +376,12 @@ export default {
                 }
             }
             // API call including upload is made in the background
-            this.postData("datasets/", formData).then((response) => {
+            this.putData(`datasets/${this.dataset.id}/`, formData).then((response) => {
                 this.sending = false;
-                this.clearForm();
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
+                    setTimeout(() => this.$emit("close-dialog"), 200)
                 }
             });
         },
