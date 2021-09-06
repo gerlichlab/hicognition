@@ -303,8 +303,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "Method": "HiC",
             "SizeType": "Interval",
             "filetype": "bedfile",
-            "file": (io.BytesIO(b"abcdef"), "test.bed"),
-            "Directionality": "-",
+            "file": (io.BytesIO(b"abcdef"), "test.bed")
         }
         # dispatch post request
         response = self.client.post(
@@ -331,8 +330,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "filetype": "bedfile",
             "method": "HiC",
             "user_id": 1,
-            "id": 1,
-            "directionality": "-",
+            "id": 1
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
