@@ -9,5 +9,6 @@ from . import (
     cross_origin,
     errors,
     authentication,
-    database_population
+    database_population,
+    put_routes
 )

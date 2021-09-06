@@ -47,7 +47,7 @@
                         <md-button
                             class="md-primary"
                             @click="handleEditClick"
-                            v-if="showControls && !showDelete"
+                            v-if="showControls && !showDelete && singleDatasetSelected"
                             >Edit</md-button
                         >
                     </div>
@@ -123,6 +123,9 @@ export default {
         },
     },
     computed: {
+        singleDatasetSelected: function(){
+            return this.selection.length === 1;
+        },
         showControls: function () {
             return this.selection.length !== 0;
         },
@@ -153,12 +156,23 @@ export default {
 
 <style lang="scss" scoped>
 
+    .md-dialog /deep/.md-dialog-container {
+        max-width: 90vw;
+        min-width: 90vw;
+        min-height: 90vh;
+    }
 
-.md-dialog /deep/.md-dialog-container {
-    max-width: 90vw;
-    min-width: 90vw;
-    min-height: 90vh;
+
+@media only screen and (min-width: 1800px) {
+
+    .md-dialog /deep/.md-dialog-container {
+        max-width: 90vw;
+        min-width: 50vw;
+        min-height: 50vh;
+    }
+
 }
+
 
 .full-width {
     width: 100%;

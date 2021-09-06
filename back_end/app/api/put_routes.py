@@ -5,34 +5,20 @@ import pandas as pd
 import cooler
 import numpy as np
 from flask.json import jsonify
-from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from . import api
 from .. import db
 from ..models import (
-    Assembly,
-    Dataset,
-    BedFileMetadata,
-    Organism,
-    Task,
-    Session,
-    Intervals,
-    Collection,
+    Dataset
 )
 from .authentication import auth
 from .helpers import (
     is_access_to_dataset_denied,
-    is_access_to_collection_denied,
-    parse_description,
-    remove_failed_tasks,
-    get_all_interval_ids,
-    parse_binsizes,
     modify_dataset_requirements_fulfilled,
     blank_dataset,
-    add_fields_to_dataset
+    add_fields_to_dataset_modify
 )
 from .errors import forbidden, invalid, not_found
-from hicognition.format_checkers import FORMAT_CHECKERS
 
 
 @api.route("/datasets/<dataset_id>/", methods=["PUT"])
@@ -40,11 +26,11 @@ from hicognition.format_checkers import FORMAT_CHECKERS
 def modify_dataset(dataset_id):
     """endpoint to add a new dataset"""
 
-    def is_form_invalid():
+    def is_form_invalid(filetype):
         if not hasattr(request, "form"):
             return True
         # check attributes
-        if not modify_dataset_requirements_fulfilled(request.form):
+        if not modify_dataset_requirements_fulfilled(request.form, filetype):
             return True
         return False
 
@@ -59,13 +45,13 @@ def modify_dataset(dataset_id):
             f"Dataset with id '{dataset_id}' is not owned by logged in user!"
         )
     # check form
-    if is_form_invalid():
+    if is_form_invalid(dataset.filetype):
         return invalid("Form is not valid!")
     # get data from form
     data = request.form
     # blank metadata fields
     blank_dataset(dataset)
-    add_fields_to_dataset(dataset, data)
+    add_fields_to_dataset_modify(dataset, data)
     db.session.add(dataset)
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})

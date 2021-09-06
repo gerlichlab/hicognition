@@ -38,7 +38,7 @@ DATASET_META_FIELDS = {
 }
 
 DATASET_META_FIELDS_MODIFY = {
-    "public": "public",
+    "datasetName": "datasetName",
     "cellCycleStage": "cellCycleStage",
     "perturbation": "perturbation",
     "ValueType": "valueType",
@@ -50,18 +50,21 @@ DATASET_META_FIELDS_MODIFY = {
 }
 
 
-def modify_dataset_requirements_fulfilled(form):
+def modify_dataset_requirements_fulfilled(form, filetype):
     """Checks whether all fields that are needed to modiy a dataset are fulfilled"""
     form_keys = set(form.keys())
     if any(key not in form_keys for key in COMMON_REQUIRED_KEYS):
         return False
     # check metadata
     datasetTypeMapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
-    value_types = datasetTypeMapping[form["filetype"]]["ValueType"]
+    value_types = datasetTypeMapping[filetype]["ValueType"]
     if form["ValueType"] not in value_types.keys():
         return False
     # check value type members
     for key, possible_values in value_types[form["ValueType"]].items():
+        # skip size type
+        if key == "SizeType":
+            continue
         if key not in form_keys:
             return False
         # check whether field is freetext
@@ -69,6 +72,10 @@ def modify_dataset_requirements_fulfilled(form):
             continue
         # check that value in form corresponds to possible values
         if form[key] not in possible_values:
+            return False
+    # check whether there is a field that is unsuitable
+    for key in ADD_REQUIRED_KEYS + ["SizeType"]:
+        if key in form_keys:
             return False
     return True
 
@@ -106,15 +113,22 @@ def add_fields_to_dataset(entry, form):
         if form_key in form:
             entry.__setattr__(dataset_field, form[form_key])
 
+def add_fields_to_dataset_modify(entry, form):
+    """adds dataset fields that exist in form to entry."""
+    for form_key, dataset_field in DATASET_META_FIELDS_MODIFY.items():
+        if form_key in form:
+            entry.__setattr__(dataset_field, form[form_key])
+
+
 
 def blank_dataset(entry):
     """blanks metadata fields of dataset"""
     # common fields
     for field in COMMON_REQUIRED_KEYS:
-        entry[field] = "undefined"
+        entry.__setattr__(field, "undefined")
     # metadata_fields
-    for key, value in DATASET_META_FIELDS_MODIFY.items():
-        entry[key] = "undefined"
+    for key in DATASET_META_FIELDS_MODIFY.keys():
+        entry.__setattr__(key, "undefined")
 
 
 def is_access_to_dataset_denied(dataset, g):
