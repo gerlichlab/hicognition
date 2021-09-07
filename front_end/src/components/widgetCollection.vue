@@ -33,6 +33,33 @@
                             <md-tooltip md-direction="top" md-delay="300">Select region for this widget collection</md-tooltip>
                             </md-button>
                         </div>
+                        <div class="menu-button">
+                            <md-menu
+                                :md-offset-x="50"
+                                :md-offset-y="-36"
+                                md-size="small"
+                                :md-active.sync="showWindowSizeSelection"
+                                v-if="allowWindowSizeSelection"
+                            >
+                                    <md-button class="md-icon-button" md-menu-trigger>
+                                        <md-icon>compare_arrows</md-icon>
+                                    </md-button>
+                                <md-menu-content>
+                                    <md-menu-item
+                                        v-for="item in windowSizes"
+                                        :key="item"
+                                        @click="handleWindowSizeSelection(item)"
+                                    >
+                                        <span class="caption">{{
+                                            convertBasePairsToReadable(item)
+                                        }}</span>
+                                        <md-icon v-if="selectedWindowSize == item"
+                                            >done</md-icon
+                                        >
+                                    </md-menu-item>
+                                </md-menu-content>
+                            </md-menu>
+                        </div>
                     </div>
                     <div class="md-layout-item md-size-10 padding-left">
                         <div class="menu-button">
@@ -148,7 +175,8 @@ export default {
             maxColumnNumber: 0,
             children: [],
             availableData: {},
-            expectSelection: false
+            expectSelection: false,
+            showWindowSizeSelection: false
         };
     },
     computed: {
@@ -279,6 +307,9 @@ export default {
         },
     },
     methods: {
+        handleWindowSizeSelection: function(windowsize){
+            this.selectedWindowSize = windowsize
+        },
         startDatasetSelection: function () {
             this.expectSelection = true;
             EventBus.$emit("show-select-dialog", this.regions, "bedfile");
