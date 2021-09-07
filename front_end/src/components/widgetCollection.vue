@@ -3,7 +3,7 @@
         <md-card :style="cssStyle" ref="collectionCard" class="md-elevation-0">
             <md-card-header>
                 <div class="md-layout">
-                    <div class="md-layout-item md-size-30 padding-right">
+                    <div class="md-layout-item md-size-25">
                         <div class="menu-button">
                             <md-button
                                 @click="handleZoomIn"
@@ -22,7 +22,7 @@
                             </md-button>
                         </div>
                     </div>
-                    <div :class="regionSelectionClasses">
+                    <div  class="md-layout-item md-size-55 padding-right">
                         <div class="menu-button">
                             <md-button
                                 class="md-icon-button"
@@ -33,32 +33,6 @@
                             <md-tooltip md-direction="top" md-delay="300">Select region for this widget collection</md-tooltip>
                             </md-button>
                         </div>
-                    </div>
-                    <div
-                        class="md-layout-item md-size-25"
-                        v-if="allowWindowSizeSelection"
-                    >
-                        <md-field class="padding-top">
-                            <label class="md-primary" for="Size"
-                                >Windowsize</label
-                            >
-                            <md-select
-                                v-model="selectedWindowSize"
-                                name="size"
-                                id="size"
-                                placeholder=" "
-                                :disabled="!allowWindowSizeSelection"
-                            >
-                                <md-option
-                                    v-for="item in windowSizes"
-                                    :value="item"
-                                    :key="item"
-                                    >{{
-                                        convertBasePairsToReadable(item)
-                                    }}</md-option
-                                >
-                            </md-select>
-                        </md-field>
                     </div>
                     <div class="md-layout-item md-size-10 padding-left">
                         <div class="menu-button">
@@ -73,6 +47,9 @@
                                 <md-icon>delete</md-icon>
                             </md-button>
                         </div>
+                    </div>
+                    <div class="md-layout-item md-size-100 blue-background">
+                        <span class="caption padding-left">{{ dataInfo }}</span>
                     </div>
                 </div>
                 <md-divider></md-divider>
@@ -175,12 +152,11 @@ export default {
         };
     },
     computed: {
-        regionSelectionClasses: function () {
-            if (this.allowWindowSizeSelection) {
-                return ["md-layout-item", "md-size-30", "padding-right"];
-            } else {
-                return ["md-layout-item", "md-size-55", "padding-right"];
+        dataInfo: function(){
+            if (this.selectedRegionID){
+                return `${this.regions.filter(el => el.id == this.selectedRegionID)[0].dataset_name} | ${this.convertBasePairsToReadable(this.selectedWindowSize)}`
             }
+            return "  "
         },
         allowRegionSelection: function () {
             return this.regions.length > 0;
@@ -590,4 +566,9 @@ export default {
 .md-field {
     min-height: 30px;
 }
+
+.blue-background {
+    background: var(--md-theme-default-primary);
+}
+
 </style>
