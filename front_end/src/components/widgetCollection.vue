@@ -3,7 +3,7 @@
         <md-card :style="cssStyle" ref="collectionCard" class="md-elevation-0">
             <md-card-header>
                 <div class="md-layout">
-                    <div class="md-layout-item md-size-25">
+                    <div class="md-layout-item md-size-30">
                         <div class="menu-button">
                             <md-button
                                 @click="handleZoomIn"
