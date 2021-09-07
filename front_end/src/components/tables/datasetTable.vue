@@ -46,13 +46,22 @@
                     "
                 >
                     <div class="md-layout-item md-size-80">
-                        <md-radio v-model="datasetType" value="bedfile"
+                        <md-radio
+                            v-model="datasetType"
+                            value="bedfile"
+                            :disabled="!allowDatasetTypeSelection"
                             >Region</md-radio
                         >
-                        <md-radio v-model="datasetType" value="bigwig"
+                        <md-radio
+                            v-model="datasetType"
+                            value="bigwig"
+                            :disabled="!allowDatasetTypeSelection"
                             >1D-feature</md-radio
                         >
-                        <md-radio v-model="datasetType" value="cooler"
+                        <md-radio
+                            v-model="datasetType"
+                            value="cooler"
+                            :disabled="!allowDatasetTypeSelection"
                             >2D-feature</md-radio
                         >
                     </div>
@@ -210,10 +219,17 @@
                             :key="key"
                             class="button-container"
                         >
-                            <md-button :class="getSortOrderClass(getSortOrderKey(key))" @click="sortByValue(getSortOrderKey(key))">
-                                <md-icon>{{ getSortOrderIcon(getSortOrderKey(key)) }}</md-icon>
+                            <md-button
+                                :class="getSortOrderClass(getSortOrderKey(key))"
+                                @click="sortByValue(getSortOrderKey(key))"
+                            >
+                                <md-icon>{{
+                                    getSortOrderIcon(getSortOrderKey(key))
+                                }}</md-icon>
                             </md-button>
-                            <md-button @click="sortByValue(getSortOrderKey(key))">
+                            <md-button
+                                @click="sortByValue(getSortOrderKey(key))"
+                            >
                                 <span class="md-caption">{{
                                     value
                                 }}</span></md-button
@@ -310,6 +326,11 @@ export default {
     mixins: [apiMixin],
     props: {
         datasets: Array,
+        restrictedDatasetType: String,
+        singleSelection: {
+            type: Boolean,
+            default: false,
+        },
     },
     data: () => ({
         assemblies: undefined,
@@ -334,27 +355,27 @@ export default {
         datasetType: "bedfile",
     }),
     methods: {
-        getSortOrderKey(fieldName){
-            if (fieldName == "status"){
-                return "processing_state"
+        getSortOrderKey(fieldName) {
+            if (fieldName == "status") {
+                return "processing_state";
             }
-            return fieldName
+            return fieldName;
         },
-        getSortOrderClass(fieldName){
-            if (fieldName == this.sortBy){
-                return "md-icon-button md-accent"
-            }else{
-                return "md-icon-button"
+        getSortOrderClass(fieldName) {
+            if (fieldName == this.sortBy) {
+                return "md-icon-button md-accent";
+            } else {
+                return "md-icon-button";
             }
         },
-        getSortOrderIcon(fieldName){
-            if (fieldName != this.sortBy){
-                return "sort"
+        getSortOrderIcon(fieldName) {
+            if (fieldName != this.sortBy) {
+                return "sort";
             }
-            if (this.sortOrder == "ascending"){
-                return "arrow_downward"
+            if (this.sortOrder == "ascending") {
+                return "arrow_downward";
             }
-            return "arrow_upward"
+            return "arrow_upward";
         },
         sortByValue: function (fieldName) {
             if (this.sortBy == fieldName && this.sortOrder == "ascending") {
@@ -371,7 +392,9 @@ export default {
             return "";
         },
         handleTableRowClicked: function (id) {
-            if (this.selectedIds.includes(id)) {
+            if (this.singleSelection) {
+                this.selectedIds = [id];
+            } else if (this.selectedIds.includes(id)) {
                 this.selectedIds.splice(this.selectedIds.indexOf(id), 1);
             } else {
                 this.selectedIds.push(id);
@@ -536,6 +559,12 @@ export default {
         },
     },
     computed: {
+        allowDatasetTypeSelection: function () {
+            if (this.restrictedDatasetType) {
+                return false;
+            }
+            return true;
+        },
         caseButtonClass: function () {
             if (this.matchCase) {
                 return "md-icon-button md-accent md-raised large-top-margin";
@@ -606,6 +635,7 @@ export default {
             this.$emit("selection-changed", this.selectedIds);
         },
         filterFields: function () {
+            console.log("filtering ran")
             this.selectedIds = [];
             this.$emit("selection-changed", this.selectedIds);
         },
@@ -622,6 +652,9 @@ export default {
         this.datasetMetadataMapping =
             this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
         this.assemblies = this.fetchAssemblies();
+        if (this.restrictedDatasetType) {
+            this.datasetType = this.restrictedDatasetType;
+        }
         this.createFilterFields();
     },
 };

@@ -23,28 +23,24 @@
                         </div>
                     </div>
                     <div :class="regionSelectionClasses">
-                        <md-field class="padding-top">
-                            <label class="md-primary" for="region"
-                                >Region</label
+                        <div class="menu-button">
+                            <md-button
+                                class="md-icon-button"
+                                @click="startDatasetSelection"
+                                :disabled="!allowRegionSelection"
                             >
-                            <md-select
-                                v-model="selectedRegionID"
-                                name="region"
-                                id="region"
-                                placeholder="Region"
-                            >
-                                <md-option
-                                    v-for="item in regions"
-                                    :value="item.id"
-                                    :key="item.id"
-                                    >{{ item.dataset_name }}</md-option
-                                >
-                            </md-select>
-                        </md-field>
+                                <md-icon>menu_open</md-icon>
+                            </md-button>
+                        </div>
                     </div>
-                    <div class="md-layout-item md-size-25" v-if="allowWindowSizeSelection">
+                    <div
+                        class="md-layout-item md-size-25"
+                        v-if="allowWindowSizeSelection"
+                    >
                         <md-field class="padding-top">
-                            <label class="md-primary" for="Size">Windowsize</label>
+                            <label class="md-primary" for="Size"
+                                >Windowsize</label
+                            >
                             <md-select
                                 v-model="selectedWindowSize"
                                 name="size"
@@ -57,9 +53,7 @@
                                     :value="item"
                                     :key="item"
                                     >{{
-                                        convertBasePairsToReadable(
-                                            item
-                                        )
+                                        convertBasePairsToReadable(item)
                                     }}</md-option
                                 >
                             </md-select>
@@ -69,7 +63,11 @@
                         <div class="menu-button">
                             <md-button
                                 @click="deleteCollection"
-                                class="md-icon-button button-margin md-primary md-icon-button md-mini"
+                                class="
+                                    md-icon-button
+                                    button-margin
+                                    md-primary md-icon-button md-mini
+                                "
                             >
                                 <md-icon>delete</md-icon>
                             </md-button>
@@ -118,7 +116,7 @@
         <div class="full-width md-layout md-gutter md-alignment-center-center">
             <div class="md-layout-item md-size-40">
                 <div class="flex-container-horizontal">
-                    <div style="display: inline-block;">
+                    <div style="display: inline-block">
                         <md-button
                             class="md-icon-button md-accent md-mini"
                             @click="increaseRows"
@@ -126,7 +124,7 @@
                             <md-icon>expand_more</md-icon>
                         </md-button>
                     </div>
-                    <div style="display: inline-block;">
+                    <div style="display: inline-block">
                         <md-button
                             class="md-icon-button md-accent md-mini"
                             @click="decreaseRows"
@@ -144,19 +142,19 @@
 <script>
 import widgetContainer from "./widgetContainer";
 import { apiMixin, formattingMixin } from "../mixins";
-import {max_array} from "../functions"
-import EventBus from "../eventBus"
+import { max_array } from "../functions";
+import EventBus from "../eventBus";
 
 export default {
     name: "widgetCollection",
     mixins: [apiMixin, formattingMixin],
     props: {
-        id: Number
+        id: Number,
     },
     components: {
-        widgetContainer
+        widgetContainer,
     },
-    data: function() {
+    data: function () {
         return {
             regions: [],
             windowSizes: [],
@@ -171,65 +169,73 @@ export default {
             maxRowNumber: 0,
             maxColumnNumber: 0,
             children: [],
-            availableData: {}
+            availableData: {},
+            expectSelection: false
         };
     },
     computed: {
-        regionSelectionClasses: function(){
-            if (this.allowWindowSizeSelection){
-                return ["md-layout-item", "md-size-30", "padding-right"]
-            }else{
-                return ["md-layout-item", "md-size-55", "padding-right"]
+        regionSelectionClasses: function () {
+            if (this.allowWindowSizeSelection) {
+                return ["md-layout-item", "md-size-30", "padding-right"];
+            } else {
+                return ["md-layout-item", "md-size-55", "padding-right"];
             }
         },
-        widgetContainerBorder: function() {
+        allowRegionSelection: function () {
+            return this.regions.length > 0;
+        },
+        widgetContainerBorder: function () {
             return {
-                width: `${this.collectionWidth +
+                width: `${
+                    this.collectionWidth +
                     this.paddingWidth +
                     40 +
-                    (this.maxColumnNumber + 1) * this.marginSizeWidth}px`,
-                height: `${this.collectionHeight +
+                    (this.maxColumnNumber + 1) * this.marginSizeWidth
+                }px`,
+                height: `${
+                    this.collectionHeight +
                     this.paddingHeight +
                     40 +
-                    (this.maxRowNumber + 1) * this.marginSizeHeight}px`,
+                    (this.maxRowNumber + 1) * this.marginSizeHeight
+                }px`,
                 background: "rgba(200, 200, 200, 0.2)",
-                "margin-right": "10px"
+                "margin-right": "10px",
             };
         },
-        decreaseRowsAllowed: function(){
-            if (this.maxRowNumber == 0){
-                return false
+        decreaseRowsAllowed: function () {
+            if (this.maxRowNumber == 0) {
+                return false;
             }
             var maxRowElements = Math.max(
-                ...this.children.map(element => element.rowIndex)
+                ...this.children.map((element) => element.rowIndex)
             );
             return this.maxRowNumber > maxRowElements;
         },
-        decreaseColumnsAllowed: function() {
-            if (this.maxColumnNumber == 0){
-                return false
+        decreaseColumnsAllowed: function () {
+            if (this.maxColumnNumber == 0) {
+                return false;
             }
             var maxColElements = Math.max(
-                ...this.children.map(element => element.colIndex)
+                ...this.children.map((element) => element.colIndex)
             );
             return this.maxColumnNumber > maxColElements;
         },
-        allowWindowSizeSelection: function(){
-            return this.windowSizes.length > 0 && this.selectedRegionID
+        allowWindowSizeSelection: function () {
+            return this.windowSizes.length > 0 && this.selectedRegionID;
         },
-        blockZoomOut: function() {
+        blockZoomOut: function () {
             if (this.baseWidth <= 350) {
                 return true;
             }
             return false;
         },
-        collectionHeight: function() {
+        collectionHeight: function () {
             return (this.maxRowNumber + 1) * this.baseHeight;
         },
-        collectionWidth: function() {
+        collectionWidth: function () {
             return (this.maxColumnNumber + 1) * this.baseWidth;
         },
-        elementMatrix: function() {
+        elementMatrix: function () {
             // creates element matrix from children filled up with empty elements
             var matrix = [];
             // create empty matrix
@@ -247,7 +253,7 @@ export default {
                         empty: true,
                         rowIndex: rowIndex,
                         colIndex: colIndex,
-                        parentID: this.id
+                        parentID: this.id,
                     };
                 }
                 matrix.push(emptyRow);
@@ -262,12 +268,12 @@ export default {
                     rowIndex: child.rowIndex,
                     colIndex: child.colIndex,
                     text: child.text,
-                    parentID: this.id
+                    parentID: this.id,
                 };
             }
             return matrix;
         },
-        flattenedElements: function() {
+        flattenedElements: function () {
             // gives a flattened representation of elements
             var output = [];
             for (var row of this.elementMatrix) {
@@ -277,80 +283,106 @@ export default {
             }
             return output;
         },
-        cssStyle: function() {
+        cssStyle: function () {
             return {
-                height: `${this.collectionHeight +
+                height: `${
+                    this.collectionHeight +
                     this.paddingHeight +
-                    (this.maxRowNumber + 1) * this.marginSizeHeight}px`,
-                width: `${this.collectionWidth +
+                    (this.maxRowNumber + 1) * this.marginSizeHeight
+                }px`,
+                width: `${
+                    this.collectionWidth +
                     this.paddingWidth +
-                    (this.maxColumnNumber + 1) * this.marginSizeWidth}px`,
+                    (this.maxColumnNumber + 1) * this.marginSizeWidth
+                }px`,
                 "margin-left": "0px",
                 "margin-right": "0px",
-                float: "left"
+                float: "left",
             };
-        }
+        },
     },
     methods: {
-        increaseRows: function() {
+        startDatasetSelection: function () {
+            this.expectSelection = true;
+            EventBus.$emit("show-select-dialog", this.regions, "bedfile");
+        },
+        registerSelectionEventHandlers: function(){
+            EventBus.$on("dataset-selected", (id) => {
+                if (this.expectSelection){
+                    this.selectedRegionID = id
+                    this.expectSelection = false
+                }
+            })
+            EventBus.$on("selection-aborted", () => {
+                this.expectSelection = false
+            })
+        },
+        increaseRows: function () {
             this.maxRowNumber = this.maxRowNumber + 1;
         },
-        decreaseRows: function() {
+        decreaseRows: function () {
             this.maxRowNumber = this.maxRowNumber - 1;
         },
-        increaseColumns: function() {
+        increaseColumns: function () {
             this.maxColumnNumber = this.maxColumnNumber + 1;
         },
-        decreaseColumns: function() {
+        decreaseColumns: function () {
             this.maxColumnNumber = this.maxColumnNumber - 1;
         },
-        getNextID: function() {
+        getNextID: function () {
             return Math.floor(Math.random() * 1000000000);
         },
-        fetchDatasets: function() {
-            this.fetchData("datasets/").then(response => {
+        fetchDatasets: function () {
+            this.fetchData("datasets/").then((response) => {
                 // success, store datasets
                 this.$store.commit("setDatasets", response.data);
                 // update datasets
                 this.regions = response.data.filter(
-                    element => element.filetype == "bedfile"
+                    (element) => element.filetype == "bedfile"
                 );
             });
         },
-        fetchResolutions: function(){
-            this.fetchData("resolutions/").then(response => {
+        fetchResolutions: function () {
+            this.fetchData("resolutions/").then((response) => {
                 // success, store resolutions
-                this.$store.commit("setResolutions", response.data)
-                this.windowSizes = Object.keys(response.data)
-            })
+                this.$store.commit("setResolutions", response.data);
+                this.windowSizes = Object.keys(response.data);
+            });
         },
-        handleZoomIn: function() {
+        handleZoomIn: function () {
             this.baseWidth += 50;
             this.baseHeight += 50;
         },
-        handleZoomOut: function() {
+        handleZoomOut: function () {
             this.baseWidth -= 50;
             this.baseHeight -= 50;
         },
-        storeCollectionConfig: function(){
+        storeCollectionConfig: function () {
             var payload = {
                 id: this.id,
-                collectionConfig: { regionID: this.selectedRegionID, availableData: this.availableData , intervalSize: this.selectedWindowSize}
+                collectionConfig: {
+                    regionID: this.selectedRegionID,
+                    availableData: this.availableData,
+                    intervalSize: this.selectedWindowSize,
+                },
             };
             this.$store.commit("compare/setCollectionConfig", payload);
         },
-        deleteCollection: function() {
+        deleteCollection: function () {
             // call delete of each child
-            for (let child of this.children){
-                EventBus.$emit("delete-widget", child.id)
+            for (let child of this.children) {
+                EventBus.$emit("delete-widget", child.id);
             }
             this.$store.commit("compare/deleteWidgetCollection", this.id);
             // remove dataset from usage counter
-            if (this.selectedRegionID){
-                this.$store.commit("compare/decrement_usage_dataset", this.selectedRegionID)
+            if (this.selectedRegionID) {
+                this.$store.commit(
+                    "compare/decrement_usage_dataset",
+                    this.selectedRegionID
+                );
             }
         },
-        handleWidgetDrop: function(
+        handleWidgetDrop: function (
             sourceColletionID,
             sourceWidgetID,
             rowIndex,
@@ -359,29 +391,32 @@ export default {
             // oupdate widget data that are managed by collection: ID, colIndex, rowIndex, parentID
             var queryObject = {
                 parentID: sourceColletionID,
-                id: sourceWidgetID
+                id: sourceWidgetID,
             };
-            var widgetData = this.$store.getters["compare/getWidgetProperties"](
-                queryObject
-            );
+            var widgetData =
+                this.$store.getters["compare/getWidgetProperties"](queryObject);
             // delete original widget
-            EventBus.$emit("delete-widget", sourceWidgetID)
+            EventBus.$emit("delete-widget", sourceWidgetID);
             // update widget data that changed upon drop
             widgetData["id"] = this.getNextID();
             widgetData["rowIndex"] = rowIndex;
             widgetData["colIndex"] = colIndex;
             widgetData["parentID"] = this.id;
             // emit id change event
-            EventBus.$emit("widget-id-change", sourceWidgetID, widgetData["id"])
+            EventBus.$emit(
+                "widget-id-change",
+                sourceWidgetID,
+                widgetData["id"]
+            );
             // update changed data in store
             this.$store.commit("compare/setWidget", widgetData);
-        }
+        },
     },
     watch: {
         // watch for changes in store
         "$store.state.compare.widgetCollections": {
             deep: true,
-            handler: function(newValue, oldValue) {
+            handler: function (newValue, oldValue) {
                 // check if own entry changed
                 var newEntry = Object.assign({}, newValue[this.id]);
                 var oldEntry = Object.assign({}, oldValue[this.id]);
@@ -392,62 +427,75 @@ export default {
                         this.children.push(child);
                     }
                 }
-            }
+            },
         },
-        selectedRegionID: async function(newVal, oldVal) {
-            if (!newVal){
-                return
+        selectedRegionID: async function (newVal, oldVal) {
+            if (!newVal) {
+                return;
             }
             // get availability object
-            await this.fetchData(`datasets/${newVal}/processedDataMap/`).then(response => {
-                // success, store availability object
-                this.availableData = response.data
-            })
-            if (!this.selectedWindowSize){
+            await this.fetchData(`datasets/${newVal}/processedDataMap/`).then(
+                (response) => {
+                    // success, store availability object
+                    this.availableData = response.data;
+                }
+            );
+            if (!this.selectedWindowSize) {
                 // set default -> middle of available windwosizes
-                this.selectedWindowSize = this.windowSizes[Math.floor(this.windowSizes.length / 2)]
-            }else{
+                this.selectedWindowSize =
+                    this.windowSizes[Math.floor(this.windowSizes.length / 2)];
+            } else {
                 // both seleted regions and windowsize are defined -> update selected windowsize
-                this.storeCollectionConfig()
+                this.storeCollectionConfig();
             }
             // update used_datasets in store -> old dataset is decremented, new one is added
-            this.$store.commit("compare/decrement_usage_dataset", oldVal)
-            this.$store.commit("compare/increment_usage_dataset", newVal)
+            this.$store.commit("compare/decrement_usage_dataset", oldVal);
+            this.$store.commit("compare/increment_usage_dataset", newVal);
         },
-        selectedWindowSize: function() {
-            this.storeCollectionConfig()
-        }
+        selectedWindowSize: function () {
+            this.storeCollectionConfig();
+        },
     },
-    mounted: function() {
+    mounted: function () {
+        // register event handlers
+        this.registerSelectionEventHandlers()
         // initialize from store
         var collectionData = this.$store.getters[
             "compare/getCollectionProperties"
         ](this.id);
         // set selected dataset and binsize if they are defined
-        if (collectionData.collectionConfig){
-            this.selectedRegionID = collectionData.collectionConfig["regionID"]
-            this.selectedWindowSize = collectionData.collectionConfig["intervalSize"]
-            this.availableData = collectionData.collectionConfig["availableData"]
-        }else{
+        if (collectionData.collectionConfig) {
+            this.selectedRegionID = collectionData.collectionConfig["regionID"];
+            this.selectedWindowSize =
+                collectionData.collectionConfig["intervalSize"];
+            this.availableData =
+                collectionData.collectionConfig["availableData"];
+        } else {
             // set new collectionConfig if not initialized from store
-                let payload = {
-                    id: this.id,
-                    collectionConfig: {
-                        regionID: undefined,
-                        availableData: {"pileup": {}, "lineprofile": {}, "stackup": {}},
-                        intervalSize: undefined
-                    }
-                }
-            this.$store.commit("compare/setCollectionConfig", payload)
+            let payload = {
+                id: this.id,
+                collectionConfig: {
+                    regionID: undefined,
+                    availableData: { pileup: {}, lineprofile: {}, stackup: {} },
+                    intervalSize: undefined,
+                },
+            };
+            this.$store.commit("compare/setCollectionConfig", payload);
         }
         // set maxrownumber and maxcolumnnumber
-        if (collectionData.children){
-            this.maxRowNumber =  max_array(Object.values(collectionData.children).map( (elem) => {
-                return elem.rowIndex
-            })) || 0;
-            this.maxColumnNumber = max_array(Object.values(collectionData.children).map( (elem) => {
-                return elem.colIndex
-            })) || 0;
+        if (collectionData.children) {
+            this.maxRowNumber =
+                max_array(
+                    Object.values(collectionData.children).map((elem) => {
+                        return elem.rowIndex;
+                    })
+                ) || 0;
+            this.maxColumnNumber =
+                max_array(
+                    Object.values(collectionData.children).map((elem) => {
+                        return elem.colIndex;
+                    })
+                ) || 0;
             // add children
             for (var child of Object.values(collectionData.children)) {
                 this.children.push(child);
@@ -456,12 +504,12 @@ export default {
         // get datasets
         this.fetchDatasets();
         // get resolutions
-        if (this.$store.state.resolutions){
-            this.windowSizes = Object.keys(this.$store.getters.getResolutions)
-        }else{
-            this.fetchResolutions()
+        if (this.$store.state.resolutions) {
+            this.windowSizes = Object.keys(this.$store.getters.getResolutions);
+        } else {
+            this.fetchResolutions();
         }
-    }
+    },
 };
 </script>
 

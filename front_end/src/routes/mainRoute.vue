@@ -121,6 +121,12 @@
                 :datasetID="modifyId"
                 @close-dialog="showModifyDialog = false; showMyDatasetDialog = true;"
             />
+            <select-dataset-dialog
+                :dialog="showSelectDialog"
+                :datasets="selectDatasets"
+                :datasetType="selectDatasetType"
+                @close-dialog="showSelectDialog = false;"
+            />
         </md-app-content>
     </md-app>
 </template>
@@ -140,6 +146,7 @@ import preprocessCollectionsDialog from "../components/dialogs/preprocessCollect
 import addAssemblyDialog from "../components/dialogs/addAssemblyDialog.vue"
 import assemblyDialog from "../components/dialogs/assemblyDialog.vue"
 import modifyDatasetDialog from "../components/dialogs/modifyDatasetDialog.vue"
+import selectDatasetDialog from "../components/dialogs/selectDatasetDialog.vue"
 
 import EventBus from "../eventBus"
 
@@ -159,7 +166,8 @@ export default {
         preprocessCollectionsDialog,
         addAssemblyDialog,
         assemblyDialog,
-        modifyDatasetDialog
+        modifyDatasetDialog,
+        selectDatasetDialog
     },
     data: () => ({
         menuVisible: false,
@@ -177,14 +185,25 @@ export default {
         showAddAssemblies: false,
         showAssemblyDialog: false,
         showModifyDialog: false,
-        modifyId: undefined
+        modifyId: undefined,
+        selectDatasets: undefined,
+        showSelectDialog: false,
+        selectDatasetType: undefined
     }),
     mounted: function(){
+        // modification listener
         EventBus.$on("show-modify-dialog", (id) => {
             this.modifyId = id
             this.showModifyDialog = true;
             this.showMyDatasetDialog = false;
         })
+        // selection listener
+        EventBus.$on("show-select-dialog", (datasets, datasetType) => {
+            this.selectDatasets = datasets
+            this.selectDatasetType = datasetType
+            this.showSelectDialog = true
+        })
+
     }
 };
 </script>
