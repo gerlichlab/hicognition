@@ -76,7 +76,7 @@
                         </div>
                     </div>
                     <div class="md-layout-item md-size-100 blue-background">
-                        <span class="caption padding-left">{{ dataInfo }}</span>
+                        <span class="md-caption padding-left">{{ dataInfo }}</span>
                     </div>
                 </div>
                 <md-divider></md-divider>
