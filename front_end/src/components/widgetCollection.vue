@@ -30,6 +30,7 @@
                                 :disabled="!allowRegionSelection"
                             >
                                 <md-icon>menu_open</md-icon>
+                            <md-tooltip md-direction="top" md-delay="300">Select region for this widget collection</md-tooltip>
                             </md-button>
                         </div>
                     </div>
