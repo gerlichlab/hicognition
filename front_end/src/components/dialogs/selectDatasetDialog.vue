@@ -6,7 +6,8 @@
                 <datasetTable
                     :datasets="datasets"
                     :restrictedDatasetType="datasetType"
-                    :singleSelection="true"
+                    :singleSelection="singleSelection"
+                    :showEmpty="showEmpty"
                     @selection-changed="handleSelectionChange"
                 ></datasetTable>
             </md-content>
@@ -56,13 +57,21 @@ export default {
         dialog: Boolean,
         datasets: Array,
         datasetType: String,
+        singleSelection: {
+            type: Boolean,
+            default: true
+        }
     },
     methods: {
         handleSelectionChange: function (selection) {
             this.selection = selection;
         },
         handleSelect: function () {
-            EventBus.$emit('dataset-selected', this.selection[0])
+            if (this.singleSelection){
+                EventBus.$emit('dataset-selected', this.selection[0])
+            } else {
+                EventBus.$emit('dataset-selected', this.selection)
+            }
             this.$emit('close-dialog')
         },
         handleClose: function(){
@@ -72,6 +81,12 @@ export default {
         }
     },
     computed: {
+        showEmpty: function(){
+            if (!this.datasets){
+                return undefined
+            }
+            return this.datasets.length == 0
+        },
         showControls: function () {
             return this.selection.length !== 0;
         },

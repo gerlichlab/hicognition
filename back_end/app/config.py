@@ -67,7 +67,7 @@ class Config:
                         "Normalization": ["NormToControl", "RPM", "No Normalization"],
                     },
                     "GeneExpression": {
-                        "Normalization": ["NormToControl", "RPM", "RPKM", "none"],
+                        "Normalization": ["NormToControl", "RPM", "RPKM", "No Normalization"],
                         "Method": ["RNAseq", "GroSeq", "SLAMseq", "NETseq"],
                     },
                 }

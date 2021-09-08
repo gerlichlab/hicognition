@@ -11,32 +11,18 @@
                 <div
                     class="md-layout-item md-size-15 padding-left padding-right"
                 >
-                    <md-menu
-                        :md-offset-x="50"
-                        :md-offset-y="-36"
-                        md-size="auto"
-                        :md-active.sync="showDatasetSelection"
-                        v-if="allowDatasetSelection"
-                        :md-close-on-select="false"
-                    >
-                        <div class="no-padding-top">
-                            <md-button class="md-icon-button" md-menu-trigger>
-                                <md-icon>menu_open</md-icon>
-                            </md-button>
-                        </div>
-                        <md-menu-content>
-                            <md-menu-item
-                                v-for="(item, id) in datasets"
-                                :key="id"
-                                @click="handleDatasetSelection(id)"
+                    <div class="menu-button">
+                        <md-button
+                            class="md-icon-button"
+                            @click="startDatasetSelection"
+                            :disabled="!allowDatasetSelection"
+                        >
+                            <md-icon>menu_open</md-icon>
+                            <md-tooltip md-direction="top" md-delay="300"
+                                >Select a dataset for this widget</md-tooltip
                             >
-                                <span class="caption">{{ item.name }}</span>
-                                <md-icon v-if="selectedDataset.includes(id)"
-                                    >done</md-icon
-                                >
-                            </md-menu-item>
-                        </md-menu-content>
-                    </md-menu>
+                        </md-button>
+                    </div>
                 </div>
                 <div
                     class="md-layout-item md-size-60 padding-left padding-right"
@@ -160,6 +146,7 @@
 <script>
 import lineprofile from "../visualizations/lineprofile";
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
+import EventBus from "../../eventBus";
 
 export default {
     name: "lineprofileWidget",
@@ -195,19 +182,22 @@ export default {
             this.selectedBinsize = undefined;
             this.widgetDataRef = undefined;
         },
-        handleDatasetSelection: function(id) {
-            // check whether id is in selected datasets
-            if (this.selectedDataset.includes(id)){
-                this.selectedDataset = this.selectedDataset.filter((val) => {
-                    return Number(val) != id
-                });
-                // check whether empty
-                if (this.selectedDataset.length == 0){
-                    this.blankWidget()
+        startDatasetSelection: function () {
+            this.expectSelection = true;
+            // get datasets from store
+            let datasets = this.$store.state.datasets.filter( (el) => Object.keys(this.datasets).includes(String(el.id)) )
+            EventBus.$emit("show-select-dialog", datasets, "bigwig", false);
+        },
+        registerSelectionEventHandlers: function () {
+            EventBus.$on("dataset-selected", (ids) => {
+                if (this.expectSelection) {
+                    this.selectedDataset = ids;
+                    this.expectSelection = false;
                 }
-            }else{
-                this.selectedDataset.push(id)
-            }
+            });
+            EventBus.$on("selection-aborted", () => {
+                this.expectSelection = false;
+            });
         },
         handleBinsizeSelection: function(binsize) {
             this.selectedBinsize = binsize;
@@ -250,7 +240,8 @@ export default {
                 showMenu: false,
                 normalized: false,
                 showDatasetSelection: false,
-                showBinSizeSelection: false
+                showBinSizeSelection: false,
+                expectSelection: false
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -301,7 +292,8 @@ export default {
                 showMenu: false,
                 normalized: widgetData["normalized"],
                 showDatasetSelection: false,
-                showBinSizeSelection: false
+                showBinSizeSelection: false,
+                expectSelection: false
             };
         },
         getlineprofileData: async function(id) {
@@ -443,6 +435,9 @@ export default {
             }
             this.updateData();
         }
+    },
+    mounted: function() {
+        this.registerSelectionEventHandlers()
     }
 };
 </script>

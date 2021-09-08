@@ -15,31 +15,18 @@
                 <div
                     class="md-layout-item md-size-15 padding-left padding-right"
                 >
-                    <md-menu
-                        :md-offset-x="50"
-                        :md-offset-y="-36"
-                        md-size="auto"
-                        :md-active.sync="showDatasetSelection"
-                        v-if="allowDatasetSelection"
-                    >
-                        <div class="no-padding-top">
-                            <md-button class="md-icon-button" md-menu-trigger>
-                                <md-icon>menu_open</md-icon>
-                            </md-button>
-                        </div>
-                        <md-menu-content>
-                            <md-menu-item
-                                v-for="(item, id) in datasets"
-                                :key="id"
-                                @click="handleDatasetSelection(id)"
+                    <div class="menu-button">
+                        <md-button
+                            class="md-icon-button"
+                            @click="startDatasetSelection"
+                            :disabled="!allowDatasetSelection"
+                        >
+                            <md-icon>menu_open</md-icon>
+                            <md-tooltip md-direction="top" md-delay="300"
+                                >Select a dataset for this widget</md-tooltip
                             >
-                                <span class="caption">{{ item.name }}</span>
-                                <md-icon v-if="selectedDataset == id"
-                                    >done</md-icon
-                                >
-                            </md-menu-item>
-                        </md-menu-content>
-                    </md-menu>
+                        </md-button>
+                    </div>
                 </div>
                 <div
                     class="md-layout-item md-size-60 padding-left padding-right"
@@ -227,8 +214,22 @@ export default {
         }
     },
     methods: {
-        handleDatasetSelection: function(id) {
-            this.selectedDataset = id;
+        startDatasetSelection: function () {
+            this.expectSelection = true;
+            // get datasets from store
+            let datasets = this.$store.state.datasets.filter( (el) => Object.keys(this.datasets).includes(String(el.id)) )
+            EventBus.$emit("show-select-dialog", datasets, "cooler");
+        },
+        registerSelectionEventHandlers: function () {
+            EventBus.$on("dataset-selected", (id) => {
+                if (this.expectSelection) {
+                    this.selectedDataset = id;
+                    this.expectSelection = false;
+                }
+            });
+            EventBus.$on("selection-aborted", () => {
+                this.expectSelection = false;
+            });
         },
         handleBinsizeSelection: function(binsize) {
             this.selectedBinsize = binsize;
@@ -368,7 +369,8 @@ export default {
                 reactToICCFSwitch: true,
                 reactToUpdate: true, // whether to react to updates in binsize/dataset
                 showDatasetSelection: false,
-                showBinSizeSelection: false
+                showBinSizeSelection: false,
+                expectSelection: false
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -440,7 +442,8 @@ export default {
                 reactToICCFSwitch: true,
                 reactToUpdate: false,
                 showDatasetSelection: false,
-                showBinSizeSelection: false
+                showBinSizeSelection: false,
+                expectSelection: false
             };
         },
         getPileupData: async function(pileupType, id) {
@@ -589,6 +592,7 @@ export default {
     },
     mounted: function() {
         this.registerValueScaleEventHandlers();
+        this.registerSelectionEventHandlers();
     }
 };
 </script>

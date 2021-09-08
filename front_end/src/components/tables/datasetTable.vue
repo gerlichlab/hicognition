@@ -286,7 +286,7 @@
                     </md-table-row>
                 </md-table>
                 <div
-                    v-else-if="datasets.length == 0 || assemblies === undefined"
+                    v-else-if="(datasets.length == 0 || assemblies === undefined) && !this.showEmpty"
                     class="wait-spinner-container"
                 >
                     <div>
@@ -331,6 +331,10 @@ export default {
             type: Boolean,
             default: false,
         },
+        showEmpty: {
+            type: Boolean,
+            default: false
+        }
     },
     data: () => ({
         assemblies: undefined,
@@ -516,6 +520,9 @@ export default {
         },
         sortAscending(datasets) {
             return datasets.sort((a, b) => {
+                if (a[this.sortBy] == undefined || b[this.sortBy] == undefined){
+                    return 1
+                }
                 if (
                     a[this.sortBy].toLowerCase() < b[this.sortBy].toLowerCase()
                 ) {
@@ -526,6 +533,9 @@ export default {
         },
         sortDescending(datasets) {
             return datasets.sort((a, b) => {
+                if (a[this.sortBy] == undefined || b[this.sortBy] == undefined){
+                    return -1
+                }
                 if (
                     a[this.sortBy].toLowerCase() > b[this.sortBy].toLowerCase()
                 ) {
@@ -635,7 +645,6 @@ export default {
             this.$emit("selection-changed", this.selectedIds);
         },
         filterFields: function () {
-            console.log("filtering ran")
             this.selectedIds = [];
             this.$emit("selection-changed", this.selectedIds);
         },
