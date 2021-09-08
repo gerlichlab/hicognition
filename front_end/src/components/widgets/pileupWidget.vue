@@ -218,7 +218,8 @@ export default {
             this.expectSelection = true;
             // get datasets from store
             let datasets = this.$store.state.datasets.filter( (el) => Object.keys(this.datasets).includes(String(el.id)) )
-            EventBus.$emit("show-select-dialog", datasets, "cooler");
+            let preselection = this.selectedDataset ? [this.selectedDataset] : []
+            EventBus.$emit("show-select-dialog", datasets, "cooler", preselection);
         },
         registerSelectionEventHandlers: function () {
             EventBus.$on("dataset-selected", (id) => {

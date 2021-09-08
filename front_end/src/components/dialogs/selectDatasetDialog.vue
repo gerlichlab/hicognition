@@ -8,6 +8,7 @@
                     :restrictedDatasetType="datasetType"
                     :singleSelection="singleSelection"
                     :showEmpty="showEmpty"
+                    :preselection="preselection"
                     @selection-changed="handleSelectionChange"
                 ></datasetTable>
             </md-content>
@@ -60,7 +61,8 @@ export default {
         singleSelection: {
             type: Boolean,
             default: true
-        }
+        },
+        preselection: Array
     },
     methods: {
         handleSelectionChange: function (selection) {
@@ -128,6 +130,7 @@ export default {
 
 .float-right {
     float: right;
+    margin: 5px
 }
 
 

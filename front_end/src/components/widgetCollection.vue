@@ -312,7 +312,8 @@ export default {
         },
         startDatasetSelection: function () {
             this.expectSelection = true;
-            EventBus.$emit("show-select-dialog", this.regions, "bedfile");
+            let preselection = this.selectedRegionID ? [this.selectedRegionID] : []
+            EventBus.$emit("show-select-dialog", this.regions, "bedfile", preselection);
         },
         registerSelectionEventHandlers: function(){
             EventBus.$on("dataset-selected", (id) => {

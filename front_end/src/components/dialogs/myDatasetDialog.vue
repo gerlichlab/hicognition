@@ -187,6 +187,7 @@ export default {
 
 .float-right {
     float: right;
+    margin: 5px;
 }
 
 

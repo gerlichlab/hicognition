@@ -334,6 +334,10 @@ export default {
         showEmpty: {
             type: Boolean,
             default: false
+        },
+        preselection: {
+            type: Array,
+            default: () => []
         }
     },
     data: () => ({
@@ -637,23 +641,23 @@ export default {
         datasetType: function () {
             this.createFilterFields();
             this.searchTerm = "";
-            this.selectedIds = [];
+            this.selectedIds = this.preselection;
             this.$emit("selection-changed", this.selectedIds);
         },
         searchTerm: function () {
-            this.selectedIds = [];
+            this.selectedIds = this.preselection;
             this.$emit("selection-changed", this.selectedIds);
         },
         filterFields: function () {
-            this.selectedIds = [];
+            this.selectedIds = this.preselection;
             this.$emit("selection-changed", this.selectedIds);
         },
         selectedAssembly: function () {
-            this.selectedIds = [];
+            this.selectedIds = this.preselection;
             this.$emit("selection-changed", this.selectedIds);
         },
         datasets: function () {
-            this.selectedIds = [];
+            this.selectedIds = this.preselection;
             this.$emit("selection-changed", this.selectedIds);
         },
     },
@@ -665,6 +669,7 @@ export default {
             this.datasetType = this.restrictedDatasetType;
         }
         this.createFilterFields();
+        this.selectedIds = this.preselection
     },
 };
 </script>

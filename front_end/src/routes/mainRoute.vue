@@ -126,6 +126,7 @@
                 :datasets="selectDatasets"
                 :datasetType="selectDatasetType"
                 :singleSelection="singleSelection"
+                :preselection="preselection"
                 @close-dialog="showSelectDialog = false;"
             />
         </md-app-content>
@@ -190,7 +191,8 @@ export default {
         selectDatasets: undefined,
         showSelectDialog: false,
         selectDatasetType: undefined,
-        singleSelection: true
+        singleSelection: true,
+        preselection: []
     }),
     mounted: function(){
         // modification listener
@@ -200,12 +202,13 @@ export default {
             this.showMyDatasetDialog = false;
         })
         // selection listener
-        EventBus.$on("show-select-dialog", (datasets, datasetType, singleSelection) => {
+        EventBus.$on("show-select-dialog", (datasets, datasetType, preselection, singleSelection) => {
             if (singleSelection !== undefined){
                 this.singleSelection = singleSelection
             } else {
                 this.singleSelection = true
             }
+            this.preselection = preselection
             this.selectDatasets = datasets
             this.selectDatasetType = datasetType
             this.showSelectDialog = true
