@@ -17,8 +17,11 @@
                             class="md-secondary md-raised md-accent"
                             @click="showDelete = true"
                             v-if="showControls && !showDelete"
-                            >Delete</md-button
+                            :disabled="!notProcessing"
+                            >Delete
+                            </md-button
                         >
+                        <md-tooltip md-direction="top" v-if="!notProcessing">Datasets cannot be delete when one of them is processing</md-tooltip>
                     </div>
                     <div class="float-left">
                         <md-button
@@ -125,6 +128,9 @@ export default {
         },
     },
     computed: {
+        notProcessing: function(){
+            return this.datasets.every(el => el.processing_datasets.length === 0)
+        },
         singleDatasetSelected: function(){
             return this.selection.length === 1;
         },

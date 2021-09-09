@@ -23,7 +23,7 @@
                                 >
                             </div>
                             <div class="md-layout-item md-size-50" >
-                                <span class="md-body-1"> {{ numberRegions }} region selected</span>
+                                <span class="md-body-1"> {{ numberRegions }} {{ pluralizedRegions }} selected</span>
                             </div>
                             <div class="md-layout-item md-size-50">
                                 <span
@@ -113,6 +113,9 @@ export default {
     computed: {
         numberRegions: function(){
             return this.form.bedfileIDs.length
+        },
+        pluralizedRegions: function(){
+            return this.numberRegions == 0 ? "regions" : "region"
         },
         numberFeatures: function(){
             return this.form.datasetIDs.length
