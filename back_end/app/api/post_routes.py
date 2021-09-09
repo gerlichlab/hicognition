@@ -129,7 +129,7 @@ def preprocess_dataset():
     def is_form_invalid():
         if not hasattr(request, "form"):
             return True
-        if sorted(list(request.form.keys())) != sorted(["dataset_id", "region_ids"]):
+        if sorted(list(request.form.keys())) != sorted(["dataset_ids", "region_ids"]):
             return True
         return False
 
@@ -139,12 +139,15 @@ def preprocess_dataset():
         return invalid("Form is not valid!")
     # get data from form
     data = request.form
-    dataset_id = json.loads(data["dataset_id"])
+    dataset_ids = json.loads(data["dataset_ids"])
     region_datasets_ids = json.loads(data["region_ids"])
-    # check whether dataset exists
-    if Dataset.query.get(dataset_id) is None:
+    # check whether datasets exist
+    feature_datasets = [
+        Dataset.query.get(feature_id) for feature_id in dataset_ids
+    ]
+    if any(entry is None for entry in feature_datasets):
         return not_found("Dataset does not exist!")
-    if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g):
+    if any(is_access_to_dataset_denied(entry, g) for entry in feature_datasets):
         return forbidden(f"Dataset is not owned by logged in user!")
     # check whether region datasets exists
     region_datasets = [
@@ -156,8 +159,9 @@ def preprocess_dataset():
     if any(is_access_to_dataset_denied(entry, g) for entry in region_datasets):
         return forbidden(f"Dataset is not owned by logged in user!")
     # delete all jobs that are in database and have failed
-    associated_tasks = Task.query.filter_by(dataset=Dataset.query.get(dataset_id)).all()
-    remove_failed_tasks(associated_tasks, db)
+    for dataset_id in dataset_ids:
+        associated_tasks = Task.query.filter_by(dataset=Dataset.query.get(dataset_id)).all()
+        remove_failed_tasks(associated_tasks, db)
     # get interval ids of selected regions
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
@@ -165,17 +169,18 @@ def preprocess_dataset():
         for binsize in current_app.config["PREPROCESSING_MAP"][
             Intervals.query.get(interval_id).windowsize
         ]:
-            current_user.launch_task(
-                *current_app.config["PIPELINE_NAMES"][
-                    Dataset.query.get(dataset_id).filetype
-                ],
-                dataset_id,
-                intervals_id=interval_id,
-                binsize=binsize,
-            )
-    # set processing state
-    dataset = Dataset.query.get(dataset_id)
-    dataset.processing_state = "processing"
+            for dataset_id in dataset_ids:
+                current_user.launch_task(
+                    *current_app.config["PIPELINE_NAMES"][
+                        Dataset.query.get(dataset_id).filetype
+                    ],
+                    dataset_id,
+                    intervals_id=interval_id,
+                    binsize=binsize,
+                )
+                # set processing state
+                dataset = Dataset.query.get(dataset_id)
+                dataset.processing_state = "processing"
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 
