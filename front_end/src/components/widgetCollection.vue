@@ -316,15 +316,21 @@ export default {
             EventBus.$emit("show-select-dialog", this.regions, "bedfile", preselection);
         },
         registerSelectionEventHandlers: function(){
-            EventBus.$on("dataset-selected", (id) => {
-                if (this.expectSelection){
+            EventBus.$on("dataset-selected", this.handleDataSelection)
+            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion)
+        },
+        removeSelectionEventHandlers: function(){
+            EventBus.$off("dataset-selected", this.handleDataSelection)
+            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion)
+        },
+        handleDataSelection: function(id){
+            if (this.expectSelection){
                     this.selectedRegionID = id
                     this.expectSelection = false
-                }
-            })
-            EventBus.$on("selection-aborted", () => {
-                this.expectSelection = false
-            })
+            }
+        },
+        hanldeSelectionAbortion: function(){
+            this.expectSelection = false
         },
         increaseRows: function () {
             this.maxRowNumber = this.maxRowNumber + 1;
@@ -519,6 +525,9 @@ export default {
             this.fetchResolutions();
         }
     },
+    beforeDestroy: function(){
+        this.removeSelectionEventHandlers()
+    }
 };
 </script>
 
