@@ -253,10 +253,10 @@
                             v-for="(value, key) of fields"
                             :key="`${dataset.id}-${key}`"
                         >
-                            <span v-if="key != 'status'">{{
+                            <span v-if="!['status', 'processing_datasets'].includes(key)">{{
                                 dataset[key]
                             }}</span>
-                            <div v-else>
+                            <div v-else-if="key == 'status'">
                                 <md-icon
                                     v-if="
                                         finishedDatasets.includes(dataset.id)
@@ -281,6 +281,9 @@
                                     >cloud_done</md-icon
                                 >
                             </div>
+                            <span v-else>
+                                {{ dataset[key].length }}
+                            </span>
                         </md-table-cell>
                     </md-table-row>
                 </md-table>
@@ -371,7 +374,8 @@ export default {
                 "dataset_name",
                 "valueType",
                 "perturbation",
-                "cellCycleStage"
+                "cellCycleStage",
+                "processing_datasets"
             ];
         }
         return {
@@ -564,6 +568,9 @@ export default {
                 ) {
                     return 1;
                 }
+                if (Array.isArray(a[this.sortBy])){
+                    return  a[this.sortBy].length - b[this.sortBy].length
+                }
                 if (
                     a[this.sortBy].toLowerCase() < b[this.sortBy].toLowerCase()
                 ) {
@@ -579,6 +586,9 @@ export default {
                     b[this.sortBy] == undefined
                 ) {
                     return -1;
+                }
+                if (Array.isArray(a[this.sortBy])){
+                    return  b[this.sortBy].length - a[this.sortBy].length
                 }
                 if (
                     a[this.sortBy].toLowerCase() > b[this.sortBy].toLowerCase()
@@ -657,6 +667,10 @@ export default {
             // put in status if needed
             if (this.finishedDatasets){
                 outputFields["status"] = "Status";
+            }
+            // put in processin gdatasets
+            if (this.datasetType == "bedfile") {
+                outputFields["processing_datasets"] = "Processing features"
             }
             return outputFields;
         },
