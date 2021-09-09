@@ -1,7 +1,7 @@
 <template>
     <div style="z-index: 500;">
         <md-dialog :md-active.sync="showDialog">
-            <md-dialog-title>Datasets</md-dialog-title>
+            <md-dialog-title>{{ this.title }}</md-dialog-title>
             <md-content class="content">
                 <datasetTable
                     :datasets="datasets"
@@ -22,7 +22,7 @@
                         <md-button
                             class="md-secondary md-raised md-accent"
                             @click="handleSelect"
-                            v-if="showControls"
+                            v-if="showControls && reactToSelection"
                             >Select</md-button
                         >
                     </div>
@@ -61,6 +61,10 @@ export default {
         dialog: Boolean,
         datasets: Array,
         datasetType: String,
+        reactToSelection: {
+            type: Boolean,
+            default: true
+        },
         singleSelection: {
             type: Boolean,
             default: true
@@ -98,6 +102,12 @@ export default {
         }
     },
     computed: {
+        title: function(){
+            if (this.reactToSelection){
+                return "Datasets"
+            }
+            return "Available Features"
+        },
         showEmpty: function(){
             if (!this.datasets){
                 return undefined

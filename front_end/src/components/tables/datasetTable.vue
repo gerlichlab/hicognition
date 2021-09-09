@@ -253,14 +253,17 @@
                             v-for="(value, key) of fields"
                             :key="`${dataset.id}-${key}`"
                         >
-                            <span v-if="!['status', 'processing_datasets'].includes(key)">{{
-                                dataset[key]
-                            }}</span>
+                            <span
+                                v-if="
+                                    !['status', 'processing_datasets'].includes(
+                                        key
+                                    )
+                                "
+                                >{{ dataset[key] }}</span
+                            >
                             <div v-else-if="key == 'status'">
                                 <md-icon
-                                    v-if="
-                                        finishedDatasets.includes(dataset.id)
-                                    "
+                                    v-if="finishedDatasets.includes(dataset.id)"
                                     >done</md-icon
                                 >
                                 <md-progress-spinner
@@ -276,13 +279,19 @@
                                     "
                                     >error</md-icon
                                 >
-                                <md-icon
-                                    v-else
-                                    >cloud_done</md-icon
-                                >
+                                <md-icon v-else>cloud_done</md-icon>
                             </div>
                             <span v-else>
-                                {{ dataset[key].length }}
+                                <md-button
+                                    class="md-secondary"
+                                    @click.prevent.stop="
+                                        showPreprocessingTable(
+                                            dataset.id,
+                                            dataset.processing_datasets
+                                        )
+                                    "
+                                    >{{ dataset[key].length }}</md-button
+                                >
                             </span>
                         </md-table-cell>
                     </md-table-row>
@@ -318,6 +327,7 @@
 
 <script>
 import { apiMixin } from "../../mixins";
+import EventBus from "../../eventBus";
 
 const fieldToPropertyMapping = {
     Method: "method",
@@ -369,7 +379,7 @@ export default {
                 "cellCycleStage",
                 "status"
             ];
-        }else {
+        } else {
             selectedFields = [
                 "dataset_name",
                 "valueType",
@@ -398,6 +408,32 @@ export default {
         };
     },
     methods: {
+        showPreprocessingTable(id, processing_datasets) {
+            this.fetchPreprocessData(id).then(response => {
+                let bigwigIDs = Object.keys(
+                    response.data["lineprofile"]
+                ).map(el => Number(el));
+                let coolerIDs = Object.keys(response.data["pileup"]).map(el =>
+                    Number(el)
+                );
+                let finished = bigwigIDs.concat(coolerIDs);
+                EventBus.$emit(
+                    "show-select-dialog",
+                    this.datasets,
+                    "features",
+                    [],
+                    false,
+                    this.selectedAssembly,
+                    finished,
+                    processing_datasets,
+                    false
+                );
+            });
+        },
+        fetchPreprocessData: function(regionID) {
+            // get availability object
+            return this.fetchData(`datasets/${regionID}/processedDataMap/`);
+        },
         getSortOrderKey(fieldName) {
             if (fieldName == "status") {
                 return "processing_state";
@@ -568,8 +604,8 @@ export default {
                 ) {
                     return 1;
                 }
-                if (Array.isArray(a[this.sortBy])){
-                    return  a[this.sortBy].length - b[this.sortBy].length
+                if (Array.isArray(a[this.sortBy])) {
+                    return a[this.sortBy].length - b[this.sortBy].length;
                 }
                 if (
                     a[this.sortBy].toLowerCase() < b[this.sortBy].toLowerCase()
@@ -587,8 +623,8 @@ export default {
                 ) {
                     return -1;
                 }
-                if (Array.isArray(a[this.sortBy])){
-                    return  b[this.sortBy].length - a[this.sortBy].length
+                if (Array.isArray(a[this.sortBy])) {
+                    return b[this.sortBy].length - a[this.sortBy].length;
                 }
                 if (
                     a[this.sortBy].toLowerCase() > b[this.sortBy].toLowerCase()
@@ -665,12 +701,12 @@ export default {
                     (outputFields[fieldToPropertyMapping[element]] = element)
             );
             // put in status if needed
-            if (this.finishedDatasets){
+            if (this.finishedDatasets) {
                 outputFields["status"] = "Status";
             }
             // put in processin gdatasets
             if (this.datasetType == "bedfile") {
-                outputFields["processing_datasets"] = "Processing features"
+                outputFields["processing_datasets"] = "Processing features";
             }
             return outputFields;
         },

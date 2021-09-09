@@ -52,7 +52,7 @@
                 "
                 @show-assembly-click="
                     showAssemblyDialog = true;
-                    menuVisible = false
+                    menuVisible = false;
                 "
             ></drawer>
         </md-app-drawer>
@@ -119,7 +119,10 @@
             <modify-dataset-dialog
                 :dialog="showModifyDialog"
                 :datasetID="modifyId"
-                @close-dialog="showModifyDialog = false; showMyDatasetDialog = true;"
+                @close-dialog="
+                    showModifyDialog = false;
+                    showMyDatasetDialog = true;
+                "
             />
             <select-dataset-dialog
                 :dialog="showSelectDialog"
@@ -130,7 +133,8 @@
                 :assembly="selectedAssembly"
                 :finishedDatasets="finishedDatasets"
                 :processingDatasets="processingDatasets"
-                @close-dialog="showSelectDialog = false;"
+                :reactToSelection="reactToSelection"
+                @close-dialog="showSelectDialog = false"
             />
         </md-app-content>
     </md-app>
@@ -145,15 +149,15 @@ import addMetadataDialog from "../components/dialogs/addMetadataDialog";
 import preprocessDatasetDialog from "../components/dialogs/preProcessDatasetDialog";
 import addSessionDialog from "../components/dialogs/addSessionDialog";
 import mySessionsDialog from "../components/dialogs/mySessionsDialog";
-import addCollectionDialog from "../components/dialogs/addCollectionDialog.vue"
-import collectionsDialog from "../components/dialogs/collectionsDialog.vue"
-import preprocessCollectionsDialog from "../components/dialogs/preprocessCollections.vue"
-import addAssemblyDialog from "../components/dialogs/addAssemblyDialog.vue"
-import assemblyDialog from "../components/dialogs/assemblyDialog.vue"
-import modifyDatasetDialog from "../components/dialogs/modifyDatasetDialog.vue"
-import selectDatasetDialog from "../components/dialogs/selectDatasetDialog.vue"
+import addCollectionDialog from "../components/dialogs/addCollectionDialog.vue";
+import collectionsDialog from "../components/dialogs/collectionsDialog.vue";
+import preprocessCollectionsDialog from "../components/dialogs/preprocessCollections.vue";
+import addAssemblyDialog from "../components/dialogs/addAssemblyDialog.vue";
+import assemblyDialog from "../components/dialogs/assemblyDialog.vue";
+import modifyDatasetDialog from "../components/dialogs/modifyDatasetDialog.vue";
+import selectDatasetDialog from "../components/dialogs/selectDatasetDialog.vue";
 
-import EventBus from "../eventBus"
+import EventBus from "../eventBus";
 
 export default {
     name: "mainRoute",
@@ -177,7 +181,7 @@ export default {
     data: () => ({
         menuVisible: false,
         showMyDatasetDialog: false,
-        showAddRegionDialog:false,
+        showAddRegionDialog: false,
         showAddFeatureDialog: false,
         showAddMetadataDialog: false,
         showPreprocessDatasetDialog: false,
@@ -198,43 +202,60 @@ export default {
         preselection: [],
         selectedAssembly: undefined,
         finishedDatasets: undefined,
-        processingDatasets: undefined
+        processingDatasets: undefined,
+        reactToSelection: true
     }),
-    mounted: function(){
+    mounted: function() {
         // modification listener
-        EventBus.$on("show-modify-dialog", (id) => {
-            this.modifyId = id
+        EventBus.$on("show-modify-dialog", id => {
+            this.modifyId = id;
             this.showModifyDialog = true;
             this.showMyDatasetDialog = false;
-        })
+        });
         // selection listener
-        EventBus.$on("show-select-dialog", (datasets, datasetType, preselection, singleSelection, assembly, finishedDatasets, processingDatasets) => {
-            if (singleSelection !== undefined){
-                this.singleSelection = singleSelection
-            } else {
-                this.singleSelection = true
+        EventBus.$on(
+            "show-select-dialog",
+            (
+                datasets,
+                datasetType,
+                preselection,
+                singleSelection,
+                assembly,
+                finishedDatasets,
+                processingDatasets,
+                reactToSelection
+            ) => {
+                if (singleSelection !== undefined) {
+                    this.singleSelection = singleSelection;
+                } else {
+                    this.singleSelection = true;
+                }
+                if (assembly) {
+                    this.selectedAssembly = assembly;
+                } else {
+                    this.selectedAssembly = undefined;
+                }
+                if (finishedDatasets) {
+                    this.finishedDatasets = finishedDatasets;
+                } else {
+                    this.finishedDatasets = undefined;
+                }
+                if (processingDatasets) {
+                    this.processingDatasets = processingDatasets;
+                } else {
+                    this.processingDatasets = undefined;
+                }
+                if (reactToSelection !== undefined) {
+                    this.reactToSelection = reactToSelection;
+                } else {
+                    this.reactToSelection = true;
+                }
+                this.preselection = preselection;
+                this.selectDatasets = datasets;
+                this.selectDatasetType = datasetType;
+                this.showSelectDialog = true;
             }
-            if (assembly){
-                this.selectedAssembly = assembly
-            } else {
-                this.selectedAssembly = undefined
-            }
-            if (finishedDatasets) {
-                this.finishedDatasets = finishedDatasets
-            } else {
-                this.finishedDatasets = undefined
-            }
-            if (processingDatasets) {
-                this.processingDatasets = processingDatasets
-            } else {
-                this.processingDatasets = undefined
-            }
-            this.preselection = preselection
-            this.selectDatasets = datasets
-            this.selectDatasetType = datasetType
-            this.showSelectDialog = true
-        })
-
+        );
     }
 };
 </script>
