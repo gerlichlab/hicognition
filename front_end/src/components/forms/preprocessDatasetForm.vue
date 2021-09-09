@@ -23,7 +23,7 @@
                                 >
                             </div>
                             <div class="md-layout-item md-size-50" >
-                                <span class="md-body-1">{{ numberRegions }} regions selected</span>
+                                <span class="md-body-1"> {{ numberRegions }} region selected</span>
                             </div>
                             <div class="md-layout-item md-size-50">
                                 <span
@@ -102,6 +102,7 @@ export default {
         availableBigwigs: [],
         availableBedFiles: [],
         finishedDatasets: [],
+        processingDatasets: [],
         form: {
             datasetIDs: [],
             bedfileIDs: [],
@@ -152,13 +153,13 @@ export default {
         startRegionSelection: function () {
             this.expectSelection = true;
             let preselection = [...this.form.bedfileIDs]
-            EventBus.$emit("show-select-dialog", this.availableBedFiles, "bedfile", preselection, false);
+            EventBus.$emit("show-select-dialog", this.availableBedFiles, "bedfile", preselection, true);
         },
         startFeatureSelection: function () {
             this.expectSelection = true;
-            let preselection = this.form.datasetIDs
+            let preselection = [...this.form.datasetIDs]
             let datasets = this.availableBigwigs.concat(this.availableCoolers)
-            EventBus.$emit("show-select-dialog", datasets, "features", preselection, false, this.selectedAssembly, this.finishedDatasets);
+            EventBus.$emit("show-select-dialog", datasets, "features", preselection, false, this.selectedAssembly, this.finishedDatasets, this.processingDatasets);
         },
         registerSelectionEventHandlers: function(){
             EventBus.$on("dataset-selected", this.handleDataSelection)
@@ -173,16 +174,16 @@ export default {
                 if (this.isRegionSelection(ids)){
                     // blank features
                     this.form.datasetIDs = []
-                    this.form.bedfileIDs = ids
+                    this.form.bedfileIDs = [ids]
                     // get preprocess dataset map
-                    for (let id of ids) {
-                        this.fetchPreprocessData(id).then((response) => {
-                            let bigwigIDs = Object.keys(response.data["lineprofile"]).map(el => Number(el))
-                            let coolerIDs = Object.keys(response.data['pileup']).map(el => Number(el))
-                            let collectiveIDs = bigwigIDs.concat(coolerIDs)
-                            this.finishedDatasets = this.finishedDatasets.concat(collectiveIDs)
-                        })
-                    }
+                    this.fetchPreprocessData(ids).then((response) => {
+                        let bigwigIDs = Object.keys(response.data["lineprofile"]).map(el => Number(el))
+                        let coolerIDs = Object.keys(response.data['pileup']).map(el => Number(el))
+                        let collectiveIDs = bigwigIDs.concat(coolerIDs)
+                        this.finishedDatasets = this.finishedDatasets.concat(collectiveIDs)
+                    })
+                    // set processing datasets
+                    this.processingDatasets = this.getBedDataset(ids).processing_datasets
                 } else {
                     this.form.datasetIDs = ids
                 }
@@ -193,7 +194,10 @@ export default {
             this.expectSelection = false
         },
         isRegionSelection: function(ids) {
-            return this.regionIDs.includes(ids[0])
+            return this.regionIDs.includes(ids)
+        },
+        getBedDataset: function(id){
+            return this.availableBedFiles.filter(el => el.id === id)[0]
         },
         fetchDatasets: function() {
             // fetches available datasets (cooler and bedfiles) from server

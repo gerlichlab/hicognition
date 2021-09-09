@@ -11,6 +11,7 @@
                     :preselection="preselection"
                     :assembly="assembly"
                     :finishedDatasets="finishedDatasets"
+                    :processingDatasets="processingDatasets"
                     @selection-changed="handleSelectionChange"
                 ></datasetTable>
             </md-content>
@@ -70,6 +71,10 @@ export default {
             default: undefined
         },
         finishedDatasets: {
+            type: Array,
+            default: undefined
+        },
+        processingDatasets: {
             type: Array,
             default: undefined
         }

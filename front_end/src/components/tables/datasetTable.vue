@@ -267,7 +267,7 @@
                                     :md-diameter="30"
                                     md-mode="indeterminate"
                                     v-else-if="
-                                        dataset.processing_state == 'processing'
+                                        processingDatasets.includes(dataset.id)
                                     "
                                 ></md-progress-spinner>
                                 <md-icon
@@ -348,6 +348,10 @@ export default {
             default: undefined
         },
         finishedDatasets: {
+            type: Array,
+            default: undefined
+        },
+        processingDatasets: {
             type: Array,
             default: undefined
         }
