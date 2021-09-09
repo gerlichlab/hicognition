@@ -160,15 +160,22 @@ export default {
             EventBus.$emit("show-select-dialog", this.availableBedFiles, "bedfile", preselection);
         },
         registerSelectionEventHandlers: function(){
-            EventBus.$on("dataset-selected", (id) => {
-                if (this.expectSelection){
+            EventBus.$on("dataset-selected", this.handleDataSelection)
+            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion)
+        },
+        removeSelectionEventHandlers: function(){
+            EventBus.$off("dataset-selected", this.handleDataSelection)
+            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion)
+        },
+        handleDataSelection: function(id){
+            console.log("IE")
+            if (this.expectSelection){
                     this.form.datasetID = id
                     this.expectSelection = false
-                }
-            })
-            EventBus.$on("selection-aborted", () => {
-                this.expectSelection = false
-            })
+            }
+        },
+        hanldeSelectionAbortion: function(){
+            this.expectSelection = false
         },
         fetchDatasets: function() {
             // fetches available datasets (cooler and bedfiles) from server
@@ -250,6 +257,9 @@ export default {
     created: function() {
         this.fetchDatasets();
         this.registerSelectionEventHandlers()
+    },
+    beforeDestroy: function(){
+        this.removeSelectionEventHandlers()
     }
 };
 </script>

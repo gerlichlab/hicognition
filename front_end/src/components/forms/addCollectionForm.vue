@@ -141,7 +141,6 @@ export default {
             EventBus.$off("selection-aborted", this.hanldeSelectionAbortion)
         },
         handleDataSelection: function(ids){
-            console.log("IE")
             if (this.expectSelection){
                     this.form.used_datasets = ids
                     this.expectSelection = false
