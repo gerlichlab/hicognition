@@ -169,9 +169,11 @@ class Dataset(db.Model):
         # check if there are any unfinished tasks
         tasks = self.tasks.filter(Task.complete == False).all()
         if len(tasks) == 0:
+            self.processing_id = None
             self.processing_state = "finished"
         else:
             if all_tasks_finished(tasks):
+                self.processing_id = None
                 self.processing_state = "finished"
             elif any_tasks_failed(tasks):
                 self.processing_state = "failed"
@@ -188,6 +190,8 @@ class Dataset(db.Model):
             value = self.__getattribute__(key)
             if value != "undefined":
                 json_dataset[key] = value
+        # add processing state
+        json_dataset["processing_datasets"] = [dataset.id for dataset in self.processing_datasets] 
         return json_dataset
 
 
