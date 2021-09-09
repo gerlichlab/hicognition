@@ -250,16 +250,22 @@ export default {
             let preselection = this.selectedDataset ? [this.selectedDataset] : []
             EventBus.$emit("show-select-dialog", datasets, "bigwig", preselection);
         },
-        registerSelectionEventHandlers: function () {
-            EventBus.$on("dataset-selected", (id) => {
-                if (this.expectSelection) {
-                    this.selectedDataset = id;
-                    this.expectSelection = false;
-                }
-            });
-            EventBus.$on("selection-aborted", () => {
-                this.expectSelection = false;
-            });
+        registerSelectionEventHandlers: function(){
+            EventBus.$on("dataset-selected", this.handleDataSelection)
+            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion)
+        },
+        removeSelectionEventHandlers: function(){
+            EventBus.$off("dataset-selected", this.handleDataSelection)
+            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion)
+        },
+        handleDataSelection: function(id){
+            if (this.expectSelection){
+                    this.selectedDataset = id
+                    this.expectSelection = false
+            }
+        },
+        hanldeSelectionAbortion: function(){
+            this.expectSelection = false
         },
         handleBinsizeSelection: function (binsize) {
             this.selectedBinsize = binsize;
@@ -692,6 +698,9 @@ export default {
         this.registerValueScaleEventHandlers();
         this.registerSelectionEventHandlers();
     },
+    beforeDestroy: function(){
+        this.removeSelectionEventHandlers()
+    }
 };
 </script>
 
