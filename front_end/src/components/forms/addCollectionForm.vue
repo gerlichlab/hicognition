@@ -14,10 +14,10 @@
                     <div class="md-layout md-gutter">
                         <!-- dataset name -->
                         <div class="md-layout-item md-small-size-100">
-                            <md-field
-                                :class="getValidationClass('name')"
-                            >
-                                <label :for="`name_collections-${fileType}`">Name</label>
+                            <md-field :class="getValidationClass('name')">
+                                <label :for="`name_collections-${fileType}`"
+                                    >Name</label
+                                >
                                 <md-input
                                     :name="`name_collections-${fileType}`"
                                     :id="`name_collections-${fileType}`"
@@ -33,29 +33,34 @@
                             </md-field>
                         </div>
                         <!-- Genotype field -->
-                        <div class="md-layout-item md-small-size-100">
-                            <md-field :class="getValidationClass('used_datasets')">
-                                <label :for="`used_datasets_collections-${fileType}`">Datasets</label>
-                                <md-select
-                                    :name="`used_datasets_collections-${fileType}`"
-                                    :id="`used_datasets_collections-${fileType}`"
-                                    v-model="form.used_datasets"
-                                    multiple
+                        <div
+                            class="md-layout-item md-layout md-gutter md-alignment-center-center md-small-size-100"
+                        >
+                            <div class="md-layout-item md-size-50">
+                                <md-button
+                                    class="md-raised md-primary"
+                                    @click="startDatasetSelection"
                                     :disabled="sending"
+                                    >Select Datasets</md-button
                                 >
-                                    <md-option
-                                        v-for="item in availableDatasets"
-                                        :value="item.id"
-                                        :key="item.id"
-                                        >{{ item.dataset_name }}</md-option
-                                    >
-                                </md-select>
+                            </div>
+
+                            <div
+                                class="md-layout-item md-size-50"
+                                v-if="form.used_datasets.length !== 0"
+                            >
+                                <span class="md-body-1">{{ datasetNumber }} datasets selected</span>
+                            </div>
+                            <div class="md-layout-item md-size-50" v-else>
                                 <span
-                                    class="md-error"
-                                    v-if="!$v.form.used_datasets.required"
-                                    >At least one dataset needs to be selected!</span
+                                    style="color: red; "
+                                    v-if="
+                                        !$v.form.used_datasets.required &&
+                                            $v.form.used_datasets.$dirty
+                                    "
+                                    >At least one dataset is required!</span
                                 >
-                            </md-field>
+                            </div>
                         </div>
                     </div>
                 </md-card-content>
@@ -76,7 +81,8 @@
             </md-card>
             <!-- Submission notification -->
             <md-snackbar :md-active.sync="datasetSaved"
-                >The collection was added succesfully and is ready for preprocessing!</md-snackbar
+                >The collection was added succesfully and is ready for
+                preprocessing!</md-snackbar
             >
         </form>
     </div>
@@ -86,8 +92,7 @@
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
-
-
+import EventBus from "../../eventBus";
 
 export default {
     name: "AddCollectionForm",
@@ -116,8 +121,28 @@ export default {
         }
     },
     computed: {
+        datasetNumber: function(){
+                return this.form.used_datasets.length
+        }
     },
     methods: {
+        startDatasetSelection: function () {
+            this.expectSelection = true;
+            let preselection = this.form.used_datasets
+            let fileType = this.fileType === "regions" ? "bedfile" : "bigwig"
+            EventBus.$emit("show-select-dialog", this.availableDatasets, fileType, preselection, false);
+        },
+        registerSelectionEventHandlers: function(){
+            EventBus.$on("dataset-selected", (ids) => {
+                if (this.expectSelection){
+                    this.form.used_datasets = ids
+                    this.expectSelection = false
+                }
+            })
+            EventBus.$on("selection-aborted", () => {
+                this.expectSelection = false
+            })
+        },
         getValidationClass(fieldName) {
             // matrial validation class for form field;
             const field = this.$v.form[fieldName];
@@ -134,32 +159,32 @@ export default {
                 // success, store datasets
                 this.$store.commit("setDatasets", response.data);
                 // update datasets
-                this.availableDatasets = response.data.filter(
-                    element =>
-                    {
-                        if (this.fileType == "regions"){
-                            return element.filetype == "bedfile"
-                        }else if (this.fileType == "1d-features"){
-                            return element.filetype == "bigwig"
-                        }else{
-                            return element.filetype == "cooler"
-                        }
+                this.availableDatasets = response.data.filter(element => {
+                    if (this.fileType == "regions") {
+                        return element.filetype == "bedfile";
+                    } else if (this.fileType == "1d-features") {
+                        return element.filetype == "bigwig";
+                    } else {
+                        return element.filetype == "cooler";
                     }
-                );
+                });
             });
         },
         clearForm() {
             this.$v.$reset();
-            this.form.name   = null;
-            this.form.used_datasets = []
+            this.form.name = null;
+            this.form.used_datasets = [];
         },
         saveDataset() {
             this.sending = true; // show progress bar
             // construct form data
             var formData = new FormData();
-            formData.append("kind", this.fileType)
-            formData.append("used_datasets", JSON.stringify(this.form.used_datasets))
-            formData.append("name", this.form.name)
+            formData.append("kind", this.fileType);
+            formData.append(
+                "used_datasets",
+                JSON.stringify(this.form.used_datasets)
+            );
+            formData.append("name", this.form.name);
             // // API call including upload is made in the background
             this.postData("collections/", formData).then(response => {
                 this.sending = false;
@@ -170,8 +195,8 @@ export default {
                 }
             });
             setTimeout(() => {
-                this.sending = false
-            }, 500)
+                this.sending = false;
+            }, 500);
         },
         validateDataset() {
             this.$v.$touch();
@@ -180,8 +205,9 @@ export default {
             }
         }
     },
-    mounted: function(){
-        this.fetchDatasets()
+    mounted: function() {
+        this.fetchDatasets();
+        this.registerSelectionEventHandlers()
     }
 };
 </script>
