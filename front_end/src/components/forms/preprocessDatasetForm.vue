@@ -40,7 +40,7 @@
                                 <md-button
                                     class="md-raised md-primary"
                                     @click="startFeatureSelection"
-                                    :disabled="!datasetsAvailable"
+                                    :disabled="!datasetsAvailable || this.form.bedfileIDs.length === 0"
                                     >Select Features</md-button
                                 >
                             </div>
@@ -101,6 +101,7 @@ export default {
         availableCoolers: [],
         availableBigwigs: [],
         availableBedFiles: [],
+        finishedDatasets: [],
         form: {
             datasetIDs: [],
             bedfileIDs: [],
@@ -150,29 +151,46 @@ export default {
     methods: {
         startRegionSelection: function () {
             this.expectSelection = true;
-            let preselection = this.form.bedfileIDs
+            let preselection = [...this.form.bedfileIDs]
             EventBus.$emit("show-select-dialog", this.availableBedFiles, "bedfile", preselection, false);
         },
         startFeatureSelection: function () {
             this.expectSelection = true;
             let preselection = this.form.datasetIDs
             let datasets = this.availableBigwigs.concat(this.availableCoolers)
-            EventBus.$emit("show-select-dialog", datasets, "features", preselection, false, this.selectedAssembly);
+            EventBus.$emit("show-select-dialog", datasets, "features", preselection, false, this.selectedAssembly, this.finishedDatasets);
         },
         registerSelectionEventHandlers: function(){
-            EventBus.$on("dataset-selected", (ids) => {
-                if (this.expectSelection){
-                    if (this.isRegionSelection(ids)){
-                        this.form.bedfileIDs = ids
-                    } else {
-                        this.form.datasetIDs = ids
+            EventBus.$on("dataset-selected", this.handleDataSelection)
+            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion)
+        },
+        removeSelectionEventHandlers: function(){
+            EventBus.$off("dataset-selected", this.handleDataSelection)
+            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion)
+        },
+        handleDataSelection: function(ids){
+            if (this.expectSelection){
+                if (this.isRegionSelection(ids)){
+                    // blank features
+                    this.form.datasetIDs = []
+                    this.form.bedfileIDs = ids
+                    // get preprocess dataset map
+                    for (let id of ids) {
+                        this.fetchPreprocessData(id).then((response) => {
+                            let bigwigIDs = Object.keys(response.data["lineprofile"]).map(el => Number(el))
+                            let coolerIDs = Object.keys(response.data['pileup']).map(el => Number(el))
+                            let collectiveIDs = bigwigIDs.concat(coolerIDs)
+                            this.finishedDatasets = this.finishedDatasets.concat(collectiveIDs)
+                        })
                     }
-                    this.expectSelection = false
+                } else {
+                    this.form.datasetIDs = ids
                 }
-            })
-            EventBus.$on("selection-aborted", () => {
                 this.expectSelection = false
-            })
+                }
+        },
+        hanldeSelectionAbortion: function(){
+            this.expectSelection = false
         },
         isRegionSelection: function(ids) {
             return this.regionIDs.includes(ids[0])
@@ -205,6 +223,10 @@ export default {
                         element.processing_state == "finished"
                 );
             });
+        },
+        fetchPreprocessData: function(regionID){
+            // get availability object
+            return this.fetchData(`datasets/${regionID}/processedDataMap/`)
         },
         getValidationClass(fieldName) {
             // matrial validation class for form field;
@@ -274,6 +296,9 @@ export default {
     created: function() {
         this.fetchDatasets();
         this.registerSelectionEventHandlers()
+    },
+    beforeDestroy: function(){
+        this.removeSelectionEventHandlers()
     }
 };
 </script>

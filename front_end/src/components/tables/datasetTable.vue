@@ -259,7 +259,7 @@
                             <div v-else>
                                 <md-icon
                                     v-if="
-                                        dataset.processing_state == 'finished'
+                                        finishedDatasets.includes(dataset.id)
                                     "
                                     >done</md-icon
                                 >
@@ -277,16 +277,8 @@
                                     >error</md-icon
                                 >
                                 <md-icon
-                                    v-else-if="
-                                        dataset.processing_state == 'uploaded'
-                                    "
+                                    v-else
                                     >cloud_done</md-icon
-                                >
-                                <md-icon
-                                    v-else-if="
-                                        dataset.processing_state == 'uploading'
-                                    "
-                                    >cloud_upload</md-icon
                                 >
                             </div>
                         </md-table-cell>
@@ -354,32 +346,49 @@ export default {
         assembly: {
             type: Number,
             default: undefined
+        },
+        finishedDatasets: {
+            type: Array,
+            default: undefined
         }
     },
-    data: () => ({
-        assemblies: undefined,
-        searchTerm: "",
-        matchCase: false,
-        selectedAssembly: undefined,
-        selectedIds: [],
-        datasetMetadataMapping: undefined,
-        filterSelection: [],
-        filterFields: {},
-        sortBy: undefined,
-        allowAssemblySelection: true,
-        sortOrder: "ascending",
-        selectedFields: [
-            "dataset_name",
-            "valueType",
-            "perturbation",
-            "cellCycleStage",
-            "status"
-        ],
-        showFilters: false,
-        showFields: false,
-        datasetType: "bedfile",
-        blockAssemblyBlanking: true
-    }),
+    data: function() {
+        let selectedFields;
+        if (this.finishedDatasets) {
+            selectedFields = [
+                "dataset_name",
+                "valueType",
+                "perturbation",
+                "cellCycleStage",
+                "status"
+            ];
+        }else {
+            selectedFields = [
+                "dataset_name",
+                "valueType",
+                "perturbation",
+                "cellCycleStage"
+            ];
+        }
+        return {
+            assemblies: undefined,
+            searchTerm: "",
+            matchCase: false,
+            selectedAssembly: undefined,
+            selectedIds: [],
+            datasetMetadataMapping: undefined,
+            filterSelection: [],
+            filterFields: {},
+            sortBy: undefined,
+            allowAssemblySelection: true,
+            sortOrder: "ascending",
+            selectedFields: selectedFields,
+            showFilters: false,
+            showFields: false,
+            datasetType: "bedfile",
+            blockAssemblyBlanking: true
+        };
+    },
     methods: {
         getSortOrderKey(fieldName) {
             if (fieldName == "status") {
@@ -619,9 +628,6 @@ export default {
                 return "md-icon-button large-top-margin";
             }
         },
-        showStatus: function() {
-            return this.selectedFields.includes("status");
-        },
         possibleFields: function() {
             const outputFields = {
                 dataset_name: "Name",
@@ -644,8 +650,10 @@ export default {
                 element =>
                     (outputFields[fieldToPropertyMapping[element]] = element)
             );
-            // put in status
-            outputFields["status"] = "Status";
+            // put in status if needed
+            if (this.finishedDatasets){
+                outputFields["status"] = "Status";
+            }
             return outputFields;
         },
         fields: function() {
@@ -691,10 +699,10 @@ export default {
             if (this.blockAssemblyBlanking) {
                 this.selectedIds = this.preselection;
             } else {
-                this.selectedIds = []
+                this.selectedIds = [];
             }
             this.$emit("selection-changed", this.selectedIds);
-            this.blockAssemblyBlanking = false
+            this.blockAssemblyBlanking = false;
         },
         datasets: function() {
             this.selectedIds = this.preselection;

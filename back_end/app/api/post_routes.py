@@ -181,6 +181,8 @@ def preprocess_dataset():
                 # set processing state
                 dataset = Dataset.query.get(dataset_id)
                 dataset.processing_state = "processing"
+                # add parent id
+                dataset.processing_id = Intervals.query.get(interval_id).dataset_id
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 

@@ -128,6 +128,7 @@
                 :singleSelection="singleSelection"
                 :preselection="preselection"
                 :assembly="selectedAssembly"
+                :finishedDatasets="finishedDatasets"
                 @close-dialog="showSelectDialog = false;"
             />
         </md-app-content>
@@ -194,7 +195,8 @@ export default {
         selectDatasetType: undefined,
         singleSelection: true,
         preselection: [],
-        selectedAssembly: undefined
+        selectedAssembly: undefined,
+        finishedDatasets: undefined
     }),
     mounted: function(){
         // modification listener
@@ -204,7 +206,7 @@ export default {
             this.showMyDatasetDialog = false;
         })
         // selection listener
-        EventBus.$on("show-select-dialog", (datasets, datasetType, preselection, singleSelection, assembly) => {
+        EventBus.$on("show-select-dialog", (datasets, datasetType, preselection, singleSelection, assembly, finishedDatasets) => {
             if (singleSelection !== undefined){
                 this.singleSelection = singleSelection
             } else {
@@ -214,6 +216,11 @@ export default {
                 this.selectedAssembly = assembly
             } else {
                 this.selectedAssembly = undefined
+            }
+            if (finishedDatasets) {
+                this.finishedDatasets = finishedDatasets
+            } else {
+                this.finishedDatasets = undefined
             }
             this.preselection = preselection
             this.selectDatasets = datasets

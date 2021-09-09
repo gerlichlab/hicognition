@@ -10,6 +10,7 @@
                     :showEmpty="showEmpty"
                     :preselection="preselection"
                     :assembly="assembly"
+                    :finishedDatasets="finishedDatasets"
                     @selection-changed="handleSelectionChange"
                 ></datasetTable>
             </md-content>
@@ -66,6 +67,10 @@ export default {
         preselection: Array,
         assembly: {
             type: Number,
+            default: undefined
+        },
+        finishedDatasets: {
+            type: Array,
             default: undefined
         }
     },

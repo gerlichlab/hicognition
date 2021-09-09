@@ -117,6 +117,8 @@ class User(db.Model, UserMixin):
 class Dataset(db.Model):
     # fields
     id = db.Column(db.Integer, primary_key=True)
+    processing_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
+    processing_datasets = db.relationship("Dataset", remote_side=[processing_id])
     dataset_name = db.Column(db.String(512), index=True)
     description = db.Column(db.String(81), default="undefined")
     perturbation = db.Column(db.String(64), default="undefined")
@@ -181,6 +183,8 @@ class Dataset(db.Model):
     def to_json(self):
         json_dataset = {}
         for key in inspect(Dataset).columns.keys():
+            if key == "processing_id":
+                continue
             value = self.__getattribute__(key)
             if value != "undefined":
                 json_dataset[key] = value
