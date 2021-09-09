@@ -165,7 +165,7 @@ export default {
     }
 
 
-@media only screen and (min-width: 1800px) {
+@media only screen and (min-width: 2400px) {
 
     .md-dialog /deep/.md-dialog-container {
         max-width: 90vw;

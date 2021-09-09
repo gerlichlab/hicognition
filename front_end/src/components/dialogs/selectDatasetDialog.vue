@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="z-index: 500;">
         <md-dialog :md-active.sync="showDialog">
             <md-dialog-title>Datasets</md-dialog-title>
             <md-content class="content">
@@ -108,7 +108,7 @@ export default {
     }
 
 
-@media only screen and (min-width: 1800px) {
+@media only screen and (min-width: 2400px) {
 
     .md-dialog /deep/.md-dialog-container {
         max-width: 90vw;

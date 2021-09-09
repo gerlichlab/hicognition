@@ -13,30 +13,26 @@
                     <!-- Intervals for which annotations are added; first row -->
                     <div class="md-layout md-gutter">
                         <!-- Regions -->
-                        <div class="md-layout-item md-small-size-100">
-                            <md-field :class="getValidationClass('datasetID')">
-                                <label for="datasetID">Regions</label>
-                                <md-select
-                                    name="datasetID"
-                                    id="datasetID"
-                                    v-model="form.datasetID"
-                                    md-dense
+                        <div class="md-layout-item md-layout md-gutter md-alignment-center-center md-small-size-100">
+
+                            <div class="md-layout-item md-size-50">
+                                <md-button
+                                    class="md-raised md-primary"
+                                    @click="startDatasetSelection"
                                     :disabled="!bedFilesAvailable"
-                                    required
+                                    >Select Region</md-button
                                 >
-                                    <md-option
-                                        v-for="item in availableBedFiles"
-                                        :value="item.id"
-                                        :key="item.id"
-                                        >{{ item.dataset_name }}</md-option
-                                    >
-                                </md-select>
+                            </div>
+                            <div class="md-layout-item md-size-50" v-if="form.datasetID" >
+                                <span class="md-body-1">{{ regionName }}</span>
+                            </div>
+                            <div class="md-layout-item md-size-50" v-else>
                                 <span
-                                    class="md-error"
-                                    v-if="!$v.form.datasetID.required"
+                                    style="color: red; "
+                                    v-if="!$v.form.datasetID.required && $v.form.datasetID.$dirty"
                                     >Regions are required</span
                                 >
-                            </md-field>
+                            </div>
                         </div>
                     </div>
                     <!-- Target file and separator; Second row -->
@@ -109,6 +105,8 @@
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
+import EventBus from "../../eventBus";
+
 
 export default {
     name: "AddMetadataForm",
@@ -127,7 +125,8 @@ export default {
         ],
         datasetSaved: false,
         sending: false,
-        selectedFile: null
+        selectedFile: null,
+        expectSelection: false
     }),
     validations: {
         // validators for the form
@@ -144,11 +143,33 @@ export default {
         }
     },
     computed: {
+        regionName: function() {
+            if (this.form.datasetID) {
+                return this.availableBedFiles.filter(el => el.id === this.form.datasetID)[0].dataset_name
+            }
+            return undefined
+        },
         bedFilesAvailable: function() {
             return this.availableBedFiles.length != 0;
         }
     },
     methods: {
+        startDatasetSelection: function () {
+            this.expectSelection = true;
+            let preselection = this.form.datasetID ? [this.form.datasetID] : []
+            EventBus.$emit("show-select-dialog", this.availableBedFiles, "bedfile", preselection);
+        },
+        registerSelectionEventHandlers: function(){
+            EventBus.$on("dataset-selected", (id) => {
+                if (this.expectSelection){
+                    this.form.datasetID = id
+                    this.expectSelection = false
+                }
+            })
+            EventBus.$on("selection-aborted", () => {
+                this.expectSelection = false
+            })
+        },
         fetchDatasets: function() {
             // fetches available datasets (cooler and bedfiles) from server
             this.fetchData("datasets/").then(response => {
@@ -228,6 +249,7 @@ export default {
     },
     created: function() {
         this.fetchDatasets();
+        this.registerSelectionEventHandlers()
     }
 };
 </script>
