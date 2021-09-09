@@ -129,6 +129,11 @@ export default {
         },
         regionIDs: function(){
             return this.availableBedFiles.map(el => el.id)
+        },
+        selectedAssembly: function(){
+            if (this.form.bedfileIDs.length !== 0){
+                return this.availableBedFiles.filter(el => el.id === this.form.bedfileIDs[0])[0].assembly
+            }
         }
     },
     validations: {
@@ -152,7 +157,7 @@ export default {
             this.expectSelection = true;
             let preselection = this.form.datasetIDs
             let datasets = this.availableBigwigs.concat(this.availableCoolers)
-            EventBus.$emit("show-select-dialog", datasets, "features", preselection, false, 4);
+            EventBus.$emit("show-select-dialog", datasets, "features", preselection, false, this.selectedAssembly);
         },
         registerSelectionEventHandlers: function(){
             EventBus.$on("dataset-selected", (ids) => {

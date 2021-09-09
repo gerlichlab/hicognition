@@ -56,13 +56,19 @@
                         <md-radio
                             v-model="datasetType"
                             value="bigwig"
-                            :disabled="!allowDatasetTypeSelection && !allowFeatureSelection"
+                            :disabled="
+                                !allowDatasetTypeSelection &&
+                                    !allowFeatureSelection
+                            "
                             >1D-feature</md-radio
                         >
                         <md-radio
                             v-model="datasetType"
                             value="cooler"
-                            :disabled="!allowDatasetTypeSelection && !allowFeatureSelection"
+                            :disabled="
+                                !allowDatasetTypeSelection &&
+                                    !allowFeatureSelection
+                            "
                             >2D-feature</md-radio
                         >
                     </div>
@@ -287,7 +293,10 @@
                     </md-table-row>
                 </md-table>
                 <div
-                    v-else-if="(datasets.length == 0 || assemblies === undefined) && !this.showEmpty"
+                    v-else-if="
+                        (datasets.length == 0 || assemblies === undefined) &&
+                            !this.showEmpty
+                    "
                     class="wait-spinner-container"
                 >
                     <div>
@@ -302,7 +311,9 @@
                     v-else
                     md-label="No datasets found"
                     style="flexgrow: true"
-                    :md-description="`No datasets found for this query. Try a different search term or create a new dataset.`"
+                    :md-description="
+                        `No datasets found for this query. Try a different search term or create a new dataset.`
+                    "
                 >
                 </md-empty-state>
             </transition>
@@ -319,7 +330,7 @@ const fieldToPropertyMapping = {
     Normalization: "normalization",
     DerivationType: "derivationType",
     Protein: "protein",
-    Directionality: "directionality",
+    Directionality: "directionality"
 };
 
 export default {
@@ -330,7 +341,7 @@ export default {
         restrictedDatasetType: String,
         singleSelection: {
             type: Boolean,
-            default: false,
+            default: false
         },
         showEmpty: {
             type: Boolean,
@@ -362,11 +373,12 @@ export default {
             "valueType",
             "perturbation",
             "cellCycleStage",
-            "status",
+            "status"
         ],
         showFilters: false,
         showFields: false,
         datasetType: "bedfile",
+        blockAssemblyBlanking: true
     }),
     methods: {
         getSortOrderKey(fieldName) {
@@ -391,7 +403,7 @@ export default {
             }
             return "arrow_upward";
         },
-        sortByValue: function (fieldName) {
+        sortByValue: function(fieldName) {
             if (this.sortBy == fieldName && this.sortOrder == "ascending") {
                 this.sortOrder = "descending";
             } else {
@@ -399,13 +411,13 @@ export default {
             }
             this.sortBy = fieldName;
         },
-        getTableRowClass: function (id) {
+        getTableRowClass: function(id) {
             if (this.selectedIds.includes(id)) {
                 return "blue-background";
             }
             return "";
         },
-        handleTableRowClicked: function (id) {
+        handleTableRowClicked: function(id) {
             if (this.singleSelection) {
                 this.selectedIds = [id];
             } else if (this.selectedIds.includes(id)) {
@@ -415,14 +427,14 @@ export default {
             }
             this.$emit("selection-changed", this.selectedIds);
         },
-        getOptionClass: function (field, value) {
+        getOptionClass: function(field, value) {
             let filterString = `${field}-${value}`;
             if (this.filterSelection.includes(filterString)) {
                 return "blue-background";
             }
             return "";
         },
-        setFilterSelection: function (field, value) {
+        setFilterSelection: function(field, value) {
             let filterString = `${field}-${value}`;
             if (this.filterSelection.includes(filterString)) {
                 this.filterSelection.splice(
@@ -433,7 +445,7 @@ export default {
                 this.filterSelection.push(filterString);
             }
         },
-        getFieldOptions: function (field) {
+        getFieldOptions: function(field) {
             if (field == "ValueType") {
                 return Object.keys(
                     this.datasetMetadataMapping[this.datasetType]["ValueType"]
@@ -447,9 +459,7 @@ export default {
                 this.datasetMetadataMapping[this.datasetType]["ValueType"]
             )) {
                 if (field in options) {
-                    options[field].forEach((element) =>
-                        fieldValues.add(element)
-                    );
+                    options[field].forEach(element => fieldValues.add(element));
                 }
             }
             if (fieldValues.size == 0) {
@@ -457,7 +467,7 @@ export default {
             }
             return Array.from(fieldValues);
         },
-        isSelectionDisabled: function (item) {
+        isSelectionDisabled: function(item) {
             if (this.anyProcessing) {
                 return true;
             }
@@ -469,16 +479,21 @@ export default {
             return true;
         },
         fetchAssemblies() {
-            this.fetchData("assemblies/").then((response) => {
+            this.fetchData("assemblies/").then(response => {
                 if (response) {
                     this.assemblies = response.data;
-                    // set default
-                    this.selectedAssembly = this.assemblies["Human"][0].id;
+                    if (this.assembly) {
+                        this.selectedAssembly = this.assembly;
+                        this.allowAssemblySelection = false;
+                    } else {
+                        // set default
+                        this.selectedAssembly = this.assemblies["Human"][0].id;
+                    }
                 }
             });
         },
         filterDatasetsOnFields(datasets) {
-            return datasets.filter((el) => {
+            return datasets.filter(el => {
                 return (
                     el.filetype == this.datasetType &&
                     el.assembly == this.selectedAssembly
@@ -486,7 +501,7 @@ export default {
             });
         },
         filterDatasetsOnMetadata(datasets) {
-            return datasets.filter((el) => {
+            return datasets.filter(el => {
                 let output = true;
                 let atLeastOne = false;
                 for (let [key, value] of Object.entries(this.filterFields)) {
@@ -506,7 +521,7 @@ export default {
             if (this.searchTerm === "") {
                 return datasets;
             }
-            return datasets.filter((el) => {
+            return datasets.filter(el => {
                 var included = false;
                 for (let key of Object.keys(this.fields)) {
                     if (typeof el[key] == "string") {
@@ -530,8 +545,11 @@ export default {
         },
         sortAscending(datasets) {
             return datasets.sort((a, b) => {
-                if (a[this.sortBy] == undefined || b[this.sortBy] == undefined){
-                    return 1
+                if (
+                    a[this.sortBy] == undefined ||
+                    b[this.sortBy] == undefined
+                ) {
+                    return 1;
                 }
                 if (
                     a[this.sortBy].toLowerCase() < b[this.sortBy].toLowerCase()
@@ -543,8 +561,11 @@ export default {
         },
         sortDescending(datasets) {
             return datasets.sort((a, b) => {
-                if (a[this.sortBy] == undefined || b[this.sortBy] == undefined){
-                    return -1
+                if (
+                    a[this.sortBy] == undefined ||
+                    b[this.sortBy] == undefined
+                ) {
+                    return -1;
                 }
                 if (
                     a[this.sortBy].toLowerCase() > b[this.sortBy].toLowerCase()
@@ -568,7 +589,7 @@ export default {
             this.filterSelection = [];
             for (let [key, value] of Object.entries(this.possibleFields)) {
                 if (this.getFieldOptions(value)) {
-                    this.getFieldOptions(value).map((option) => {
+                    this.getFieldOptions(value).map(option => {
                         let filterString = `${value}-${option}`;
                         this.filterSelection.push(filterString);
                     });
@@ -576,37 +597,37 @@ export default {
                 }
             }
             this.filterFields = fields;
-        },
+        }
     },
     computed: {
-        allowDatasetTypeSelection: function () {
+        allowDatasetTypeSelection: function() {
             if (this.restrictedDatasetType) {
                 return false;
             }
             return true;
         },
-        allowFeatureSelection: function (){
+        allowFeatureSelection: function() {
             if (this.restrictedDatasetType === "features") {
-                return true
+                return true;
             }
-            return false
+            return false;
         },
-        caseButtonClass: function () {
+        caseButtonClass: function() {
             if (this.matchCase) {
                 return "md-icon-button md-accent md-raised large-top-margin";
             } else {
                 return "md-icon-button large-top-margin";
             }
         },
-        showStatus: function () {
+        showStatus: function() {
             return this.selectedFields.includes("status");
         },
-        possibleFields: function () {
+        possibleFields: function() {
             const outputFields = {
                 dataset_name: "Name",
                 valueType: "ValueType",
                 perturbation: "Perturbation",
-                cellCycleStage: "Cell cycle Stage",
+                cellCycleStage: "Cell cycle Stage"
             };
             let fields = new Set();
             // go through possible fields of this value type
@@ -617,17 +638,17 @@ export default {
                     this.datasetMetadataMapping[this.datasetType]["ValueType"][
                         valueType
                     ]
-                ).forEach((element) => fields.add(element));
+                ).forEach(element => fields.add(element));
             }
             Array.from(fields.values()).forEach(
-                (element) =>
+                element =>
                     (outputFields[fieldToPropertyMapping[element]] = element)
             );
             // put in status
             outputFields["status"] = "Status";
             return outputFields;
         },
-        fields: function () {
+        fields: function() {
             const outputFields = {};
             for (let [key, value] of Object.entries(this.possibleFields)) {
                 if (this.selectedFields.includes(key)) {
@@ -636,61 +657,65 @@ export default {
             }
             return outputFields;
         },
-        selected: function () {
+        selected: function() {
             if (this.datasets) {
                 // if filters run reset selection
                 let fieldFiltered = this.filterDatasetsOnFields(this.datasets);
-                let metadataFiltered =
-                    this.filterDatasetsOnMetadata(fieldFiltered);
-                let filteredOnSearchTerm =
-                    this.filterDatasetsOnSearchTerm(metadataFiltered);
+                let metadataFiltered = this.filterDatasetsOnMetadata(
+                    fieldFiltered
+                );
+                let filteredOnSearchTerm = this.filterDatasetsOnSearchTerm(
+                    metadataFiltered
+                );
                 return this.sortDatasets(filteredOnSearchTerm);
             }
             return [];
-        },
+        }
     },
     watch: {
-        datasetType: function () {
+        datasetType: function() {
             this.createFilterFields();
             this.searchTerm = "";
             this.selectedIds = this.preselection;
             this.$emit("selection-changed", this.selectedIds);
         },
-        searchTerm: function () {
+        searchTerm: function() {
             this.selectedIds = this.preselection;
             this.$emit("selection-changed", this.selectedIds);
         },
-        filterFields: function () {
+        filterFields: function() {
             this.selectedIds = this.preselection;
             this.$emit("selection-changed", this.selectedIds);
         },
-        selectedAssembly: function () {
+        selectedAssembly: function() {
+            if (this.blockAssemblyBlanking) {
+                this.selectedIds = this.preselection;
+            } else {
+                this.selectedIds = []
+            }
+            this.$emit("selection-changed", this.selectedIds);
+            this.blockAssemblyBlanking = false
+        },
+        datasets: function() {
             this.selectedIds = this.preselection;
             this.$emit("selection-changed", this.selectedIds);
-        },
-        datasets: function () {
-            this.selectedIds = this.preselection;
-            this.$emit("selection-changed", this.selectedIds);
-        },
+        }
     },
-    created: function () {
-        this.datasetMetadataMapping =
-            this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
+    created: function() {
+        this.datasetMetadataMapping = this.$store.getters[
+            "getDatasetMetadataMapping"
+        ]["DatasetType"];
         this.assemblies = this.fetchAssemblies();
         if (this.restrictedDatasetType) {
-            if (this.restrictedDatasetType === "features"){
-                this.datasetType = "bigwig"
-            }else{
+            if (this.restrictedDatasetType === "features") {
+                this.datasetType = "bigwig";
+            } else {
                 this.datasetType = this.restrictedDatasetType;
             }
         }
-        if (this.assembly) {
-            this.selectedAssembly = this.assembly
-            this.allowAssemblySelection = false
-        }
         this.createFilterFields();
-        this.selectedIds = this.preselection
-    },
+        this.selectedIds = this.preselection;
+    }
 };
 </script>
 
