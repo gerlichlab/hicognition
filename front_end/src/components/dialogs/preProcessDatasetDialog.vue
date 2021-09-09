@@ -2,7 +2,7 @@
     <div>
         <md-dialog :md-active.sync="showDialog">
             <md-dialog-title
-                >Preprocess Dataset<md-tooltip md-direction="left">
+                >Preprocess Datasets<md-tooltip md-direction="left">
                     <div>
                         <span class="md-title"
                             >Information about preprocessing</span

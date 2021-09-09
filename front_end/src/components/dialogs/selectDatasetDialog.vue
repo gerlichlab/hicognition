@@ -9,6 +9,7 @@
                     :singleSelection="singleSelection"
                     :showEmpty="showEmpty"
                     :preselection="preselection"
+                    :assembly="assembly"
                     @selection-changed="handleSelectionChange"
                 ></datasetTable>
             </md-content>
@@ -62,7 +63,11 @@ export default {
             type: Boolean,
             default: true
         },
-        preselection: Array
+        preselection: Array,
+        assembly: {
+            type: Number,
+            default: undefined
+        }
     },
     methods: {
         handleSelectionChange: function (selection) {

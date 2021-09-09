@@ -10,77 +10,52 @@
             <md-card class="md-layout-item">
                 <!-- Field definitions -->
                 <md-card-content>
-                    <!-- Cooler file and binsizes; first row -->
                     <div class="md-layout md-gutter">
-                        <!-- cooler file -->
-                        <div class="md-layout-item md-small-size-100">
-                            <md-field :class="getValidationClass('datasetID')">
-                                <label for="datasetID">Genomic Dataset</label>
-                                <md-select
-                                    name="datasetID"
-                                    id="datasetID"
-                                    v-model="form.datasetID"
-                                    availableDatasets
+
+                        <div class="md-layout-item md-layout md-gutter md-alignment-center-left md-small-size-50">
+
+                            <div class="md-layout-item md-size-50">
+                                <md-button
+                                    class="md-raised md-primary"
+                                    @click="startRegionSelection"
                                     :disabled="!datasetsAvailable"
-                                    required
+                                    >Select Regions</md-button
                                 >
-                                    <md-optgroup
-                                        label="Coolers"
-                                        v-if="coolersAvailable"
-                                    >
-                                        <md-option
-                                            v-for="item in availableCoolers"
-                                            :value="item.id"
-                                            :key="item.id"
-                                            >{{ item.dataset_name }}</md-option
-                                        >
-                                    </md-optgroup>
-                                    <md-optgroup
-                                        label="Bigwigs"
-                                        v-if="bigwigsAvailable"
-                                    >
-                                        <md-option
-                                            v-for="item in availableBigwigs"
-                                            :value="item.id"
-                                            :key="item.id"
-                                            >{{ item.dataset_name }}</md-option
-                                        >
-                                    </md-optgroup>
-                                </md-select>
+                            </div>
+                            <div class="md-layout-item md-size-50" >
+                                <span class="md-body-1">{{ numberRegions }} regions selected</span>
+                            </div>
+                            <div class="md-layout-item md-size-50">
                                 <span
-                                    class="md-error"
-                                    v-if="!$v.form.datasetID.required"
-                                    >A dataset name is required</span
+                                    style="color: red; "
+                                    v-if="!$v.form.bedfileIDs.required && $v.form.bedfileIDs.$dirty"
+                                    >At least one region is required</span
                                 >
-                            </md-field>
+                            </div>
                         </div>
-                        <!-- bedfiles -->
-                        <div class="md-layout-item md-small-size-100">
-                            <md-field :class="getValidationClass('bedfileIDs')">
-                                <label for="bedfileIDs">Regions</label>
-                                <md-select
-                                    name="bedfileIDs"
-                                    id="bedfileIDs"
-                                    v-model="form.bedfileIDs"
-                                    md-dense
-                                    :disabled="!bedFilesAvailable"
-                                    required
-                                    multiple
+
+                        <div class="md-layout-item md-layout md-gutter md-alignment-center-left md-small-size-50">
+
+                            <div class="md-layout-item md-size-50">
+                                <md-button
+                                    class="md-raised md-primary"
+                                    @click="startFeatureSelection"
+                                    :disabled="!datasetsAvailable"
+                                    >Select Features</md-button
                                 >
-                                    <md-option
-                                        v-for="item in availableBedFiles"
-                                        :value="item.id"
-                                        :key="item.id"
-                                        >{{ item.dataset_name }}</md-option
-                                    >
-                                </md-select>
+                            </div>
+                            <div class="md-layout-item md-size-50">
+                                <span class="md-body-1">{{ numberFeatures }} features selected</span>
+                            </div>
+                            <div class="md-layout-item md-size-50">
                                 <span
-                                    class="md-error"
-                                    v-if="!$v.form.bedfileIDs.required"
-                                    >Regions are required</span
+                                    style="color: red; "
+                                    v-if="!$v.form.bedfileIDs.required && $v.form.bedfileIDs.$dirty"
+                                    >At least one feature dataset is required</span
                                 >
-                            </md-field>
+                            </div>
                         </div>
+
                     </div>
                 </md-card-content>
                 <!-- Progress bar -->
@@ -116,6 +91,7 @@
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
 import { apiMixin, formattingMixin } from "../../mixins";
+import EventBus from "../../eventBus";
 
 export default {
     name: "PreprocessDatasetForm",
@@ -126,13 +102,19 @@ export default {
         availableBigwigs: [],
         availableBedFiles: [],
         form: {
-            datasetID: null,
+            datasetIDs: [],
             bedfileIDs: [],
         },
         datasetSaved: false,
         sending: false
     }),
     computed: {
+        numberRegions: function(){
+            return this.form.bedfileIDs.length
+        },
+        numberFeatures: function(){
+            return this.form.datasetIDs.length
+        },
         datasetsAvailable: function() {
             return this.availableDatasets.length != 0;
         },
@@ -144,12 +126,15 @@ export default {
         },
         bedFilesAvailable: function() {
             return this.availableBedFiles.length != 0;
+        },
+        regionIDs: function(){
+            return this.availableBedFiles.map(el => el.id)
         }
     },
     validations: {
         // validators for the form
         form: {
-            datasetID: {
+            datasetIDs: {
                 required
             },
             bedfileIDs: {
@@ -158,6 +143,35 @@ export default {
         }
     },
     methods: {
+        startRegionSelection: function () {
+            this.expectSelection = true;
+            let preselection = this.form.bedfileIDs
+            EventBus.$emit("show-select-dialog", this.availableBedFiles, "bedfile", preselection, false);
+        },
+        startFeatureSelection: function () {
+            this.expectSelection = true;
+            let preselection = this.form.datasetIDs
+            let datasets = this.availableBigwigs.concat(this.availableCoolers)
+            EventBus.$emit("show-select-dialog", datasets, "features", preselection, false, 4);
+        },
+        registerSelectionEventHandlers: function(){
+            EventBus.$on("dataset-selected", (ids) => {
+                if (this.expectSelection){
+                    if (this.isRegionSelection(ids)){
+                        this.form.bedfileIDs = ids
+                    } else {
+                        this.form.datasetIDs = ids
+                    }
+                    this.expectSelection = false
+                }
+            })
+            EventBus.$on("selection-aborted", () => {
+                this.expectSelection = false
+            })
+        },
+        isRegionSelection: function(ids) {
+            return this.regionIDs.includes(ids[0])
+        },
         fetchDatasets: function() {
             // fetches available datasets (cooler and bedfiles) from server
             this.fetchData("datasets/").then(response => {
@@ -241,7 +255,7 @@ export default {
         prepare_form_data() {
             // put data into form
             var form_data = {};
-            form_data["dataset_id"] = JSON.stringify(this.form["datasetID"]);
+            form_data["dataset_ids"] = JSON.stringify(this.form["datasetIDs"]);
             form_data["region_ids"] = JSON.stringify(this.form["bedfileIDs"]);
             return form_data;
         },
@@ -254,6 +268,7 @@ export default {
     },
     created: function() {
         this.fetchDatasets();
+        this.registerSelectionEventHandlers()
     }
 };
 </script>

@@ -22,6 +22,7 @@
                             name="assembly"
                             id="assembly"
                             v-model="selectedAssembly"
+                            :disabled="!allowAssemblySelection"
                         >
                             <md-optgroup
                                 v-for="(values, org) in assemblies"
@@ -55,13 +56,13 @@
                         <md-radio
                             v-model="datasetType"
                             value="bigwig"
-                            :disabled="!allowDatasetTypeSelection"
+                            :disabled="!allowDatasetTypeSelection && !allowFeatureSelection"
                             >1D-feature</md-radio
                         >
                         <md-radio
                             v-model="datasetType"
                             value="cooler"
-                            :disabled="!allowDatasetTypeSelection"
+                            :disabled="!allowDatasetTypeSelection && !allowFeatureSelection"
                             >2D-feature</md-radio
                         >
                     </div>
@@ -338,6 +339,10 @@ export default {
         preselection: {
             type: Array,
             default: () => []
+        },
+        assembly: {
+            type: Number,
+            default: undefined
         }
     },
     data: () => ({
@@ -350,6 +355,7 @@ export default {
         filterSelection: [],
         filterFields: {},
         sortBy: undefined,
+        allowAssemblySelection: true,
         sortOrder: "ascending",
         selectedFields: [
             "dataset_name",
@@ -579,6 +585,12 @@ export default {
             }
             return true;
         },
+        allowFeatureSelection: function (){
+            if (this.restrictedDatasetType === "features") {
+                return true
+            }
+            return false
+        },
         caseButtonClass: function () {
             if (this.matchCase) {
                 return "md-icon-button md-accent md-raised large-top-margin";
@@ -666,7 +678,15 @@ export default {
             this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
         this.assemblies = this.fetchAssemblies();
         if (this.restrictedDatasetType) {
-            this.datasetType = this.restrictedDatasetType;
+            if (this.restrictedDatasetType === "features"){
+                this.datasetType = "bigwig"
+            }else{
+                this.datasetType = this.restrictedDatasetType;
+            }
+        }
+        if (this.assembly) {
+            this.selectedAssembly = this.assembly
+            this.allowAssemblySelection = false
         }
         this.createFilterFields();
         this.selectedIds = this.preselection
