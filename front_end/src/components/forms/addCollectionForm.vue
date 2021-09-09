@@ -32,7 +32,7 @@
                                 >
                             </md-field>
                         </div>
-                        <!-- Genotype field -->
+                        <!-- Dataset selection place -->
                         <div
                             class="md-layout-item md-layout md-gutter md-alignment-center-center md-small-size-100"
                         >
