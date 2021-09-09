@@ -29,7 +29,7 @@ class Config:
         "cooler": ("pipeline_pileup", "run pileup pipeline"),
         "bigwig": ("pipeline_stackup", "run stackup pipeline"),
         "collections": {
-            "region": ("pipeline_lola", "run lola pipeline"),
+            "regions": ("pipeline_lola", "run lola pipeline"),
             "1d-features": ("pipeline_embedding_1d", "run 1d embedding pipeline"),
         },
     }
