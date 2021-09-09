@@ -128,20 +128,27 @@ export default {
     methods: {
         startDatasetSelection: function () {
             this.expectSelection = true;
-            let preselection = this.form.used_datasets
+            let preselection = [...this.form.used_datasets]
             let fileType = this.fileType === "regions" ? "bedfile" : "bigwig"
             EventBus.$emit("show-select-dialog", this.availableDatasets, fileType, preselection, false);
         },
         registerSelectionEventHandlers: function(){
-            EventBus.$on("dataset-selected", (ids) => {
-                if (this.expectSelection){
+            EventBus.$on("dataset-selected", this.handleDataSelection)
+            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion)
+        },
+        removeSelectionEventHandlers: function(){
+            EventBus.$off("dataset-selected", this.handleDataSelection)
+            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion)
+        },
+        handleDataSelection: function(ids){
+            console.log("IE")
+            if (this.expectSelection){
                     this.form.used_datasets = ids
                     this.expectSelection = false
-                }
-            })
-            EventBus.$on("selection-aborted", () => {
-                this.expectSelection = false
-            })
+            }
+        },
+        hanldeSelectionAbortion: function(){
+            this.expectSelection = false
         },
         getValidationClass(fieldName) {
             // matrial validation class for form field;
@@ -208,6 +215,9 @@ export default {
     mounted: function() {
         this.fetchDatasets();
         this.registerSelectionEventHandlers()
+    },
+    beforeDestroy: function(){
+        this.removeSelectionEventHandlers()
     }
 };
 </script>
