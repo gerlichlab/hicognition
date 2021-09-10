@@ -246,6 +246,7 @@ def preprocess_collections():
                 intervals_id=interval_id,
                 binsize=binsize,
             )
+            collection.processing_for_datasets.append(Intervals.query.get(interval_id).source_dataset)
     # set processing state
     collection = Collection.query.get(collection_id)
     collection.processing_state = "processing"
