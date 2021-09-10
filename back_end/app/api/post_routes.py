@@ -24,7 +24,7 @@ from .helpers import (
     is_access_to_dataset_denied,
     is_access_to_collection_denied,
     parse_description,
-    remove_failed_tasks,
+    remove_tasks,
     get_all_interval_ids,
     parse_binsizes,
     post_dataset_requirements_fullfilled,
@@ -161,7 +161,7 @@ def preprocess_dataset():
     # delete all jobs that are in database and have failed and remove failed entries
     for dataset_id in dataset_ids:
         associated_tasks = Task.query.filter_by(dataset=Dataset.query.get(dataset_id)).all()
-        remove_failed_tasks(associated_tasks, db)
+        remove_tasks(associated_tasks, db)
         for region_ds in region_datasets:
             region_ds.failed_features = [feature for feature in region_ds.failed_features if feature != Dataset.query.get(dataset_id)]
     # get interval ids of selected regions
@@ -232,7 +232,7 @@ def preprocess_collections():
     associated_tasks = Task.query.filter_by(
         collection=Collection.query.get(collection_id)
     ).all()
-    remove_failed_tasks(associated_tasks, db)
+    remove_tasks(associated_tasks, db)
     # get interval ids of selected regions
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines

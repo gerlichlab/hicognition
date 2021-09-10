@@ -250,12 +250,9 @@ def remove_safely(file_path):
         )
 
 
-def remove_failed_tasks(tasks, db):
+def remove_tasks(tasks, db):
     for task in tasks:
-        if task.get_rq_job() is None:
-            continue
-        if task.get_rq_job().get_status() == "failed":
-            db.session.delete(task)
+        db.session.delete(task)
     db.session.commit()
 
 
