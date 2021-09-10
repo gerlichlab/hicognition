@@ -30,6 +30,19 @@ dataset_collection_assoc_table = db.Table(
     db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id")),
 )
 
+dataset_preprocessing_table = db.Table(
+    "dataset_dataset_preprocessing_table",
+    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
+    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
+)
+
+dataset_failed_table = db.Table(
+    "dataset_failed_table",
+    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
+    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
+)
+
+
 
 class User(db.Model, UserMixin):
     """User database model"""
@@ -117,8 +130,6 @@ class User(db.Model, UserMixin):
 class Dataset(db.Model):
     # fields
     id = db.Column(db.Integer, primary_key=True)
-    processing_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
-    processing_datasets = db.relationship("Dataset", remote_side=[processing_id])
     dataset_name = db.Column(db.String(512), index=True)
     description = db.Column(db.String(81), default="undefined")
     perturbation = db.Column(db.String(64), default="undefined")
@@ -137,6 +148,21 @@ class Dataset(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     available_binsizes = db.Column(db.String(500), default="undefined")
     processing_state = db.Column(db.String(64))
+    # self relationships
+    processing_features = db.relationship(
+        "Dataset", secondary=dataset_preprocessing_table,
+        primaryjoin=dataset_preprocessing_table.c.dataset_region==id,
+        secondaryjoin=dataset_preprocessing_table.c.dataset_feature==id,
+        backref="processing_regions"
+
+    )
+    failed_features = db.relationship(
+        "Dataset", secondary=dataset_failed_table,
+        primaryjoin=dataset_failed_table.c.dataset_region==id,
+        secondaryjoin=dataset_failed_table.c.dataset_feature==id,
+        backref="failed_regions"
+
+    )
     # Relationships
     intervals = db.relationship("Intervals", backref="source_dataset", lazy="dynamic", cascade="all, delete-orphan")
     collections = db.relationship(
@@ -169,11 +195,9 @@ class Dataset(db.Model):
         # check if there are any unfinished tasks
         tasks = self.tasks.filter(Task.complete == False).all()
         if len(tasks) == 0:
-            self.processing_id = None
             self.processing_state = "finished"
         else:
             if all_tasks_finished(tasks):
-                self.processing_id = None
                 self.processing_state = "finished"
             elif any_tasks_failed(tasks):
                 self.processing_state = "failed"
@@ -190,8 +214,10 @@ class Dataset(db.Model):
             value = self.__getattribute__(key)
             if value != "undefined":
                 json_dataset[key] = value
-        # add processing state
-        json_dataset["processing_datasets"] = [dataset.id for dataset in self.processing_datasets] 
+        # add processing datasets
+        json_dataset["processing_datasets"] = [dataset.id for dataset in self.processing_features]
+        # add failed datasets
+        json_dataset["failed_datasets"] = [dataset.id for dataset in self.failed_features]
         return json_dataset
 
 

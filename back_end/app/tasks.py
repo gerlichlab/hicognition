@@ -55,23 +55,31 @@ def pipeline_bed(dataset_id):
 def pipeline_pileup(dataset_id, intervals_id, binsize):
     """Start pileup pipeline for specified combination of
     dataset_id (cooler_file), binsize and intervals_id"""
-    chromosome_arms = pd.read_csv(
-        Assembly.query.get(Dataset.query.get(dataset_id).assembly).chrom_arms
-    )
-    pipeline_steps.perform_pileup(
-        dataset_id, intervals_id, binsize, chromosome_arms, "ICCF"
-    )
-    pipeline_steps.perform_pileup(
-        dataset_id, intervals_id, binsize, chromosome_arms, "Obs/Exp"
-    )
-    pipeline_steps._set_task_progress(100)
+    try:
+        chromosome_arms = pd.read_csv(
+            Assembly.query.get(Dataset.query.get(dataset_id).assembly).chrom_arms
+        )
+        pipeline_steps.perform_pileup(
+            dataset_id, intervals_id, binsize, chromosome_arms, "ICCF"
+        )
+        pipeline_steps.perform_pileup(
+            dataset_id, intervals_id, binsize, chromosome_arms, "Obs/Exp"
+        )
+        pipeline_steps._set_task_progress(100)
+        pipeline_steps._set_dataset_finished(dataset_id, intervals_id)
+    except BaseException:
+        pipeline_steps._set_dataset_failed(dataset_id, intervals_id)
 
 
 def pipeline_stackup(dataset_id, intervals_id, binsize):
     """Start stackup pipeline for specified combination of
     dataset_id (bigwig file), binsize and intervals_id"""
-    pipeline_steps.perform_stackup(dataset_id, intervals_id, binsize)
-    pipeline_steps._set_task_progress(100)
+    try:
+        pipeline_steps.perform_stackup(dataset_id, intervals_id, binsize)
+        pipeline_steps._set_task_progress(100)
+        pipeline_steps._set_dataset_finished(dataset_id, intervals_id)
+    except BaseException:
+        pipeline_steps._set_dataset_failed(dataset_id, intervals_id)
 
 
 def pipeline_lola(collection_id, intervals_id, binsize):

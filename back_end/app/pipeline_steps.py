@@ -47,7 +47,12 @@ def bed_preprocess_pipeline_step(dataset_id, windowsize):
     file_path = dataset.file_path
     # generate bedpe file
     bedpe_file = file_path + f".{windowsize}" + ".bedpe"
-    io_helpers.convert_bed_to_bedpe(file_path, bedpe_file, windowsize, Assembly.query.get(dataset.assembly).chrom_sizes)
+    io_helpers.convert_bed_to_bedpe(
+        file_path,
+        bedpe_file,
+        windowsize,
+        Assembly.query.get(dataset.assembly).chrom_sizes,
+    )
     # generate subsample index for smaller stackup
     bedpe = pd.read_csv(bedpe_file, sep="\t", header=None)
     index_file = os.path.join(
@@ -199,7 +204,9 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
     # make queries
     log.info("      Constructing queries...")
     # get chromosome sizes -> this will be the same for all datasets of the collection
-    assembly = Assembly.query.get(Collection.query.get(collection_id).datasets[0].assembly)
+    assembly = Assembly.query.get(
+        Collection.query.get(collection_id).datasets[0].assembly
+    )
     chromsizes = io_helpers.load_chromsizes(assembly.chrom_sizes)
     chromsizes_regions = pd.DataFrame(
         {"chrom": chromsizes.index, "start": 0, "end": chromsizes}
@@ -467,6 +474,46 @@ def _do_stackup(regions, window_size, binsize, bigwig_dataset):
     # put extracted data back in target array
     target_array[good_chromosome_indices, :] = stackup_array
     return target_array
+
+
+def _set_dataset_failed(dataset_id, intervals_id):
+    """Adds region dataset associated in intervals_id to failed regions of dataset_id"""
+    log.info("      Set for fail")
+    feature = Dataset.query.get(dataset_id)
+    region = Intervals.query.get(intervals_id).source_dataset
+    log.info(f"      Region: {region} with processing features {region.processing_features} and dataset {feature}")
+    # remove feature dataset from processing list TODO: make this nicer -> if failing happens concurrently, the first setting will success, but others will be stale
+    try:
+        region.processing_features = [
+            element for element in region.processing_features if element != feature
+        ]
+    except:
+        pass
+    region.failed_features.append(feature)
+    db.session.commit()
+    log.info("      Setting for fail finished")
+
+
+def _set_dataset_finished(dataset_id, intervals_id):
+    """removes dataset from region associated with intervals_id if no other task is associated with it."""
+    region = Intervals.query.get(intervals_id).source_dataset
+    associated_tasks = (
+        Task.query.join(Intervals)
+        .join(Dataset)
+        .filter(
+            (Dataset.id == region.id)
+            & (Task.dataset_id == dataset_id)
+            & (Task.complete == False)
+        )
+        .all()
+    )
+    if len(associated_tasks) == 0:
+        # current task is last task, remove feature
+        feature = Dataset.query.get(dataset_id)
+        region.processing_features = [
+            element for element in region.processing_features if element != feature
+        ]
+        db.session.commit()
 
 
 def _set_task_progress(progress):

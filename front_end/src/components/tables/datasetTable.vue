@@ -275,7 +275,7 @@
                                 ></md-progress-spinner>
                                 <md-icon
                                     v-else-if="
-                                        dataset.processing_state == 'failed'
+                                        failedDatasets.includes(dataset.id)
                                     "
                                     >error</md-icon
                                 >
@@ -287,7 +287,8 @@
                                     @click.prevent.stop="
                                         showPreprocessingTable(
                                             dataset.id,
-                                            dataset.processing_datasets
+                                            dataset.processing_datasets,
+                                            dataset.failed_datasets
                                         )
                                     "
                                     >{{ dataset[key].length }}</md-button
@@ -367,6 +368,10 @@ export default {
         processingDatasets: {
             type: Array,
             default: undefined
+        },
+        failedDatasets: {
+            type: Array,
+            default: undefined
         }
     },
     data: function() {
@@ -408,7 +413,7 @@ export default {
         };
     },
     methods: {
-        showPreprocessingTable(id, processing_datasets) {
+        showPreprocessingTable(id, processing_datasets, failed_datasets) {
             this.fetchPreprocessData(id).then(response => {
                 let bigwigIDs = Object.keys(
                     response.data["lineprofile"]
@@ -426,6 +431,7 @@ export default {
                     this.selectedAssembly,
                     finished,
                     processing_datasets,
+                    failed_datasets,
                     false
                 );
             });

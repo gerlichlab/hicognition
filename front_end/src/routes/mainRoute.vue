@@ -133,6 +133,7 @@
                 :assembly="selectedAssembly"
                 :finishedDatasets="finishedDatasets"
                 :processingDatasets="processingDatasets"
+                :failedDatasets="failedDatasets"
                 :reactToSelection="reactToSelection"
                 @close-dialog="showSelectDialog = false"
             />
@@ -203,6 +204,7 @@ export default {
         selectedAssembly: undefined,
         finishedDatasets: undefined,
         processingDatasets: undefined,
+        failedDatasets: undefined,
         reactToSelection: true
     }),
     mounted: function() {
@@ -223,6 +225,7 @@ export default {
                 assembly,
                 finishedDatasets,
                 processingDatasets,
+                failedDatasets,
                 reactToSelection
             ) => {
                 if (singleSelection !== undefined) {
@@ -244,6 +247,11 @@ export default {
                     this.processingDatasets = processingDatasets;
                 } else {
                     this.processingDatasets = undefined;
+                }
+                if (failedDatasets !== undefined) {
+                    this.failedDatasets = failedDatasets
+                } else {
+                    this.finishedDatasets = undefined
                 }
                 if (reactToSelection !== undefined) {
                     this.reactToSelection = reactToSelection;

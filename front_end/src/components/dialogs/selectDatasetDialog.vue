@@ -12,6 +12,7 @@
                     :assembly="assembly"
                     :finishedDatasets="finishedDatasets"
                     :processingDatasets="processingDatasets"
+                    :failedDatasets="failedDatasets"
                     @selection-changed="handleSelectionChange"
                 ></datasetTable>
             </md-content>
@@ -79,6 +80,10 @@ export default {
             default: undefined
         },
         processingDatasets: {
+            type: Array,
+            default: undefined
+        },
+        failedDatasets: {
             type: Array,
             default: undefined
         }

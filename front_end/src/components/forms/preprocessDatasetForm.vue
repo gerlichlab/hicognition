@@ -103,6 +103,7 @@ export default {
         availableBedFiles: [],
         finishedDatasets: [],
         processingDatasets: [],
+        failedDatasets: [],
         form: {
             datasetIDs: [],
             bedfileIDs: [],
@@ -162,7 +163,7 @@ export default {
             this.expectSelection = true;
             let preselection = [...this.form.datasetIDs]
             let datasets = this.availableBigwigs.concat(this.availableCoolers)
-            EventBus.$emit("show-select-dialog", datasets, "features", preselection, false, this.selectedAssembly, this.finishedDatasets, this.processingDatasets);
+            EventBus.$emit("show-select-dialog", datasets, "features", preselection, false, this.selectedAssembly, this.finishedDatasets, this.processingDatasets, this.failedDatasets);
         },
         registerSelectionEventHandlers: function(){
             EventBus.$on("dataset-selected", this.handleDataSelection)
@@ -185,8 +186,9 @@ export default {
                         let collectiveIDs = bigwigIDs.concat(coolerIDs)
                         this.finishedDatasets = this.finishedDatasets.concat(collectiveIDs)
                     })
-                    // set processing datasets
+                    // set processing datasets and failed datasets
                     this.processingDatasets = this.getBedDataset(ids).processing_datasets
+                    this.failedDatasets = this.getBedDataset(ids).failed_datasets
                 } else {
                     this.form.datasetIDs = ids
                 }

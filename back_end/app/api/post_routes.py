@@ -158,10 +158,12 @@ def preprocess_dataset():
     # check whether region datasets are owned
     if any(is_access_to_dataset_denied(entry, g) for entry in region_datasets):
         return forbidden(f"Dataset is not owned by logged in user!")
-    # delete all jobs that are in database and have failed
+    # delete all jobs that are in database and have failed and remove failed entries
     for dataset_id in dataset_ids:
         associated_tasks = Task.query.filter_by(dataset=Dataset.query.get(dataset_id)).all()
         remove_failed_tasks(associated_tasks, db)
+        for region_ds in region_datasets:
+            region_ds.failed_features = [feature for feature in region_ds.failed_features if feature != Dataset.query.get(dataset_id)]
     # get interval ids of selected regions
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
@@ -182,7 +184,7 @@ def preprocess_dataset():
                 dataset = Dataset.query.get(dataset_id)
                 dataset.processing_state = "processing"
                 # add parent id
-                dataset.processing_id = Intervals.query.get(interval_id).dataset_id
+                dataset.processing_regions.append(Intervals.query.get(interval_id).source_dataset)
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 
