@@ -85,22 +85,30 @@ def pipeline_stackup(dataset_id, intervals_id, binsize):
 def pipeline_lola(collection_id, intervals_id, binsize):
     """Starts lola enrichment calculation pipeline step for a specific
     collection_id, binsize and intervals_id"""
-    pipeline_steps.perform_enrichment_analysis(collection_id, intervals_id, binsize)
-    pipeline_steps._set_task_progress(100)
+    try:
+        pipeline_steps.perform_enrichment_analysis(collection_id, intervals_id, binsize)
+        pipeline_steps._set_task_progress(100)
+        pipeline_steps._set_collection_finished(collection_id, intervals_id)
+    except BaseException:
+        pipeline_steps._set_collection_failed(collection_id, intervals_id)
 
 
 def pipeline_embedding_1d(collection_id, intervals_id, binsize):
     """Starts embedding pipeline steps for feature collections refering to
     1 dimensional features per regions (e.g. bigwig tracks)"""
     # check whether stackups exist and perform stackup if not
-    for source_dataset in Collection.query.get(collection_id).datasets:
-        stackup = IndividualIntervalData.query.filter(
-            (IndividualIntervalData.dataset_id == source_dataset.id)
-            & (IndividualIntervalData.intervals_id == intervals_id)
-            & (IndividualIntervalData.binsize == binsize)
-        ).first()
-        if stackup is None:
-            pipeline_steps.perform_stackup(source_dataset.id, intervals_id, binsize)
-    # perform embedding
-    pipeline_steps.perform_1d_embedding(collection_id, intervals_id, binsize)
-    pipeline_steps._set_task_progress(100)
+    try:
+        for source_dataset in Collection.query.get(collection_id).datasets:
+            stackup = IndividualIntervalData.query.filter(
+                (IndividualIntervalData.dataset_id == source_dataset.id)
+                & (IndividualIntervalData.intervals_id == intervals_id)
+                & (IndividualIntervalData.binsize == binsize)
+            ).first()
+            if stackup is None:
+                pipeline_steps.perform_stackup(source_dataset.id, intervals_id, binsize)
+        # perform embedding
+        pipeline_steps.perform_1d_embedding(collection_id, intervals_id, binsize)
+        pipeline_steps._set_task_progress(100)
+        pipeline_steps._set_collection_finished(collection_id, intervals_id)
+    except BaseException:
+        pipeline_steps._set_collection_failed(collection_id, intervals_id)

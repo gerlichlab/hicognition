@@ -28,7 +28,7 @@ from .helpers import (
     get_all_interval_ids,
     parse_binsizes,
     post_dataset_requirements_fullfilled,
-    add_fields_to_dataset
+    add_fields_to_dataset,
 )
 from .errors import forbidden, invalid, not_found
 from hicognition.format_checkers import FORMAT_CHECKERS
@@ -90,9 +90,7 @@ def add_dataset():
     fileObject.save(file_path)
     assembly = Assembly.query.get(data["assembly"])
     # check format -> this cannot be done in form checker since file needs to be available
-    chromosome_names = set(
-        pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0]
-    )
+    chromosome_names = set(pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0])
     needed_resolutions = parse_binsizes(current_app.config["PREPROCESSING_MAP"])
     if not FORMAT_CHECKERS[request.form["filetype"]](
         file_path, chromosome_names, needed_resolutions
@@ -142,9 +140,7 @@ def preprocess_dataset():
     dataset_ids = json.loads(data["dataset_ids"])
     region_datasets_ids = json.loads(data["region_ids"])
     # check whether datasets exist
-    feature_datasets = [
-        Dataset.query.get(feature_id) for feature_id in dataset_ids
-    ]
+    feature_datasets = [Dataset.query.get(feature_id) for feature_id in dataset_ids]
     if any(entry is None for entry in feature_datasets):
         return not_found("Dataset does not exist!")
     if any(is_access_to_dataset_denied(entry, g) for entry in feature_datasets):
@@ -160,10 +156,12 @@ def preprocess_dataset():
         return forbidden(f"Dataset is not owned by logged in user!")
     # delete all jobs that are in database and have failed and remove failed entries
     for dataset_id in dataset_ids:
-        associated_tasks = Task.query.filter_by(dataset=Dataset.query.get(dataset_id)).all()
-        remove_tasks(associated_tasks, db)
         for region_ds in region_datasets:
-            region_ds.failed_features = [feature for feature in region_ds.failed_features if feature != Dataset.query.get(dataset_id)]
+            region_ds.failed_features = [
+                feature
+                for feature in region_ds.failed_features
+                if feature != Dataset.query.get(dataset_id)
+            ]
     # get interval ids of selected regions
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
@@ -184,7 +182,9 @@ def preprocess_dataset():
                 dataset = Dataset.query.get(dataset_id)
                 dataset.processing_state = "processing"
                 # add parent id
-                dataset.processing_regions.append(Intervals.query.get(interval_id).source_dataset)
+                dataset.processing_regions.append(
+                    Intervals.query.get(interval_id).source_dataset
+                )
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 

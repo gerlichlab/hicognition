@@ -477,8 +477,8 @@ def _do_stackup(regions, window_size, binsize, bigwig_dataset):
 
 
 def _set_dataset_failed(dataset_id, intervals_id):
-    """Adds region dataset associated in intervals_id to failed regions of dataset_id"""
-    log.info("      Set for fail")
+    """Adds feature dataset associated with dataset_id to failed datasets of region ds associated with intervals_id"""
+    log.info("      Preprocessing failed")
     feature = Dataset.query.get(dataset_id)
     region = Intervals.query.get(intervals_id).source_dataset
     log.info(f"      Region: {region} with processing features {region.processing_features} and dataset {feature}")
@@ -487,11 +487,50 @@ def _set_dataset_failed(dataset_id, intervals_id):
         region.processing_features = [
             element for element in region.processing_features if element != feature
         ]
-    except:
+    except BaseException:
         pass
     region.failed_features.append(feature)
     db.session.commit()
+
+
+def _set_collection_failed(collection_id, intervals_id):
+    """Adds collection with collection_id to failed collections of region ds associated with intervals"""
+    log.info("      Set for fail")
+    collection = Collection.query.get(collection_id)
+    region = Intervals.query.get(intervals_id).source_dataset
+    log.info(f"      Region: {region} with processing collections {region.processing_collections} and collection {collection}")
+    # remove feature dataset from processing list TODO: make this nicer -> if failing happens concurrently, the first setting will success, but others will be stale
+    try:
+        region.processing_collections = [
+            element for element in region.processing_collections if element != collection
+        ]
+    except BaseException:
+        pass
+    region.failed_collections.append(collection)
+    db.session.commit()
     log.info("      Setting for fail finished")
+
+
+def _set_collection_finished(collection_id, intervals_id):
+    """removes dataset from region associated with intervals_id if no other task is associated with it."""
+    region = Intervals.query.get(intervals_id).source_dataset
+    associated_tasks = (
+        Task.query.join(Intervals)
+        .join(Dataset)
+        .filter(
+            (Dataset.id == region.id)
+            & (Task.collection_id == collection_id)
+            & (Task.complete == False)
+        )
+        .all()
+    )
+    if len(associated_tasks) == 0:
+        # current task is last task, remove feature
+        collection = Collection.query.get(collection_id)
+        region.processing_collections = [
+            element for element in region.processing_collections if element != collection
+        ]
+        db.session.commit()
 
 
 def _set_dataset_finished(dataset_id, intervals_id):
@@ -513,6 +552,8 @@ def _set_dataset_finished(dataset_id, intervals_id):
         region.processing_features = [
             element for element in region.processing_features if element != feature
         ]
+        if feature not in region.completed_features:
+            region.completed_features.append(feature)
         db.session.commit()
 
 

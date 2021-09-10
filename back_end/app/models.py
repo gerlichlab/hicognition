@@ -42,6 +42,23 @@ dataset_failed_table = db.Table(
     db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
 )
 
+dataset_completed_table = db.Table(
+    "dataset_completed_table",
+    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
+    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
+)
+
+collections_preprocessing_table = db.Table(
+    "collections_preprocessing_table",
+    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
+    db.Column("collection_feature", db.Integer, db.ForeignKey("collection.id")),
+)
+
+collections_failed_table = db.Table(
+    "collections_failed_table",
+    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
+    db.Column("collection_feature", db.Integer, db.ForeignKey("collection.id")),
+)
 
 
 class User(db.Model, UserMixin):
@@ -51,8 +68,12 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
-    datasets = db.relationship("Dataset", backref="owner", lazy="dynamic", cascade="all, delete-orphan")
-    tasks = db.relationship("Task", backref="user", lazy="dynamic", cascade="all, delete-orphan")
+    datasets = db.relationship(
+        "Dataset", backref="owner", lazy="dynamic", cascade="all, delete-orphan"
+    )
+    tasks = db.relationship(
+        "Task", backref="user", lazy="dynamic", cascade="all, delete-orphan"
+    )
 
     def set_password(self, password):
         """set password helper."""
@@ -150,33 +171,60 @@ class Dataset(db.Model):
     processing_state = db.Column(db.String(64))
     # self relationships
     processing_features = db.relationship(
-        "Dataset", secondary=dataset_preprocessing_table,
-        primaryjoin=dataset_preprocessing_table.c.dataset_region==id,
-        secondaryjoin=dataset_preprocessing_table.c.dataset_feature==id,
-        backref="processing_regions"
-
+        "Dataset",
+        secondary=dataset_preprocessing_table,
+        primaryjoin=dataset_preprocessing_table.c.dataset_region == id,
+        secondaryjoin=dataset_preprocessing_table.c.dataset_feature == id,
+        backref="processing_regions",
     )
     failed_features = db.relationship(
-        "Dataset", secondary=dataset_failed_table,
-        primaryjoin=dataset_failed_table.c.dataset_region==id,
-        secondaryjoin=dataset_failed_table.c.dataset_feature==id,
-        backref="failed_regions"
-
+        "Dataset",
+        secondary=dataset_failed_table,
+        primaryjoin=dataset_failed_table.c.dataset_region == id,
+        secondaryjoin=dataset_failed_table.c.dataset_feature == id,
+        backref="failed_regions",
+    )
+    completed_features = db.relationship(
+        "Dataset",
+        secondary=dataset_completed_table,
+        primaryjoin=dataset_completed_table.c.dataset_region == id,
+        secondaryjoin=dataset_completed_table.c.dataset_feature == id,
+        backref="completed_regions",
     )
     # Relationships
-    intervals = db.relationship("Intervals", backref="source_dataset", lazy="dynamic", cascade="all, delete-orphan")
+    intervals = db.relationship(
+        "Intervals",
+        backref="source_dataset",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
     collections = db.relationship(
         "Collection", secondary=dataset_collection_assoc_table
     )
+    processing_collections = db.relationship(
+        "Collection", secondary=collections_preprocessing_table
+    )
+    failed_collections = db.relationship(
+        "Collection", secondary=collections_failed_table
+    )
     sessions = db.relationship("Session", secondary=session_dataset_assoc_table)
     averageIntervalData = db.relationship(
-        "AverageIntervalData", backref="source_dataset", lazy="dynamic", cascade="all, delete-orphan"
+        "AverageIntervalData",
+        backref="source_dataset",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
     )
     individualIntervalData = db.relationship(
-        "IndividualIntervalData", backref="source_dataset", lazy="dynamic", cascade="all, delete-orphan"
+        "IndividualIntervalData",
+        backref="source_dataset",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
     )
     bedFileMetadata = db.relationship(
-        "BedFileMetadata", backref="associated_dataset", lazy="dynamic", cascade="all, delete-orphan"
+        "BedFileMetadata",
+        backref="associated_dataset",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
     )
     tasks = db.relationship("Task", backref="dataset", lazy="dynamic")
 
@@ -215,22 +263,36 @@ class Dataset(db.Model):
             if value != "undefined":
                 json_dataset[key] = value
         # add processing datasets
-        json_dataset["processing_datasets"] = [dataset.id for dataset in self.processing_features]
+        json_dataset["processing_datasets"] = [
+            dataset.id for dataset in self.processing_features
+        ]
         # add failed datasets
-        json_dataset["failed_datasets"] = [dataset.id for dataset in self.failed_features]
+        json_dataset["failed_datasets"] = [
+            dataset.id for dataset in self.failed_features
+        ]
+        # add processing collections
+        json_dataset["processing_collections"] = [
+            collection.id for collection in self.processing_collections
+        ]
+        # add failed collections
+        json_dataset["failed_collections"] = [
+            collection.id for collection in self.failed_collections
+        ]
         return json_dataset
 
 
 class Organism(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512))
-    assemblies = db.relationship("Assembly", backref="source_organism", lazy="dynamic", cascade="all, delete-orphan")
+    assemblies = db.relationship(
+        "Assembly",
+        backref="source_organism",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
 
     def to_json(self):
-        return {
-            "id": self.id,
-            "name": self.name
-        }
+        return {"id": self.id, "name": self.name}
 
 
 class Assembly(db.Model):
@@ -242,11 +304,7 @@ class Assembly(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
     def to_json(self):
-        json_dataset = {
-            "id": self.id,
-            "name": self.name,
-            "user_id": self.user_id
-        }
+        json_dataset = {"id": self.id, "name": self.name, "user_id": self.user_id}
         return json_dataset
 
 
@@ -258,18 +316,32 @@ class Intervals(db.Model):
     file_path_sub_sample_index = db.Column(db.String(512), index=True)
     windowsize = db.Column(db.Integer, index=True)
     averageIntervalData = db.relationship(
-        "AverageIntervalData", backref="source_intervals", lazy="dynamic", cascade="all, delete-orphan"
+        "AverageIntervalData",
+        backref="source_intervals",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
     )
     individualIntervalData = db.relationship(
-        "IndividualIntervalData", backref="source_intervals", lazy="dynamic", cascade="all, delete-orphan"
+        "IndividualIntervalData",
+        backref="source_intervals",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
     )
     associationIntervalData = db.relationship(
-        "AssociationIntervalData", backref="source_intervals", lazy="dynamic", cascade="all, delete-orphan"
+        "AssociationIntervalData",
+        backref="source_intervals",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
     )
     embeddingIntervalData = db.relationship(
-        "EmbeddingIntervalData", backref="source_intervals", lazy="dynamic", cascade="all, delete-orphan"
+        "EmbeddingIntervalData",
+        backref="source_intervals",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
     )
-    tasks = db.relationship("Task", backref="intervals", lazy="dynamic", cascade="all, delete-orphan")
+    tasks = db.relationship(
+        "Task", backref="intervals", lazy="dynamic", cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         """Format print output."""
@@ -476,12 +548,24 @@ class Collection(db.Model):
     )  # What kind of datasets are collected (regions, 1d-features, 2d-features)
     tasks = db.relationship("Task", backref="collection", lazy="dynamic")
     datasets = db.relationship("Dataset", secondary=dataset_collection_assoc_table)
+    processing_for_datasets = db.relationship(
+        "Dataset", secondary=collections_preprocessing_table
+    )
+    failed_for_datasets = db.relationship(
+        "Dataset", secondary=collections_failed_table
+    )
     sessions = db.relationship("Session", secondary=session_collection_assoc_table)
     associationData = db.relationship(
-        "AssociationIntervalData", backref="source_collection", lazy="dynamic", cascade="all, delete-orphan"
+        "AssociationIntervalData",
+        backref="source_collection",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
     )
     embeddingData = db.relationship(
-        "EmbeddingIntervalData", backref="source_collection", lazy="dynamic", cascade="all, delete-orphan"
+        "EmbeddingIntervalData",
+        backref="source_collection",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
     )
     processing_state = db.Column(db.String(64))
 

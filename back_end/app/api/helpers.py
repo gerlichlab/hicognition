@@ -283,15 +283,8 @@ def add_average_data_to_preprocessed_dataset_map(
         # check whether there are any uncompleted tasks for the region dataset associated with these features
         interval = Intervals.query.get(average.intervals_id)
         region_dataset = interval.source_dataset
-        tasks_on_interval = (
-            Task.query.join(Intervals)
-            .join(Dataset)
-            .filter((Task.dataset_id == dataset.id) & (Dataset.id == region_dataset.id))
-            .all()
-        )
-        if len(tasks_on_interval) != 0 and any(
-            not task.complete for task in tasks_on_interval
-        ):
+        # check whether dataset is in failed or processing datasets
+        if (dataset in region_dataset.processing_features) or (dataset in region_dataset.failed_features):
             continue
         if average.value_type in ["Obs/Exp", "ICCF"]:
             output_object["pileup"][dataset.id]["name"] = dataset.dataset_name
@@ -316,15 +309,8 @@ def add_individual_data_to_preprocessed_dataset_map(
         # check whether there are any uncompleted tasks for the feature dataset
         interval = Intervals.query.get(individual.intervals_id)
         region_dataset = interval.source_dataset
-        tasks_on_interval = (
-            Task.query.join(Intervals)
-            .join(Dataset)
-            .filter((Task.dataset_id == dataset.id) & (Dataset.id == region_dataset.id))
-            .all()
-        )
-        if len(tasks_on_interval) != 0 and any(
-            not task.complete for task in tasks_on_interval
-        ):
+        # check whether dataset is in failed or processing datasets
+        if (dataset in region_dataset.processing_features) or (dataset in region_dataset.failed_features):
             continue
         output_object["stackup"][dataset.id]["name"] = dataset.dataset_name
         output_object["stackup"][dataset.id]["data_ids"][interval.windowsize][
