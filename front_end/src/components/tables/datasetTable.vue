@@ -255,7 +255,7 @@
                         >
                             <span
                                 v-if="
-                                    !['status', 'processing_datasets'].includes(
+                                    !['status', 'processing_datasets', 'processing_collections'].includes(
                                         key
                                     )
                                 "
@@ -281,7 +281,7 @@
                                 >
                                 <md-icon v-else>cloud_done</md-icon>
                             </div>
-                            <span v-else>
+                            <span v-else-if="key == 'processing_datasets'">
                                 <md-button
                                     class="md-secondary"
                                     @click.prevent.stop="
@@ -291,7 +291,13 @@
                                             dataset.failed_datasets
                                         )
                                     "
-                                    >{{ dataset[key].length }}</md-button
+                                    ><span class="md-caption">Features</span> <br> {{ dataset[key].length }}</md-button
+                                >
+                            </span>
+                            <span v-else>
+                                <md-button
+                                    class="md-secondary"
+                                    ><span class="md-caption">Collections</span> <br> {{ dataset[key].length }}</md-button
                                 >
                             </span>
                         </md-table-cell>
@@ -390,7 +396,8 @@ export default {
                 "valueType",
                 "perturbation",
                 "cellCycleStage",
-                "processing_datasets"
+                "processing_datasets",
+                "processing_collections"
             ];
         }
         return {
@@ -710,9 +717,10 @@ export default {
             if (this.finishedDatasets) {
                 outputFields["status"] = "Status";
             }
-            // put in processin gdatasets
+            // put in processin gdatasets and processing collections
             if (this.datasetType == "bedfile") {
-                outputFields["processing_datasets"] = "Processing features";
+                outputFields["processing_datasets"] = "Processing";
+                outputFields["processing_collections"] = "Processing"
             }
             return outputFields;
         },
