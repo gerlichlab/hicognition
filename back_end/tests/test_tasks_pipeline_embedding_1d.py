@@ -14,7 +14,8 @@ from app.models import (
     Collection,
     IndividualIntervalData,
     EmbeddingIntervalData,
-    Assembly
+    Assembly,
+    Task
 )
 from app.tasks import pipeline_embedding_1d
 from app.pipeline_steps import perform_1d_embedding
@@ -60,6 +61,19 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
             intervals_id=self.intervals_1.id,
             binsize=10000,
         )
+        # add tasks
+        self.finished_task1 = Task(
+            id="test1",
+            collection_id=1,
+            intervals_id=1,
+            complete=True
+        )
+        self.unfinished_task1 = Task(
+            id="test1",
+            collection_id=1,
+            intervals_id=1,
+            complete=False
+        )
 
     @patch("app.pipeline_steps.perform_stackup")
     @patch("app.pipeline_steps.perform_1d_embedding")
@@ -102,6 +116,53 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
         mock_embedding.assert_called_with(
             self.collection_1.id, self.intervals_1.id, 20000
         )
+
+
+    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.perform_stackup")
+    @patch("app.pipeline_steps.perform_1d_embedding")
+    def test_dataset_state_not_changed_if_not_last(self,mock_embedding, mock_stackup, mock_progress):
+        """tests whether dataset state is left unchanged if it is not the last task for
+        this dataset/intervals combination."""
+        # set up database
+        self.bed_file.processing_collections = [self.collection_1]
+        db.session.add_all([self.bed_file, self.collection_1, self.intervals_1, self.unfinished_task1])
+        # call pipeline
+        pipeline_embedding_1d(1, 1, 10000)
+        # check whether processing has finished
+        self.assertEqual(self.bed_file.processing_collections, [self.collection_1])
+
+    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.perform_stackup")
+    @patch("app.pipeline_steps.perform_1d_embedding")
+    def test_dataset_set_finished_if_last(self,mock_embedding, mock_stackup, mock_progress):
+        """tests whether dataset is set finished correctly if it is the last task for
+        this dataset/intervals combination."""
+        # set up database
+        self.bed_file.processing_collections = [self.collection_1]
+        db.session.add_all([self.bed_file, self.collection_1, self.intervals_1, self.finished_task1])
+        # call pipeline
+        pipeline_embedding_1d(1, 1, 10000)
+        # check whether processing has finished
+        self.assertEqual(self.bed_file.processing_collections, [])
+
+    @patch("app.pipeline_steps.log.error")
+    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.perform_stackup")
+    @patch("app.pipeline_steps.perform_1d_embedding")
+    def test_dataset_set_failed_if_failed(self,mock_embedding, mock_stackup, mock_progress, mock_log):
+        """tests whether dataset is set as faild if problem arises."""
+        # set up exception raising
+        mock_embedding.side_effect = ValueError("Test")
+        # set up database
+        self.bed_file.processing_collections = [self.collection_1]
+        db.session.add_all([self.bed_file, self.collection_1, self.intervals_1, self.finished_task1])
+        # call pipeline
+        pipeline_embedding_1d(1, 1, 10000)
+        # check whether processing has finished
+        self.assertEqual(self.bed_file.failed_collections, [self.collection_1])
+        self.assertEqual(self.bed_file.processing_collections, [])
+        assert mock_log.called
 
 
 class TestPerformEmbedding1d(LoginTestCase, TempDirTestCase):

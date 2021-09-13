@@ -1,6 +1,7 @@
 import sys
 import os
 import unittest
+from unittest.mock import patch
 import pandas as pd
 import numpy as np
 from test_helpers import LoginTestCase, TempDirTestCase
@@ -8,9 +9,100 @@ from test_helpers import LoginTestCase, TempDirTestCase
 # add path to import app
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, Collection, AssociationIntervalData, Assembly
+from app.models import Dataset, Intervals, Collection, AssociationIntervalData, Assembly, Task
 from app.pipeline_steps import perform_enrichment_analysis
+from app.tasks import pipeline_lola
 
+
+class TestPipelineLola(LoginTestCase):
+    """Tests for pipeline lola"""
+
+    def setUp(self):
+        super().setUp()
+        # add assembly
+        self.hg19 = Assembly(
+            id=1,
+            name="hg19",
+            chrom_sizes=self.app.config["CHROM_SIZES"],
+            chrom_arms=self.app.config["CHROM_ARMS"],
+        )
+        db.session.add(self.hg19)
+        db.session.commit()
+        # add region
+        self.bedfile = Dataset(
+            id=1,
+            filetype="bedfile",
+            user_id=1,
+            assembly=1
+        )
+        # add intervals
+        self.intervals1 = Intervals(
+            id=1,
+            name="testRegion1",
+            dataset_id=1,
+            file_path="test_path_1.bedd2db",
+            windowsize=200000,
+        )
+        # add collections
+        self.collection = Collection(
+            id=1
+        )
+        # add tasks
+        self.finished_task1 = Task(
+            id="test1",
+            collection_id=1,
+            intervals_id=1,
+            complete=True
+        )
+        self.unfinished_task1 = Task(
+            id="test1",
+            collection_id=1,
+            intervals_id=1,
+            complete=False
+        )
+
+    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.perform_enrichment_analysis")
+    def test_dataset_state_not_changed_if_not_last(self, mock_enrichment, mock_set_progress):
+        """tests whether dataset state is left unchanged if it is not the last task for
+        this dataset/intervals combination."""
+        # set up database
+        self.bedfile.processing_collections = [self.collection]
+        db.session.add_all([self.bedfile, self.collection, self.intervals1, self.unfinished_task1])
+        # call pipeline
+        pipeline_lola(1, 1, 10000)
+        # check whether processing has finished
+        self.assertEqual(self.bedfile.processing_collections, [self.collection])
+
+    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.perform_enrichment_analysis")
+    def test_dataset_set_finished_if_last(self, mock_enrichment, mock_set_progress):
+        """tests whether dataset is set finished correctly if it is the last task for
+        this dataset/intervals combination."""
+        # set up database
+        self.bedfile.processing_collections = [self.collection]
+        db.session.add_all([self.bedfile, self.collection, self.intervals1, self.finished_task1])
+        # call pipeline
+        pipeline_lola(1, 1, 10000)
+        # check whether processing has finished
+        self.assertEqual(self.bedfile.processing_collections, [])
+
+    @patch("app.pipeline_steps.log.error")
+    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.perform_enrichment_analysis")
+    def test_dataset_set_failed_if_failed(self, mock_enrichment, mock_set_progress, mock_log):
+        """tests whether dataset is set as faild if problem arises."""
+        # set up exception raising
+        mock_enrichment.side_effect = ValueError("Test")
+        # set up database
+        self.bedfile.processing_collections = [self.collection]
+        db.session.add_all([self.bedfile, self.collection, self.intervals1, self.finished_task1])
+        # call pipeline
+        pipeline_lola(1, 1, 10000)
+        # check whether processing has finished
+        self.assertEqual(self.bedfile.failed_collections, [self.collection])
+        self.assertEqual(self.bedfile.processing_collections, [])
+        assert mock_log.called
 
 class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
     """Tests bed_preprocess_pipeline_step"""

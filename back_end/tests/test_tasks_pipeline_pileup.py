@@ -31,12 +31,6 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         )
         db.session.add(self.hg19)
         db.session.commit()
-        # authenticate
-        token = self.add_and_authenticate("test", "asdf")
-        # create token_header
-        token_headers = self.get_token_header(token)
-        # add content-type
-        token_headers["Content-Type"] = "multipart/form-data"
         # add dataset
         self.bedfile = Dataset(
             id=1,
