@@ -5,6 +5,7 @@
             <md-content class="content">
                 <datasetTable
                     :datasets="datasets"
+                    :restrictedDatasetType="datasetType"
                     @load-datasets="this.fetchDatasets"
                     @selection-changed="handleSelectionChange"
                 ></datasetTable>
@@ -96,6 +97,10 @@ export default {
     },
     props: {
         dialog: Boolean,
+        datasetType: {
+            type: String,
+            default: "bedfile"
+        }
     },
     methods: {
         handleSelectionChange: function (selection) {

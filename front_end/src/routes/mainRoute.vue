@@ -11,8 +11,7 @@
         <md-app-drawer :md-active.sync="menuVisible">
             <drawer
                 @mydataset-click="
-                    showMyDatasetDialog = true;
-                    menuVisible = false;
+                    handleShowMyDatasetDialog
                 "
                 @add-region-click="
                     showAddRegionDialog = true;
@@ -75,6 +74,7 @@
             ></preprocessDatasetDialog>
             <datasetDialog
                 :dialog="showMyDatasetDialog"
+                :datasetType="myDatasetDialogDatasetType"
                 @close-dialog="showMyDatasetDialog = false"
             ></datasetDialog>
             <addSessionDialog
@@ -187,6 +187,7 @@ export default {
     data: () => ({
         menuVisible: false,
         showMyDatasetDialog: false,
+        myDatasetDialogDatasetType: undefined,
         showAddRegionDialog: false,
         showAddFeatureDialog: false,
         showAddMetadataDialog: false,
@@ -222,6 +223,11 @@ export default {
         reactToSelectionCollections: undefined
     }),
     methods: {
+        handleShowMyDatasetDialog: function(datasetType){
+                this.showMyDatasetDialog = true;
+                this.menuVisible = false;
+                this.myDatasetDialogDatasetType = datasetType
+        },
         registerDatasetSelectionHandlers: function () {
             // modification listener
             EventBus.$on("show-modify-dialog", this.handleShowModifyDialog)
