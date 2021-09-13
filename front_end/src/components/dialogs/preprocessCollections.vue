@@ -2,10 +2,10 @@
     <div>
         <md-dialog :md-active.sync="showDialog">
             <md-dialog-title
-                >{{dialogName}}<md-tooltip md-direction="left">
+                >Preprocess Collections<md-tooltip md-direction="left">
                     <div>
                         <span class="md-title"
-                            >Information about calculating associations</span
+                            >Information about preprocessing collections</span
                         >
                     </div>
                     <div class="mainText">
@@ -22,7 +22,6 @@
             </md-dialog-title>
             <preprocessCollectionsForm
                 @close-dialog="$emit('close-dialog')"
-                :datatype="datatype"
             ></preprocessCollectionsForm>
         </md-dialog>
     </div>
@@ -37,8 +36,7 @@ export default {
         preprocessCollectionsForm
     },
     props: {
-        dialog: Boolean,
-        datatype: String
+        dialog: Boolean
     },
     computed: {
         dialogName: function(){

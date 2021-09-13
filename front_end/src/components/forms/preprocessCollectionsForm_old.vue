@@ -10,45 +10,8 @@
             <md-card class="md-layout-item">
                 <!-- Field definitions -->
                 <md-card-content>
+                    <!-- Collections -->
                     <div class="md-layout md-gutter">
-                        <!-- bedfiles -->
-                        <div
-                            class="
-                                md-layout-item
-                                md-layout
-                                md-gutter
-                                md-alignment-center-center
-                                md-small-size-100
-                            "
-                        >
-                            <div class="md-layout-item md-size-50">
-                                <md-button
-                                    class="md-raised md-primary"
-                                    @click="startDatasetSelection"
-                                    :disabled="!bedFilesAvailable"
-                                    >Select Regions</md-button
-                                >
-                            </div>
-                            <div
-                                class="md-layout-item md-size-50"
-                                v-if="form.bedfileIDs.length !== 0"
-                            >
-                                <span class="md-body-1"
-                                    >{{ this.getBedFileName(this.form.bedfileIDs[0]) }}</span
-                                >
-                            </div>
-                            <div class="md-layout-item md-size-50" v-else>
-                                <span
-                                    style="color: red"
-                                    v-if="
-                                        !$v.form.bedfileIDs.required &&
-                                        $v.form.bedfileIDs.$dirty
-                                    "
-                                    >At least one dataset is required!</span
-                                >
-                            </div>
-                        </div>
-                        <!-- Collections -->
                         <div class="md-layout-item md-small-size-100">
                             <md-field
                                 :class="getValidationClass('collectionID')"
@@ -76,6 +39,37 @@
                                 >
                             </md-field>
                         </div>
+                        <!-- bedfiles -->
+                        <div
+                            class="md-layout-item md-layout md-gutter md-alignment-center-center md-small-size-100"
+                        >
+                            <div class="md-layout-item md-size-50">
+                                <md-button
+                                    class="md-raised md-primary"
+                                    @click="startDatasetSelection"
+                                    :disabled="!bedFilesAvailable"
+                                    >Select Datasets</md-button
+                                >
+                            </div>
+                            <div
+                                class="md-layout-item md-size-50"
+                                v-if="form.bedfileIDs.length !== 0"
+                            >
+                                <span class="md-body-1"
+                                    >{{ datasetNumber }} datasets selected</span
+                                >
+                            </div>
+                            <div class="md-layout-item md-size-50" v-else>
+                                <span
+                                    style="color: red; "
+                                    v-if="
+                                        !$v.form.bedfileIDs.required &&
+                                            $v.form.bedfileIDs.$dirty
+                                    "
+                                    >At least one dataset is required!</span
+                                >
+                            </div>
+                        </div>
                     </div>
                 </md-card-content>
                 <!-- Progress bar -->
@@ -83,13 +77,7 @@
                 <!-- Buttons for submission and closing -->
                 <md-card-actions>
                     <md-button
-                        class="
-                            md-dense
-                            md-raised
-                            md-primary
-                            md-icon-button
-                            md-alignment-horizontal-left
-                        "
+                        class="md-dense md-raised md-primary md-icon-button md-alignment-horizontal-left"
                         @click="
                             fetchDatasets();
                             fetchCollections();
@@ -125,84 +113,83 @@ import EventBus from "../../eventBus";
 export default {
     name: "PreprocessDatasetForm",
     mixins: [validationMixin, apiMixin, formattingMixin],
+    props: {
+        datatype: String
+    },
     data: () => ({
         availableCollections: [],
         availableBedFiles: [],
         form: {
             collectionID: null,
-            bedfileIDs: [],
+            bedfileIDs: []
         },
         datasetSaved: false,
-        sending: false,
+        sending: false
     }),
     computed: {
-        collectionsAvailable: function () {
+        datasetNumber: function(){
+            return this.form.bedfileIDs.length
+        },
+        collectionsAvailable: function() {
             return this.availableCollections.length != 0;
         },
-        bedFilesAvailable: function () {
+        bedFilesAvailable: function() {
             return this.availableBedFiles.length != 0;
-        },
+        }
     },
     validations: {
         // validators for the form
         form: {
             collectionID: {
-                required,
+                required
             },
             bedfileIDs: {
-                required,
-            },
-        },
+                required
+            }
+        }
     },
     methods: {
-        getBedFileName: function(id){
-            return this.availableBedFiles.filter( el => el.id === id)[0].dataset_name
-        },
         startDatasetSelection: function () {
             this.expectSelection = true;
-            let preselection = [...this.form.bedfileIDs];
-            EventBus.$emit(
-                "show-select-dialog",
-                this.availableBedFiles,
-                "bedfile",
-                preselection,
-                true
-            );
+            let preselection = [...this.form.bedfileIDs]
+            EventBus.$emit("show-select-dialog", this.availableBedFiles, "bedfile", preselection, false);
         },
-        registerSelectionEventHandlers: function () {
-            EventBus.$on("dataset-selected", this.handleDataSelection);
-            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
+        registerSelectionEventHandlers: function(){
+            EventBus.$on("dataset-selected", this.handleDataSelection)
+            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion)
         },
-        removeSelectionEventHandlers: function () {
-            EventBus.$off("dataset-selected", this.handleDataSelection);
-            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
+        removeSelectionEventHandlers: function(){
+            EventBus.$off("dataset-selected", this.handleDataSelection)
+            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion)
         },
-        handleDataSelection: function (ids) {
-            if (this.expectSelection) {
-                this.form.bedfileIDs = [ids];
-                this.expectSelection = false;
+        handleDataSelection: function(ids){
+            if (this.expectSelection){
+                    this.form.bedfileIDs = ids
+                    this.expectSelection = false
             }
         },
-        hanldeSelectionAbortion: function () {
-            this.expectSelection = false;
+        hanldeSelectionAbortion: function(){
+            this.expectSelection = false
         },
-        fetchDatasets: function () {
+        fetchDatasets: function() {
             // fetches available datasets (cooler and bedfiles) from server
-            this.fetchData("datasets/").then((response) => {
+            this.fetchData("datasets/").then(response => {
                 // success, store datasets
                 this.$store.commit("setDatasets", response.data);
                 // update bedfiles
                 this.availableBedFiles = response.data.filter(
-                    (element) =>
+                    element =>
                         element.filetype == "bedfile" &&
                         element.processing_state == "finished"
                 );
             });
         },
-        fetchCollections: function () {
-            this.fetchData("collections/").then((response) => {
+        fetchCollections: function() {
+            this.fetchData("collections/").then(response => {
                 // update bedfiles
-                this.availableCollections = response.data;
+                this.availableCollections = response.data.filter(
+                    element => element.kind == this.datatype
+                );
             });
         },
         getValidationClass(fieldName) {
@@ -211,7 +198,7 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty,
+                    "md-invalid": field.$invalid && field.$dirty
                 };
             }
         },
@@ -237,7 +224,7 @@ export default {
             }
             // API call
             this.postData("preprocess/collections/", formData).then(
-                (response) => {
+                response => {
                     if (response) {
                         this.datasetSaved = true;
                     }
@@ -249,9 +236,9 @@ export default {
         prepare_form_data() {
             // put data into form
             var form_data = {};
-            form_data["collection_ids"] = JSON.stringify([
-                this.form["collectionID"],
-            ]);
+            form_data["collection_ids"] = JSON.stringify(
+                [this.form["collectionID"]]
+            );
             form_data["region_ids"] = JSON.stringify(this.form["bedfileIDs"]);
             return form_data;
         },
@@ -260,16 +247,16 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        },
+        }
     },
-    created: function () {
+    created: function() {
         this.fetchDatasets();
         this.fetchCollections();
-        this.registerSelectionEventHandlers();
+        this.registerSelectionEventHandlers()
     },
-    beforeDestroy: function () {
-        this.removeSelectionEventHandlers();
-    },
+    beforeDestroy: function(){
+        this.removeSelectionEventHandlers()
+    }
 };
 </script>
 

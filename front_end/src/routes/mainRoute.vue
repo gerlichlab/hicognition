@@ -38,12 +38,8 @@
                     showCollectionDialog = true;
                     menuVisible = false;
                 "
-                @calculate-associations-click="
-                    showCalculateAssociations = true;
-                    menuVisible = false;
-                "
-                @embedding-1d-click="
-                    showEmbedding1d = true;
+                @preprocess-collections-click="
+                    showPreprocessCollections = true;
                     menuVisible = false;
                 "
                 @add-assembly-click="
@@ -99,14 +95,8 @@
                 @close-dialog="showCollectionDialog = false"
             />
             <preprocess-collections-dialog
-                :dialog="showCalculateAssociations"
-                @close-dialog="showCalculateAssociations = false"
-                datatype="regions"
-            />
-            <preprocess-collections-dialog
-                :dialog="showEmbedding1d"
-                @close-dialog="showEmbedding1d = false"
-                datatype="1d-features"
+                :dialog="showPreprocessCollections"
+                @close-dialog="showPreprocessCollections = false"
             />
             <addAssemblyDialog
                 :dialog="showAddAssemblies"
@@ -177,7 +167,7 @@ export default {
         addAssemblyDialog,
         assemblyDialog,
         modifyDatasetDialog,
-        selectDatasetDialog
+        selectDatasetDialog,
     },
     data: () => ({
         menuVisible: false,
@@ -190,8 +180,7 @@ export default {
         showMySessionsDialog: false,
         showAddCollectionDialog: false,
         showCollectionDialog: false,
-        showCalculateAssociations: false,
-        showEmbedding1d: false,
+        showPreprocessCollections: false,
         showAddAssemblies: false,
         showAssemblyDialog: false,
         showModifyDialog: false,
@@ -205,65 +194,55 @@ export default {
         finishedDatasets: undefined,
         processingDatasets: undefined,
         failedDatasets: undefined,
-        reactToSelection: true
+        reactToSelection: true,
     }),
-    mounted: function() {
-        // modification listener
-        EventBus.$on("show-modify-dialog", id => {
+    methods: {
+        registerDatasetSelectionHandlers: function () {
+            // modification listener
+            EventBus.$on("show-modify-dialog", this.handleShowModifyDialog)
+            // selection listener
+            EventBus.$on("show-select-dialog", this.handleShowSelectDialog)
+        },
+        handleShowModifyDialog: function (id) {
             this.modifyId = id;
             this.showModifyDialog = true;
             this.showMyDatasetDialog = false;
-        });
-        // selection listener
-        EventBus.$on(
-            "show-select-dialog",
-            (
-                datasets,
-                datasetType,
-                preselection,
-                singleSelection,
-                assembly,
-                finishedDatasets,
-                processingDatasets,
-                failedDatasets,
-                reactToSelection
-            ) => {
-                if (singleSelection !== undefined) {
-                    this.singleSelection = singleSelection;
-                } else {
-                    this.singleSelection = true;
-                }
-                if (assembly) {
-                    this.selectedAssembly = assembly;
-                } else {
-                    this.selectedAssembly = undefined;
-                }
-                if (finishedDatasets) {
-                    this.finishedDatasets = finishedDatasets;
-                } else {
-                    this.finishedDatasets = undefined;
-                }
-                if (processingDatasets) {
-                    this.processingDatasets = processingDatasets;
-                } else {
-                    this.processingDatasets = undefined;
-                }
-                if (failedDatasets !== undefined) {
-                    this.failedDatasets = failedDatasets
-                } else {
-                    this.finishedDatasets = undefined
-                }
-                if (reactToSelection !== undefined) {
-                    this.reactToSelection = reactToSelection;
-                } else {
-                    this.reactToSelection = true;
-                }
-                this.preselection = preselection;
-                this.selectDatasets = datasets;
-                this.selectDatasetType = datasetType;
-                this.showSelectDialog = true;
-            }
-        );
+        },
+        handleShowSelectDialog: function (
+            datasets,
+            datasetType,
+            preselection,
+            singleSelection = true,
+            assembly,
+            finishedDatasets,
+            processingDatasets,
+            failedDatasets,
+            reactToSelection = true
+        ) {
+            this.singleSelection = singleSelection;
+            this.selectedAssembly = assembly;
+            this.finishedDatasets = finishedDatasets;
+            this.processingDatasets = processingDatasets;
+            this.failedDatasets = failedDatasets;
+            this.reactToSelection = reactToSelection;
+            this.preselection = preselection;
+            this.selectDatasets = datasets;
+            this.selectDatasetType = datasetType;
+            this.showSelectDialog = true;
+        },
+        removeDatasetSelectionEventHandlers: function(){
+            // modification listener
+            EventBus.$off("show-modify-dialog", this.handleShowModifyDialog)
+            // selection listener
+            EventBus.$off("show-select-dialog", this.handleShowSelectDialog)
+        }
+
+    },
+    mounted: function () {
+        this.registerDatasetSelectionHandlers()
+    },
+    beforeDestroy: function(){
+        this.registerDatasetSelectionHandlers()
     }
 };
 </script>

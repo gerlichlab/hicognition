@@ -60,7 +60,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # define call arguments
-        data = {"collection_id": "1", "region_ids": "[3]", "kind": "regions"}
+        data = {"collection_ids": "[1]", "region_ids": "[3]"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",
@@ -93,7 +93,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # define call arguments
-        data = {"collection_id": "3", "region_ids": "[3]", "kind": "regions"}
+        data = {"collection_ids": "[3]", "region_ids": "[3]"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",
@@ -126,7 +126,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {"collection_id": "2", "region_ids": "[3]", "kind": "regions"}
+        data = {"collection_ids": "[2]", "region_ids": "[3]"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",
@@ -143,7 +143,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {"collection_id": "100", "region_ids": "[3]", "kind": "regions"}
+        data = {"collection_ids": "[100]", "region_ids": "[3]"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",
@@ -188,9 +188,11 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         task1 = Task(id="test", name="test", user_id=1, collection_id=1, intervals_id=1)
         task2 = Task(
             id="test2", name="test2", user_id=1, collection_id=1, intervals_id=1)
-        db.session.add_all([task1, task2])
+        # add tasks that should not be deleted
+        task3 = Task(id="test3", name="test", user_id=1, collection_id=1, intervals_id=2)
+        db.session.add_all([task1, task2, task3])
         db.session.commit()
-        data = {"collection_id": "1", "region_ids": "[3]", "kind": "regions"}
+        data = {"collection_ids": "[1]", "region_ids": "[3]"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",
@@ -200,7 +202,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check correct tasks where deleted
-        self.assertEqual(len(Task.query.all()), 0)
+        self.assertEqual(Task.query.all(), [task3])
 
 
 if __name__ == "__main__":

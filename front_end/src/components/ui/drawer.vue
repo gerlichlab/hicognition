@@ -83,23 +83,12 @@
                     <md-list-item class="md-inset">
                         <md-button
                             class="md-icon-button"
-                            @click="$emit('calculate-associations-click')"
+                            @click="$emit('preprocess-collections-click')"
                         >
                             <md-icon>launch</md-icon>
                         </md-button>
                         <span class="md-list-item-text"
-                            >Calculate associations</span
-                        >
-                    </md-list-item>
-                    <md-list-item class="md-inset">
-                        <md-button
-                            class="md-icon-button"
-                            @click="$emit('embedding-1d-click')"
-                        >
-                            <md-icon>launch</md-icon>
-                        </md-button>
-                        <span class="md-list-item-text"
-                            >Calculate 1D embedding</span
+                            >Preprocess Collections</span
                         >
                     </md-list-item>
                     <md-list-item class="md-inset">
