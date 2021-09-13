@@ -262,11 +262,11 @@ export default {
         restrictedDatasetType: String,
         finishedCollections: {
             type: Array,
-            default:    undefined
+            default: undefined
         },
         singleSelection: {
             type: Boolean,
-            default: false
+            default: true
         },
         showEmpty: {
             type: Boolean,
@@ -316,8 +316,7 @@ export default {
             selectedIds: [],
             datasetType: "regions",
             allowAssemblySelection: true,
-            clickedDelete: false,
-            datasetsDeleted: false
+            blockAssemblyBlanking: true
         }
     },
     computed: {
@@ -525,13 +524,29 @@ export default {
         }
     },
     watch: {
-        selected: function(val) {
-            if (val != undefined) {
-                this.$emit("selection-available", this.selected.id);
+        datasetType: function(){
+            this.searchTerm = "";
+            this.selectedIds = this.preselection;
+            this.$emit("selection-changed", this.selectedIds);
+        },
+        searchTerm: function() {
+            this.selectedIds = this.preselection;
+            this.$emit("selection-changed", this.selectedIds);
+        },
+        selectedAssembly: function() {
+            if (this.blockAssemblyBlanking) {
+                this.selectedIds = this.preselection;
             } else {
-                this.$emit("selection-unavailable");
+                this.selectedIds = [];
             }
+            this.$emit("selection-changed", this.selectedIds);
+            this.blockAssemblyBlanking = false;
+        },
+        collections: function() {
+            this.selectedIds = this.preselection;
+            this.$emit("selection-changed", this.selectedIds);
         }
+
     },
     created: function() {
         this.assemblies = this.fetchAssemblies();

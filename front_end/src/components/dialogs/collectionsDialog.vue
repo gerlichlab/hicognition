@@ -4,9 +4,9 @@
             <md-dialog-title>Available Collections</md-dialog-title>
             <md-content class="content">
                 <collection-table
-                    @selection-available="handleSelectionAvailable"
-                    @selection-unavailable="handleSelectionUnAvailable"
                     @load-collections="fetchCollections"
+                    @selection-changed="handleSelectionChange"
+                    :singleSelection="true"
                     :collections="collections"
                 ></collection-table>
             </md-content>
@@ -15,9 +15,35 @@
                     <div class="float-left">
                         <md-button
                             class="md-secondary md-raised md-accent"
-                            @click="handleSessionDeletion"
+                            @click="showDelete = true"
+                            v-if="showControls && !showDelete"
+                            :disabled="!notProcessing"
+                            >Delete
+                            </md-button
+                        >
+                        <md-tooltip md-direction="top" v-if="!notProcessing">Datasets cannot be delete when one of them is processing</md-tooltip>
+                    </div>
+                    <div class="float-left">
+                        <md-button
+                            class="md-raised"
                             v-if="showDelete"
-                            >Delete</md-button
+                            >Are you sure?</md-button
+                        >
+                    </div>
+                    <div class="float-left">
+                        <md-button
+                            class="md-raised md-accent"
+                            @click="handleDelete"
+                            v-if="showDelete"
+                            >Yes</md-button
+                        >
+                    </div>
+                    <div class="float-left">
+                        <md-button
+                            class="md-raised md-primary"
+                            @click="showDelete = false"
+                            v-if="showDelete"
+                            >No</md-button
                         >
                     </div>
                     <div class="float-right">
@@ -32,6 +58,9 @@
                 </div>
             </md-dialog-actions>
         </md-dialog>
+        <md-snackbar :md-active.sync="datasetsDeleted"
+            >Deletion done!</md-snackbar
+        >
     </div>
 </template>
 
@@ -45,9 +74,11 @@ export default {
     mixins: [apiMixin],
     data: function() {
         return {
-            selected_collection_id: null,
             showDelete: false,
-            collections: []
+            collections: [],
+            selection: [],
+            clickedDelete: false,
+            datasetsDeleted: false,
         };
     },
     components: {
@@ -60,8 +91,17 @@ export default {
         showDialog: function() {
             return this.dialog;
         },
+        showControls: function () {
+            return this.selection.length !== 0;
+        },
+        notProcessing: function(){
+            return this.collections.every(el => el.processing_for_regions.length === 0)
+        },
     },
     methods: {
+        handleSelectionChange: function (selection) {
+            this.selection = selection;
+        },
         fetchCollections() {
             this.fetchData("collections/").then(response => {
                 if (response) {
@@ -70,19 +110,12 @@ export default {
                 }
             });
         },
-        handleSessionDeletion: function() {
-            this.deleteData(`collections/${this.selected_collection_id}/`).then(
+        handleDelete: function() {
+            this.deleteData(`collections/${this.selection[0]}/`).then(
                 response => {
-                    EventBus.$emit("fetch-sessions");
+                    this.fetchCollections()
                 }
             );
-        },
-        handleSelectionAvailable: function(collection_id) {
-                this.selected_collection_id = collection_id;
-                this.showDelete = true
-        },
-        handleSelectionUnAvailable: function() {
-            (this.showDelete = false);
         }
     },
     mounted: function(){
