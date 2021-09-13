@@ -255,6 +255,34 @@ def remove_tasks(tasks, db):
         db.session.delete(task)
     db.session.commit()
 
+def remove_tasks_dataset(db, dataset, region):
+    """Removes all incomplete tasks that are associated with a particular dataset/region combination"""
+    associated_tasks = (
+        Task.query.join(Intervals)
+        .join(Dataset)
+        .filter(
+            (Dataset.id == region.id)
+            & (Task.dataset_id == dataset.id)
+            & (Task.complete == False)
+        )
+        .all()
+    )
+    remove_tasks(associated_tasks, db)
+
+def remove_tasks_collection(db, collection, region):
+    """Removes all incomplete tasks that are associated with a particular collection/region combination"""
+    associated_tasks = (
+        Task.query.join(Intervals)
+        .join(Dataset)
+        .filter(
+            (Dataset.id == region.id)
+            & (Task.collection_id == collection.id)
+            & (Task.complete == False)
+        )
+        .all()
+    )
+    remove_tasks(associated_tasks, db)
+
 
 def get_all_interval_ids(region_datasets):
     """Returns ids of all intervals associated with list or region datasets."""

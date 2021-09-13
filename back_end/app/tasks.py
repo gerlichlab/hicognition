@@ -67,8 +67,9 @@ def pipeline_pileup(dataset_id, intervals_id, binsize):
         )
         pipeline_steps._set_task_progress(100)
         pipeline_steps._set_dataset_finished(dataset_id, intervals_id)
-    except BaseException:
+    except BaseException as e:
         pipeline_steps._set_dataset_failed(dataset_id, intervals_id)
+        raise e
 
 
 def pipeline_stackup(dataset_id, intervals_id, binsize):
@@ -78,8 +79,9 @@ def pipeline_stackup(dataset_id, intervals_id, binsize):
         pipeline_steps.perform_stackup(dataset_id, intervals_id, binsize)
         pipeline_steps._set_task_progress(100)
         pipeline_steps._set_dataset_finished(dataset_id, intervals_id)
-    except BaseException:
+    except BaseException as e:
         pipeline_steps._set_dataset_failed(dataset_id, intervals_id)
+        raise e
 
 
 def pipeline_lola(collection_id, intervals_id, binsize):
@@ -89,8 +91,9 @@ def pipeline_lola(collection_id, intervals_id, binsize):
         pipeline_steps.perform_enrichment_analysis(collection_id, intervals_id, binsize)
         pipeline_steps._set_task_progress(100)
         pipeline_steps._set_collection_finished(collection_id, intervals_id)
-    except BaseException:
+    except BaseException as e:
         pipeline_steps._set_collection_failed(collection_id, intervals_id)
+        raise e
 
 
 def pipeline_embedding_1d(collection_id, intervals_id, binsize):
@@ -110,5 +113,6 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
         pipeline_steps.perform_1d_embedding(collection_id, intervals_id, binsize)
         pipeline_steps._set_task_progress(100)
         pipeline_steps._set_collection_finished(collection_id, intervals_id)
-    except BaseException:
+    except BaseException as e:
         pipeline_steps._set_collection_failed(collection_id, intervals_id)
+        raise e
