@@ -422,7 +422,11 @@ export default {
         },
         handleTableRowClicked: function(id) {
             if (this.singleSelection) {
-                this.selectedIds = [id];
+                if (this.selectedIds.includes(id)){
+                    this.selectedIds = []
+                }else{
+                    this.selectedIds = [id];
+                }
             } else if (this.selectedIds.includes(id)) {
                 this.selectedIds.splice(this.selectedIds.indexOf(id), 1);
             } else {
