@@ -106,7 +106,8 @@ export default {
             this.fetchData("collections/").then(response => {
                 if (response) {
                     // update displayed datasets
-                    this.collections = response.data;
+                    this.collections = response.data
+                    this.$store.commit("setCollections", response.data)
                 }
             });
         },

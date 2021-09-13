@@ -40,6 +40,14 @@ export default {
                 }
             });
         },
+        fetchCollections: function() {
+            this.fetchData("collections/").then(response => {
+                // success, store datasets
+                if (response){
+                    this.$store.commit("setCollections", response.data);
+                }
+            });
+        },
         fetchResolutions: function(){
             this.fetchData("resolutions/").then(response => {
                 // success, store resolutions
@@ -100,6 +108,7 @@ export default {
         //
         EventBus.$on("session-loaded", this.updateMaxID)
         this.fetchDatasets()
+        this.fetchCollections()
         this.fetchResolutions()
         this.fetchDatasetMetadataMapping()
     },

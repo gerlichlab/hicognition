@@ -369,6 +369,7 @@ const store = new Vuex.Store({
         user_id: null,
         resolutions: null,
         datasetMetadataMapping: null,
+        collections: null,
         datasets: null, // datasets are in the global store because they will be shared for all functionalities for a given user throughout a session
         usedSortOrders: Array(COLORPALETTE.length).fill(0), // flags for used numbers
         usedValueScales: Array(COLORPALETTE.length).fill(0)
@@ -469,6 +470,9 @@ const store = new Vuex.Store({
         },
         setDatasets(state, datasets) {
             state.datasets = datasets;
+        },
+        setCollections(state, collections) {
+            state.collections = collections;
         },
         setResolutions(state, resolutions) {
             state.resolutions = resolutions

@@ -127,6 +127,19 @@
                 :reactToSelection="reactToSelection"
                 @close-dialog="showSelectDialog = false"
             />
+            <select-collection-dialog
+                :dialog="showSelectCollectionDialog"
+                :collections="selectCollections"
+                :datasetType="selectDatasetTypeCollections"
+                :singleSelection="singleSelectionCollections"
+                :preselection="preselectionCollections"
+                :assembly="selectedAssemblyCollections"
+                :finishedDatasets="finishedCollections"
+                :processingDatasets="processingCollections"
+                :failedDatasets="failedCollections"
+                :reactToSelection="reactToSelectionCollections"
+                @close-dialog="showSelectCollectionDialog = false"
+            />
         </md-app-content>
     </md-app>
 </template>
@@ -147,6 +160,7 @@ import addAssemblyDialog from "../components/dialogs/addAssemblyDialog.vue";
 import assemblyDialog from "../components/dialogs/assemblyDialog.vue";
 import modifyDatasetDialog from "../components/dialogs/modifyDatasetDialog.vue";
 import selectDatasetDialog from "../components/dialogs/selectDatasetDialog.vue";
+import selectCollectionDialog from "../components/dialogs/selectCollectionDialog.vue"
 
 import EventBus from "../eventBus";
 
@@ -168,6 +182,7 @@ export default {
         assemblyDialog,
         modifyDatasetDialog,
         selectDatasetDialog,
+        selectCollectionDialog
     },
     data: () => ({
         menuVisible: false,
@@ -195,6 +210,16 @@ export default {
         processingDatasets: undefined,
         failedDatasets: undefined,
         reactToSelection: true,
+        showSelectCollectionDialog: false,
+        selectCollections: undefined,
+        selectDatasetTypeCollections: undefined,
+        singleSelectionCollections: undefined,
+        preselectionCollections: [],
+        selectedAssemblyCollections: undefined,
+        finishedCollections: undefined,
+        processingCollections: undefined,
+        failedCollections: undefined,
+        reactToSelectionCollections: undefined
     }),
     methods: {
         registerDatasetSelectionHandlers: function () {
@@ -235,14 +260,45 @@ export default {
             EventBus.$off("show-modify-dialog", this.handleShowModifyDialog)
             // selection listener
             EventBus.$off("show-select-dialog", this.handleShowSelectDialog)
-        }
+        },
+        registerCollectionSelectionHandlers: function(){
+            // selection listener
+            EventBus.$on("show-select-collection-dialog", this.handleShowSelectCollectionDialog)
+        },
+        removeCollectionSelectionHandlers: function(){
+            EventBus.$off("show-select-collection-dialog", this.handleShowSelectCollectionDialog)
+        },
+        handleShowSelectCollectionDialog: function (
+            collections,
+            datasetType,
+            preselection,
+            singleSelection = true,
+            assembly,
+            finishedDatasets,
+            processingDatasets,
+            failedDatasets,
+            reactToSelection = true
+        ) {
+            this.singleSelectionCollections = singleSelection;
+            this.selectedAssemblyCollections = assembly;
+            this.finishedCollections = finishedDatasets;
+            this.processingCollections = processingDatasets;
+            this.failedCollections = failedDatasets;
+            this.reactToSelectionCollections = reactToSelection;
+            this.preselectionCollections = preselection;
+            this.selectCollections = collections;
+            this.selectDatasetTypeCollections = datasetType;
+            this.showSelectCollectionDialog = true;
+        },
 
     },
     mounted: function () {
         this.registerDatasetSelectionHandlers()
+        this.registerCollectionSelectionHandlers()
     },
     beforeDestroy: function(){
-        this.registerDatasetSelectionHandlers()
+        this.removeDatasetSelectionHandlers()
+        this.removeCollectionSelectionHandlers()
     }
 };
 </script>
