@@ -291,12 +291,21 @@
                                             dataset.failed_datasets
                                         )
                                     "
+                                    :disabled="blockProcessingDialog"
                                     ><span class="md-caption">Features</span> <br> {{ dataset[key].length }}</md-button
                                 >
                             </span>
                             <span v-else>
                                 <md-button
                                     class="md-secondary"
+                                    @click.prevent.stop="
+                                        showPreprocessingCollectionTable(
+                                            dataset.id,
+                                            dataset.processing_collections,
+                                            dataset.failed_collections
+                                        )
+                                    "
+                                    :disabled="blockProcessingDialog"
                                     ><span class="md-caption">Collections</span> <br> {{ dataset[key].length }}</md-button
                                 >
                             </span>
@@ -378,6 +387,10 @@ export default {
         failedDatasets: {
             type: Array,
             default: undefined
+        },
+        blockProcessingDialog: {
+            type: Boolean,
+            default: false
         }
     },
     data: function() {
@@ -439,6 +452,31 @@ export default {
                     finished,
                     processing_datasets,
                     failed_datasets,
+                    false
+                );
+            });
+        },
+        showPreprocessingCollectionTable(id, processing_collections, failed_collections) {
+            this.fetchPreprocessData(id).then(response => {
+                let lolaIDs = Object.keys(
+                    response.data["lola"]
+                ).map(el => Number(el));
+                let embeddingIDs = Object.keys(response.data["embedding"]).map(el =>
+                    Number(el)
+                );
+                let finished = lolaIDs.concat(embeddingIDs);
+                // get collections from store
+                let collections = this.$store.state.collections
+                EventBus.$emit(
+                    "show-select-collection-dialog",
+                    collections,
+                    undefined,
+                    [],
+                    true,
+                    this.selectedAssembly,
+                    finished,
+                    processing_collections,
+                    failed_collections,
                     false
                 );
             });

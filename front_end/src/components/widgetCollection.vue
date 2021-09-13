@@ -357,6 +357,14 @@ export default {
                 );
             });
         },
+        fetchCollections: function() {
+            this.fetchData("collections/").then(response => {
+                // success, store datasets
+                if (response){
+                    this.$store.commit("setCollections", response.data);
+                }
+            });
+        },
         fetchResolutions: function () {
             this.fetchData("resolutions/").then((response) => {
                 // success, store resolutions
@@ -518,6 +526,8 @@ export default {
         }
         // get datasets
         this.fetchDatasets();
+        // get collections
+        this.fetchCollections()
         // get resolutions
         if (this.$store.state.resolutions) {
             this.windowSizes = Object.keys(this.$store.getters.getResolutions);

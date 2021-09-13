@@ -13,6 +13,7 @@
                     :finishedDatasets="finishedDatasets"
                     :processingDatasets="processingDatasets"
                     :failedDatasets="failedDatasets"
+                    :blockProcessingDialog="true"
                     @selection-changed="handleSelectionChange"
                 ></datasetTable>
             </md-content>

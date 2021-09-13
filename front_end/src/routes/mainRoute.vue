@@ -134,9 +134,9 @@
                 :singleSelection="singleSelectionCollections"
                 :preselection="preselectionCollections"
                 :assembly="selectedAssemblyCollections"
-                :finishedDatasets="finishedCollections"
-                :processingDatasets="processingCollections"
-                :failedDatasets="failedCollections"
+                :finishedCollections="finishedCollections"
+                :processingCollections="processingCollections"
+                :failedCollections="failedCollections"
                 :reactToSelection="reactToSelectionCollections"
                 @close-dialog="showSelectCollectionDialog = false"
             />

@@ -11,32 +11,18 @@
                 <div
                     class="md-layout-item md-size-15 padding-left padding-right"
                 >
-                    <md-menu
-                        :md-offset-x="50"
-                        :md-offset-y="-36"
-                        md-size="auto"
-                        :md-active.sync="showDatasetSelection"
-                        v-if="allowDatasetSelection"
-                        :md-close-on-select="false"
-                    >
-                        <div class="no-padding-top">
-                            <md-button class="md-icon-button" md-menu-trigger>
-                                <md-icon>menu_open</md-icon>
-                            </md-button>
-                        </div>
-                        <md-menu-content>
-                            <md-menu-item
-                                v-for="(item, id) in datasets"
-                                :key="id"
-                                @click="handleDatasetSelection(id)"
+                    <div class="menu-button">
+                        <md-button
+                            class="md-icon-button"
+                            @click="startDatasetSelection"
+                            :disabled="!allowDatasetSelection"
+                        >
+                            <md-icon>menu_open</md-icon>
+                            <md-tooltip md-direction="top" md-delay="300"
+                                >Select a dataset for this widget</md-tooltip
                             >
-                                <span class="caption">{{ item.name }}</span>
-                                <md-icon v-if="selectedDataset.includes(id)"
-                                    >done</md-icon
-                                >
-                            </md-menu-item>
-                        </md-menu-content>
-                    </md-menu>
+                        </md-button>
+                    </div>
                 </div>
                 <div
                     class="md-layout-item md-size-60 padding-left padding-right"
@@ -174,6 +160,7 @@
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
 import { rectBin, flatten } from "../../functions";
 import heatmap from "../visualizations/heatmap.vue";
+import EventBus from "../../eventBus";
 
 export default {
     components: { heatmap },
@@ -257,6 +244,30 @@ export default {
         },
     },
     methods: {
+        startDatasetSelection: function () {
+            this.expectSelection = true;
+            // get collections from store
+            let collections = this.$store.state.collections.filter( (el) => Object.keys(this.datasets).includes(String(el.id)) )
+            let preselection = this.selectedDataset ? [this.selectedDataset] : []
+            EventBus.$emit("show-select-collection-dialog", collections, "regions" , preselection);
+        },
+        registerSelectionEventHandlers: function(){
+            EventBus.$on("collection-selected", this.handleDataSelection)
+            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion)
+        },
+        removeSelectionEventHandlers: function(){
+            EventBus.$off("collection-selected", this.handleDataSelection)
+            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion)
+        },
+        handleDataSelection: function(id){
+            if (this.expectSelection){
+                    this.selectedDataset = id
+                    this.expectSelection = false
+            }
+        },
+        hanldeSelectionAbortion: function(){
+            this.expectSelection = false
+        },
         blankWidget: function () {
             // removes all information that the user can set in case a certain region/dataset combination is not available
             this.widgetData = undefined;
@@ -616,6 +627,12 @@ export default {
             this.loading = false;
         },
     },
+    mounted: function(){
+        this.registerSelectionEventHandlers()
+    },
+    beforeDestroy: function(){
+        this.removeSelectionEventHandlers()
+    }
 };
 </script>
 
