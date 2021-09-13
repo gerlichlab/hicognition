@@ -258,7 +258,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
 
     @patch("app.models.User.launch_task")
     @patch("app.models.Task.get_rq_job")
-    def test_tasks_deleted_after_relaunch(self, mock_get_rq_job, mock_launch):
+    def test_failed_tasks_deleted_after_relaunch(self, mock_get_rq_job, mock_launch):
         """Tests whether preprocessing api call deletes any remaining
         jobs that have failed."""
         # patch
@@ -268,10 +268,13 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
-        # add tasks
-        task1 = Task(id="test", name="test", user_id=1, dataset_id=1, complete=False)
-        task2 = Task(id="test2", name="test2", user_id=1, dataset_id=1, complete=False)
-        db.session.add_all([task1, task2])
+        # add tasks to be deleted
+        task1 = Task(id="test", name="test", user_id=1, dataset_id=1, intervals_id=1)
+        task2 = Task(id="test2", name="test2", user_id=1, dataset_id=1, intervals_id=1)
+        # add tasks to be left alone
+        task3 = Task(id="test3", name="test2", user_id=1, dataset_id=1, intervals_id=2)
+        task4 = Task(id="test4", name="test2", user_id=1, dataset_id=2, intervals_id=1)
+        db.session.add_all([task1, task2, task3, task4])
         db.session.commit()
         data = {"dataset_ids": "[1]", "region_ids": "[4]"}
         # dispatch post request
@@ -283,7 +286,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check correct tasks where deleted
-        self.assertEqual(len(Task.query.all()), 0)
+        self.assertEqual(Task.query.all(), [task3, task4])
 
     @patch("app.models.User.launch_task")
     def test_mixed_pipelines_called_correctly_with_multiple_owned_datasets(

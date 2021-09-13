@@ -185,10 +185,9 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # add tasks
-        task1 = Task(id="test", name="test", user_id=1, collection_id=1, complete=False)
+        task1 = Task(id="test", name="test", user_id=1, collection_id=1, intervals_id=1)
         task2 = Task(
-            id="test2", name="test2", user_id=1, collection_id=1, complete=False
-        )
+            id="test2", name="test2", user_id=1, collection_id=1, intervals_id=1)
         db.session.add_all([task1, task2])
         db.session.commit()
         data = {"collection_id": "1", "region_ids": "[3]", "kind": "regions"}

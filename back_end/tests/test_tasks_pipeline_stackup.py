@@ -8,9 +8,103 @@ from test_helpers import LoginTestCase, TempDirTestCase
 # add path to import app
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, IndividualIntervalData
+from app.models import Dataset, Intervals, IndividualIntervalData, Assembly, Task
 from app.tasks import pipeline_stackup
 from app.pipeline_steps import perform_stackup
+
+
+class TestPipelineStackup(LoginTestCase):
+    """Tests for pipeline stackup"""
+
+    def setUp(self):
+        super().setUp()
+        # add assembly
+        self.hg19 = Assembly(
+            id=1,
+            name="hg19",
+            chrom_sizes=self.app.config["CHROM_SIZES"],
+            chrom_arms=self.app.config["CHROM_ARMS"],
+        )
+        db.session.add(self.hg19)
+        db.session.commit()
+        # make datasets
+        self.bedfile = Dataset(
+            id=1,
+            filetype="bedfile"
+        )
+        self.bigwigfile = Dataset(
+            id=2,
+            filetype="bigwig"
+        )
+        # make intervals
+        self.intervals1 = Intervals(
+            id=1,
+            dataset_id=1
+        )
+        self.intervals2 = Intervals(
+            id=1,
+            dataset_id=1
+        )
+        # make tasks
+        self.finished_task1 = Task(
+            id="test1",
+            dataset_id=2,
+            intervals_id=1,
+            complete=True
+        )
+        self.unfinished_task1 = Task(
+            id="test1",
+            dataset_id=2,
+            intervals_id=1,
+            complete=False
+        )
+
+    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.perform_stackup")
+    def test_task_state_not_changed_if_not_last(self, mock_stackup, mock_set_progress):
+        """tests whether task state is left unchanged if it is not the last task for
+        this dataset/intervals combination."""
+        # set up database
+        self.bedfile.processing_features = [self.bigwigfile]
+        db.session.add_all([self.bedfile, self.bigwigfile, self.intervals1, self.unfinished_task1])
+        # call pipeline
+        pipeline_stackup(2, 1, 10000)
+        # check whether processing has finished
+        self.assertEqual(self.bedfile.processing_features, [self.bigwigfile])
+
+
+    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.perform_stackup")
+    def test_task_set_finished_if_last(self, mock_stackup, mock_set_progress):
+        """tests whether task is set finished correctly if it is the last task for
+        this dataset/intervals combination."""
+        # set up database
+        self.bedfile.processing_features = [self.bigwigfile]
+        db.session.add_all([self.bedfile, self.bigwigfile, self.intervals1, self.finished_task1])
+        # call pipeline
+        pipeline_stackup(2, 1, 10000)
+        # check whether processing has finished
+        self.assertEqual(len(self.bedfile.processing_features), 0)
+
+    @patch("app.pipeline_steps.log.error")
+    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.perform_stackup")
+    def test_task_set_failed_if_failed(self, mock_stackup, mock_set_progress, mock_log):
+        """tests whether task is set as faild if problem arises."""
+        # set up exception raising
+        mock_stackup.side_effect = ValueError("Test")
+        # set up database
+        self.bedfile.processing_features = [self.bigwigfile]
+        db.session.add_all([self.bedfile, self.bigwigfile, self.intervals1, self.unfinished_task1])
+        # call pipeline
+        pipeline_stackup(2, 1, 10000)
+        # check whether dataset was added to failed datasets
+        self.assertEqual(self.bedfile.failed_features, [self.bigwigfile])
+        self.assertEqual(len(self.bedfile.processing_features), 0)
+        assert mock_log.called
+
+
+
 
 
 class TestPerformStackup(LoginTestCase, TempDirTestCase):
