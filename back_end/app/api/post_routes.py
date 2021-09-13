@@ -24,9 +24,8 @@ from .helpers import (
     is_access_to_dataset_denied,
     is_access_to_collection_denied,
     parse_description,
-    remove_tasks,
-    remove_tasks_dataset,
-    remove_tasks_collection,
+    remove_failed_tasks_dataset,
+    remove_failed_tasks_collection,
     get_all_interval_ids,
     parse_binsizes,
     post_dataset_requirements_fullfilled,
@@ -167,7 +166,7 @@ def preprocess_dataset():
                 if feature != Dataset.query.get(dataset_id)
             ]
             # remove associated tasks
-            remove_tasks_dataset(db, Dataset.query.get(dataset_id), region_ds)
+            remove_failed_tasks_dataset(db, Dataset.query.get(dataset_id), region_ds)
     # get interval ids of selected regions
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
@@ -236,7 +235,7 @@ def preprocess_collections():
         return forbidden(f"Region dataset is not owned by logged in user!")
     # delete all jobs that are in database and have failed
     for region in region_datasets:
-        remove_tasks_collection(db, Collection.query.get(collection_id), region)
+        remove_failed_tasks_collection(db, Collection.query.get(collection_id), region)
     # get interval ids of selected regions
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines

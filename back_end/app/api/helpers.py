@@ -10,6 +10,7 @@ from ..models import (
     IndividualIntervalData,
     AverageIntervalData,
     BedFileMetadata,
+    any_tasks_failed,
 )
 
 COMMON_REQUIRED_KEYS = [
@@ -255,8 +256,18 @@ def remove_tasks(tasks, db):
         db.session.delete(task)
     db.session.commit()
 
-def remove_tasks_dataset(db, dataset, region):
-    """Removes all incomplete tasks that are associated with a particular dataset/region combination"""
+def filter_failed_tasks(tasks):
+    """filters tasks for failed tasks"""
+    output = []
+    for task in tasks:
+        if task.get_rq_job() is None:
+            continue
+        if task.get_rq_job().get_status() == "failed":
+            output.append(task)
+    return output
+
+def remove_failed_tasks_dataset(db, dataset, region):
+    """Removes all failed tasks that are associated with a particular dataset/region combination"""
     associated_tasks = (
         Task.query.join(Intervals)
         .join(Dataset)
@@ -267,10 +278,11 @@ def remove_tasks_dataset(db, dataset, region):
         )
         .all()
     )
-    remove_tasks(associated_tasks, db)
+    failed_tasks = filter_failed_tasks(associated_tasks)
+    remove_tasks(failed_tasks, db)
 
-def remove_tasks_collection(db, collection, region):
-    """Removes all incomplete tasks that are associated with a particular collection/region combination"""
+def remove_failed_tasks_collection(db, collection, region):
+    """Removes all failed tasks that are associated with a particular collection/region combination"""
     associated_tasks = (
         Task.query.join(Intervals)
         .join(Dataset)
@@ -281,7 +293,8 @@ def remove_tasks_collection(db, collection, region):
         )
         .all()
     )
-    remove_tasks(associated_tasks, db)
+    failed_tasks = filter_failed_tasks(associated_tasks)
+    remove_tasks(failed_tasks, db)
 
 
 def get_all_interval_ids(region_datasets):
@@ -357,18 +370,7 @@ def add_association_data_to_preprocessed_dataset_map(
         # check whether there are any uncompleted tasks for the feature dataset
         interval = Intervals.query.get(assoc.intervals_id)
         region_dataset = interval.source_dataset
-        tasks_on_interval = (
-            Task.query.join(Intervals)
-            .join(Dataset)
-            .filter(
-                (Task.collection_id == collection.id)
-                & (Dataset.id == region_dataset.id)
-            )
-            .all()
-        )
-        if len(tasks_on_interval) != 0 and any(
-            not task.complete for task in tasks_on_interval
-        ):
+        if (collection in region_dataset.processing_collections) or (collection in region_dataset.failed_collections):
             continue
         output_object["lola"][collection.id]["name"] = collection.name
         output_object["lola"][collection.id][
@@ -390,18 +392,7 @@ def add_embedding_data_to_preprocessed_dataset_map(
         # check whether there are any uncompleted tasks for the feature dataset
         interval = Intervals.query.get(embed.intervals_id)
         region_dataset = interval.source_dataset
-        tasks_on_interval = (
-            Task.query.join(Intervals)
-            .join(Dataset)
-            .filter(
-                (Task.collection_id == collection.id)
-                & (Dataset.id == region_dataset.id)
-            )
-            .all()
-        )
-        if len(tasks_on_interval) != 0 and any(
-            not task.complete for task in tasks_on_interval
-        ):
+        if (collection in region_dataset.processing_collections) or (collection in region_dataset.failed_collections):
             continue
         output_object["embedding"][collection.id]["name"] = collection.name
         output_object["embedding"][collection.id][
