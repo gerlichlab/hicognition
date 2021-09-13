@@ -61,8 +61,8 @@ class TestPipelineStackup(LoginTestCase):
 
     @patch("app.pipeline_steps._set_task_progress")
     @patch("app.pipeline_steps.perform_stackup")
-    def test_task_state_not_changed_if_not_last(self, mock_stackup, mock_set_progress):
-        """tests whether task state is left unchanged if it is not the last task for
+    def test_dataset_state_not_changed_if_not_last(self, mock_stackup, mock_set_progress):
+        """tests whether dataset state is left unchanged if it is not the last task for
         this dataset/intervals combination."""
         # set up database
         self.bedfile.processing_features = [self.bigwigfile]
@@ -75,8 +75,8 @@ class TestPipelineStackup(LoginTestCase):
 
     @patch("app.pipeline_steps._set_task_progress")
     @patch("app.pipeline_steps.perform_stackup")
-    def test_task_set_finished_if_last(self, mock_stackup, mock_set_progress):
-        """tests whether task is set finished correctly if it is the last task for
+    def test_dataset_set_finished_if_last(self, mock_stackup, mock_set_progress):
+        """tests whether dataset is set finished correctly if it is the last task for
         this dataset/intervals combination."""
         # set up database
         self.bedfile.processing_features = [self.bigwigfile]
@@ -89,8 +89,8 @@ class TestPipelineStackup(LoginTestCase):
     @patch("app.pipeline_steps.log.error")
     @patch("app.pipeline_steps._set_task_progress")
     @patch("app.pipeline_steps.perform_stackup")
-    def test_task_set_failed_if_failed(self, mock_stackup, mock_set_progress, mock_log):
-        """tests whether task is set as faild if problem arises."""
+    def test_dataset_set_failed_if_failed(self, mock_stackup, mock_set_progress, mock_log):
+        """tests whether dataset is set as faild if problem arises."""
         # set up exception raising
         mock_stackup.side_effect = ValueError("Test")
         # set up database

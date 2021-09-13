@@ -9,7 +9,7 @@ from test_helpers import LoginTestCase, TempDirTestCase
 # add path to import app
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, Assembly
+from app.models import Dataset, Intervals, Assembly, Task
 from app.tasks import pipeline_pileup
 from app.pipeline_steps import perform_pileup
 
@@ -38,31 +38,46 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         # add content-type
         token_headers["Content-Type"] = "multipart/form-data"
         # add dataset
-        self.dataset = Dataset(
-            dataset_name="test3",
-            file_path="/test/path/test3.mcool",
+        self.bedfile = Dataset(
+            id=1,
+            filetype="bedfile",
+            user_id=1,
+            assembly=1
+        )
+        self.coolerfile = Dataset(
+            id=2,
             filetype="cooler",
-            processing_state="finished",
             user_id=1,
             assembly=1
         )
         # add intervals
         self.intervals1 = Intervals(
+            id=1,
             name="testRegion1",
             dataset_id=1,
             file_path="test_path_1.bedd2db",
             windowsize=200000,
         )
         self.intervals2 = Intervals(
+            id=2,
             name="testRegion2",
             dataset_id=1,
             file_path="test_path_2.bedd2db",
             windowsize=200000,
         )
-        db.session.add(self.dataset)
-        db.session.add(self.intervals1)
-        db.session.add(self.intervals2)
-        db.session.commit()
+        # make tasks
+        self.finished_task1 = Task(
+            id="test1",
+            dataset_id=2,
+            intervals_id=1,
+            complete=True
+        )
+        self.unfinished_task1 = Task(
+            id="test1",
+            dataset_id=2,
+            intervals_id=1,
+            complete=False
+        )
 
     @staticmethod
     def get_call_args_without_index(mock, remove_index):
@@ -86,9 +101,12 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
     ):
         """Tests whether the functions that execute the different pipeline steps are called
         correctly."""
+        # add datasets
+        db.session.add_all([self.coolerfile, self.bedfile, self.intervals1, self.intervals2])
+        db.session.commit()
         # launch task
         binsize = 10000
-        dataset_id = 1
+        dataset_id = 2
         intervals_id = 2
         pileup_types = ["ICCF", "Obs/Exp"]
         pipeline_pileup(dataset_id, intervals_id, binsize)
@@ -103,6 +121,52 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         self.assertEqual(len(call_args), len(pileup_types))
         # check whether last call to set task progress was 100
         mock_set_progress.assert_called_with(100)
+
+    @patch("app.pipeline_steps.pd.read_csv")
+    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.perform_pileup")
+    def test_dataset_state_not_changed_if_not_last(self, mock_pileup, mock_set_progress, mock_read_csv):
+        """tests whether dataset state is left unchanged if it is not the last task for
+        this dataset/intervals combination."""
+        # set up database
+        self.bedfile.processing_features = [self.coolerfile]
+        db.session.add_all([self.bedfile, self.coolerfile, self.intervals1, self.unfinished_task1])
+        # call pipeline
+        pipeline_pileup(2, 1, 10000)
+        # check whether processing has finished
+        self.assertEqual(self.bedfile.processing_features, [self.coolerfile])
+
+    @patch("app.pipeline_steps.pd.read_csv")
+    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.perform_pileup")
+    def test_dataset_set_finished_if_last(self, mock_pileup, mock_set_progress, mock_read_csv):
+        """tests whether dataset is set finished correctly if it is the last task for
+        this dataset/intervals combination."""
+        # set up database
+        self.bedfile.processing_features = [self.coolerfile]
+        db.session.add_all([self.bedfile, self.coolerfile, self.intervals1, self.finished_task1])
+        # call pipeline
+        pipeline_pileup(2, 1, 10000)
+        # check whether processing has finished
+        self.assertEqual(self.bedfile.processing_features, [])
+
+    @patch("app.pipeline_steps.log.error")
+    @patch("app.pipeline_steps.pd.read_csv")
+    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.perform_pileup")
+    def test_dataset_set_failed_if_failed(self, mock_pileup, mock_set_progress, mock_read_csv, mock_log):
+        """tests whether dataset is set as faild if problem arises."""
+        # set up exception raising
+        mock_pileup.side_effect = ValueError("Test")
+        # set up database
+        self.bedfile.processing_features = [self.coolerfile]
+        db.session.add_all([self.bedfile, self.coolerfile, self.intervals1, self.unfinished_task1])
+        # call pipeline
+        pipeline_pileup(2, 1, 10000)
+        # check whether processing has finished
+        self.assertEqual(self.bedfile.failed_features, [self.coolerfile])
+        self.assertEqual(self.bedfile.processing_features, [])
+        assert mock_log.called
 
 
 class TestPerformPileup(LoginTestCase, TempDirTestCase):
