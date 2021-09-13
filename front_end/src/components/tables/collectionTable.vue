@@ -215,7 +215,7 @@
                                 ></md-progress-spinner>
                                 <md-icon
                                     v-else-if="
-                                        failedCollecttions.includes(collection.id)
+                                        failedCollections.includes(collection.id)
                                     "
                                     >error</md-icon
                                 >

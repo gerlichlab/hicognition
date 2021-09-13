@@ -127,7 +127,7 @@ import { apiMixin, formattingMixin } from "../../mixins";
 import EventBus from "../../eventBus";
 
 export default {
-    name: "PreprocessDatasetForm",
+    name: "PreprocessCollectionForm",
     mixins: [validationMixin, apiMixin, formattingMixin],
     data: () => ({
         availableCollections: [],
@@ -154,6 +154,11 @@ export default {
         },
         regionIDs: function() {
             return this.availableBedFiles.map(el => el.id);
+        },
+        selectedAssembly: function(){
+            if (this.form.bedfileIDs.length !== 0){
+                return this.availableBedFiles.filter(el => el.id === this.form.bedfileIDs[0])[0].assembly
+            }
         }
     },
     validations: {
@@ -198,8 +203,8 @@ export default {
                 false,
                 this.selectedAssembly,
                 this.finishedCollections,
-                this.processingfinishedCollections,
-                this.failedfinishedCollections
+                this.processingCollections,
+                this.failedCollections
             );
         },
         registerSelectionEventHandlers: function() {
@@ -237,10 +242,10 @@ export default {
                     );
                 });
                 // set processing datasets and failed datasets
-                this.processingDatasets = this.getBedDataset(
+                this.processingCollections = this.getBedDataset(
                     ids
                 ).processing_collections;
-                this.failedDatasets = this.getBedDataset(
+                this.failedCollections = this.getBedDataset(
                     ids
                 ).failed_collections;
                 this.expectSelection = false;
