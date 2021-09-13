@@ -193,8 +193,8 @@
                             <md-button
                                     class="md-secondary"
                                     @click.prevent.stop="
-                                        showDatasetTable(
-                                            collection.dataset_ids
+                                        showContainingDatasetsTable(
+                                            collection
                                         )
                                     "
                                     >{{ collection.dataset_ids.length }}</md-button
@@ -253,6 +253,7 @@
 
 <script>
 import { apiMixin } from "../../mixins";
+import EventBus from "../../eventBus";
 
 export default {
     name: "collectionTable",
@@ -369,6 +370,27 @@ export default {
         }
     },
     methods: {
+        showContainingDatasetsTable(collection) {
+            let datasets = this.$store.state.datasets.filter(el => collection.dataset_ids.includes(el.id))
+            let datasetType;
+            if (collection.kind === "regions"){
+                datasetType = "bedfile"
+            }else{
+                datasetType = "bigwig"
+            }
+            EventBus.$emit(
+                    "show-select-dialog",
+                    datasets,
+                    datasetType,
+                    [],
+                    false,
+                    this.selectedAssembly,
+                    undefined,
+                    undefined,
+                    undefined,
+                    false
+            );
+        },
         sortByValue: function(fieldName) {
             if (this.sortBy == fieldName && this.sortOrder == "ascending") {
                 this.sortOrder = "descending";

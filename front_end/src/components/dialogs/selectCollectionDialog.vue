@@ -17,7 +17,6 @@
                 ></collectionTable>
             </md-content>
             <md-dialog-actions>
-
                 <div class="full-width">
                     <div class="float-left">
                         <md-button
@@ -28,9 +27,7 @@
                         >
                     </div>
                     <div class="float-right">
-                        <md-button
-                            class="md-secondary"
-                            @click="handleClose"
+                        <md-button class="md-secondary" @click="handleClose"
                             >Close</md-button
                         >
                     </div>
@@ -40,22 +37,19 @@
     </div>
 </template>
 
-
-
 <script>
 import collectionTable from "../tables/collectionTable";
 
 import EventBus from "../../eventBus";
 
-
 export default {
     name: "selectCollectionDialog",
     components: {
-        collectionTable,
+        collectionTable
     },
-    data: function () {
+    data: function() {
         return {
-            selection: [],
+            selection: []
         };
     },
     props: {
@@ -89,65 +83,60 @@ export default {
         }
     },
     methods: {
-        handleSelectionChange: function (selection) {
+        handleSelectionChange: function(selection) {
             this.selection = selection;
         },
-        handleSelect: function () {
-            if (this.singleSelection){
-                EventBus.$emit('collection-selected', this.selection[0])
+        handleSelect: function() {
+            if (this.singleSelection) {
+                EventBus.$emit("collection-selected", this.selection[0]);
             } else {
-                EventBus.$emit('collection-selected', this.selection)
+                EventBus.$emit("collection-selected", this.selection);
             }
-            this.$emit('close-dialog')
+            this.$emit("close-dialog");
         },
-        handleClose: function(){
-            this.$emit('close-dialog');
-            EventBus.$emit('selection-aborted')
-            this.selection = []
+        handleClose: function() {
+            this.$emit("close-dialog");
+            EventBus.$emit("selection-aborted");
+            this.selection = [];
         }
     },
     computed: {
-        title: function(){
-            if (this.reactToSelection){
-                return "Collections"
+        title: function() {
+            if (this.reactToSelection) {
+                return "Collections";
             }
-            return "Available Collections"
+            return "Available Collections";
         },
-        showEmpty: function(){
-            if (!this.collections){
-                return undefined
+        showEmpty: function() {
+            if (!this.collections) {
+                return undefined;
             }
-            return this.collections.length == 0
+            return this.collections.length == 0;
         },
-        showControls: function () {
+        showControls: function() {
             return this.selection.length !== 0;
         },
-        showDialog: function () {
+        showDialog: function() {
             return this.dialog;
-        },
-    },
+        }
+    }
 };
 </script>
 
 <style lang="scss" scoped>
-
-    .md-dialog /deep/.md-dialog-container {
-        max-width: 90vw;
-        min-width: 90vw;
-        min-height: 90vh;
-    }
-
+.md-dialog /deep/.md-dialog-container {
+    max-width: 70vw;
+    min-width: 70vw;
+    min-height: 70vh;
+}
 
 @media only screen and (min-width: 2400px) {
-
     .md-dialog /deep/.md-dialog-container {
-        max-width: 90vw;
+        max-width: 60vw;
         min-width: 50vw;
         min-height: 50vh;
     }
-
 }
-
 
 .full-width {
     width: 100%;
@@ -160,9 +149,8 @@ export default {
 
 .float-right {
     float: right;
-    margin: 5px
+    margin: 5px;
 }
-
 
 .content {
     margin: 10px;

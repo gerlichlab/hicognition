@@ -18,7 +18,6 @@
                 ></datasetTable>
             </md-content>
             <md-dialog-actions>
-
                 <div class="full-width">
                     <div class="float-left">
                         <md-button
@@ -29,9 +28,7 @@
                         >
                     </div>
                     <div class="float-right">
-                        <md-button
-                            class="md-secondary"
-                            @click="handleClose"
+                        <md-button class="md-secondary" @click="handleClose"
                             >Close</md-button
                         >
                     </div>
@@ -41,22 +38,19 @@
     </div>
 </template>
 
-
-
 <script>
 import datasetTable from "../tables/datasetTable";
 
 import EventBus from "../../eventBus";
 
-
 export default {
     name: "selectDatasetDialog",
     components: {
-        datasetTable,
+        datasetTable
     },
-    data: function () {
+    data: function() {
         return {
-            selection: [],
+            selection: []
         };
     },
     props: {
@@ -90,65 +84,60 @@ export default {
         }
     },
     methods: {
-        handleSelectionChange: function (selection) {
+        handleSelectionChange: function(selection) {
             this.selection = selection;
         },
-        handleSelect: function () {
-            if (this.singleSelection){
-                EventBus.$emit('dataset-selected', this.selection[0])
+        handleSelect: function() {
+            if (this.singleSelection) {
+                EventBus.$emit("dataset-selected", this.selection[0]);
             } else {
-                EventBus.$emit('dataset-selected', this.selection)
+                EventBus.$emit("dataset-selected", this.selection);
             }
-            this.$emit('close-dialog')
+            this.$emit("close-dialog");
         },
-        handleClose: function(){
-            this.$emit('close-dialog');
-            EventBus.$emit('selection-aborted')
-            this.selection = []
+        handleClose: function() {
+            this.$emit("close-dialog");
+            EventBus.$emit("selection-aborted");
+            this.selection = [];
         }
     },
     computed: {
-        title: function(){
-            if (this.reactToSelection){
-                return "Datasets"
+        title: function() {
+            if (this.reactToSelection) {
+                return "Datasets";
             }
-            return "Available Features"
+            return "Available Features";
         },
-        showEmpty: function(){
-            if (!this.datasets){
-                return undefined
+        showEmpty: function() {
+            if (!this.datasets) {
+                return undefined;
             }
-            return this.datasets.length == 0
+            return this.datasets.length == 0;
         },
-        showControls: function () {
+        showControls: function() {
             return this.selection.length !== 0;
         },
-        showDialog: function () {
+        showDialog: function() {
             return this.dialog;
-        },
-    },
+        }
+    }
 };
 </script>
 
 <style lang="scss" scoped>
-
-    .md-dialog /deep/.md-dialog-container {
-        max-width: 90vw;
-        min-width: 90vw;
-        min-height: 90vh;
-    }
-
+.md-dialog /deep/.md-dialog-container {
+    max-width: 70vw;
+    min-width: 70vw;
+    min-height: 70vh;
+}
 
 @media only screen and (min-width: 2400px) {
-
     .md-dialog /deep/.md-dialog-container {
-        max-width: 90vw;
+        max-width: 60vw;
         min-width: 50vw;
         min-height: 50vh;
     }
-
 }
-
 
 .full-width {
     width: 100%;
@@ -161,9 +150,8 @@ export default {
 
 .float-right {
     float: right;
-    margin: 5px
+    margin: 5px;
 }
-
 
 .content {
     margin: 10px;
