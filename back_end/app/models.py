@@ -597,8 +597,10 @@ class Collection(db.Model):
             "id": self.id,
             "name": self.name,
             "kind": self.kind,
+            "assembly": self.datasets[0].assembly,
             "number_datasets": len(self.datasets),
             "dataset_names": [dataset.dataset_name for dataset in self.datasets],
+            "dataset_ids": [dataset.id for dataset in self.datasets],
             "processing_state": self.processing_state,
         }
         return json_session

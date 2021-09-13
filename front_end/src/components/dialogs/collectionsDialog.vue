@@ -6,6 +6,8 @@
                 <collection-table
                     @selection-available="handleSelectionAvailable"
                     @selection-unavailable="handleSelectionUnAvailable"
+                    @load-collections="fetchCollections"
+                    :collections="collections"
                 ></collection-table>
             </md-content>
             <md-dialog-actions>
@@ -44,7 +46,8 @@ export default {
     data: function() {
         return {
             selected_collection_id: null,
-            showDelete: false
+            showDelete: false,
+            collections: []
         };
     },
     components: {
@@ -59,6 +62,14 @@ export default {
         },
     },
     methods: {
+        fetchCollections() {
+            this.fetchData("collections/").then(response => {
+                if (response) {
+                    // update displayed datasets
+                    this.collections = response.data;
+                }
+            });
+        },
         handleSessionDeletion: function() {
             this.deleteData(`collections/${this.selected_collection_id}/`).then(
                 response => {
@@ -73,29 +84,33 @@ export default {
         handleSelectionUnAvailable: function() {
             (this.showDelete = false);
         }
+    },
+    mounted: function(){
+        this.fetchCollections()
     }
 };
 </script>
 
 <style lang="scss" scoped>
+
+
 .md-dialog /deep/.md-dialog-container {
-    max-width: 80vw;
-}
-
-.full-width-flexbox-center{
-    display: flex;
-    justify-content: center;
-    width: 100%;
-}
+        max-width: 90vw;
+        min-width: 90vw;
+        min-height: 90vh;
+    }
 
 
-.no-margin {
-    margin: 0px;
+@media only screen and (min-width: 2400px) {
+
+    .md-dialog /deep/.md-dialog-container {
+        max-width: 90vw;
+        min-width: 50vw;
+        min-height: 50vh;
+    }
+
 }
 
-.large-margin {
-    margin: 10px;
-}
 
 .full-width {
     width: 100%;
@@ -103,14 +118,18 @@ export default {
 
 .float-left {
     float: left;
+    margin: 5px;
 }
 
 .float-right {
     float: right;
+    margin: 5px;
 }
+
 
 .content {
     margin: 10px;
+    flex: 1 1;
 }
 
 </style>
