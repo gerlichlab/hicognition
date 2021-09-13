@@ -13,6 +13,7 @@
                     :finishedCollections="finishedCollections"
                     :processingCollections="processingCollections"
                     :failedCollections="failedCollections"
+                    :blockContainedDialog="true"
                     @selection-changed="handleSelectionChange"
                 ></collectionTable>
             </md-content>

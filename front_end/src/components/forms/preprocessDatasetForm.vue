@@ -19,7 +19,7 @@
                                     class="md-raised md-primary"
                                     @click="startRegionSelection"
                                     :disabled="!datasetsAvailable"
-                                    >Select Regions</md-button
+                                    >Select Region</md-button
                                 >
                             </div>
                             <div class="md-layout-item md-size-50" >

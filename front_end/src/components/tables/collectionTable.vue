@@ -197,6 +197,7 @@
                                             collection
                                         )
                                     "
+                                    :disabled="blockContainedDialog"
                                     >{{ collection.dataset_ids.length }}</md-button
                                 >
                             </span>
@@ -288,6 +289,10 @@ export default {
         failedCollections: {
             type: Array,
             default: undefined
+        },
+        blockContainedDialog: {
+            type: Boolean,
+            default: false
         }
     },
     data: function(){
