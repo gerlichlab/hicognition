@@ -6,7 +6,10 @@
 
         <md-list :md-expand-single="true">
             <md-list-item md-expand>
-                <span class="md-list-item-text">Regions</span>
+                <md-icon>multiple_stop</md-icon>
+                <span class="md-list-item-text">
+                    Regions
+                    </span>
                 <md-list slot="md-expand">
                     <md-list-item class="md-inset">
                         <md-button
@@ -65,6 +68,7 @@
             </md-list-item>
 
             <md-list-item md-expand>
+                <md-icon>insights</md-icon>
                 <span class="md-list-item-text">Features</span>
                 <md-list slot="md-expand">
                     <md-list-item class="md-inset">
@@ -91,6 +95,7 @@
             </md-list-item>
 
             <md-list-item md-expand>
+                <md-icon>layers</md-icon>
                 <span class="md-list-item-text">Collections</span>
                 <md-list slot="md-expand">
                     <md-list-item class="md-inset">
@@ -118,6 +123,7 @@
                 </md-list>
             </md-list-item>
             <md-list-item md-expand>
+                <md-icon>circle</md-icon>
                 <span class="md-list-item-text">Genomes</span>
                 <md-list slot="md-expand">
                     <md-list-item class="md-inset">
