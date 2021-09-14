@@ -40,7 +40,7 @@
                                 <md-button
                                     class="md-raised md-primary"
                                     @click="startFeatureSelection"
-                                    :disabled="!datasetsAvailable || this.form.bedfileIDs.length === 0"
+                                    :disabled="!datasetsAvailable || this.form.bedfileIDs.length === 0 || !this.preprocessingMapLoaded"
                                     >Select Features</md-button
                                 >
                             </div>
@@ -109,7 +109,8 @@ export default {
             bedfileIDs: [],
         },
         datasetSaved: false,
-        sending: false
+        sending: false,
+        preprocessingMapLoaded: false
     }),
     computed: {
         numberRegions: function(){
@@ -178,6 +179,8 @@ export default {
                 if (this.isRegionSelection(ids)){
                     // blank features
                     this.form.datasetIDs = []
+                    // blanck preprocessing map
+                    this.preprocessingMapLoaded = false
                     this.form.bedfileIDs = [ids]
                     // get preprocess dataset map
                     this.fetchPreprocessData(ids).then((response) => {
@@ -185,6 +188,7 @@ export default {
                         let coolerIDs = Object.keys(response.data['pileup']).map(el => Number(el))
                         let collectiveIDs = bigwigIDs.concat(coolerIDs)
                         this.finishedDatasets = this.finishedDatasets.concat(collectiveIDs)
+                        this.preprocessingMapLoaded = true
                     })
                     // set processing datasets and failed datasets
                     this.processingDatasets = this.getBedDataset(ids).processing_datasets

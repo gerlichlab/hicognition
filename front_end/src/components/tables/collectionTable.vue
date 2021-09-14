@@ -581,6 +581,9 @@ export default {
     },
     created: function() {
         this.assemblies = this.fetchAssemblies();
+        if (this.restrictedDatasetType) {
+            this.datasetType = this.restrictedDatasetType;
+        }
     }
 };
 </script>

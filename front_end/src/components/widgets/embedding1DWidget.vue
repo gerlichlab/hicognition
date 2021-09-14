@@ -249,7 +249,7 @@ export default {
             // get collections from store
             let collections = this.$store.state.collections.filter( (el) => Object.keys(this.datasets).includes(String(el.id)) )
             let preselection = this.selectedDataset ? [this.selectedDataset] : []
-            EventBus.$emit("show-select-collection-dialog", collections, "regions" , preselection);
+            EventBus.$emit("show-select-collection-dialog", collections, "1d-features" , preselection);
         },
         registerSelectionEventHandlers: function(){
             EventBus.$on("collection-selected", this.handleDataSelection)

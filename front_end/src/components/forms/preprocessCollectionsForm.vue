@@ -58,7 +58,7 @@
                                     @click="startCollectionSelection"
                                     :disabled="
                                         !collectionsAvailable ||
-                                            this.form.bedfileIDs.length === 0
+                                            this.form.bedfileIDs.length === 0 || !this.preprocessingMapLoaded
                                     "
                                     >Select Collections</md-button
                                 >
@@ -140,7 +140,8 @@ export default {
             bedfileIDs: []
         },
         datasetSaved: false,
-        sending: false
+        sending: false,
+        preprocessingMapLoaded: false
     }),
     computed: {
         numberCollections: function(){
@@ -227,6 +228,8 @@ export default {
             if (this.expectSelection) {
                 // blank features
                 this.form.collectionIDs = [];
+                // blank preprocessing map loaded
+                this.preprocessingMapLoaded = false
                 this.form.bedfileIDs = [ids];
                 // get preprocess dataset map
                 this.fetchPreprocessData(ids).then(response => {
@@ -240,6 +243,7 @@ export default {
                     this.finishedCollections = this.finishedCollections.concat(
                         collectiveIDs
                     );
+                    this.preprocessingMapLoaded = true
                 });
                 // set processing datasets and failed datasets
                 this.processingCollections = this.getBedDataset(

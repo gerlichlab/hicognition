@@ -261,6 +261,7 @@ def filter_failed_tasks(tasks):
     output = []
     for task in tasks:
         if task.get_rq_job() is None:
+            output.append(task)
             continue
         if task.get_rq_job().get_status() == "failed":
             output.append(task)

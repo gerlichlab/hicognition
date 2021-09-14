@@ -303,7 +303,7 @@ export default {
         this.registerCollectionSelectionHandlers()
     },
     beforeDestroy: function(){
-        this.removeDatasetSelectionHandlers()
+        this.removeDatasetSelectionEventHandlers()
         this.removeCollectionSelectionHandlers()
     }
 };
