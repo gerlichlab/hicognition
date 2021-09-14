@@ -3,18 +3,6 @@
         <div>
             <!--assembly and region type--->
             <div class="md-layout md-gutter md-alignment-center-center">
-                <div class="md-layout-item md-size-5 small-vertical-margin">
-                    <md-button
-                        class="
-                            md-dense md-raised
-                            button-margin
-                            md-primary md-icon-button
-                        "
-                        @click="$emit('load-datasets')"
-                    >
-                        <md-icon>cached</md-icon>
-                    </md-button>
-                </div>
                 <div class="md-layout-item md-size-25 small-vertical-margin">
                     <md-field class="small-vertical-margin">
                         <label for="assembly">Genome assembly</label>
@@ -41,7 +29,7 @@
                 </div>
                 <div
                     class="
-                        md-layout-item md-layout md-gutter md-size-45
+                        md-layout-item md-layout md-gutter md-size-50
                         small-vertical-margin
                         md-alignment-center-center
                     "
