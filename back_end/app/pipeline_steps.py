@@ -1,6 +1,5 @@
 """Pipeline steps for redis queue"""
 import os
-import io
 import uuid
 import logging
 
@@ -28,6 +27,10 @@ from .models import (
     IndividualIntervalData,
     AssociationIntervalData,
     EmbeddingIntervalData,
+    dataset_preprocessing_table,
+    dataset_failed_table,
+    collections_preprocessing_table,
+    collections_failed_table,
 )
 
 # get logger
@@ -478,37 +481,54 @@ def _do_stackup(regions, window_size, binsize, bigwig_dataset):
 
 def _set_dataset_failed(dataset_id, intervals_id):
     """Adds feature dataset associated with dataset_id to failed datasets of region ds associated with intervals_id"""
-    log.info("      Preprocessing failed")
+    log.error("      Preprocessing failed")
     feature = Dataset.query.get(dataset_id)
     region = Intervals.query.get(intervals_id).source_dataset
-    log.info(f"      Region: {region} with processing features {region.processing_features} and dataset {feature}")
-    # remove feature dataset from processing list TODO: make this nicer -> if failing happens concurrently, the first setting will success, but others will be stale
-    try:
-        region.processing_features = [
-            element for element in region.processing_features if element != feature
-        ]
-    except BaseException:
-        pass
-    region.failed_features.append(feature)
+    log.error(
+        f"      Region: {region} with processing features {region.processing_features} and dataset {feature}"
+    )
+    # remove feature from preprocessing list -> this needs to be done on the association table to avoid concurrency problems
+    stmt = dataset_preprocessing_table.delete().where(
+        db.and_(
+            (dataset_preprocessing_table.c.dataset_region == region.id),
+            (dataset_preprocessing_table.c.dataset_feature == feature.id),
+        )
+    )
+    db.session.execute(stmt)
     db.session.commit()
+    # add region to failed_features -> if this combination is already in, this operation will fail, but the first one will succeed
+    try:
+        region.failed_features.append(feature)
+        db.session.commit()
+    except BaseException as e:
+        log.error(e, exc_info=True)
+    log.error("      Setting for fail finished")
 
 
 def _set_collection_failed(collection_id, intervals_id):
     """Adds collection with collection_id to failed collections of region ds associated with intervals"""
-    log.info("      Set for fail")
+    log.error("      Set for fail")
     collection = Collection.query.get(collection_id)
     region = Intervals.query.get(intervals_id).source_dataset
-    log.info(f"      Region: {region} with processing collections {region.processing_collections} and collection {collection}")
-    # remove feature dataset from processing list TODO: make this nicer -> if failing happens concurrently, the first setting will success, but others will be stale
-    try:
-        region.processing_collections = [
-            element for element in region.processing_collections if element != collection
-        ]
-    except BaseException:
-        pass
-    region.failed_collections.append(collection)
+    log.error(
+        f"      Region: {region} with processing collections {region.processing_collections} and collection {collection}"
+    )
+    # remove feature from preprocessing list -> this needs to be done on the association table to avoid concurrency problems
+    stmt = collections_preprocessing_table.delete().where(
+        db.and_(
+            (collections_preprocessing_table.c.dataset_region == region.id),
+            (collections_preprocessing_table.c.collection_feature == collection.id),
+        )
+    )
+    db.session.execute(stmt)
     db.session.commit()
-    log.info("      Setting for fail finished")
+    # add region to failed_features -> if this combination is already in, this operation will fail, but the first one will succeed
+    try:
+        region.failed_collections.append(collection)
+        db.session.commit()
+    except BaseException as e:
+        log.error(e, exc_info=True)
+    log.error("      Setting for fail finished")
 
 
 def _set_collection_finished(collection_id, intervals_id):
@@ -526,10 +546,13 @@ def _set_collection_finished(collection_id, intervals_id):
     )
     if len(associated_tasks) == 0:
         # current task is last task, remove feature
-        collection = Collection.query.get(collection_id)
-        region.processing_collections = [
-            element for element in region.processing_collections if element != collection
-        ]
+        stmt = collections_preprocessing_table.delete().where(
+            db.and_(
+                (collections_preprocessing_table.c.dataset_region == region.id),
+                (collections_preprocessing_table.c.collection_feature == collection_id),
+            )
+        )
+        db.session.execute(stmt)
         db.session.commit()
 
 
@@ -548,12 +571,13 @@ def _set_dataset_finished(dataset_id, intervals_id):
     )
     if len(associated_tasks) == 0:
         # current task is last task, remove feature
-        feature = Dataset.query.get(dataset_id)
-        region.processing_features = [
-            element for element in region.processing_features if element != feature
-        ]
-        if feature not in region.completed_features:
-            region.completed_features.append(feature)
+        stmt = dataset_preprocessing_table.delete().where(
+            db.and_(
+                (dataset_preprocessing_table.c.dataset_region == region.id),
+                (dataset_preprocessing_table.c.dataset_feature == dataset_id),
+            )
+        )
+        db.session.execute(stmt)
         db.session.commit()
 
 
