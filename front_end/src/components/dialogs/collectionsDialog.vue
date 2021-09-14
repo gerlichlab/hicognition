@@ -119,9 +119,13 @@ export default {
             );
         }
     },
-    mounted: function(){
-        this.fetchCollections()
-    }
+    watch: {
+        showDialog: function (val) {
+            if (val) {
+                this.fetchCollections()
+            }
+        },
+    },
 };
 </script>
 
