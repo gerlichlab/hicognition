@@ -181,8 +181,7 @@ export default {
             // fetches available datasets (cooler and bedfiles) from server
             this.availableBedFiles = this.$store.state.datasets.filter(
                     element =>
-                        element.filetype == "bedfile" &&
-                        element.processing_state == "finished"
+                        element.filetype == "bedfile"
             );
         },
         getValidationClass(fieldName) {

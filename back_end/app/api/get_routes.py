@@ -94,7 +94,6 @@ def get_all_datasets():
         | (Dataset.public)
         | (Dataset.id.in_(g.session_datasets))
     ).all()
-    update_processing_state(all_available_datasets, db)
     return jsonify([dfile.to_json() for dfile in all_available_datasets])
 
 
