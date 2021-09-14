@@ -192,9 +192,16 @@ export default {
             if (this.plotData.length < 5) {
                 return val;
             }
-            if (index % 2 == 0) {
+            if (this.plotData.lengt < 10) {
+                if (index % 2 == 0) {
+                    return `Rank ${this.plotData.length - index}`;
+                }
+                return
+            }
+            if (index % Math.floor(this.plotData.length/5) == 0) {
                 return `Rank ${this.plotData.length - index}`;
             }
+            return
         },
         createCircles: function () {
             /*

@@ -121,13 +121,6 @@ export default {
             return this.dialog;
         }
     },
-    watch: {
-        showDialog: function (val) {
-            if (val) {
-                this.fetchCollections()
-            }
-        },
-    },
 };
 </script>
 
