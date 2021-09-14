@@ -608,7 +608,7 @@ class Collection(db.Model):
             "dataset_names": [dataset.dataset_name for dataset in self.datasets],
             "dataset_ids": [dataset.id for dataset in self.datasets],
             "processing_state": self.processing_state,
-            "processing_for_regions": self.processing_for_datasets
+            "processing_for_regions": [region.id for region in self.processing_for_datasets]
         }
         return json_session
 
