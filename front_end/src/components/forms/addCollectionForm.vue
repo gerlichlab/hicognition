@@ -159,13 +159,9 @@ export default {
                 };
             }
         },
-        fetchDatasets: function() {
-            // fetches available datasets (cooler and bedfiles) from server
-            this.fetchData("datasets/").then(response => {
-                // success, store datasets
-                this.$store.commit("setDatasets", response.data);
-                // update datasets
-                this.availableDatasets = response.data.filter(element => {
+        getDatasets: function() {
+            // fetches available datasets (cooler and bedfiles) from store
+            this.availableDatasets = this.$store.state.datasets.filter(element => {
                     if (this.fileType == "regions") {
                         return element.filetype == "bedfile";
                     } else if (this.fileType == "1d-features") {
@@ -174,7 +170,6 @@ export default {
                         return element.filetype == "cooler";
                     }
                 });
-            });
         },
         clearForm() {
             this.$v.$reset();
@@ -212,7 +207,7 @@ export default {
         }
     },
     mounted: function() {
-        this.fetchDatasets();
+        this.getDatasets();
         this.registerSelectionEventHandlers()
     },
     beforeDestroy: function(){

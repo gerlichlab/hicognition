@@ -483,6 +483,14 @@ export default {
                 }
             }
         },
+        fetchDatasets(){
+            this.fetchData("datasets/").then(response => {
+                // success, store datasets
+                if (response){
+                    this.$store.commit("setDatasets", response.data);
+                }
+            });
+        },
         saveDataset() {
             this.sending = true; // show progress bar
             // construct form data
@@ -511,6 +519,7 @@ export default {
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
+                    this.fetchDatasets()
                 }
             });
         },

@@ -87,21 +87,6 @@
                 <!-- Buttons for submission and closing -->
                 <md-card-actions>
                     <md-button
-                        class="
-                            md-dense
-                            md-raised
-                            md-primary
-                            md-icon-button
-                            md-alignment-horizontal-left
-                        "
-                        @click="
-                            fetchDatasets();
-                            fetchCollections();
-                        "
-                    >
-                        <md-icon>cached</md-icon>
-                    </md-button>
-                    <md-button
                         type="submit"
                         class="md-primary"
                         :disabled="sending"
@@ -261,18 +246,13 @@ export default {
         getBedDataset: function(id) {
             return this.availableBedFiles.filter(el => el.id === id)[0];
         },
-        fetchDatasets: function() {
+        getDatasets: function() {
             // fetches available datasets (cooler and bedfiles) from server
-            this.fetchData("datasets/").then(response => {
-                // success, store datasets
-                this.$store.commit("setDatasets", response.data);
-                // update bedfiles
-                this.availableBedFiles = response.data.filter(
+            this.availableBedFiles = this.$store.state.datasets.filter(
                     element =>
                         element.filetype == "bedfile" &&
                         element.processing_state == "finished"
-                );
-            });
+            );
         },
         fetchCollections: function() {
             this.fetchData("collections/").then(response => {
@@ -336,7 +316,7 @@ export default {
         }
     },
     created: function() {
-        this.fetchDatasets();
+        this.getDatasets();
         this.fetchCollections();
         this.registerSelectionEventHandlers();
     },

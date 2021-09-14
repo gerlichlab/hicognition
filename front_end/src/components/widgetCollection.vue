@@ -347,15 +347,10 @@ export default {
         getNextID: function () {
             return Math.floor(Math.random() * 1000000000);
         },
-        fetchDatasets: function () {
-            this.fetchData("datasets/").then((response) => {
-                // success, store datasets
-                this.$store.commit("setDatasets", response.data);
-                // update datasets
-                this.regions = response.data.filter(
+        getDatasets: function () {
+            this.regions = this.$store.state.datasets.filter(
                     (element) => element.filetype == "bedfile"
                 );
-            });
         },
         fetchCollections: function() {
             this.fetchData("collections/").then(response => {
@@ -525,7 +520,7 @@ export default {
             }
         }
         // get datasets
-        this.fetchDatasets();
+        this.getDatasets();
         // get collections
         this.fetchCollections()
         // get resolutions

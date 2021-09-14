@@ -177,18 +177,13 @@ export default {
         hanldeSelectionAbortion: function(){
             this.expectSelection = false
         },
-        fetchDatasets: function() {
+        getDatasets: function() {
             // fetches available datasets (cooler and bedfiles) from server
-            this.fetchData("datasets/").then(response => {
-                // success, store datasets
-                this.$store.commit("setDatasets", response.data);
-                // update datasets
-                this.availableBedFiles = response.data.filter(
+            this.availableBedFiles = this.$store.state.datasets.filter(
                     element =>
                         element.filetype == "bedfile" &&
                         element.processing_state == "finished"
-                );
-            });
+            );
         },
         getValidationClass(fieldName) {
             // matrial validation class for form field;
@@ -255,7 +250,7 @@ export default {
         }
     },
     created: function() {
-        this.fetchDatasets();
+        this.getDatasets();
         this.registerSelectionEventHandlers()
     },
     beforeDestroy: function(){

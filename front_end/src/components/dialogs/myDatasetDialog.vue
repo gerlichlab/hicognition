@@ -118,6 +118,9 @@ export default {
             this.selection = [];
             this.fetchDatasets();
         },
+        getDatasets: function () {
+            this.datasets = this.$store.state.datasets
+        },
         fetchDatasets() {
             this.datasets = [];
             this.fetchData("datasets/").then((response) => {
@@ -154,13 +157,10 @@ export default {
             }
         },
     },
-    mounted: function () {
-        this.fetchDatasets();
-    },
     watch: {
         showDialog: function (val) {
             if (val) {
-                this.fetchDatasets();
+                this.getDatasets();
             }
         },
     },

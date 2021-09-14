@@ -9,19 +9,7 @@
                 >
                     <md-icon>menu</md-icon>
                 </md-button>
-
-                <md-tabs class="md-primary md-elevation">
-                    <md-tab
-                        id="tab-compare"
-                        md-label="Compare"
-                        to="/main/compare"
-                    ></md-tab>
-                    <md-tab
-                        id="tab-annotate"
-                        md-label="Annotate"
-                        to="/main/annotate"
-                    ></md-tab>
-                </md-tabs>
+                 <span class="md-title">HiCognition {{ appversion }}</span>
             </div>
 
             <div class="md-toolbar-section-end">
@@ -44,6 +32,11 @@
 <script>
 export default {
     name: "toolbar",
+    data: function() {
+        return {
+            appversion: process.env.VERSION
+        };
+    },
     methods: {
         logout: function() {
             this.$store.commit("clearToken")

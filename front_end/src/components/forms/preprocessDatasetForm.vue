@@ -63,12 +63,6 @@
                 <!-- Buttons for submission and closing -->
                 <md-card-actions>
                     <md-button
-                        class="md-dense md-raised md-primary md-icon-button md-alignment-horizontal-left"
-                        @click="fetchDatasets"
-                    >
-                        <md-icon>cached</md-icon>
-                    </md-button>
-                    <md-button
                         type="submit"
                         class="md-primary"
                         :disabled="sending"
@@ -208,34 +202,29 @@ export default {
         getBedDataset: function(id){
             return this.availableBedFiles.filter(el => el.id === id)[0]
         },
-        fetchDatasets: function() {
+        getDatasets: function() {
             // fetches available datasets (cooler and bedfiles) from server
-            this.fetchData("datasets/").then(response => {
-                // success, store datasets
-                this.$store.commit("setDatasets", response.data);
-                // update datasets
-                this.availableDatasets = response.data.filter(
+            this.availableDatasets = this.$store.state.datasets.filter(
                     element =>
                         (element.filetype == "cooler" ||
                             element.filetype == "bigwig") &&
                         element.processing_state != "uploading"
                 );
-                this.availableCoolers = response.data.filter(
+                this.availableCoolers = this.$store.state.datasets.filter(
                     element =>
                         element.filetype == "cooler" &&
                         element.processing_state != "uploading"
                 );
-                this.availableBigwigs = response.data.filter(
+                this.availableBigwigs = this.$store.state.datasets.filter(
                     element =>
                         element.filetype == "bigwig" &&
                         element.processing_state != "uploading"
                 );
-                this.availableBedFiles = response.data.filter(
+                this.availableBedFiles = this.$store.state.datasets.filter(
                     element =>
                         element.filetype == "bedfile" &&
                         element.processing_state == "finished"
-                );
-            });
+            );
         },
         fetchPreprocessData: function(regionID){
             // get availability object
@@ -307,7 +296,7 @@ export default {
         }
     },
     created: function() {
-        this.fetchDatasets();
+        this.getDatasets();
         this.registerSelectionEventHandlers()
     },
     beforeDestroy: function(){

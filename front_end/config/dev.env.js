@@ -7,5 +7,5 @@ module.exports = merge(prodEnv, {
   API_URL: '"http://localhost:5000/api/"',
   HIGLASS_URL: '"http://localhost:8888"',
   STATIC_URL: '"http://localhost:5000/static/"',
-  VERSION: "0.2"
+  VERSION: "0.6"
 })
