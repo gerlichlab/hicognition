@@ -222,8 +222,7 @@ export default {
                 );
                 this.availableBedFiles = this.$store.state.datasets.filter(
                     element =>
-                        element.filetype == "bedfile" &&
-                        element.processing_state == "finished"
+                        element.filetype == "bedfile"
             );
         },
         fetchPreprocessData: function(regionID){
