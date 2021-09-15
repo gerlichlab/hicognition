@@ -108,25 +108,8 @@ class TestBedPreprocessPipelineStep(LoginTestCase, TempDirTestCase):
         db.session.commit()
 
     @patch("app.tasks.pd.read_csv")
-    @patch("app.tasks.io_helpers.convert_bed_to_bedpe")
-    def test_conversion_called_correctly(self, mock_convert_bed, mock_read_csv):
-        """Test whether convert_bed_to_bedpe is called correctly."""
-        mock_read_csv.return_value = pd.DataFrame(
-            {0: ["chr1", "chr1", "chr1"], 1: [0, 1, 2], 2: [1, 2, 3]}
-        )
-        # call function
-        window = 400000
-        bed_preprocess_pipeline_step(1, window)
-        # check whehter convert bed to bedpe is called correctly
-        target_file = "/test/path/test3.bed" + f".{window}" + ".bedpe"
-        mock_convert_bed.assert_called_with(
-            *["/test/path/test3.bed", target_file, window, self.hg19.chrom_sizes]
-        )
-
-    @patch("app.tasks.pd.read_csv")
-    @patch("app.tasks.io_helpers.convert_bed_to_bedpe")
     def tests_whether_small_regions_are_not_downsampled(
-        self, mock_convert_bed, mock_read_csv
+        self, mock_read_csv
     ):
         """Tests that if bed preprocess pipeline step is called with small
         regions, they are not downsampled."""
@@ -143,9 +126,8 @@ class TestBedPreprocessPipelineStep(LoginTestCase, TempDirTestCase):
         self.assertEqual(len(mock_frame), len(sub_sample_index))
 
     @patch("app.tasks.pd.read_csv")
-    @patch("app.tasks.io_helpers.convert_bed_to_bedpe")
     def tests_whether_large_regions_are_not_downsampled(
-        self, mock_convert_bed, mock_read_csv
+        self, mock_read_csv
     ):
         """Tests that if bed preprocess pipeline step is called with large
         regions (larger than indicated in config['STACKUP_THRESHOLD']),

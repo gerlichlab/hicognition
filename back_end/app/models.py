@@ -318,7 +318,6 @@ class Intervals(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     name = db.Column(db.String(512), index=True)
-    file_path = db.Column(db.String(512), index=True)
     file_path_sub_sample_index = db.Column(db.String(512), index=True)
     windowsize = db.Column(db.Integer, index=True)
     averageIntervalData = db.relationship(
@@ -359,7 +358,6 @@ class Intervals(db.Model):
             "id": self.id,
             "source_dataset": self.dataset_id,
             "dataset_name": self.name,
-            "file_path": self.file_path,
             "windowsize": self.windowsize,
         }
         return json_intervals

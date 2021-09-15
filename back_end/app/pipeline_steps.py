@@ -28,9 +28,7 @@ from .models import (
     AssociationIntervalData,
     EmbeddingIntervalData,
     dataset_preprocessing_table,
-    dataset_failed_table,
-    collections_preprocessing_table,
-    collections_failed_table,
+    collections_preprocessing_table
 )
 
 # get logger
@@ -44,31 +42,22 @@ def bed_preprocess_pipeline_step(dataset_id, windowsize):
     * Create downsampled indices
     * add Intervals dataset entry
     """
-    log.info(f"  Converting to bedpe: {dataset_id} with {windowsize}")
+    log.info(f"  Generating Intervals: {dataset_id} with {windowsize}")
     # get database object
     dataset = Dataset.query.get(dataset_id)
-    file_path = dataset.file_path
-    # generate bedpe file
-    bedpe_file = file_path + f".{windowsize}" + ".bedpe"
-    io_helpers.convert_bed_to_bedpe(
-        file_path,
-        bedpe_file,
-        windowsize,
-        Assembly.query.get(dataset.assembly).chrom_sizes,
-    )
-    # generate subsample index for smaller stackup
-    bedpe = pd.read_csv(bedpe_file, sep="\t", header=None)
+    bed_path = dataset.file_path
+    bed = pd.read_csv(bed_path, sep="\t", header=None)
     index_file = os.path.join(
-        current_app.config["UPLOAD_DIR"], bedpe_file.split(os.sep)[-1] + "_indices.npy"
+        current_app.config["UPLOAD_DIR"], bed_path.split(os.sep)[-1] + "_indices.npy"
     )
-    if len(bedpe) < current_app.config["STACKUP_THRESHOLD"]:
+    if len(bed) < current_app.config["STACKUP_THRESHOLD"]:
         # if there are less rows than the stackup theshold, index file are the indices of this file
-        sub_sample_index = np.arange(len(bedpe))
+        sub_sample_index = np.arange(len(bed))
     else:
         # set random seed
         np.random.seed(42)
         # subsample
-        all_indices = np.arange(len(bedpe))
+        all_indices = np.arange(len(bed))
         sub_sample_index = np.random.choice(
             all_indices, current_app.config["STACKUP_THRESHOLD"], replace=False
         )
@@ -77,8 +66,7 @@ def bed_preprocess_pipeline_step(dataset_id, windowsize):
     # Commit to database
     new_entry = Intervals(
         dataset_id=dataset_id,
-        name=bedpe_file.split(os.sep)[-1],
-        file_path=bedpe_file,
+        name=dataset.dataset_name + f"_{windowsize}",
         file_path_sub_sample_index=index_file,
         windowsize=windowsize,
     )

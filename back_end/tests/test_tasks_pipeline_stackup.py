@@ -137,13 +137,11 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
         self.intervals1 = Intervals(
             name="testRegion1",
             dataset_id=1,
-            file_path="test_path_1.bedd2db",
             windowsize=200000,
         )
         self.intervals2 = Intervals(
             name="testRegion2",
             dataset_id=2,
-            file_path="test_path_2.bedd2db",
             windowsize=50000,
         )
         db.session.add(self.dataset)

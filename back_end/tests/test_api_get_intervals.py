@@ -48,14 +48,12 @@ class TestGetIntervals(LoginTestCase):
             id=1,
             name="testRegion1",
             dataset_id=1,
-            file_path="test_path_1.bedd2db",
             windowsize=200000,
         )
         self.owned_intervals_2 = Intervals(
             id=2,
             name="testRegion2",
             dataset_id=1,
-            file_path="test_path_2.bedd2db",
             windowsize=400000,
         )
         # add intervals for unowned dataset
@@ -63,7 +61,6 @@ class TestGetIntervals(LoginTestCase):
             id=3,
             name="testRegion3",
             dataset_id=2,
-            file_path="test_path_3.bedd2db",
             windowsize=400000,
         )
         # add intervals for public dataset
@@ -71,7 +68,6 @@ class TestGetIntervals(LoginTestCase):
             id=4,
             name="testRegion3",
             dataset_id=3,
-            file_path="test_path_3.bedd2db",
             windowsize=400000,
         )
         # add session for unowned dataset
@@ -206,43 +202,10 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
             user_id=2,
         )
         # add intetvals for owned dataset
-        intervals_file_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.bedpe")
-        intervals_df = pd.DataFrame(
-            {
-                "chrom": ["chr1"] * 6,
-                "start": [0] * 6,
-                "end": [10] * 6,
-                "bed_row_id": range(6),
-            }
-        )
-        intervals_df.to_csv(intervals_file_path, index=False, header=None, sep="\t")
         self.owned_intervals = Intervals(
             id=1,
             name="testRegion1",
             dataset_id=1,
-            file_path=intervals_file_path,
-            windowsize=200000,
-        )
-        # add intervals for owned dataset with filtered rows
-        intervals_filtered_file_path = os.path.join(
-            TempDirTestCase.TEMP_PATH, "test_filtered.bedpe"
-        )
-        self.intervals_filtered_df = pd.DataFrame(
-            {
-                "chrom": ["chr1"] * 6,
-                "start": [0] * 6,
-                "end": [10] * 6,
-                "bed_row_id": [0, 2, 4, 6, 8, 10],
-            }
-        )
-        self.intervals_filtered_df.to_csv(
-            intervals_filtered_file_path, index=False, header=None, sep="\t"
-        )
-        self.owned_intervals_filtered_rows = Intervals(
-            id=2,
-            name="testRegion1",
-            dataset_id=1,
-            file_path=intervals_filtered_file_path,
             windowsize=200000,
         )
         # add intervals for unowned dataset
@@ -250,7 +213,6 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
             id=3,
             name="testRegion1",
             dataset_id=2,
-            file_path="test_path_1.bedd2db",
             windowsize=200000,
         )
         # add metadata 1 for owned dataset
@@ -465,38 +427,6 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
         expected = self.metadata_df_simple_1
         expected.loc[:, "end"] = self.metadata_df_simple_3["end"]
         self.assertEqual(response.get_json(), expected.to_dict(orient="list"))
-
-    def test_metadata_entry_with_rows_differing_from_intervals_returned_correctly(self):
-        """Context: A metadata file is associated with the bedfile and has an equal number
-        of rows. However, the interval file that is associated with the bedfile does not necessarliy
-        have the same number of rows because some intervals may be filtered out because the overlap
-        chromosomal boundaries. This test checks whether such a case is handled correctly."""
-        # authenticate
-        token = self.add_and_authenticate("test", "asdf")
-        # create token header
-        token_headers = self.get_token_header(token)
-        # add data
-        db.session.add_all(
-            [
-                self.owned_dataset,
-                self.owned_intervals_filtered_rows,
-                self.metadata_filtered,
-            ]
-        )
-        db.session.commit()
-        # make apicall
-        response = self.client.get(
-            f"/api/intervals/{self.owned_intervals_filtered_rows.id}/metadata",
-            headers=token_headers,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.get_json(),
-            self.metadata_filtered_df.iloc[
-                self.intervals_filtered_df["bed_row_id"], :
-            ].to_dict(orient="list"),
-        )
 
 
 if __name__ == "__main__":

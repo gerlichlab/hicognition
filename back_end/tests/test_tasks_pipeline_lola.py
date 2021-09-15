@@ -40,7 +40,6 @@ class TestPipelineLola(LoginTestCase):
             id=1,
             name="testRegion1",
             dataset_id=1,
-            file_path="test_path_1.bedd2db",
             windowsize=200000,
         )
         # add collections

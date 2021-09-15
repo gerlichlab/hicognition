@@ -72,7 +72,6 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
             id=1,
             name="testRegion1",
             dataset_id=self.owned_bedfile.id,
-            file_path="test_path_1.bedd2db",
             windowsize=200000,
         )
         # add intervals for unowned bedfile
@@ -80,7 +79,6 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
             id=2,
             name="testRegion1",
             dataset_id=self.unowned_bedfile.id,
-            file_path="test_path_1.bedd2db",
             windowsize=200000,
         )
         # add intervals for unowned, public bedfile
@@ -88,7 +86,6 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
             id=3,
             name="testRegion1",
             dataset_id=self.unowned_public_bedfile.id,
-            file_path="test_path_1.bedd2db",
             windowsize=200000,
         )
         # add averageIntervalData with unowned cooler

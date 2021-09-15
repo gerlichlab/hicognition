@@ -240,8 +240,6 @@ def get_interval_metadata(interval_id):
     # check if list is empty
     if len(metadata_entries) == 0:
         return jsonify({})
-    # get bed_row_index rom interval file -> this is the last column
-    bed_row_index = pd.read_csv(interval.file_path, sep="\t", header=None).iloc[:, -1]
     # load all metadata_files as dataframes
     temp_frames = []
     for metadata_entry in metadata_entries:
@@ -251,7 +249,7 @@ def get_interval_metadata(interval_id):
         columns_retained = json.loads(metadata_entry.metadata_fields)
         temp_frame = pd.read_csv(
             metadata_entry.file_path, usecols=columns_retained
-        ).iloc[bed_row_index, :]
+        )
         temp_frames.append(temp_frame)
     output_frame = pd.concat(temp_frames, axis=1)
     # this drops all occurences of a given column but the first, since ids are sorted by descending order, the newest one wins
