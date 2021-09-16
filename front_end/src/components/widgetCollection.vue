@@ -22,7 +22,7 @@
                             </md-button>
                         </div>
                     </div>
-                    <div  class="md-layout-item md-size-55 padding-right">
+                    <div class="md-layout-item md-size-55 padding-right">
                         <div class="menu-button">
                             <md-button
                                 class="md-icon-button"
@@ -30,7 +30,10 @@
                                 :disabled="!allowRegionSelection"
                             >
                                 <md-icon>menu_open</md-icon>
-                            <md-tooltip md-direction="top" md-delay="300">Select region for this widget collection</md-tooltip>
+                                <md-tooltip md-direction="top" md-delay="300"
+                                    >Select region for this widget
+                                    collection</md-tooltip
+                                >
                             </md-button>
                         </div>
                         <div class="menu-button">
@@ -41,19 +44,23 @@
                                 :md-active.sync="showWindowSizeSelection"
                                 v-if="allowWindowSizeSelection"
                             >
-                                    <md-button class="md-icon-button" md-menu-trigger>
-                                        <md-icon>compare_arrows</md-icon>
-                                    </md-button>
+                                <md-button
+                                    class="md-icon-button"
+                                    md-menu-trigger
+                                >
+                                    <md-icon>compare_arrows</md-icon>
+                                </md-button>
                                 <md-menu-content>
                                     <md-menu-item
-                                        v-for="item in windowSizes"
+                                        v-for="item in pointWindowSizes"
                                         :key="item"
                                         @click="handleWindowSizeSelection(item)"
                                     >
                                         <span class="caption">{{
                                             convertBasePairsToReadable(item)
                                         }}</span>
-                                        <md-icon v-if="selectedWindowSize == item"
+                                        <md-icon
+                                            v-if="selectedWindowSize == item"
                                             >done</md-icon
                                         >
                                     </md-menu-item>
@@ -76,7 +83,9 @@
                         </div>
                     </div>
                     <div class="md-layout-item md-size-100 blue-background">
-                        <span class="md-caption padding-left">{{ dataInfo }}</span>
+                        <span class="md-caption padding-left">{{
+                            dataInfo
+                        }}</span>
                     </div>
                 </div>
                 <md-divider></md-divider>
@@ -154,12 +163,12 @@ export default {
     name: "widgetCollection",
     mixins: [apiMixin, formattingMixin],
     props: {
-        id: Number,
+        id: Number
     },
     components: {
-        widgetContainer,
+        widgetContainer
     },
-    data: function () {
+    data: function() {
         return {
             regions: [],
             windowSizes: [],
@@ -180,67 +189,90 @@ export default {
         };
     },
     computed: {
-        dataInfo: function(){
-            if (this.selectedRegionID){
-                return `${this.regions.filter(el => el.id == this.selectedRegionID)[0].dataset_name} | ${this.convertBasePairsToReadable(this.selectedWindowSize)}`
-            }
-            return "  "
+        pointWindowSizes: function() {
+            return this.windowSizes.filter(el => el != "variable");
         },
-        allowRegionSelection: function () {
+        isPointFeature: function() {
+            if (this.selectedRegionID) {
+                let dataset = this.regions.filter(
+                    el => el.id === this.selectedRegionID
+                )[0];
+                return dataset.sizeType === "Point";
+            }
+            return false;
+        },
+        dataInfo: function() {
+            if (this.selectedRegionID && this.isPointFeature) {
+                return `${
+                    this.regions.filter(el => el.id == this.selectedRegionID)[0]
+                        .dataset_name
+                } | ${this.convertBasePairsToReadable(
+                    this.selectedWindowSize
+                )}`;
+            }
+            if (this.selectedRegionID && !this.isPointFeature) {
+                return `${
+                    this.regions.filter(el => el.id == this.selectedRegionID)[0]
+                        .dataset_name
+                } | ${this.selectedWindowSize}`;
+            }
+            return "  ";
+        },
+        allowRegionSelection: function() {
             return this.regions.length > 0;
         },
-        widgetContainerBorder: function () {
+        widgetContainerBorder: function() {
             return {
-                width: `${
-                    this.collectionWidth +
+                width: `${this.collectionWidth +
                     this.paddingWidth +
                     40 +
-                    (this.maxColumnNumber + 1) * this.marginSizeWidth
-                }px`,
-                height: `${
-                    this.collectionHeight +
+                    (this.maxColumnNumber + 1) * this.marginSizeWidth}px`,
+                height: `${this.collectionHeight +
                     this.paddingHeight +
                     40 +
-                    (this.maxRowNumber + 1) * this.marginSizeHeight
-                }px`,
+                    (this.maxRowNumber + 1) * this.marginSizeHeight}px`,
                 background: "rgba(200, 200, 200, 0.2)",
-                "margin-right": "10px",
+                "margin-right": "10px"
             };
         },
-        decreaseRowsAllowed: function () {
+        decreaseRowsAllowed: function() {
             if (this.maxRowNumber == 0) {
                 return false;
             }
             var maxRowElements = Math.max(
-                ...this.children.map((element) => element.rowIndex)
+                ...this.children.map(element => element.rowIndex)
             );
             return this.maxRowNumber > maxRowElements;
         },
-        decreaseColumnsAllowed: function () {
+        decreaseColumnsAllowed: function() {
             if (this.maxColumnNumber == 0) {
                 return false;
             }
             var maxColElements = Math.max(
-                ...this.children.map((element) => element.colIndex)
+                ...this.children.map(element => element.colIndex)
             );
             return this.maxColumnNumber > maxColElements;
         },
-        allowWindowSizeSelection: function () {
-            return this.windowSizes.length > 0 && this.selectedRegionID;
+        allowWindowSizeSelection: function() {
+            return (
+                this.windowSizes.length > 0 &&
+                this.selectedRegionID &&
+                this.isPointFeature
+            );
         },
-        blockZoomOut: function () {
+        blockZoomOut: function() {
             if (this.baseWidth <= 350) {
                 return true;
             }
             return false;
         },
-        collectionHeight: function () {
+        collectionHeight: function() {
             return (this.maxRowNumber + 1) * this.baseHeight;
         },
-        collectionWidth: function () {
+        collectionWidth: function() {
             return (this.maxColumnNumber + 1) * this.baseWidth;
         },
-        elementMatrix: function () {
+        elementMatrix: function() {
             // creates element matrix from children filled up with empty elements
             var matrix = [];
             // create empty matrix
@@ -258,7 +290,7 @@ export default {
                         empty: true,
                         rowIndex: rowIndex,
                         colIndex: colIndex,
-                        parentID: this.id,
+                        parentID: this.id
                     };
                 }
                 matrix.push(emptyRow);
@@ -273,12 +305,12 @@ export default {
                     rowIndex: child.rowIndex,
                     colIndex: child.colIndex,
                     text: child.text,
-                    parentID: this.id,
+                    parentID: this.id
                 };
             }
             return matrix;
         },
-        flattenedElements: function () {
+        flattenedElements: function() {
             // gives a flattened representation of elements
             var output = [];
             for (var row of this.elementMatrix) {
@@ -288,105 +320,108 @@ export default {
             }
             return output;
         },
-        cssStyle: function () {
+        cssStyle: function() {
             return {
-                height: `${
-                    this.collectionHeight +
+                height: `${this.collectionHeight +
                     this.paddingHeight +
-                    (this.maxRowNumber + 1) * this.marginSizeHeight
-                }px`,
-                width: `${
-                    this.collectionWidth +
+                    (this.maxRowNumber + 1) * this.marginSizeHeight}px`,
+                width: `${this.collectionWidth +
                     this.paddingWidth +
-                    (this.maxColumnNumber + 1) * this.marginSizeWidth
-                }px`,
+                    (this.maxColumnNumber + 1) * this.marginSizeWidth}px`,
                 "margin-left": "0px",
                 "margin-right": "0px",
-                float: "left",
+                float: "left"
             };
-        },
+        }
     },
     methods: {
-        handleWindowSizeSelection: function(windowsize){
-            this.selectedWindowSize = windowsize
+        handleWindowSizeSelection: function(windowsize) {
+            this.selectedWindowSize = windowsize;
         },
-        startDatasetSelection: function () {
+        startDatasetSelection: function() {
             this.expectSelection = true;
-            let preselection = this.selectedRegionID ? [this.selectedRegionID] : []
-            EventBus.$emit("show-select-dialog", this.regions, "bedfile", preselection);
+            let preselection = this.selectedRegionID
+                ? [this.selectedRegionID]
+                : [];
+            EventBus.$emit(
+                "show-select-dialog",
+                this.regions,
+                "bedfile",
+                preselection
+            );
         },
-        registerSelectionEventHandlers: function(){
-            EventBus.$on("dataset-selected", this.handleDataSelection)
-            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion)
+        registerSelectionEventHandlers: function() {
+            EventBus.$on("dataset-selected", this.handleDataSelection);
+            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function(){
-            EventBus.$off("dataset-selected", this.handleDataSelection)
-            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion)
+        removeSelectionEventHandlers: function() {
+            EventBus.$off("dataset-selected", this.handleDataSelection);
+            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function(id){
-            if (this.expectSelection){
-                    this.selectedRegionID = id
-                    this.expectSelection = false
+        handleDataSelection: function(id) {
+            if (this.expectSelection) {
+                this.selectedRegionID = id;
+                this.expectSelection = false;
             }
         },
-        hanldeSelectionAbortion: function(){
-            this.expectSelection = false
+        hanldeSelectionAbortion: function() {
+            this.expectSelection = false;
         },
-        increaseRows: function () {
+        increaseRows: function() {
             this.maxRowNumber = this.maxRowNumber + 1;
         },
-        decreaseRows: function () {
+        decreaseRows: function() {
             this.maxRowNumber = this.maxRowNumber - 1;
         },
-        increaseColumns: function () {
+        increaseColumns: function() {
             this.maxColumnNumber = this.maxColumnNumber + 1;
         },
-        decreaseColumns: function () {
+        decreaseColumns: function() {
             this.maxColumnNumber = this.maxColumnNumber - 1;
         },
-        getNextID: function () {
+        getNextID: function() {
             return Math.floor(Math.random() * 1000000000);
         },
-        getDatasets: function () {
+        getDatasets: function() {
             this.regions = this.$store.state.datasets.filter(
-                    (element) => element.filetype == "bedfile"
-                );
+                element => element.filetype == "bedfile"
+            );
         },
         fetchCollections: function() {
             this.fetchData("collections/").then(response => {
                 // success, store datasets
-                if (response){
+                if (response) {
                     this.$store.commit("setCollections", response.data);
                 }
             });
         },
-        fetchResolutions: function () {
-            this.fetchData("resolutions/").then((response) => {
+        fetchResolutions: function() {
+            this.fetchData("resolutions/").then(response => {
                 // success, store resolutions
                 this.$store.commit("setResolutions", response.data);
                 this.windowSizes = Object.keys(response.data);
             });
         },
-        handleZoomIn: function () {
+        handleZoomIn: function() {
             this.baseWidth += 50;
             this.baseHeight += 50;
         },
-        handleZoomOut: function () {
+        handleZoomOut: function() {
             this.baseWidth -= 50;
             this.baseHeight -= 50;
         },
-        storeCollectionConfig: function () {
+        storeCollectionConfig: function() {
             var payload = {
                 id: this.id,
                 collectionConfig: {
                     regionID: this.selectedRegionID,
                     availableData: this.availableData,
-                    intervalSize: this.selectedWindowSize,
-                },
+                    intervalSize: this.selectedWindowSize
+                }
             };
             this.$store.commit("compare/setCollectionConfig", payload);
         },
-        deleteCollection: function () {
+        deleteCollection: function() {
             // call delete of each child
             for (let child of this.children) {
                 EventBus.$emit("delete-widget", child.id);
@@ -400,7 +435,7 @@ export default {
                 );
             }
         },
-        handleWidgetDrop: function (
+        handleWidgetDrop: function(
             sourceColletionID,
             sourceWidgetID,
             rowIndex,
@@ -409,10 +444,11 @@ export default {
             // oupdate widget data that are managed by collection: ID, colIndex, rowIndex, parentID
             var queryObject = {
                 parentID: sourceColletionID,
-                id: sourceWidgetID,
+                id: sourceWidgetID
             };
-            var widgetData =
-                this.$store.getters["compare/getWidgetProperties"](queryObject);
+            var widgetData = this.$store.getters["compare/getWidgetProperties"](
+                queryObject
+            );
             // delete original widget
             EventBus.$emit("delete-widget", sourceWidgetID);
             // update widget data that changed upon drop
@@ -428,13 +464,13 @@ export default {
             );
             // update changed data in store
             this.$store.commit("compare/setWidget", widgetData);
-        },
+        }
     },
     watch: {
         // watch for changes in store
         "$store.state.compare.widgetCollections": {
             deep: true,
-            handler: function (newValue, oldValue) {
+            handler: function(newValue, oldValue) {
                 // check if own entry changed
                 var newEntry = Object.assign({}, newValue[this.id]);
                 var oldEntry = Object.assign({}, oldValue[this.id]);
@@ -445,23 +481,28 @@ export default {
                         this.children.push(child);
                     }
                 }
-            },
+            }
         },
-        selectedRegionID: async function (newVal, oldVal) {
+        selectedRegionID: async function(newVal, oldVal) {
             if (!newVal) {
                 return;
             }
             // get availability object
             await this.fetchData(`datasets/${newVal}/processedDataMap/`).then(
-                (response) => {
+                response => {
                     // success, store availability object
                     this.availableData = response.data;
                 }
             );
             if (!this.selectedWindowSize) {
-                // set default -> middle of available windwosizes
-                this.selectedWindowSize =
-                    this.windowSizes[Math.floor(this.windowSizes.length / 2)];
+                // set default -> middle of available windwosizes if point, otherwise variable
+                if (this.isPointFeature) {
+                    this.selectedWindowSize = this.pointWindowSizes[
+                        Math.floor(this.pointWindowSizes.length / 2)
+                    ];
+                }else{
+                    this.selectedWindowSize = "variable"
+                }
             } else {
                 // both seleted regions and windowsize are defined -> update selected windowsize
                 this.storeCollectionConfig();
@@ -470,13 +511,13 @@ export default {
             this.$store.commit("compare/decrement_usage_dataset", oldVal);
             this.$store.commit("compare/increment_usage_dataset", newVal);
         },
-        selectedWindowSize: function () {
+        selectedWindowSize: function() {
             this.storeCollectionConfig();
-        },
+        }
     },
-    mounted: function () {
+    mounted: function() {
         // register event handlers
-        this.registerSelectionEventHandlers()
+        this.registerSelectionEventHandlers();
         // initialize from store
         var collectionData = this.$store.getters[
             "compare/getCollectionProperties"
@@ -495,8 +536,8 @@ export default {
                 collectionConfig: {
                     regionID: undefined,
                     availableData: { pileup: {}, lineprofile: {}, stackup: {} },
-                    intervalSize: undefined,
-                },
+                    intervalSize: undefined
+                }
             };
             this.$store.commit("compare/setCollectionConfig", payload);
         }
@@ -504,13 +545,13 @@ export default {
         if (collectionData.children) {
             this.maxRowNumber =
                 max_array(
-                    Object.values(collectionData.children).map((elem) => {
+                    Object.values(collectionData.children).map(elem => {
                         return elem.rowIndex;
                     })
                 ) || 0;
             this.maxColumnNumber =
                 max_array(
-                    Object.values(collectionData.children).map((elem) => {
+                    Object.values(collectionData.children).map(elem => {
                         return elem.colIndex;
                     })
                 ) || 0;
@@ -522,7 +563,7 @@ export default {
         // get datasets
         this.getDatasets();
         // get collections
-        this.fetchCollections()
+        this.fetchCollections();
         // get resolutions
         if (this.$store.state.resolutions) {
             this.windowSizes = Object.keys(this.$store.getters.getResolutions);
@@ -530,8 +571,8 @@ export default {
             this.fetchResolutions();
         }
     },
-    beforeDestroy: function(){
-        this.removeSelectionEventHandlers()
+    beforeDestroy: function() {
+        this.removeSelectionEventHandlers();
     }
 };
 </script>
@@ -616,5 +657,4 @@ export default {
 .blue-background {
     background: var(--md-theme-default-primary);
 }
-
 </style>
