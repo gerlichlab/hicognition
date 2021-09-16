@@ -52,10 +52,19 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             dataset_name="testfile4",
             processing_state="finished",
         )
+        self.owned_bedfile_interval = Dataset(
+            id=9,
+            user_id=1,
+            filetype="bedfile",
+            dataset_name="testfile",
+            processing_state="finished",
+            sizeType="Interval"
+        )
         self.owned_datasets = [
             self.owned_bedfile,
             self.owned_coolerfile,
             self.owned_bigwig,
+            self.owned_bedfile_interval
         ]
         self.not_owned_bigwig = Dataset(
             id=5,
@@ -86,6 +95,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             processing_state="finished",
         )
         self.not_owned_datasets = [self.not_owned_bigwig, self.not_owned_cooler]
+        # add bedfile with interval sizetype
         # create colledtions
         self.owned_collection = Collection(
             id=1,
@@ -99,6 +109,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             Intervals(id=1, dataset_id=1, windowsize=10000),
             Intervals(id=2, dataset_id=1, windowsize=20000),
             Intervals(id=3, dataset_id=1, windowsize=30000),
+            Intervals(id=7, dataset_id=9)
         ]
         self.intervals_not_owned_bedfile = [
             Intervals(id=4, dataset_id=2, windowsize=10000),
@@ -122,6 +133,12 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             AverageIntervalData(
                 id=5, binsize=2000, dataset_id=6, intervals_id=2, value_type="ICCF"
             ),
+            AverageIntervalData(
+                id=10, binsize=2, dataset_id=3, intervals_id=7, value_type="ICCF"
+            ),
+            AverageIntervalData(
+                id=11, binsize=2, dataset_id=3, intervals_id=7, value_type="Obs/Exp"
+            )
         ]
         # create line profiles
         self.lineprofiles = [
@@ -134,12 +151,16 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             AverageIntervalData(
                 id=8, binsize=2000, dataset_id=5, intervals_id=2, value_type="line"
             ),
+            AverageIntervalData(
+                id=9, binsize=5, dataset_id=4, intervals_id=7, value_type="line"
+            ),
         ]
         # create stackup
         self.stackups = [
             IndividualIntervalData(id=1, binsize=1000, dataset_id=4, intervals_id=1),
             IndividualIntervalData(id=2, binsize=2000, dataset_id=4, intervals_id=2),
             IndividualIntervalData(id=3, binsize=2000, dataset_id=5, intervals_id=2),
+            IndividualIntervalData(id=4, binsize=10, dataset_id=4, intervals_id=7)
         ]
         # create association data
         self.association_data = [
@@ -152,12 +173,16 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             AssociationIntervalData(
                 id=3, binsize=20000, collection_id=1, intervals_id=2
             ),
+            AssociationIntervalData(
+                id=4, binsize=2, collection_id=1, intervals_id=7
+            )
         ]
         # create embedding data
         self.embedding_data = [
             EmbeddingIntervalData(id=1, binsize=10000, collection_id=1, intervals_id=1),
             EmbeddingIntervalData(id=2, binsize=20000, collection_id=1, intervals_id=1),
             EmbeddingIntervalData(id=3, binsize=20000, collection_id=1, intervals_id=2),
+            EmbeddingIntervalData(id=4, binsize=5, collection_id=1, intervals_id=7)
         ]
 
     def test_no_auth(self):
@@ -310,6 +335,43 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         }
         self.assertEqual(response.json, expected)
 
+    def test_structure_of_mapping_pileups_variable_intervals(self):
+        """Test whether the structure of the returned object is correct for
+        bedfile holding regions of variable size associated with pileups"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add datasets
+        db.session.add_all(self.owned_datasets)
+        db.session.add_all(self.not_owned_datasets)
+        db.session.add_all(self.intervals_owned_bedfile)
+        db.session.add_all(self.pileups)
+        db.session.commit()
+        # protected route
+        response = self.client.get(
+            "/api/datasets/9/processedDataMap/",
+            content_type="application/json",
+            headers=token_headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether response is correct
+        expected = {
+            "pileup": {
+                "3": {
+                    "name": "testfile3",
+                    "data_ids": {
+                        "variable": {"2": {"ICCF": "10", "Obs/Exp": "11"}},
+                    },
+                }
+            },
+            "stackup": {},
+            "lineprofile": {},
+            "lola": {},
+            "embedding": {},
+        }
+        self.assertEqual(response.json, expected)
+
     def test_structure_of_mapping_w_intervals_w_lineprofiles(self):
         """Test whether the structure of the returned object is correct for
         bedfile associated with pileups"""
@@ -345,6 +407,42 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         }
         self.assertEqual(response.json, expected)
 
+    def test_structure_of_mapping_lineprofiles_variable_intervals(self):
+        """Test whether the structure of the returned object is correct for
+        bedfile with variable intervals associated with pileups"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add datasets
+        db.session.add_all(self.owned_datasets)
+        db.session.add_all(self.not_owned_datasets)
+        db.session.add_all(self.intervals_owned_bedfile)
+        db.session.add_all(self.lineprofiles)
+        db.session.commit()
+        # protected route
+        response = self.client.get(
+            "/api/datasets/9/processedDataMap/",
+            content_type="application/json",
+            headers=token_headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether response is correct
+        expected = {
+            "pileup": {},
+            "stackup": {},
+            "lola": {},
+            "lineprofile": {
+                "4": {
+                    "name": "testfile4",
+                    "data_ids": {"variable": {"5": "9"}},
+                }
+            },
+            "embedding": {},
+        }
+        self.assertEqual(response.json, expected)
+
+
     def test_structure_of_mapping_w_intervals_w_stackups(self):
         """Test whether the structure of the returned object is correct for
         bedfile associated with pileups"""
@@ -372,6 +470,42 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
+                }
+            },
+            "lineprofile": {},
+            "lola": {},
+            "embedding": {},
+        }
+        self.assertEqual(response.json, expected)
+
+
+    def test_structure_of_mapping_stackups_variable_intervals(self):
+        """Test whether the structure of the returned object is correct for
+        bedfile with variable intervals associated with stackups"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add datasets
+        db.session.add_all(self.owned_datasets)
+        db.session.add_all(self.not_owned_datasets)
+        db.session.add_all(self.intervals_owned_bedfile)
+        db.session.add_all(self.stackups)
+        db.session.commit()
+        # protected route
+        response = self.client.get(
+            "/api/datasets/9/processedDataMap/",
+            content_type="application/json",
+            headers=token_headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether response is correct
+        expected = {
+            "pileup": {},
+            "stackup": {
+                "4": {
+                    "name": "testfile4",
+                    "data_ids": {"variable": {"10": "4"}},
                 }
             },
             "lineprofile": {},
@@ -420,6 +554,46 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         }
         self.assertEqual(response.json, expected)
 
+
+    def test_structure_of_mapping_association_data_variable_intervals(self):
+        """Test whether the structure of the returned object is correct for
+        bedfile with variable intervals associated with pileups"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add datasets
+        db.session.add_all(self.owned_datasets)
+        db.session.add(self.owned_collection)
+        db.session.add_all(self.not_owned_datasets)
+        db.session.add_all(self.intervals_owned_bedfile)
+        db.session.add_all(self.association_data)
+        db.session.commit()
+        # protected route
+        response = self.client.get(
+            "/api/datasets/9/processedDataMap/",
+            content_type="application/json",
+            headers=token_headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether response is correct
+        expected = {
+            "pileup": {},
+            "stackup": {},
+            "lineprofile": {},
+            "lola": {
+                "1": {
+                    "name": "test_collection",
+                    "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                    "data_ids": {
+                        "variable": {"2": "4"}
+                    },
+                }
+            },
+            "embedding": {},
+        }
+        self.assertEqual(response.json, expected)
+
     def test_structure_of_mapping_w_intervals_w_embedding_data(self):
         """Test whether the structure of the returned object is correct for
         bedfile associated with pileups"""
@@ -459,6 +633,46 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             },
         }
         self.assertEqual(response.json, expected)
+
+    def test_structure_of_mapping_embedding_data_variable_intervals(self):
+        """Test whether the structure of the returned object is correct for
+        bedfile with variable intervals associated with pileups"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add datasets
+        db.session.add_all(self.owned_datasets)
+        db.session.add(self.owned_collection)
+        db.session.add_all(self.not_owned_datasets)
+        db.session.add_all(self.intervals_owned_bedfile)
+        db.session.add_all(self.embedding_data)
+        db.session.commit()
+        # protected route
+        response = self.client.get(
+            "/api/datasets/9/processedDataMap/",
+            content_type="application/json",
+            headers=token_headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether response is correct
+        expected = {
+            "pileup": {},
+            "stackup": {},
+            "lineprofile": {},
+            "lola": {},
+            "embedding": {
+                "1": {
+                    "name": "test_collection",
+                    "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                    "data_ids": {
+                        "variable": {"5": "4"}
+                    },
+                }
+            },
+        }
+        self.assertEqual(response.json, expected)
+
 
     def test_structure_of_mapping_w_intervals_w_all_datatypes(self):
         """Test whether the structure of the returned object is correct for
@@ -530,6 +744,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             },
         }
         self.assertEqual(response.json, expected)
+
 
     def test_bigwig_dataset_not_sent_when_not_finished(self):
         """Tests whehter only datasets are included in preprocessed dataset map

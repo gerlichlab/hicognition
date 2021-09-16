@@ -325,17 +325,22 @@ def add_average_data_to_preprocessed_dataset_map(
         # check whether there are any uncompleted tasks for the region dataset associated with these features
         interval = Intervals.query.get(average.intervals_id)
         region_dataset = interval.source_dataset
+        # check whether region_dataset is interval
+        if region_dataset.sizeType == "Interval":
+            windowsize = "variable"
+        else:
+            windowsize = interval.windowsize
         # check whether dataset is in failed or processing datasets
         if (dataset in region_dataset.processing_features) or (dataset in region_dataset.failed_features):
             continue
         if average.value_type in ["Obs/Exp", "ICCF"]:
             output_object["pileup"][dataset.id]["name"] = dataset.dataset_name
-            output_object["pileup"][dataset.id]["data_ids"][interval.windowsize][
+            output_object["pileup"][dataset.id]["data_ids"][windowsize][
                 average.binsize
             ][average.value_type] = str(average.id)
         else:
             output_object["lineprofile"][dataset.id]["name"] = dataset.dataset_name
-            output_object["lineprofile"][dataset.id]["data_ids"][interval.windowsize][
+            output_object["lineprofile"][dataset.id]["data_ids"][windowsize][
                 average.binsize
             ] = str(average.id)
 
@@ -351,11 +356,16 @@ def add_individual_data_to_preprocessed_dataset_map(
         # check whether there are any uncompleted tasks for the feature dataset
         interval = Intervals.query.get(individual.intervals_id)
         region_dataset = interval.source_dataset
+        # check whether region_dataset is interval
+        if region_dataset.sizeType == "Interval":
+            windowsize = "variable"
+        else:
+            windowsize = interval.windowsize
         # check whether dataset is in failed or processing datasets
         if (dataset in region_dataset.processing_features) or (dataset in region_dataset.failed_features):
             continue
         output_object["stackup"][dataset.id]["name"] = dataset.dataset_name
-        output_object["stackup"][dataset.id]["data_ids"][interval.windowsize][
+        output_object["stackup"][dataset.id]["data_ids"][windowsize][
             individual.binsize
         ] = str(individual.id)
 
@@ -371,13 +381,18 @@ def add_association_data_to_preprocessed_dataset_map(
         # check whether there are any uncompleted tasks for the feature dataset
         interval = Intervals.query.get(assoc.intervals_id)
         region_dataset = interval.source_dataset
+        # check whether region_dataset is interval
+        if region_dataset.sizeType == "Interval":
+            windowsize = "variable"
+        else:
+            windowsize = interval.windowsize
         if (collection in region_dataset.processing_collections) or (collection in region_dataset.failed_collections):
             continue
         output_object["lola"][collection.id]["name"] = collection.name
         output_object["lola"][collection.id][
             "collection_dataset_names"
         ] = collection.to_json()["dataset_names"]
-        output_object["lola"][collection.id]["data_ids"][interval.windowsize][
+        output_object["lola"][collection.id]["data_ids"][windowsize][
             assoc.binsize
         ] = str(assoc.id)
 
@@ -393,13 +408,18 @@ def add_embedding_data_to_preprocessed_dataset_map(
         # check whether there are any uncompleted tasks for the feature dataset
         interval = Intervals.query.get(embed.intervals_id)
         region_dataset = interval.source_dataset
+        # check whether region_dataset is interval
+        if region_dataset.sizeType == "Interval":
+            windowsize = "variable"
+        else:
+            windowsize = interval.windowsize
         if (collection in region_dataset.processing_collections) or (collection in region_dataset.failed_collections):
             continue
         output_object["embedding"][collection.id]["name"] = collection.name
         output_object["embedding"][collection.id][
             "collection_dataset_names"
         ] = collection.to_json()["dataset_names"]
-        output_object["embedding"][collection.id]["data_ids"][interval.windowsize][
+        output_object["embedding"][collection.id]["data_ids"][windowsize][
             embed.binsize
         ] = str(embed.id)
 

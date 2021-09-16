@@ -23,7 +23,7 @@ class Config:
         400000: [5000, 10000, 20000],
         1000000: [20000, 50000, 100000],
         2000000: [50000, 100000, 200000],
-        "variable": [0.02, 0.05, 0.1],
+        "variable": [2, 5, 10],  # binsize for variable sizetype is in percent
     }
     # mapping of pipeline names to filetypes
     PIPELINE_NAMES = {
@@ -68,7 +68,12 @@ class Config:
                         "Normalization": ["NormToControl", "RPM", "No Normalization"],
                     },
                     "GeneExpression": {
-                        "Normalization": ["NormToControl", "RPM", "RPKM", "No Normalization"],
+                        "Normalization": [
+                            "NormToControl",
+                            "RPM",
+                            "RPKM",
+                            "No Normalization",
+                        ],
                         "Method": ["RNAseq", "GroSeq", "SLAMseq", "NETseq"],
                     },
                 }

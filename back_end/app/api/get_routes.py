@@ -28,7 +28,6 @@ from ..models import (
     EmbeddingIntervalData,
     Session,
     Collection,
-    Assembly,
     Organism,
 )
 from .authentication import auth
