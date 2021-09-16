@@ -14,13 +14,13 @@ graph G {
   
    subgraph feature2d {
     ValueType2d -- Interaction;
+    Interaction -- Method2d;
+    Interaction -- Normalization2d
     Method2d -- HiC;
     Normalization2d -- ICCF
   }
   
     Feature2D -- ValueType2d;
-    Feature2D -- Method2d;
-    Feature2D -- Normalization2d;
     
     subgraph region {
         ValueTypeR -- GenomeAnnotation;
