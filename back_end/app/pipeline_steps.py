@@ -64,6 +64,8 @@ def bed_preprocess_pipeline_step(dataset_id, windowsize):
     # store indices
     np.save(index_file, sub_sample_index)
     # Commit to database
+    if windowsize == "variable":
+        windowsize = None
     new_entry = Intervals(
         dataset_id=dataset_id,
         name=dataset.dataset_name + f"_{windowsize}",
