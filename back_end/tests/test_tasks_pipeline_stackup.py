@@ -180,34 +180,6 @@ class TestPerformStackup(LoginTestCase, TempDirTestCase):
             missing=np.nan,
         )
 
-    @patch("app.pipeline_steps.bbi.chromsizes")
-    @patch("app.pipeline_steps.bbi.stackup")
-    @patch("app.pipeline_steps.pd.read_csv")
-    def test_stackup_called_correctly_regions_pos(
-        self, mock_read_csv, mock_stackup, mock_chromsizes
-    ):
-        """Tests whether regions that are defined as chrom, pos are handled correctly."""
-        BIN_NUMBER = 40
-        mock_chromsizes.return_value = {"chr1": "test"}
-        mock_stackup.return_value = np.empty((2, BIN_NUMBER))
-        test_df_interval = pd.DataFrame({0: ["chr1", "chr1"], 1: [500, 1500]})
-        mock_read_csv.return_value = test_df_interval
-        # dispatch call
-        dataset_id = 1
-        intervals_id = 1
-        with patch("app.pipeline_steps.np.load") as mock_load:
-            mock_load.return_value = np.array([0, 1])
-            perform_stackup(dataset_id, intervals_id, 10000)
-        # check whether stackup was called correctly
-        mock_stackup.assert_called_with(
-            self.dataset.file_path,
-            chroms=["chr1", "chr1"],
-            starts=[-199500, -198500],
-            ends=[200500, 201500],
-            bins=BIN_NUMBER,
-            missing=np.nan,
-        )
-
     @patch("app.pipeline_steps.pd.read_csv")
     def test_small_example_processed_correctly(
         self,

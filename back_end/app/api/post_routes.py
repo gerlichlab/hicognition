@@ -171,8 +171,11 @@ def preprocess_dataset():
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
     for interval_id in interval_ids:
+        windowsize = Intervals.query.get(interval_id).windowsize
+        if windowsize is None:
+            windowsize = "variable"
         for binsize in current_app.config["PREPROCESSING_MAP"][
-            Intervals.query.get(interval_id).windowsize
+             windowsize
         ]:
             for dataset in feature_datasets:
                 current_user.launch_task(
@@ -183,9 +186,9 @@ def preprocess_dataset():
                     intervals_id=interval_id,
                     binsize=binsize,
                 )
-                # add parent id
+                # add parent id # TODO: guard against duplicate processing
                 dataset.processing_regions.append(
-                    Intervals.query.get(interval_id).source_dataset
+                     Intervals.query.get(interval_id).source_dataset
                 )
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
@@ -239,8 +242,11 @@ def preprocess_collections():
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
     for interval_id in interval_ids:
+        windowsize = Intervals.query.get(interval_id).windowsize
+        if windowsize is None:
+            windowsize = "variable"
         for binsize in current_app.config["PREPROCESSING_MAP"][
-            Intervals.query.get(interval_id).windowsize
+            windowsize
         ]:
             for collection in collections:
                 current_user.launch_collection_task(

@@ -260,6 +260,8 @@ def perform_1d_embedding(collection_id, intervals_id, binsize):
     the features in collection_id"""
     # get all features in collection
     features = Collection.query.get(collection_id).datasets
+    # get dataset for intervals
+    source_regions = Intervals.query.get(intervals_id).source_dataset
     # extract stackups
     log.info("      Construct feature frame...")
     data = []
@@ -269,9 +271,13 @@ def perform_1d_embedding(collection_id, intervals_id, binsize):
             & (IndividualIntervalData.intervals_id == intervals_id)
             & (IndividualIntervalData.binsize == binsize)
         ).first()
-        # load data and extract center column
+        # load data and extract center column if data is point feature
         temp = np.load(stackup.file_path)
-        data.append(temp[:, temp.shape[1] // 2])
+        if source_regions.sizeType == "Interval":
+            reduced = np.mean(temp, axis=1)
+            data.append(reduced)
+        else:
+            data.append(temp[:, temp.shape[1] // 2])
     # construct feature frame
     feature_frame = np.stack(data).transpose()
     # do imputation
@@ -426,24 +432,30 @@ def add_pileup_db(file_path, binsize, intervals_id, cooler_dataset_id, pileup_ty
 def _do_stackup(regions, window_size, binsize, bigwig_dataset):
     """Takes a set of regions, window_size, binsize as well as the path to a bigwig file and
     extracts data along those regions."""
-    if len(regions.columns) > 2:
-        # region definition with start and end
-        regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
+    regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
+    if window_size is not None:
         regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
+        # construct stackup-regions: positions - windowsize until position + windowsize
+        stackup_regions = pd.DataFrame(
+            {
+                "chrom": regions["chrom"],
+                "start": regions["pos"]
+                - window_size,  # regions outside of chromosomes will be filled with NaN by pybbi
+                "end": regions["pos"] + window_size,
+            }
+        )
+        # calculate number of bins
+        bin_number = int(window_size / binsize) * 2
     else:
-        # region definition with start
-        regions = regions.rename(columns={0: "chrom", 1: "pos"})
-    # construct stackup-regions: positions - windowsize until position + windowsize
-    stackup_regions = pd.DataFrame(
-        {
-            "chrom": regions["chrom"],
-            "start": regions["pos"]
-            - window_size,  # regions outside of chromosomes will be filled with NaN by pybbi
-            "end": regions["pos"] + window_size,
-        }
-    )
-    # calculate number of bins
-    bin_number = int(window_size / binsize) * 2
+        size = regions["end"] - regions["start"]
+        stackup_regions = pd.DataFrame(
+            {
+                "chrom": regions["chrom"],
+                "start": regions["start"] - 0.2 * size,
+                "end": regions["end"] + 0.2 * size,
+            }
+        )
+        bin_number = 100 // binsize
     # make arget array
     target_array = np.empty((len(stackup_regions), bin_number))
     target_array.fill(np.nan)

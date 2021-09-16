@@ -23,7 +23,7 @@ class Config:
         400000: [5000, 10000, 20000],
         1000000: [20000, 50000, 100000],
         2000000: [50000, 100000, 200000],
-        "variable": [2, 5, 10],  # binsize for variable sizetype is in percent
+        "variable": [1, 2, 5],  # binsize for variable sizetype is in percent
     }
     # mapping of pipeline names to filetypes
     PIPELINE_NAMES = {
