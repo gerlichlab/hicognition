@@ -26,7 +26,7 @@ def delete_dataset_handler(dataset_id):
     if is_dataset_deletion_denied(dataset, g.current_user):
         return forbidden(f"Dataset with id {dataset_id} is not owned by user!")
     # check if data set is processing
-    if dataset.processing_state == "processing":
+    if (len(dataset.processing_features) != 0) or (len(dataset.processing_regions) != 0):
         return invalid(f"Dataset is in processing state!")
     # delete associated data of dataset
     delete_associated_data_of_dataset(dataset)

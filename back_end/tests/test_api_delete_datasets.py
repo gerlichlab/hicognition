@@ -91,13 +91,6 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             user_id=1,
         )
         # create cooler that is in processing state
-        self.owned_cooler_processing = Dataset(
-            id=6,
-            filetype="cooler",
-            user_id=1,
-            processing_state="processing",
-        )
-        # create cooler that is in processing state
         self.owned_cooler_w_wrong_path = Dataset(
             id=7, filetype="cooler", file_path="/code/tmp/bad_file_path", user_id=1
         )
@@ -312,17 +305,48 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         expected = set(self._get_expected_tempdir_state(self.datasets, deletion_id))
         self.assertEqual(files_tempdir, expected)
 
-    def test_deletion_of_processing_datasets_does_not_work(self):
+    def test_deletion_of_processing_features_does_not_work(self):
         """tests whether deletion of datasets that are processing does not work."""
         token = self.add_and_authenticate("test", "asdf")
         # create token_headers
         token_headers = self.get_token_header(token)
+        # create processing dataset
+        owned_cooler_processing = Dataset(
+            id=6,
+            filetype="cooler",
+            user_id=1,
+            processing_regions=[self.owned_bedfile],
+        )
         # add dataset that is processing
-        db.session.add(self.owned_cooler_processing)
+        db.session.add_all([owned_cooler_processing, self.owned_bedfile])
         db.session.commit()
         # delete data set
         response = self.client.delete(
-            f"/api/datasets/{self.owned_cooler_processing.id}/",
+            f"/api/datasets/{owned_cooler_processing.id}/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        # check response
+        self.assertEqual(response.status_code, 400)
+
+    def test_deletion_of_processing_regions_does_not_work(self):
+        """tests whether deletion of datasets that are processing does not work."""
+        token = self.add_and_authenticate("test", "asdf")
+        # create token_headers
+        token_headers = self.get_token_header(token)
+        # create processing dataset
+        owned_bedfile_processing = Dataset(
+            id=6,
+            filetype="bedfile",
+            user_id=1,
+            processing_features=[self.owned_cooler],
+        )
+        # add dataset that is processing
+        db.session.add_all([owned_bedfile_processing, self.owned_cooler])
+        db.session.commit()
+        # delete data set
+        response = self.client.delete(
+            f"/api/datasets/{owned_bedfile_processing.id}/",
             headers=token_headers,
             content_type="application/json",
         )
