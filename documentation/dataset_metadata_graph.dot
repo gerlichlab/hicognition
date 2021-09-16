@@ -1,0 +1,101 @@
+graph G {
+
+  Dataset -- Organism;
+  Dataset -- Assembly;
+  Dataset -- Perturbation;
+  Dataset -- CellCycleStage;
+  CellCycleStage -- DatasetType;
+  Organism -- DatasetType;
+  Assembly -- DatasetType;
+  Perturbation -- DatasetType
+  DatasetType -- Region;
+  DatasetType -- Feature1D;
+  DatasetType -- Feature2D;
+  
+   subgraph feature2d {
+    ValueType2d -- Interaction;
+    Method2d -- HiC;
+    Normalization2d -- ICCF
+  }
+  
+    Feature2D -- ValueType2d;
+    Feature2D -- Method2d;
+    Feature2D -- Normalization2d;
+    
+    subgraph region {
+        ValueTypeR -- GenomeAnnotation;
+        ValueTypeR -- Peak;
+        ValueTypeR -- DerivedR;
+        Peak -- MethodR;
+        DerivedR -- MethodRH
+        Peak -- SizeType
+        DerivedR -- SizeType
+        Peak -- Directionality;
+        GenomeAnnotation -- Directionality;
+        
+        MethodR -- ChipSeqR;
+        MethodRH -- HiCR;
+        SizeType -- Interval;
+        SizeType -- Point;
+        Directionality -- Minus;
+        Directionality -- Plus;
+        Directionality -- NoDirectionality;
+    }
+    
+    Region -- ValueTypeR
+    
+    subgraph feature1d {
+        ValueType1D -- ProteinBinding;
+        ValueType1D -- GeneExpression;
+        ValueType1D -- Derived;
+        ProteinBinding -- Protein;
+        ProteinBinding -- Normalization1D;
+        ProteinBinding -- Method1D;
+        Method1D -- ChipSeq1D;
+        Method1D -- CutAndRun;
+        Method1D -- CutAndTag;
+        Normalization1D -- RPM;
+        Normalization1D -- NormToControl;
+        GeneExpression -- Method1DG;
+        GeneExpression -- Normalization1D;
+        Method1DG -- GroSeq;
+        Method1DG -- RNAseq;
+        Derived -- NormD;
+        Derived -- DerivationType;
+        Derived -- MethodD;
+        NormD -- BaseLineCorrected;
+        DerivationType -- InsulationScore;
+        DerivationType -- PairingScore;
+        MethodD -- HiCD;
+    }
+    
+    Feature1D -- ValueType1D;
+    
+
+  
+  Organism [color="red"]
+  Assembly [color="red"]
+  DatasetType [color="red"]
+  Perturbation[color="red"]
+  CellCycleStage[color="red"]
+  HiCR[label="HiC"]
+  SizeType[color="red"]
+  Method2d[color="red", label="Method"]
+  MethodR[color="red", label="Method"]
+  Normalization2d[color="red", label="Normalization"]
+  ValueType2d[color="red", label="ValueType"]
+  ValueType1D[color="red", label="ValueType"]
+  Method1DG[color="red", label="Method"]
+  ChipSeq1D[label="ChipSeq"]
+  Method1D[color="red", label="Method"]
+  Normalization1D[color="red", label="Normalization"]
+  NormD[color="red", label="Normalization"]
+  HiCD[label="HiC"]
+  DerivationType[color="red"]
+  MethodD[color="red", label="Method"]
+  ValueTypeR[color="red", label="ValueType"]
+  DerivedR[label="Derived"]
+  Directionality[color="red"]
+  MethodRH[color="red", label="Method"]
+  ChipSeqR[label="ChipSeq"]
+}
