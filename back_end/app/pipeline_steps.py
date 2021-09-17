@@ -11,6 +11,7 @@ from sklearn.impute import SimpleImputer
 import cooler
 import bioframe as bf
 import umap
+from skimage.transform import resize
 from ngs import HiCTools as HT
 from hicognition import io_helpers, interval_operations
 import pylola
@@ -87,14 +88,6 @@ def perform_pileup(cooler_dataset_id, interval_id, binsize, arms, pileup_type):
     intervals = Intervals.query.get(interval_id)
     # get path to dataset
     file_path = intervals.source_dataset.file_path
-    # get windowsize
-    window_size = intervals.windowsize
-    # check whether windowsize is divisible by binsize
-    if window_size % int(binsize) != 0:
-        log.warn(
-            "      ########### Windowsize and binsize do not match! ##############"
-        )
-        return
     # load bedfile
     log.info("      Loading regions...")
     regions = pd.read_csv(file_path, sep="\t", header=None)
@@ -102,10 +95,18 @@ def perform_pileup(cooler_dataset_id, interval_id, binsize, arms, pileup_type):
     regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
     # do pileup
     log.info("      Doing pileup...")
+    # get windowsize
+    window_size = intervals.windowsize
     if window_size is not None:
+        # check whether windowsize is divisible by binsize
+        if window_size % int(binsize) != 0:
+            log.warn(
+                "      ########### Windowsize and binsize do not match! ##############"
+            )
+            return
         pileup_array = _do_pileup_fixed_size(cooler_dataset, window_size, binsize, regions, arms, pileup_type)
     else:
-        pileup_array = _do_pileup_variable_size(cooler_dataset, window_size, binsize, regions, arms, pileup_type)
+        pileup_array = _do_pileup_variable_size(cooler_dataset, binsize, regions, arms, pileup_type)
     # prepare dataframe for js reading1
     log.info("      Writing output...")
     file_name = uuid.uuid4().hex + ".npy"
@@ -415,7 +416,7 @@ def add_pileup_db(file_path, binsize, intervals_id, cooler_dataset_id, pileup_ty
 
 
 def _do_pileup_fixed_size(cooler_dataset, window_size, binsize, regions, arms, pileup_type):
-    """"""
+    """do pileup with subsequent averaging for regions with a fixed size"""
     cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{binsize}")
     pileup_windows = HT.assign_regions(
         window_size, int(binsize), regions["chrom"], regions["pos"], arms
@@ -437,19 +438,35 @@ def _do_pileup_fixed_size(cooler_dataset, window_size, binsize, regions, arms, p
     return pileup_array
 
 
-def _do_pileup_variable_size(cooler_dataset_id, interval_id, binsize, regions, arms, pileup_type):
-    """"""
-    cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{binsize}")
-
+def _do_pileup_variable_size(cooler_dataset, binsize, regions, arms, pileup_type):
+    """do pileup with subsequent averaging for regions with a variable size"""
+    # TODO: select resolution based on max/median/min size
+    cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/10000")
+    # expand regions
+    size = regions["end"] - regions["start"]
+    pileup_regions = pd.DataFrame(
+        {
+            "chrom": regions["chrom"],
+            "start": (regions["start"] - current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * size).astype(int),
+            "end": (regions["end"] + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * size).astype(int),
+        }
+    )
     if pileup_type == "Obs/Exp":
         expected = HT.get_expected(
             cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
         )
-        pileup_array = HT.extract_windows_different_sizes_obs_exp(regions, arms, cooler_file, expected)
-        
+        pileup_arrays = HT.extract_windows_different_sizes_obs_exp(pileup_regions, arms, cooler_file, expected)
     else:
-        pileup_array = HT.extract_regions_different_sizes_iccf(regions, arms, cooler_file)
-    return pileup_array
+        pileup_arrays = HT.extract_windows_different_sizes_iccf(pileup_regions, arms, cooler_file)
+    # resize to fit
+    bin_number = int((100 + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]*100*2) / binsize)
+    resized_arrays = []
+    for array in pileup_arrays:
+        # replace inf with nan
+        array[np.isinf(array)] = np.nan
+        resized_arrays.append(resize(array, (bin_number, bin_number)))
+    stacked = np.stack(resized_arrays, axis=2)
+    return np.nanmean(stacked, axis=2)
 
 
 def _do_stackup(regions, window_size, binsize, bigwig_dataset):

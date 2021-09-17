@@ -310,7 +310,8 @@ def parse_binsizes(map):
     """returns needed binsizes from preprocessing map."""
     binsizes = set()
     for windowsize, bins in map.items():
-        binsizes |= set(bins)
+        if windowsize != "variable":
+            binsizes |= set(bins)
     return list(binsizes)
 
 
