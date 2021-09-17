@@ -207,7 +207,10 @@ export default {
             if (this.widgetData["shape"][0] > 10000) {
                 return 100;
             }
-            return 50;
+            if (this.widgetData["shape"][0] > 2500){
+                return 50
+            }
+            return 25;
         },
         aggregationType: function () {
             if (this.overlay == "density") {
