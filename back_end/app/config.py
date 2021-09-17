@@ -25,6 +25,7 @@ class Config:
         2000000: [50000, 100000, 200000],
         "variable": [1, 2, 5],  # binsize for variable sizetype is in percent
     }
+    VARIABLE_SIZE_EXPANSION_FACTOR = 0.2
     # mapping of pipeline names to filetypes
     PIPELINE_NAMES = {
         "cooler": ("pipeline_pileup", "run pileup pipeline"),

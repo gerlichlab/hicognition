@@ -5,6 +5,7 @@ import logging
 
 from flask.globals import current_app
 import pandas as pd
+from pandas.core.indexes.base import ensure_index
 import numpy as np
 from sklearn.impute import SimpleImputer
 import cooler
@@ -271,12 +272,15 @@ def perform_1d_embedding(collection_id, intervals_id, binsize):
             & (IndividualIntervalData.intervals_id == intervals_id)
             & (IndividualIntervalData.binsize == binsize)
         ).first()
-        # load data and extract center column if data is point feature
         temp = np.load(stackup.file_path)
         if source_regions.sizeType == "Interval":
-            reduced = np.mean(temp, axis=1)
+            # Take area between the expanded regions
+            start_index = int((current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]*100) // binsize)
+            end_index = int(start_index + (100//binsize))
+            reduced = np.mean(temp[:, start_index:end_index], axis=1)
             data.append(reduced)
         else:
+            # load data and extract center column if data is point feature
             data.append(temp[:, temp.shape[1] // 2])
     # construct feature frame
     feature_frame = np.stack(data).transpose()
@@ -433,7 +437,7 @@ def _do_stackup(regions, window_size, binsize, bigwig_dataset):
     """Takes a set of regions, window_size, binsize as well as the path to a bigwig file and
     extracts data along those regions."""
     regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
-    if window_size is not None:
+    if window_size is not None: # regions with constant size
         regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
         # construct stackup-regions: positions - windowsize until position + windowsize
         stackup_regions = pd.DataFrame(
@@ -446,16 +450,16 @@ def _do_stackup(regions, window_size, binsize, bigwig_dataset):
         )
         # calculate number of bins
         bin_number = int(window_size / binsize) * 2
-    else:
+    else: # regions with variable size
         size = regions["end"] - regions["start"]
         stackup_regions = pd.DataFrame(
             {
                 "chrom": regions["chrom"],
-                "start": regions["start"] - 0.2 * size,
-                "end": regions["end"] + 0.2 * size,
+                "start": regions["start"] - current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * size,
+                "end": regions["end"] + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * size,
             }
         )
-        bin_number = 100 // binsize
+        bin_number = int((100 + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]*100*2) / binsize)
     # make arget array
     target_array = np.empty((len(stackup_regions), bin_number))
     target_array.fill(np.nan)
