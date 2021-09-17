@@ -98,33 +98,14 @@ def perform_pileup(cooler_dataset_id, interval_id, binsize, arms, pileup_type):
     # load bedfile
     log.info("      Loading regions...")
     regions = pd.read_csv(file_path, sep="\t", header=None)
-    if len(regions.columns) > 2:
-        # region definition with start and end
-        regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
-        regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
-    else:
-        # region definition with start
-        regions = regions.rename(columns={0: "chrom", 1: "pos"})
+    regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
+    regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
     # do pileup
     log.info("      Doing pileup...")
-    cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{binsize}")
-    pileup_windows = HT.assign_regions(
-        window_size, int(binsize), regions["chrom"], regions["pos"], arms
-    ).dropna()
-    if pileup_type == "Obs/Exp":
-        expected = HT.get_expected(
-            cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
-        )
-        pileup_array = HT.do_pileup_obs_exp(
-            cooler_file,
-            expected,
-            pileup_windows,
-            proc=current_app.config["PILEUP_PROCESSES"],
-        )
+    if window_size is not None:
+        pileup_array = _do_pileup_fixed_size(cooler_dataset, window_size, binsize, regions, arms, pileup_type)
     else:
-        pileup_array = HT.do_pileup_iccf(
-            cooler_file, pileup_windows, proc=current_app.config["PILEUP_PROCESSES"]
-        )
+        pileup_array = _do_pileup_variable_size(cooler_dataset, window_size, binsize, regions, arms, pileup_type)
     # prepare dataframe for js reading1
     log.info("      Writing output...")
     file_name = uuid.uuid4().hex + ".npy"
@@ -431,6 +412,44 @@ def add_pileup_db(file_path, binsize, intervals_id, cooler_dataset_id, pileup_ty
     )
     db.session.add(new_entry)
     db.session.commit()
+
+
+def _do_pileup_fixed_size(cooler_dataset, window_size, binsize, regions, arms, pileup_type):
+    """"""
+    cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{binsize}")
+    pileup_windows = HT.assign_regions(
+        window_size, int(binsize), regions["chrom"], regions["pos"], arms
+    ).dropna()
+    if pileup_type == "Obs/Exp":
+        expected = HT.get_expected(
+            cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
+        )
+        pileup_array = HT.do_pileup_obs_exp(
+            cooler_file,
+            expected,
+            pileup_windows,
+            proc=current_app.config["PILEUP_PROCESSES"],
+        )
+    else:
+        pileup_array = HT.do_pileup_iccf(
+            cooler_file, pileup_windows, proc=current_app.config["PILEUP_PROCESSES"]
+        )
+    return pileup_array
+
+
+def _do_pileup_variable_size(cooler_dataset_id, interval_id, binsize, regions, arms, pileup_type):
+    """"""
+    cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{binsize}")
+
+    if pileup_type == "Obs/Exp":
+        expected = HT.get_expected(
+            cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
+        )
+        pileup_array = HT.extract_windows_different_sizes_obs_exp(regions, arms, cooler_file, expected)
+        
+    else:
+        pileup_array = HT.extract_regions_different_sizes_iccf(regions, arms, cooler_file)
+    return pileup_array
 
 
 def _do_stackup(regions, window_size, binsize, bigwig_dataset):
