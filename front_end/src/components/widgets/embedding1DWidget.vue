@@ -46,7 +46,7 @@
                                 @click="handleBinsizeSelection(binsize)"
                             >
                                 <span class="caption">{{
-                                    convertBasePairsToReadable(binsize)
+                                    getBinSizeFormat(binsize)
                                 }}</span>
                                 <md-icon v-if="selectedBinsize == binsize"
                                     >done</md-icon
@@ -194,7 +194,7 @@ export default {
                 " | " +
                 `${overlayMessage}` +
                 " | binsize " +
-                this.convertBasePairsToReadable(this.selectedBinsize)
+                this.getBinSizeFormat(this.selectedBinsize)
             );
         },
         size: function () {

@@ -46,7 +46,7 @@
                                 @click="handleBinsizeSelection(binsize)"
                             >
                                 <span class="caption">{{
-                                    convertBasePairsToReadable(binsize)
+                                    getBinSizeFormat(binsize)
                                 }}</span>
                                 <md-icon v-if="selectedBinsize == binsize"
                                     >done</md-icon
@@ -109,7 +109,7 @@ export default {
     },
     computed: {
         message: function(){
-            return  this.datasets[this.selectedDataset]["name"] +  " | binsize " + this.convertBasePairsToReadable(this.selectedBinsize)
+            return  this.datasets[this.selectedDataset]["name"] +  " | binsize " + this.getBinSizeFormat(this.selectedBinsize)
         },
         datasetNames: function(){
             return this.datasets[this.selectedDataset]["collection_dataset_names"]

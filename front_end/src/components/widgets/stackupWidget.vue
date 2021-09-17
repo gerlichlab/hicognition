@@ -50,7 +50,7 @@
                                 @click="handleBinsizeSelection(binsize)"
                             >
                                 <span class="caption">{{
-                                    convertBasePairsToReadable(binsize)
+                                    getBinSizeFormat(binsize)
                                 }}</span>
                                 <md-icon v-if="selectedBinsize == binsize"
                                     >done</md-icon
@@ -235,7 +235,7 @@ export default {
             return (
                 this.datasets[this.selectedDataset]["name"] +
                 " | binsize " +
-                this.convertBasePairsToReadable(this.selectedBinsize)
+                this.getBinSizeFormat(this.selectedBinsize)
             );
         },
         colormap: function () {

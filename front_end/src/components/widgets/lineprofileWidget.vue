@@ -46,7 +46,7 @@
                                 @click="handleBinsizeSelection(binsize)"
                             >
                                 <span class="caption">{{
-                                    convertBasePairsToReadable(binsize)
+                                    getBinSizeFormat(binsize)
                                 }}</span>
                                 <md-icon v-if="selectedBinsize == binsize"
                                     >done</md-icon
@@ -171,7 +171,7 @@ export default {
             if (datasetSummary.length > 40){
                 datasetSummary = "multiple datasets | "
             }
-            return  datasetSummary + "binsize " + this.convertBasePairsToReadable(this.selectedBinsize)
+            return  datasetSummary + "binsize " + this.getBinSizeFormat(this.selectedBinsize)
         }
     },
     methods: {

@@ -208,6 +208,15 @@ export var apiMixin = {
 
 export var formattingMixin = {
     methods: {
+        getBinSizeFormat: function(binsize){
+            let output;
+            if (this.isVariableSize){
+                output = `${binsize} %`
+            }else {
+                output = this.convertBasePairsToReadable(binsize)
+            }
+            return output
+        },
         convertBasePairsToReadable: function(baseString) {
             var basePairs = Number(baseString);
             if (Math.abs(basePairs) < 1000) {
@@ -273,6 +282,9 @@ export var widgetMixin = {
                 height: `${this.height}px`,
                 width: `${this.width}px`
             };
+        },
+        isVariableSize: function(){
+            return this.intervalSize == "variable"
         }
     },
     methods: {
