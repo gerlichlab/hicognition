@@ -76,6 +76,7 @@
                 :collectionNames="datasetNames"
                 :intervalSize="Number(intervalSize)"
                 :selectedColumn="selectedColumn"
+                :binsize="Number(selectedBinsize)"
                 @barclick="handleLocationChange"
             />
             <div

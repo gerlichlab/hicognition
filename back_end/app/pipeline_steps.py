@@ -30,7 +30,7 @@ from .models import (
     AssociationIntervalData,
     EmbeddingIntervalData,
     dataset_preprocessing_table,
-    collections_preprocessing_table
+    collections_preprocessing_table,
 )
 
 # get logger
@@ -104,9 +104,13 @@ def perform_pileup(cooler_dataset_id, interval_id, binsize, arms, pileup_type):
                 "      ########### Windowsize and binsize do not match! ##############"
             )
             return
-        pileup_array = _do_pileup_fixed_size(cooler_dataset, window_size, binsize, regions, arms, pileup_type)
+        pileup_array = _do_pileup_fixed_size(
+            cooler_dataset, window_size, binsize, regions, arms, pileup_type
+        )
     else:
-        pileup_array = _do_pileup_variable_size(cooler_dataset, binsize, regions, arms, pileup_type)
+        pileup_array = _do_pileup_variable_size(
+            cooler_dataset, binsize, regions, arms, pileup_type
+        )
     # prepare dataframe for js reading1
     log.info("      Writing output...")
     file_name = uuid.uuid4().hex + ".npy"
@@ -193,12 +197,18 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
         .query("count > 0")
         .drop("count", axis="columns")
     )
-    queries = interval_operations.chunk_intervals(filtered, window_size, binsize)
+    if window_size is None:
+        queries = interval_operations.chunk_intervals_variable_size(
+            filtered, binsize, current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]
+        )
+    else:
+        queries = interval_operations.chunk_intervals(filtered, window_size, binsize)
     filtered_queries = [
         bf.count_overlaps(query, chromsizes_regions)
         .query("count > 0")
         .drop("count", axis="columns")
         .drop_duplicates()
+        .reset_index(drop=True)
         for query in queries
     ]
     # get target datasets
@@ -214,10 +224,15 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
         bf.count_overlaps(target, chromsizes_regions)
         .query("count > 0")
         .drop("count", axis="columns")
+        .drop_duplicates()
+        .reset_index(drop=True)
         for target in target_list
     ]
     # get universe -> genome binned with equal binsize
-    universe = bf.binnify(chromsizes, binsize)
+    if window_size is None:
+        universe = pd.concat(queries).drop_duplicates().reset_index(drop=True)
+    else:
+        universe = bf.binnify(chromsizes, binsize)
     # perform enrichment analysis
     log.info("      Run enrichment analysis...")
     results = [
@@ -257,8 +272,10 @@ def perform_1d_embedding(collection_id, intervals_id, binsize):
         temp = np.load(stackup.file_path)
         if source_regions.sizeType == "Interval":
             # Take area between the expanded regions
-            start_index = int((current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]*100) // binsize)
-            end_index = int(start_index + (100//binsize))
+            start_index = int(
+                (current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * 100) // binsize
+            )
+            end_index = int(start_index + (100 // binsize))
             reduced = np.mean(temp[:, start_index:end_index], axis=1)
             data.append(reduced)
         else:
@@ -415,7 +432,9 @@ def add_pileup_db(file_path, binsize, intervals_id, cooler_dataset_id, pileup_ty
     db.session.commit()
 
 
-def _do_pileup_fixed_size(cooler_dataset, window_size, binsize, regions, arms, pileup_type):
+def _do_pileup_fixed_size(
+    cooler_dataset, window_size, binsize, regions, arms, pileup_type
+):
     """do pileup with subsequent averaging for regions with a fixed size"""
     cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{binsize}")
     pileup_windows = HT.assign_regions(
@@ -447,19 +466,31 @@ def _do_pileup_variable_size(cooler_dataset, binsize, regions, arms, pileup_type
     pileup_regions = pd.DataFrame(
         {
             "chrom": regions["chrom"],
-            "start": (regions["start"] - current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * size).astype(int),
-            "end": (regions["end"] + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * size).astype(int),
+            "start": (
+                regions["start"]
+                - current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * size
+            ).astype(int),
+            "end": (
+                regions["end"]
+                + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * size
+            ).astype(int),
         }
     )
     if pileup_type == "Obs/Exp":
         expected = HT.get_expected(
             cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
         )
-        pileup_arrays = HT.extract_windows_different_sizes_obs_exp(pileup_regions, arms, cooler_file, expected)
+        pileup_arrays = HT.extract_windows_different_sizes_obs_exp(
+            pileup_regions, arms, cooler_file, expected
+        )
     else:
-        pileup_arrays = HT.extract_windows_different_sizes_iccf(pileup_regions, arms, cooler_file)
+        pileup_arrays = HT.extract_windows_different_sizes_iccf(
+            pileup_regions, arms, cooler_file
+        )
     # resize to fit
-    bin_number = int((100 + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]*100*2) / binsize)
+    bin_number = int(
+        (100 + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * 100 * 2) / binsize
+    )
     resized_arrays = []
     for array in pileup_arrays:
         # replace inf with nan
@@ -473,7 +504,7 @@ def _do_stackup(regions, window_size, binsize, bigwig_dataset):
     """Takes a set of regions, window_size, binsize as well as the path to a bigwig file and
     extracts data along those regions."""
     regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
-    if window_size is not None: # regions with constant size
+    if window_size is not None:  # regions with constant size
         regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
         # construct stackup-regions: positions - windowsize until position + windowsize
         stackup_regions = pd.DataFrame(
@@ -486,16 +517,21 @@ def _do_stackup(regions, window_size, binsize, bigwig_dataset):
         )
         # calculate number of bins
         bin_number = int(window_size / binsize) * 2
-    else: # regions with variable size
+    else:  # regions with variable size
         size = regions["end"] - regions["start"]
         stackup_regions = pd.DataFrame(
             {
                 "chrom": regions["chrom"],
-                "start": regions["start"] - current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * size,
-                "end": regions["end"] + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * size,
+                "start": regions["start"]
+                - current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * size,
+                "end": regions["end"]
+                + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * size,
             }
         )
-        bin_number = int((100 + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]*100*2) / binsize)
+        bin_number = int(
+            (100 + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * 100 * 2)
+            / binsize
+        )
     # make arget array
     target_array = np.empty((len(stackup_regions), bin_number))
     target_array.fill(np.nan)

@@ -192,7 +192,7 @@ export default {
             if (this.plotData.length < 5) {
                 return val;
             }
-            if (this.plotData.lengt < 10) {
+            if (this.plotData.length < 10) {
                 if (index % 2 == 0) {
                     return `Rank ${this.plotData.length - index}`;
                 }

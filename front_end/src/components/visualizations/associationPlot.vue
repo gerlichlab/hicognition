@@ -8,6 +8,7 @@
                 :height="distributionPlotHeight"
                 :intervalSize="intervalSize"
                 :currentColumn="currentColumn"
+                :binsize="binsize"
                 @barclick="transmitEvent"
                 />
             </md-list-item>
@@ -40,7 +41,8 @@ export default {
         height: Number,
         collectionNames: Array,
         intervalSize: Number,
-        selectedColumn: Number
+        selectedColumn: Number,
+        binsize: Number
     },
     computed: {
         rankPlotHeight: function(){

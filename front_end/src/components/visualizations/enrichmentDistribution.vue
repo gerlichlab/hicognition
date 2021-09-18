@@ -15,6 +15,7 @@ export default {
         height: Number,
         intervalSize: Number,
         currentColumn: Number,
+        binsize: Number
     },
     data: function () {
         return {
@@ -106,20 +107,23 @@ export default {
         },
         xAxisFormatter: function (val, index) {
             if (
-                index % (this.plotData.length / 5) == 0 ||
-                index == this.plotData.length - 1
+                index % Math.floor(this.plotData.length / 5) == 0
             ) {
-                return (
-                    Math.floor(
-                        (-this.intervalSize +
-                            index *
-                                Math.floor(
-                                    (this.intervalSize * 2) /
-                                        this.plotData.length
-                                )) /
-                            1000
-                    ) + " kb"
-                );
+                if (!isNaN(this.intervalSize)) {
+                    return (
+                        Math.floor(
+                            (-this.intervalSize +
+                                index *
+                                    Math.floor(
+                                        (this.intervalSize * 2) /
+                                            this.plotData.length
+                                    )) /
+                                1000
+                        ) + " kb"
+                    );
+                }
+                // this is variable region, x-axis format in percent
+                return  (-20 + index * this.binsize) + " %"
             }
             return "";
         },

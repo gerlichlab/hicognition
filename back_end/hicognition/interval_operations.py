@@ -29,3 +29,27 @@ def chunk_intervals(regions, window_size, binsize):
         )
         for offset in range(0, 2 * window_size, binsize)
     ]
+
+
+def chunk_intervals_variable_size(regions, binsize, expansion_factor):
+    """Takes dataframe specifying regions with start and end and returns a dataframe for each
+    binsize-sized (in terms of percentage of the entire region) chunk in [start - size*expansion_factor, end + szie*expansion_factor]
+    """
+    regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
+    sizes = regions["end"] - regions["start"]
+    # get bounds for chunks
+    chroms = regions["chrom"]
+    starts = (regions["start"] - sizes * expansion_factor).astype(int)
+    binsizes = (sizes / (100/binsize)).astype(int)
+    bin_number = int((100 + expansion_factor*100*2) / binsize)
+    # construct output
+    return [
+        pd.DataFrame(
+            {
+                "chrom": chroms,
+                "start": starts + offset * binsizes,
+                "end": starts + (offset + 1) * binsizes,
+            }
+        )
+        for offset in range(bin_number)
+    ]

@@ -144,14 +144,20 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         self.assoc_data_1 = AssociationIntervalData(
             file_path=test_file, binsize=50000, collection_id=1, intervals_id=1
         )
-
-    def _add_tad_boundaries(self):
-        """populate database with real data"""
+        # add tad boundaries
         self.tad_boundaries = Dataset(id=4, file_path="tests/testfiles/tad_boundaries.bed", filetype="bedfile", assembly=1)
         self.tad_boundaries_interval = Intervals(id=2, windowsize=200000, dataset_id=4)
+        # add ctcf peaks
+        self.ctcf_peaks = Dataset(id=5, file_path="tests/testfiles/CTCF_peaks.bed", filetype="bedfile", assembly=1)
         self.collection_2 = Collection(
             id=2, datasets=[self.tad_boundaries]
         )
+        self.collection_3 = Collection(
+            id=3, datasets=[self.ctcf_peaks]
+        )
+        # add variable intervals
+        self.tads = Dataset(id=6, file_path="tests/testfiles/G2_tads_w_size.bed", filetype="bedfile", assembly=1, sizeType="Interval")
+        self.tad_interval = Intervals(id=3, dataset_id=6)
 
     def _create_groupings(self):
         self.datasets = [
@@ -159,9 +165,11 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
             self.tad_boundaries,
             self.target_dataset_1,
             self.target_dataset_2,
+            self.tads,
+            self.ctcf_peaks
         ]
-        self.intervals = [self.query_interval, self.tad_boundaries_interval]
-        self.collections = [self.collection_1, self.collection_2]
+        self.intervals = [self.query_interval, self.tad_boundaries_interval, self.tad_interval]
+        self.collections = [self.collection_1, self.collection_2, self.collection_3]
 
     def setUp(self):
         """Add test dataset"""
@@ -177,7 +185,6 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         self._populate_with_data()
-        self._add_tad_boundaries()
         self._create_groupings()
 
     def test_result_added_correctly_to_db(self):
@@ -241,6 +248,15 @@ class TestPerformEnrichmentAnalysis(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # run enrichment analysis
         perform_enrichment_analysis(self.collection_2.id, self.tad_boundaries_interval.id, 50000)
+
+    def test_variable_sized_regions_run_through(self):
+        """tests whether enrichment for variable sized regions runs correctly."""
+        db.session.add_all(self.datasets)
+        db.session.add_all(self.intervals)
+        db.session.add_all(self.collections)
+        db.session.commit()
+        # run enrichment analysis
+        perform_enrichment_analysis(self.collection_2.id, self.tad_interval.id, 10)
 
 
 if __name__ == "__main__":
