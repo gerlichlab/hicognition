@@ -462,13 +462,13 @@ def _do_pileup_fixed_size(
 
 def _do_pileup_variable_size(cooler_dataset, binsize, regions, arms, pileup_type):
     """do pileup with subsequent averaging for regions with a variable size"""
-    bin_number = int(
+    bin_number_expanded = int(
         (100 + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * 100 * 2) / binsize
     )
-    binsize = get_optimal_binsize(regions)
+    binsize = get_optimal_binsize(regions, bin_number_expanded)
     log.info(f"      Optimal binsize is {binsize}")
     if binsize is None:
-        empty = np.empty((bin_number, bin_number))
+        empty = np.empty((bin_number_expanded, bin_number_expanded))
         empty[:] = np.nan
         return empty
     cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{binsize}")
@@ -504,9 +504,9 @@ def _do_pileup_variable_size(cooler_dataset, binsize, regions, arms, pileup_type
         # replace inf with nan
         array[np.isinf(array)] = np.nan
         if len(array) != 0:
-            resized_arrays.append(resize(array, (bin_number, bin_number)))
+            resized_arrays.append(resize(array, (bin_number_expanded, bin_number_expanded)))
         else:
-            empty = np.empty((bin_number, bin_number))
+            empty = np.empty((bin_number_expanded, bin_number_expanded))
             empty[:] = np.nan
             resized_arrays.append(empty)
     stacked = np.stack(resized_arrays, axis=2)

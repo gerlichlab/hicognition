@@ -445,12 +445,13 @@ def recDict():
     return defaultdict(recDict)
 
 
-def get_optimal_binsize(regions):
-    """given a dataframe of regions defined via (chrom, start, end)
-    decide which binsize to use for variable size pileup/enrichment analysis"""
+def get_optimal_binsize(regions, target_bin_number):
+    """given a dataframe of regions defined via (chrom, start, end) and a
+    target bin number, decide which binsize to use for variable size pileup/enrichment analysis"""
     MAX_CHUNK_NUMBER = 250
     sizes = regions["end"] - regions["start"]
     max_size = np.percentile(sizes, 80)
+    median_size = np.median(sizes)
     binsizes = sorted(
         [
             int(entry)
@@ -463,12 +464,14 @@ def get_optimal_binsize(regions):
         return None
     # flag binsizes that are below max chunk_number
     good_binsizes = [
-        binsize
+        (binsize, median_size / binsize)
         for index, binsize in enumerate(binsizes)
         if chunk_number[index] < MAX_CHUNK_NUMBER
     ]
     # check if any retained
     if len(good_binsizes) == 0:
         return None
+    # check which binsize is closest to the target binnumber for the mean size
+    best_binsize = min(good_binsizes, key=lambda x: abs(x[1] - target_bin_number))
     # return smallest one that is ok
-    return good_binsizes[0]
+    return best_binsize[0]
