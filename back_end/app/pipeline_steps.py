@@ -16,7 +16,10 @@ from ngs import HiCTools as HT
 from hicognition import io_helpers, interval_operations
 import pylola
 import bbi
-from .api.helpers import remove_safely
+from .api.helpers import (
+        remove_safely,
+        get_optimal_binsize
+)
 from rq import get_current_job
 from . import db
 from .models import (
@@ -459,8 +462,16 @@ def _do_pileup_fixed_size(
 
 def _do_pileup_variable_size(cooler_dataset, binsize, regions, arms, pileup_type):
     """do pileup with subsequent averaging for regions with a variable size"""
-    # TODO: select resolution based on max/median/min size
-    cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/10000")
+    bin_number = int(
+        (100 + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * 100 * 2) / binsize
+    )
+    binsize = get_optimal_binsize(regions)
+    log.info(f"      Optimal binsize is {binsize}")
+    if binsize is None:
+        empty = np.empty((bin_number, bin_number))
+        empty[:] = np.nan
+        return empty
+    cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{binsize}")
     # expand regions
     size = regions["end"] - regions["start"]
     pileup_regions = pd.DataFrame(
@@ -488,14 +499,16 @@ def _do_pileup_variable_size(cooler_dataset, binsize, regions, arms, pileup_type
             pileup_regions, arms, cooler_file
         )
     # resize to fit
-    bin_number = int(
-        (100 + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * 100 * 2) / binsize
-    )
     resized_arrays = []
     for array in pileup_arrays:
         # replace inf with nan
         array[np.isinf(array)] = np.nan
-        resized_arrays.append(resize(array, (bin_number, bin_number)))
+        if len(array) != 0:
+            resized_arrays.append(resize(array, (bin_number, bin_number)))
+        else:
+            empty = np.empty((bin_number, bin_number))
+            empty[:] = np.nan
+            resized_arrays.append(empty)
     stacked = np.stack(resized_arrays, axis=2)
     return np.nanmean(stacked, axis=2)
 

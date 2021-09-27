@@ -12,6 +12,7 @@ from app import db
 from app.models import Dataset, Intervals, Assembly, Task
 from app.tasks import pipeline_pileup
 from app.pipeline_steps import perform_pileup
+from app.api.helpers import get_optimal_binsize
 
 
 class TestPipelinePileup(LoginTestCase, TempDirTestCase):
@@ -32,18 +33,8 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # add dataset
-        self.bedfile = Dataset(
-            id=1,
-            filetype="bedfile",
-            user_id=1,
-            assembly=1
-        )
-        self.coolerfile = Dataset(
-            id=2,
-            filetype="cooler",
-            user_id=1,
-            assembly=1
-        )
+        self.bedfile = Dataset(id=1, filetype="bedfile", user_id=1, assembly=1)
+        self.coolerfile = Dataset(id=2, filetype="cooler", user_id=1, assembly=1)
         # add intervals
         self.intervals1 = Intervals(
             id=1,
@@ -59,16 +50,10 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         )
         # make tasks
         self.finished_task1 = Task(
-            id="test1",
-            dataset_id=2,
-            intervals_id=1,
-            complete=True
+            id="test1", dataset_id=2, intervals_id=1, complete=True
         )
         self.unfinished_task1 = Task(
-            id="test1",
-            dataset_id=2,
-            intervals_id=1,
-            complete=False
+            id="test1", dataset_id=2, intervals_id=1, complete=False
         )
 
     @staticmethod
@@ -94,7 +79,9 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         """Tests whether the functions that execute the different pipeline steps are called
         correctly."""
         # add datasets
-        db.session.add_all([self.coolerfile, self.bedfile, self.intervals1, self.intervals2])
+        db.session.add_all(
+            [self.coolerfile, self.bedfile, self.intervals1, self.intervals2]
+        )
         db.session.commit()
         # launch task
         binsize = 10000
@@ -117,12 +104,16 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.pd.read_csv")
     @patch("app.pipeline_steps._set_task_progress")
     @patch("app.pipeline_steps.perform_pileup")
-    def test_dataset_state_not_changed_if_not_last(self, mock_pileup, mock_set_progress, mock_read_csv):
+    def test_dataset_state_not_changed_if_not_last(
+        self, mock_pileup, mock_set_progress, mock_read_csv
+    ):
         """tests whether dataset state is left unchanged if it is not the last task for
         this dataset/intervals combination."""
         # set up database
         self.bedfile.processing_features = [self.coolerfile]
-        db.session.add_all([self.bedfile, self.coolerfile, self.intervals1, self.unfinished_task1])
+        db.session.add_all(
+            [self.bedfile, self.coolerfile, self.intervals1, self.unfinished_task1]
+        )
         # call pipeline
         pipeline_pileup(2, 1, 10000)
         # check whether processing has finished
@@ -131,12 +122,16 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.pd.read_csv")
     @patch("app.pipeline_steps._set_task_progress")
     @patch("app.pipeline_steps.perform_pileup")
-    def test_dataset_set_finished_if_last(self, mock_pileup, mock_set_progress, mock_read_csv):
+    def test_dataset_set_finished_if_last(
+        self, mock_pileup, mock_set_progress, mock_read_csv
+    ):
         """tests whether dataset is set finished correctly if it is the last task for
         this dataset/intervals combination."""
         # set up database
         self.bedfile.processing_features = [self.coolerfile]
-        db.session.add_all([self.bedfile, self.coolerfile, self.intervals1, self.finished_task1])
+        db.session.add_all(
+            [self.bedfile, self.coolerfile, self.intervals1, self.finished_task1]
+        )
         # call pipeline
         pipeline_pileup(2, 1, 10000)
         # check whether processing has finished
@@ -146,13 +141,17 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.pd.read_csv")
     @patch("app.pipeline_steps._set_task_progress")
     @patch("app.pipeline_steps.perform_pileup")
-    def test_dataset_set_failed_if_failed(self, mock_pileup, mock_set_progress, mock_read_csv, mock_log):
+    def test_dataset_set_failed_if_failed(
+        self, mock_pileup, mock_set_progress, mock_read_csv, mock_log
+    ):
         """tests whether dataset is set as faild if problem arises."""
         # set up exception raising
         mock_pileup.side_effect = ValueError("Test")
         # set up database
         self.bedfile.processing_features = [self.coolerfile]
-        db.session.add_all([self.bedfile, self.coolerfile, self.intervals1, self.unfinished_task1])
+        db.session.add_all(
+            [self.bedfile, self.coolerfile, self.intervals1, self.unfinished_task1]
+        )
         # call pipeline
         pipeline_pileup(2, 1, 10000)
         # check whether processing has finished
@@ -188,7 +187,7 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
             filetype="cooler",
             processing_state="finished",
             user_id=1,
-            assembly=1
+            assembly=1,
         )
         self.dataset2 = Dataset(
             dataset_name="test4",
@@ -196,7 +195,7 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
             filetype="cooler",
             processing_state="finished",
             user_id=1,
-            assembly=1
+            assembly=1,
         )
         # add intervals
         self.intervals1 = Intervals(
@@ -400,6 +399,36 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
             self.dataset.id,
             "ICCF",
         )
+
+
+class TestGetOptimalBinsize(unittest.TestCase):
+    """Tests get_optimal_binsize helper function"""
+
+    def test_none_if_regions_too_small(self):
+        """tests if none is returned if regions are too small."""
+        regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [10]})
+        self.assertEqual(get_optimal_binsize(regions), None)
+
+    def test_correct_binsize_small_size(self):
+        """tests if none is returned if regions are too small."""
+        regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [10000]})
+        self.assertEqual(get_optimal_binsize(regions), 1000)
+
+    def test_correct_binsize_moderate_size(self):
+        """tests if none is returned if regions are too small."""
+        regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [500001]})
+        self.assertEqual(get_optimal_binsize(regions), 2000)
+
+    def test_correct_binsize_large_size(self):
+        """tests if none is returned if regions are too small."""
+        regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [1000001]})
+        self.assertEqual(get_optimal_binsize(regions), 5000)
+
+    def test_correct_binsize_rare_large_size(self):
+        """tests if none is returned if regions are too small."""
+        regions = pd.DataFrame({"chrom": ["chr1"]*100, "start": [0]*100, "end": [10000]*99 + [1000001]})
+        self.assertEqual(get_optimal_binsize(regions), 1000)
+
 
 
 if __name__ == "__main__":

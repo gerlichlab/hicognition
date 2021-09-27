@@ -9,9 +9,9 @@ from ..models import (
     Task,
     IndividualIntervalData,
     AverageIntervalData,
-    BedFileMetadata,
-    any_tasks_failed,
+    BedFileMetadata
 )
+import numpy as np
 
 COMMON_REQUIRED_KEYS = [
     "cellCycleStage",
@@ -430,3 +430,23 @@ def recDict():
     assignment. recDict[0][1][2] will
     create all intermediate dictionaries."""
     return defaultdict(recDict)
+
+
+def get_optimal_binsize(regions):
+    """given a dataframe of regions defined via (chrom, start, end)
+    decide which binsize to use for variable size pileup/enrichment analysis"""
+    MAX_CHUNK_NUMBER = 500
+    sizes = regions["end"] - regions["start"]
+    max_size = np.percentile(sizes, 95)
+    binsizes = sorted([int(entry) for entry in parse_binsizes(current_app.config["PREPROCESSING_MAP"])])
+    chunk_number = [max_size/binsize for binsize in binsizes]
+    # check if first chunk_number is below 1 -> should indicate error
+    if chunk_number[0] <= 1:
+        return None
+    # flag binsizes that are below max chunk_number
+    good_binsizes = [binsize for index, binsize in enumerate(binsizes) if chunk_number[index] < MAX_CHUNK_NUMBER]
+    # check if any retained
+    if len(good_binsizes) == 0:
+        return None
+    # return smallest one that is ok
+    return good_binsizes[0]

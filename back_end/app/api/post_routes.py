@@ -29,7 +29,7 @@ from .helpers import (
     get_all_interval_ids,
     parse_binsizes,
     post_dataset_requirements_fullfilled,
-    add_fields_to_dataset,
+    add_fields_to_dataset
 
 )
 from .errors import forbidden, invalid, not_found
