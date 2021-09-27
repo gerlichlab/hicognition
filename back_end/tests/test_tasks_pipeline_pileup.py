@@ -408,10 +408,10 @@ class TestGetOptimalBinsize(unittest.TestCase):
         """tests if none is returned if regions are too small."""
         regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [10]})
         self.assertEqual(get_optimal_binsize(regions), None)
-    
+
     def test_none_if_regions_too_large(self):
         """tests if none is returned if regions too large"""
-        regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [10**9]})
+        regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [10 ** 9]})
         self.assertEqual(get_optimal_binsize(regions), None)
 
     def test_correct_binsize_small_size(self):
@@ -422,7 +422,7 @@ class TestGetOptimalBinsize(unittest.TestCase):
     def test_correct_binsize_moderate_size(self):
         """tests correct handling of moderately sized regions."""
         regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [500001]})
-        self.assertEqual(get_optimal_binsize(regions), 2000)
+        self.assertEqual(get_optimal_binsize(regions), 5000)
 
     def test_correct_binsize_large_size(self):
         """tests correct handling of large regions."""
@@ -431,9 +431,21 @@ class TestGetOptimalBinsize(unittest.TestCase):
 
     def test_correct_binsize_rare_large_size(self):
         """tests correct handling of small regions with rare lare regions"""
-        regions = pd.DataFrame({"chrom": ["chr1"]*100, "start": [0]*100, "end": [10000]*99 + [1000001]})
+        regions = pd.DataFrame(
+            {
+                "chrom": ["chr1"] * 100,
+                "start": [0] * 100,
+                "end": [10000] * 99 + [1000001],
+            }
+        )
         self.assertEqual(get_optimal_binsize(regions), 1000)
 
+    def test_correct_binsize_tads(self):
+        """tests correct handling of small regions with rare lare regions"""
+        regions = pd.read_csv(
+            "tests/testfiles/G2_tads_w_size.bed", sep="\t", header=None
+        ).rename(columns={0: "chrom", 1: "start", 2: "end"})
+        self.assertEqual(get_optimal_binsize(regions), 10000)
 
 
 if __name__ == "__main__":

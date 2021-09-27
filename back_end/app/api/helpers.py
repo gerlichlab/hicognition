@@ -9,7 +9,7 @@ from ..models import (
     Task,
     IndividualIntervalData,
     AverageIntervalData,
-    BedFileMetadata
+    BedFileMetadata,
 )
 import numpy as np
 
@@ -48,7 +48,7 @@ DATASET_META_FIELDS_MODIFY = {
     "DerivationType": "derivationType",
     "Protein": "protein",
     "Directionality": "directionality",
-    "public": "public"
+    "public": "public",
 }
 
 
@@ -115,15 +115,17 @@ def add_fields_to_dataset(entry, form):
         if form_key in form:
             entry.__setattr__(dataset_field, form[form_key])
 
+
 def add_fields_to_dataset_modify(entry, form):
     """adds dataset fields that exist in form to entry."""
     for form_key, dataset_field in DATASET_META_FIELDS_MODIFY.items():
         if form_key in form:
             if form_key == "public":
-                entry.__setattr__(dataset_field, "public" in form and form["public"].lower() == "true")
+                entry.__setattr__(
+                    dataset_field, "public" in form and form["public"].lower() == "true"
+                )
             else:
                 entry.__setattr__(dataset_field, form[form_key])
-
 
 
 def blank_dataset(entry):
@@ -256,6 +258,7 @@ def remove_tasks(tasks, db):
         db.session.delete(task)
     db.session.commit()
 
+
 def filter_failed_tasks(tasks):
     """filters tasks for failed tasks"""
     output = []
@@ -266,6 +269,7 @@ def filter_failed_tasks(tasks):
         if task.get_rq_job().get_status() == "failed":
             output.append(task)
     return output
+
 
 def remove_failed_tasks_dataset(db, dataset, region):
     """Removes all failed tasks that are associated with a particular dataset/region combination"""
@@ -281,6 +285,7 @@ def remove_failed_tasks_dataset(db, dataset, region):
     )
     failed_tasks = filter_failed_tasks(associated_tasks)
     remove_tasks(failed_tasks, db)
+
 
 def remove_failed_tasks_collection(db, collection, region):
     """Removes all failed tasks that are associated with a particular collection/region combination"""
@@ -332,7 +337,9 @@ def add_average_data_to_preprocessed_dataset_map(
         else:
             windowsize = interval.windowsize
         # check whether dataset is in failed or processing datasets
-        if (dataset in region_dataset.processing_features) or (dataset in region_dataset.failed_features):
+        if (dataset in region_dataset.processing_features) or (
+            dataset in region_dataset.failed_features
+        ):
             continue
         if average.value_type in ["Obs/Exp", "ICCF"]:
             output_object["pileup"][dataset.id]["name"] = dataset.dataset_name
@@ -363,7 +370,9 @@ def add_individual_data_to_preprocessed_dataset_map(
         else:
             windowsize = interval.windowsize
         # check whether dataset is in failed or processing datasets
-        if (dataset in region_dataset.processing_features) or (dataset in region_dataset.failed_features):
+        if (dataset in region_dataset.processing_features) or (
+            dataset in region_dataset.failed_features
+        ):
             continue
         output_object["stackup"][dataset.id]["name"] = dataset.dataset_name
         output_object["stackup"][dataset.id]["data_ids"][windowsize][
@@ -387,7 +396,9 @@ def add_association_data_to_preprocessed_dataset_map(
             windowsize = "variable"
         else:
             windowsize = interval.windowsize
-        if (collection in region_dataset.processing_collections) or (collection in region_dataset.failed_collections):
+        if (collection in region_dataset.processing_collections) or (
+            collection in region_dataset.failed_collections
+        ):
             continue
         output_object["lola"][collection.id]["name"] = collection.name
         output_object["lola"][collection.id][
@@ -414,7 +425,9 @@ def add_embedding_data_to_preprocessed_dataset_map(
             windowsize = "variable"
         else:
             windowsize = interval.windowsize
-        if (collection in region_dataset.processing_collections) or (collection in region_dataset.failed_collections):
+        if (collection in region_dataset.processing_collections) or (
+            collection in region_dataset.failed_collections
+        ):
             continue
         output_object["embedding"][collection.id]["name"] = collection.name
         output_object["embedding"][collection.id][
@@ -435,16 +448,25 @@ def recDict():
 def get_optimal_binsize(regions):
     """given a dataframe of regions defined via (chrom, start, end)
     decide which binsize to use for variable size pileup/enrichment analysis"""
-    MAX_CHUNK_NUMBER = 500
+    MAX_CHUNK_NUMBER = 250
     sizes = regions["end"] - regions["start"]
-    max_size = np.percentile(sizes, 95)
-    binsizes = sorted([int(entry) for entry in parse_binsizes(current_app.config["PREPROCESSING_MAP"])])
-    chunk_number = [max_size/binsize for binsize in binsizes]
+    max_size = np.percentile(sizes, 80)
+    binsizes = sorted(
+        [
+            int(entry)
+            for entry in parse_binsizes(current_app.config["PREPROCESSING_MAP"])
+        ]
+    )
+    chunk_number = [max_size / binsize for binsize in binsizes]
     # check if first chunk_number is below 1 -> should indicate error
     if chunk_number[0] <= 1:
         return None
     # flag binsizes that are below max chunk_number
-    good_binsizes = [binsize for index, binsize in enumerate(binsizes) if chunk_number[index] < MAX_CHUNK_NUMBER]
+    good_binsizes = [
+        binsize
+        for index, binsize in enumerate(binsizes)
+        if chunk_number[index] < MAX_CHUNK_NUMBER
+    ]
     # check if any retained
     if len(good_binsizes) == 0:
         return None
