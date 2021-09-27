@@ -222,7 +222,7 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.HT.assign_regions")
     @patch("app.pipeline_steps.cooler.Cooler")
     @patch("app.pipeline_steps.pd.read_csv")
-    def test_assign_regions_start_end_regions_handled_correctly(
+    def test_assign_regions_called_correctly(
         self,
         mock_read_csv,
         mock_Cooler,
@@ -259,41 +259,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.HT.assign_regions")
     @patch("app.pipeline_steps.cooler.Cooler")
     @patch("app.pipeline_steps.pd.read_csv")
-    def test_assign_regions_pos_regions_handled_correctly(
-        self,
-        mock_read_csv,
-        mock_Cooler,
-        mock_assign_regions,
-        mock_get_expected,
-        mock_pileup_obs_exp,
-        mock_pileup_iccf,
-        mock_add_db,
-    ):
-        """Tests whether regions that are defined as chrom, pos are handled correctly."""
-        test_df_interval = pd.DataFrame({0: ["chr1", "chr1"], 1: [500, 1500]})
-        mock_read_csv.return_value = test_df_interval
-        # dispatch call
-        dataset_id = 1
-        intervals_id = 1
-        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        perform_pileup(dataset_id, intervals_id, 10000, arms, "ICCF")
-        # check whether assign regions was called with correct arguments
-        expected_df = pd.DataFrame({"chrom": ["chr1", "chr1"], "pos": [500, 1500]})
-        window_size, binsize, chrom_called, pos_called = mock_assign_regions.call_args[
-            0
-        ][:4]
-        self.assertEqual(window_size, 200000)
-        self.assertEqual(binsize, 10000)
-        assert_series_equal(chrom_called, expected_df["chrom"])
-        assert_series_equal(pos_called, expected_df["pos"])
-
-    @patch("app.pipeline_steps.add_pileup_db")
-    @patch("app.pipeline_steps.HT.do_pileup_iccf")
-    @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
-    @patch("app.pipeline_steps.HT.get_expected")
-    @patch("app.pipeline_steps.HT.assign_regions")
-    @patch("app.pipeline_steps.cooler.Cooler")
-    @patch("app.pipeline_steps.pd.read_csv")
     def test_correct_cooler_used(
         self,
         mock_read_csv,
@@ -305,7 +270,9 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_add_db,
     ):
         """Tests whether correct cooler is used for pileup."""
-        test_df_interval = pd.DataFrame({0: ["chr1", "chr1"], 1: [500, 1500]})
+        test_df_interval = pd.DataFrame(
+            {0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000]}
+        )
         mock_read_csv.return_value = test_df_interval
         # dispatch call
         dataset_id = 1
@@ -323,7 +290,7 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.HT.assign_regions")
     @patch("app.pipeline_steps.cooler.Cooler")
     @patch("app.pipeline_steps.pd.read_csv")
-    def test_correct_functions_called_whenObsExp(
+    def test_correct_functions_called_ObsExp(
         self,
         mock_read_csv,
         mock_Cooler,
@@ -334,7 +301,9 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_add_db,
     ):
         """Tests whether correct cooler is used for pileup."""
-        test_df_interval = pd.DataFrame({0: ["chr1", "chr1"], 1: [500, 1500]})
+        test_df_interval = pd.DataFrame(
+            {0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000]}
+        )
         mock_read_csv.return_value = test_df_interval
         mock_Cooler.return_value = "mock_cooler"
         returned_regions = MagicMock()
@@ -359,7 +328,7 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.HT.assign_regions")
     @patch("app.pipeline_steps.cooler.Cooler")
     @patch("app.pipeline_steps.pd.read_csv")
-    def test_correct_functions_called_whenICCF(
+    def test_correct_functions_called_ICCF(
         self,
         mock_read_csv,
         mock_Cooler,
@@ -370,7 +339,9 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_add_db,
     ):
         """Tests whether correct cooler is used for pileup."""
-        test_df_interval = pd.DataFrame({0: ["chr1", "chr1"], 1: [500, 1500]})
+        test_df_interval = pd.DataFrame(
+            {0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000]}
+        )
         mock_read_csv.return_value = test_df_interval
         mock_Cooler.return_value = "mock_cooler"
         returned_regions = MagicMock()
@@ -407,7 +378,9 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_uuid,
     ):
         """Tests whether conversion function as df for java script is called correctly"""
-        test_df_interval = pd.DataFrame({0: ["chr1", "chr1"], 1: [500, 1500]})
+        test_df_interval = pd.DataFrame(
+            {0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000]}
+        )
         mock_read_csv.return_value = test_df_interval
         mock_pileup_iccf.return_value = "testCooler"
         # hack in return value of uuid4().hex to be asdf
