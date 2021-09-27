@@ -1,5 +1,5 @@
 """Helpers to populate database"""
-from ..models import Organism, Assembly, Dataset
+from ..models import Organism, Assembly, Dataset, dataset_preprocessing_table, collections_preprocessing_table
 from . import api
 from flask.globals import current_app
 from .. import db
@@ -25,9 +25,18 @@ def create_hg19():
             dataset.assembly = assembly.id
         db.session.commit()
 
+def drop_preprocessing_tables():
+    """deletes entries in preprocessing tables."""
+    stmt = dataset_preprocessing_table.delete()
+    db.session.execute(stmt)
+    stmt = collections_preprocessing_table.delete()
+    db.session.execute(stmt)
+    db.session.commit()
+
 
 @api.before_app_first_request
 def init_database():
     """Populate database"""
     if not current_app.config["TESTING"]:
         create_hg19()
+        drop_preprocessing_tables()
