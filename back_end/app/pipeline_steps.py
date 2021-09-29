@@ -160,7 +160,7 @@ def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize):
     log.info("      Success!")
 
 
-def perform_enrichment_analysis(collection_id, intervals_id, binsize):
+def enrichment_pipeline_step(collection_id, intervals_id, binsize):
     """Pipeline step to perform enrichment analysis"""
     log.info(
         f"Doing enrichment analysis with collection {collection_id} on intervals {intervals_id} with binsize {binsize}"
@@ -175,7 +175,7 @@ def perform_enrichment_analysis(collection_id, intervals_id, binsize):
             collection_id, binsize, regions_path
         )
     else:
-        stacked = worker_funcs._do_enrichment_calculations_variable_size(
+        stacked = worker_funcs._do_enrichment_calculations_fixed_size(
             collection_id, window_size, binsize, regions_path
         )
     # write output

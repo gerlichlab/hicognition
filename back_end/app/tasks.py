@@ -91,7 +91,7 @@ def pipeline_lola(collection_id, intervals_id, binsize):
     """Starts lola enrichment calculation pipeline step for a specific
     collection_id, binsize and intervals_id"""
     try:
-        pipeline_steps.perform_enrichment_analysis(collection_id, intervals_id, binsize)
+        pipeline_steps.enrichment_pipeline_step(collection_id, intervals_id, binsize)
         pipeline_steps.set_task_progress(100)
         pipeline_steps.set_collection_finished(collection_id, intervals_id)
     except BaseException as e:
