@@ -80,11 +80,7 @@ class TestChunkIntervalsVariableSize(unittest.TestCase):
     def setUp(cls):
         cls.expected_first = [
             pd.DataFrame(
-                {
-                    "chrom": ["chr1"],
-                    "start": [80 + offset],
-                    "end": [80 + offset + 10]
-                }
+                {"chrom": ["chr1"], "start": [80 + offset], "end": [80 + offset + 10]}
             )
             for offset in range(0, 140, 10)
         ]
@@ -93,7 +89,7 @@ class TestChunkIntervalsVariableSize(unittest.TestCase):
                 {
                     "chrom": ["chr6"],
                     "start": [-325000 + offset],
-                    "end": [-325000 + offset + 150000]
+                    "end": [-325000 + offset + 150000],
                 }
             )
             for offset in range(0, 4200000, 150000)
@@ -132,6 +128,44 @@ class TestChunkIntervalsVariableSize(unittest.TestCase):
         # test whether chunked frames are correct
         for actual_df, expected_df in zip(result, self.expected_second):
             assert_frame_equal(actual_df, expected_df)
+
+
+class TestGetBinNumberExpandedIntervals(unittest.TestCase):
+    """Tests for get_bin_number_for_expanded_intervals"""
+
+    def test_correct_number_produced_large_bins(self):
+        result = interval_operations.get_bin_number_for_expanded_intervals(10, 0.2)
+        self.assertEqual(result, 14)
+
+    def test_correct_number_produced_medium_bins(self):
+        result = interval_operations.get_bin_number_for_expanded_intervals(5, 0.2)
+        self.assertEqual(result, 28)
+
+    def test_correct_number_produced_small_bins(self):
+        result = interval_operations.get_bin_number_for_expanded_intervals(1, 0.2)
+        self.assertEqual(result, 140)
+
+
+class TestExpandRegions(unittest.TestCase):
+    """Tests for expand regions."""
+
+    def test_regions_correctly_expanded(self):
+        test_region = pd.DataFrame(
+            {
+                "chrom": ["chr1", "chr1"],
+                "start": [100, 200],
+                "end": [200, 400],
+            }
+        )
+        expected = pd.DataFrame(
+            {
+                "chrom": ["chr1", "chr1"],
+                "start": [80, 160],
+                "end": [220, 440],
+            }
+        )
+        result = interval_operations.expand_regions(test_region, 0.2)
+        assert_frame_equal(result, expected)
 
 
 if __name__ == "__main__":

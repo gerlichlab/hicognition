@@ -52,7 +52,7 @@ def pipeline_bed(dataset_id):
     for window in window_sizes:
         # preprocessing
         pipeline_steps.bed_preprocess_pipeline_step(dataset_id, window)
-    pipeline_steps._set_task_progress(100)
+    pipeline_steps.set_task_progress(100)
 
 
 def pipeline_pileup(dataset_id, intervals_id, binsize):
@@ -62,16 +62,16 @@ def pipeline_pileup(dataset_id, intervals_id, binsize):
         chromosome_arms = pd.read_csv(
             Assembly.query.get(Dataset.query.get(dataset_id).assembly).chrom_arms
         )
-        pipeline_steps.perform_pileup(
+        pipeline_steps.pileup_pipeline_step(
             dataset_id, intervals_id, binsize, chromosome_arms, "ICCF"
         )
-        pipeline_steps.perform_pileup(
+        pipeline_steps.pileup_pipeline_step(
             dataset_id, intervals_id, binsize, chromosome_arms, "Obs/Exp"
         )
-        pipeline_steps._set_task_progress(100)
-        pipeline_steps._set_dataset_finished(dataset_id, intervals_id)
+        pipeline_steps.set_task_progress(100)
+        pipeline_steps.set_dataset_finished(dataset_id, intervals_id)
     except BaseException as e:
-        pipeline_steps._set_dataset_failed(dataset_id, intervals_id)
+        pipeline_steps.set_dataset_failed(dataset_id, intervals_id)
         log.error(e, exc_info=True)
 
 
@@ -80,10 +80,10 @@ def pipeline_stackup(dataset_id, intervals_id, binsize):
     dataset_id (bigwig file), binsize and intervals_id"""
     try:
         pipeline_steps.perform_stackup(dataset_id, intervals_id, binsize)
-        pipeline_steps._set_task_progress(100)
-        pipeline_steps._set_dataset_finished(dataset_id, intervals_id)
+        pipeline_steps.set_task_progress(100)
+        pipeline_steps.set_dataset_finished(dataset_id, intervals_id)
     except BaseException as e:
-        pipeline_steps._set_dataset_failed(dataset_id, intervals_id)
+        pipeline_steps.set_dataset_failed(dataset_id, intervals_id)
         log.error(e, exc_info=True)
 
 
@@ -92,10 +92,10 @@ def pipeline_lola(collection_id, intervals_id, binsize):
     collection_id, binsize and intervals_id"""
     try:
         pipeline_steps.perform_enrichment_analysis(collection_id, intervals_id, binsize)
-        pipeline_steps._set_task_progress(100)
-        pipeline_steps._set_collection_finished(collection_id, intervals_id)
+        pipeline_steps.set_task_progress(100)
+        pipeline_steps.set_collection_finished(collection_id, intervals_id)
     except BaseException as e:
-        pipeline_steps._set_collection_failed(collection_id, intervals_id)
+        pipeline_steps.set_collection_failed(collection_id, intervals_id)
         log.error(e, exc_info=True)
 
 
@@ -114,8 +114,8 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
                 pipeline_steps.perform_stackup(source_dataset.id, intervals_id, binsize)
         # perform embedding
         pipeline_steps.perform_1d_embedding(collection_id, intervals_id, binsize)
-        pipeline_steps._set_task_progress(100)
-        pipeline_steps._set_collection_finished(collection_id, intervals_id)
+        pipeline_steps.set_task_progress(100)
+        pipeline_steps.set_collection_finished(collection_id, intervals_id)
     except BaseException as e:
-        pipeline_steps._set_collection_failed(collection_id, intervals_id)
+        pipeline_steps.set_collection_failed(collection_id, intervals_id)
         log.error(e, exc_info=True)

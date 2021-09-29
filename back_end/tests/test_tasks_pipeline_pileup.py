@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import patch
 from unittest.mock import MagicMock, PropertyMock
 import pandas as pd
+import numpy as np
 from pandas.testing import assert_series_equal
 from test_helpers import LoginTestCase, TempDirTestCase
 
@@ -11,7 +12,8 @@ sys.path.append("./")
 from app import db
 from app.models import Dataset, Intervals, Assembly, Task
 from app.tasks import pipeline_pileup
-from app.pipeline_steps import perform_pileup
+from app.pipeline_steps import pileup_pipeline_step
+from app.pipeline_worker_functions import _do_pileup_fixed_size, _do_pileup_variable_size
 from app.api.helpers import get_optimal_binsize
 
 
@@ -71,10 +73,10 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
             call_args.append(current_call_list)
         return call_args
 
-    @patch("app.pipeline_steps._set_task_progress")
-    @patch("app.pipeline_steps.perform_pileup")
+    @patch("app.pipeline_steps.set_task_progress")
+    @patch("app.pipeline_steps.pileup_pipeline_step")
     def test_pipeline_pileup_calls_steps_correctly(
-        self, mock_perform_pileup, mock_set_progress
+        self, mock_pileup_pipeline_step, mock_set_progress
     ):
         """Tests whether the functions that execute the different pipeline steps are called
         correctly."""
@@ -90,7 +92,7 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         pileup_types = ["ICCF", "Obs/Exp"]
         pipeline_pileup(dataset_id, intervals_id, binsize)
         # construct call arguments, pd.dataframe breaks magicmocks interval methods
-        call_args = self.get_call_args_without_index(mock_perform_pileup, 3)
+        call_args = self.get_call_args_without_index(mock_pileup_pipeline_step, 3)
         # compare expected call arguments with actual call arguments
         for pileup_type in pileup_types:
             # check whether the current combination is in call args list
@@ -102,8 +104,8 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         mock_set_progress.assert_called_with(100)
 
     @patch("app.pipeline_steps.pd.read_csv")
-    @patch("app.pipeline_steps._set_task_progress")
-    @patch("app.pipeline_steps.perform_pileup")
+    @patch("app.pipeline_steps.set_task_progress")
+    @patch("app.pipeline_steps.pileup_pipeline_step")
     def test_dataset_state_not_changed_if_not_last(
         self, mock_pileup, mock_set_progress, mock_read_csv
     ):
@@ -120,8 +122,8 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         self.assertEqual(self.bedfile.processing_features, [self.coolerfile])
 
     @patch("app.pipeline_steps.pd.read_csv")
-    @patch("app.pipeline_steps._set_task_progress")
-    @patch("app.pipeline_steps.perform_pileup")
+    @patch("app.pipeline_steps.set_task_progress")
+    @patch("app.pipeline_steps.pileup_pipeline_step")
     def test_dataset_set_finished_if_last(
         self, mock_pileup, mock_set_progress, mock_read_csv
     ):
@@ -139,8 +141,8 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
 
     @patch("app.pipeline_steps.log.error")
     @patch("app.pipeline_steps.pd.read_csv")
-    @patch("app.pipeline_steps._set_task_progress")
-    @patch("app.pipeline_steps.perform_pileup")
+    @patch("app.pipeline_steps.set_task_progress")
+    @patch("app.pipeline_steps.pileup_pipeline_step")
     def test_dataset_set_failed_if_failed(
         self, mock_pileup, mock_set_progress, mock_read_csv, mock_log
     ):
@@ -160,11 +162,11 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         assert mock_log.called
 
 
-class TestPerformPileup(LoginTestCase, TempDirTestCase):
+class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
     def setUp(self):
         """Add test dataset"""
         # call setUp of LoginTestCase to initialize app
-        super(TestPerformPileup, self).setUp()
+        super().setUp()
         # add assembly
         self.hg19 = Assembly(
             id=1,
@@ -174,12 +176,6 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         )
         db.session.add(self.hg19)
         db.session.commit()
-        # authenticate
-        token = self.add_and_authenticate("test", "asdf")
-        # create token_header
-        token_headers = self.get_token_header(token)
-        # add content-type
-        token_headers["Content-Type"] = "multipart/form-data"
         # add dataset
         self.dataset = Dataset(
             dataset_name="test3",
@@ -208,87 +204,120 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
             dataset_id=1,
             windowsize=300000,
         )
+        self.intervals3 = Intervals(
+            name="testRegion2",
+            dataset_id=1,
+            windowsize=None,
+        )
         db.session.add(self.dataset)
         db.session.add(self.dataset2)
         db.session.add(self.intervals1)
         db.session.add(self.intervals2)
+        db.session.add(self.intervals3)
         db.session.commit()
 
-    @patch("app.pipeline_steps.add_pileup_db")
-    @patch("app.pipeline_steps.HT.do_pileup_iccf")
-    @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
-    @patch("app.pipeline_steps.HT.get_expected")
-    @patch("app.pipeline_steps.HT.assign_regions")
-    @patch("app.pipeline_steps.cooler.Cooler")
-    @patch("app.pipeline_steps.pd.read_csv")
-    def test_assign_regions_called_correctly(
+    @patch("app.pipeline_steps.worker_funcs._do_pileup_fixed_size")
+    @patch("app.pipeline_steps.worker_funcs._do_pileup_variable_size")
+    def test_correct_pileup_worker_function_used_point_feature(
         self,
-        mock_read_csv,
-        mock_Cooler,
-        mock_assign_regions,
-        mock_get_expected,
-        mock_pileup_obs_exp,
-        mock_pileup_iccf,
-        mock_add_db,
+        mock_pileup_variable_size,
+        mock_pileup_fixed_size,
     ):
-        """Tests whether regions that are defined as chrom, start, end are handled correctly."""
-        test_df_interval = pd.DataFrame(
-            {0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000]}
-        )
-        mock_read_csv.return_value = test_df_interval
+        """Tests whether correct worker function for pileup is used
+        when intervals has fixed windowsizes"""
         # dispatch call
         dataset_id = 1
         intervals_id = 1
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        perform_pileup(dataset_id, intervals_id, 10000, arms, "ICCF")
-        # check whether assign regions was called with correct arguments
-        expected_df = pd.DataFrame({"chrom": ["chr1", "chr1"], "pos": [500, 1500]})
-        window_size, binsize, chrom_called, pos_called = mock_assign_regions.call_args[
-            0
-        ][:4]
-        self.assertEqual(window_size, 200000)
-        self.assertEqual(binsize, 10000)
-        assert_series_equal(chrom_called, expected_df["chrom"])
-        assert_series_equal(pos_called, expected_df["pos"])
+        pileup_pipeline_step(dataset_id, intervals_id, 10000, arms, "ICCF")
+        # check whether pileup with fixed size was called and with variable size was not called
+        mock_pileup_fixed_size.assert_called_once()
+        mock_pileup_variable_size.assert_not_called()
 
-    @patch("app.pipeline_steps.add_pileup_db")
-    @patch("app.pipeline_steps.HT.do_pileup_iccf")
-    @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
-    @patch("app.pipeline_steps.HT.get_expected")
-    @patch("app.pipeline_steps.HT.assign_regions")
-    @patch("app.pipeline_steps.cooler.Cooler")
-    @patch("app.pipeline_steps.pd.read_csv")
-    def test_correct_cooler_used(
+    @patch("app.pipeline_steps.worker_funcs._do_pileup_fixed_size")
+    @patch("app.pipeline_steps.worker_funcs._do_pileup_variable_size")
+    def test_correct_pileup_worker_function_used_interval_feature(
         self,
-        mock_read_csv,
-        mock_Cooler,
-        mock_assign_regions,
-        mock_get_expected,
-        mock_pileup_obs_exp,
-        mock_pileup_iccf,
-        mock_add_db,
+        mock_pileup_variable_size,
+        mock_pileup_fixed_size,
     ):
-        """Tests whether correct cooler is used for pileup."""
-        test_df_interval = pd.DataFrame(
-            {0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000]}
-        )
-        mock_read_csv.return_value = test_df_interval
+        """Tests whether correct worker function for pileup is used
+        when intervals has variable windowsizes"""
         # dispatch call
+        dataset_id = 1
+        intervals_id = 3
+        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
+        pileup_pipeline_step(dataset_id, intervals_id, 10000, arms, "ICCF")
+        # check whether pileup with fixed size was called and with variable size was not called
+        mock_pileup_variable_size.assert_called_once()
+        mock_pileup_fixed_size.assert_not_called()
+
+    @patch("app.pipeline_steps.uuid.uuid4")
+    @patch("app.pipeline_steps.worker_funcs._add_pileup_db")
+    @patch("app.pipeline_steps.worker_funcs._do_pileup_fixed_size")
+    @patch("app.pipeline_steps.worker_funcs._do_pileup_variable_size")
+    def test_adding_to_db_called_correctly(
+        self,
+        mock_pileup_variable_size,
+        mock_pileup_fixed_size,
+        mock_add_db,
+        mock_uuid,
+    ):
+        """Tests whether function to add result to database is called correctly."""
+        # hack in return value of uuid4().hex to be asdf
+        uuid4 = MagicMock()
+        type(uuid4).hex = PropertyMock(return_value="asdf")
+        mock_uuid.return_value = uuid4
+        # construct call args
         dataset_id = 1
         intervals_id = 1
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        perform_pileup(dataset_id, intervals_id, 10000, arms, "ICCF")
-        # check whether corrrect cooler file was called with correct binsize
-        expected_call = self.dataset.file_path + "::/resolutions/10000"
-        mock_Cooler.assert_called_with(expected_call)
+        pileup_pipeline_step(dataset_id, intervals_id, 10000, arms, "ICCF")
+        # check whether get_expected was called
+        mock_add_db.assert_called_with(
+            self.app.config["UPLOAD_DIR"] + "/asdf.npy",
+            10000,
+            self.intervals1.id,
+            self.dataset.id,
+            "ICCF",
+        )
 
-    @patch("app.pipeline_steps.add_pileup_db")
-    @patch("app.pipeline_steps.HT.do_pileup_iccf")
-    @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
-    @patch("app.pipeline_steps.HT.get_expected")
-    @patch("app.pipeline_steps.HT.assign_regions")
-    @patch("app.pipeline_steps.cooler.Cooler")
-    @patch("app.pipeline_steps.pd.read_csv")
+
+class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
+    """Test pileup worker functions for fixed sized intervals."""
+
+    def setUp(self):
+        """Add test dataset"""
+        # call setUp of LoginTestCase to initialize app
+        super().setUp()
+        # add assembly
+        self.hg19 = Assembly(
+            id=1,
+            name="hg19",
+            chrom_sizes=self.app.config["CHROM_SIZES"],
+            chrom_arms=self.app.config["CHROM_ARMS"],
+        )
+        db.session.add(self.hg19)
+        db.session.commit()
+        # add dataset
+        self.cooler = Dataset(
+            dataset_name="test3",
+            file_path="/test/path/test3.mcool",
+            filetype="cooler",
+            processing_state="finished",
+            user_id=1,
+            assembly=1,
+        )
+        db.session.add(self.cooler)
+        db.session.commit()
+
+
+    @patch("app.pipeline_worker_functions.HT.do_pileup_iccf")
+    @patch("app.pipeline_worker_functions.HT.do_pileup_obs_exp")
+    @patch("app.pipeline_worker_functions.HT.get_expected")
+    @patch("app.pipeline_worker_functions.HT.assign_regions")
+    @patch("app.pipeline_worker_functions.cooler.Cooler")
+    @patch("app.pipeline_worker_functions.pd.read_csv")
     def test_correct_functions_called_ObsExp(
         self,
         mock_read_csv,
@@ -297,9 +326,8 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_get_expected,
         mock_pileup_obs_exp,
         mock_pileup_iccf,
-        mock_add_db,
     ):
-        """Tests whether correct cooler is used for pileup."""
+        """Tests whether correct pileup function is called when obs/exp pileup is dispatched"""
         test_df_interval = pd.DataFrame(
             {0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000]}
         )
@@ -309,10 +337,8 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_assign_regions.return_value = returned_regions
         mock_get_expected.return_value = "expected"
         # dispatch call
-        dataset_id = 1
-        intervals_id = 1
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        perform_pileup(dataset_id, intervals_id, 10000, arms, "Obs/Exp")
+        _do_pileup_fixed_size(self.cooler, 100000, 10000, "testpath", arms, "Obs/Exp")
         # check whether get_expected was called
         mock_get_expected.assert_called()
         expected_pileup_call = ["mock_cooler", "expected", returned_regions.dropna()]
@@ -320,13 +346,12 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         # check whether iccf pileup is not called
         mock_pileup_iccf.assert_not_called()
 
-    @patch("app.pipeline_steps.add_pileup_db")
-    @patch("app.pipeline_steps.HT.do_pileup_iccf")
-    @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
-    @patch("app.pipeline_steps.HT.get_expected")
-    @patch("app.pipeline_steps.HT.assign_regions")
-    @patch("app.pipeline_steps.cooler.Cooler")
-    @patch("app.pipeline_steps.pd.read_csv")
+    @patch("app.pipeline_worker_functions.HT.do_pileup_iccf")
+    @patch("app.pipeline_worker_functions.HT.do_pileup_obs_exp")
+    @patch("app.pipeline_worker_functions.HT.get_expected")
+    @patch("app.pipeline_worker_functions.HT.assign_regions")
+    @patch("app.pipeline_worker_functions.cooler.Cooler")
+    @patch("app.pipeline_worker_functions.pd.read_csv")
     def test_correct_functions_called_ICCF(
         self,
         mock_read_csv,
@@ -335,9 +360,8 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_get_expected,
         mock_pileup_obs_exp,
         mock_pileup_iccf,
-        mock_add_db,
     ):
-        """Tests whether correct cooler is used for pileup."""
+        """Tests whether correct pileup function is called when iccf pileup is dispatched"""
         test_df_interval = pd.DataFrame(
             {0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000]}
         )
@@ -345,60 +369,122 @@ class TestPerformPileup(LoginTestCase, TempDirTestCase):
         mock_Cooler.return_value = "mock_cooler"
         returned_regions = MagicMock()
         mock_assign_regions.return_value = returned_regions
+        mock_get_expected.return_value = "expected"
         # dispatch call
-        dataset_id = 1
-        intervals_id = 1
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        perform_pileup(dataset_id, intervals_id, 10000, arms, "ICCF")
+        _do_pileup_fixed_size(self.cooler, 100000, 10000, "testpath", arms, "ICCF")
         # check whether get_expected was called
+        mock_get_expected.assert_not_called()
         expected_pileup_call = ["mock_cooler", returned_regions.dropna()]
         mock_pileup_iccf.assert_called_with(*expected_pileup_call, proc=1)
         # check whether iccf pileup is not called
-        mock_get_expected.assert_not_called()
         mock_pileup_obs_exp.assert_not_called()
 
-    @patch("app.pipeline_steps.uuid.uuid4")
-    @patch("app.pipeline_steps.add_pileup_db")
-    @patch("app.pipeline_steps.HT.do_pileup_iccf")
-    @patch("app.pipeline_steps.HT.do_pileup_obs_exp")
-    @patch("app.pipeline_steps.HT.get_expected")
-    @patch("app.pipeline_steps.HT.assign_regions")
-    @patch("app.pipeline_steps.cooler.Cooler")
-    @patch("app.pipeline_steps.pd.read_csv")
-    def test_adding_to_db_called_correctly(
+
+class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
+    """Test pileup worker functions for variable sized intervals"""
+
+    def setUp(self):
+        """Add test dataset"""
+        # call setUp of LoginTestCase to initialize app
+        super().setUp()
+        # add assembly
+        self.hg19 = Assembly(
+            id=1,
+            name="hg19",
+            chrom_sizes=self.app.config["CHROM_SIZES"],
+            chrom_arms=self.app.config["CHROM_ARMS"],
+        )
+        db.session.add(self.hg19)
+        db.session.commit()
+        # add dataset
+        self.cooler = Dataset(
+            dataset_name="test3",
+            file_path="/test/path/test3.mcool",
+            filetype="cooler",
+            processing_state="finished",
+            user_id=1,
+            assembly=1,
+        )
+        db.session.add(self.cooler)
+        db.session.commit()
+
+    @patch("app.pipeline_worker_functions.np")
+    @patch("app.pipeline_worker_functions.HT.extract_windows_different_sizes_iccf")
+    @patch("app.pipeline_worker_functions.HT.extract_windows_different_sizes_obs_exp")
+    @patch("app.pipeline_worker_functions.HT.get_expected")
+    @patch("app.pipeline_worker_functions.cooler.Cooler")
+    @patch("app.pipeline_worker_functions.pd.read_csv")
+    def test_correct_pileup_function_called_ObsExp(
         self,
         mock_read_csv,
         mock_Cooler,
-        mock_assign_regions,
         mock_get_expected,
         mock_pileup_obs_exp,
         mock_pileup_iccf,
-        mock_add_db,
-        mock_uuid,
+        mock_np
     ):
-        """Tests whether conversion function as df for java script is called correctly"""
+        """Tests whether correct pileup function is called when obs/exp pileup is dispatched"""
         test_df_interval = pd.DataFrame(
-            {0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000]}
+            {0: ["chr1", "chr1"], 1: [0, 1000], 2: [100000, 200000]}
         )
         mock_read_csv.return_value = test_df_interval
-        mock_pileup_iccf.return_value = "testCooler"
-        # hack in return value of uuid4().hex to be asdf
-        uuid4 = MagicMock()
-        type(uuid4).hex = PropertyMock(return_value="asdf")
-        mock_uuid.return_value = uuid4
-        # construct call args
-        dataset_id = 1
-        intervals_id = 1
+        mock_Cooler.return_value = "mock_cooler"
+        mock_get_expected.return_value = "expected"
+        # dispatch call
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        perform_pileup(dataset_id, intervals_id, 10000, arms, "ICCF")
+        _do_pileup_variable_size(self.cooler, 5, "testpath", arms, "Obs/Exp")
         # check whether get_expected was called
-        mock_add_db.assert_called_with(
-            self.app.config["UPLOAD_DIR"] + "/asdf.npy",
-            10000,
-            self.intervals1.id,
-            self.dataset.id,
-            "ICCF",
+        mock_get_expected.assert_called()
+        mock_pileup_obs_exp.assert_called()
+        # check whether iccf pileup is not called
+        mock_pileup_iccf.assert_not_called()
+
+    @patch("app.pipeline_worker_functions.np")
+    @patch("app.pipeline_worker_functions.HT.extract_windows_different_sizes_iccf")
+    @patch("app.pipeline_worker_functions.HT.extract_windows_different_sizes_obs_exp")
+    @patch("app.pipeline_worker_functions.HT.get_expected")
+    @patch("app.pipeline_worker_functions.cooler.Cooler")
+    @patch("app.pipeline_worker_functions.pd.read_csv")
+    def test_correct_pileup_function_called_ICCF(
+        self,
+        mock_read_csv,
+        mock_Cooler,
+        mock_get_expected,
+        mock_pileup_obs_exp,
+        mock_pileup_iccf,
+        mock_np
+    ):
+        """Tests whether correct pileup function is called when obs/exp pileup is dispatched"""
+        test_df_interval = pd.DataFrame(
+            {0: ["chr1", "chr1"], 1: [0, 1000], 2: [100000, 200000]}
         )
+        mock_read_csv.return_value = test_df_interval
+        mock_Cooler.return_value = "mock_cooler"
+        mock_get_expected.return_value = "expected"
+        # dispatch call
+        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
+        _do_pileup_variable_size(self.cooler, 5, "testpath", arms, "ICCF")
+        # check whether get_expected was called
+        mock_get_expected.assert_not_called()
+        mock_pileup_iccf.assert_called()
+        # check whether iccf pileup is not called
+        mock_pileup_obs_exp.assert_not_called()
+
+
+    @patch("app.pipeline_worker_functions.pd.read_csv")
+    def test_empty_array_returned_if_binsize_none(
+        self,
+        mock_read_csv
+    ):
+        """Tests an empty array is returned when optimal binsize is none"""
+        test_df_interval = pd.DataFrame(
+            {0: ["chr1", "chr1"], 1: [0, 0], 2: [100, 200]}
+        )
+        mock_read_csv.return_value = test_df_interval
+        # dispatch call
+        result = _do_pileup_variable_size(self.cooler, 5, "testpath", "testarms", "ICCF")
+        self.assertTrue(np.all(np.isnan(result)))
 
 
 class TestGetOptimalBinsize(unittest.TestCase):

@@ -40,8 +40,8 @@ def chunk_intervals_variable_size(regions, binsize, expansion_factor):
     # get bounds for chunks
     chroms = regions["chrom"]
     starts = (regions["start"] - sizes * expansion_factor).astype(int)
-    binsizes = (sizes / (100/binsize)).astype(int)
-    bin_number = int((100 + expansion_factor*100*2) / binsize)
+    binsizes = (sizes / (100 / binsize)).astype(int)
+    bin_number = int((100 + expansion_factor * 100 * 2) / binsize)
     # construct output
     return [
         pd.DataFrame(
@@ -53,3 +53,29 @@ def chunk_intervals_variable_size(regions, binsize, expansion_factor):
         )
         for offset in range(bin_number)
     ]
+
+
+def get_bin_number_for_expanded_intervals(binsize_perc, expansion_factor):
+    """Returns binnumber with bins being the binsize in percentage of the total interval size, before
+    expanding it left and right with expansion factor. So if binsize percentage is 10, then the original
+    interval contains 10 bins and after expansion with expansion factor e.g. 0.2 2 bins are added left and right
+    so the total binnumber will be 14."""
+    return int((100 + expansion_factor * 100 * 2) / binsize_perc)
+
+
+def expand_regions(regions, expansion_factor):
+    """Will expand regions by expansion factor left and right"""
+    size = regions["end"] - regions["start"]
+    return pd.DataFrame(
+        {
+            "chrom": regions["chrom"],
+            "start": (
+                regions["start"]
+                - expansion_factor * size
+            ).astype(int),
+            "end": (
+                regions["end"]
+                + expansion_factor * size
+            ).astype(int),
+        }
+    )
