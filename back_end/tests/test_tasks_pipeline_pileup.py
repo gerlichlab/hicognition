@@ -4,7 +4,6 @@ from unittest.mock import patch
 from unittest.mock import MagicMock, PropertyMock
 import pandas as pd
 import numpy as np
-from pandas.testing import assert_series_equal
 from test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
@@ -13,7 +12,10 @@ from app import db
 from app.models import Dataset, Intervals, Assembly, Task
 from app.tasks import pipeline_pileup
 from app.pipeline_steps import pileup_pipeline_step
-from app.pipeline_worker_functions import _do_pileup_fixed_size, _do_pileup_variable_size
+from app.pipeline_worker_functions import (
+    _do_pileup_fixed_size,
+    _do_pileup_variable_size,
+)
 from app.api.helpers import get_optimal_binsize
 
 
@@ -311,7 +313,6 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
         db.session.add(self.cooler)
         db.session.commit()
 
-
     @patch("app.pipeline_worker_functions.HT.do_pileup_iccf")
     @patch("app.pipeline_worker_functions.HT.do_pileup_obs_exp")
     @patch("app.pipeline_worker_functions.HT.get_expected")
@@ -422,7 +423,7 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         mock_get_expected,
         mock_pileup_obs_exp,
         mock_pileup_iccf,
-        mock_np
+        mock_np,
     ):
         """Tests whether correct pileup function is called when obs/exp pileup is dispatched"""
         test_df_interval = pd.DataFrame(
@@ -453,7 +454,7 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         mock_get_expected,
         mock_pileup_obs_exp,
         mock_pileup_iccf,
-        mock_np
+        mock_np,
     ):
         """Tests whether correct pileup function is called when obs/exp pileup is dispatched"""
         test_df_interval = pd.DataFrame(
@@ -471,20 +472,44 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         # check whether iccf pileup is not called
         mock_pileup_obs_exp.assert_not_called()
 
-
     @patch("app.pipeline_worker_functions.pd.read_csv")
-    def test_empty_array_returned_if_binsize_none(
-        self,
-        mock_read_csv
-    ):
+    def test_empty_array_returned_if_binsize_none(self, mock_read_csv):
         """Tests an empty array is returned when optimal binsize is none"""
-        test_df_interval = pd.DataFrame(
-            {0: ["chr1", "chr1"], 1: [0, 0], 2: [100, 200]}
-        )
+        test_df_interval = pd.DataFrame({0: ["chr1", "chr1"], 1: [0, 0], 2: [100, 200]})
         mock_read_csv.return_value = test_df_interval
         # dispatch call
-        result = _do_pileup_variable_size(self.cooler, 5, "testpath", "testarms", "ICCF")
+        result = _do_pileup_variable_size(
+            self.cooler, 5, "testpath", "testarms", "ICCF"
+        )
         self.assertTrue(np.all(np.isnan(result)))
+
+    @patch(
+        "app.pipeline_worker_functions.interval_operations.get_bin_number_for_expanded_intervals"
+    )
+    @patch("app.pipeline_worker_functions.HT.extract_windows_different_sizes_iccf")
+    @patch("app.pipeline_worker_functions.HT.extract_windows_different_sizes_obs_exp")
+    @patch("app.pipeline_worker_functions.cooler.Cooler")
+    @patch("app.pipeline_worker_functions.pd.read_csv")
+    def test_bad_interpolation_regions_skipped(
+        self,
+        mock_read_csv,
+        mock_Cooler,
+        mock_pileup_obs_exp,
+        mock_pileup_iccf,
+        mock_bin_numbers,
+    ):
+        """tests whether pileup_arrays that are of size [0, 0] are skipped and filled with nans"""
+        test_df_interval = pd.DataFrame(
+            {0: ["chr1", "chr1"], 1: [0, 1000], 2: [100000, 200000]}
+        )
+        mock_read_csv.return_value = test_df_interval
+        mock_Cooler.return_value = "mock_cooler"
+        mock_bin_numbers.return_value = 10
+        mock_pileup_iccf.return_value = [np.ones((10, 10)), np.array([])]
+        # dispatch call
+        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
+        result = _do_pileup_variable_size(self.cooler, 5, "testpath", arms, "ICCF")
+        self.assertTrue(np.allclose(result, np.ones((10, 10))))
 
 
 class TestGetOptimalBinsize(unittest.TestCase):

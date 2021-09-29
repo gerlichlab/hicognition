@@ -77,13 +77,13 @@ def _do_pileup_variable_size(cooler_dataset, binsize, regions_path, arms, pileup
     bin_number_expanded = interval_operations.get_bin_number_for_expanded_intervals(
         binsize, current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]
     )
-    binsize = get_optimal_binsize(regions, bin_number_expanded)
-    log.info(f"      Optimal binsize is {binsize}")
-    if binsize is None:
+    cooler_binsize = get_optimal_binsize(regions, bin_number_expanded)
+    log.info(f"      Optimal binsize is {cooler_binsize}")
+    if cooler_binsize is None:
         empty = np.empty((bin_number_expanded, bin_number_expanded))
         empty[:] = np.nan
         return empty
-    cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{binsize}")
+    cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{cooler_binsize}")
     # expand regions
     pileup_regions = interval_operations.expand_regions(regions, current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"])
     if pileup_type == "Obs/Exp":
