@@ -54,7 +54,7 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
         db.session.commit()
 
     @patch("app.tasks.io_helpers.clean_bed")
-    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.bed_preprocess_pipeline_step")
     def test_helper_calls_dispatched_correctly_point_feature(
         self,
@@ -82,7 +82,7 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
         mock_set_progress.assert_called_with(100)
 
     @patch("app.tasks.io_helpers.clean_bed")
-    @patch("app.pipeline_steps._set_task_progress")
+    @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.bed_preprocess_pipeline_step")
     def test_helper_calls_dispatched_correctly_interval_feature(
         self,

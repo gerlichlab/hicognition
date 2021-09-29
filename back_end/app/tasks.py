@@ -79,7 +79,7 @@ def pipeline_stackup(dataset_id, intervals_id, binsize):
     """Start stackup pipeline for specified combination of
     dataset_id (bigwig file), binsize and intervals_id"""
     try:
-        pipeline_steps.perform_stackup(dataset_id, intervals_id, binsize)
+        pipeline_steps.stackup_pipeline_step(dataset_id, intervals_id, binsize)
         pipeline_steps.set_task_progress(100)
         pipeline_steps.set_dataset_finished(dataset_id, intervals_id)
     except BaseException as e:
@@ -111,7 +111,7 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
                 & (IndividualIntervalData.binsize == binsize)
             ).first()
             if stackup is None:
-                pipeline_steps.perform_stackup(source_dataset.id, intervals_id, binsize)
+                pipeline_steps.stackup_pipeline_step(source_dataset.id, intervals_id, binsize)
         # perform embedding
         pipeline_steps.perform_1d_embedding(collection_id, intervals_id, binsize)
         pipeline_steps.set_task_progress(100)

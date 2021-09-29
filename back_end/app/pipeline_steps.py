@@ -105,7 +105,7 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
     log.info("      Success!")
 
 
-def perform_stackup(bigwig_dataset_id, intervals_id, binsize):
+def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize):
     """Performs stackup of bigwig dataset over the intervals provided with the indicated binsize.
     Stores result and adds it to database."""
     log.info(

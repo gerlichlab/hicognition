@@ -15,10 +15,7 @@ from hicognition import io_helpers, interval_operations
 import bioframe as bf
 from sklearn.impute import SimpleImputer
 import pylola
-from .api.helpers import (
-    remove_safely,
-    get_optimal_binsize
-)
+from .api.helpers import remove_safely, get_optimal_binsize
 from . import db
 from .models import (
     Assembly,
@@ -83,9 +80,13 @@ def _do_pileup_variable_size(cooler_dataset, binsize, regions_path, arms, pileup
         empty = np.empty((bin_number_expanded, bin_number_expanded))
         empty[:] = np.nan
         return empty
-    cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{cooler_binsize}")
+    cooler_file = cooler.Cooler(
+        cooler_dataset.file_path + f"::/resolutions/{cooler_binsize}"
+    )
     # expand regions
-    pileup_regions = interval_operations.expand_regions(regions, current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"])
+    pileup_regions = interval_operations.expand_regions(
+        regions, current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]
+    )
     if pileup_type == "Obs/Exp":
         expected = HT.get_expected(
             cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
@@ -114,7 +115,7 @@ def _do_pileup_variable_size(cooler_dataset, binsize, regions_path, arms, pileup
     return np.nanmean(stacked, axis=2)
 
 
-def _do_stackup_fixed_size(bigwig_dataset, regions, window_size, binsize):
+def _do_stackup_fixed_size(bigwig_filepath, regions, window_size, binsize):
     regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
     regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
     # construct stackup-regions: positions - windowsize until position + windowsize
@@ -132,7 +133,7 @@ def _do_stackup_fixed_size(bigwig_dataset, regions, window_size, binsize):
     target_array = np.empty((len(stackup_regions), bin_number))
     target_array.fill(np.nan)
     # filter stackup_regions for chromoosmes that are in bigwig
-    chromosome_names = bbi.chromsizes(bigwig_dataset).keys()
+    chromosome_names = bbi.chromsizes(bigwig_filepath).keys()
     is_good_chromosome = [
         True if chrom in chromosome_names else False
         for chrom in stackup_regions["chrom"]
@@ -141,7 +142,7 @@ def _do_stackup_fixed_size(bigwig_dataset, regions, window_size, binsize):
     good_regions = stackup_regions.iloc[good_chromosome_indices, :]
     # extract data
     stackup_array = bbi.stackup(
-        bigwig_dataset,
+        bigwig_filepath,
         chroms=good_regions["chrom"].to_list(),
         starts=good_regions["start"].to_list(),
         ends=good_regions["end"].to_list(),
@@ -153,26 +154,19 @@ def _do_stackup_fixed_size(bigwig_dataset, regions, window_size, binsize):
     return target_array
 
 
-def _do_stackup_variable_size(bigwig_dataset, regions, binsize):
+def _do_stackup_variable_size(bigwig_filepath, regions, binsize):
     regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
-    size = regions["end"] - regions["start"]
-    stackup_regions = pd.DataFrame(
-        {
-            "chrom": regions["chrom"],
-            "start": regions["start"]
-            - current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * size,
-            "end": regions["end"]
-            + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * size,
-        }
+    stackup_regions = interval_operations.expand_regions(
+        regions, current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]
     )
-    bin_number = int(
-        (100 + current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"] * 100 * 2) / binsize
+    bin_number = interval_operations.get_bin_number_for_expanded_intervals(
+        binsize, current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]
     )
     # make target array
     target_array = np.empty((len(stackup_regions), bin_number))
     target_array.fill(np.nan)
     # filter stackup_regions for chromoosmes that are in bigwig
-    chromosome_names = bbi.chromsizes(bigwig_dataset).keys()
+    chromosome_names = bbi.chromsizes(bigwig_filepath).keys()
     is_good_chromosome = [
         True if chrom in chromosome_names else False
         for chrom in stackup_regions["chrom"]
@@ -181,7 +175,7 @@ def _do_stackup_variable_size(bigwig_dataset, regions, binsize):
     good_regions = stackup_regions.iloc[good_chromosome_indices, :]
     # extract data
     stackup_array = bbi.stackup(
-        bigwig_dataset,
+        bigwig_filepath,
         chroms=good_regions["chrom"].to_list(),
         starts=good_regions["start"].to_list(),
         ends=good_regions["end"].to_list(),
