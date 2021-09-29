@@ -11,6 +11,12 @@ RUN apt-get update -y &&\
 # Add yml file for conda environment
 ADD conda_env.yml /temp/install/
 
+# Add hicognition package for installation
+
+ADD setup.py /temp/install/
+ADD VERSION /temp/install/
+ADD hicognition /temp/install/hicognition/
+
 # install packages
 RUN conda install mamba -n base -c conda-forge &&\
     mamba env update -n base --f /temp/install/conda_env.yml &&\
@@ -18,7 +24,13 @@ RUN conda install mamba -n base -c conda-forge &&\
     # install version 0.3 of ngs
     pip install git+git://github.com/gerlichlab/ngs@v0.3b &&\
     # install pylola
-    pip install git+git://github.com/Mittmich/pylola
+    pip install git+git://github.com/Mittmich/pylola &&\
+    # install hicognition 
+    pip install /temp/install
+
+# clean up install
+
+RUN rm -rf /temp/install
 
 WORKDIR /home
 

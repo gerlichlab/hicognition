@@ -1,0 +1,2 @@
+# a server may have a lot of data in temp, that is send as buildcontext to the docker dameon if not excluded
+./temp*
