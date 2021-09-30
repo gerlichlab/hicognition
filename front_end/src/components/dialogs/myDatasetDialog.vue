@@ -121,7 +121,7 @@ export default {
         getDatasets: function () {
             this.datasets = this.$store.state.datasets
         },
-        fetchDatasets() {
+        fetchDatasets: function() {
             this.datasets = [];
             this.fetchData("datasets/").then((response) => {
                 if (response) {

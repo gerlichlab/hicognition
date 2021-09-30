@@ -794,20 +794,20 @@ export default {
         datasetType: function() {
             this.createFilterFields();
             this.searchTerm = "";
-            this.selectedIds = this.preselection;
+            this.selectedIds = JSON.parse(JSON.stringify(this.preselection));
             this.$emit("selection-changed", this.selectedIds);
         },
         searchTerm: function() {
-            this.selectedIds = this.preselection;
+            this.selectedIds = JSON.parse(JSON.stringify(this.preselection));
             this.$emit("selection-changed", this.selectedIds);
         },
         filterFields: function() {
-            this.selectedIds = this.preselection;
+            this.selectedIds = JSON.parse(JSON.stringify(this.preselection));
             this.$emit("selection-changed", this.selectedIds);
         },
         selectedAssembly: function() {
             if (this.blockAssemblyBlanking) {
-                this.selectedIds = this.preselection;
+                this.selectedIds = JSON.parse(JSON.stringify(this.preselection));
             } else {
                 this.selectedIds = [];
             }
@@ -815,7 +815,7 @@ export default {
             this.blockAssemblyBlanking = false;
         },
         datasets: function() {
-            this.selectedIds = this.preselection;
+            this.selectedIds = JSON.parse(JSON.stringify(this.preselection));
             this.$emit("selection-changed", this.selectedIds);
         }
     },
@@ -832,7 +832,7 @@ export default {
             }
         }
         this.createFilterFields();
-        this.selectedIds = this.preselection;
+        this.selectedIds = JSON.parse(JSON.stringify(this.preselection));
     }
 };
 </script>
