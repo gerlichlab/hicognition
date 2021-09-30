@@ -19,6 +19,7 @@ from app.models import (
 )
 from app.tasks import pipeline_embedding_1d
 from app.pipeline_steps import embedding_1d_pipeline_step
+from app.pipeline_worker_functions import _do_embedding_1d_fixed_size, _do_embedding_1d_variable_size
 
 
 class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
@@ -319,8 +320,9 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
         mock_fixed_size.assert_not_called()
         mock_variable_size.assert_called()
 
-class TestPerformEmbedding1d(LoginTestCase, TempDirTestCase):
-    """Tests whether pipeline step embedding_1d_pipeline_step is called correctly."""
+
+class TestEmbedding1DWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
+    """Tests fixed size worker function"""
 
     def setUp(self):
         """Add test dataset"""
@@ -375,8 +377,8 @@ class TestPerformEmbedding1d(LoginTestCase, TempDirTestCase):
             file_path=data_path_3,
         )
 
-    def test_dastabase_entry_added_correctly(self):
-        """Tests whether database entry is added correctly"""
+    def test_correct_features_produced(self):
+        """Tests whether produced features are correct"""
         # add data to database
         db.session.add_all(
             [
@@ -391,40 +393,9 @@ class TestPerformEmbedding1d(LoginTestCase, TempDirTestCase):
                 self.ind_data_3,
             ]
         )
-        embedding_1d_pipeline_step(self.collection_1.id, self.intervals_1.id, 10000)
-        # test whether database entry has been added
-        embeddings = EmbeddingIntervalData.query.all()
-        self.assertEqual(len(embeddings), 1)
-        # test whehter addition is correct
-        embedding = embeddings[0]
-        self.assertEqual(embedding.binsize, 10000)
-        self.assertEqual(embedding.value_type, "1d-embedding")
-        self.assertEqual(embedding.collection_id, self.collection_1.id)
-        self.assertEqual(embedding.intervals_id, self.intervals_1.id)
-
-    def test_correct_features_saved(self):
-        """Tests whether produced embedding is correct"""
-        # add data to database
-        db.session.add_all(
-            [
-                self.bed_file,
-                self.intervals_1,
-                self.feature_1,
-                self.feature_2,
-                self.feature_3,
-                self.collection_1,
-                self.ind_data_1,
-                self.ind_data_2,
-                self.ind_data_3,
-            ]
-        )
-        embedding_1d_pipeline_step(self.collection_1.id, self.intervals_1.id, 10000)
-        # test whether database entry has been added
-        embeddings = EmbeddingIntervalData.query.all()
-        # test whether dataset is correct
-        embedding = embeddings[0]
+        # dispatch call
+        embedding, features = _do_embedding_1d_fixed_size(self.collection_1.id, self.intervals_1.id, 10000)
         # test whether feature frame used is correct
-        feature_data = np.load(embedding.file_path_feature_values)
         expected_features = np.array(
             [
                 [2.0, 0.2, 0.3],
@@ -444,7 +415,94 @@ class TestPerformEmbedding1d(LoginTestCase, TempDirTestCase):
                 [10.0, 0.1, 1.1],
             ]
         )
-        self.assertTrue(np.array_equal(feature_data, expected_features))
+        self.assertTrue(np.array_equal(features, expected_features))
+
+
+class TestEmbedding1DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
+    """Tests variable size worker function"""
+
+    def setUp(self):
+        """Add test dataset"""
+        # call setUp of LoginTestCase to initialize app
+        super().setUp()
+        # create dummy data
+        ingredient_1 = np.array([[1, 2, 3,4,5,6,7,8,9,10,11,12,13,14]*3])
+        self.test_data_1 = np.concatenate([ingredient_1] * 5)
+        data_path_1 = os.path.join(self.TEMP_PATH, "data1.npy")
+        np.save(data_path_1, self.test_data_1)
+        ingredient_2 = np.array([[1, 2, 3,4,5,6,7,8,9,10,11,12,13,14]*3])
+        self.test_data_2 = np.concatenate([ingredient_2] * 5)
+        data_path_2 = os.path.join(self.TEMP_PATH, "data2.npy")
+        np.save(data_path_2, self.test_data_2)
+        ingredient_3 = np.array([[1, 2, 3,4,5,6,7,8,9,10,11,12,13,14]*3])
+        self.test_data_3 = np.concatenate([ingredient_3] * 5)
+        data_path_3 = os.path.join(self.TEMP_PATH, "data3.npy")
+        np.save(data_path_3, self.test_data_3)
+        # add database entries
+        # create bed dataset
+        self.bed_file = Dataset(id=1, user_id=1, filetype="bedfile")
+        # create intervals
+        self.intervals_1 = Intervals(id=1, windowsize=None, dataset_id=1)
+        # create feature datasets
+        self.feature_1 = Dataset(id=2, user_id=1, filetype="bigwig")
+        self.feature_2 = Dataset(id=3, user_id=1, filetype="bigwig")
+        self.feature_3 = Dataset(id=4, user_id=1, filetype="bigwig")
+        # create collection
+        self.collection_1 = Collection(
+            id=1, datasets=[self.feature_1, self.feature_2, self.feature_3]
+        )
+        # create stackups
+        self.ind_data_1 = IndividualIntervalData(
+            id=1,
+            dataset_id=self.feature_1.id,
+            intervals_id=self.intervals_1.id,
+            binsize=10,
+            file_path=data_path_1,
+        )
+        self.ind_data_2 = IndividualIntervalData(
+            id=2,
+            dataset_id=self.feature_2.id,
+            intervals_id=self.intervals_1.id,
+            binsize=10,
+            file_path=data_path_2,
+        )
+        self.ind_data_3 = IndividualIntervalData(
+            id=3,
+            dataset_id=self.feature_3.id,
+            intervals_id=self.intervals_1.id,
+            binsize=10,
+            file_path=data_path_3,
+        )
+
+    def test_correct_features_produced(self):
+        """Tests whether produced features are correct"""
+        # add data to database
+        db.session.add_all(
+            [
+                self.bed_file,
+                self.intervals_1,
+                self.feature_1,
+                self.feature_2,
+                self.feature_3,
+                self.collection_1,
+                self.ind_data_1,
+                self.ind_data_2,
+                self.ind_data_3,
+            ]
+        )
+        # dispatch call
+        embedding, features = _do_embedding_1d_variable_size(self.collection_1.id, self.intervals_1.id, 10)
+        # test whether feature frame used is correct
+        expected_features = np.array(
+            [
+                [7.5, 7.5, 7.5],
+                [7.5, 7.5, 7.5],
+                [7.5, 7.5, 7.5],
+                [7.5, 7.5, 7.5],
+                [7.5, 7.5, 7.5]
+            ]
+        )
+        self.assertTrue(np.array_equal(features, expected_features))
 
 
 if __name__ == "__main__":
