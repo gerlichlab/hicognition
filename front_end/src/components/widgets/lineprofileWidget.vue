@@ -135,9 +135,9 @@
                 >
             </div>
             <div class="flex-container" v-if="showData">
-            <div >
-                <span class="md-caption">{{message}}</span>
-            </div>
+                <div>
+                    <span class="md-caption">{{ message }}</span>
+                </div>
             </div>
         </div>
     </div>
@@ -155,56 +155,70 @@ export default {
         lineprofile
     },
     computed: {
-        visualizationWidth: function(){
-            return this.width
+        visualizationWidth: function() {
+            return this.width;
         },
-        lineprofileHeight: function(){
+        lineprofileHeight: function() {
             // needs to be adjusted because is not square like heatmap using widgets
-            return this.visualizationHeight - 10
+            return this.visualizationHeight - 10;
         },
-        message: function(){
-            let datasetSummary = ""
-            for (let selected of this.selectedDataset){
-                let name = this.datasets[selected]["name"]
-                datasetSummary +=  name + " | "
+        message: function() {
+            let datasetSummary = "";
+            for (let selected of this.selectedDataset) {
+                let name = this.datasets[selected]["name"];
+                datasetSummary += name + " | ";
             }
-            if (datasetSummary.length > 40){
-                datasetSummary = "multiple datasets | "
+            if (datasetSummary.length > 40) {
+                datasetSummary = "multiple datasets | ";
             }
-            return  datasetSummary + "binsize " + this.getBinSizeFormat(this.selectedBinsize)
+            return (
+                datasetSummary +
+                "binsize " +
+                this.getBinSizeFormat(this.selectedBinsize)
+            );
         }
     },
     methods: {
-        blankWidget: function(){
+        blankWidget: function() {
             // removes all information that the user can set in case a certain region/dataset combination is not available
             this.widgetData = undefined;
             this.selectedDataset = [];
             this.selectedBinsize = undefined;
             this.widgetDataRef = undefined;
         },
-        startDatasetSelection: function () {
+        startDatasetSelection: function() {
             this.expectSelection = true;
             // get datasets from store
-            let datasets = this.$store.state.datasets.filter( (el) => Object.keys(this.datasets).includes(String(el.id)) )
-            let preselection = this.selectedDataset ? [...this.selectedDataset] : []
-            EventBus.$emit("show-select-dialog", datasets, "bigwig", preselection, false);
+            let datasets = this.$store.state.datasets.filter(el =>
+                Object.keys(this.datasets).includes(String(el.id))
+            );
+            let preselection = this.selectedDataset
+                ? [...this.selectedDataset]
+                : [];
+            EventBus.$emit(
+                "show-select-dialog",
+                datasets,
+                "bigwig",
+                preselection,
+                false
+            );
         },
-        registerSelectionEventHandlers: function(){
-            EventBus.$on("dataset-selected", this.handleDataSelection)
-            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion)
+        registerSelectionEventHandlers: function() {
+            EventBus.$on("dataset-selected", this.handleDataSelection);
+            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function(){
-            EventBus.$off("dataset-selected", this.handleDataSelection)
-            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion)
+        removeSelectionEventHandlers: function() {
+            EventBus.$off("dataset-selected", this.handleDataSelection);
+            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function(ids){
-            if (this.expectSelection){
-                    this.selectedDataset = ids
-                    this.expectSelection = false
+        handleDataSelection: function(ids) {
+            if (this.expectSelection) {
+                this.selectedDataset = ids;
+                this.expectSelection = false;
             }
         },
-        hanldeSelectionAbortion: function(){
-            this.expectSelection = false
+        hanldeSelectionAbortion: function() {
+            this.expectSelection = false;
         },
         handleBinsizeSelection: function(binsize) {
             this.selectedBinsize = binsize;
@@ -384,10 +398,12 @@ export default {
             ) {
                 return;
             }
-            // check whether there is any data available
-            if (!this.datasets[this.selectedDataset]){
-                this.blankWidget()
-                return
+            // check whether there is data available
+            for (let testDataset of this.selectedDataset){
+                if (!this.datasets[testDataset]) {
+                    this.blankWidget();
+                    return;
+                }
             }
             this.binsizes = this.getIdsOfBinsizes();
             this.selectedBinsize = this.getCenterOfArray(
@@ -444,10 +460,10 @@ export default {
         }
     },
     mounted: function() {
-        this.registerSelectionEventHandlers()
+        this.registerSelectionEventHandlers();
     },
-    beforeDestroy: function(){
-        this.removeSelectionEventHandlers()
+    beforeDestroy: function() {
+        this.removeSelectionEventHandlers();
     }
 };
 </script>

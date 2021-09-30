@@ -494,14 +494,19 @@ export default {
                     this.availableData = response.data;
                 }
             );
-            if (!this.selectedWindowSize) {
+            if (
+                !this.selectedWindowSize ||
+                (this.isPointFeature &&
+                    this.selectedWindowSize === "variable") ||
+                (!this.isPointFeature && this.selectedWindowSize !== "variable")
+            ) {
                 // set default -> middle of available windwosizes if point, otherwise variable
                 if (this.isPointFeature) {
                     this.selectedWindowSize = this.pointWindowSizes[
                         Math.floor(this.pointWindowSizes.length / 2)
                     ];
-                }else{
-                    this.selectedWindowSize = "variable"
+                } else {
+                    this.selectedWindowSize = "variable";
                 }
             } else {
                 // both seleted regions and windowsize are defined -> update selected windowsize
