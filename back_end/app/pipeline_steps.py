@@ -190,7 +190,7 @@ def enrichment_pipeline_step(collection_id, intervals_id, binsize):
     )
 
 
-def perform_1d_embedding(collection_id, intervals_id, binsize):
+def embedding_1d_pipeline_step(collection_id, intervals_id, binsize):
     """Performs embedding on each binsize-sized bin of the window specified in intervals_id using
     the features in collection_id"""
     # get intervals to decide whether fixed size or variable size

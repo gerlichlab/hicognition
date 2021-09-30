@@ -113,7 +113,7 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
             if stackup is None:
                 pipeline_steps.stackup_pipeline_step(source_dataset.id, intervals_id, binsize)
         # perform embedding
-        pipeline_steps.perform_1d_embedding(collection_id, intervals_id, binsize)
+        pipeline_steps.embedding_1d_pipeline_step(collection_id, intervals_id, binsize)
         pipeline_steps.set_task_progress(100)
         pipeline_steps.set_collection_finished(collection_id, intervals_id)
     except BaseException as e:

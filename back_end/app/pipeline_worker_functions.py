@@ -303,7 +303,7 @@ def _do_enrichment_calculations_variable_size(collection_id, binsize, regions_pa
         .reset_index(drop=True)
         for target in target_list
     ]
-    # get universe -> genome binned with equal binsize
+    # get universe -> union of queries
     universe = pd.concat(queries).drop_duplicates().reset_index(drop=True)
     # perform enrichment analysis
     log.info("      Run enrichment analysis...")
@@ -336,7 +336,7 @@ def _do_embedding_1d_fixed_size(collection_id, intervals_id, binsize):
     # calculate embedding
     log.info("      Running embedding...")
     embedder = umap.UMAP(random_state=42)
-    return embedder.fit_transform(imputed_frame)
+    return embedder.fit_transform(imputed_frame), feature_frame
 
 
 def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize):
