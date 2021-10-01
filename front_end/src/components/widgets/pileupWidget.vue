@@ -154,6 +154,7 @@
                 :valueScaleBorder="valueScaleBorder"
                 :allowValueScaleChange="allowValueScaleChange"
                 :log="true"
+                :showInterval="isVariableSize"
                 @slider-change="handleSliderChange"
             >
             </heatmap>

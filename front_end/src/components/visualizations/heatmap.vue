@@ -24,7 +24,8 @@
                 </div>
                 <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-4">
-                    <div class="small-margin"  ref="canvasDiv"/>
+                    <div :class="heatmapClass"  ref="canvasDiv"/>
+                    <div v-if="showInterval" class="small-margin-left-right" :id="xAxisdivID"/>
                 </md-content>
             </md-list-item>
         </md-list>
@@ -32,6 +33,7 @@
 </template>
 <script>
 import * as PIXI from "pixi.js-legacy";
+import * as d3 from "d3";
 import { getScale } from "../../colorScales.js";
 import colorBarSlider from "../ui/colorBarSlider.vue";
 import { getPercentile, getPerMilRank } from "../../functions";
@@ -45,6 +47,8 @@ function hexToRgb(hex) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result.slice(1, 4).map(el => parseInt(el, 16));
 }
+
+const EXPANSION_FACTOR = 0.2
 
 export default {
     name: "heatmap",
@@ -65,14 +69,67 @@ export default {
         valueScaleColor: String,
         valueScaleBorder: String,
         allowValueScaleChange: Boolean,
-        log: Boolean
+        log: Boolean,
+        showInterval: { //  whehter to show interval start and end on x axis
+            type: Boolean,
+            default: false
+        }
+
     },
     computed: {
+        heatmapClass: function(){
+            if (this.showInterval){
+                return "small-margin-left-right-top"
+            }
+            return "small-margin"
+        },
+        xAxismargin: function() {
+            return {
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0
+            }
+        },
+        xAxisHeight: function(){
+            return (this.height * 0.07) - this.xAxismargin.bottom - this.xAxismargin.top
+        },
+        xAxisWidth: function(){
+            return this.visualizationSize - this.xAxismargin.left - this.xAxismargin.right
+        },
+        heatMapHeight: function(){
+            if (this.showInterval){
+                return (this.height * 0.93) - 7
+            }
+            return this.height
+        },
+        xAxisdivID: function() {
+            // ID for the div containing the lineprofile
+            return "xAxis_" + this.id;
+        },
+        xAxisFontSize: function(){
+            let fontSize = 10 + Math.round(this.width/50) - 2
+            return `${fontSize}px`
+        },
+        intervalStartBin: function(){
+            if (this.stackupData) {
+                let intervalSize = Math.round(this.stackupData.shape[1]/ (1 + 2*EXPANSION_FACTOR))
+                return Math.round(intervalSize * EXPANSION_FACTOR)
+            }
+            return undefined
+        },
+        intervalEndBin: function(){
+            if (this.stackupData) {
+                let intervalSize = Math.round(this.stackupData.shape[1]/ (1 + 2*EXPANSION_FACTOR))
+                return intervalSize + Math.round(intervalSize * EXPANSION_FACTOR)
+            }
+            return undefined
+        },
         nan_color: function(){
             return [255, 255, 255]
         },
         visualizationSize: function() {
-            return Math.min(this.width, this.height);
+            return Math.floor(Math.min(this.width, this.heatMapHeight));
         },
         colorBarContainerStyle: function() {
             return {
@@ -177,10 +234,68 @@ export default {
             imageData: undefined,
             id: Math.round(Math.random() * 1000000),
             pseudoCanvasContext: undefined,
-            pseudoCanvas: undefined
+            pseudoCanvas: undefined,
+            id: Math.floor(Math.random() * 100000000)
         };
     },
     methods: {
+        createColorBarScales: function() {
+            this.xScale = d3
+                .scaleLinear()
+                .domain([0, this.stackupData.shape[1]])
+                .range([0, this.xAxisWidth]);
+        },
+        createColorBarSvg: function() {
+            console.log("called")
+            d3.select(`#${this.xAxisdivID}Svg`).remove();
+            this.svg = d3
+                .select(`#${this.xAxisdivID}`)
+                .append("svg")
+                .attr("id", `${this.xAxisdivID}Svg`)
+                .attr(
+                    "width",
+                    this.xAxisWidth
+                )
+                .attr(
+                    "height",
+                    this.xAxisHeight
+                )
+                .append("g")
+                .attr(
+                    "transform",
+                    "translate(" +
+                        this.xAxismargin.left +
+                        "," +
+                        this.xAxismargin.top +
+                        ")"
+                );
+        },
+        xAxisGenerator: function(args){
+            return d3
+                .axisBottom(this.xScale)
+                .tickFormat(val => this.getXaxisFormat(val))
+                .tickSizeOuter(0)
+                .tickValues([this.intervalStartBin, this.intervalEndBin])(args); 
+        },
+        getXaxisFormat: function(val){
+            if (val == this.intervalStartBin){
+                return "Start"
+            }
+            if (val == this.intervalEndBin){
+                return "End"
+            }
+            return undefined
+        },
+        createAxes: function() {
+            this.svg
+            .append("g")
+            .attr("class", "x axis")
+            .call(this.xAxisGenerator);
+            this.svg.selectAll("text").style("font-size", this.xAxisFontSize);
+            this.svg.selectAll('.tick')
+                      .style('stroke-width','3px');
+            this.svg.selectAll(".domain").style("opacity", 0)
+        },
         createRenderer: function() {
             this.renderer = new PIXI.CanvasRenderer({
                 width: this.visualizationSize,
@@ -243,6 +358,12 @@ export default {
             // add and render
             this.stage.addChild(this.sprite);
             this.renderer.render(this.stage);
+            // add x Axis if necessary
+            if (this.showInterval){
+                this.createColorBarScales()
+                this.createColorBarSvg()
+                this.createAxes()
+            }
         },
         initializeCanvas: function() {
             // add the renderer view object into the canvas div
@@ -344,5 +465,19 @@ export default {
 }
 .small-margin {
     margin: 5px;
+}
+
+.small-margin-left-right {
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.small-margin-left-right-top {
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 5px;
+    margin-bottom: 0px
 }
 </style>
