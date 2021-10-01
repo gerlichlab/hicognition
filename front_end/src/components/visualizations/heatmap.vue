@@ -1,7 +1,7 @@
 <template>
     <div>
         <md-list class="md-double-line">
-            <md-list-item class="md-alignment-top-center">
+            <md-list-item class="md-alignment-top-center" v-if="!allNull">
                 <!-- this prevents drag events to allow slider change without causing widget drag -->
                 <div
                     :style="colorBarContainerStyle"
@@ -24,10 +24,18 @@
                 </div>
                 <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-4">
-                    <div :class="heatmapClass"  ref="canvasDiv"/>
-                    <div v-if="showInterval" class="small-margin-left-right" :id="xAxisdivID"/>
+                        <div :class="heatmapClass"  ref="canvasDiv"/>
+                        <div v-if="showInterval" class="small-margin-left-right" :id="xAxisdivID"/>
                 </md-content>
             </md-list-item>
+            <div v-else>
+                <md-empty-state
+                    md-icon="info"
+                    md-label="Not enough data for this condition"
+                    :style="emptyStyle"
+                >
+            </md-empty-state>
+        </div>
         </md-list>
     </div>
 </template>
@@ -82,6 +90,13 @@ export default {
                 return "small-margin-left-right-top"
             }
             return "small-margin"
+        },
+        emptyStyle: function(){
+            return {
+                "padding": "0px",
+                "width": this.width + "px",
+                "height": this.height + "px",
+            }
         },
         xAxismargin: function() {
             return {
@@ -199,10 +214,13 @@ export default {
         rgbArray: function() {
             // array with rgba values for pixi Texture.fromBuffer
             var bufferArray = [];
+            let allNull = true;
             for (var element of this.stackupValues) {
                 // convert data into rgb values
                 var colorValues;
                 if (element) {
+                    // indicate that not all values are nan
+                    allNull = false
                     if (this.colorScale(element)[0] == "#") {
                         colorValues = hexToRgb(this.colorScale(element));
                     } else {
@@ -221,6 +239,7 @@ export default {
                 // add full saturation
                 bufferArray.push(255);
             }
+            this.allNull = allNull
             return new Uint8ClampedArray(bufferArray);
         }
     },
@@ -235,7 +254,7 @@ export default {
             id: Math.round(Math.random() * 1000000),
             pseudoCanvasContext: undefined,
             pseudoCanvas: undefined,
-            id: Math.floor(Math.random() * 100000000)
+            allNull: false
         };
     },
     methods: {
@@ -448,7 +467,9 @@ export default {
         this.stage.destroy();
         this.stage = null;
         // remove renderer view
-        this.$refs["canvasDiv"].removeChild(this.renderer.view);
+        if (this.$refs["canvasDiv"]){
+            this.$refs["canvasDiv"].removeChild(this.renderer.view);
+        }
         this.renderer.destroy();
         this.renderer = null;
         this.texture = null;
