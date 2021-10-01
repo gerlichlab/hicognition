@@ -11,6 +11,8 @@
 import * as d3 from "d3";
 import { min_array, max_array, normalizeLineProfile } from "../../functions";
 
+const EXPANSION_FACTOR = 0.2
+
 export default {
     name: "lineprofile",
     props: {
@@ -21,7 +23,10 @@ export default {
         width: Number,
         height: Number,
         lineprofileID: Number, // lineprofile ID is needed because I am accessing the div of the lineprofile via id and they must be different for different pilups
-        log: Boolean
+        showInterval: { //  whehter to show interval start and end on x axis
+            type: Boolean,
+            default: false
+        }
     },
     data: function() {
         return {
@@ -36,10 +41,24 @@ export default {
         margin: function() {
             return {
                 top: this.height * 0.01,
-                bottom: this.height * 0.01,
+                bottom: this.showInterval ? this.height * 0.03 : this.height * 0.01,
                 left: this.width * 0.12,
                 right: this.width * 0.1
             }
+        },
+        intervalStartBin: function(){
+            if (this.lineData && this.lineData.length != 0) {
+                let intervalSize = Math.round(this.lineData[0].data.length/ (1 + 2*EXPANSION_FACTOR))
+                return Math.round(intervalSize * EXPANSION_FACTOR)
+            }
+            return undefined
+        },
+        intervalEndBin: function(){
+            if (this.lineData && this.lineData.length != 0) {
+                let intervalSize = Math.round(this.lineData[0].data.length/ (1 + 2*EXPANSION_FACTOR))
+                return intervalSize + Math.round(intervalSize * EXPANSION_FACTOR)
+            }
+            return undefined
         },
         fontSize: function(){
             let additionalSize = Math.floor((this.width - 350)/50)
@@ -116,11 +135,26 @@ export default {
             }
             return val;
         },
+        getXaxisFormat: function(val){
+            if (val == this.intervalStartBin){
+                return "Start"
+            }
+            if (val == this.intervalEndBin){
+                return "End"
+            }
+            return undefined
+        },
         formatLabel: function(label){
             if (label.length > 10){
                 return label.slice(0, 10) + "..."
             }
             return label
+        },
+        xAxisGenerator: function(args){
+            return d3
+                .axisBottom(this.xScale)
+                .tickFormat(val => this.getXaxisFormat(val))
+                .tickValues([this.intervalStartBin, this.intervalEndBin])(args); 
         },
         yAxisGenerator: function(args) {
             return d3
@@ -281,6 +315,13 @@ export default {
                 .attr("class", "y axis")
                 .call(this.yAxisGenerator);
             // set font-size
+            if (this.showInterval){
+                this.svg
+                .append("g")
+                .attr("class", "x axis")
+                .attr("transform", `translate(0, ${this.plotHeight})`)
+                .call(this.xAxisGenerator);
+            }
             this.svg.selectAll("text").style("font-size", this.fontSize);
         },
         addDataLine: function(single_data, color_index) {

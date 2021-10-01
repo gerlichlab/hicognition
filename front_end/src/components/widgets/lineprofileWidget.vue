@@ -122,7 +122,7 @@
                 :lineprofileNames="lineProfileNames"
                 :lineprofileData="widgetData"
                 :normalized="normalized"
-                :log="true"
+                :showInterval="isVariableSize"
             >
             </lineprofile>
             <div
