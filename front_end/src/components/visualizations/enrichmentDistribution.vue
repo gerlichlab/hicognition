@@ -6,6 +6,8 @@
 import * as d3 from "d3";
 import { formattingMixin } from "../../mixins";
 
+const EXPANSION_FACTOR = 0.2
+
 export default {
     name: "enrichmentDistribution",
     mixins: [formattingMixin],
@@ -67,6 +69,20 @@ export default {
             // height of the plotting area without margins
             return this.height - this.margin.top - this.margin.bottom;
         },
+        intervalStartBin: function(){
+            if (this.rawData) {
+                let intervalSize = Math.round(this.rawData.length/ (1 + 2*EXPANSION_FACTOR))
+                return Math.round(intervalSize * EXPANSION_FACTOR)
+            }
+            return undefined
+        },
+        intervalEndBin: function(){
+            if (this.rawData) {
+                let intervalSize = Math.round(this.rawData.length/ (1 + 2*EXPANSION_FACTOR))
+                return intervalSize + Math.round(intervalSize * EXPANSION_FACTOR)
+            }
+            return undefined
+        },
     },
     methods: {
         createScales: function () {
@@ -87,10 +103,17 @@ export default {
         },
         xAxisGenerator: function (args) {
             // x-axis generator function
+            if (!isNaN(this.intervalSize)){
+                return d3
+                    .axisBottom(this.xScale)
+                    .tickFormat(this.xAxisFormatter)
+                    .tickSize(0)(args);
+            }
             return d3
                 .axisBottom(this.xScale)
-                .tickFormat(this.xAxisFormatter)
-                .tickSize(0)(args);
+                .tickFormat(this.xAxisFormatterInterval)
+                .tickSizeOuter(0)
+                .tickValues([this.intervalStartBin, this.intervalEndBin])(args);
         },
         yAxisGenerator: function (args) {
             // y-axis generator function
@@ -105,25 +128,30 @@ export default {
                 return Math.floor((this.maxVal - val) * 10) / 10;
             }
         },
+        xAxisFormatterInterval: function(val){
+            if (val == this.intervalStartBin){
+                return "Start"
+            }
+            if (val == this.intervalEndBin){
+                return "End"
+            }
+            return undefined
+        },
         xAxisFormatter: function (val, index) {
             if (
                 index % Math.floor(this.plotData.length / 5) == 0
             ) {
-                if (!isNaN(this.intervalSize)) {
-                    return (
-                        Math.floor(
-                            (-this.intervalSize +
-                                index *
-                                    Math.floor(
-                                        (this.intervalSize * 2) /
-                                            this.plotData.length
-                                    )) /
-                                1000
-                        ) + " kb"
-                    );
-                }
-                // this is variable region, x-axis format in percent
-                return  (-20 + index * this.binsize) + " %"
+                return (
+                    Math.floor(
+                        (-this.intervalSize +
+                            index *
+                                Math.floor(
+                                    (this.intervalSize * 2) /
+                                        this.plotData.length
+                                )) /
+                            1000
+                    ) + " kb"
+                );
             }
             return "";
         },

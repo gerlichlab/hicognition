@@ -246,7 +246,6 @@ export default {
                 .range([0, this.xAxisWidth]);
         },
         createColorBarSvg: function() {
-            console.log("called")
             d3.select(`#${this.xAxisdivID}Svg`).remove();
             this.svg = d3
                 .select(`#${this.xAxisdivID}`)
