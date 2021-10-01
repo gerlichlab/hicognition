@@ -29,6 +29,8 @@ import enrichmentDistribution from "./enrichmentDistribution.vue"
 import enrichmentRanks from "./enrichmentRanks.vue"
 import {max_array_along_rows, select_column} from "../../functions" 
 
+const EXPANSION_FACTOR = 0.2
+
 export default {
     name: "associationPlot",
     components: {
@@ -45,6 +47,13 @@ export default {
         binsize: Number
     },
     computed: {
+        intervalStartBin: function(){
+            if (this.plotData) {
+                let intervalSize = Math.round(this.plotData["shape"][1]/ (1 + 2*EXPANSION_FACTOR))
+                return Math.round(intervalSize * EXPANSION_FACTOR)
+            }
+            return undefined
+        },
         rankPlotHeight: function(){
             return this.height * 0.7
         },
@@ -55,8 +64,11 @@ export default {
             return max_array_along_rows(this.plotData["data"], this.plotData["shape"])
         },
         currentColumn: function(){
-            if (this.selectedColumn == undefined){
-                return Math.floor(this.plotData["shape"][1]/2)
+            if (this.selectedColumn === undefined){
+                if (!isNaN(this.intervalSize)){
+                    return Math.floor(this.plotData["shape"][1]/2)
+                }
+                return this.intervalStartBin
             }else{
                 return this.selectedColumn
             }
