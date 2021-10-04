@@ -79,7 +79,8 @@ Usage: flask dataset add [OPTIONS] JSON_PATH USER PASSWORD
 Options:
   --help  Show this message and exit.
 ```
-an example can be found in ```test/testfiles/test.json```.
+an example can be found in ```test/testfiles/test.json``` which metadata you need for your dataset can be foung in the following figure:
+![dataset metadata](documentation/dataset_metadata.gif)
 
 and then you can preprocess them as follows:
 
