@@ -28,42 +28,41 @@ dataset_collection_assoc_table = db.Table(
     "dataset_collection_assoc_table",
     db.Column("collection_id", db.Integer, db.ForeignKey("collection.id")),
     db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id")),
-    
 )
 
 dataset_preprocessing_table = db.Table(
     "dataset_dataset_preprocessing_table",
     db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
     db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
-    db.UniqueConstraint('dataset_region', 'dataset_feature', name='uix_1')
+    db.UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
 )
 
 dataset_failed_table = db.Table(
     "dataset_failed_table",
     db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
     db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
-    db.UniqueConstraint('dataset_region', 'dataset_feature', name='uix_1')
+    db.UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
 )
 
 dataset_completed_table = db.Table(
     "dataset_completed_table",
     db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
     db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
-    db.UniqueConstraint('dataset_region', 'dataset_feature', name='uix_1')
+    db.UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
 )
 
 collections_preprocessing_table = db.Table(
     "collections_preprocessing_table",
     db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
     db.Column("collection_feature", db.Integer, db.ForeignKey("collection.id")),
-    db.UniqueConstraint('dataset_region', 'collection_feature', name='uix_1')
+    db.UniqueConstraint("dataset_region", "collection_feature", name="uix_1"),
 )
 
 collections_failed_table = db.Table(
     "collections_failed_table",
     db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
     db.Column("collection_feature", db.Integer, db.ForeignKey("collection.id")),
-    db.UniqueConstraint('dataset_region', 'collection_feature', name='uix_1')
+    db.UniqueConstraint("dataset_region", "collection_feature", name="uix_1"),
 )
 
 
@@ -555,9 +554,7 @@ class Collection(db.Model):
     processing_for_datasets = db.relationship(
         "Dataset", secondary=collections_preprocessing_table
     )
-    failed_for_datasets = db.relationship(
-        "Dataset", secondary=collections_failed_table
-    )
+    failed_for_datasets = db.relationship("Dataset", secondary=collections_failed_table)
     sessions = db.relationship("Session", secondary=session_collection_assoc_table)
     associationData = db.relationship(
         "AssociationIntervalData",
@@ -606,7 +603,9 @@ class Collection(db.Model):
             "dataset_names": [dataset.dataset_name for dataset in self.datasets],
             "dataset_ids": [dataset.id for dataset in self.datasets],
             "processing_state": self.processing_state,
-            "processing_for_regions": [region.id for region in self.processing_for_datasets]
+            "processing_for_regions": [
+                region.id for region in self.processing_for_datasets
+            ],
         }
         return json_session
 

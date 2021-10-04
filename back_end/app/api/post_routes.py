@@ -29,8 +29,7 @@ from .helpers import (
     get_all_interval_ids,
     parse_binsizes,
     post_dataset_requirements_fullfilled,
-    add_fields_to_dataset
-
+    add_fields_to_dataset,
 )
 from .errors import forbidden, invalid, not_found
 from hicognition.format_checkers import FORMAT_CHECKERS
@@ -161,9 +160,7 @@ def preprocess_dataset():
         for region_ds in region_datasets:
             # change failed entries
             region_ds.failed_features = [
-                feature
-                for feature in region_ds.failed_features
-                if feature != dataset
+                feature for feature in region_ds.failed_features if feature != dataset
             ]
             # remove associated tasks
             remove_failed_tasks_dataset(db, dataset, region_ds)
@@ -174,21 +171,17 @@ def preprocess_dataset():
         windowsize = Intervals.query.get(interval_id).windowsize
         if windowsize is None:
             windowsize = "variable"
-        for binsize in current_app.config["PREPROCESSING_MAP"][
-             windowsize
-        ]:
+        for binsize in current_app.config["PREPROCESSING_MAP"][windowsize]:
             for dataset in feature_datasets:
                 current_user.launch_task(
-                    *current_app.config["PIPELINE_NAMES"][
-                        dataset.filetype
-                    ],
+                    *current_app.config["PIPELINE_NAMES"][dataset.filetype],
                     dataset.id,
                     intervals_id=interval_id,
                     binsize=binsize,
                 )
                 # add parent id # TODO: guard against duplicate processing
                 dataset.processing_regions.append(
-                     Intervals.query.get(interval_id).source_dataset
+                    Intervals.query.get(interval_id).source_dataset
                 )
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
@@ -218,7 +211,9 @@ def preprocess_collections():
     collection_ids = json.loads(data["collection_ids"])
     region_datasets_ids = json.loads(data["region_ids"])
     # check whether collection exists
-    collections = [Collection.query.get(collection_id) for collection_id in collection_ids]
+    collections = [
+        Collection.query.get(collection_id) for collection_id in collection_ids
+    ]
     if any(entry is None for entry in collections):
         return not_found("Collection does not exist!")
     if any(is_access_to_collection_denied(collection, g) for collection in collections):
@@ -236,7 +231,11 @@ def preprocess_collections():
     for collection in collections:
         for region_ds in region_datasets:
             # change failed entries
-            region_ds.failed_collections = [candidate for candidate in region_ds.failed_collections if candidate != collection]
+            region_ds.failed_collections = [
+                candidate
+                for candidate in region_ds.failed_collections
+                if candidate != collection
+            ]
             remove_failed_tasks_collection(db, collection, region_ds)
     # get interval ids of selected regions
     interval_ids = get_all_interval_ids(region_datasets)
@@ -245,17 +244,19 @@ def preprocess_collections():
         windowsize = Intervals.query.get(interval_id).windowsize
         if windowsize is None:
             windowsize = "variable"
-        for binsize in current_app.config["PREPROCESSING_MAP"][
-            windowsize
-        ]:
+        for binsize in current_app.config["PREPROCESSING_MAP"][windowsize]:
             for collection in collections:
                 current_user.launch_collection_task(
-                    *current_app.config["PIPELINE_NAMES"]["collections"][collection.kind],
+                    *current_app.config["PIPELINE_NAMES"]["collections"][
+                        collection.kind
+                    ],
                     collection.id,
                     intervals_id=interval_id,
                     binsize=binsize,
                 )
-                collection.processing_for_datasets.append(Intervals.query.get(interval_id).source_dataset)
+                collection.processing_for_datasets.append(
+                    Intervals.query.get(interval_id).source_dataset
+                )
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 

@@ -50,10 +50,7 @@ class Config:
                         "SizeType": ["Point", "Interval"],
                         "Directionality": ["+", "-", "No directionality"],
                     },
-                    "Derived": {
-                        "Method": ["HiC"],
-                        "SizeType": ["Point", "Interval"],
-                    },
+                    "Derived": {"Method": ["HiC"], "SizeType": ["Point", "Interval"]},
                 }
             },
             "bigwig": {
@@ -87,7 +84,9 @@ class Config:
         }
     }
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled
-    OBS_EXP_PROCESSES = 4  # Number of processes to use per worker to calcualte obs/exp matrix of pileups
+    OBS_EXP_PROCESSES = (
+        4
+    )  # Number of processes to use per worker to calcualte obs/exp matrix of pileups
     PILEUP_PROCESSES = 1  # Number of processes to use per worker to do pileups
 
 

@@ -54,19 +54,19 @@ def get_resolutions():
     from config file"""
     return jsonify(current_app.config["PREPROCESSING_MAP"])
 
+
 @api.route("/datasetMetadataMapping/", methods=["get"])
 @auth.login_required
 def get_metadata_mapping():
     """Get route for metadata mapping"""
     return jsonify(current_app.config["DATASET_OPTION_MAPPING"])
 
+
 @api.route("/organisms/", methods=["GET"])
 @auth.login_required
 def get_organisms():
     """Get route for available organisms"""
-    return jsonify([
-        org.to_json() for org in Organism.query.all()
-    ])
+    return jsonify([org.to_json() for org in Organism.query.all()])
 
 
 @api.route("/assemblies/", methods=["GET"])
@@ -78,7 +78,9 @@ def get_assemblies():
         temp_list = []
         for assembly in organism.assemblies.all():
             temp_dict = assembly.to_json()
-            temp_dict["dependent_datasets"] = len(Dataset.query.filter(Dataset.assembly == assembly.id).all())
+            temp_dict["dependent_datasets"] = len(
+                Dataset.query.filter(Dataset.assembly == assembly.id).all()
+            )
             temp_list.append(temp_dict)
         output[organism.name] = temp_list
     return output
@@ -246,9 +248,7 @@ def get_interval_metadata(interval_id):
             # skip metadata if there are no fields defined
             continue
         columns_retained = json.loads(metadata_entry.metadata_fields)
-        temp_frame = pd.read_csv(
-            metadata_entry.file_path, usecols=columns_retained
-        )
+        temp_frame = pd.read_csv(metadata_entry.file_path, usecols=columns_retained)
         temp_frames.append(temp_frame)
     output_frame = pd.concat(temp_frames, axis=1)
     # this drops all occurences of a given column but the first, since ids are sorted by descending order, the newest one wins
@@ -494,10 +494,7 @@ def get_session_token(session_id):
         return forbidden(f"Session with id '{session_id}' is not owned!")
     # create session token
     return jsonify(
-        {
-            "session_token": session.generate_session_token(),
-            "session_id": session_id,
-        }
+        {"session_token": session.generate_session_token(), "session_id": session_id}
     )
 
 

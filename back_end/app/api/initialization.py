@@ -49,6 +49,7 @@ def drop_tasks():
         db.session.delete(task)
     db.session.commit()
 
+
 @api.before_app_first_request
 def init_database():
     """Populate database"""

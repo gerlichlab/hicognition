@@ -125,10 +125,10 @@ def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize):
     log.info("      Doing stackup...")
     if window_size is None:
         full_size_array = worker_funcs._do_stackup_variable_size(
-            bigwig_dataset.file_path, regions, binsize, 
+            bigwig_dataset.file_path, regions, binsize
         )
         downsampled_array = worker_funcs._do_stackup_variable_size(
-            bigwig_dataset.file_path, regions_small, binsize, 
+            bigwig_dataset.file_path, regions_small, binsize
         )
     else:
         full_size_array = worker_funcs._do_stackup_fixed_size(

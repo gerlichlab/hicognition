@@ -1,15 +1,15 @@
 """DELETE API endpoints for hicognition"""
 from flask.json import jsonify
 from flask import g
-from .helpers import is_dataset_deletion_denied, delete_collection, delete_associated_data_of_dataset, remove_safely
+from .helpers import (
+    is_dataset_deletion_denied,
+    delete_collection,
+    delete_associated_data_of_dataset,
+    remove_safely,
+)
 from . import api
 from .. import db
-from ..models import (
-    Assembly,
-    Collection,
-    Dataset,
-    Session,
-)
+from ..models import Assembly, Collection, Dataset, Session
 from .authentication import auth
 from .errors import forbidden, invalid, not_found
 
@@ -26,7 +26,9 @@ def delete_dataset_handler(dataset_id):
     if is_dataset_deletion_denied(dataset, g.current_user):
         return forbidden(f"Dataset with id {dataset_id} is not owned by user!")
     # check if data set is processing
-    if (len(dataset.processing_features) != 0) or (len(dataset.processing_regions) != 0):
+    if (len(dataset.processing_features) != 0) or (
+        len(dataset.processing_regions) != 0
+    ):
         return invalid(f"Dataset is in processing state!")
     # delete associated data of dataset
     delete_associated_data_of_dataset(dataset)
@@ -99,7 +101,9 @@ def delete_assembly_handler(assembly_id):
         return forbidden(f"Assembly with id {assembly_id} is not owned by user!")
     # check whether assembly is associated with datasets
     if len(Dataset.query.filter(Dataset.assembly == assembly.id).all()) != 0:
-        return forbidden(f"Assembly can only be deleted if it is not associated with any datasets!")
+        return forbidden(
+            f"Assembly can only be deleted if it is not associated with any datasets!"
+        )
     # delete assembly
     remove_safely(assembly.chrom_sizes)
     remove_safely(assembly.chrom_arms)

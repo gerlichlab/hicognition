@@ -31,11 +31,15 @@ def pipeline_bed(dataset_id):
     Output-folder is not needed for this since the file_path
     of Dataset entry contains it.
     """
-    dataset_object =  Dataset.query.get(dataset_id)
+    dataset_object = Dataset.query.get(dataset_id)
     if dataset_object.sizeType == "Interval":
         window_sizes = ["variable"]
     else:
-        window_sizes = [size for size in app.config["PREPROCESSING_MAP"].keys() if size != "variable"]
+        window_sizes = [
+            size
+            for size in app.config["PREPROCESSING_MAP"].keys()
+            if size != "variable"
+        ]
     log.info(f"Bed pipeline started for {dataset_id} with {window_sizes}")
     # bed-file preprocessing: sorting, clodius, uploading to higlass
     file_path = dataset_object.file_path
@@ -111,7 +115,9 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
                 & (IndividualIntervalData.binsize == binsize)
             ).first()
             if stackup is None:
-                pipeline_steps.stackup_pipeline_step(source_dataset.id, intervals_id, binsize)
+                pipeline_steps.stackup_pipeline_step(
+                    source_dataset.id, intervals_id, binsize
+                )
         # perform embedding
         pipeline_steps.embedding_1d_pipeline_step(collection_id, intervals_id, binsize)
         pipeline_steps.set_task_progress(100)

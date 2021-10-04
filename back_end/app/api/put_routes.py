@@ -8,15 +8,13 @@ from flask.json import jsonify
 from flask import g, request, current_app
 from . import api
 from .. import db
-from ..models import (
-    Dataset
-)
+from ..models import Dataset
 from .authentication import auth
 from .helpers import (
     is_access_to_dataset_denied,
     modify_dataset_requirements_fulfilled,
     blank_dataset,
-    add_fields_to_dataset_modify
+    add_fields_to_dataset_modify,
 )
 from .errors import forbidden, invalid, not_found
 

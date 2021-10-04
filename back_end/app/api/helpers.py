@@ -13,17 +13,9 @@ from ..models import (
 )
 import numpy as np
 
-COMMON_REQUIRED_KEYS = [
-    "cellCycleStage",
-    "datasetName",
-    "perturbation",
-    "ValueType",
-]
+COMMON_REQUIRED_KEYS = ["cellCycleStage", "datasetName", "perturbation", "ValueType"]
 
-ADD_REQUIRED_KEYS = [
-    "assembly",
-    "filetype",
-]
+ADD_REQUIRED_KEYS = ["assembly", "filetype"]
 
 DATASET_META_FIELDS = {
     "assembly": "assembly",
