@@ -8,6 +8,8 @@ import {
     getPercentile,
     max_array_along_rows,
     select_column,
+    select_columns,
+    mean_along_columns,
     rectBin,
     flatten
 } from "../functions.js";
@@ -91,6 +93,7 @@ describe("Test sort matrix by center testing suite", function () {
         ).toEqual([1, 5, 3, 4, 2, 6]);
     });
 });
+
 
 // test max array
 
@@ -303,6 +306,8 @@ describe("When max_array_along_rows is called, it", function () {
     });
 });
 
+// test select single column
+
 describe("When select_column is called, it", function () {
     it("Should return undefined if array is length 0", () => {
         expect(select_column([], [1, 2], 2)).toEqual(undefined);
@@ -328,6 +333,59 @@ describe("When select_column is called, it", function () {
         expect(select_column([1, 2, 3, 4, 5, 6], [2, 3], 2)).toEqual([3, 6]);
     });
 });
+
+
+// test select columns
+
+describe("When select_columns is called", function() {
+    it("Should return undefined if array is length 0", () => {
+        expect(select_column([], [1, 2], [2])).toEqual(undefined);
+    });
+    it("Should return undefined if shape is length 0", () => {
+        expect(select_column([1, 2], [], [2])).toEqual(undefined);
+    });
+    it("Should return undefined if array and shape do not match", () => {
+        expect(select_column([1, 2], [3, 4], [2])).toEqual(undefined);
+    });
+    it("Should return undefined if col_Index is not defined", () => {
+        expect(select_column([1, 2, 3, 4], [2, 2])).toEqual(undefined);
+    });
+    it("Should return undefined if col_index is < 0", () => {
+        expect(select_column([1, 2, 3, 4], [2, 2], [-2])).toEqual(undefined);
+    });
+    it("Should return undefined if col_index is > col_number", () => {
+        expect(select_column([1, 2, 3, 4], [2, 2], [3])).toEqual(undefined);
+    });
+    it("Should return correct single column", () => {
+        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [0])).toEqual({result: [1, 4], shape: [2, 1]});
+        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [1])).toEqual({result: [2, 5], shape: [2, 1]});
+        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [2])).toEqual({result: [3, 6], shape: [2, 1]});
+    });
+    it("Should return correct multiple columns", () => {
+        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [0, 1])).toEqual(  {result: [1, 2, 4, 5], shape: [2, 2]});
+        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [1 ,2])).toEqual( {result: [2, 3, 5, 6], shape: [2, 2]}  );
+        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [0, 1, 2])).toEqual( {result: [1, 2, 3, 4, 5, 6], shape: [2, 3]});
+    });
+})
+
+// test mean along columns
+
+
+describe("When mean_along_columns is called", function() {
+    it("Should return undefined if array is length 0", () => {
+        expect(mean_along_columns([], [1, 2])).toEqual(undefined);
+    });
+    it("Should return undefined if shape is length 0", () => {
+        expect(mean_along_columns([1, 2], [], )).toEqual(undefined);
+    });
+    it("Should return undefined if array and shape do not match", () => {
+        expect(mean_along_columns([1, 2], [3, 4], )).toEqual(undefined);
+    });
+    it("Should return correct mean", () => {
+        expect(mean_along_columns([1, 2, 3, 4, 5, 6], [2, 3])).toEqual([2., 5.]);
+        expect(mean_along_columns([2, 3, 5, 6], [2, 2])).toEqual([2.5, 5.5])
+    })
+})
 
 // test rectBin
 

@@ -110,6 +110,57 @@ export function select_column(array, shape, col_index) {
     return output;
 }
 
+export function select_columns(array, shape, col_indices) {
+    /*
+        returns all values in columns in col_indices as a flattened array
+        together with the resulting shape
+    */
+    // extract columns
+    let result = []
+    for (let index of col_indices){
+        let temp = select_column(array, shape, index)
+        if (temp === undefined){
+            return undefined
+        }
+        result.push(temp)
+    }
+    // flatten results
+    let output = []
+    for (let row_index of [...Array(shape[0]).keys()]) {
+        for (let column of result){
+            output.push(column[row_index])
+        }
+    }
+    return { result: output, shape: [shape[0], col_indices.length]}
+}
+
+
+export function mean_along_columns(array, shape){
+    /*
+        Takes a flattened array with shape and calculates mean along columns
+    */
+    // check array
+       if (
+        array.length == 0 ||
+        shape.length != 2 ||
+        array.length != shape[0] * shape[1]
+    ) {
+        return undefined;
+    }
+    let [row_number, col_number] = shape;
+    // calculate mean
+    let output = []
+    for (let row_index = 0; row_index < row_number; row_index ++){
+        let sum = 0
+        for (let col_index = 0; col_index < col_number; col_index ++){
+            sum += array[row_index * col_number + col_index]
+        }
+        output.push(sum/col_number)
+    }
+    return output
+}
+
+
 export function min_array(array) {
     /*
         returns minimum element of array
