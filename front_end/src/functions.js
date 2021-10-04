@@ -291,6 +291,16 @@ export function getBoundaries(x_vals, y_vals){
     };
 }
 
+
+// from https://stackoverflow.com/questions/3895478/does-javascript-have-a-method-like-range-to-generate-a-range-within-the-supp
+export function range(start, stop, step) {
+    var a = [start], b = start;
+    while (b < stop) {
+        a.push(b += step || 1);
+    }
+    return a;
+}
+
 export function rectBin(
     size,
     points,
