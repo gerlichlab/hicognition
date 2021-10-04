@@ -72,16 +72,14 @@ flask user define dummy -p 1234
 To add datasets you can use the add dataset command line tool:
 
 ```
-Usage: flask dataset add [OPTIONS] PATH NAME FILETYPE USER PASSWORD
+Usage: flask dataset add [OPTIONS] JSON_PATH USER PASSWORD
 
-  Adds dataset to database and uploads it.
+  Adds datasets defined in a JSON to database and uploads it.
 
 Options:
-  -d, --description TEXT
-  -g, --genotype TEXT
-  -p, --public TEXT
-  --help                  Show this message and exit.
+  --help  Show this message and exit.
 ```
+an example can be found in ```test/testfiles/test.json```.
 
 and then you can preprocess them as follows:
 
@@ -151,7 +149,7 @@ and you are ready to got!
 
 ## Running the app
 
-Open a powershell/bash session and change into the `hicognition_flask` directory.
+Open a powershell/bash session and change into the `HiCognition` directory.
 In that directory, start the docker network with the following command:
 
 ```
@@ -168,7 +166,7 @@ execute the command above in the root directory of this repo.
 
 ## Project architecture and design decisions
 
-For a detailed description of the project architecture and development design decisions see our [dev-git](https://github.com/gerlichlab/HiCognition_flask/tree/master/documentation).
+For a detailed description of the project architecture and development design decisions see our [dev-git](https://github.com/gerlichlab/HiCognition/tree/master/documentation).
 
 ## Fullsize test data
 A .mcool, .bw and .bed file can be found ar this [dropbox](https://www.dropbox.com/sh/zjfc6sgkbdp3ksh/AAAWrbgKt8hz4npNxSfh-RBja?dl=0) location.

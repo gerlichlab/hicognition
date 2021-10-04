@@ -1,0 +1,26 @@
+{   
+    "dataset":[
+        {    
+        "datasetName":"cis_1234",
+        "file":"tests/testfiles/G2.fc_1_2_3_4.wOldG2.cis.1000.mcool",
+        "assembly":"1",
+        "perturbation": "none",
+        "cellCycleStage": "G2",
+        "ValueType": "Interaction",
+        "Method": "HiC",
+        "Normalization": "ICCF",
+        "filetype": "cooler"
+        },
+        {
+        "datasetName":"trans_1234",
+        "file":"tests/testfiles/G2.fc_1_2_3_4.wOldG2.trans.1000.mcool",
+        "assembly":"1",
+        "perturbation": "none",
+        "cellCycleStage": "G2",
+        "ValueType": "Interaction",
+        "Method": "HiC",
+        "Normalization": "ICCF",
+        "filetype": "cooler"  
+        }
+    ]
+}
