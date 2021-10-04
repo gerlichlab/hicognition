@@ -124,16 +124,8 @@ class TestStackupPipelineStep(LoginTestCase, TempDirTestCase):
             user_id=1,
         )
         # add intervals
-        self.intervals1 = Intervals(
-            name="testRegion1",
-            dataset_id=1,
-            windowsize=200000,
-        )
-        self.intervals2 = Intervals(
-            name="testRegion2",
-            dataset_id=2,
-            windowsize=None,
-        )
+        self.intervals1 = Intervals(name="testRegion1", dataset_id=1, windowsize=200000)
+        self.intervals2 = Intervals(name="testRegion2", dataset_id=2, windowsize=None)
         db.session.add(self.dataset)
         db.session.add(self.dataset2)
         db.session.add(self.intervals1)
@@ -300,7 +292,9 @@ class TestStackupWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
         mock_chromsizes.return_value = {"chr1": "test"}
         mock_stackup.return_value = np.empty((2, bin_number))
         regions = pd.DataFrame({0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000]})
-        expanded_regions = interval_operations.expand_regions(regions.rename(columns={0: "chrom", 1: "start", 2: "end"}), 0.2)
+        expanded_regions = interval_operations.expand_regions(
+            regions.rename(columns={0: "chrom", 1: "start", 2: "end"}), 0.2
+        )
         # dispatch call
         _do_stackup_variable_size(self.dataset.file_path, regions, 10)
         # check whether stackup was called correctly

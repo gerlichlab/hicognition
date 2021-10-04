@@ -41,9 +41,7 @@ class TestGetSessions(LoginTestCase):
         token_headers = self.get_token_header(token)
         # get sessions
         response = self.client.get(
-            "/api/sessions/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/sessions/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(len(response.json) == 0)
@@ -59,9 +57,7 @@ class TestGetSessions(LoginTestCase):
         db.session.commit()
         # get sessions
         response = self.client.get(
-            "/api/sessions/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/sessions/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, [self.session_user_1.to_json()])
@@ -77,9 +73,7 @@ class TestGetSessions(LoginTestCase):
         db.session.commit()
         # get sessions
         response = self.client.get(
-            "/api/sessions/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/sessions/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -98,9 +92,7 @@ class TestGetSessions(LoginTestCase):
         db.session.commit()
         # get sessions
         response = self.client.get(
-            "/api/sessions/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/sessions/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, [self.session_user_1.to_json()])
@@ -137,9 +129,7 @@ class TestGetSessionWithID(LoginTestCase):
         token_headers = self.get_token_header(token)
         # get session
         response = self.client.get(
-            "/api/sessions/10/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/sessions/10/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 404)
 
@@ -154,9 +144,7 @@ class TestGetSessionWithID(LoginTestCase):
         db.session.commit()
         # get session
         response = self.client.get(
-            "/api/sessions/1/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/sessions/1/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 403)
 
@@ -171,9 +159,7 @@ class TestGetSessionWithID(LoginTestCase):
         db.session.commit()
         # get session
         response = self.client.get(
-            "/api/sessions/1/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/sessions/1/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, self.session_user_1.to_json())

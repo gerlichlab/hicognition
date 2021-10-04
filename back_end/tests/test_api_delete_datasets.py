@@ -15,7 +15,7 @@ from app.models import (
     AverageIntervalData,
     IndividualIntervalData,
     Session,
-    Collection
+    Collection,
 )
 
 
@@ -61,45 +61,22 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         """adds test datasets to db"""
         super().setUp()
         # create owned data_set cooler
-        self.owned_cooler = Dataset(
-            id=1,
-            filetype="cooler",
-            user_id=1,
-        )
+        self.owned_cooler = Dataset(id=1, filetype="cooler", user_id=1)
         # create not owned data_set
-        self.unowned_cooler = Dataset(
-            id=2,
-            filetype="cooler",
-            user_id=2,
-        )
+        self.unowned_cooler = Dataset(id=2, filetype="cooler", user_id=2)
         # create owned data_set bed
-        self.owned_bedfile = Dataset(
-            id=3,
-            filetype="bedfile",
-            user_id=1,
-        )
+        self.owned_bedfile = Dataset(id=3, filetype="bedfile", user_id=1)
         # create not owned data_set bed
-        self.unowned_bedfile = Dataset(
-            id=4,
-            filetype="bedfile",
-            user_id=2,
-        )
+        self.unowned_bedfile = Dataset(id=4, filetype="bedfile", user_id=2)
         # create owned data_set bigwig
-        self.owned_bigwig = Dataset(
-            id=5,
-            filetype="bigwig",
-            user_id=1,
-        )
+        self.owned_bigwig = Dataset(id=5, filetype="bigwig", user_id=1)
         # create cooler that is in processing state
         self.owned_cooler_w_wrong_path = Dataset(
             id=7, filetype="cooler", file_path="/code/tmp/bad_file_path", user_id=1
         )
         # create public, unowned cooler
         self.unowned_public_cooler = Dataset(
-            id=8,
-            filetype="cooler",
-            user_id=2,
-            public=True,
+            id=8, filetype="cooler", user_id=2, public=True
         )
         # create public, owned cooler
         self.owned_public_cooler = Dataset(
@@ -123,9 +100,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         )
         # create individualIntervalData for owned data_sets
         self.individual_interval_bigwig_owned = IndividualIntervalData(
-            id=1,
-            dataset_id=5,
-            intervals_id=1,
+            id=1, dataset_id=5, intervals_id=1
         )
         # create sessions
         self.session_owned_cooler = Session(datasets=[self.owned_cooler])
@@ -175,9 +150,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         # try deletion of dataset that is not owned, current user is id 1 and dataset id2 is owned
         # by user id 2
         response = self.client.delete(
-            "/api/datasets/500/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/datasets/500/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 404)
 
@@ -191,9 +164,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # dispatch response
         response = self.client.delete(
-            "/api/datasets/2/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/datasets/2/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 403)
 
@@ -312,10 +283,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         token_headers = self.get_token_header(token)
         # create processing dataset
         owned_cooler_processing = Dataset(
-            id=6,
-            filetype="cooler",
-            user_id=1,
-            processing_regions=[self.owned_bedfile],
+            id=6, filetype="cooler", user_id=1, processing_regions=[self.owned_bedfile]
         )
         # add dataset that is processing
         db.session.add_all([owned_cooler_processing, self.owned_bedfile])
@@ -336,10 +304,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         token_headers = self.get_token_header(token)
         # create processing dataset
         owned_bedfile_processing = Dataset(
-            id=6,
-            filetype="bedfile",
-            user_id=1,
-            processing_features=[self.owned_cooler],
+            id=6, filetype="bedfile", user_id=1, processing_features=[self.owned_cooler]
         )
         # add dataset that is processing
         db.session.add_all([owned_bedfile_processing, self.owned_cooler])
@@ -455,12 +420,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         # create token_headers
         token_headers = self.get_token_header(token)
-        db.session.add_all(
-            [
-                self.owned_cooler,
-                self.owned_collection
-            ]
-        )
+        db.session.add_all([self.owned_cooler, self.owned_collection])
         db.session.commit()
         # delete data set
         self.client.delete(
@@ -469,7 +429,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             content_type="application/json",
         )
         # check whether collection was deleted
-        self.assertEqual(len(Collection.query.all()),0)
+        self.assertEqual(len(Collection.query.all()), 0)
 
 
 if __name__ == "__main__":

@@ -23,28 +23,16 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         # add unowned collection
         self.unowned_collection = Collection(id=2, user_id=2)
         # add owned bedfile
-        self.owned_bedfile = Dataset(
-            id=3,
-            filetype="bedfile",
-            user_id=1,
-        )
+        self.owned_bedfile = Dataset(id=3, filetype="bedfile", user_id=1)
         # add unowned bedfile
-        self.unowned_bedfile = Dataset(
-            id=4,
-            filetype="bedfile",
-            user_id=2,
-        )
+        self.unowned_bedfile = Dataset(id=4, filetype="bedfile", user_id=2)
         # add intervals for owned bedfile
         self.owned_intervals = Intervals(
-            id=1,
-            dataset_id=self.owned_bedfile.id,
-            windowsize=200000,
+            id=1, dataset_id=self.owned_bedfile.id, windowsize=200000
         )
         # add intervals for unowned bedfile
         self.unowned_intervals = Intervals(
-            id=2,
-            dataset_id=self.unowned_bedfile.id,
-            windowsize=200000,
+            id=2, dataset_id=self.unowned_bedfile.id, windowsize=200000
         )
         # add embeddingIntervalData with unowned collection
         self.assocData_collection_unowned = EmbeddingIntervalData(
@@ -65,11 +53,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, self.test_data)
         self.assocData_owned = EmbeddingIntervalData(
-            id=3,
-            binsize=10000,
-            file_path=data_path,
-            collection_id=1,
-            intervals_id=1,
+            id=3, binsize=10000, file_path=data_path, collection_id=1, intervals_id=1
         )
 
     def test_no_auth(self):

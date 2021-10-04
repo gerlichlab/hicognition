@@ -58,13 +58,13 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             filetype="bedfile",
             dataset_name="testfile",
             processing_state="finished",
-            sizeType="Interval"
+            sizeType="Interval",
         )
         self.owned_datasets = [
             self.owned_bedfile,
             self.owned_coolerfile,
             self.owned_bigwig,
-            self.owned_bedfile_interval
+            self.owned_bedfile_interval,
         ]
         self.not_owned_bigwig = Dataset(
             id=5,
@@ -109,7 +109,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             Intervals(id=1, dataset_id=1, windowsize=10000),
             Intervals(id=2, dataset_id=1, windowsize=20000),
             Intervals(id=3, dataset_id=1, windowsize=30000),
-            Intervals(id=7, dataset_id=9)
+            Intervals(id=7, dataset_id=9),
         ]
         self.intervals_not_owned_bedfile = [
             Intervals(id=4, dataset_id=2, windowsize=10000),
@@ -138,7 +138,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             ),
             AverageIntervalData(
                 id=11, binsize=2, dataset_id=3, intervals_id=7, value_type="Obs/Exp"
-            )
+            ),
         ]
         # create line profiles
         self.lineprofiles = [
@@ -160,7 +160,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             IndividualIntervalData(id=1, binsize=1000, dataset_id=4, intervals_id=1),
             IndividualIntervalData(id=2, binsize=2000, dataset_id=4, intervals_id=2),
             IndividualIntervalData(id=3, binsize=2000, dataset_id=5, intervals_id=2),
-            IndividualIntervalData(id=4, binsize=10, dataset_id=4, intervals_id=7)
+            IndividualIntervalData(id=4, binsize=10, dataset_id=4, intervals_id=7),
         ]
         # create association data
         self.association_data = [
@@ -173,16 +173,14 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             AssociationIntervalData(
                 id=3, binsize=20000, collection_id=1, intervals_id=2
             ),
-            AssociationIntervalData(
-                id=4, binsize=2, collection_id=1, intervals_id=7
-            )
+            AssociationIntervalData(id=4, binsize=2, collection_id=1, intervals_id=7),
         ]
         # create embedding data
         self.embedding_data = [
             EmbeddingIntervalData(id=1, binsize=10000, collection_id=1, intervals_id=1),
             EmbeddingIntervalData(id=2, binsize=20000, collection_id=1, intervals_id=1),
             EmbeddingIntervalData(id=3, binsize=20000, collection_id=1, intervals_id=2),
-            EmbeddingIntervalData(id=4, binsize=5, collection_id=1, intervals_id=7)
+            EmbeddingIntervalData(id=4, binsize=5, collection_id=1, intervals_id=7),
         ]
 
     def test_no_auth(self):
@@ -360,9 +358,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "pileup": {
                 "3": {
                     "name": "testfile3",
-                    "data_ids": {
-                        "variable": {"2": {"ICCF": "10", "Obs/Exp": "11"}},
-                    },
+                    "data_ids": {"variable": {"2": {"ICCF": "10", "Obs/Exp": "11"}}},
                 }
             },
             "stackup": {},
@@ -433,15 +429,11 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "stackup": {},
             "lola": {},
             "lineprofile": {
-                "4": {
-                    "name": "testfile4",
-                    "data_ids": {"variable": {"5": "9"}},
-                }
+                "4": {"name": "testfile4", "data_ids": {"variable": {"5": "9"}}}
             },
             "embedding": {},
         }
         self.assertEqual(response.json, expected)
-
 
     def test_structure_of_mapping_w_intervals_w_stackups(self):
         """Test whether the structure of the returned object is correct for
@@ -478,7 +470,6 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         }
         self.assertEqual(response.json, expected)
 
-
     def test_structure_of_mapping_stackups_variable_intervals(self):
         """Test whether the structure of the returned object is correct for
         bedfile with variable intervals associated with stackups"""
@@ -503,10 +494,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         expected = {
             "pileup": {},
             "stackup": {
-                "4": {
-                    "name": "testfile4",
-                    "data_ids": {"variable": {"10": "4"}},
-                }
+                "4": {"name": "testfile4", "data_ids": {"variable": {"10": "4"}}}
             },
             "lineprofile": {},
             "lola": {},
@@ -554,7 +542,6 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         }
         self.assertEqual(response.json, expected)
 
-
     def test_structure_of_mapping_association_data_variable_intervals(self):
         """Test whether the structure of the returned object is correct for
         bedfile with variable intervals associated with pileups"""
@@ -585,9 +572,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 "1": {
                     "name": "test_collection",
                     "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
-                    "data_ids": {
-                        "variable": {"2": "4"}
-                    },
+                    "data_ids": {"variable": {"2": "4"}},
                 }
             },
             "embedding": {},
@@ -665,14 +650,11 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 "1": {
                     "name": "test_collection",
                     "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
-                    "data_ids": {
-                        "variable": {"5": "4"}
-                    },
+                    "data_ids": {"variable": {"5": "4"}},
                 }
             },
         }
         self.assertEqual(response.json, expected)
-
 
     def test_structure_of_mapping_w_intervals_w_all_datatypes(self):
         """Test whether the structure of the returned object is correct for
@@ -745,7 +727,6 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         }
         self.assertEqual(response.json, expected)
 
-
     def test_bigwig_dataset_not_sent_when_not_finished(self):
         """Tests whehter only datasets are included in preprocessed dataset map
         that have finished processing for the query region."""
@@ -795,7 +776,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {}
+            "embedding": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -848,7 +829,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {}
+            "embedding": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -911,7 +892,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {}
+            "embedding": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -974,7 +955,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {}
+            "embedding": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -1029,7 +1010,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {}
+            "embedding": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -1084,7 +1065,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {}
+            "embedding": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -1147,7 +1128,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {}
+            "embedding": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -1201,7 +1182,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 }
             },
             "lola": {},
-            "embedding": {}
+            "embedding": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -1255,7 +1236,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 }
             },
             "lola": {},
-            "embedding": {}
+            "embedding": {},
         }
         self.assertEqual(response.json, expected)
 

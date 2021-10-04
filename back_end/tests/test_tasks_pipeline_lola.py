@@ -43,10 +43,7 @@ class TestPipelineLola(LoginTestCase):
         self.bedfile = Dataset(id=1, filetype="bedfile", user_id=1, assembly=1)
         # add intervals
         self.intervals1 = Intervals(
-            id=1,
-            name="testRegion1",
-            dataset_id=1,
-            windowsize=200000,
+            id=1, name="testRegion1", dataset_id=1, windowsize=200000
         )
         # add collections
         self.collection = Collection(id=1)
@@ -219,7 +216,6 @@ class EnrichmentSetupClass(LoginTestCase, TempDirTestCase):
 class TestEnrichmentPipelineStep(EnrichmentSetupClass):
     """Tests enrichment pipeline step"""
 
-
     @patch("app.pipeline_steps.worker_funcs._do_enrichment_calculations_fixed_size")
     @patch("app.pipeline_steps.worker_funcs._do_enrichment_calculations_variable_size")
     def test_correct_worker_function_called_fixed_intervals(
@@ -341,9 +337,7 @@ class TestEnrichmentWorkerFunctionVariableSize(EnrichmentSetupClass):
         db.session.commit()
         # run enrichment analysis
         _do_enrichment_calculations_variable_size(
-            self.collection_2.id,
-            10,
-            self.tad_interval.source_dataset.file_path,
+            self.collection_2.id, 10, self.tad_interval.source_dataset.file_path
         )
 
 

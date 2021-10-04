@@ -15,11 +15,14 @@ from app.models import (
     IndividualIntervalData,
     EmbeddingIntervalData,
     Assembly,
-    Task
+    Task,
 )
 from app.tasks import pipeline_embedding_1d
 from app.pipeline_steps import embedding_1d_pipeline_step
-from app.pipeline_worker_functions import _do_embedding_1d_fixed_size, _do_embedding_1d_variable_size
+from app.pipeline_worker_functions import (
+    _do_embedding_1d_fixed_size,
+    _do_embedding_1d_variable_size,
+)
 
 
 class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
@@ -64,16 +67,10 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
         )
         # add tasks
         self.finished_task1 = Task(
-            id="test1",
-            collection_id=1,
-            intervals_id=1,
-            complete=True
+            id="test1", collection_id=1, intervals_id=1, complete=True
         )
         self.unfinished_task1 = Task(
-            id="test1",
-            collection_id=1,
-            intervals_id=1,
-            complete=False
+            id="test1", collection_id=1, intervals_id=1, complete=False
         )
 
     @patch("app.pipeline_steps.stackup_pipeline_step")
@@ -118,16 +115,19 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
             self.collection_1.id, self.intervals_1.id, 20000
         )
 
-
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.stackup_pipeline_step")
     @patch("app.pipeline_steps.embedding_1d_pipeline_step")
-    def test_dataset_state_not_changed_if_not_last(self,mock_embedding, mock_stackup, mock_progress):
+    def test_dataset_state_not_changed_if_not_last(
+        self, mock_embedding, mock_stackup, mock_progress
+    ):
         """tests whether dataset state is left unchanged if it is not the last task for
         this dataset/intervals combination."""
         # set up database
         self.bed_file.processing_collections = [self.collection_1]
-        db.session.add_all([self.bed_file, self.collection_1, self.intervals_1, self.unfinished_task1])
+        db.session.add_all(
+            [self.bed_file, self.collection_1, self.intervals_1, self.unfinished_task1]
+        )
         # call pipeline
         pipeline_embedding_1d(1, 1, 10000)
         # check whether processing has finished
@@ -136,12 +136,16 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.stackup_pipeline_step")
     @patch("app.pipeline_steps.embedding_1d_pipeline_step")
-    def test_dataset_set_finished_if_last(self,mock_embedding, mock_stackup, mock_progress):
+    def test_dataset_set_finished_if_last(
+        self, mock_embedding, mock_stackup, mock_progress
+    ):
         """tests whether dataset is set finished correctly if it is the last task for
         this dataset/intervals combination."""
         # set up database
         self.bed_file.processing_collections = [self.collection_1]
-        db.session.add_all([self.bed_file, self.collection_1, self.intervals_1, self.finished_task1])
+        db.session.add_all(
+            [self.bed_file, self.collection_1, self.intervals_1, self.finished_task1]
+        )
         # call pipeline
         pipeline_embedding_1d(1, 1, 10000)
         # check whether processing has finished
@@ -151,13 +155,17 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.stackup_pipeline_step")
     @patch("app.pipeline_steps.embedding_1d_pipeline_step")
-    def test_dataset_set_failed_if_failed(self,mock_embedding, mock_stackup, mock_progress, mock_log):
+    def test_dataset_set_failed_if_failed(
+        self, mock_embedding, mock_stackup, mock_progress, mock_log
+    ):
         """tests whether dataset is set as faild if problem arises."""
         # set up exception raising
         mock_embedding.side_effect = ValueError("Test")
         # set up database
         self.bed_file.processing_collections = [self.collection_1]
-        db.session.add_all([self.bed_file, self.collection_1, self.intervals_1, self.finished_task1])
+        db.session.add_all(
+            [self.bed_file, self.collection_1, self.intervals_1, self.finished_task1]
+        )
         # call pipeline
         pipeline_embedding_1d(1, 1, 10000)
         # check whether processing has finished
@@ -225,15 +233,11 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
 
     @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_variable_size")
     @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_fixed_size")
-    def test_database_entry_added_correctly(
-        self,
-        mock_fixed_size,
-        mock_variable_size
-    ):
+    def test_database_entry_added_correctly(self, mock_fixed_size, mock_variable_size):
         """Tests whether database entry is added correctly"""
         # ad return values
-        mock_fixed_size.return_value = [np.empty((1, 1))]*2
-        mock_variable_size.return_value = [np.empty((1, 1))]*2
+        mock_fixed_size.return_value = [np.empty((1, 1))] * 2
+        mock_variable_size.return_value = [np.empty((1, 1))] * 2
         # add data to database
         db.session.add_all(
             [
@@ -262,14 +266,12 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_variable_size")
     @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_fixed_size")
     def test_correct_worker_called_fixed_size_intervals(
-        self,
-        mock_fixed_size,
-        mock_variable_size
+        self, mock_fixed_size, mock_variable_size
     ):
         """Tests whether correct worker function is called with fixed size intervals"""
         # ad return values
-        mock_fixed_size.return_value = [np.empty((1, 1))]*2
-        mock_variable_size.return_value = [np.empty((1, 1))]*2
+        mock_fixed_size.return_value = [np.empty((1, 1))] * 2
+        mock_variable_size.return_value = [np.empty((1, 1))] * 2
         # add data to database
         db.session.add_all(
             [
@@ -292,14 +294,12 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_variable_size")
     @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_fixed_size")
     def test_correct_worker_called_variable_size_intervals(
-        self,
-        mock_fixed_size,
-        mock_variable_size
+        self, mock_fixed_size, mock_variable_size
     ):
         """Tests whether correct worker function is called with fixed size intervals"""
         # ad return values
-        mock_fixed_size.return_value = [np.empty((1, 1))]*2
-        mock_variable_size.return_value = [np.empty((1, 1))]*2
+        mock_fixed_size.return_value = [np.empty((1, 1))] * 2
+        mock_variable_size.return_value = [np.empty((1, 1))] * 2
         # add data to database
         db.session.add_all(
             [
@@ -394,7 +394,9 @@ class TestEmbedding1DWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
             ]
         )
         # dispatch call
-        embedding, features = _do_embedding_1d_fixed_size(self.collection_1.id, self.intervals_1.id, 10000)
+        embedding, features = _do_embedding_1d_fixed_size(
+            self.collection_1.id, self.intervals_1.id, 10000
+        )
         # test whether feature frame used is correct
         expected_features = np.array(
             [
@@ -426,15 +428,15 @@ class TestEmbedding1DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
         # call setUp of LoginTestCase to initialize app
         super().setUp()
         # create dummy data
-        ingredient_1 = np.array([[1, 2, 3,4,5,6,7,8,9,10,11,12,13,14]*3])
+        ingredient_1 = np.array([[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] * 3])
         self.test_data_1 = np.concatenate([ingredient_1] * 5)
         data_path_1 = os.path.join(self.TEMP_PATH, "data1.npy")
         np.save(data_path_1, self.test_data_1)
-        ingredient_2 = np.array([[1, 2, 3,4,5,6,7,8,9,10,11,12,13,14]*3])
+        ingredient_2 = np.array([[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] * 3])
         self.test_data_2 = np.concatenate([ingredient_2] * 5)
         data_path_2 = os.path.join(self.TEMP_PATH, "data2.npy")
         np.save(data_path_2, self.test_data_2)
-        ingredient_3 = np.array([[1, 2, 3,4,5,6,7,8,9,10,11,12,13,14]*3])
+        ingredient_3 = np.array([[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] * 3])
         self.test_data_3 = np.concatenate([ingredient_3] * 5)
         data_path_3 = os.path.join(self.TEMP_PATH, "data3.npy")
         np.save(data_path_3, self.test_data_3)
@@ -491,7 +493,9 @@ class TestEmbedding1DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
             ]
         )
         # dispatch call
-        embedding, features = _do_embedding_1d_variable_size(self.collection_1.id, self.intervals_1.id, 10)
+        embedding, features = _do_embedding_1d_variable_size(
+            self.collection_1.id, self.intervals_1.id, 10
+        )
         # test whether feature frame used is correct
         expected_features = np.array(
             [
@@ -499,7 +503,7 @@ class TestEmbedding1DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
                 [7.5, 7.5, 7.5],
                 [7.5, 7.5, 7.5],
                 [7.5, 7.5, 7.5],
-                [7.5, 7.5, 7.5]
+                [7.5, 7.5, 7.5],
             ]
         )
         self.assertTrue(np.array_equal(features, expected_features))

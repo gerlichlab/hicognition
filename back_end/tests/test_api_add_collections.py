@@ -24,8 +24,7 @@ class TestAddCollection(LoginTestCase):
         if no token is provided."""
         # dispatch post request
         response = self.client.post(
-            "/api/collections/",
-            content_type="multipart/form-data",
+            "/api/collections/", content_type="multipart/form-data"
         )
         self.assertEqual(response.status_code, 401)
 
@@ -77,10 +76,7 @@ class TestAddCollection(LoginTestCase):
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
-        data = {
-            "used_datasets": "[1, 2, 3, 4]",
-            "name": "test-collection",
-        }
+        data = {"used_datasets": "[1, 2, 3, 4]", "name": "test-collection"}
         # dispatch post request
         response = self.client.post(
             "/api/collections/",

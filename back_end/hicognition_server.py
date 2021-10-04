@@ -16,7 +16,7 @@ from app.models import (
     EmbeddingIntervalData,
     AssociationIntervalData,
     Organism,
-    Assembly
+    Assembly,
 )
 from flask_migrate import Migrate
 from flask.cli import AppGroup
@@ -57,6 +57,7 @@ app.cli.add_command(user_group)
 
 dataset_group = AppGroup("dataset")
 
+
 @dataset_group.command("add")
 @click.argument("json_path")
 @click.argument("user")
@@ -69,9 +70,9 @@ def add_dataset(json_path, user, password):
     with open(json_path, "rb") as json_data:
         all_data = json.load(json_data)
         for dataset_item in all_data["dataset"]:
-            #print(dataset_item)
+            # print(dataset_item)
             with open(dataset_item["file"], "rb") as f:
-                #open and pass the file into the data array as well
+                # open and pass the file into the data array as well
                 dataset_item["file"] = (f, dataset_item["file"])
                 response = client.post(
                     "/api/datasets/",
@@ -79,7 +80,9 @@ def add_dataset(json_path, user, password):
                     headers=headers,
                     content_type="multipart/form-data",
                 )
-                print(f"Request dispatched with status code {response.status_code} and response {response.json}")
+                print(
+                    f"Request dispatched with status code {response.status_code} and response {response.json}"
+                )
 
 
 @dataset_group.command("preprocess")
@@ -138,7 +141,7 @@ def make_shell_context():
         "EmbeddingIntervalData": EmbeddingIntervalData,
         "AssociationIntervalData": AssociationIntervalData,
         "Organism": Organism,
-        "Assembly": Assembly
+        "Assembly": Assembly,
     }
 
 

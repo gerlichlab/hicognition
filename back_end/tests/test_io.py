@@ -20,7 +20,7 @@ class TestConvertBedToBedPE(TempDirTestCase):
             "tests/testfiles/test_small.bed",
             os.path.join(TempDirTestCase.TEMP_PATH, "test_small_result.bedpe"),
             halfwindowsize=300000,
-            chromsize_path="tests/testfiles/hg19.chrom.sizes"
+            chromsize_path="tests/testfiles/hg19.chrom.sizes",
         )
         # load expected data
         expected = pd.read_csv(
@@ -43,7 +43,7 @@ class TestConvertBedToBedPE(TempDirTestCase):
             "tests/testfiles/test2_realData_twocol.bed",
             os.path.join(TempDirTestCase.TEMP_PATH, "test2_realData_twocol.bedpe"),
             halfwindowsize=300000,
-            chromsize_path="tests/testfiles/hg19.chrom.sizes"
+            chromsize_path="tests/testfiles/hg19.chrom.sizes",
         )
         # load expected data
         expected = pd.read_csv(
@@ -81,7 +81,7 @@ class TestConvertBedToBedPE(TempDirTestCase):
             test_bed_path,
             os.path.join(TempDirTestCase.TEMP_PATH, "filter_output.bedpe"),
             halfwindowsize=300000,
-            chromsize_path="tests/testfiles/hg19.chrom.sizes"
+            chromsize_path="tests/testfiles/hg19.chrom.sizes",
         )
         # load result
         result = pd.read_csv(

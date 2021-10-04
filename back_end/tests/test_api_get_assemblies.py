@@ -42,15 +42,19 @@ class TestGetAssemblies(LoginTestCase):
         token_headers = self.get_token_header(token)
         # get datasets
         response = self.client.get(
-            "/api/assemblies/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/assemblies/", headers=token_headers, content_type="application/json"
         )
         # check response
         self.assertEqual(response.status_code, 200)
         expected = {
-            "Human": [{"id": 1, "name": "hg19", "user_id": None, "dependent_datasets": 0}, {"id": 2, "name": "hg38", "user_id": None, "dependent_datasets": 0}],
-            "Drosophila": [{"id": 3, "name": "dm1", "user_id": None, "dependent_datasets": 0}, {"id": 4, "name": "dm2", "user_id": None, "dependent_datasets": 0}],
+            "Human": [
+                {"id": 1, "name": "hg19", "user_id": None, "dependent_datasets": 0},
+                {"id": 2, "name": "hg38", "user_id": None, "dependent_datasets": 0},
+            ],
+            "Drosophila": [
+                {"id": 3, "name": "dm1", "user_id": None, "dependent_datasets": 0},
+                {"id": 4, "name": "dm2", "user_id": None, "dependent_datasets": 0},
+            ],
         }
         self.assertEqual(expected, response.json)
 

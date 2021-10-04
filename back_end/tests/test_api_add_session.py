@@ -18,22 +18,15 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
         self.empty_owned_dataset_2 = Dataset(id=2, user_id=1)
         self.owned_datasets = [self.empty_owned_dataset_1, self.empty_owned_dataset_2]
         self.empty_unowned_dataset = Dataset(id=1, user_id=2)
-        self.collection_1 = Collection(
-            id=1,
-            user_id=1
-        )
-        self.collection_2 = Collection(
-            id=2,
-            user_id=2
-        )
+        self.collection_1 = Collection(id=1, user_id=1)
+        self.collection_2 = Collection(id=2, user_id=2)
 
     def test_access_denied_without_token(self):
         """Test whether post request results in 401 error
         if no token is provided."""
         # dispatch post request
         response = self.client.post(
-            "/api/sessions/",
-            content_type="multipart/form-data",
+            "/api/sessions/", content_type="multipart/form-data"
         )
         self.assertEqual(response.status_code, 401)
 
@@ -44,9 +37,7 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
         token_headers = self.get_token_header(token)
         # dispatch post request
         response = self.client.post(
-            "/api/sessions/",
-            content_type="multipart/form-data",
-            headers=token_headers,
+            "/api/sessions/", content_type="multipart/form-data", headers=token_headers
         )
         self.assertEqual(response.status_code, 400)
 
@@ -59,7 +50,7 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
             "session_object": "test-object",
             "session_type": "compare",
             "used_datasets": "[1, 2, 3, 4]",
-            "used_collections": "[1,2]"
+            "used_collections": "[1,2]",
         }
         # dispatch post request
         response = self.client.post(
@@ -79,7 +70,7 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
             "name": "test-session",
             "session_type": "compare",
             "used_datasets": "[1, 2, 3, 4]",
-            "used_collections": "[1,2]"
+            "used_collections": "[1,2]",
         }
         # dispatch post request
         response = self.client.post(
@@ -99,7 +90,7 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
             "name": "test-session",
             "session_object": "test-object",
             "used_datasets": "[1, 2, 3, 4]",
-            "used_collections": "[1,2]"
+            "used_collections": "[1,2]",
         }
         # dispatch post request
         response = self.client.post(
@@ -119,7 +110,7 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
             "name": "test-session",
             "session_object": "test-object",
             "session_type": "compare",
-            "used_collections": "[1,2]"
+            "used_collections": "[1,2]",
         }
         # dispatch post request
         response = self.client.post(
@@ -139,7 +130,7 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
             "name": "test-session",
             "session_object": "test-object",
             "session_type": "compare",
-            "used_datasets": "[1,2]"
+            "used_datasets": "[1,2]",
         }
         # dispatch post request
         response = self.client.post(
@@ -160,7 +151,7 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
             "session_object": "test-object",
             "session_type": "compare",
             "used_datasets": "[1, 2, 3]",
-            "used_collections": "[]"
+            "used_collections": "[]",
         }
         # dispatch post request
         response = self.client.post(
@@ -181,7 +172,7 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
             "session_object": "test-object",
             "session_type": "compare",
             "used_datasets": "[]",
-            "used_collections": "[1,2]"
+            "used_collections": "[1,2]",
         }
         # dispatch post request
         response = self.client.post(
@@ -206,7 +197,7 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
             "session_object": "test-object",
             "session_type": "compare",
             "used_datasets": "[1]",
-            "used_collections": "[1,2]"
+            "used_collections": "[1,2]",
         }
         # dispatch post request
         response = self.client.post(
@@ -231,7 +222,7 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
             "session_object": "test-object",
             "session_type": "compare",
             "used_datasets": "[]",
-            "used_collections": "[2]"
+            "used_collections": "[2]",
         }
         # dispatch post request
         response = self.client.post(
@@ -256,7 +247,7 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
             "session_object": "test-object",
             "session_type": "compare",
             "used_datasets": "[1]",
-            "used_collections": "[]"
+            "used_collections": "[]",
         }
         # dispatch post request
         response = self.client.post(
@@ -287,7 +278,7 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
             "session_object": "test-object",
             "session_type": "compare",
             "used_datasets": "[1, 2]",
-            "used_collections": "[1]"
+            "used_collections": "[1]",
         }
         # dispatch post request
         response = self.client.post(

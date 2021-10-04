@@ -45,30 +45,18 @@ class TestGetIntervals(LoginTestCase):
         )
         # add intervals for owned dataset
         self.owned_intervals_1 = Intervals(
-            id=1,
-            name="testRegion1",
-            dataset_id=1,
-            windowsize=200000,
+            id=1, name="testRegion1", dataset_id=1, windowsize=200000
         )
         self.owned_intervals_2 = Intervals(
-            id=2,
-            name="testRegion2",
-            dataset_id=1,
-            windowsize=400000,
+            id=2, name="testRegion2", dataset_id=1, windowsize=400000
         )
         # add intervals for unowned dataset
         self.unowned_intervals = Intervals(
-            id=3,
-            name="testRegion3",
-            dataset_id=2,
-            windowsize=400000,
+            id=3, name="testRegion3", dataset_id=2, windowsize=400000
         )
         # add intervals for public dataset
         self.public_intervals = Intervals(
-            id=4,
-            name="testRegion3",
-            dataset_id=3,
-            windowsize=400000,
+            id=4, name="testRegion3", dataset_id=3, windowsize=400000
         )
         # add session for unowned dataset
         self.session_unowned_dataset = Session(datasets=[self.unowned_dataset])
@@ -102,9 +90,7 @@ class TestGetIntervals(LoginTestCase):
         db.session.commit()
         # get intervals
         response = self.client.get(
-            "/api/intervals/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/intervals/", headers=token_headers, content_type="application/json"
         )
         # check whether they are correct
         expected = [self.owned_intervals_1.to_json(), self.owned_intervals_2.to_json()]
@@ -124,9 +110,7 @@ class TestGetIntervals(LoginTestCase):
         db.session.commit()
         # get intervals
         response = self.client.get(
-            "/api/intervals/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/intervals/", headers=token_headers, content_type="application/json"
         )
         # check whether they are correct
         expected = [self.owned_intervals_1.to_json(), self.owned_intervals_2.to_json()]
@@ -172,9 +156,7 @@ class TestGetIntervals(LoginTestCase):
         db.session.commit()
         # get intervals
         response = self.client.get(
-            "/api/intervals/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/intervals/", headers=token_headers, content_type="application/json"
         )
         # check whether they are correct
         self.assertEqual(response.json, [self.public_intervals.to_json()])
@@ -203,17 +185,11 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
         )
         # add intetvals for owned dataset
         self.owned_intervals = Intervals(
-            id=1,
-            name="testRegion1",
-            dataset_id=1,
-            windowsize=200000,
+            id=1, name="testRegion1", dataset_id=1, windowsize=200000
         )
         # add intervals for unowned dataset
         self.unowned_intervals = Intervals(
-            id=3,
-            name="testRegion1",
-            dataset_id=2,
-            windowsize=200000,
+            id=3, name="testRegion1", dataset_id=2, windowsize=200000
         )
         # add metadata 1 for owned dataset
         metadata_file_path_1 = os.path.join(TempDirTestCase.TEMP_PATH, "test.csv")

@@ -72,5 +72,5 @@ FORMAT_CHECKERS = {
     "cooler": is_mcooler,
     "bigwig": lambda x, y, z: True,
     "chromsizes": lambda x: True,
-    "chromarms": lambda x: True
+    "chromarms": lambda x: True,
 }

@@ -41,16 +41,10 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         self.coolerfile = Dataset(id=2, filetype="cooler", user_id=1, assembly=1)
         # add intervals
         self.intervals1 = Intervals(
-            id=1,
-            name="testRegion1",
-            dataset_id=1,
-            windowsize=200000,
+            id=1, name="testRegion1", dataset_id=1, windowsize=200000
         )
         self.intervals2 = Intervals(
-            id=2,
-            name="testRegion2",
-            dataset_id=1,
-            windowsize=200000,
+            id=2, name="testRegion2", dataset_id=1, windowsize=200000
         )
         # make tasks
         self.finished_task1 = Task(
@@ -196,21 +190,9 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
             assembly=1,
         )
         # add intervals
-        self.intervals1 = Intervals(
-            name="testRegion1",
-            dataset_id=1,
-            windowsize=200000,
-        )
-        self.intervals2 = Intervals(
-            name="testRegion2",
-            dataset_id=1,
-            windowsize=300000,
-        )
-        self.intervals3 = Intervals(
-            name="testRegion2",
-            dataset_id=1,
-            windowsize=None,
-        )
+        self.intervals1 = Intervals(name="testRegion1", dataset_id=1, windowsize=200000)
+        self.intervals2 = Intervals(name="testRegion2", dataset_id=1, windowsize=300000)
+        self.intervals3 = Intervals(name="testRegion2", dataset_id=1, windowsize=None)
         db.session.add(self.dataset)
         db.session.add(self.dataset2)
         db.session.add(self.intervals1)
@@ -221,9 +203,7 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.worker_funcs._do_pileup_fixed_size")
     @patch("app.pipeline_steps.worker_funcs._do_pileup_variable_size")
     def test_correct_pileup_worker_function_used_point_feature(
-        self,
-        mock_pileup_variable_size,
-        mock_pileup_fixed_size,
+        self, mock_pileup_variable_size, mock_pileup_fixed_size
     ):
         """Tests whether correct worker function for pileup is used
         when intervals has fixed windowsizes"""
@@ -239,9 +219,7 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.worker_funcs._do_pileup_fixed_size")
     @patch("app.pipeline_steps.worker_funcs._do_pileup_variable_size")
     def test_correct_pileup_worker_function_used_interval_feature(
-        self,
-        mock_pileup_variable_size,
-        mock_pileup_fixed_size,
+        self, mock_pileup_variable_size, mock_pileup_fixed_size
     ):
         """Tests whether correct worker function for pileup is used
         when intervals has variable windowsizes"""
@@ -259,11 +237,7 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.worker_funcs._do_pileup_fixed_size")
     @patch("app.pipeline_steps.worker_funcs._do_pileup_variable_size")
     def test_adding_to_db_called_correctly(
-        self,
-        mock_pileup_variable_size,
-        mock_pileup_fixed_size,
-        mock_add_db,
-        mock_uuid,
+        self, mock_pileup_variable_size, mock_pileup_fixed_size, mock_add_db, mock_uuid
     ):
         """Tests whether function to add result to database is called correctly."""
         # hack in return value of uuid4().hex to be asdf

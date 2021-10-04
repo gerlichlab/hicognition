@@ -23,28 +23,16 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         # add unowned collection
         self.unowned_collection = Collection(id=2, user_id=2)
         # add owned bedfile
-        self.owned_bedfile = Dataset(
-            id=3,
-            filetype="bedfile",
-            user_id=1,
-        )
+        self.owned_bedfile = Dataset(id=3, filetype="bedfile", user_id=1)
         # add unowned bedfile
-        self.unowned_bedfile = Dataset(
-            id=4,
-            filetype="bedfile",
-            user_id=2,
-        )
+        self.unowned_bedfile = Dataset(id=4, filetype="bedfile", user_id=2)
         # add intervals for owned bedfile
         self.owned_intervals = Intervals(
-            id=1,
-            dataset_id=self.owned_bedfile.id,
-            windowsize=200000,
+            id=1, dataset_id=self.owned_bedfile.id, windowsize=200000
         )
         # add intervals for unowned bedfile
         self.unowned_intervals = Intervals(
-            id=2,
-            dataset_id=self.unowned_bedfile.id,
-            windowsize=200000,
+            id=2, dataset_id=self.unowned_bedfile.id, windowsize=200000
         )
         # add embeddingIntervalData with unowned collection
         self.assocData_collection_unowned = EmbeddingIntervalData(
@@ -64,7 +52,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         self.test_data = np.array([[1.66, 2.2, 3.8, 4.5]])
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, self.test_data)
-        self.feature_data = np.array([[5., 6., 7., 8.], [1. ,2., 3., 4.]])
+        self.feature_data = np.array([[5.0, 6.0, 7.0, 8.0], [1.0, 2.0, 3.0, 4.0]])
         feature_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_features.npy")
         np.save(feature_path, self.feature_data)
         self.assocData_owned = EmbeddingIntervalData(
@@ -170,12 +158,11 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         )
         data = json.loads(gzip.decompress(response.data))
         expected = {
-                "data": self.feature_data[:, 0].flatten().tolist(),
-                "shape": list(self.feature_data[:, 0].shape),
-                "dtype": "float32",
-            }
+            "data": self.feature_data[:, 0].flatten().tolist(),
+            "shape": list(self.feature_data[:, 0].shape),
+            "dtype": "float32",
+        }
         self.assertEqual(data, expected)
-
 
     def test_correct_data_returned_index_2(self):
         """Correct data is returned from an owned embeddingIntervalData"""
@@ -201,11 +188,12 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         )
         data = json.loads(gzip.decompress(response.data))
         expected = {
-                "data": self.feature_data[:, 2].flatten().tolist(),
-                "shape": list(self.feature_data[:, 2].shape),
-                "dtype": "float32",
-            }
+            "data": self.feature_data[:, 2].flatten().tolist(),
+            "shape": list(self.feature_data[:, 2].shape),
+            "dtype": "float32",
+        }
         self.assertEqual(data, expected)
+
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

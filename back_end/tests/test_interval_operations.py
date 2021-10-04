@@ -11,32 +11,16 @@ class TestChunkIntervals(unittest.TestCase):
     def setUp(cls):
         cls.expected = [
             pd.DataFrame(
-                {
-                    "chrom": ["chr1"] * 3,
-                    "start": [900000] * 3,
-                    "end": [950000] * 3,
-                }
+                {"chrom": ["chr1"] * 3, "start": [900000] * 3, "end": [950000] * 3}
             ),
             pd.DataFrame(
-                {
-                    "chrom": ["chr1"] * 3,
-                    "start": [950000] * 3,
-                    "end": [1000000] * 3,
-                }
+                {"chrom": ["chr1"] * 3, "start": [950000] * 3, "end": [1000000] * 3}
             ),
             pd.DataFrame(
-                {
-                    "chrom": ["chr1"] * 3,
-                    "start": [1000000] * 3,
-                    "end": [1050000] * 3,
-                }
+                {"chrom": ["chr1"] * 3, "start": [1000000] * 3, "end": [1050000] * 3}
             ),
             pd.DataFrame(
-                {
-                    "chrom": ["chr1"] * 3,
-                    "start": [1050000] * 3,
-                    "end": [1100000] * 3,
-                }
+                {"chrom": ["chr1"] * 3, "start": [1050000] * 3, "end": [1100000] * 3}
             ),
         ]
 
@@ -97,13 +81,7 @@ class TestChunkIntervalsVariableSize(unittest.TestCase):
 
     def test_single_region(self):
         """tests single region"""
-        test_region = pd.DataFrame(
-            {
-                "chrom": ["chr1"],
-                "start": [100],
-                "end": [200],
-            }
-        )
+        test_region = pd.DataFrame({"chrom": ["chr1"], "start": [100], "end": [200]})
         # call function
         result = interval_operations.chunk_intervals_variable_size(test_region, 10, 0.2)
         # test length
@@ -115,11 +93,7 @@ class TestChunkIntervalsVariableSize(unittest.TestCase):
     def test_region_border_chromosome(self):
         """tests multiple regions"""
         test_region = pd.DataFrame(
-            {
-                "chrom": ["chr6"],
-                "start": [275000],
-                "end": [3275000],
-            }
+            {"chrom": ["chr6"], "start": [275000], "end": [3275000]}
         )
         # call function
         result = interval_operations.chunk_intervals_variable_size(test_region, 5, 0.2)
@@ -151,18 +125,10 @@ class TestExpandRegions(unittest.TestCase):
 
     def test_regions_correctly_expanded(self):
         test_region = pd.DataFrame(
-            {
-                "chrom": ["chr1", "chr1"],
-                "start": [100, 200],
-                "end": [200, 400],
-            }
+            {"chrom": ["chr1", "chr1"], "start": [100, 200], "end": [200, 400]}
         )
         expected = pd.DataFrame(
-            {
-                "chrom": ["chr1", "chr1"],
-                "start": [80, 160],
-                "end": [220, 440],
-            }
+            {"chrom": ["chr1", "chr1"], "start": [80, 160], "end": [220, 440]}
         )
         result = interval_operations.expand_regions(test_region, 0.2)
         assert_frame_equal(result, expected)

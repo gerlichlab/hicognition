@@ -93,10 +93,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # define call arguments
-        data = {
-            "dataset_ids": "[1]",
-            "region_ids": "[4]",
-        }
+        data = {"dataset_ids": "[1]", "region_ids": "[4]"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -129,10 +126,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {
-            "dataset_ids": "[3]",
-            "region_ids": "[4]",
-        }
+        data = {"dataset_ids": "[3]", "region_ids": "[4]"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -149,10 +143,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {
-            "dataset_ids": "[100]",
-            "region_ids": "[4]",
-        }
+        data = {"dataset_ids": "[100]", "region_ids": "[4]"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -169,9 +160,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {
-            "region_ids": "[4]",
-        }
+        data = {"region_ids": "[4]"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -191,10 +180,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token_headers = self.get_token_header(token)
         # construct post data
         # call args
-        data = {
-            "dataset_ids": "[5]",
-            "region_ids": "[4]",
-        }
+        data = {"dataset_ids": "[5]", "region_ids": "[4]"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -227,10 +213,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {
-            "dataset_ids": "[6]",
-            "region_ids": "[4]",
-        }
+        data = {"dataset_ids": "[6]", "region_ids": "[4]"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -297,10 +280,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {
-            "dataset_ids": "[2, 6]",
-            "region_ids": "[4]",
-        }
+        data = {"dataset_ids": "[2, 6]", "region_ids": "[4]"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -326,7 +306,8 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     )
         # check whether number of calls was correct
         self.assertEqual(
-            len(mock_launch.call_args_list), len(intervals) * len(binsizes) * len(datasets)
+            len(mock_launch.call_args_list),
+            len(intervals) * len(binsizes) * len(datasets),
         )
         # check whether processing datasets where added correctly
         regionDataset = Dataset.query.get(4)
@@ -342,10 +323,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {
-            "dataset_ids": "[6, 7]",
-            "region_ids": "[4]",
-        }
+        data = {"dataset_ids": "[6, 7]", "region_ids": "[4]"}
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -370,7 +348,8 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     )
         # check whether number of calls was correct
         self.assertEqual(
-            len(mock_launch.call_args_list), len(intervals) * len(binsizes) * len(datasets)
+            len(mock_launch.call_args_list),
+            len(intervals) * len(binsizes) * len(datasets),
         )
 
 

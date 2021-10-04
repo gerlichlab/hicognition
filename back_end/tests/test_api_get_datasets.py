@@ -118,9 +118,7 @@ class TestGetDatasets(LoginTestCase):
         db.session.commit()
         # get datasets
         response = self.client.get(
-            "/api/datasets/bed",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/datasets/bed", headers=token_headers, content_type="application/json"
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -137,9 +135,7 @@ class TestGetDatasets(LoginTestCase):
         db.session.add_all(self.owned_datasets)
         # get datasets
         response = self.client.get(
-            "/api/datasets/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/datasets/", headers=token_headers, content_type="application/json"
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -155,9 +151,7 @@ class TestGetDatasets(LoginTestCase):
         token_headers = self.get_token_header(token)
         # get datasets
         response = self.client.get(
-            "/api/datasets/asdf",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/datasets/asdf", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 404)
 
@@ -171,9 +165,7 @@ class TestGetDatasets(LoginTestCase):
         token_headers = self.get_token_header(token1)
         # get datasets
         response = self.client.get(
-            "/api/datasets/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/datasets/", headers=token_headers, content_type="application/json"
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -192,9 +184,7 @@ class TestGetDatasets(LoginTestCase):
         )
         # check response for bedfiles
         response = self.client.get(
-            "/api/datasets/bed",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/datasets/bed", headers=token_headers, content_type="application/json"
         )
         # check response
         self.assertEqual(response.status_code, 200)
@@ -258,9 +248,7 @@ class TestGetDatasets(LoginTestCase):
         token_headers = self.get_token_header(token1)
         # get datasets
         response = self.client.get(
-            "/api/datasets/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/datasets/", headers=token_headers, content_type="application/json"
         )
         # check response
         self.assertEqual(response.status_code, 200)

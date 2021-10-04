@@ -35,8 +35,7 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
         if no token is provided."""
         # dispatch post request
         response = self.client.post(
-            "/api/bedFileMetadata/",
-            content_type="multipart/form-data",
+            "/api/bedFileMetadata/", content_type="multipart/form-data"
         )
         self.assertEqual(response.status_code, 401)
 
@@ -315,11 +314,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         # create owned dataset-metadata combination with exisiting fields
         metadata_filepath = os.path.join(TempDirTestCase.TEMP_PATH, "metadata.txt")
         metadata_data = pd.DataFrame(
-            {
-                "size": [0, 1, 2, 3, 4, 5],
-                "start": [0] * 6,
-                "end": [10] * 6,
-            }
+            {"size": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
         )
         metadata_data.to_csv(metadata_filepath, index=False)
         self.owned_metadata_with_file = BedFileMetadata(
@@ -332,8 +327,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         if no token is provided."""
         # dispatch post request
         response = self.client.post(
-            "/api/bedFileMetadata/1/setFields",
-            content_type="multipart/form-data",
+            "/api/bedFileMetadata/1/setFields", content_type="multipart/form-data"
         )
         self.assertEqual(response.status_code, 401)
 
@@ -350,9 +344,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         # add content-type
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
-        data = {
-            "fields": json.dumps(["asdf"]),
-        }
+        data = {"fields": json.dumps(["asdf"])}
         # dispatch post request
         response = self.client.post(
             "/api/bedFileMetadata/1/setFields",
@@ -375,9 +367,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         # add content-type
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
-        data = {
-            "fields": json.dumps(["asdf"]),
-        }
+        data = {"fields": json.dumps(["asdf"])}
         # dispatch post request
         response = self.client.post(
             "/api/bedFileMetadata/500/setFields",
@@ -400,9 +390,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         # add content-type
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
-        data = {
-            "fields": json.dumps(["asdf"]),
-        }
+        data = {"fields": json.dumps(["asdf"])}
         # dispatch post request
         response = self.client.post(
             "/api/bedFileMetadata/1/setFields",
@@ -425,9 +413,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         # add content-type
         token_headers["Content-Type"] = "multipart/form-data"
         # construct form data
-        data = {
-            "fields": json.dumps(["size", "start"]),
-        }
+        data = {"fields": json.dumps(["size", "start"])}
         # dispatch post request
         response = self.client.post(
             "/api/bedFileMetadata/1/setFields",

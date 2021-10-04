@@ -20,29 +20,13 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
     def setUp(self):
         super().setUp()
         # add unowned bigwig
-        self.unowned_bigwig = Dataset(
-            id=1,
-            filetype="bigwig",
-            user_id=5,
-        )
+        self.unowned_bigwig = Dataset(id=1, filetype="bigwig", user_id=5)
         # add owned bigwig
-        self.owned_bigwig = Dataset(
-            id=2,
-            filetype="bigwig",
-            user_id=1,
-        )
+        self.owned_bigwig = Dataset(id=2, filetype="bigwig", user_id=1)
         # add owned bedfile
-        self.owned_bedfile = Dataset(
-            id=3,
-            filetype="bedfile",
-            user_id=1,
-        )
+        self.owned_bedfile = Dataset(id=3, filetype="bedfile", user_id=1)
         # add unowned bedfile
-        self.unowned_bedfile = Dataset(
-            id=4,
-            filetype="bedfile",
-            user_id=2,
-        )
+        self.unowned_bedfile = Dataset(id=4, filetype="bedfile", user_id=2)
         # add unowned, public bigwig
         self.unowned_public_bigwig = Dataset(
             id=5, filetype="bigwig", user_id=5, public=True
@@ -52,21 +36,15 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
         )
         # add owned intervals
         self.owned_intervals = Intervals(
-            id=1,
-            dataset_id=self.owned_bedfile.id,
-            windowsize=200000,
+            id=1, dataset_id=self.owned_bedfile.id, windowsize=200000
         )
         # add not owned intervals
         self.unowned_intervals = Intervals(
-            id=2,
-            dataset_id=self.unowned_bedfile.id,
-            windowsize=200000,
+            id=2, dataset_id=self.unowned_bedfile.id, windowsize=200000
         )
         # add not owned, public intervals
         self.unowned_public_intervals = Intervals(
-            id=3,
-            dataset_id=self.unowned_public_bedfile.id,
-            windowsize=200000,
+            id=3, dataset_id=self.unowned_public_bedfile.id, windowsize=200000
         )
         # add individualIntervalData from unowned bigwig
         self.indData_unowned_bigwig = IndividualIntervalData(
@@ -317,29 +295,13 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
     def setUp(self):
         super().setUp()
         # add unowned bigwig
-        self.unowned_bigwig = Dataset(
-            id=1,
-            filetype="bigwig",
-            user_id=5,
-        )
+        self.unowned_bigwig = Dataset(id=1, filetype="bigwig", user_id=5)
         # add owned bigwig
-        self.owned_bigwig = Dataset(
-            id=2,
-            filetype="bigwig",
-            user_id=1,
-        )
+        self.owned_bigwig = Dataset(id=2, filetype="bigwig", user_id=1)
         # add owned bedfile
-        self.owned_bedfile = Dataset(
-            id=3,
-            filetype="bedfile",
-            user_id=1,
-        )
+        self.owned_bedfile = Dataset(id=3, filetype="bedfile", user_id=1)
         # add unowned bedfile
-        self.unowned_bedfile = Dataset(
-            id=4,
-            filetype="bedfile",
-            user_id=2,
-        )
+        self.unowned_bedfile = Dataset(id=4, filetype="bedfile", user_id=2)
         # add owned intervals
         self.indices_1 = np.array([0, 2])
         index_file = os.path.join(TempDirTestCase.TEMP_PATH, "indices.npy")
@@ -352,9 +314,7 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
         )
         # add not owned intervals
         self.unowned_intervals = Intervals(
-            id=2,
-            dataset_id=self.unowned_bedfile.id,
-            windowsize=200000,
+            id=2, dataset_id=self.unowned_bedfile.id, windowsize=200000
         )
         # add individualIntervalData from unowned bigwig
         self.indData_unowned_bigwig = IndividualIntervalData(
@@ -628,10 +588,7 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
             self.indices_1, :
         ]  # subset on the subsample indices defined in the interval file
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.get_json(),
-            expected.to_dict(orient="list"),
-        )
+        self.assertEqual(response.get_json(), expected.to_dict(orient="list"))
 
 
 if __name__ == "__main__":

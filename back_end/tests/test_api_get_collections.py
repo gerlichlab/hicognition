@@ -58,9 +58,7 @@ class TestGetCollections(LoginTestCase):
         token_headers = self.get_token_header(token)
         # get collections
         response = self.client.get(
-            "/api/collections/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/collections/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(len(response.json) == 0)
@@ -76,9 +74,7 @@ class TestGetCollections(LoginTestCase):
         db.session.commit()
         # get collections
         response = self.client.get(
-            "/api/collections/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/collections/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, [self.collection_user_1.to_json()])
@@ -94,9 +90,7 @@ class TestGetCollections(LoginTestCase):
         db.session.commit()
         # get collections
         response = self.client.get(
-            "/api/collections/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/collections/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -115,9 +109,7 @@ class TestGetCollections(LoginTestCase):
         db.session.commit()
         # get sessions
         response = self.client.get(
-            "/api/collections/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/collections/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, [self.collection_user_1.to_json()])
@@ -132,9 +124,7 @@ class TestGetCollections(LoginTestCase):
         token_headers = self.get_token_header(token1)
         # get datasets
         response = self.client.get(
-            "/api/collections/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/collections/", headers=token_headers, content_type="application/json"
         )
         # check response
         self.assertEqual(response.status_code, 200)

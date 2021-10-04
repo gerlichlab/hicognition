@@ -17,9 +17,7 @@ class TestSetProcessingState(LoginTestCase):
     def add_test_collection(self, state):
         """adds test collection to db
         with specified processing state."""
-        collection = Collection(
-            processing_state=state,
-        )
+        collection = Collection(processing_state=state)
         db.session.add(collection)
         db.session.commit()
 

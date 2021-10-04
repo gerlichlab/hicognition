@@ -37,7 +37,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "DerivationType": "derivationType",
             "Protein": "protein",
             "Directionality": "directionality",
-            "public": "public"
+            "public": "public",
         }
         # add token headers
         token = self.add_and_authenticate("test", "asdf")
@@ -53,7 +53,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             filetype="cooler",
             processing_state="finished",
             user_id=1,
-            assembly=1
+            assembly=1,
         )
         self.bedfile_1 = Dataset(
             id=2,
@@ -62,7 +62,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             filetype="bedfile",
             processing_state="finished",
             user_id=1,
-            assembly=1
+            assembly=1,
         )
         self.bedfile_2 = Dataset(
             id=3,
@@ -71,7 +71,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             filetype="bedfile",
             processing_state="finished",
             user_id=1,
-            assembly=1
+            assembly=1,
         )
         self.bigwig_1 = Dataset(
             id=4,
@@ -80,7 +80,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             filetype="bigwig",
             processing_state="finished",
             user_id=1,
-            assembly=1
+            assembly=1,
         )
         # add unowned coolers
         self.unowned_cooler = Dataset(
@@ -223,7 +223,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "ValueType": "Interaction",
             "Method": "HiC",
             "Normalization": "ICCF",
-            "assembly": 1
+            "assembly": 1,
         }
         # put datasets
         response = self.client.put(
@@ -233,7 +233,6 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             content_type="multipart/form-data",
         )
         self.assertEqual(response.status_code, 400)
-
 
     def test_badform_contains_sizetype(self):
         """Test 400 returned if no form is provided."""
@@ -248,7 +247,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "ValueType": "Interaction",
             "Method": "HiC",
             "Normalization": "ICCF",
-            "SizeType": "IEE"
+            "SizeType": "IEE",
         }
         # put datasets
         response = self.client.put(
@@ -295,7 +294,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset.filetype, "cooler")
 
     def test_modification_goes_through_bedfile(self):
-       # add datasets
+        # add datasets
         db.session.add(self.bedfile_1)
         db.session.commit()
         # construct form data
@@ -304,7 +303,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "cellCycleStage": "asynchronous",
             "perturbation": "No perturbation",
             "ValueType": "Derived",
-            "Method": "HiC"
+            "Method": "HiC",
         }
         # put datasets
         response = self.client.put(
@@ -328,7 +327,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset.filetype, "bedfile")
 
     def test_modification_goes_through_bedfile_genome_annotation(self):
-       # add datasets
+        # add datasets
         db.session.add(self.bedfile_2)
         db.session.commit()
         # construct form data
@@ -337,7 +336,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "ValueType": "GenomeAnnotation",
             "Directionality": "No directionality",
             "cellCycleStage": "none",
-            "perturbation": "none"
+            "perturbation": "none",
         }
         # put datasets
         response = self.client.put(
@@ -358,7 +357,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset.filetype, "bedfile")
 
     def test_public_flag_set_correctly(self):
-       # add datasets
+        # add datasets
         db.session.add(self.bedfile_2)
         db.session.commit()
         # construct form data
@@ -368,7 +367,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "Directionality": "No directionality",
             "cellCycleStage": "none",
             "perturbation": "none",
-            "public": True
+            "public": True,
         }
         # put datasets
         response = self.client.put(
@@ -388,9 +387,8 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset.assembly, 1)
         self.assertEqual(dataset.filetype, "bedfile")
 
-
     def test_modification_goes_through_bigwig(self):
-       # add datasets
+        # add datasets
         db.session.add(self.bigwig_1)
         db.session.commit()
         # construct form data
@@ -423,6 +421,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # check whether assembly and filetype are unchanged
         self.assertEqual(dataset.assembly, 1)
         self.assertEqual(dataset.filetype, "bigwig")
+
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

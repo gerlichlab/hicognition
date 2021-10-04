@@ -47,9 +47,7 @@ class TestDeleteSession(LoginTestCase, TempDirTestCase):
         token_headers = self.get_token_header(token)
         # by user id 2
         response = self.client.delete(
-            "/api/sessions/500/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/sessions/500/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 404)
 
@@ -63,9 +61,7 @@ class TestDeleteSession(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # by user id 2
         response = self.client.delete(
-            "/api/sessions/1/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/sessions/1/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 403)
 
@@ -79,9 +75,7 @@ class TestDeleteSession(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # by user id 2
         response = self.client.delete(
-            "/api/sessions/1/",
-            headers=token_headers,
-            content_type="application/json",
+            "/api/sessions/1/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(Session.query.all()), 1)

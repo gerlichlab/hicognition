@@ -50,7 +50,7 @@ class TestDeleteAssembly(LoginTestCase, TempDirTestCase):
         )
         # define associted datasets
         self.dataset1 = Dataset(id=1, assembly=2)
-        #aut
+        # aut
         token = self.add_and_authenticate("test", "asdf")
         # create token_headers
         self.token_headers = self.get_token_header(token)
@@ -111,7 +111,7 @@ class TestDeleteAssembly(LoginTestCase, TempDirTestCase):
     def test_delete_assembly_w_associated_datasets_forbidden(self):
         """Tests whether deletion of assembly is forbidden if there are associated datasets."""
         # add session
-        db.session.add_all([self.assembly_user_1_w_datasets,self.dataset1 ])
+        db.session.add_all([self.assembly_user_1_w_datasets, self.dataset1])
         db.session.commit()
         # make call
         response = self.client.delete(

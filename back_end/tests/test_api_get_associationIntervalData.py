@@ -21,28 +21,16 @@ class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):
         # add unowned collection
         self.unowned_collection = Collection(id=2, user_id=2)
         # add owned bedfile
-        self.owned_bedfile = Dataset(
-            id=3,
-            filetype="bedfile",
-            user_id=1,
-        )
+        self.owned_bedfile = Dataset(id=3, filetype="bedfile", user_id=1)
         # add unowned bedfile
-        self.unowned_bedfile = Dataset(
-            id=4,
-            filetype="bedfile",
-            user_id=2,
-        )
+        self.unowned_bedfile = Dataset(id=4, filetype="bedfile", user_id=2)
         # add intervals for owned bedfile
         self.owned_intervals = Intervals(
-            id=1,
-            dataset_id=self.owned_bedfile.id,
-            windowsize=200000,
+            id=1, dataset_id=self.owned_bedfile.id, windowsize=200000
         )
         # add intervals for unowned bedfile
         self.unowned_intervals = Intervals(
-            id=2,
-            dataset_id=self.unowned_bedfile.id,
-            windowsize=200000,
+            id=2, dataset_id=self.unowned_bedfile.id, windowsize=200000
         )
         # add associationIntervalData with unowned collection
         self.assocData_collection_unowned = AssociationIntervalData(

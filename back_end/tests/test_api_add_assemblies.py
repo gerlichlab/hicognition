@@ -184,8 +184,14 @@ class TestAddAssembly(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(1, len(Assembly.query.all()))
         assembly = Assembly.query.first()
-        self.assertEqual(assembly.chrom_sizes, os.path.join(self.TEMP_PATH, f"{assembly.id}_hg19.chrom.sizes"))
-        self.assertEqual(assembly.chrom_arms, os.path.join(self.TEMP_PATH, f"{assembly.id}_arms.hg19"))
+        self.assertEqual(
+            assembly.chrom_sizes,
+            os.path.join(self.TEMP_PATH, f"{assembly.id}_hg19.chrom.sizes"),
+        )
+        self.assertEqual(
+            assembly.chrom_arms,
+            os.path.join(self.TEMP_PATH, f"{assembly.id}_arms.hg19"),
+        )
         self.assertEqual(assembly.name, "test")
         self.assertEqual(Organism.query.first().assemblies[0], assembly)
 
