@@ -62,23 +62,24 @@ dataset_group = AppGroup("dataset")
 @click.argument("user")
 @click.argument("password")
 def add_dataset(json_path, user, password):
-    """Adds datasets defined in JSON to database and uploads it."""
+    """Adds datasets defined in a JSON to database and uploads it."""
     client = app.test_client()
     headers = _get_api_headers(user, password)
     # construct form data from JSON
     with open(json_path, "rb") as json_data:
-        form_data = json.load(json_data)
-        with open(form_data["file"], "rb") as f:
-            #open and pass the file into the data array as well
-            form_data["file"] = (f, form_data["file"])
-            response = client.post(
-                "/api/datasets/",
-                data=form_data,
-                headers=headers,
-                content_type="multipart/form-data",
-            )
-    print(f"Request dispatched with status code {response.status_code} and response {response.json}"
-    )
+        all_data = json.load(json_data)
+        for dataset_item in all_data["dataset"]:
+            #print(dataset_item)
+            with open(dataset_item["file"], "rb") as f:
+                #open and pass the file into the data array as well
+                dataset_item["file"] = (f, dataset_item["file"])
+                response = client.post(
+                    "/api/datasets/",
+                    data=dataset_item,
+                    headers=headers,
+                    content_type="multipart/form-data",
+                )
+                print(f"Request dispatched with status code {response.status_code} and response {response.json}")
 
 
 @dataset_group.command("preprocess")
