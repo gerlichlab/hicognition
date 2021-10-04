@@ -247,26 +247,35 @@ export default {
         startDatasetSelection: function () {
             this.expectSelection = true;
             // get datasets from store
-            let datasets = this.$store.state.datasets.filter( (el) => Object.keys(this.datasets).includes(String(el.id)) )
-            let preselection = this.selectedDataset ? [this.selectedDataset] : []
-            EventBus.$emit("show-select-dialog", datasets, "bigwig", preselection);
+            let datasets = this.$store.state.datasets.filter((el) =>
+                Object.keys(this.datasets).includes(String(el.id))
+            );
+            let preselection = this.selectedDataset
+                ? [this.selectedDataset]
+                : [];
+            EventBus.$emit(
+                "show-select-dialog",
+                datasets,
+                "bigwig",
+                preselection
+            );
         },
-        registerSelectionEventHandlers: function(){
-            EventBus.$on("dataset-selected", this.handleDataSelection)
-            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion)
+        registerSelectionEventHandlers: function () {
+            EventBus.$on("dataset-selected", this.handleDataSelection);
+            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function(){
-            EventBus.$off("dataset-selected", this.handleDataSelection)
-            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion)
+        removeSelectionEventHandlers: function () {
+            EventBus.$off("dataset-selected", this.handleDataSelection);
+            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function(id){
-            if (this.expectSelection){
-                    this.selectedDataset = id
-                    this.expectSelection = false
+        handleDataSelection: function (id) {
+            if (this.expectSelection) {
+                this.selectedDataset = id;
+                this.expectSelection = false;
             }
         },
-        hanldeSelectionAbortion: function(){
-            this.expectSelection = false
+        hanldeSelectionAbortion: function () {
+            this.expectSelection = false;
         },
         handleBinsizeSelection: function (binsize) {
             this.selectedBinsize = binsize;
@@ -421,6 +430,10 @@ export default {
             );
         },
         initializeForFirstTime: function (widgetData, collectionConfig) {
+            let sortOrderDefault =
+                collectionConfig["intervalSize"] == "variable"
+                    ? "region"
+                    : "center column";
             var data = {
                 widgetDataRef: undefined,
                 dragImage: undefined,
@@ -433,7 +446,7 @@ export default {
                 datasets: collectionConfig["availableData"]["stackup"],
                 minHeatmap: undefined,
                 maxHeatmap: undefined,
-                selectedSortOrder: "center column",
+                selectedSortOrder: sortOrderDefault,
                 sortorders: undefined,
                 isAscending: true,
                 expectingSortOrder: false,
@@ -574,8 +587,14 @@ export default {
             } else {
                 this.sortorders = response.data;
             }
-            // add by center column
-            this.sortorders["center column"] = {};
+            // add default
+            if (this.isVariableSize) {
+                this.sortorders["region"] = {};
+                this.sortorders["left boundary"] = {};
+                this.sortorders["right boundary"] = {};
+            } else {
+                this.sortorders["center column"] = {};
+            }
             // add random sort order
             seedrandom("I am a random seed!");
             let randArray = [];
@@ -602,6 +621,12 @@ export default {
                     newValue[this.collectionID]["collectionConfig"][
                         "intervalSize"
                     ];
+                // reset order
+                this.selectedSortOrder =
+                    newValue[this.collectionID]["collectionConfig"]["intervalSize"] ==
+                    "variable"
+                        ? "region"
+                        : "center column";
             },
         },
         datasets: function (newVal, oldVal) {
@@ -699,9 +724,9 @@ export default {
         this.registerValueScaleEventHandlers();
         this.registerSelectionEventHandlers();
     },
-    beforeDestroy: function(){
-        this.removeSelectionEventHandlers()
-    }
+    beforeDestroy: function () {
+        this.removeSelectionEventHandlers();
+    },
 };
 </script>
 
