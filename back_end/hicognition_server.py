@@ -20,6 +20,7 @@ from app.models import (
 )
 from flask_migrate import Migrate
 from flask.cli import AppGroup
+import json
 
 app = create_app(os.getenv("FLASK_CONFIG") or "default")
 migrate = Migrate(app, db, compare_type=True)
@@ -56,39 +57,27 @@ app.cli.add_command(user_group)
 
 dataset_group = AppGroup("dataset")
 
-
 @dataset_group.command("add")
-@click.argument("path")
-@click.argument("name")
-@click.argument("filetype")
+@click.argument("json_path")
 @click.argument("user")
 @click.argument("password")
-@click.option("--description", "-d", default=None)
-@click.option("--genotype", "-g", default=None)
-@click.option("--public", "-p", default=False)
-def add_dataset(path, name, filetype, user, password, description, genotype, public):
-    """Adds dataset to database and uploads it."""
+def add_dataset(json_path, user, password):
+    """Adds datasets defined in JSON to database and uploads it."""
     client = app.test_client()
     headers = _get_api_headers(user, password)
-    # construct form data
-    with open(path, "rb") as f:
-        data = {
-            "datasetName": name,
-            "description": description,
-            "genotype": genotype,
-            "filetype": filetype,
-            "file": (f, path),
-            "public": public,
-        }
-        # dispatch post request
-        response = client.post(
-            "/api/datasets/",
-            data=data,
-            headers=headers,
-            content_type="multipart/form-data",
-        )
-    print(
-        f"Request dispatched with status code {response.status_code} and response {response.json}"
+    # construct form data from JSON
+    with open(json_path, "rb") as json_data:
+        form_data = json.load(json_data)
+        with open(form_data["file"], "rb") as f:
+            #open and pass the file into the data array as well
+            form_data["file"] = (f, form_data["file"])
+            response = client.post(
+                "/api/datasets/",
+                data=form_data,
+                headers=headers,
+                content_type="multipart/form-data",
+            )
+    print(f"Request dispatched with status code {response.status_code} and response {response.json}"
     )
 
 
@@ -102,7 +91,7 @@ def add_dataset(name, user, password):
     headers = _get_api_headers(user, password)
     # get dataset with name
     datasets = Dataset.query.filter(Dataset.dataset_name == name).all()
-    # check wheter dataset name is unique
+    # check if dataset name is unique
     if len(datasets) > 1:
         raise ValueError("Name refers to multiple datasets!")
     dataset = datasets[0]
