@@ -23,3 +23,8 @@
 //
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
+
+before(() => {
+    // dispatches first request to flask to initialize database
+    cy.request('/flask/api/test')
+  })

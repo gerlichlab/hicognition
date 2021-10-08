@@ -1,33 +1,20 @@
 version: "3"
 
 services:
-    node:
-        container_name: node
-        image: node:14-buster
-        ports:
-            # only map localhost-port
-            - "8080:8080"
-        volumes:
-            - ${DIR_FRONT_END}:/front_end
-        entrypoint: 
-            - "/bin/bash"
-        networks:
-          hicognition-net:
-            ipv4_address: 172.18.0.11
-        command: -c "cd /front_end && npm install && npm run dev"
-
+    # flask-api server
     hicognition:
         container_name: flask-server
         volumes:  
             - ${HICOGNITION_DIR}:/code
         environment:
-            - FLASK_DEBUG=1
+            - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
+            - FLASK_CONFIG=end2end
         ports:
             # only map localhost-port
             - "5000:5000"
@@ -35,11 +22,39 @@ services:
             context: "./back_end"
         image: flask:v1.0
         entrypoint: "/bin/bash"
+        command: -c "cd /code && ./boot.sh"
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.3
-        command: -c "cd /code && ./boot.sh"
 
+    # nginx server to serve front-end and redirect requests to flask-api
+    nginx:
+        container_name: hicognition-nginx
+        build:
+            context: "./nginx"
+        ports:
+            - "80:80"
+        # map front-end files
+        depends_on:
+            - node
+            - hicognition
+        volumes:
+            - ${DIR_FRONT_END}:/front_end
+            - ${DIR_STATIC}:/static
+            - ${KEY_DIR}:/keys
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.4
+
+    # container to build front-end
+    node:
+        container_name: node-builder
+        image: node:14-buster
+        volumes:
+            - ${DIR_FRONT_END}:/front_end
+        entrypoint: 
+            - "/bin/bash"
+        command: -c "cd /front_end; [ -e ./dist/static/finished.json ] && rm ./dist/static/finished.json; npm install && npm run build && touch ./dist/static/finished.json"
 
     redis-server:
         container_name: redis-server
@@ -47,7 +62,7 @@ services:
             context: "./redis"
         networks:
             hicognition-net:
-                ipv4_address: 172.18.0.4
+                ipv4_address: 172.18.0.5
         ports:
             - 6379:6379
 
@@ -71,7 +86,7 @@ services:
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
-                ipv4_address: 172.18.0.5
+                ipv4_address: 172.18.0.6
         # sleeps to wait for redis-server. TODO: make this check nicer!
         command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
 
@@ -95,7 +110,7 @@ services:
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
-                ipv4_address: 172.18.0.6
+                ipv4_address: 172.18.0.7
         # sleeps to wait for redis-server. TODO: make this check nicer!
         command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
 
@@ -123,7 +138,7 @@ services:
           context: "./front_end/e2e"
       environment:
         # pass base url to test pointing at the web application
-        - CYPRESS_baseUrl=http://node:8080
+        - CYPRESS_baseUrl=http://nginx
       # share the current folder as volume to avoid copying
       working_dir: /e2e
       volumes:

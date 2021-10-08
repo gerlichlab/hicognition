@@ -1,5 +1,6 @@
 """Helpers to populate database"""
 from ..models import (
+    User,
     Organism,
     Assembly,
     Dataset,
@@ -49,6 +50,18 @@ def drop_tasks():
         db.session.delete(task)
     db.session.commit()
 
+def create_test_user(name, password):
+    # check if user with such a name exists
+    if User.query.filter(User.username == name).first() is not None:
+        # if user exists, get the user
+        user = User.query.filter(User.username == name).first()
+    else:
+        # otherwise make a new one
+        user = User(username=name)
+    user.set_password(password)
+    db.session.add(user)
+    db.session.commit()
+
 
 @api.before_app_first_request
 def init_database():
@@ -57,3 +70,5 @@ def init_database():
         create_hg19()
         drop_preprocessing_tables()
         drop_tasks()
+    if current_app.config["END2END"]:
+        create_test_user("test", "test")

@@ -103,6 +103,10 @@ class TestingConfig(Config):
     UPLOAD_DIR = "./tmp_test"
     STACKUP_THRESHOLD = 10  # Threshold of when stackup is downsampled
 
+class End2EndConfig(DevelopmentConfig):
+    END2END = True
+    pass
+
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get(
@@ -115,4 +119,5 @@ config = {
     "testing": TestingConfig,
     "production": ProductionConfig,
     "default": DevelopmentConfig,
+    "end2end": End2EndConfig
 }
