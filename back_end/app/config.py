@@ -52,7 +52,7 @@ class Config:
                         "SizeType": ["Point", "Interval"],
                         "Directionality": ["+", "-", "No directionality"],
                     },
-                    "Derived": {"Method": ["HiC"], "SizeType": ["Point", "Interval"]},
+                    "Derived": {"Method": ["HiC", "Other Dataset"], "SizeType": ["Point", "Interval"]},
                 }
             },
             "bigwig": {

@@ -14,10 +14,10 @@ from ..models import (
     Dataset,
     BedFileMetadata,
     Organism,
-    Task,
     Session,
     Intervals,
     Collection,
+    EmbeddingIntervalData
 )
 from .authentication import auth
 from .helpers import (
@@ -29,7 +29,8 @@ from .helpers import (
     get_all_interval_ids,
     parse_binsizes,
     post_dataset_requirements_fullfilled,
-    add_fields_to_dataset,
+    add_fields_to_dataset_from_form,
+    add_fields_to_dataset_from_dataset
 )
 from .errors import forbidden, invalid, not_found
 from hicognition.format_checkers import FORMAT_CHECKERS
@@ -82,7 +83,7 @@ def add_dataset():
         filetype=data["filetype"],
         user_id=current_user.id,
     )
-    add_fields_to_dataset(new_entry, data)
+    add_fields_to_dataset_from_form(new_entry, data)
     db.session.add(new_entry)
     db.session.commit()
     # save file in upload directory with database_id as prefix
@@ -534,3 +535,74 @@ def create_assembly():
     db.session.add(new_entry)
     db.session.commit()
     return jsonify({"message": "success! Assembly added."})
+
+
+@api.route("/embeddingIntervalData/<entry_id>/<cluster_id>/create/", methods=["POST"])
+@auth.login_required
+def create_region_from_cluster_id(entry_id, cluster_id):
+    """creates new region for cluster_id at entry_id"""
+    def is_form_invalid():
+        if not hasattr(request, "form"):
+            return True
+        if len(request.form) == 0:
+            return True
+        # check attributes
+        if sorted(request.form.keys()) != ["name"]:
+            return True
+        return False
+
+    # Check for existence
+    if EmbeddingIntervalData.query.get(entry_id) is None:
+        return not_found("Embedding data does not exist!")
+    # Check whether datasets are owned
+    embedding_data = EmbeddingIntervalData.query.get(entry_id)
+    collection = embedding_data.source_collection
+    bed_ds = embedding_data.source_intervals.source_dataset
+    if is_access_to_collection_denied(collection, g) or is_access_to_dataset_denied(
+        bed_ds, g
+    ):
+        return forbidden("Collection or bed dataset is not owned by logged in user!")
+    # check form
+    if is_form_invalid():
+        return invalid("Form is not valid!")
+    # get data from form
+    form_data = request.form
+    # check whetehr thumbnails exist
+    if (embedding_data.cluster_id_path is None):
+        return not_found("ClusterIDs do not exist")
+    # load cluster ids
+    cluster_ids = np.load(embedding_data.cluster_id_path).astype(int)
+    # check whether cluster id is inside
+    unique_ids = set(cluster_ids.astype(int))
+    if int(cluster_id) not in unique_ids:
+        return not_found("Cluster id does not exist!")
+    # load regions
+    regions = pd.read_csv(bed_ds.file_path, sep="\t", header=None)
+    # create new dataset
+    new_entry = Dataset(
+        dataset_name=form_data["name"],
+        description=bed_ds.description,
+        public=bed_ds.public,
+        processing_state="uploading",
+        filetype="bedfile",
+        user_id=g.current_user.id,
+    )
+    # add fields
+    add_fields_to_dataset_from_dataset(new_entry, bed_ds)
+    db.session.add(new_entry)
+    db.session.commit()
+    # subset and write to file
+    mask = cluster_ids == int(cluster_id)
+    subset = regions.iloc[mask, :]
+    filename = f"{new_entry.id}_subset_{bed_ds.dataset_name}"
+    file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
+    subset.to_csv(file_path, sep="\t", header=None, index=False)
+    # add file_path to database entry
+    new_entry.file_path = file_path
+    # start preprocessing for bedfile
+    g.current_user.launch_task("pipeline_bed", "run bed preprocessing", new_entry.id)
+    new_entry.processing_state = "processing"
+    db.session.add(new_entry)
+    db.session.commit()
+    # return success
+    return jsonify({"message": "success! Region subset"})

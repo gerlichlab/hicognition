@@ -101,11 +101,17 @@ def post_dataset_requirements_fullfilled(form):
     return True
 
 
-def add_fields_to_dataset(entry, form):
+def add_fields_to_dataset_from_form(entry, form):
     """adds dataset fields that exist in form to entry."""
     for form_key, dataset_field in DATASET_META_FIELDS.items():
         if form_key in form:
             entry.__setattr__(dataset_field, form[form_key])
+
+def add_fields_to_dataset_from_dataset(target, source):
+    """adds dataset fields that exist in source to target"""
+    for dataset_field in DATASET_META_FIELDS.values():
+        if source.__getattribute__(dataset_field) is not None:
+            target.__setattr__(dataset_field, source.__getattribute__(dataset_field))
 
 
 def add_fields_to_dataset_modify(entry, form):

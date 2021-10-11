@@ -396,7 +396,7 @@ def get_embedding_thumbnail(entry_id, cluster_id):
         return forbidden("Collection or bed dataset is not owned by logged in user!")
     # check whetehr thumbnails exist
     if (embedding_data.thumbnail_path is None) or (embedding_data.feature_distribution_path is None):
-        return not_found("Thumbanils do not exist")
+        return not_found("Thumbnails do not exist")
     # check whether cluster_id is in range
     thumbnails = np.load(embedding_data.thumbnail_path)
     feature_distribution = np.load(embedding_data.feature_distribution_path)
