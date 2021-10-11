@@ -346,6 +346,55 @@ def get_embedding_data(entry_id):
     return response
 
 
+@api.route("/embeddingIntervalData/<entry_id>/thumbnail/<cluster_id>/", methods=["GET"])
+@auth.login_required
+def get_embedding_thumbnail(entry_id, cluster_id):
+    """returns the thumbnail for a cluster with cluster_id associated
+    with EmbeddingIntervalData entry with entry_id."""
+    # Check for existence
+    if EmbeddingIntervalData.query.get(entry_id) is None:
+        return not_found("Embedding data does not exist!")
+    # Check whether datasets are owned
+    embedding_data = EmbeddingIntervalData.query.get(entry_id)
+    collection = embedding_data.source_collection
+    bed_ds = embedding_data.source_intervals.source_dataset
+    if is_access_to_collection_denied(collection, g) or is_access_to_dataset_denied(
+        bed_ds, g
+    ):
+        return forbidden("Collection or bed dataset is not owned by logged in user!")
+    # check whetehr thumbnails exist
+    if (embedding_data.thumbnail_path is None) or (embedding_data.cluster_id_path is None) or (embedding_data.feature_distribution_path is None):
+        return not_found("Thumbanils do not exist")
+    # check whether cluster_id is in range
+    thumbnails = np.load(embedding_data.thumbnail_path)
+    feature_distribution = np.load(embedding_data.feature_distribution_path)
+    if (int(cluster_id) >= thumbnails.shape[0]) or (int(cluster_id) >= feature_distribution.shape[0]):
+        return not_found("Thumbanils do not exist")
+    # extract data
+    flat_data_thumbnail = [
+        entry if not (np.isnan(entry) or np.isinf(entry)) else None
+        for entry in thumbnails[int(cluster_id), ...].flatten()
+    ]
+    data_distribution = [
+        entry if not (np.isnan(entry) or np.isinf(entry)) else None
+        for entry in feature_distribution[int(cluster_id), :].flatten()
+    ]
+    json_data = {
+        "heatmap": {
+            "data": flat_data_thumbnail,
+            "shape": thumbnails[int(cluster_id), ...].shape,
+            "dtype": "float32"
+        },
+        "distribution": data_distribution
+    }
+    # compress
+    content = gzip.compress(json.dumps(json_data).encode("utf8"), 4)
+    response = make_response(content)
+    response.headers["Content-length"] = len(content)
+    response.headers["Content-Encoding"] = "gzip"
+    return response
+
+
 @api.route("/embeddingIntervalData/<entry_id>/<feature_index>/", methods=["GET"])
 @auth.login_required
 def get_embedding_feature(entry_id, feature_index):
