@@ -16,6 +16,8 @@ class Config:
     )
     CHROM_ARMS = os.environ.get("CHROM_ARMS") or os.path.join(basedir, "data/arms.hg19")
     REDIS_URL = os.environ.get("REDIS_URL") or "redis://"
+    TESTING = False
+    END2END = False
     # allowed binsizes for given windowsizes of regions
     PREPROCESSING_MAP = {
         50000: [1000, 2000, 5000],
