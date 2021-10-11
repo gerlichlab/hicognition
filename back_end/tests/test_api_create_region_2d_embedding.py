@@ -5,6 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal
+from unittest.mock import patch
 from test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
@@ -270,7 +271,8 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 404)
 
-    def test_new_region_correctly_created(self):
+    @patch("app.models.User.launch_task")
+    def test_new_region_correctly_created(self, mock_launch):
         """Test whether new region is correctly created"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
