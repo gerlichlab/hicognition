@@ -140,7 +140,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         response = self.client.post(
             "/api/embeddingIntervalData/500/0/create/",
             headers=token_headers,
-            ontent_type="multipart/form-data",
+            content_type="multipart/form-data",
         )
         self.assertEqual(response.status_code, 404)
 
