@@ -345,6 +345,38 @@ def get_embedding_data(entry_id):
     response.headers["Content-Encoding"] = "gzip"
     return response
 
+@api.route("/embeddingIntervalData/<entry_id>/clusterIDs/", methods=["GET"])
+@auth.login_required
+def get_embedding_clusters(entry_id):
+    """Get route of cluster_ids associated with embeddingIntervalData"""
+    # Check for existence
+    if EmbeddingIntervalData.query.get(entry_id) is None:
+        return not_found("Embedding data does not exist!")
+    # Check whether datasets are owned
+    embedding_data = EmbeddingIntervalData.query.get(entry_id)
+    collection = embedding_data.source_collection
+    bed_ds = embedding_data.source_intervals.source_dataset
+    if is_access_to_collection_denied(collection, g) or is_access_to_dataset_denied(
+        bed_ds, g
+    ):
+        return forbidden("Collection or bed dataset is not owned by logged in user!")
+    # check whetehr cluster_ids exist
+    if embedding_data.cluster_id_path is None:
+        return not_found("Cluster_ids do not exist")
+    # extract data
+    data = [
+        entry if not (np.isnan(entry) or np.isinf(entry)) else None
+        for entry in np.load(embedding_data.cluster_id_path).flatten()
+    ]
+    # extract data
+    json_data = {"data": data, "shape": [len(data)], "dtype": "float32"}
+    # compress
+    content = gzip.compress(json.dumps(json_data).encode("utf8"), 4)
+    response = make_response(content)
+    response.headers["Content-length"] = len(content)
+    response.headers["Content-Encoding"] = "gzip"
+    return response
+
 
 @api.route("/embeddingIntervalData/<entry_id>/thumbnail/<cluster_id>/", methods=["GET"])
 @auth.login_required
@@ -363,7 +395,7 @@ def get_embedding_thumbnail(entry_id, cluster_id):
     ):
         return forbidden("Collection or bed dataset is not owned by logged in user!")
     # check whetehr thumbnails exist
-    if (embedding_data.thumbnail_path is None) or (embedding_data.cluster_id_path is None) or (embedding_data.feature_distribution_path is None):
+    if (embedding_data.thumbnail_path is None) or (embedding_data.feature_distribution_path is None):
         return not_found("Thumbanils do not exist")
     # check whether cluster_id is in range
     thumbnails = np.load(embedding_data.thumbnail_path)

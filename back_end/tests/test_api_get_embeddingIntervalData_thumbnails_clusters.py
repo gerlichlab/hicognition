@@ -12,9 +12,8 @@ sys.path.append("./")
 from app import db
 from app.models import Collection, Dataset, Intervals, EmbeddingIntervalData
 
-
-class TestGetEmbeddingIntervalDataThumbnails(LoginTestCase, TempDirTestCase):
-    """Tests for get route of thumbnails associated with embeddingIntervalData"""
+class SetupClass(LoginTestCase, TempDirTestCase):
+    """Shared setupclass for all testclasses here"""
 
     def setUp(self):
         super().setUp()
@@ -65,14 +64,14 @@ class TestGetEmbeddingIntervalDataThumbnails(LoginTestCase, TempDirTestCase):
         thumbnail_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_thumbnails.npy")
         np.save(thumbnail_path, self.thumbnail_data)
         # create clusters
-        self.cluster_data = np.array([1, 2, 3, 1, 1, 2])
+        self.cluster_data = np.array([1., 2., 3., 1., 1., 2.])
         cluster_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_clusters.npy")
         np.save(cluster_path, self.cluster_data)
         # create distributions
         self.distribution_data = np.array(
             [[0.1, 0.2, 0.7], [0.4, 0.2, 0.4], [0.1, 0.1, 0.8]]
         )
-        distribution_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_clusters.npy")
+        distribution_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_distribution.npy")
         np.save(distribution_path, self.distribution_data)
         # create data
         self.embeddingData_owned = EmbeddingIntervalData(
@@ -85,6 +84,11 @@ class TestGetEmbeddingIntervalDataThumbnails(LoginTestCase, TempDirTestCase):
             cluster_id_path=cluster_path,
             feature_distribution_path=distribution_path,
         )
+
+
+
+class TestGetEmbeddingIntervalDataThumbnails(SetupClass):
+    """Tests for get route of thumbnails associated with embeddingIntervalData"""
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
@@ -269,6 +273,134 @@ class TestGetEmbeddingIntervalDataThumbnails(LoginTestCase, TempDirTestCase):
         }
         data = json.loads(gzip.decompress(response.data))
         self.assertEqual(data, expected)
+
+class TestGetEmbeddingIntervalDataClusterIds(SetupClass):
+    """Tests for get route of cluster_ids associated with embeddingIntervalData"""
+
+    def test_no_auth(self):
+        """No authentication provided, response should be 401"""
+        # protected route
+        response = self.client.get(
+            "/api/embeddingIntervalData/1/clusterIDs/", content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_embeddingIntervalData_does_not_exist(self):
+        """Test 404 is returned if embeddingIntervalData does not exist."""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # make request
+        response = self.client.get(
+            "/api/embeddingIntervalData/500/clusterIDs/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_collection_not_owned(self):
+        """Collection underlying embeddingIntervalData is not owned"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add data
+        db.session.add_all(
+            [
+                self.owned_bedfile,
+                self.unowned_collection,
+                self.owned_intervals,
+                self.embeddingData_collection_unowned,
+            ]
+        )
+        db.session.commit()
+        # make request for forbidden cooler
+        response = self.client.get(
+            f"/api/embeddingIntervalData/{self.embeddingData_collection_unowned.id}/clusterIDs/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_intervals_not_owned(self):
+        """Intervals dataset underlying embeddingIntervalData are not owned"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add data
+        db.session.add_all(
+            [
+                self.owned_collection,
+                self.unowned_bedfile,
+                self.unowned_intervals,
+                self.embeddingData_intervals_unowned,
+            ]
+        )
+        db.session.commit()
+        # make request with forbidden intervall
+        response = self.client.get(
+            f"/api/embeddingIntervalData/{self.embeddingData_intervals_unowned.id}/clusterIDs/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_clusterIDs_do_not_exist(self):
+        """Test whether 404 is returned if clusterID field is None"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add data
+        db.session.add_all(
+            [
+                self.owned_collection,
+                self.owned_bedfile,
+                self.owned_intervals,
+                self.embeddingData_intervals_wo_thumbnail_data,
+            ]
+        )
+        db.session.commit()
+        # make request with forbidden intervall
+        response = self.client.get(
+            f"/api/embeddingIntervalData/{self.embeddingData_intervals_wo_thumbnail_data.id}/clusterIDs/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_correct_data_returned(self):
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add data
+        db.session.add_all(
+            [
+                self.owned_collection,
+                self.owned_bedfile,
+                self.owned_intervals,
+                self.embeddingData_owned,
+            ]
+        )
+        db.session.commit()
+        # make request
+        response = self.client.get(
+            f"/api/embeddingIntervalData/{self.embeddingData_owned.id}/clusterIDs/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        expected = {
+            "data": self.cluster_data.tolist(),
+            "shape": list(self.cluster_data.shape),
+            "dtype": "float32"
+        }
+        data = json.loads(gzip.decompress(response.data))
+        self.assertEqual(data, expected)
+
+
 
 
 if __name__ == "__main__":
