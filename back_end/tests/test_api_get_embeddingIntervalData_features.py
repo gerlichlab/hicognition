@@ -13,8 +13,8 @@ from app import db
 from app.models import Collection, Dataset, Intervals, EmbeddingIntervalData
 
 
-class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
-    """Tests for get route of embedding interval data."""
+class TestGetEmbeddingIntervalDataFeatures(LoginTestCase, TempDirTestCase):
+    """Tests for get route of features associated with embedding interval data."""
 
     def setUp(self):
         super().setUp()
@@ -135,7 +135,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_correct_data_returned_index_0(self):
-        """Correct data is returned from an owned embeddingIntervalData"""
+        """Correct feature data is returned from an owned embeddingIntervalData"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -165,7 +165,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         self.assertEqual(data, expected)
 
     def test_correct_data_returned_index_2(self):
-        """Correct data is returned from an owned embeddingIntervalData"""
+        """Correct feature data is returned from an owned embeddingIntervalData"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
