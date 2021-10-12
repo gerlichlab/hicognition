@@ -105,7 +105,7 @@ def pipeline_lola(collection_id, intervals_id, binsize):
 
 def pipeline_embedding_1d(collection_id, intervals_id, binsize):
     """Starts embedding pipeline steps for feature collections refering to
-    1 dimensional features per regions (e.g. bigwig tracks)"""
+    1-dimensional features per regions (e.g. bigwig tracks)"""
     # check whether stackups exist and perform stackup if not
     try:
         for source_dataset in Collection.query.get(collection_id).datasets:
@@ -120,6 +120,20 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
                 )
         # perform embedding
         pipeline_steps.embedding_1d_pipeline_step(collection_id, intervals_id, binsize)
+        pipeline_steps.set_task_progress(100)
+        pipeline_steps.set_collection_finished(collection_id, intervals_id)
+    except BaseException as e:
+        pipeline_steps.set_collection_failed(collection_id, intervals_id)
+        log.error(e, exc_info=True)
+
+
+def pipeline_embedding_2d(collection_id, intervals_id, binsize):
+    """Starts embedding pipeline steps for feature collections refering to
+    2-dimensional features per regions (e.g. bigwig tracks)"""
+    # check whether stackups exist and perform stackup if not
+    try:
+        # perform embedding
+        pipeline_steps.embedding_2d_pipeline_step(collection_id, intervals_id, binsize)
         pipeline_steps.set_task_progress(100)
         pipeline_steps.set_collection_finished(collection_id, intervals_id)
     except BaseException as e:

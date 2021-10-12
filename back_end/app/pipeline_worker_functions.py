@@ -365,8 +365,42 @@ def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize):
     embedder = umap.UMAP(random_state=42)
     return embedder.fit_transform(imputed_frame), feature_frame
 
+def _do_embedding_2d_variable_size(collection_id, intervals_id, binsize):
+    pass
+
+def _do_embedding_2d_fixed_size(collection_id, intervals_id, binsize):
+    pass
+
 
 # Database handling
+
+def _add_embedding_2d_to_db(
+    filepaths, binsize, intervals_id, collection_id
+):
+    """Adds association data set to db"""
+    # check if old association interval data exists and delete them
+    test_query = EmbeddingIntervalData.query.filter(
+        (EmbeddingIntervalData.binsize == int(binsize))
+        & (EmbeddingIntervalData.intervals_id == intervals_id)
+        & (EmbeddingIntervalData.collection_id == collection_id)
+    ).all()
+    for entry in test_query:
+        remove_safely(entry.file_path)
+        db.session.delete(entry)
+    # add new entry
+    new_entry = EmbeddingIntervalData(
+        binsize=int(binsize),
+        name=os.path.basename(filepaths["embedding"]),
+        file_path=filepaths["embedding"],
+        thumbnail_path=filepaths["thumbnails"],
+        cluster_id_path=filepaths["cluster_ids"],
+        feature_distribution_path=filepaths["distributions"],
+        intervals_id=intervals_id,
+        collection_id=collection_id,
+        value_type="1d-embedding",
+    )
+    db.session.add(new_entry)
+    db.session.commit()
 
 
 def _add_embedding_1d_to_db(

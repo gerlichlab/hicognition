@@ -219,6 +219,52 @@ def embedding_1d_pipeline_step(collection_id, intervals_id, binsize):
         file_path, file_path_features, binsize, intervals_id, collection_id
     )
 
+def embedding_2d_pipeline_step(collection_id, intervals_id, binsize):
+    """Performs embedding on each binsize-sized bin of the window specified in intervals_id using
+    the features in collection_id"""
+    # get intervals to decide whether fixed size or variable size
+    intervals = Intervals.query.get(intervals_id)
+    if intervals.windowsize is None:
+        embedding, cluster_ids, thumbnails, distributions = worker_funcs._do_embedding_2d_variable_size(
+            collection_id, intervals_id, binsize
+        )
+    else:
+        embedding, cluster_ids, thumbnails, distributions = worker_funcs._do_embedding_2d_fixed_size(
+            collection_id, intervals_id, binsize
+        )
+    # write output for embedding
+    log.info("      Writing output...")
+    file_path = os.path.join(
+        current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + "_embedding.npy"
+    )
+    np.save(file_path, embedding)
+    # write output for cluster_ids
+    file_path_cluster_ids = os.path.join(
+        current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + "_cluster_ids.npy"
+    )
+    np.save(file_path_cluster_ids, cluster_ids)
+    # write output for thumbnails
+    file_path_thumbnails = os.path.join(
+        current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + "_thumbnails.npy"
+    )
+    np.save(file_path_thumbnails, thumbnails)
+    # write output for distributions
+    file_path_distributions = os.path.join(
+        current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + "_distributions.npy"
+    )
+    np.save(file_path_distributions, distributions)
+    filepaths = {
+        "embedding": file_path,
+        "cluster_ids": file_path_cluster_ids,
+        "thumbnails": file_path_thumbnails,
+        "distributions": file_path_distributions
+    }
+    # add to database
+    worker_funcs._add_embedding_2d_to_db(
+        filepaths, binsize, intervals_id, collection_id
+    )
+
+
 
 def set_dataset_finished(dataset_id, intervals_id):
     """removes dataset from region associated with intervals_id if no other task is associated with it."""
