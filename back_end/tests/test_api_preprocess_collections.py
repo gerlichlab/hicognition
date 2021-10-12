@@ -27,6 +27,8 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         dataset4 = Dataset(id=4, filetype="bedfile", user_id=2)
         dataset5 = Dataset(id=5, filetype="bigwig", user_id=1)
         dataset6 = Dataset(id=6, filetype="bigwig", user_id=1)
+        dataset7 = Dataset(id=7, filetype="cooler", user_id=1)
+        dataset8 = Dataset(id=8, filetype="cooler", user_id=1)
         interval1 = Intervals(id=1, name="interval1", windowsize=100000, dataset_id=3)
         # create region collections
         collection = Collection(
@@ -37,6 +39,9 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         collection3 = Collection(
             datasets=[dataset5, dataset6], user_id=1, id=3, kind="1d-features"
         )
+        collection4 = Collection(
+            datasets=[dataset7, dataset8], user_id=1, id=4, kind="2d-features"
+        )
         db.session.add_all(
             [
                 dataset1,
@@ -45,10 +50,13 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
                 dataset4,
                 dataset5,
                 dataset6,
+                dataset7,
+                dataset8,
                 interval1,
                 collection,
                 collection2,
                 collection3,
+                collection4
             ]
         )
         db.session.commit()
@@ -111,6 +119,39 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
                     "pipeline_embedding_1d",
                     "run 1d embedding pipeline",
                     3,
+                    intervals_id=interval,
+                    binsize=binsize,
+                )
+        # check whether number of calls was correct
+        self.assertEqual(
+            len(mock_launch.call_args_list), len(intervals) * len(binsizes)
+        )
+
+    @patch("app.models.User.launch_collection_task")
+    def test_pipeline_2d_embedding_is_called_correctly(self, mock_launch):
+        """Tests whether 2d embedding analysis is called correctly"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        token_headers = self.get_token_header(token)
+        # define call arguments
+        data = {"collection_ids": "[4]", "region_ids": "[3]"}
+        # dispatch post request
+        response = self.client.post(
+            "/api/preprocess/collections/",
+            data=data,
+            headers=token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether pipeline has been called with right parameters
+        binsizes = current_app.config["PREPROCESSING_MAP"][100000]
+        intervals = [1]
+        for binsize in binsizes:
+            for interval in intervals:
+                mock_launch.assert_any_call(
+                    "pipeline_embedding_2d",
+                    "run 2d embedding pipeline",
+                    4,
                     intervals_id=interval,
                     binsize=binsize,
                 )

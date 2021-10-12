@@ -35,6 +35,7 @@ class Config:
         "collections": {
             "regions": ("pipeline_lola", "run lola pipeline"),
             "1d-features": ("pipeline_embedding_1d", "run 1d embedding pipeline"),
+            "2d-features": ("pipeline_embedding_2d", "run 2d embedding pipeline")
         },
     }
     # dataset-option mapping -> puts different optionvalues for dataset into relation
