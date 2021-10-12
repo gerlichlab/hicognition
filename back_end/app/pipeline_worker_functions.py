@@ -397,7 +397,7 @@ def _add_embedding_2d_to_db(
         feature_distribution_path=filepaths["distributions"],
         intervals_id=intervals_id,
         collection_id=collection_id,
-        value_type="1d-embedding",
+        value_type="2d-embedding",
     )
     db.session.add(new_entry)
     db.session.commit()
