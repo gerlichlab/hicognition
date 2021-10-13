@@ -378,7 +378,7 @@ def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize):
 
 
 def _do_embedding_2d_variable_size(collection_id, intervals_id, binsize):
-    CLUSTERNUMBER = 20
+    CLUSTERNUMBER = 10
     features = Collection.query.get(collection_id).datasets
     intervals = Intervals.query.get(intervals_id)
     regions = intervals.source_dataset.file_path
@@ -393,7 +393,7 @@ def _do_embedding_2d_variable_size(collection_id, intervals_id, binsize):
             binsize,
             regions,
             chromosome_arms,
-            "Obs/Exp",
+            "ICCF",
             collapse=False,
         )
         data.extend(
@@ -441,7 +441,7 @@ def _do_embedding_2d_variable_size(collection_id, intervals_id, binsize):
 
 
 def _do_embedding_2d_fixed_size(collection_id, intervals_id, binsize):
-    CLUSTERNUMBER = 20
+    CLUSTERNUMBER = 10
     features = Collection.query.get(collection_id).datasets
     intervals = Intervals.query.get(intervals_id)
     windowsize = intervals.windowsize
@@ -458,7 +458,7 @@ def _do_embedding_2d_fixed_size(collection_id, intervals_id, binsize):
             binsize,
             regions,
             chromosome_arms,
-            "Obs/Exp",
+            "ICCF",
             collapse=False,
         )
         data.extend(
@@ -466,7 +466,7 @@ def _do_embedding_2d_fixed_size(collection_id, intervals_id, binsize):
         )  # switches dimensions such that first dimension is dimesion that indexes arrays
     # extract features
     log.info("      Extracting image features...")
-    image_features = feature_extraction.extract_image_features(data, pixel_target=(5, 5))
+    image_features = feature_extraction.extract_image_features(data, pixel_target=(10, 10))
     # calculate embedding
     log.info("      Running embedding...")
     embedder = umap.UMAP(random_state=42)
