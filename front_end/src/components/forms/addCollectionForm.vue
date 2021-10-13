@@ -129,7 +129,17 @@ export default {
         startDatasetSelection: function () {
             this.expectSelection = true;
             let preselection = [...this.form.used_datasets]
-            let fileType = this.fileType === "regions" ? "bedfile" : "bigwig"
+            let fileType;
+            switch (this.fileType) {
+                case "regions":
+                    fileType = "bedfile"
+                    break
+                case "1d-features":
+                    fileType = "bigwig"
+                    break
+                default:
+                    fileType = "cooler"
+            }
             EventBus.$emit("show-select-dialog", this.availableDatasets, fileType, preselection, false);
         },
         registerSelectionEventHandlers: function(){

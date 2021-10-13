@@ -378,10 +378,15 @@ export default {
         showContainingDatasetsTable(collection) {
             let datasets = this.$store.state.datasets.filter(el => collection.dataset_ids.includes(el.id))
             let datasetType;
-            if (collection.kind === "regions"){
-                datasetType = "bedfile"
-            }else{
-                datasetType = "bigwig"
+            switch (collection.kind){
+                case "regions":
+                    datasetType = "bedfile"
+                    break
+                case "1d-features":
+                    datasetType = "bigwig"
+                    break
+                default:
+                    datasetType = "cooler"
             }
             EventBus.$emit(
                     "show-select-dialog",

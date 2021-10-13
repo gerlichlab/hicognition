@@ -21,16 +21,23 @@
                         </md-tooltip>
                     </md-dialog-title>
                 <md-tabs class="md-primary">
-                <md-tab id="tab-single" md-label="Regions">
+                <md-tab id="tab-regions" md-label="Regions">
                     <addCollectionForm
                     fileType="regions"
                     @close-dialog="$emit('close-dialog')"
                     >
                     </addCollectionForm>
                 </md-tab>
-                <md-tab id="tab-bulk" md-label="1d-features">
+                <md-tab id="tab-1d-features" md-label="1d-features">
                     <addCollectionForm
                     fileType="1d-features"
+                    @close-dialog="$emit('close-dialog')"
+                    >
+                    </addCollectionForm>
+                </md-tab>
+                <md-tab id="tab-2d-features" md-label="2d-features">
+                    <addCollectionForm
+                    fileType="2d-features"
                     @close-dialog="$emit('close-dialog')"
                     >
                     </addCollectionForm>
