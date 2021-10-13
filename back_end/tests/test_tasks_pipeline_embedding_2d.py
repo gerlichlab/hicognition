@@ -68,9 +68,7 @@ class TestPipelineEmbedding2d(LoginTestCase, TempDirTestCase):
 
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.embedding_2d_pipeline_step")
-    def test_dataset_state_not_changed_if_not_last(
-        self, mock_embedding, mock_progress
-    ):
+    def test_dataset_state_not_changed_if_not_last(self, mock_embedding, mock_progress):
         """tests whether dataset state is left unchanged if it is not the last task for
         this dataset/intervals combination."""
         # set up database
@@ -85,9 +83,7 @@ class TestPipelineEmbedding2d(LoginTestCase, TempDirTestCase):
 
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.embedding_2d_pipeline_step")
-    def test_dataset_set_finished_if_last(
-        self, mock_embedding, mock_progress
-    ):
+    def test_dataset_set_finished_if_last(self, mock_embedding, mock_progress):
         """tests whether dataset is set finished correctly if it is the last task for
         this dataset/intervals combination."""
         # set up database
@@ -120,6 +116,7 @@ class TestPipelineEmbedding2d(LoginTestCase, TempDirTestCase):
         self.assertEqual(self.bed_file.failed_collections, [self.collection_1])
         self.assertEqual(self.bed_file.processing_collections, [])
         assert mock_log.called
+
 
 class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
     """Tests embedding 2d pipeline step"""
@@ -157,7 +154,7 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
                 self.feature_1,
                 self.feature_2,
                 self.feature_3,
-                self.collection_1
+                self.collection_1,
             ]
         )
         embedding_2d_pipeline_step(self.collection_1.id, self.intervals_1.id, 10000)
@@ -188,7 +185,7 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
                 self.feature_1,
                 self.feature_2,
                 self.feature_3,
-                self.collection_1
+                self.collection_1,
             ]
         )
         embedding_2d_pipeline_step(self.collection_1.id, self.intervals_1.id, 10000)
@@ -214,13 +211,196 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
                 self.feature_1,
                 self.feature_2,
                 self.feature_3,
-                self.collection_1
+                self.collection_1,
             ]
         )
         embedding_2d_pipeline_step(self.collection_1.id, self.intervals_2.id, 10)
         # test whether correct workerfunction was called
         mock_fixed_size.assert_not_called()
         mock_variable_size.assert_called()
+
+
+class TestEmbedding2DWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
+    """Tests fixed size worker function"""
+
+    def setUp(self):
+        """Add test datasets"""
+        super().setUp()
+        # add assembly
+        self.hg19 = Assembly(
+            id=1,
+            name="hg19",
+            chrom_sizes=self.app.config["CHROM_SIZES"],
+            chrom_arms=self.app.config["CHROM_ARMS"],
+        )
+        db.session.add(self.hg19)
+        db.session.commit()
+        # create bed dataset
+        self.bed_file = Dataset(id=1, user_id=1, filetype="bedfile", assembly=1)
+        # create intervals
+        self.intervals_1 = Intervals(id=1, windowsize=100000, dataset_id=1)
+        # create feature datasets
+        self.feature_1 = Dataset(id=2, user_id=1, filetype="cooler", assembly=1)
+        self.feature_2 = Dataset(id=3, user_id=1, filetype="cooler", assembly=1)
+        self.feature_3 = Dataset(id=4, user_id=1, filetype="cooler", assembly=1)
+        # create collection
+        self.collection_1 = Collection(
+            id=1, datasets=[self.feature_1, self.feature_2, self.feature_3]
+        )
+
+    @patch("app.pipeline_worker_functions.pd.read_csv")
+    @patch("app.pipeline_worker_functions._do_pileup_fixed_size")
+    def test_do_pileup_called_correctly(self, mock_do_pileup, mock_read_csv):
+        """tests whether do_pileup is called correctly"""
+        # add data to database
+        db.session.add_all(
+            [
+                self.bed_file,
+                self.intervals_1,
+                self.feature_1,
+                self.feature_2,
+                self.feature_3,
+                self.collection_1,
+            ]
+        )
+        # mock stuff
+        return_value = np.stack(
+            [np.random.normal(size=(10, 10)) for i in range(10)], axis=2
+        )
+        mock_do_pileup.return_value = return_value
+        mock_read_csv.return_value = "chrom_arms"
+        # make call
+        _do_embedding_2d_fixed_size(self.collection_1.id, self.intervals_1.id, 10000)
+        # check whether call is correct
+        for feature in self.collection_1.datasets:
+            mock_do_pileup.assert_any_call(
+                feature,
+                self.intervals_1.windowsize,
+                10000,
+                self.bed_file.file_path,
+                "chrom_arms",
+                "Obs/Exp",
+                collapse=False,
+            )
+
+    @patch("app.pipeline_worker_functions.pd.read_csv")
+    @patch("app.pipeline_worker_functions._do_pileup_fixed_size")
+    def test_output_correct_shapes(self, mock_do_pileup, mock_read_csv):
+        """tests whether the produced outputs have correct shape"""
+        # add data to database
+        db.session.add_all(
+            [
+                self.bed_file,
+                self.intervals_1,
+                self.feature_1,
+                self.feature_2,
+                self.feature_3,
+                self.collection_1,
+            ]
+        )
+        # mock stuff
+        return_value = np.stack(
+            [np.random.normal(size=(10, 10)) for i in range(10)], axis=2
+        )
+        mock_do_pileup.return_value = return_value
+        mock_read_csv.return_value = "chrom_arms"
+        # make call
+        embedding, cluster_ids, thumbnails, distributions = _do_embedding_2d_fixed_size(self.collection_1.id, self.intervals_1.id, 10000)
+        self.assertEqual(embedding.shape, (30, 2))
+        self.assertEqual(cluster_ids.shape, (30, ))
+        self.assertEqual(thumbnails.shape, (20, 10, 10))
+        self.assertEqual(distributions.shape, (20, 3))
+
+
+class TestEmbedding2DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
+    """Tests variable size worker function"""
+
+    def setUp(self):
+        """Add test datasets"""
+        super().setUp()
+        # add assembly
+        self.hg19 = Assembly(
+            id=1,
+            name="hg19",
+            chrom_sizes=self.app.config["CHROM_SIZES"],
+            chrom_arms=self.app.config["CHROM_ARMS"],
+        )
+        db.session.add(self.hg19)
+        db.session.commit()
+        # create bed dataset
+        self.bed_file = Dataset(id=1, user_id=1, filetype="bedfile", assembly=1)
+        # create intervals
+        self.intervals_1 = Intervals(id=1, dataset_id=1)
+        # create feature datasets
+        self.feature_1 = Dataset(id=2, user_id=1, filetype="cooler", assembly=1)
+        self.feature_2 = Dataset(id=3, user_id=1, filetype="cooler", assembly=1)
+        self.feature_3 = Dataset(id=4, user_id=1, filetype="cooler", assembly=1)
+        # create collection
+        self.collection_1 = Collection(
+            id=1, datasets=[self.feature_1, self.feature_2, self.feature_3]
+        )
+
+    @patch("app.pipeline_worker_functions.pd.read_csv")
+    @patch("app.pipeline_worker_functions._do_pileup_variable_size")
+    def test_do_pileup_called_correctly(self, mock_do_pileup, mock_read_csv):
+        """tests whether do_pileup is called correctly"""
+        # add data to database
+        db.session.add_all(
+            [
+                self.bed_file,
+                self.intervals_1,
+                self.feature_1,
+                self.feature_2,
+                self.feature_3,
+                self.collection_1,
+            ]
+        )
+        # mock stuff
+        return_value = np.stack(
+            [np.random.normal(size=(10, 10)) for i in range(10)], axis=2
+        )
+        mock_do_pileup.return_value = return_value
+        mock_read_csv.return_value = "chrom_arms"
+        # make call
+        _do_embedding_2d_variable_size(self.collection_1.id, self.intervals_1.id, 10)
+        # check whether call is correct
+        for feature in self.collection_1.datasets:
+            mock_do_pileup.assert_any_call(
+                feature,
+                10,
+                self.bed_file.file_path,
+                "chrom_arms",
+                "Obs/Exp",
+                collapse=False,
+            )
+
+    @patch("app.pipeline_worker_functions.pd.read_csv")
+    @patch("app.pipeline_worker_functions._do_pileup_variable_size")
+    def test_output_correct_shapes(self, mock_do_pileup, mock_read_csv):
+        """tests whether the produced outputs have correct shape"""
+        # add data to database
+        db.session.add_all(
+            [
+                self.bed_file,
+                self.intervals_1,
+                self.feature_1,
+                self.feature_2,
+                self.feature_3,
+                self.collection_1,
+            ]
+        )
+        # mock stuff
+        return_value = np.stack(
+            [np.random.normal(size=(10, 10)) for i in range(10)], axis=2
+        )
+        mock_do_pileup.return_value = return_value
+        mock_read_csv.return_value = "chrom_arms"
+        # make call
+        embedding, cluster_ids, thumbnails, distributions = _do_embedding_2d_variable_size(self.collection_1.id, self.intervals_1.id, 10000)
+        self.assertEqual(embedding.shape, (30, 2))
+        self.assertEqual(cluster_ids.shape, (30, ))
+        self.assertEqual(thumbnails.shape, (20, 10, 10))
+        self.assertEqual(distributions.shape, (20, 3))
 
 
 if __name__ == "__main__":

@@ -44,6 +44,8 @@ def extract_image_features(images, pixel_target=(10, 10)):
         )
     ]
     X = np.stack(feature_list)
+    # replace inf with nan
+    X[np.isinf(X)] = np.nan
     imputed = SimpleImputer().fit_transform(X)
     scaled = StandardScaler().fit_transform(imputed)
     return scaled

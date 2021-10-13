@@ -401,11 +401,11 @@ def _do_embedding_2d_variable_size(collection_id, intervals_id, binsize):
         )  # switches dimensions such that first dimension is dimesion that indexes arrays
     # extract features
     log.info("      Extracting image features...")
-    features = feature_extraction.extract_image_features(data, pixel_target=(5, 5))
+    image_features = feature_extraction.extract_image_features(data, pixel_target=(5, 5))
     # calculate embedding
     log.info("      Running embedding...")
     embedder = umap.UMAP(random_state=42)
-    embedding = embedder.fit_transform(features)
+    embedding = embedder.fit_transform(image_features)
     #  kmeans clustering
     kmeans = KMeans(n_clusters=CLUSTERNUMBER, random_state=0).fit(embedding)
     cluster_ids = kmeans.labels_
@@ -424,8 +424,9 @@ def _do_embedding_2d_variable_size(collection_id, intervals_id, binsize):
         thumbnails_list.append(thumbnail)
     thumbnails = np.stack(thumbnails_list, axis=0)
     # find out fraction of collections in each cluster
+    region_length = len(data)//len(features)
     collection_ids = np.array(
-        [j for i in range(len(features)) for j in [i] * len(regions)]
+        [j for i in range(len(features)) for j in [i] * region_length]
     )
     distribution_list = []
     for cluster in range(CLUSTERNUMBER):
@@ -462,11 +463,11 @@ def _do_embedding_2d_fixed_size(collection_id, intervals_id, binsize):
         )  # switches dimensions such that first dimension is dimesion that indexes arrays
     # extract features
     log.info("      Extracting image features...")
-    features = feature_extraction.extract_image_features(data, pixel_target=(5, 5))
+    image_features = feature_extraction.extract_image_features(data, pixel_target=(5, 5))
     # calculate embedding
     log.info("      Running embedding...")
     embedder = umap.UMAP(random_state=42)
-    embedding = embedder.fit_transform(features)
+    embedding = embedder.fit_transform(image_features)
     #  kmeans clustering
     kmeans = KMeans(n_clusters=CLUSTERNUMBER, random_state=0).fit(embedding)
     cluster_ids = kmeans.labels_
@@ -485,8 +486,9 @@ def _do_embedding_2d_fixed_size(collection_id, intervals_id, binsize):
         thumbnails_list.append(thumbnail)
     thumbnails = np.stack(thumbnails_list, axis=0)
     # find out fraction of collections in each cluster
+    region_length = len(data)//len(features)
     collection_ids = np.array(
-        [j for i in range(len(features)) for j in [i] * len(regions)]
+        [j for i in range(len(features)) for j in [i] * region_length]
     )
     distribution_list = []
     for cluster in range(CLUSTERNUMBER):
