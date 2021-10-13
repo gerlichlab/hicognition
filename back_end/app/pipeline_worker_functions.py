@@ -11,9 +11,10 @@ from skimage.transform import resize
 from ngs import HiCTools as HT
 import cooler
 import bbi
-from hicognition import io_helpers, interval_operations
+from hicognition import io_helpers, interval_operations, feature_extraction
 import bioframe as bf
 from sklearn.impute import SimpleImputer
+from sklearn.cluster import KMeans
 import pylola
 from .api.helpers import remove_safely, get_optimal_binsize
 from . import db
@@ -24,6 +25,7 @@ from .models import (
     IndividualIntervalData,
     AssociationIntervalData,
     EmbeddingIntervalData,
+    Intervals,
 )
 
 # get logger
@@ -34,7 +36,7 @@ log = logging.getLogger("rq.worker")
 
 
 def _do_pileup_fixed_size(
-    cooler_dataset, window_size, binsize, regions_path, arms, pileup_type
+    cooler_dataset, window_size, binsize, regions_path, arms, pileup_type, collapse=True
 ):
     """do pileup with subsequent averaging for regions with a fixed size"""
     # open cooler
@@ -57,15 +59,21 @@ def _do_pileup_fixed_size(
             expected,
             pileup_windows,
             proc=current_app.config["PILEUP_PROCESSES"],
+            collapse=collapse,
         )
     else:
         pileup_array = HT.do_pileup_iccf(
-            cooler_file, pileup_windows, proc=current_app.config["PILEUP_PROCESSES"]
+            cooler_file,
+            pileup_windows,
+            proc=current_app.config["PILEUP_PROCESSES"],
+            collapse=collapse,
         )
     return pileup_array
 
 
-def _do_pileup_variable_size(cooler_dataset, binsize, regions_path, arms, pileup_type):
+def _do_pileup_variable_size(
+    cooler_dataset, binsize, regions_path, arms, pileup_type, collapse=True
+):
     """do pileup with subsequent averaging for regions with a variable size"""
     # load regions
     regions = pd.read_csv(regions_path, sep="\t", header=None)
@@ -112,7 +120,10 @@ def _do_pileup_variable_size(cooler_dataset, binsize, regions_path, arms, pileup
             empty[:] = np.nan
             resized_arrays.append(empty)
     stacked = np.stack(resized_arrays, axis=2)
-    return np.nanmean(stacked, axis=2)
+    if collapse:
+        return np.nanmean(stacked, axis=2)
+    else:
+        return stacked
 
 
 def _do_stackup_fixed_size(bigwig_filepath, regions, window_size, binsize):
@@ -365,18 +376,131 @@ def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize):
     embedder = umap.UMAP(random_state=42)
     return embedder.fit_transform(imputed_frame), feature_frame
 
+
 def _do_embedding_2d_variable_size(collection_id, intervals_id, binsize):
-    pass
+    CLUSTERNUMBER = 20
+    features = Collection.query.get(collection_id).datasets
+    intervals = Intervals.query.get(intervals_id)
+    regions = intervals.source_dataset.file_path
+    chromosome_arms = pd.read_csv(
+        Assembly.query.get(intervals.source_dataset.assembly).chrom_arms
+    )
+    log.info("      Collecting HiC matrices...")
+    data = []
+    for feature in features:
+        stack = _do_pileup_variable_size(
+            feature,
+            binsize,
+            regions,
+            chromosome_arms,
+            "Obs/Exp",
+            collapse=False,
+        )
+        data.extend(
+            stack.T
+        )  # switches dimensions such that first dimension is dimesion that indexes arrays
+    # extract features
+    log.info("      Extracting image features...")
+    features = feature_extraction.extract_image_features(data, pixel_target=(5, 5))
+    # calculate embedding
+    log.info("      Running embedding...")
+    embedder = umap.UMAP(random_state=42)
+    embedding = embedder.fit_transform(features)
+    #  kmeans clustering
+    kmeans = KMeans(n_clusters=CLUSTERNUMBER, random_state=0).fit(embedding)
+    cluster_ids = kmeans.labels_
+    # create thumbnails for each cluster
+    thumbnails_list = []
+    for cluster in range(CLUSTERNUMBER):
+        sub_stacks = np.stack(
+            [
+                array
+                for index, array in enumerate(data)
+                if cluster_ids[index] == cluster
+            ],
+            axis=2,
+        )
+        thumbnail = np.nanmean(sub_stacks, axis=2)
+        thumbnails_list.append(thumbnail)
+    thumbnails = np.stack(thumbnails_list, axis=0)
+    # find out fraction of collections in each cluster
+    collection_ids = np.array(
+        [j for i in range(len(features)) for j in [i] * len(regions)]
+    )
+    distribution_list = []
+    for cluster in range(CLUSTERNUMBER):
+        subset = collection_ids[cluster_ids == cluster]
+        fractions = np.histogram(subset, bins=len(features))[0] / len(subset)
+        distribution_list.append(fractions)
+    distributions = np.stack(distribution_list, axis=0)
+    return embedding, cluster_ids, thumbnails, distributions
+
 
 def _do_embedding_2d_fixed_size(collection_id, intervals_id, binsize):
-    pass
+    CLUSTERNUMBER = 20
+    features = Collection.query.get(collection_id).datasets
+    intervals = Intervals.query.get(intervals_id)
+    windowsize = intervals.windowsize
+    regions = intervals.source_dataset.file_path
+    chromosome_arms = pd.read_csv(
+        Assembly.query.get(intervals.source_dataset.assembly).chrom_arms
+    )
+    log.info("      Collecting HiC matrices...")
+    data = []
+    for feature in features:
+        stack = _do_pileup_fixed_size(
+            feature,
+            windowsize,
+            binsize,
+            regions,
+            chromosome_arms,
+            "Obs/Exp",
+            collapse=False,
+        )
+        data.extend(
+            stack.T
+        )  # switches dimensions such that first dimension is dimesion that indexes arrays
+    # extract features
+    log.info("      Extracting image features...")
+    features = feature_extraction.extract_image_features(data, pixel_target=(5, 5))
+    # calculate embedding
+    log.info("      Running embedding...")
+    embedder = umap.UMAP(random_state=42)
+    embedding = embedder.fit_transform(features)
+    #  kmeans clustering
+    kmeans = KMeans(n_clusters=CLUSTERNUMBER, random_state=0).fit(embedding)
+    cluster_ids = kmeans.labels_
+    # create thumbnails for each cluster
+    thumbnails_list = []
+    for cluster in range(CLUSTERNUMBER):
+        sub_stacks = np.stack(
+            [
+                array
+                for index, array in enumerate(data)
+                if cluster_ids[index] == cluster
+            ],
+            axis=2,
+        )
+        thumbnail = np.nanmean(sub_stacks, axis=2)
+        thumbnails_list.append(thumbnail)
+    thumbnails = np.stack(thumbnails_list, axis=0)
+    # find out fraction of collections in each cluster
+    collection_ids = np.array(
+        [j for i in range(len(features)) for j in [i] * len(regions)]
+    )
+    distribution_list = []
+    for cluster in range(CLUSTERNUMBER):
+        subset = collection_ids[cluster_ids == cluster]
+        fractions = np.histogram(subset, bins=len(features))[0] / len(subset)
+        distribution_list.append(fractions)
+    distributions = np.stack(distribution_list, axis=0)
+    return embedding, cluster_ids, thumbnails, distributions
 
 
 # Database handling
 
-def _add_embedding_2d_to_db(
-    filepaths, binsize, intervals_id, collection_id
-):
+
+def _add_embedding_2d_to_db(filepaths, binsize, intervals_id, collection_id):
     """Adds association data set to db"""
     # check if old association interval data exists and delete them
     test_query = EmbeddingIntervalData.query.filter(

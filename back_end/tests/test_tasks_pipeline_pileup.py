@@ -317,7 +317,7 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
         # check whether get_expected was called
         mock_get_expected.assert_called()
         expected_pileup_call = ["mock_cooler", "expected", returned_regions.dropna()]
-        mock_pileup_obs_exp.assert_called_with(*expected_pileup_call, proc=1)
+        mock_pileup_obs_exp.assert_called_with(*expected_pileup_call, proc=1, collapse=True)
         # check whether iccf pileup is not called
         mock_pileup_iccf.assert_not_called()
 
@@ -351,7 +351,7 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
         # check whether get_expected was called
         mock_get_expected.assert_not_called()
         expected_pileup_call = ["mock_cooler", returned_regions.dropna()]
-        mock_pileup_iccf.assert_called_with(*expected_pileup_call, proc=1)
+        mock_pileup_iccf.assert_called_with(*expected_pileup_call, proc=1, collapse=True)
         # check whether iccf pileup is not called
         mock_pileup_obs_exp.assert_not_called()
 
