@@ -407,9 +407,11 @@ def _do_embedding_2d_variable_size(collection_id, intervals_id, binsize):
     embedder = umap.UMAP(random_state=42)
     embedding = embedder.fit_transform(image_features)
     #  kmeans clustering
+    log.info("      Running clustering...")
     kmeans = KMeans(n_clusters=CLUSTERNUMBER, random_state=0).fit(embedding)
     cluster_ids = kmeans.labels_
     # create thumbnails for each cluster
+    log.info("      Generating thumbnails...")
     thumbnails_list = []
     for cluster in range(CLUSTERNUMBER):
         sub_stacks = np.stack(
@@ -424,6 +426,7 @@ def _do_embedding_2d_variable_size(collection_id, intervals_id, binsize):
         thumbnails_list.append(thumbnail)
     thumbnails = np.stack(thumbnails_list, axis=0)
     # find out fraction of collections in each cluster
+    log.info("      Calculating distributions...")
     region_length = len(data)//len(features)
     collection_ids = np.array(
         [j for i in range(len(features)) for j in [i] * region_length]
