@@ -22,22 +22,19 @@ class TestExtractImageFeatures(unittest.TestCase):
         """Tests whether supplying an array of only nans
         results in correct output (all 0s because sato turns nan into 0)."""
         result = feature_extraction.extract_image_features([self.nan_array])
-        expected = np.zeros(
-            (1, 100)
-        )  # this is 100 because all features except to sobel ones are 0 and are removed by simple imputer
-        self.assertTrue(np.allclose(result, expected))
+        self.assertEqual(result, None)
 
     def test_random_arrays_return_right_shape(self):
         """Tests whether random arrays return right shape"""
         images = [np.random.normal(0, 1, (10, 10)) for i in range(5)]
         result = feature_extraction.extract_image_features(images)
-        self.assertEqual(result.shape, (5, 500))
+        self.assertEqual(result.shape, (5, 100))
 
     def test_heterogenous_random_arrays_return_right_shape(self):
         """Tests whether random arrays return right shape"""
         images = [np.random.normal(0, 1, (i, i)) for i in range(5)]
         result = feature_extraction.extract_image_features(images)
-        self.assertEqual(result.shape, (5, 500))
+        self.assertEqual(result.shape, (5, 100))
 
     def test_correct_arrays_returned(self):
         """Test whether correct array is returned for small example"""
@@ -47,13 +44,7 @@ class TestExtractImageFeatures(unittest.TestCase):
             np.array([[100, 1], [87, 2]]),
         ]
         result = feature_extraction.extract_image_features(images, (1, 1))
-        expected = np.array(
-            [
-                [-0.73744372, 1.40399977, 0.71281686, -0.78406256, 0.0],
-                [-0.6763296, -0.84893009, 0.70138129, -0.62725005, 0.0],
-                [1.41377333, -0.55506968, -1.41419815, 1.41131261, 0.0],
-            ]
-        )
+        expected = np.array([[-0.74355736], [-0.67001872], [1.41357609]])
         self.assertTrue(np.allclose(result, expected))
 
 
