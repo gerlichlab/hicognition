@@ -128,8 +128,17 @@
                     @mouse-leave="handleMouseLeft"
                     :log="false"
                 />
-                <div :style="tooltipStyle">
-                    test
+                <div :style="tooltipStyle" v-show="thumbnail" class="md-elevation-5">
+                    <heatmap
+                        v-if="thumbnail"
+                        :stackupID="id"
+                        :width="visualizationWidth/2"
+                        :height="visualizationHeight/2"
+                        :stackupData="thumbnail"
+                        :colormap="thumbnailColormap"
+                        :allowValueScaleChange="false"
+                        :log="true"
+                    />
                 </div>
             </div>
             <div v-if="loading" :style="waitSpinnerContainer">
@@ -159,7 +168,7 @@
 
 <script>
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
-import { rectBin, flatten } from "../../functions";
+import { rectBin, flatten, select_3d_along_first_axis } from "../../functions";
 import heatmap from "../visualizations/heatmap.vue";
 import EventBus from "../../eventBus";
 
@@ -177,8 +186,14 @@ export default {
                 "align-items": "center"
             };
         },
+        thumbnailColormap: function(){
+            if (this.valueType == "ICCF") {
+                return "fall";
+            }
+            return "blueWhiteRed";
+        },
         colormap: function() {
-            return "magma";
+            return "viridis";
         },
         valueType: function() {
             if (this.isICCF) {
@@ -219,7 +234,10 @@ export default {
             return 25;
         },
         aggregationType: function() {
-            return "sum";
+            if (this.selectedCluster === undefined) {
+                return "sum";
+            }
+            return "mean"
         },
         clusterMap: function() {
             return rectBin(
@@ -228,6 +246,15 @@ export default {
                 this.widgetData[this.valueType]["cluster_ids"].data,
                 "mode"
             );
+        },
+        thumbnail: function() {
+            if (this.selectedCluster !== undefined) {
+                return {
+                    data: select_3d_along_first_axis(this.widgetData[this.valueType]["thumbnails"].data, this.widgetData[this.valueType]["thumbnails"].shape, this.selectedCluster ),
+                    shape: this.widgetData[this.valueType]["thumbnails"].shape.slice(1),
+                    dtype: "float32"
+                }
+            }
         },
         embeddingData: function() {
             if (this.selectedCluster === undefined) {
@@ -250,7 +277,7 @@ export default {
                 if (el === this.selectedCluster) {
                     return 100;
                 }
-                return 1;
+                return 5;
             });
             return {
                 data: flatten(
@@ -314,7 +341,9 @@ export default {
             let bin_width = visualizationSize  / this.size
             let x_bin = Math.round(x/bin_width)
             let y_bin = Math.round(y/bin_width)
-            this.selectedCluster = this.clusterMap[y_bin][x_bin]
+            if (this.clusterMap) {
+                this.selectedCluster = this.clusterMap[y_bin][x_bin]
+            }
         },
         hanldeSelectionAbortion: function() {
             this.expectSelection = false;
@@ -334,25 +363,19 @@ export default {
         },
         handleHeatmapClick: function(x, y, adjustedX, adjustedY) {
             console.log("ran");
-            if (this.tooltipStyle["background-color"] === "blue") {
-                this.tooltipStyle["background-color"] = "red";
-            } else {
-                this.tooltipStyle["background-color"] = "blue";
-            }
         },
         handleMouseMove: function(x, y, adjustedX, adjustedY, size) {
             this.tooltipStyle["top"] = `${adjustedY}px`;
-            this.tooltipStyle["left"] = `${adjustedX}px`;
+            this.tooltipStyle["left"] = `${adjustedX + 50}px`;
             this.selectCluster(x, y, size)
         },
         handleMouseEnter: function(x, y, adjustedX, adjustedY) {
             this.tooltipStyle["opacity"] = 1;
             this.tooltipStyle["top"] = `${adjustedY}px`;
-            this.tooltipStyle["left"] = `${adjustedX}px`;
+            this.tooltipStyle["left"] = `${adjustedX + 50}px`;
         },
         handleMouseLeft: function() {
             this.tooltipStyle["opacity"] = 0;
-            this.selectedCluster = undefined
         },
         toStoreObject: function() {
             // serialize object for storing its state in the store
@@ -401,12 +424,14 @@ export default {
                 loading: false,
                 tooltipStyle: {
                     position: "absolute",
-                    "background-color": "red",
+                    "background-color": "white",
                     top: "0px",
                     left: "0px",
                     "z-index": "100",
                     opacity: "0",
-                    "pointer-events": "none"
+                    "pointer-events": "none",
+                    "width": `${this.width/2}px`,
+                    "height": `${this.height/2}px`
                 },
                 selectedCluster: undefined
             };
@@ -486,12 +511,14 @@ export default {
                 loading: false,
                 tooltipStyle: {
                     position: "absolute",
-                    "background-color": "red",
+                    "background-color": "white",
                     top: "0px",
                     left: "0px",
                     "z-index": "100",
                     opacity: "0",
-                    "pointer-events": "none"
+                    "pointer-events": "none",
+                    "width": `${this.width/2}px`,
+                    "height": `${this.height/2}px`
                 },
                 selectedCluster: widgetData["selectedCluster"]
             };
@@ -622,6 +649,10 @@ export default {
                 Object.keys(this.binsizes)
             );
             this.updateData();
+        },
+        height: function(val) {
+            this.tooltipStyle["width"] = `${this.width/2}px`
+            this.tooltipStyle["height"] = `${this.height/2}px`
         },
         intervalSize: function(newVal, oldVal) {
             // if interval size changes, reload data

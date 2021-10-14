@@ -85,6 +85,30 @@ export function max_array_along_rows(array, shape) {
     return output.map(elem => (elem == -Infinity ? undefined : elem));
 }
 
+
+export function select_3d_along_first_axis(array, shape, index) {
+    /*
+        selects entries from 3d array along first axis
+    */
+       // check array
+       if (
+        array.length == 0 ||
+        shape.length != 3 ||
+        array.length != shape[0] * shape[1] * shape[2]
+    ) {
+        return undefined;
+    }
+    let [example_number, row_number, col_number] = shape;
+    // check col_index
+    if (index == undefined || index < 0 || index >= example_number) {
+        return undefined;
+    }
+    // select
+    let example_size = row_number * col_number
+    return array.slice(example_size * index, example_size * (index + 1))
+}
+
+
 export function select_column(array, shape, col_index) {
     /*
         returns all values in column col_index for a flattened array of a given shape
