@@ -220,7 +220,7 @@ def embedding_1d_pipeline_step(collection_id, intervals_id, binsize):
     )
 
 
-def embedding_2d_pipeline_step(collection_id, intervals_id, binsize):
+def embedding_2d_pipeline_step(collection_id, intervals_id, binsize, interaction_type):
     """Performs embedding on each binsize-sized bin of the window specified in intervals_id using
     the features in collection_id"""
     # get intervals to decide whether fixed size or variable size
@@ -232,7 +232,7 @@ def embedding_2d_pipeline_step(collection_id, intervals_id, binsize):
             thumbnails,
             distributions,
         ) = worker_funcs._do_embedding_2d_variable_size(
-            collection_id, intervals_id, binsize
+            collection_id, intervals_id, binsize, interaction_type
         )
     else:
         (
@@ -241,7 +241,7 @@ def embedding_2d_pipeline_step(collection_id, intervals_id, binsize):
             thumbnails,
             distributions,
         ) = worker_funcs._do_embedding_2d_fixed_size(
-            collection_id, intervals_id, binsize
+            collection_id, intervals_id, binsize, interaction_type
         )
     # write output for embedding
     log.info("      Writing output...")
@@ -272,7 +272,7 @@ def embedding_2d_pipeline_step(collection_id, intervals_id, binsize):
     }
     # add to database
     worker_funcs._add_embedding_2d_to_db(
-        filepaths, binsize, intervals_id, collection_id
+        filepaths, binsize, intervals_id, collection_id, interaction_type
     )
 
 

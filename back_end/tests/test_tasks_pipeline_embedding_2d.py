@@ -157,7 +157,7 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
                 self.collection_1,
             ]
         )
-        embedding_2d_pipeline_step(self.collection_1.id, self.intervals_1.id, 10000)
+        embedding_2d_pipeline_step(self.collection_1.id, self.intervals_1.id, 10000, "ICCF")
         # test whether database entry has been added
         embeddings = EmbeddingIntervalData.query.all()
         self.assertEqual(len(embeddings), 1)
@@ -167,6 +167,7 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
         self.assertEqual(embedding.value_type, "2d-embedding")
         self.assertEqual(embedding.collection_id, self.collection_1.id)
         self.assertEqual(embedding.intervals_id, self.intervals_1.id)
+        self.assertEqual(embedding.normalization, "ICCF")
 
     @patch("app.pipeline_steps.worker_funcs._do_embedding_2d_variable_size")
     @patch("app.pipeline_steps.worker_funcs._do_embedding_2d_fixed_size")
@@ -188,7 +189,7 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
                 self.collection_1,
             ]
         )
-        embedding_2d_pipeline_step(self.collection_1.id, self.intervals_1.id, 10000)
+        embedding_2d_pipeline_step(self.collection_1.id, self.intervals_1.id, 10000, "ICCF")
         # test whether correct workerfunction was called
         mock_fixed_size.assert_called()
         mock_variable_size.assert_not_called()
@@ -214,7 +215,7 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
                 self.collection_1,
             ]
         )
-        embedding_2d_pipeline_step(self.collection_1.id, self.intervals_2.id, 10)
+        embedding_2d_pipeline_step(self.collection_1.id, self.intervals_2.id, 10, "ICCF")
         # test whether correct workerfunction was called
         mock_fixed_size.assert_not_called()
         mock_variable_size.assert_called()
@@ -270,7 +271,7 @@ class TestEmbedding2DWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
         mock_do_pileup.return_value = return_value
         mock_read_csv.return_value = "chrom_arms"
         # make call
-        _do_embedding_2d_fixed_size(self.collection_1.id, self.intervals_1.id, 10000)
+        _do_embedding_2d_fixed_size(self.collection_1.id, self.intervals_1.id, 10000, "Obs/Exp")
         # check whether call is correct
         for feature in self.collection_1.datasets:
             mock_do_pileup.assert_any_call(
@@ -305,11 +306,11 @@ class TestEmbedding2DWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
         mock_do_pileup.return_value = return_value
         mock_read_csv.return_value = "chrom_arms"
         # make call
-        embedding, cluster_ids, thumbnails, distributions = _do_embedding_2d_fixed_size(self.collection_1.id, self.intervals_1.id, 10000)
+        embedding, cluster_ids, thumbnails, distributions = _do_embedding_2d_fixed_size(self.collection_1.id, self.intervals_1.id, 10000, "ICCF")
         self.assertEqual(embedding.shape, (30, 2))
         self.assertEqual(cluster_ids.shape, (30, ))
-        self.assertEqual(thumbnails.shape, (20, 10, 10))
-        self.assertEqual(distributions.shape, (20, 3))
+        self.assertEqual(thumbnails.shape, (10, 10, 10))
+        self.assertEqual(distributions.shape, (10, 3))
 
 
 class TestEmbedding2DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
@@ -362,7 +363,7 @@ class TestEmbedding2DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
         mock_do_pileup.return_value = return_value
         mock_read_csv.return_value = "chrom_arms"
         # make call
-        _do_embedding_2d_variable_size(self.collection_1.id, self.intervals_1.id, 10)
+        _do_embedding_2d_variable_size(self.collection_1.id, self.intervals_1.id, 10, "Obs/Exp")
         # check whether call is correct
         for feature in self.collection_1.datasets:
             mock_do_pileup.assert_any_call(
@@ -396,11 +397,11 @@ class TestEmbedding2DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
         mock_do_pileup.return_value = return_value
         mock_read_csv.return_value = "chrom_arms"
         # make call
-        embedding, cluster_ids, thumbnails, distributions = _do_embedding_2d_variable_size(self.collection_1.id, self.intervals_1.id, 10000)
+        embedding, cluster_ids, thumbnails, distributions = _do_embedding_2d_variable_size(self.collection_1.id, self.intervals_1.id, 10000, "ICCF")
         self.assertEqual(embedding.shape, (30, 2))
         self.assertEqual(cluster_ids.shape, (30, ))
-        self.assertEqual(thumbnails.shape, (20, 10, 10))
-        self.assertEqual(distributions.shape, (20, 3))
+        self.assertEqual(thumbnails.shape, (10, 10, 10))
+        self.assertEqual(distributions.shape, (10, 3))
 
 
 if __name__ == "__main__":

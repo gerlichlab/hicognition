@@ -377,7 +377,7 @@ def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize):
     return embedder.fit_transform(imputed_frame), feature_frame
 
 
-def _do_embedding_2d_variable_size(collection_id, intervals_id, binsize):
+def _do_embedding_2d_variable_size(collection_id, intervals_id, binsize, interaction_type):
     CLUSTERNUMBER = 10
     features = Collection.query.get(collection_id).datasets
     intervals = Intervals.query.get(intervals_id)
@@ -393,7 +393,7 @@ def _do_embedding_2d_variable_size(collection_id, intervals_id, binsize):
             binsize,
             regions,
             chromosome_arms,
-            "ICCF",
+            interaction_type,
             collapse=False,
         )
         data.extend(
@@ -440,7 +440,7 @@ def _do_embedding_2d_variable_size(collection_id, intervals_id, binsize):
     return embedding, cluster_ids, thumbnails, distributions
 
 
-def _do_embedding_2d_fixed_size(collection_id, intervals_id, binsize):
+def _do_embedding_2d_fixed_size(collection_id, intervals_id, binsize, interaction_type):
     CLUSTERNUMBER = 10
     features = Collection.query.get(collection_id).datasets
     intervals = Intervals.query.get(intervals_id)
@@ -458,7 +458,7 @@ def _do_embedding_2d_fixed_size(collection_id, intervals_id, binsize):
             binsize,
             regions,
             chromosome_arms,
-            "ICCF",
+            interaction_type,
             collapse=False,
         )
         data.extend(
@@ -505,7 +505,7 @@ def _do_embedding_2d_fixed_size(collection_id, intervals_id, binsize):
 # Database handling
 
 
-def _add_embedding_2d_to_db(filepaths, binsize, intervals_id, collection_id):
+def _add_embedding_2d_to_db(filepaths, binsize, intervals_id, collection_id, interaction_type):
     """Adds association data set to db"""
     # check if old association interval data exists and delete them
     test_query = EmbeddingIntervalData.query.filter(
@@ -527,6 +527,7 @@ def _add_embedding_2d_to_db(filepaths, binsize, intervals_id, collection_id):
         intervals_id=intervals_id,
         collection_id=collection_id,
         value_type="2d-embedding",
+        normalization=interaction_type
     )
     db.session.add(new_entry)
     db.session.commit()

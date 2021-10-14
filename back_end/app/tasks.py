@@ -133,7 +133,8 @@ def pipeline_embedding_2d(collection_id, intervals_id, binsize):
     # check whether stackups exist and perform stackup if not
     try:
         # perform embedding
-        pipeline_steps.embedding_2d_pipeline_step(collection_id, intervals_id, binsize)
+        pipeline_steps.embedding_2d_pipeline_step(collection_id, intervals_id, binsize, "ICCF")
+        pipeline_steps.embedding_2d_pipeline_step(collection_id, intervals_id, binsize, "Obs/Exp")
         pipeline_steps.set_task_progress(100)
         pipeline_steps.set_collection_finished(collection_id, intervals_id)
     except BaseException as e:
