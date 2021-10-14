@@ -401,7 +401,7 @@ def _do_embedding_2d_variable_size(collection_id, intervals_id, binsize, interac
         )  # switches dimensions such that first dimension is dimesion that indexes arrays
     # extract features
     log.info("      Extracting image features...")
-    image_features = feature_extraction.extract_image_features(data, pixel_target=(5, 5))
+    image_features = feature_extraction.extract_image_features(data, pixel_target=(10, 10))
     # calculate embedding
     log.info("      Running embedding...")
     embedder = umap.UMAP(random_state=42)

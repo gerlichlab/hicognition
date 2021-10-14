@@ -15,6 +15,7 @@ from .helpers import (
     add_association_data_to_preprocessed_dataset_map,
     add_embedding_data_to_preprocessed_dataset_map,
     recDict,
+    flatten_and_clean_array,
 )
 from . import api
 from .. import db
@@ -189,7 +190,7 @@ def get_processed_data_mapping_of_dataset(dataset_id):
         "lineprofile": recDict(),
         "lola": recDict(),
         "embedding1d": recDict(),
-        "embedding2d": recDict()
+        "embedding2d": recDict(),
     }
     # populate output object
     associated_intervals = dataset.intervals.all()
@@ -330,21 +331,40 @@ def get_embedding_data(entry_id):
     ):
         return forbidden("Collection or bed dataset is not owned by logged in user!")
     # Dataset is owned, return the data
-    np_data = np.load(embedding_data.file_path).astype(
-        np.float64
-    )  # this as float32 and that cannot be put into a list via iterator easily
+    embedding = np.load(embedding_data.file_path).astype(float)
+    cluster_ids = np.load(embedding_data.cluster_id_path).astype(float)
+    thumbnails = np.load(embedding_data.thumbnail_path).astype(float)
+    distributions = np.load(embedding_data.feature_distribution_path).astype(float)
     # Convert np.nan and np.isinf to None -> this is handeled by jsonify correctly
-    flat_data = [
-        entry if not (np.isnan(entry) or np.isinf(entry)) else None
-        for entry in np_data.flatten()
-    ]
-    json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
+    json_data = {
+        "embedding": {
+            "data": flatten_and_clean_array(embedding),
+            "shape": embedding.shape,
+            "dtype": "float32",
+        },
+        "cluster_ids": {
+            "data": flatten_and_clean_array(cluster_ids),
+            "shape": cluster_ids.shape,
+            "dtype": "float32",
+        },
+        "thumbnails": {
+            "data": flatten_and_clean_array(thumbnails),
+            "shape": thumbnails.shape,
+            "dtype": "float32",
+        },
+        "distributions": {
+            "data": flatten_and_clean_array(distributions),
+            "shape": distributions.shape,
+            "dtype": "float32",
+        },
+    }
     # compress
     content = gzip.compress(json.dumps(json_data).encode("utf8"), 4)
     response = make_response(content)
     response.headers["Content-length"] = len(content)
     response.headers["Content-Encoding"] = "gzip"
     return response
+
 
 @api.route("/embeddingIntervalData/<entry_id>/clusterIDs/", methods=["GET"])
 @auth.login_required
@@ -396,12 +416,16 @@ def get_embedding_thumbnail(entry_id, cluster_id):
     ):
         return forbidden("Collection or bed dataset is not owned by logged in user!")
     # check whetehr thumbnails exist
-    if (embedding_data.thumbnail_path is None) or (embedding_data.feature_distribution_path is None):
+    if (embedding_data.thumbnail_path is None) or (
+        embedding_data.feature_distribution_path is None
+    ):
         return not_found("Thumbnails do not exist")
     # check whether cluster_id is in range
     thumbnails = np.load(embedding_data.thumbnail_path)
     feature_distribution = np.load(embedding_data.feature_distribution_path)
-    if (int(cluster_id) >= thumbnails.shape[0]) or (int(cluster_id) >= feature_distribution.shape[0]):
+    if (int(cluster_id) >= thumbnails.shape[0]) or (
+        int(cluster_id) >= feature_distribution.shape[0]
+    ):
         return not_found("Thumbanils do not exist")
     # extract data
     flat_data_thumbnail = [
@@ -416,9 +440,9 @@ def get_embedding_thumbnail(entry_id, cluster_id):
         "heatmap": {
             "data": flat_data_thumbnail,
             "shape": thumbnails[int(cluster_id), ...].shape,
-            "dtype": "float32"
+            "dtype": "float32",
         },
-        "distribution": data_distribution
+        "distribution": data_distribution,
     }
     # compress
     content = gzip.compress(json.dumps(json_data).encode("utf8"), 4)

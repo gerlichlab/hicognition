@@ -483,3 +483,12 @@ def get_optimal_binsize(regions, target_bin_number):
     best_binsize = min(good_binsizes, key=lambda x: abs(x[1] - target_bin_number))
     # return smallest one that is ok
     return best_binsize[0]
+
+
+def flatten_and_clean_array(array):
+    """takes numpy array and converts it to a list where
+    numpy.na and +\- np.inf is convert to python None"""
+    return [
+        entry if not (np.isnan(entry) or np.isinf(entry)) else None
+        for entry in array.flatten()
+    ]

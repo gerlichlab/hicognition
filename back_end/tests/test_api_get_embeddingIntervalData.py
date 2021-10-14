@@ -49,11 +49,34 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
             intervals_id=self.unowned_intervals.id,
         )
         # add embeddingIntervalData with owned intervals and collection and associated data
-        self.test_data = np.array([[1.66, 2.2, 3.8, 4.5]])
+        self.test_data = np.array([[1., 2.], [3, 4.], [5., 6.], [7., 8.], [9., 10.], [11., 12.]])
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, self.test_data)
-        self.assocData_owned = EmbeddingIntervalData(
-            id=3, binsize=10000, file_path=data_path, collection_id=1, intervals_id=1
+        # create thumbnails
+        thumbnails = [np.array([[5., 6.], [ 7., 7.]]), np.array([[1., 2.], [3., 4.]]), np.array([[1.5, 10.], [7.0, 3.4]])]
+        self.thumbnail_data = np.stack(thumbnails)
+        thumbnail_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_thumbnails.npy")
+        np.save(thumbnail_path, self.thumbnail_data)
+        # create clusters
+        self.cluster_data = np.array([1., 2., 3., 1., 1., 2.])
+        cluster_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_clusters.npy")
+        np.save(cluster_path, self.cluster_data)
+        # create distributions
+        self.distribution_data = np.array(
+            [[0.1, 0.2, 0.7], [0.4, 0.2, 0.4], [0.1, 0.1, 0.8]]
+        )
+        distribution_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_distribution.npy")
+        np.save(distribution_path, self.distribution_data)
+        # create data
+        self.embeddingData_owned = EmbeddingIntervalData(
+            id=3,
+            binsize=10000,
+            file_path=data_path,
+            collection_id=self.owned_collection.id,
+            intervals_id=self.owned_intervals.id,
+            thumbnail_path=thumbnail_path,
+            cluster_id_path=cluster_path,
+            feature_distribution_path=distribution_path,
         )
 
     def test_no_auth(self):
@@ -138,21 +161,38 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_collection,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.assocData_owned,
+                self.embeddingData_owned,
             ]
         )
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/embeddingIntervalData/{self.assocData_owned.id}/",
+            f"/api/embeddingIntervalData/{self.embeddingData_owned.id}/",
             headers=token_headers,
             content_type="application/json",
         )
         data = json.loads(gzip.decompress(response.data))
         expected = {
-            "data": self.test_data.flatten().tolist(),
-            "shape": list(self.test_data.shape),
-            "dtype": "float32",
+            "embedding": {
+                "data": self.test_data.flatten().tolist(),
+                "shape": list(self.test_data.shape),
+                "dtype": "float32",
+            },
+            "cluster_ids": {
+                "data": self.cluster_data.tolist(),
+                "shape": list(self.cluster_data.shape),
+                "dtype": "float32"
+            },
+            "thumbnails": {
+                "data": self.thumbnail_data.flatten().tolist(),
+                "shape": list(self.thumbnail_data.shape),
+                "dtype": "float32",
+            },
+            "distributions": {
+                "data":  self.distribution_data.flatten().tolist(),
+                "shape": list(self.distribution_data.shape),
+                "dtype": "float32"
+            }   
         }
         self.assertEqual(data, expected)
 
