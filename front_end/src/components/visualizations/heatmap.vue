@@ -23,7 +23,7 @@
                     </color-bar-slider>
                 </div>
                 <!-- Pileup display -->
-                <md-content class="center-horizontal md-elevation-4">
+                <md-content class="center-horizontal md-elevation-4" ref="contentDiv">
                         <div :class="heatmapClass"  ref="canvasDiv"/>
                         <div v-if="showInterval" class="small-margin-left-right" :id="xAxisdivID"/>
                 </md-content>
@@ -57,6 +57,7 @@ function hexToRgb(hex) {
 }
 
 const EXPANSION_FACTOR = 0.2
+const COLORBAR_FRACTION = 0.17
 
 export default {
     name: "heatmap",
@@ -148,7 +149,7 @@ export default {
         },
         colorBarContainerStyle: function() {
             return {
-                width: "17%",
+                width: `${COLORBAR_FRACTION * 100}%`,
                 height: this.height + "px",
                 display: "inline"
             };
@@ -254,7 +255,8 @@ export default {
             id: Math.round(Math.random() * 1000000),
             pseudoCanvasContext: undefined,
             pseudoCanvas: undefined,
-            allNull: false
+            allNull: false,
+            trackMouse: false
         };
     },
     methods: {
@@ -354,6 +356,52 @@ export default {
         resizeCanvas: function(width, height) {
             this.renderer.resize(width, height);
         },
+        getMouseCoordinates: function(mousedata) {
+            let contentDiv =  this.$refs["contentDiv"].$el
+            let style = window.getComputedStyle(contentDiv)
+            let marginLeft = Number(style.marginLeft.split("px")[0])
+            let marginTop = Number(style.marginTop.split("px")[0])
+            let adjustedX = this.width * COLORBAR_FRACTION + mousedata.data.global.x + marginLeft // 16 is padding
+            let adjustedY = 14.5 + mousedata.data.global.y + marginTop // 14.5 is accumulated top margins
+            return [mousedata.data.global.x, mousedata.data.global.y, adjustedX, adjustedY]
+        },
+        hanldeMouseClick: function(mousedata) {
+            // get margin of content -> this is dynamic
+            let [x, y, adjustedX, adjustedY] = this.getMouseCoordinates(mousedata)
+            this.$emit("heatmap-clicked", x, y, adjustedX, adjustedY)
+        },
+        handleMouseMove: function(mousedata) {
+            if (this.trackMouse) {
+                // get margin of content -> this is dynamic
+                let [x, y, adjustedX, adjustedY] = this.getMouseCoordinates(mousedata)
+                this.$emit("mouse-move",  x, y, adjustedX, adjustedY)
+            }
+        },
+        throttleFunction: function (func, delay) {
+            let timerId;
+            return function(mousedata) {
+                if (timerId) {
+                    return
+                }
+                // Schedule a setTimeout after delay seconds
+                timerId  =  setTimeout(function () {
+                    func(mousedata)
+                    
+                    // Once setTimeout function execution is finished, timerId = undefined so that in <br>
+                    // the next scroll event function execution can be scheduled by the setTimeout
+                    timerId  =  undefined;
+                }, delay)
+            }
+        },
+        handleMouseOver: function(mousedata){
+            this.trackMouse = true
+            let [x, y, adjustedX, adjustedY] = this.getMouseCoordinates(mousedata)
+            this.$emit("mouse-enter", x, y, adjustedX, adjustedY)
+        },
+        handleMouseOut: function(mousedata){
+            this.trackMouse = false
+            this.$emit("mouse-leave")
+        },
         drawHeatmap: function() {
             // destroy old pseudocanvas if existing
             this.destroyPseudoCanvas();
@@ -368,6 +416,13 @@ export default {
             // create texture form pseudocanvas
             this.texture = PIXI.Texture.from(this.pseudoCanvas);
             this.sprite = PIXI.Sprite.from(this.texture);
+            //  attach event handlers
+            this.sprite.interactive = true
+            this.sprite.hitArea = new PIXI.Rectangle(0, 0 , this.visualizationSize, this.visualizationSize)
+            this.sprite.click = this.hanldeMouseClick
+            this.sprite.pointermove = this.throttleFunction(this.handleMouseMove, 50)
+            this.sprite.mouseover = this.handleMouseOver
+            this.sprite.mouseout = this.handleMouseOut
             // position sprite at top left and make it stretch the canvas
             this.sprite.x = 0;
             this.sprite.y = 0;

@@ -108,21 +108,30 @@
                     </div>
                 </div>
             </div>
-            <heatmap
-                v-if="showData && !loading"
-                :stackupID="id"
-                :width="visualizationWidth"
-                :height="visualizationHeight"
-                :stackupData="embeddingData"
-                :minHeatmapValue="minHeatmap"
-                :maxHeatmapValue="maxHeatmap"
-                :minHeatmapRange="minHeatmapRange"
-                :maxHeatmapRange="maxHeatmapRange"
-                :colormap="colormap"
-                :allowValueScaleChange="true"
-                @slider-change="handleSliderChange"
-                :log="false"
-            />
+            <div style="position: relative;">
+                <heatmap
+                    v-if="showData && !loading"
+                    :stackupID="id"
+                    :width="visualizationWidth"
+                    :height="visualizationHeight"
+                    :stackupData="embeddingData"
+                    :minHeatmapValue="minHeatmap"
+                    :maxHeatmapValue="maxHeatmap"
+                    :minHeatmapRange="minHeatmapRange"
+                    :maxHeatmapRange="maxHeatmapRange"
+                    :colormap="colormap"
+                    :allowValueScaleChange="true"
+                    @slider-change="handleSliderChange"
+                    @heatmap-clicked="handleHeatmapClick"
+                    @mouse-move="handleMouseMove"
+                    @mouse-enter="handleMouseEnter"
+                    @mouse-leave="handleMouseLeft"
+                    :log="false"
+                />
+                <div :style="tooltipStyle">
+                    test
+                </div>
+            </div>
             <div v-if="loading" :style="waitSpinnerContainer">
                 <md-progress-spinner
                     :md-diameter="100"
@@ -192,13 +201,13 @@ export default {
             if (!this.widgetData) {
                 return;
             }
-            if (this.widgetData[this.valueType]["shape"][0] > 50000) {
+            if (this.widgetData[this.valueType]["embedding"]["shape"][0] > 50000) {
                 return 150;
             }
-            if (this.widgetData[this.valueType]["shape"][0] > 10000) {
+            if (this.widgetData[this.valueType]["embedding"]["shape"][0] > 10000) {
                 return 100;
             }
-            if (this.widgetData[this.valueType]["shape"][0] > 2500) {
+            if (this.widgetData[this.valueType]["embedding"]["shape"][0] > 2500) {
                 return 50;
             }
             return 25;
@@ -211,7 +220,7 @@ export default {
                 data: flatten(
                     rectBin(
                         this.size,
-                        this.widgetData[this.valueType].data,
+                        this.widgetData[this.valueType]["embedding"].data,
                         undefined,
                         this.aggregationType
                     )
@@ -281,6 +290,26 @@ export default {
         handleBinsizeSelection: function(binsize) {
             this.selectedBinsize = binsize;
         },
+        handleHeatmapClick: function(x, y, adjustedX, adjustedY) {
+            console.log("ran")
+            if (this.tooltipStyle["background-color"] === "blue") {
+                this.tooltipStyle["background-color"] = "red"
+            } else {
+                this.tooltipStyle["background-color"] = "blue"
+            }
+        },
+        handleMouseMove: function(x, y, adjustedX, adjustedY) {
+            this.tooltipStyle["top"] = `${adjustedY}px`
+            this.tooltipStyle["left"] = `${adjustedX}px`
+        },
+        handleMouseEnter: function(x, y, adjustedX, adjustedY) {
+            this.tooltipStyle["opacity"] = 1
+            this.tooltipStyle["top"] = `${adjustedY}px`
+            this.tooltipStyle["left"] = `${adjustedX}px`
+        },
+        handleMouseLeft: function(){
+            this.tooltipStyle["opacity"] = 0
+        },
         toStoreObject: function() {
             // serialize object for storing its state in the store
             return {
@@ -324,7 +353,16 @@ export default {
                 maxHeatmap: undefined,
                 minHeatmapRange: undefined,
                 maxHeatmapRange: undefined,
-                loading: false
+                loading: false,
+                tooltipStyle: {
+                    "position": "absolute",
+                    "background-color": "red",
+                    "top": "0px",
+                    "left": "0px",
+                    "z-index": "100",
+                    "opacity": "0",
+                    "pointer-events": "none"
+                }
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -399,7 +437,16 @@ export default {
                 maxHeatmap: widgetData["maxHeatmap"],
                 minHeatmapRange: widgetData["minHeatmapRange"],
                 maxHeatmapRange: widgetData["maxHeatmapRange"],
-                loading: false
+                loading: false,
+                tooltipStyle: {
+                    "position": "absolute",
+                    "background-color": "red",
+                    "top": "0px",
+                    "left": "0px",
+                    "z-index": "100",
+                    "opacity": "0",
+                    "pointer-events": "none"
+                }
             };
         },
         handleSliderChange: function(data) {
