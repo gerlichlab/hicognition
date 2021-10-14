@@ -374,7 +374,7 @@ export default {
             if (this.trackMouse) {
                 // get margin of content -> this is dynamic
                 let [x, y, adjustedX, adjustedY] = this.getMouseCoordinates(mousedata)
-                this.$emit("mouse-move",  x, y, adjustedX, adjustedY)
+                this.$emit("mouse-move",  x, y, adjustedX, adjustedY, this.visualizationSize)
             }
         },
         throttleFunction: function (func, delay) {

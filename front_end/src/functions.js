@@ -333,6 +333,18 @@ export function rectBin(
             count[i] = tempArray;
         }
     }
+    if (aggregation == "mode"){
+        // create maps for counting
+        // create count array
+        var histArray = Array(size);
+        for (let i = 0; i < size; i++) {
+            let tempArray = Array(size);
+            for (let j = 0; j < size; j++){
+                tempArray[j] = new Map()
+            }
+            histArray[i] = tempArray;
+        }
+    }
     // get x and y coordinates
     let x_vals = [];
     let y_vals = [];
@@ -367,15 +379,22 @@ export function rectBin(
         } else {
             y_bin = Math.floor((y_val - value_boundaries.minY) / y_stepsize);
         }
-
-        if (output[size - 1 - y_bin][x_bin] == undefined) {
-            output[size - 1 - y_bin][x_bin] = value;
-        } else {
-            output[size - 1 - y_bin][x_bin] =
-                output[size - 1 - y_bin][x_bin] + value;
-        }
-        if (aggregation == "mean") {
-            count[size - 1 - y_bin][x_bin] += 1;
+        if (aggregation != "mode") {
+            if (output[size - 1 - y_bin][x_bin] == undefined) {
+                output[size - 1 - y_bin][x_bin] = value;
+            } else {
+                output[size - 1 - y_bin][x_bin] =
+                    output[size - 1 - y_bin][x_bin] + value;
+            }
+            if (aggregation == "mean") {
+                count[size - 1 - y_bin][x_bin] += 1;
+            }
+        }else{
+            if (histArray[size - 1 - y_bin][x_bin].has(value)){
+                histArray[size - 1 - y_bin][x_bin].set(value, histArray[size - 1 - y_bin][x_bin].get(value) + 1)
+            }else{
+                histArray[size - 1 - y_bin][x_bin].set(value, 1)
+            }
         }
     }
     // calculate mean if needed
@@ -384,6 +403,24 @@ export function rectBin(
             for (let j = 0; j < size; j++) {
                 if (count[i][j] != 0) {
                     output[i][j] = output[i][j] / count[i][j];
+                }
+            }
+        }
+    }
+    // calculate mode if needed
+    if (aggregation == "mode"){
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                if (histArray[i][j].size != 0) {
+                    let maxVal = 0;
+                    let maxKey = undefined;
+                    for (let [key, value] of histArray[i][j].entries()){
+                        if (value > maxVal){
+                            maxVal = value
+                            maxKey = key
+                        }
+                    }
+                    output[i][j] = maxKey
                 }
             }
         }

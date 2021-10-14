@@ -451,6 +451,25 @@ describe("When rectBin is called, it", function () {
             [0.5, undefined]
         ]);
     });
+    it("Should handle mode mode correctly", () => {
+        expect(
+            rectBin(
+                2,
+                flatten([
+                    [0.4, 1.8],
+                    [0.5, 1.55],
+                    [1.1, 2.1],
+                    [0.1, 1.1],
+                    [0.1, 1.1]
+                ]),
+                [1, 1, 3, 0, 0],
+                "mode"
+            )
+        ).toEqual([
+            [1, 3],
+            [0, undefined]
+        ]);
+    })
 });
 
 

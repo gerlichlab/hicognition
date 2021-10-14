@@ -178,7 +178,7 @@ export default {
             };
         },
         colormap: function() {
-            return "viridis";
+            return "magma";
         },
         valueType: function() {
             if (this.isICCF) {
@@ -201,13 +201,19 @@ export default {
             if (!this.widgetData) {
                 return;
             }
-            if (this.widgetData[this.valueType]["embedding"]["shape"][0] > 50000) {
+            if (
+                this.widgetData[this.valueType]["embedding"]["shape"][0] > 50000
+            ) {
                 return 150;
             }
-            if (this.widgetData[this.valueType]["embedding"]["shape"][0] > 10000) {
+            if (
+                this.widgetData[this.valueType]["embedding"]["shape"][0] > 10000
+            ) {
                 return 100;
             }
-            if (this.widgetData[this.valueType]["embedding"]["shape"][0] > 2500) {
+            if (
+                this.widgetData[this.valueType]["embedding"]["shape"][0] > 2500
+            ) {
                 return 50;
             }
             return 25;
@@ -215,13 +221,43 @@ export default {
         aggregationType: function() {
             return "sum";
         },
+        clusterMap: function() {
+            return rectBin(
+                this.size,
+                this.widgetData[this.valueType]["embedding"].data,
+                this.widgetData[this.valueType]["cluster_ids"].data,
+                "mode"
+            );
+        },
         embeddingData: function() {
+            if (this.selectedCluster === undefined) {
+                return {
+                    data: flatten(
+                        rectBin(
+                            this.size,
+                            this.widgetData[this.valueType]["embedding"].data,
+                            undefined,
+                            this.aggregationType
+                        )
+                    ),
+                    shape: [this.size, this.size],
+                    dtype: "float32"
+                };
+            }
+            let overlayClusters = this.widgetData[this.valueType][
+                "cluster_ids"
+            ]["data"].map(el => {
+                if (el === this.selectedCluster) {
+                    return 100;
+                }
+                return 1;
+            });
             return {
                 data: flatten(
                     rectBin(
                         this.size,
                         this.widgetData[this.valueType]["embedding"].data,
-                        undefined,
+                        overlayClusters,
                         this.aggregationType
                     )
                 ),
@@ -274,6 +310,12 @@ export default {
                 this.expectSelection = false;
             }
         },
+        selectCluster: function(x, y, visualizationSize) {
+            let bin_width = visualizationSize  / this.size
+            let x_bin = Math.round(x/bin_width)
+            let y_bin = Math.round(y/bin_width)
+            this.selectedCluster = this.clusterMap[y_bin][x_bin]
+        },
         hanldeSelectionAbortion: function() {
             this.expectSelection = false;
         },
@@ -291,24 +333,26 @@ export default {
             this.selectedBinsize = binsize;
         },
         handleHeatmapClick: function(x, y, adjustedX, adjustedY) {
-            console.log("ran")
+            console.log("ran");
             if (this.tooltipStyle["background-color"] === "blue") {
-                this.tooltipStyle["background-color"] = "red"
+                this.tooltipStyle["background-color"] = "red";
             } else {
-                this.tooltipStyle["background-color"] = "blue"
+                this.tooltipStyle["background-color"] = "blue";
             }
         },
-        handleMouseMove: function(x, y, adjustedX, adjustedY) {
-            this.tooltipStyle["top"] = `${adjustedY}px`
-            this.tooltipStyle["left"] = `${adjustedX}px`
+        handleMouseMove: function(x, y, adjustedX, adjustedY, size) {
+            this.tooltipStyle["top"] = `${adjustedY}px`;
+            this.tooltipStyle["left"] = `${adjustedX}px`;
+            this.selectCluster(x, y, size)
         },
         handleMouseEnter: function(x, y, adjustedX, adjustedY) {
-            this.tooltipStyle["opacity"] = 1
-            this.tooltipStyle["top"] = `${adjustedY}px`
-            this.tooltipStyle["left"] = `${adjustedX}px`
+            this.tooltipStyle["opacity"] = 1;
+            this.tooltipStyle["top"] = `${adjustedY}px`;
+            this.tooltipStyle["left"] = `${adjustedX}px`;
         },
-        handleMouseLeft: function(){
-            this.tooltipStyle["opacity"] = 0
+        handleMouseLeft: function() {
+            this.tooltipStyle["opacity"] = 0;
+            this.selectedCluster = undefined
         },
         toStoreObject: function() {
             // serialize object for storing its state in the store
@@ -331,7 +375,8 @@ export default {
                 minHeatmap: this.minHeatmap,
                 maxHeatmap: this.maxHeatmap,
                 minHeatmapRange: this.minHeatmapRange,
-                maxHeatmapRange: this.maxHeatmapRange
+                maxHeatmapRange: this.maxHeatmapRange,
+                selectedCluster: this.selectedCluster
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -355,14 +400,15 @@ export default {
                 maxHeatmapRange: undefined,
                 loading: false,
                 tooltipStyle: {
-                    "position": "absolute",
+                    position: "absolute",
                     "background-color": "red",
-                    "top": "0px",
-                    "left": "0px",
+                    top: "0px",
+                    left: "0px",
                     "z-index": "100",
-                    "opacity": "0",
+                    opacity: "0",
                     "pointer-events": "none"
-                }
+                },
+                selectedCluster: undefined
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -401,12 +447,12 @@ export default {
                 };
                 // get widget data from store
                 widgetDataValues = {
-                    ICCF: this.$store.getters["compare/getWidgetDataEmbedding2d"](
-                        queryICCF
-                    ),
-                    ObsExp: this.$store.getters["compare/getWidgetDataEmbedding2d"](
-                        queryObsExp
-                    )
+                    ICCF: this.$store.getters[
+                        "compare/getWidgetDataEmbedding2d"
+                    ](queryICCF),
+                    ObsExp: this.$store.getters[
+                        "compare/getWidgetDataEmbedding2d"
+                    ](queryObsExp)
                 };
             } else {
                 widgetDataValues = undefined;
@@ -439,14 +485,15 @@ export default {
                 maxHeatmapRange: widgetData["maxHeatmapRange"],
                 loading: false,
                 tooltipStyle: {
-                    "position": "absolute",
+                    position: "absolute",
                     "background-color": "red",
-                    "top": "0px",
-                    "left": "0px",
+                    top: "0px",
+                    left: "0px",
                     "z-index": "100",
-                    "opacity": "0",
+                    opacity: "0",
                     "pointer-events": "none"
-                }
+                },
+                selectedCluster: widgetData["selectedCluster"]
             };
         },
         handleSliderChange: function(data) {
@@ -525,7 +572,10 @@ export default {
             };
             // fetch data
             let iccf_data = await this.getEmbeddingData("ICCF", iccf_id);
-            let obs_exp_data = await this.getEmbeddingData("ObsExp", obs_exp_id);
+            let obs_exp_data = await this.getEmbeddingData(
+                "ObsExp",
+                obs_exp_id
+            );
             this.widgetData = {
                 ICCF: iccf_data,
                 ObsExp: obs_exp_data
@@ -611,7 +661,7 @@ export default {
                 return;
             }
             this.updateData();
-        },
+        }
     },
     mounted: function() {
         this.registerSelectionEventHandlers();
