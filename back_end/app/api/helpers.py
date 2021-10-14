@@ -107,6 +107,7 @@ def add_fields_to_dataset_from_form(entry, form):
         if form_key in form:
             entry.__setattr__(dataset_field, form[form_key])
 
+
 def add_fields_to_dataset_from_dataset(target, source):
     """adds dataset fields that exist in source to target"""
     for dataset_field in DATASET_META_FIELDS.values():
@@ -427,13 +428,22 @@ def add_embedding_data_to_preprocessed_dataset_map(
             collection in region_dataset.failed_collections
         ):
             continue
-        output_object["embedding"][collection.id]["name"] = collection.name
-        output_object["embedding"][collection.id][
-            "collection_dataset_names"
-        ] = collection.to_json()["dataset_names"]
-        output_object["embedding"][collection.id]["data_ids"][windowsize][
-            embed.binsize
-        ] = str(embed.id)
+        if embed.value_type == "1d-embedding":
+            output_object["embedding1d"][collection.id]["name"] = collection.name
+            output_object["embedding1d"][collection.id][
+                "collection_dataset_names"
+            ] = collection.to_json()["dataset_names"]
+            output_object["embedding1d"][collection.id]["data_ids"][windowsize][
+                embed.binsize
+            ] = str(embed.id)
+        else:
+            output_object["embedding2d"][collection.id]["name"] = collection.name
+            output_object["embedding2d"][collection.id][
+                "collection_dataset_names"
+            ] = collection.to_json()["dataset_names"]
+            output_object["embedding2d"][collection.id]["data_ids"][windowsize][
+                embed.binsize
+            ][embed.normalization] = str(embed.id)
 
 
 def recDict():

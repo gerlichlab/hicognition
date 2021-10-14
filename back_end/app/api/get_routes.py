@@ -164,8 +164,8 @@ def get_processed_data_mapping_of_dataset(dataset_id):
         }
     }
 
-    Processed_data_type is in [pileup, stackup, lineprofile, lola, embedding]. All entries
-    for a given processed_data_type key are available processed_datasets.
+    Processed_data_type is in [pileup, stackup, lineprofile, lola, embedding1d, embedding2d]
+    All entries for a given processed_data_type key are available processed_datasets.
     The values for each processed_dataset hold information about their name
     and which id in the target table corresponds to which interval and binsize
     combintaion.
@@ -188,7 +188,8 @@ def get_processed_data_mapping_of_dataset(dataset_id):
         "stackup": recDict(),
         "lineprofile": recDict(),
         "lola": recDict(),
-        "embedding": recDict(),
+        "embedding1d": recDict(),
+        "embedding2d": recDict()
     }
     # populate output object
     associated_intervals = dataset.intervals.all()

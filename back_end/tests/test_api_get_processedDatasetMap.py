@@ -177,10 +177,12 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         ]
         # create embedding data
         self.embedding_data = [
-            EmbeddingIntervalData(id=1, binsize=10000, collection_id=1, intervals_id=1),
-            EmbeddingIntervalData(id=2, binsize=20000, collection_id=1, intervals_id=1),
-            EmbeddingIntervalData(id=3, binsize=20000, collection_id=1, intervals_id=2),
-            EmbeddingIntervalData(id=4, binsize=5, collection_id=1, intervals_id=7),
+            EmbeddingIntervalData(id=1, binsize=10000, collection_id=1, intervals_id=1, value_type="1d-embedding"),
+            EmbeddingIntervalData(id=2, binsize=20000, collection_id=1, intervals_id=1, value_type="1d-embedding"),
+            EmbeddingIntervalData(id=3, binsize=20000, collection_id=1, intervals_id=2, value_type="1d-embedding"),
+            EmbeddingIntervalData(id=4, binsize=5, collection_id=1, intervals_id=7, value_type="1d-embedding"),
+            EmbeddingIntervalData(id=5, binsize=10000, collection_id=1, intervals_id=1, value_type="2d-embedding", normalization="ICCF"),
+            EmbeddingIntervalData(id=6, binsize=10000, collection_id=1, intervals_id=1, value_type="2d-embedding", normalization="Obs/Exp"),
         ]
 
     def test_no_auth(self):
@@ -262,7 +264,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "stackup": {},
             "lineprofile": {},
             "lola": {},
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -291,7 +294,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "stackup": {},
             "lineprofile": {},
             "lola": {},
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -329,7 +333,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "stackup": {},
             "lineprofile": {},
             "lola": {},
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -364,7 +369,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "stackup": {},
             "lineprofile": {},
             "lola": {},
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -399,7 +405,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
                 }
             },
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -431,7 +438,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "lineprofile": {
                 "4": {"name": "testfile4", "data_ids": {"variable": {"5": "9"}}}
             },
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -466,7 +474,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             },
             "lineprofile": {},
             "lola": {},
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -498,7 +507,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             },
             "lineprofile": {},
             "lola": {},
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -538,7 +548,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -575,7 +586,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "data_ids": {"variable": {"2": "4"}},
                 }
             },
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -606,7 +618,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "stackup": {},
             "lineprofile": {},
             "lola": {},
-            "embedding": {
+            "embedding1d": {
                 "1": {
                     "name": "test_collection",
                     "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
@@ -616,6 +628,18 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
+            "embedding2d": {
+                "1": {
+                    "name": "test_collection",
+                    "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                    "data_ids": {
+                        "10000": {"10000": {
+                            "ICCF": "5",
+                            "Obs/Exp": "6"
+                        }},
+                    },
+                }
+            }
         }
         self.assertEqual(response.json, expected)
 
@@ -646,13 +670,14 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "stackup": {},
             "lineprofile": {},
             "lola": {},
-            "embedding": {
+            "embedding1d": {
                 "1": {
                     "name": "test_collection",
                     "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
                     "data_ids": {"variable": {"5": "4"}},
                 }
             },
+            "embedding2d": {}
         }
         self.assertEqual(response.json, expected)
 
@@ -714,7 +739,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {
+            "embedding1d": {
                 "1": {
                     "name": "test_collection",
                     "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
@@ -724,6 +749,18 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
+            "embedding2d": {
+                "1": {
+                    "name": "test_collection",
+                    "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                    "data_ids": {
+                        "10000": {"10000": {
+                            "ICCF": "5",
+                            "Obs/Exp": "6"
+                        }},
+                    },
+                }
+            }
         }
         self.assertEqual(response.json, expected)
 
@@ -776,7 +813,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {}
         }
         self.assertEqual(response.json, expected)
 
@@ -829,7 +867,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -892,7 +931,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -955,7 +995,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -1010,7 +1051,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -1065,7 +1107,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -1128,7 +1171,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -1182,7 +1226,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 }
             },
             "lola": {},
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -1236,7 +1281,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 }
             },
             "lola": {},
-            "embedding": {},
+            "embedding1d": {},
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
