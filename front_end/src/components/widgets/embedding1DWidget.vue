@@ -318,7 +318,7 @@ export default {
                 intervalSize: collectionData["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: {},
-                datasets: collectionData["availableData"]["embedding"],
+                datasets: collectionData["availableData"]["embedding1d"],
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
@@ -397,7 +397,7 @@ export default {
                 intervalSize: collectionConfig["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
-                datasets: collectionConfig["availableData"]["embedding"],
+                datasets: collectionConfig["availableData"]["embedding1d"],
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
@@ -543,7 +543,7 @@ export default {
                 this.datasets =
                     newValue[this.collectionID]["collectionConfig"][
                         "availableData"
-                    ]["embedding"];
+                    ]["embedding1d"];
                 this.intervalSize =
                     newValue[this.collectionID]["collectionConfig"][
                         "intervalSize"
