@@ -461,10 +461,13 @@ export default {
                 let lolaIDs = Object.keys(
                     response.data["lola"]
                 ).map(el => Number(el));
-                let embeddingIDs = Object.keys(response.data["embedding"]).map(el =>
-                    Number(el)
-                );
-                let finished = lolaIDs.concat(embeddingIDs);
+                let embedding1dIDs = Object.keys(
+                        response.data["embedding1d"]
+                    ).map(el => Number(el));
+                let embedding2dIDs = Object.keys(
+                        response.data["embedding2d"]
+                    ).map(el => Number(el));
+                let finished = lolaIDs.concat(embedding1dIDs, embedding2dIDs);
                 // get collections from store
                 let collections = this.$store.state.collections
                 EventBus.$emit(

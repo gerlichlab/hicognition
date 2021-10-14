@@ -221,10 +221,13 @@ export default {
                     let lolaIDs = Object.keys(
                         response.data["lola"]
                     ).map(el => Number(el));
-                    let embeddingIDs = Object.keys(
-                        response.data["embedding"]
+                    let embedding1dIDs = Object.keys(
+                        response.data["embedding1d"]
                     ).map(el => Number(el));
-                    let collectiveIDs = lolaIDs.concat(embeddingIDs);
+                    let embedding2dIDs = Object.keys(
+                        response.data["embedding2d"]
+                    ).map(el => Number(el));
+                    let collectiveIDs = lolaIDs.concat(embedding1dIDs, embedding2dIDs);
                     this.finishedCollections = this.finishedCollections.concat(
                         collectiveIDs
                     );

@@ -512,6 +512,7 @@ def _add_embedding_2d_to_db(filepaths, binsize, intervals_id, collection_id, int
         (EmbeddingIntervalData.binsize == int(binsize))
         & (EmbeddingIntervalData.intervals_id == intervals_id)
         & (EmbeddingIntervalData.collection_id == collection_id)
+        & (EmbeddingIntervalData.normalization == interaction_type)
     ).all()
     for entry in test_query:
         remove_safely(entry.file_path)
