@@ -234,10 +234,7 @@ export default {
             return 25;
         },
         aggregationType: function() {
-            if (this.selectedCluster === undefined) {
-                return "sum";
-            }
-            return "mean"
+            return "sum"
         },
         clusterMap: function() {
             return rectBin(
@@ -275,9 +272,9 @@ export default {
                 "cluster_ids"
             ]["data"].map(el => {
                 if (el === this.selectedCluster) {
-                    return 100;
+                    return 99999999;
                 }
-                return 5;
+                return 1;
             });
             return {
                 data: flatten(
