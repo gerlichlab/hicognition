@@ -1,6 +1,11 @@
 <template>
     <div :style="widgetContainerBorder" class="md-elevation-5">
-        <md-card :style="cssStyle" ref="collectionCard" class="md-elevation-0" style="z-index: auto;">
+        <md-card
+            :style="cssStyle"
+            ref="collectionCard"
+            class="md-elevation-0"
+            style="z-index: auto;"
+        >
             <md-card-header>
                 <div class="md-layout">
                     <div class="md-layout-item md-size-30">
@@ -415,6 +420,9 @@ export default {
                 id: this.id,
                 collectionConfig: {
                     regionID: this.selectedRegionID,
+                    regionName: this.regions.filter(
+                        el => el.id == this.selectedRegionID
+                    )[0].dataset_name,
                     availableData: this.availableData,
                     intervalSize: this.selectedWindowSize
                 }

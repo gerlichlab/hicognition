@@ -106,7 +106,10 @@
                                         "
                                     >
                                         <span class="md-body-1">Large</span>
-                                        <md-icon v-if="clusterNumber === 'small'">done</md-icon>
+                                        <md-icon
+                                            v-if="clusterNumber === 'small'"
+                                            >done</md-icon
+                                        >
                                     </md-list-item>
                                     <md-list-item
                                         class="md-inset"
@@ -116,7 +119,10 @@
                                         "
                                     >
                                         <span class="md-body-1">Small</span>
-                                        <md-icon v-if="clusterNumber === 'large'">done</md-icon>
+                                        <md-icon
+                                            v-if="clusterNumber === 'large'"
+                                            >done</md-icon
+                                        >
                                     </md-list-item>
                                 </md-list>
                             </md-list-item>
@@ -154,18 +160,23 @@
                     @mouse-leave="handleMouseLeft"
                     :log="false"
                 />
-                <div :style="tooltipStyle" v-show="thumbnail" class="md-elevation-5">
-                    <heatmap
-                        v-if="thumbnail"
-                        :stackupID="id"
-                        :width="visualizationWidth/2"
-                        :height="visualizationHeight/2"
-                        :stackupData="thumbnail"
-                        :colormap="thumbnailColormap"
-                        :allowValueScaleChange="false"
-                        :log="true"
-                    />
-                </div>
+                <tooltip
+                    :id="id"
+                    :width="width"
+                    :height="tooltipHeight"
+                    :colormap="thumbnailColormap"
+                    :allowValueScaleChange="false"
+                    :showTooltip="showTooltip"
+                    :thumbnail="thumbnail"
+                    :showControls="showTooltipControls"
+                    :tooltipOffsetLeft="tooltipOffsetLeft"
+                    :tooltipOffsetTop="tooltipOffsetTop"
+                    :clusterID="selectedCluster"
+                    :embeddingID="widgetDataID"
+                    :datasetName="collectionName"
+                    :regionName="regionName"
+                    @close-controls="closeControls"
+                />
             </div>
             <div v-if="loading" :style="waitSpinnerContainer">
                 <md-progress-spinner
@@ -196,10 +207,11 @@
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
 import { rectBin, flatten, select_3d_along_first_axis } from "../../functions";
 import heatmap from "../visualizations/heatmap.vue";
+import tooltip from "../visualizations/heatmapTooltip.vue"
 import EventBus from "../../eventBus";
 
 export default {
-    components: { heatmap },
+    components: { heatmap , tooltip},
     name: "Embedding2D",
     mixins: [apiMixin, formattingMixin, widgetMixin],
     computed: {
@@ -212,11 +224,17 @@ export default {
                 "align-items": "center"
             };
         },
-        thumbnailColormap: function(){
+        thumbnailColormap: function() {
             if (this.valueType == "ICCF") {
                 return "fall";
             }
             return "blueWhiteRed";
+        },
+        tooltipHeight: function(){
+            if (this.showTooltipControls){
+                return this.height + 50
+            }
+            return this.height
         },
         colormap: function() {
             return "viridis";
@@ -226,6 +244,22 @@ export default {
                 return "ICCF";
             } else {
                 return "ObsExp";
+            }
+        },
+        widgetDataID: function(){
+            if (this.binsizes && this.selectedBinsize) {
+                let valueType
+                if (this.isICCF){
+                    valueType = "ICCF"
+                }else{
+                    valueType = "Obs/Exp"
+                }
+                return Number(this.binsizes[this.selectedBinsize][valueType][this.clusterNumber])
+            }
+        },
+        collectionName: function(){
+            if (this.selectedBinsize) {
+                return this.datasets[this.selectedDataset]['name']
             }
         },
         message: function() {
@@ -260,7 +294,7 @@ export default {
             return 25;
         },
         aggregationType: function() {
-            return "sum"
+            return "sum";
         },
         clusterMap: function() {
             return rectBin(
@@ -273,10 +307,16 @@ export default {
         thumbnail: function() {
             if (this.selectedCluster !== undefined) {
                 return {
-                    data: select_3d_along_first_axis(this.widgetData[this.valueType]["thumbnails"].data, this.widgetData[this.valueType]["thumbnails"].shape, this.selectedCluster ),
-                    shape: this.widgetData[this.valueType]["thumbnails"].shape.slice(1),
+                    data: select_3d_along_first_axis(
+                        this.widgetData[this.valueType]["thumbnails"].data,
+                        this.widgetData[this.valueType]["thumbnails"].shape,
+                        this.selectedCluster
+                    ),
+                    shape: this.widgetData[this.valueType][
+                        "thumbnails"
+                    ].shape.slice(1),
                     dtype: "float32"
-                }
+                };
             }
         },
         embeddingData: function() {
@@ -361,11 +401,11 @@ export default {
             }
         },
         selectCluster: function(x, y, visualizationSize) {
-            let bin_width = visualizationSize  / this.size
-            let x_bin = Math.round(x/bin_width)
-            let y_bin = Math.round(y/bin_width)
+            let bin_width = visualizationSize / this.size;
+            let x_bin = Math.round(x / bin_width);
+            let y_bin = Math.round(y / bin_width);
             if (this.clusterMap) {
-                this.selectedCluster = this.clusterMap[y_bin][x_bin]
+                this.selectedCluster = this.clusterMap[y_bin][x_bin];
             }
         },
         hanldeSelectionAbortion: function() {
@@ -385,20 +425,39 @@ export default {
             this.selectedBinsize = binsize;
         },
         handleHeatmapClick: function(x, y, adjustedX, adjustedY) {
-            console.log("ran");
+            if (this.showTooltipControls) {
+                this.showTooltipControls = false
+            }else if (this.thumbnail){
+                this.showTooltipControls = true
+            }
         },
         handleMouseMove: function(x, y, adjustedX, adjustedY, size) {
-            this.tooltipStyle["top"] = `${adjustedY}px`;
-            this.tooltipStyle["left"] = `${adjustedX + 50}px`;
-            this.selectCluster(x, y, size)
+            if (!this.showTooltipControls){
+                this.showTooltip = true
+                this.tooltipOffsetLeft = adjustedX + 60
+                this.tooltipOffsetTop = adjustedY
+                this.selectCluster(x, y, size);
+            }
         },
         handleMouseEnter: function(x, y, adjustedX, adjustedY) {
-            this.tooltipStyle["opacity"] = 1;
-            this.tooltipStyle["top"] = `${adjustedY}px`;
-            this.tooltipStyle["left"] = `${adjustedX + 50}px`;
+            if (!this.showTooltipControls){
+                this.showTooltip = true
+                this.tooltipOffsetLeft = adjustedX + 60
+                this.tooltipOffsetTop = adjustedY
+            }
         },
         handleMouseLeft: function() {
-            this.tooltipStyle["opacity"] = 0;
+            if (!this.showTooltipControls){
+                this.showTooltip = false
+            }
+        },
+        closeControls: function() {
+            this.selectedCluster = undefined
+            this.showTooltipControls = false
+            this.showTooltip = false
+        },
+        resetThumbnail: function() {
+            this.selectedCluster = undefined;
         },
         toStoreObject: function() {
             // serialize object for storing its state in the store
@@ -434,6 +493,7 @@ export default {
                 selectedDataset: [],
                 selectedBinsize: undefined,
                 intervalSize: collectionData["intervalSize"],
+                regionName: collectionData["regionName"],
                 emptyClass: ["smallMargin", "empty"],
                 isICCF: true,
                 binsizes: {},
@@ -446,19 +506,12 @@ export default {
                 minHeatmapRange: undefined,
                 maxHeatmapRange: undefined,
                 loading: false,
-                tooltipStyle: {
-                    position: "absolute",
-                    "background-color": "white",
-                    top: "0px",
-                    left: "0px",
-                    "z-index": "100",
-                    opacity: "0",
-                    "pointer-events": "none",
-                    "width": `${this.width/2}px`,
-                    "height": `${this.height/2}px`
-                },
                 selectedCluster: undefined,
-                clusterNumber: "small"
+                clusterNumber: "small",
+                showTooltip: false,
+                showTooltipControls: false,
+                tooltipOffsetTop: 0,
+                tooltipOffsetLeft: 0
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -522,6 +575,7 @@ export default {
                 selectedDataset: widgetData["dataset"],
                 selectedBinsize: widgetData["binsize"],
                 intervalSize: collectionConfig["intervalSize"],
+                regionName: collectionConfig["regionName"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
                 datasets: collectionConfig["availableData"]["embedding2d"],
@@ -534,19 +588,12 @@ export default {
                 minHeatmapRange: widgetData["minHeatmapRange"],
                 maxHeatmapRange: widgetData["maxHeatmapRange"],
                 loading: false,
-                tooltipStyle: {
-                    position: "absolute",
-                    "background-color": "white",
-                    top: "0px",
-                    left: "0px",
-                    "z-index": "100",
-                    opacity: "0",
-                    "pointer-events": "none",
-                    "width": `${this.width/2}px`,
-                    "height": `${this.height/2}px`
-                },
                 selectedCluster: widgetData["selectedCluster"],
-                clusterNumber: widgetData["clusterNumber"]
+                clusterNumber: widgetData["clusterNumber"],
+                showTooltip: false,
+                showTooltipControls: false,
+                tooltipOffsetTop: 0,
+                tooltipOffsetLeft: 0
             };
         },
         handleSliderChange: function(data) {
@@ -616,8 +663,12 @@ export default {
         updateData: async function() {
             this.loading = true;
             // construct data ids to be fecthed
-            var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"][this.clusterNumber];
-            var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"][this.clusterNumber];
+            var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"][
+                this.clusterNumber
+            ];
+            var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"][
+                this.clusterNumber
+            ];
             // store widget data ref
             this.widgetDataRef = {
                 ICCF: iccf_id,
@@ -635,6 +686,7 @@ export default {
             };
             // reset color scale
             this.resetColorScale();
+            this.resetThumbnail();
             this.loading = false;
         }
     },
@@ -677,8 +729,8 @@ export default {
             this.updateData();
         },
         height: function(val) {
-            this.tooltipStyle["width"] = `${this.width/2}px`
-            this.tooltipStyle["height"] = `${this.height/2}px`
+            this.tooltipStyle["width"] = `${this.width / 2}px`;
+            this.tooltipStyle["height"] = `${this.height / 2}px`;
         },
         intervalSize: function(newVal, oldVal) {
             // if interval size changes, reload data
@@ -718,10 +770,10 @@ export default {
                 return;
             }
             this.updateData();
-        }, 
-        clusterNumber: function(){
-            if (!this.selectedBinszie){
-                this.updateData()
+        },
+        clusterNumber: function() {
+            if (!this.selectedBinszie) {
+                this.updateData();
             }
         }
     },
