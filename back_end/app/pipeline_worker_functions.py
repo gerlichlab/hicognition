@@ -132,7 +132,7 @@ def _do_pileup_variable_size(
             resized_arrays.append(empty)
     stacked = np.stack(resized_arrays, axis=2)
     # fill in bad indices
-    assigned_regions = HT._assign_supports(regions, bf.parse_regions(arms))
+    assigned_regions = HT._assign_supports(pileup_regions, bf.parse_regions(arms))
     good_indices = ~assigned_regions.region.isnull().values
     pileup_shape = stacked[..., 0].shape[0]
     output = np.empty((pileup_shape, pileup_shape, len(regions)))

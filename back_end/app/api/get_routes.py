@@ -331,33 +331,41 @@ def get_embedding_data(entry_id):
     ):
         return forbidden("Collection or bed dataset is not owned by logged in user!")
     # Dataset is owned, return the data
-    embedding = np.load(embedding_data.file_path).astype(float)
-    cluster_ids = np.load(embedding_data.cluster_id_path).astype(float)
-    thumbnails = np.load(embedding_data.thumbnail_path).astype(float)
-    distributions = np.load(embedding_data.feature_distribution_path).astype(float)
-    # Convert np.nan and np.isinf to None -> this is handeled by jsonify correctly
-    json_data = {
-        "embedding": {
-            "data": flatten_and_clean_array(embedding),
-            "shape": embedding.shape,
-            "dtype": "float32",
-        },
-        "cluster_ids": {
-            "data": flatten_and_clean_array(cluster_ids),
-            "shape": cluster_ids.shape,
-            "dtype": "float32",
-        },
-        "thumbnails": {
-            "data": flatten_and_clean_array(thumbnails),
-            "shape": thumbnails.shape,
-            "dtype": "float32",
-        },
-        "distributions": {
-            "data": flatten_and_clean_array(distributions),
-            "shape": distributions.shape,
-            "dtype": "float32",
-        },
-    }
+    if embedding_data.value_type == "2d-embedding":
+        embedding = np.load(embedding_data.file_path).astype(float)
+        cluster_ids = np.load(embedding_data.cluster_id_path).astype(float)
+        thumbnails = np.load(embedding_data.thumbnail_path).astype(float)
+        distributions = np.load(embedding_data.feature_distribution_path).astype(float)
+        # Convert np.nan and np.isinf to None -> this is handeled by jsonify correctly
+        json_data = {
+            "embedding": {
+                "data": flatten_and_clean_array(embedding),
+                "shape": embedding.shape,
+                "dtype": "float32",
+            },
+            "cluster_ids": {
+                "data": flatten_and_clean_array(cluster_ids),
+                "shape": cluster_ids.shape,
+                "dtype": "float32",
+            },
+            "thumbnails": {
+                "data": flatten_and_clean_array(thumbnails),
+                "shape": thumbnails.shape,
+                "dtype": "float32",
+            },
+            "distributions": {
+                "data": flatten_and_clean_array(distributions),
+                "shape": distributions.shape,
+                "dtype": "float32",
+            },
+        }
+    else:
+        embedding = np.load(embedding_data.file_path).astype(float)
+        json_data = {
+                "data": flatten_and_clean_array(embedding),
+                "shape": embedding.shape,
+                "dtype": "float32",
+        }
     # compress
     content = gzip.compress(json.dumps(json_data).encode("utf8"), 4)
     response = make_response(content)

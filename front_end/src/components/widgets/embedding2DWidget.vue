@@ -728,10 +728,6 @@ export default {
             );
             this.updateData();
         },
-        height: function(val) {
-            this.tooltipStyle["width"] = `${this.width / 2}px`;
-            this.tooltipStyle["height"] = `${this.height / 2}px`;
-        },
         intervalSize: function(newVal, oldVal) {
             // if interval size changes, reload data
             if (!newVal || !oldVal || this.selectedDataset.length == 0) {

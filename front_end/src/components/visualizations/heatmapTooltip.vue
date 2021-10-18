@@ -103,7 +103,6 @@ export default {
             this.tooltipStyle["top"] = `${val}px`
         },
         height: function(val){
-            console.log("ran")
             this.tooltipStyle["height"] = `${val}px`
         },
         showControls: function(){
