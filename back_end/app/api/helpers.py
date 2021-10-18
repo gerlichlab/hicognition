@@ -443,7 +443,7 @@ def add_embedding_data_to_preprocessed_dataset_map(
             ] = collection.to_json()["dataset_names"]
             output_object["embedding2d"][collection.id]["data_ids"][windowsize][
                 embed.binsize
-            ][embed.normalization] = str(embed.id)
+            ][embed.normalization][embed.cluster_number] = str(embed.id)
 
 
 def recDict():

@@ -13,11 +13,11 @@ from app.models import (
     Intervals,
     Collection,
     EmbeddingIntervalData,
-    IndividualIntervalData,
     Assembly,
     Task,
 )
 from app.tasks import pipeline_embedding_2d
+from flask import current_app
 from app.pipeline_steps import embedding_2d_pipeline_step
 from app.pipeline_worker_functions import (
     _do_embedding_2d_fixed_size,
@@ -143,9 +143,24 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.worker_funcs._do_embedding_2d_fixed_size")
     def test_database_entry_added_correctly(self, mock_fixed_size, mock_variable_size):
         """Tests whether database entry is added correctly"""
+        return_value = {
+            "embedding": np.empty((1, 1)),
+            "clusters": {
+                current_app.config["CLUSTER_NUMBER_LARGE"]: {
+                    "cluster_ids": np.empty((1, 1)),
+                    "thumbnails": np.empty((1, 1)),
+                    "distributions": np.empty((1, 1)),
+                },
+                current_app.config["CLUSTER_NUMBER_SMALL"]: {
+                    "cluster_ids": np.empty((1, 1)),
+                    "thumbnails": np.empty((1, 1)),
+                    "distributions": np.empty((1, 1)),
+                },
+            },
+        }
         # add return values
-        mock_fixed_size.return_value = [np.empty((1, 1))] * 4
-        mock_variable_size.return_value = [np.empty((1, 1))] * 4
+        mock_fixed_size.return_value = return_value
+        mock_variable_size.return_value = return_value
         # add data to database
         db.session.add_all(
             [
@@ -157,17 +172,25 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
                 self.collection_1,
             ]
         )
-        embedding_2d_pipeline_step(self.collection_1.id, self.intervals_1.id, 10000, "ICCF")
+        embedding_2d_pipeline_step(
+            self.collection_1.id, self.intervals_1.id, 10000, "ICCF"
+        )
         # test whether database entry has been added
         embeddings = EmbeddingIntervalData.query.all()
-        self.assertEqual(len(embeddings), 1)
+        self.assertEqual(len(embeddings), 2)
         # test whehter addition is correct
-        embedding = embeddings[0]
-        self.assertEqual(embedding.binsize, 10000)
-        self.assertEqual(embedding.value_type, "2d-embedding")
-        self.assertEqual(embedding.collection_id, self.collection_1.id)
-        self.assertEqual(embedding.intervals_id, self.intervals_1.id)
-        self.assertEqual(embedding.normalization, "ICCF")
+        embedding_small = EmbeddingIntervalData.query.filter_by(cluster_number=current_app.config["CLUSTER_NUMBER_SMALL"]).first()
+        self.assertEqual(embedding_small.binsize, 10000)
+        self.assertEqual(embedding_small.value_type, "2d-embedding")
+        self.assertEqual(embedding_small.collection_id, self.collection_1.id)
+        self.assertEqual(embedding_small.intervals_id, self.intervals_1.id)
+        self.assertEqual(embedding_small.normalization, "ICCF")
+        embedding_large = EmbeddingIntervalData.query.filter_by(cluster_number=current_app.config["CLUSTER_NUMBER_LARGE"]).first()
+        self.assertEqual(embedding_large.binsize, 10000)
+        self.assertEqual(embedding_large.value_type, "2d-embedding")
+        self.assertEqual(embedding_large.collection_id, self.collection_1.id)
+        self.assertEqual(embedding_large.intervals_id, self.intervals_1.id)
+        self.assertEqual(embedding_large.normalization, "ICCF")
 
     @patch("app.pipeline_steps.worker_funcs._do_embedding_2d_variable_size")
     @patch("app.pipeline_steps.worker_funcs._do_embedding_2d_fixed_size")
@@ -175,9 +198,24 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
         self, mock_fixed_size, mock_variable_size
     ):
         """Tests whether correct worker function is called with fixed size intervals"""
+        return_value = {
+            "embedding": np.empty((1, 1)),
+            "clusters": {
+                current_app.config["CLUSTER_NUMBER_LARGE"]: {
+                    "cluster_ids": np.empty((1, 1)),
+                    "thumbnails": np.empty((1, 1)),
+                    "distributions": np.empty((1, 1)),
+                },
+                current_app.config["CLUSTER_NUMBER_SMALL"]: {
+                    "cluster_ids": np.empty((1, 1)),
+                    "thumbnails": np.empty((1, 1)),
+                    "distributions": np.empty((1, 1)),
+                },
+            },
+        }
         # add return values
-        mock_fixed_size.return_value = [np.empty((1, 1))] * 4
-        mock_variable_size.return_value = [np.empty((1, 1))] * 4
+        mock_fixed_size.return_value = return_value
+        mock_variable_size.return_value = return_value
         # add data to database
         db.session.add_all(
             [
@@ -189,7 +227,9 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
                 self.collection_1,
             ]
         )
-        embedding_2d_pipeline_step(self.collection_1.id, self.intervals_1.id, 10000, "ICCF")
+        embedding_2d_pipeline_step(
+            self.collection_1.id, self.intervals_1.id, 10000, "ICCF"
+        )
         # test whether correct workerfunction was called
         mock_fixed_size.assert_called()
         mock_variable_size.assert_not_called()
@@ -200,9 +240,24 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
         self, mock_fixed_size, mock_variable_size
     ):
         """Tests whether correct worker function is called with fixed size intervals"""
-        # ad return values
-        mock_fixed_size.return_value = [np.empty((1, 1))] * 4
-        mock_variable_size.return_value = [np.empty((1, 1))] * 4
+        return_value = {
+            "embedding": np.empty((1, 1)),
+            "clusters": {
+                current_app.config["CLUSTER_NUMBER_LARGE"]: {
+                    "cluster_ids": np.empty((1, 1)),
+                    "thumbnails": np.empty((1, 1)),
+                    "distributions": np.empty((1, 1)),
+                },
+                current_app.config["CLUSTER_NUMBER_SMALL"]: {
+                    "cluster_ids": np.empty((1, 1)),
+                    "thumbnails": np.empty((1, 1)),
+                    "distributions": np.empty((1, 1)),
+                },
+            },
+        }
+        # add return values
+        mock_fixed_size.return_value = return_value
+        mock_variable_size.return_value = return_value
         # add data to database
         db.session.add_all(
             [
@@ -215,7 +270,9 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
                 self.collection_1,
             ]
         )
-        embedding_2d_pipeline_step(self.collection_1.id, self.intervals_2.id, 10, "ICCF")
+        embedding_2d_pipeline_step(
+            self.collection_1.id, self.intervals_2.id, 10, "ICCF"
+        )
         # test whether correct workerfunction was called
         mock_fixed_size.assert_not_called()
         mock_variable_size.assert_called()
@@ -271,7 +328,9 @@ class TestEmbedding2DWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
         mock_do_pileup.return_value = return_value
         mock_read_csv.return_value = "chrom_arms"
         # make call
-        _do_embedding_2d_fixed_size(self.collection_1.id, self.intervals_1.id, 10000, "Obs/Exp")
+        _do_embedding_2d_fixed_size(
+            self.collection_1.id, self.intervals_1.id, 10000, "Obs/Exp"
+        )
         # check whether call is correct
         for feature in self.collection_1.datasets:
             mock_do_pileup.assert_any_call(
@@ -306,11 +365,16 @@ class TestEmbedding2DWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
         mock_do_pileup.return_value = return_value
         mock_read_csv.return_value = "chrom_arms"
         # make call
-        embedding, cluster_ids, thumbnails, distributions = _do_embedding_2d_fixed_size(self.collection_1.id, self.intervals_1.id, 10000, "ICCF")
-        self.assertEqual(embedding.shape, (30, 2))
-        self.assertEqual(cluster_ids.shape, (30, ))
-        self.assertEqual(thumbnails.shape, (10, 10, 10))
-        self.assertEqual(distributions.shape, (10, 3))
+        embedding_results = _do_embedding_2d_fixed_size(
+            self.collection_1.id, self.intervals_1.id, 10000, "ICCF"
+        )
+        self.assertEqual(embedding_results["embedding"].shape, (30, 2))
+        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_LARGE"]]["cluster_ids"].shape, (30,))
+        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_SMALL"]]["cluster_ids"].shape, (30,))
+        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_LARGE"]]["thumbnails"].shape, (20, 10, 10))
+        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_SMALL"]]["thumbnails"].shape, (10, 10, 10))
+        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_LARGE"]]["distributions"].shape, (20, 3))
+        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_SMALL"]]["distributions"].shape, (10, 3))
 
 
 class TestEmbedding2DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
@@ -363,7 +427,9 @@ class TestEmbedding2DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
         mock_do_pileup.return_value = return_value
         mock_read_csv.return_value = "chrom_arms"
         # make call
-        _do_embedding_2d_variable_size(self.collection_1.id, self.intervals_1.id, 10, "Obs/Exp")
+        _do_embedding_2d_variable_size(
+            self.collection_1.id, self.intervals_1.id, 10, "Obs/Exp"
+        )
         # check whether call is correct
         for feature in self.collection_1.datasets:
             mock_do_pileup.assert_any_call(
@@ -397,11 +463,16 @@ class TestEmbedding2DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
         mock_do_pileup.return_value = return_value
         mock_read_csv.return_value = "chrom_arms"
         # make call
-        embedding, cluster_ids, thumbnails, distributions = _do_embedding_2d_variable_size(self.collection_1.id, self.intervals_1.id, 10000, "ICCF")
-        self.assertEqual(embedding.shape, (30, 2))
-        self.assertEqual(cluster_ids.shape, (30, ))
-        self.assertEqual(thumbnails.shape, (10, 10, 10))
-        self.assertEqual(distributions.shape, (10, 3))
+        embedding_results = _do_embedding_2d_variable_size(
+            self.collection_1.id, self.intervals_1.id, 10000, "ICCF"
+        )
+        self.assertEqual(embedding_results["embedding"].shape, (30, 2))
+        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_LARGE"]]["cluster_ids"].shape, (30,))
+        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_SMALL"]]["cluster_ids"].shape, (30,))
+        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_LARGE"]]["thumbnails"].shape, (20, 10, 10))
+        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_SMALL"]]["thumbnails"].shape, (10, 10, 10))
+        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_LARGE"]]["distributions"].shape, (20, 3))
+        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_SMALL"]]["distributions"].shape, (10, 3))
 
 
 if __name__ == "__main__":

@@ -38,6 +38,8 @@ class Config:
             "2d-features": ("pipeline_embedding_2d", "run 2d embedding pipeline")
         },
     }
+    CLUSTER_NUMBER_LARGE = 20
+    CLUSTER_NUMBER_SMALL = 10
     # dataset-option mapping -> puts different optionvalues for dataset into relation
     DATASET_OPTION_MAPPING = {
         "DatasetType": {

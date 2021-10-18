@@ -181,8 +181,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             EmbeddingIntervalData(id=2, binsize=20000, collection_id=1, intervals_id=1, value_type="1d-embedding"),
             EmbeddingIntervalData(id=3, binsize=20000, collection_id=1, intervals_id=2, value_type="1d-embedding"),
             EmbeddingIntervalData(id=4, binsize=5, collection_id=1, intervals_id=7, value_type="1d-embedding"),
-            EmbeddingIntervalData(id=5, binsize=10000, collection_id=1, intervals_id=1, value_type="2d-embedding", normalization="ICCF"),
-            EmbeddingIntervalData(id=6, binsize=10000, collection_id=1, intervals_id=1, value_type="2d-embedding", normalization="Obs/Exp"),
+            EmbeddingIntervalData(id=5, binsize=10000, collection_id=1, intervals_id=1, value_type="2d-embedding", normalization="ICCF", cluster_number=10),
+            EmbeddingIntervalData(id=6, binsize=10000, collection_id=1, intervals_id=1, value_type="2d-embedding", normalization="Obs/Exp", cluster_number=10),
         ]
 
     def test_no_auth(self):
@@ -634,8 +634,12 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
                     "data_ids": {
                         "10000": {"10000": {
-                            "ICCF": "5",
-                            "Obs/Exp": "6"
+                            "ICCF": {
+                                "10": "5"
+                            },
+                            "Obs/Exp": {
+                                "10": "6"
+                            }
                         }},
                     },
                 }
@@ -755,8 +759,12 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
                     "data_ids": {
                         "10000": {"10000": {
-                            "ICCF": "5",
-                            "Obs/Exp": "6"
+                            "ICCF": {
+                                "10": "5"
+                            },
+                            "Obs/Exp": {
+                                "10": "6"
+                            }
                         }},
                     },
                 }
