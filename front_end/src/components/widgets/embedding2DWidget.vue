@@ -94,6 +94,32 @@
                                     </md-list-item>
                                 </md-list>
                             </md-list-item>
+                            <md-list-item md-expand>
+                                <span class="md-body-1">Neighborhood size</span>
+
+                                <md-list slot="md-expand">
+                                    <md-list-item
+                                        class="md-inset"
+                                        @click="
+                                            clusterNumber = 'small';
+                                            showMenu = false;
+                                        "
+                                    >
+                                        <span class="md-body-1">Large</span>
+                                        <md-icon v-if="clusterNumber === 'small'">done</md-icon>
+                                    </md-list-item>
+                                    <md-list-item
+                                        class="md-inset"
+                                        @click="
+                                            clusterNumber = 'large';
+                                            showMenu = false;
+                                        "
+                                    >
+                                        <span class="md-body-1">Small</span>
+                                        <md-icon v-if="clusterNumber === 'large'">done</md-icon>
+                                    </md-list-item>
+                                </md-list>
+                            </md-list-item>
                         </md-menu-content>
                     </md-menu>
                 </div>
@@ -396,7 +422,8 @@ export default {
                 maxHeatmap: this.maxHeatmap,
                 minHeatmapRange: this.minHeatmapRange,
                 maxHeatmapRange: this.maxHeatmapRange,
-                selectedCluster: this.selectedCluster
+                selectedCluster: this.selectedCluster,
+                clusterNumber: this.clusterNumber
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -430,7 +457,8 @@ export default {
                     "width": `${this.width/2}px`,
                     "height": `${this.height/2}px`
                 },
-                selectedCluster: undefined
+                selectedCluster: undefined,
+                clusterNumber: "small"
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -517,7 +545,8 @@ export default {
                     "width": `${this.width/2}px`,
                     "height": `${this.height/2}px`
                 },
-                selectedCluster: widgetData["selectedCluster"]
+                selectedCluster: widgetData["selectedCluster"],
+                clusterNumber: widgetData["clusterNumber"]
             };
         },
         handleSliderChange: function(data) {
@@ -587,8 +616,8 @@ export default {
         updateData: async function() {
             this.loading = true;
             // construct data ids to be fecthed
-            var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"];
-            var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
+            var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"][this.clusterNumber];
+            var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"][this.clusterNumber];
             // store widget data ref
             this.widgetDataRef = {
                 ICCF: iccf_id,
@@ -689,6 +718,11 @@ export default {
                 return;
             }
             this.updateData();
+        }, 
+        clusterNumber: function(){
+            if (!this.selectedBinszie){
+                this.updateData()
+            }
         }
     },
     mounted: function() {
