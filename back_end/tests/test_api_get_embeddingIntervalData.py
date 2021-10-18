@@ -77,6 +77,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
             thumbnail_path=thumbnail_path,
             cluster_id_path=cluster_path,
             feature_distribution_path=distribution_path,
+            value_type="2d-embedding"
         )
 
     def test_no_auth(self):
