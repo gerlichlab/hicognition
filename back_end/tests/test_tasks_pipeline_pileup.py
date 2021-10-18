@@ -278,7 +278,7 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
         # add dataset
         self.cooler = Dataset(
             dataset_name="test3",
-            file_path="/test/path/test3.mcool",
+            file_path="./tests/testfiles/test.mcool",
             filetype="cooler",
             processing_state="finished",
             user_id=1,
@@ -317,7 +317,9 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
         # check whether get_expected was called
         mock_get_expected.assert_called()
         expected_pileup_call = ["mock_cooler", "expected", returned_regions.dropna()]
-        mock_pileup_obs_exp.assert_called_with(*expected_pileup_call, proc=1, collapse=True)
+        mock_pileup_obs_exp.assert_called_with(
+            *expected_pileup_call, proc=1, collapse=True
+        )
         # check whether iccf pileup is not called
         mock_pileup_iccf.assert_not_called()
 
@@ -351,9 +353,51 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
         # check whether get_expected was called
         mock_get_expected.assert_not_called()
         expected_pileup_call = ["mock_cooler", returned_regions.dropna()]
-        mock_pileup_iccf.assert_called_with(*expected_pileup_call, proc=1, collapse=True)
+        mock_pileup_iccf.assert_called_with(
+            *expected_pileup_call, proc=1, collapse=True
+        )
         # check whether iccf pileup is not called
         mock_pileup_obs_exp.assert_not_called()
+
+    def test_regions_with_bad_chromosomes_filled_with_nan(self):
+        """Checks whether regions with bad chromosomes are filled with nans"""
+        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
+        with patch("app.pipeline_worker_functions.pd.read_csv") as mock_read_csv:
+            test_df_interval = pd.DataFrame(
+                {
+                    0: ["chr1", "chrASDF", "chr1", "chrASDF"],
+                    1: [60000000, 10, 50000000, 100],
+                    2: [60000000, 10, 50000000, 150],
+                }
+            )
+            mock_read_csv.return_value = test_df_interval
+            # dispatch call
+            result = _do_pileup_fixed_size(
+                self.cooler, 10000000, 5000000, "testpath", arms, "ICCF", collapse=False
+            )
+        self.assertEqual(result.shape[2], 4)
+        test_array_one = np.array(
+            [
+                [0.13717751, 0.0265284, 0.01462106, 0.009942, 0.00682112],
+                [0.0265284, 0.18850834, 0.06237434, 0.0145492, 0.01485787],
+                [0.01462106, 0.06237434, 0.119365, 0.04225391, 0.01654861],
+                [0.009942, 0.0145492, 0.04225391, 0.12408607, 0.05381814],
+                [0.00682112, 0.01485787, 0.01654861, 0.05381814, 0.14363506],
+            ]
+        )
+        test_array_two = np.array(
+            [
+                [0.23130276, 0.02327701, 0.0126868, 0.00436247, 0.00401918],
+                [0.02327701, 0.15173886, 0.07788348, 0.01425616, 0.01083477],
+                [0.0126868, 0.07788348, 0.13717751, 0.0265284, 0.01462106],
+                [0.00436247, 0.01425616, 0.0265284, 0.18850834, 0.06237434],
+                [0.00401918, 0.01083477, 0.01462106, 0.06237434, 0.119365],
+            ]
+        )
+        self.assertTrue(np.allclose(result[..., 0], test_array_one))
+        self.assertTrue(np.all(np.isnan(result[..., 1])))
+        self.assertTrue(np.allclose(result[..., 2], test_array_two))
+        self.assertTrue(np.all(np.isnan(result[..., 3])))
 
 
 class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
@@ -375,12 +419,14 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         # add dataset
         self.cooler = Dataset(
             dataset_name="test3",
-            file_path="/test/path/test3.mcool",
+            file_path="./tests/testfiles/test.mcool",
             filetype="cooler",
             processing_state="finished",
             user_id=1,
             assembly=1,
         )
+        # get arms
+        self.arms =  pd.read_csv(self.app.config["CHROM_ARMS"])
         db.session.add(self.cooler)
         db.session.commit()
 
@@ -407,8 +453,7 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         mock_Cooler.return_value = "mock_cooler"
         mock_get_expected.return_value = "expected"
         # dispatch call
-        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        _do_pileup_variable_size(self.cooler, 5, "testpath", arms, "Obs/Exp")
+        _do_pileup_variable_size(self.cooler, 5, "testpath", self.arms, "Obs/Exp")
         # check whether get_expected was called
         mock_get_expected.assert_called()
         mock_pileup_obs_exp.assert_called()
@@ -439,7 +484,7 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         mock_get_expected.return_value = "expected"
         # dispatch call
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        _do_pileup_variable_size(self.cooler, 5, "testpath", arms, "ICCF")
+        _do_pileup_variable_size(self.cooler, 5, "testpath", self.arms, "ICCF")
         # check whether get_expected was called
         mock_get_expected.assert_not_called()
         mock_pileup_iccf.assert_called()
@@ -481,9 +526,32 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         mock_bin_numbers.return_value = 10
         mock_pileup_iccf.return_value = [np.ones((10, 10)), np.array([])]
         # dispatch call
-        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
-        result = _do_pileup_variable_size(self.cooler, 5, "testpath", arms, "ICCF")
+        result = _do_pileup_variable_size(self.cooler, 5, "testpath", self.arms, "ICCF")
         self.assertTrue(np.allclose(result, np.ones((10, 10))))
+
+    @patch("app.pipeline_worker_functions.get_optimal_binsize")
+    def test_regions_with_bad_chromosomes_filled_with_nan(self, mock_binsize):
+        """Checks whether regions with bad chromosomes are filled with nans"""
+        mock_binsize.return_value = 5000000
+        with patch("app.pipeline_worker_functions.pd.read_csv") as mock_read_csv:
+            test_df_interval = pd.DataFrame(
+                {
+                    0: ["chr1", "chrASDF", "chr1", "chrASDF"],
+                    1: [50000000, 10, 90000000, 100],
+                    2: [70000000, 10, 100000000, 150],
+                }
+            )
+            mock_read_csv.return_value = test_df_interval
+            # dispatch call
+            result = _do_pileup_variable_size(
+                self.cooler, 50, "testpath", self.arms, "ICCF", collapse=False
+            )
+        test_array_one = np.array([[0.08672944, 0.02488877], [0.02488877, 0.07476589]])
+        test_array_two = np.array([[0.10348359, 0.03325665], [0.03325665, 0.12614132]])
+        self.assertTrue(np.allclose(result[..., 0], test_array_one))
+        self.assertTrue(np.all(np.isnan(result[..., 1])))
+        self.assertTrue(np.allclose(result[..., 2], test_array_two))
+        self.assertTrue(np.all(np.isnan(result[..., 3])))
 
 
 class TestGetOptimalBinsize(unittest.TestCase):

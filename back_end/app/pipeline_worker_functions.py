@@ -48,7 +48,10 @@ def _do_pileup_fixed_size(
     # assing regions to support
     pileup_windows = HT.assign_regions(
         window_size, int(binsize), regions["chrom"], regions["pos"], arms
-    ).dropna()
+    )
+    # create placeholder with nans
+    good_indices = ~pileup_windows.region.isnull().values
+    pileup_windows = pileup_windows.dropna()
     # do pileup
     if pileup_type == "Obs/Exp":
         expected = HT.get_expected(
@@ -68,7 +71,15 @@ def _do_pileup_fixed_size(
             proc=current_app.config["PILEUP_PROCESSES"],
             collapse=collapse,
         )
-    return pileup_array
+    # put togehter output if collapse is false
+    if collapse is False:
+        pileup_shape = pileup_array[..., 0].shape[0]
+        output = np.empty((pileup_shape, pileup_shape, len(regions)))
+        output.fill(np.nan)
+        output[..., good_indices] = pileup_array
+    else:
+        output = pileup_array
+    return output
 
 
 def _do_pileup_variable_size(
@@ -120,10 +131,17 @@ def _do_pileup_variable_size(
             empty[:] = np.nan
             resized_arrays.append(empty)
     stacked = np.stack(resized_arrays, axis=2)
+    # fill in bad indices
+    assigned_regions = HT._assign_supports(regions, bf.parse_regions(arms))
+    good_indices = ~assigned_regions.region.isnull().values
+    pileup_shape = stacked[..., 0].shape[0]
+    output = np.empty((pileup_shape, pileup_shape, len(regions)))
+    output.fill(np.nan)
+    output[..., good_indices] = stacked
     if collapse:
-        return np.nanmean(stacked, axis=2)
+        return np.nanmean(output, axis=2)
     else:
-        return stacked
+        return output
 
 
 def _do_stackup_fixed_size(bigwig_filepath, regions, window_size, binsize):
@@ -629,7 +647,7 @@ def _add_embedding_2d_to_db(
         collection_id=collection_id,
         value_type="2d-embedding",
         normalization=interaction_type,
-        cluster_number=cluster_number
+        cluster_number=cluster_number,
     )
     db.session.add(new_entry)
     db.session.commit()
