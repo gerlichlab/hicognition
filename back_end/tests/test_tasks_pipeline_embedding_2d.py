@@ -146,12 +146,12 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
         return_value = {
             "embedding": np.empty((1, 1)),
             "clusters": {
-                current_app.config["CLUSTER_NUMBER_LARGE"]: {
+                "large": {
                     "cluster_ids": np.empty((1, 1)),
                     "thumbnails": np.empty((1, 1)),
                     "distributions": np.empty((1, 1)),
                 },
-                current_app.config["CLUSTER_NUMBER_SMALL"]: {
+                "small": {
                     "cluster_ids": np.empty((1, 1)),
                     "thumbnails": np.empty((1, 1)),
                     "distributions": np.empty((1, 1)),
@@ -179,13 +179,13 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
         embeddings = EmbeddingIntervalData.query.all()
         self.assertEqual(len(embeddings), 2)
         # test whehter addition is correct
-        embedding_small = EmbeddingIntervalData.query.filter_by(cluster_number=current_app.config["CLUSTER_NUMBER_SMALL"]).first()
+        embedding_small = EmbeddingIntervalData.query.filter_by(cluster_number="small").first()
         self.assertEqual(embedding_small.binsize, 10000)
         self.assertEqual(embedding_small.value_type, "2d-embedding")
         self.assertEqual(embedding_small.collection_id, self.collection_1.id)
         self.assertEqual(embedding_small.intervals_id, self.intervals_1.id)
         self.assertEqual(embedding_small.normalization, "ICCF")
-        embedding_large = EmbeddingIntervalData.query.filter_by(cluster_number=current_app.config["CLUSTER_NUMBER_LARGE"]).first()
+        embedding_large = EmbeddingIntervalData.query.filter_by(cluster_number="large").first()
         self.assertEqual(embedding_large.binsize, 10000)
         self.assertEqual(embedding_large.value_type, "2d-embedding")
         self.assertEqual(embedding_large.collection_id, self.collection_1.id)
@@ -201,12 +201,12 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
         return_value = {
             "embedding": np.empty((1, 1)),
             "clusters": {
-                current_app.config["CLUSTER_NUMBER_LARGE"]: {
+               "large": {
                     "cluster_ids": np.empty((1, 1)),
                     "thumbnails": np.empty((1, 1)),
                     "distributions": np.empty((1, 1)),
                 },
-                current_app.config["CLUSTER_NUMBER_SMALL"]: {
+                "small": {
                     "cluster_ids": np.empty((1, 1)),
                     "thumbnails": np.empty((1, 1)),
                     "distributions": np.empty((1, 1)),
@@ -243,12 +243,12 @@ class TestEmbedding2DPipelineStep(LoginTestCase, TempDirTestCase):
         return_value = {
             "embedding": np.empty((1, 1)),
             "clusters": {
-                current_app.config["CLUSTER_NUMBER_LARGE"]: {
+               "large": {
                     "cluster_ids": np.empty((1, 1)),
                     "thumbnails": np.empty((1, 1)),
                     "distributions": np.empty((1, 1)),
                 },
-                current_app.config["CLUSTER_NUMBER_SMALL"]: {
+                "small": {
                     "cluster_ids": np.empty((1, 1)),
                     "thumbnails": np.empty((1, 1)),
                     "distributions": np.empty((1, 1)),
@@ -369,12 +369,12 @@ class TestEmbedding2DWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
             self.collection_1.id, self.intervals_1.id, 10000, "ICCF"
         )
         self.assertEqual(embedding_results["embedding"].shape, (30, 2))
-        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_LARGE"]]["cluster_ids"].shape, (30,))
-        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_SMALL"]]["cluster_ids"].shape, (30,))
-        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_LARGE"]]["thumbnails"].shape, (20, 10, 10))
-        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_SMALL"]]["thumbnails"].shape, (10, 10, 10))
-        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_LARGE"]]["distributions"].shape, (20, 3))
-        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_SMALL"]]["distributions"].shape, (10, 3))
+        self.assertEqual(embedding_results["clusters"]["large"]["cluster_ids"].shape, (30,))
+        self.assertEqual(embedding_results["clusters"]["small"]["cluster_ids"].shape, (30,))
+        self.assertEqual(embedding_results["clusters"]["large"]["thumbnails"].shape, (20, 10, 10))
+        self.assertEqual(embedding_results["clusters"]["small"]["thumbnails"].shape, (10, 10, 10))
+        self.assertEqual(embedding_results["clusters"]["large"]["distributions"].shape, (20, 3))
+        self.assertEqual(embedding_results["clusters"]["small"]["distributions"].shape, (10, 3))
 
 
 class TestEmbedding2DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
@@ -467,12 +467,12 @@ class TestEmbedding2DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
             self.collection_1.id, self.intervals_1.id, 10000, "ICCF"
         )
         self.assertEqual(embedding_results["embedding"].shape, (30, 2))
-        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_LARGE"]]["cluster_ids"].shape, (30,))
-        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_SMALL"]]["cluster_ids"].shape, (30,))
-        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_LARGE"]]["thumbnails"].shape, (20, 10, 10))
-        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_SMALL"]]["thumbnails"].shape, (10, 10, 10))
-        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_LARGE"]]["distributions"].shape, (20, 3))
-        self.assertEqual(embedding_results["clusters"][current_app.config["CLUSTER_NUMBER_SMALL"]]["distributions"].shape, (10, 3))
+        self.assertEqual(embedding_results["clusters"]["large"]["cluster_ids"].shape, (30,))
+        self.assertEqual(embedding_results["clusters"]["small"]["cluster_ids"].shape, (30,))
+        self.assertEqual(embedding_results["clusters"]["large"]["thumbnails"].shape, (20, 10, 10))
+        self.assertEqual(embedding_results["clusters"]["small"]["thumbnails"].shape, (10, 10, 10))
+        self.assertEqual(embedding_results["clusters"]["large"]["distributions"].shape, (20, 3))
+        self.assertEqual(embedding_results["clusters"]["small"]["distributions"].shape, (10, 3))
 
 
 if __name__ == "__main__":

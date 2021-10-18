@@ -454,7 +454,7 @@ class EmbeddingIntervalData(db.Model):
     feature_distribution_path = db.Column(db.String(512), index=True)
     value_type = db.Column(db.String(64))
     normalization = db.Column(db.String(64))
-    cluster_number = db.Column(db.Integer)
+    cluster_number = db.Column(db.String(64))
     collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
     intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
 

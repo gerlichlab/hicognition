@@ -240,10 +240,7 @@ def embedding_2d_pipeline_step(collection_id, intervals_id, binsize, interaction
     )
     np.save(file_path, embedding_results["embedding"])
     # write output for cluster_ids
-    for size in [
-        current_app.config["CLUSTER_NUMBER_SMALL"],
-        current_app.config["CLUSTER_NUMBER_LARGE"],
-    ]:
+    for size in ["small", "large"]:
         file_path_cluster_ids = os.path.join(
             current_app.config["UPLOAD_DIR"],
             uuid.uuid4().hex + f"_cluster_ids_{size}.npy",

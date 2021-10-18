@@ -474,12 +474,12 @@ def _do_embedding_2d_variable_size(
     return {
         "embedding": embedding,
         "clusters": {
-            current_app.config["CLUSTER_NUMBER_LARGE"]: {
+            "large": {
                 "cluster_ids": cluster_ids_large,
                 "thumbnails": thumbnails_large,
                 "distributions": distributions_large,
             },
-            current_app.config["CLUSTER_NUMBER_SMALL"]: {
+            "small": {
                 "cluster_ids": cluster_ids_small,
                 "thumbnails": thumbnails_small,
                 "distributions": distributions_small,
@@ -585,12 +585,12 @@ def _do_embedding_2d_fixed_size(collection_id, intervals_id, binsize, interactio
     return {
         "embedding": embedding,
         "clusters": {
-            current_app.config["CLUSTER_NUMBER_LARGE"]: {
+            "large": {
                 "cluster_ids": cluster_ids_large,
                 "thumbnails": thumbnails_large,
                 "distributions": distributions_large,
             },
-            current_app.config["CLUSTER_NUMBER_SMALL"]: {
+            "small": {
                 "cluster_ids": cluster_ids_small,
                 "thumbnails": thumbnails_small,
                 "distributions": distributions_small,
