@@ -8,7 +8,12 @@
                 :height="heatmapSize"
                 :stackupData="thumbnail"
                 :colormap="colormap"
+                :minHeatmapValue="minHeatmap"
+                :maxHeatmapValue="maxHeatmap"
+                :minHeatmapRange="minHeatmapRange"
+                :maxHeatmapRange="maxHeatmapRange"
                 :allowValueScaleChange="showControls"
+                @slider-change="handleSliderChange"
                 :log="true"
             />
         </md-card-content>
@@ -67,7 +72,11 @@ export default {
                 },
         showDialog: false,
         newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterID}`,
-        datasetSaved: false
+        datasetSaved: false,
+        minHeatmap: undefined,
+        maxHeatmap: undefined,
+        minHeatmapRange: undefined,
+        maxHeatmapRange: undefined
         }
     },
     computed: {
@@ -76,6 +85,19 @@ export default {
         }
     },
     methods: {
+        handleSliderChange: function(data) {
+            this.setColorScale(data);
+        },
+        setColorScale: function (data) {
+            /* 
+                sets colorScale based on data array
+                containing minPos, maxPos, minRange, maxRange
+            */
+            this.minHeatmap = data[0];
+            this.maxHeatmap = data[1];
+            this.minHeatmapRange = data[2]
+            this.maxHeatmapRange = data[3]
+        },
         handleSubmission: function(){
             // check whether there is a name
             if (this.newRegionName.length === 0) {
@@ -104,6 +126,9 @@ export default {
         },
         height: function(val){
             this.tooltipStyle["height"] = `${val}px`
+        },
+        width: function(val){
+            this.tooltipStyle["width"] = `${val}px`
         },
         showControls: function(){
             this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterID}`
