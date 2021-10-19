@@ -8,6 +8,7 @@ import {
     getPercentile,
     max_array_along_rows,
     select_column,
+    select_row,
     select_columns,
     select_3d_along_first_axis,
     mean_along_columns,
@@ -332,6 +333,33 @@ describe("When select_column is called, it", function () {
         expect(select_column([1, 2, 3, 4, 5, 6], [2, 3], 0)).toEqual([1, 4]);
         expect(select_column([1, 2, 3, 4, 5, 6], [2, 3], 1)).toEqual([2, 5]);
         expect(select_column([1, 2, 3, 4, 5, 6], [2, 3], 2)).toEqual([3, 6]);
+    });
+});
+
+// test select single row
+
+describe("When select_row is called, it", function () {
+    it("Should return undefined if array is length 0", () => {
+        expect(select_row([], [1, 2], 2)).toEqual(undefined);
+    });
+    it("Should return undefined if shape is length 0", () => {
+        expect(select_row([1, 2], [], 2)).toEqual(undefined);
+    });
+    it("Should return undefined if array and shape do not match", () => {
+        expect(select_row([1, 2], [3, 4], 2)).toEqual(undefined);
+    });
+    it("Should return undefined if row_Index is not defined", () => {
+        expect(select_row([1, 2, 3, 4], [2, 2])).toEqual(undefined);
+    });
+    it("Should return undefined if row_index is < 0", () => {
+        expect(select_row([1, 2, 3, 4], [2, 2], -2)).toEqual(undefined);
+    });
+    it("Should return undefined if row_index is > row_number", () => {
+        expect(select_row([1, 2, 3, 4], [2, 2], 3)).toEqual(undefined);
+    });
+    it("Should return correct row", () => {
+        expect(select_row([1, 2, 3, 4, 5, 6], [2, 3], 0)).toEqual([1, 2, 3]);
+        expect(select_row([1, 2, 3, 4, 5, 6], [2, 3], 1)).toEqual([4, 5, 6]);
     });
 });
 

@@ -159,6 +159,27 @@ export function select_columns(array, shape, col_indices) {
 }
 
 
+export function select_row(array, shape, row_index) {
+    /*
+            returns all values in row row_index for a flattened array of a given shape
+    */
+    // check array
+       if (
+        array.length == 0 ||
+        shape.length != 2 ||
+        array.length != shape[0] * shape[1]
+    ) {
+        return undefined;
+    }
+    let [row_number, col_number] = shape;
+    // check col_index
+    if (row_index == undefined || row_index < 0 || row_index >= row_number) {
+        return undefined;
+    }
+    // select row
+    return array.slice(col_number * row_index, col_number * (row_index + 1))
+}
+
 export function mean_along_columns(array, shape){
     /*
         Takes a flattened array with shape and calculates mean along columns
