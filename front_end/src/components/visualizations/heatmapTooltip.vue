@@ -98,6 +98,15 @@ export default {
             this.minHeatmapRange = data[2]
             this.maxHeatmapRange = data[3]
         },
+        resetColorScale: function () {
+            /*
+                resets colorscale to undefined
+            */
+            this.minHeatmap = undefined;
+            this.maxHeatmap = undefined;
+            this.minHeatmapRange = undefined;
+            this.maxHeatmapRange = undefined;
+        },
         handleSubmission: function(){
             // check whether there is a name
             if (this.newRegionName.length === 0) {
@@ -132,6 +141,9 @@ export default {
         },
         showControls: function(){
             this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterID}`
+        },
+        thumbnail: function(){
+            this.resetColorScale()
         }
     }
 };
