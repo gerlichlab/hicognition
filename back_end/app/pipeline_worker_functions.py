@@ -486,7 +486,7 @@ def _do_embedding_2d_variable_size(
     distribution_list = []
     for cluster in range(current_app.config["CLUSTER_NUMBER_SMALL"]):
         subset = collection_ids[cluster_ids_small == cluster]
-        fractions = np.histogram(subset, bins=len(features))[0] / len(subset)
+        fractions = np.histogram(subset, bins=range(len(features) + 1))[0] / len(subset)
         distribution_list.append(fractions)
     distributions_small = np.stack(distribution_list, axis=0)
     return {
