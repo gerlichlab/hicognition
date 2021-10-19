@@ -17,31 +17,52 @@
                 :log="true"
             />
         </md-card-content>
-        <md-card-actions v-if="showControls">
-            <md-button @click="$emit('close-controls')" class="md-raised md-accent">Close</md-button>
-            <md-button class="md-raised md-primary" @click="showDialog = true">Create Region</md-button>
-        </md-card-actions>
-    <md-dialog-prompt
-      :md-active.sync="showDialog"
-      v-model="newRegionName"
-      md-title="Enter a region name"
-      md-input-maxlength="30"
-      md-confirm-text="Submit"
-      @md-confirm="handleSubmission"
-    />
-    <md-snackbar :md-active.sync="datasetSaved"
-        >The region was added succesfully!</md-snackbar
-    >
+            <md-card-actions md-alignment="space-between" v-if="showControls">
+                <md-button
+                    @click="$emit('close-controls')"
+                    class="md-raised md-accent"
+                    >Close</md-button
+                >
+                <md-button
+                    class="md-raised md-primary"
+                    @click="showDialog = true"
+                    >Create Region</md-button
+                >
+                <md-button class="md-icon-button" @click="handleExpandCard" v-if="showExpand">
+                    <md-icon > keyboard_arrow_down</md-icon>
+                </md-button>
+            </md-card-actions>
+            <md-card-content v-if="expanded">
+                <embedding-distribution
+                :rawData="selectedDistribution"
+                :width="width"
+                :height="distributionSize"
+                :collectionNames="collectionNames"
+                />
+            </md-card-content>
+        <md-dialog-prompt
+            :md-active.sync="showDialog"
+            v-model="newRegionName"
+            md-title="Enter a region name"
+            md-input-maxlength="30"
+            md-confirm-text="Submit"
+            @md-confirm="handleSubmission"
+        />
+        <md-snackbar :md-active.sync="datasetSaved"
+            >The region was added succesfully!</md-snackbar
+        >
     </md-card>
 </template>
 
 <script>
 import heatmap from "../visualizations/heatmap.vue";
 import { apiMixin } from "../../mixins";
+import { select_row } from "../../functions";
+import embeddingDistribution from "../visualizations/embeddingDistribution.vue"
 
 export default {
     name: "HeatmapTooltip",
-    components: { heatmap },
+    components: { heatmap, embeddingDistribution },
     mixins: [apiMixin],
     props: {
         id: Number,
@@ -51,41 +72,68 @@ export default {
         allowValueScaleChange: Boolean,
         showTooltip: Boolean,
         thumbnail: Object,
+        distributionData: Object,
         showControls: Boolean,
         tooltipOffsetLeft: Number,
         tooltipOffsetTop: Number,
         clusterID: Number,
         embeddingID: Number,
         datasetName: String,
-        regionName: String
+        regionName: String,
+        collectionNames: Array
     },
-    data: function() {
+    data: function () {
         return {
-        tooltipStyle: {
-                    position: "absolute",
-                    "background-color": "white",
-                    top: "0px",
-                    left: "0px",
-                    "z-index": "100",
-                    "width": `${this.width}px`,
-                    "height": `${this.height}px`
-                },
-        showDialog: false,
-        newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterID}`,
-        datasetSaved: false,
-        minHeatmap: undefined,
-        maxHeatmap: undefined,
-        minHeatmapRange: undefined,
-        maxHeatmapRange: undefined
-        }
+            tooltipStyle: {
+                position: "absolute",
+                "background-color": "white",
+                top: "0px",
+                left: "0px",
+                "z-index": "100",
+                width: `${this.width}px`,
+                height: `${this.height}px`,
+            },
+            showDialog: false,
+            newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterID}`,
+            datasetSaved: false,
+            minHeatmap: undefined,
+            maxHeatmap: undefined,
+            minHeatmapRange: undefined,
+            maxHeatmapRange: undefined,
+            expanded: false
+        };
     },
     computed: {
-        heatmapSize: function() {
+        distributionSize: function() {
+            return 150
+        },
+        showExpand: function() {
+            return this.collectionNames.length > 1
+        },
+        heatmapSize: function () {
             return this.width * 0.8;
-        }
+        },
+        selectedDistribution: function () {
+            if (this.clusterID !== undefined) {
+                return select_row(
+                    this.distributionData.data,
+                    this.distributionData.shape,
+                    this.clusterID
+                );
+            }
+        },
     },
     methods: {
-        handleSliderChange: function(data) {
+        handleExpandCard: function() {
+            if (this.expanded) {
+                this.tooltipStyle["height"] = `${this.height}px`;
+                this.expanded = false
+            } else {
+                this.tooltipStyle["height"] = `${this.height + this.distributionSize}px`;
+                this.expanded = true
+            }
+        },
+        handleSliderChange: function (data) {
             this.setColorScale(data);
         },
         setColorScale: function (data) {
@@ -95,8 +143,8 @@ export default {
             */
             this.minHeatmap = data[0];
             this.maxHeatmap = data[1];
-            this.minHeatmapRange = data[2]
-            this.maxHeatmapRange = data[3]
+            this.minHeatmapRange = data[2];
+            this.maxHeatmapRange = data[3];
         },
         resetColorScale: function () {
             /*
@@ -107,45 +155,47 @@ export default {
             this.minHeatmapRange = undefined;
             this.maxHeatmapRange = undefined;
         },
-        handleSubmission: function(){
+        handleSubmission: function () {
             // check whether there is a name
             if (this.newRegionName.length === 0) {
-                console.log("no region name provided")
-                return
+                console.log("no region name provided");
+                return;
             }
             // create form
             let formData = new FormData();
-            formData.append("name", this.newRegionName)
+            formData.append("name", this.newRegionName);
             // do api call
-            this.postData(`embeddingIntervalData/${this.embeddingID}/${this.clusterID}/create/`, formData).then(response => {
+            this.postData(
+                `embeddingIntervalData/${this.embeddingID}/${this.clusterID}/create/`,
+                formData
+            ).then((response) => {
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
                 }
             });
-
-        }
+        },
     },
     watch: {
-        tooltipOffsetLeft: function(val){
-            this.tooltipStyle["left"] = `${val}px`
+        tooltipOffsetLeft: function (val) {
+            this.tooltipStyle["left"] = `${val}px`;
         },
-        tooltipOffsetTop: function(val){
-            this.tooltipStyle["top"] = `${val}px`
+        tooltipOffsetTop: function (val) {
+            this.tooltipStyle["top"] = `${val}px`;
         },
-        height: function(val){
-            this.tooltipStyle["height"] = `${val}px`
+        height: function (val) {
+            this.tooltipStyle["height"] = `${val}px`;
         },
-        width: function(val){
-            this.tooltipStyle["width"] = `${val}px`
+        width: function (val) {
+            this.tooltipStyle["width"] = `${val}px`;
         },
-        showControls: function(){
-            this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterID}`
+        showControls: function () {
+            this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterID}`;
         },
-        thumbnail: function(){
-            this.resetColorScale()
-        }
-    }
+        thumbnail: function () {
+            this.resetColorScale();
+        },
+    },
 };
 </script>
 

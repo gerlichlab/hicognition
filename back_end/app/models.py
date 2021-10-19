@@ -166,7 +166,7 @@ class Dataset(db.Model):
     normalization = db.Column(db.String(64), default="undefined")
     derivationType = db.Column(db.String(64), default="undefined")
     sizeType = db.Column(db.String(64), default="undefined")
-    file_path = db.Column(db.String(128), index=True)
+    file_path = db.Column(db.String(512), index=True)
     public = db.Column(db.Boolean, default=False)
     protein = db.Column(db.String(64), default="undefined")
     directionality = db.Column(db.String(64), default="undefined")

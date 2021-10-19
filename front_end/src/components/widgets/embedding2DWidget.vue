@@ -168,6 +168,7 @@
                     :allowValueScaleChange="false"
                     :showTooltip="showTooltip"
                     :thumbnail="thumbnail"
+                    :distributionData="distributionData"
                     :showControls="showTooltipControls"
                     :tooltipOffsetLeft="tooltipOffsetLeft"
                     :tooltipOffsetTop="tooltipOffsetTop"
@@ -175,6 +176,7 @@
                     :embeddingID="widgetDataID"
                     :datasetName="collectionName"
                     :regionName="regionName"
+                    :collectionNames="datasetNames"
                     @close-controls="closeControls"
                 />
             </div>
@@ -260,6 +262,11 @@ export default {
         collectionName: function(){
             if (this.selectedBinsize) {
                 return this.datasets[this.selectedDataset]['name']
+            }
+        },
+        distributionData: function(){
+            if (this.selectedBinsize && this.widgetData) {
+                return this.widgetData[this.valueType]["distributions"]
             }
         },
         message: function() {
