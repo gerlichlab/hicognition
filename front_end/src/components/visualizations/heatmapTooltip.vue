@@ -1,6 +1,6 @@
 <template>
     <md-card :style="tooltipStyle" v-show="showTooltip && thumbnail">
-        <md-card-content>
+        <md-card-content class="no-padding">
             <heatmap
                 v-if="thumbnail"
                 :stackupID="id"
@@ -17,14 +17,12 @@
                 :log="true"
             />
         </md-card-content>
-            <md-card-actions md-alignment="space-between" v-if="showControls">
+            <md-card-actions v-if="showControls">
                 <md-button
                     @click="$emit('close-controls')"
-                    class="md-raised md-accent"
                     >Close</md-button
                 >
                 <md-button
-                    class="md-raised md-primary"
                     @click="showDialog = true"
                     >Create Region</md-button
                 >
@@ -32,7 +30,7 @@
                     <md-icon > keyboard_arrow_down</md-icon>
                 </md-button>
             </md-card-actions>
-            <md-card-content v-if="expanded">
+            <md-card-content v-if="expanded" class="no-padding">
                 <embedding-distribution
                 :rawData="selectedDistribution"
                 :width="width"
@@ -105,7 +103,7 @@ export default {
     },
     computed: {
         distributionSize: function() {
-            return 150
+            return 100
         },
         showExpand: function() {
             return this.collectionNames.length > 1
@@ -184,13 +182,21 @@ export default {
             this.tooltipStyle["top"] = `${val}px`;
         },
         height: function (val) {
-            this.tooltipStyle["height"] = `${val}px`;
+            if (this.expanded) {
+                this.tooltipStyle["height"] = `${this.height + this.distributionSize}px`;
+            }else {
+                this.tooltipStyle["height"] = `${val}px`;
+            }
         },
         width: function (val) {
             this.tooltipStyle["width"] = `${val}px`;
         },
-        showControls: function () {
+        showControls: function (val) {
             this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterID}`;
+            if (!val) {
+                this.expanded = false
+                this.tooltipStyle["height"] = `${this.height}px`;
+            }
         },
         thumbnail: function () {
             this.resetColorScale();

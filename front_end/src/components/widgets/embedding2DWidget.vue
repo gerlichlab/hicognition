@@ -234,9 +234,9 @@ export default {
         },
         tooltipHeight: function(){
             if (this.showTooltipControls){
-                return this.height + 50
+                return this.height + 10
             }
-            return this.height
+            return this.height - 40
         },
         colormap: function() {
             return "viridis";
