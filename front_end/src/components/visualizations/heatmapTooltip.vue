@@ -212,6 +212,6 @@ export default {
 }
 
 .no-padding {
-    padding: 0px;
+    padding: 0px !important;
 }
 </style>
