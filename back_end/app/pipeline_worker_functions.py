@@ -423,6 +423,23 @@ def _do_embedding_2d_variable_size(
     image_features = feature_extraction.extract_image_features(
         data, pixel_target=(10, 10)
     )
+    # check if bad image features and return empty arrays if so
+    if image_features is None:
+        return {
+                "embedding": np.full((len(data), 2), np.nan),
+                "clusters": {
+                    "large": {
+                        "cluster_ids": np.full((len(data)), np.nan),
+                        "thumbnails": np.full((current_app.config["CLUSTER_NUMBER_LARGE"], data[0].shape[0], data[0].shape[1]), np.nan),
+                        "distributions": np.full((current_app.config["CLUSTER_NUMBER_LARGE"], len(features)), np.nan),
+                    },
+                    "small": {
+                        "cluster_ids": np.full((len(data)), np.nan),
+                        "thumbnails": np.full((current_app.config["CLUSTER_NUMBER_SMALL"], data[0].shape[0], data[0].shape[1]), np.nan),
+                        "distributions": np.full((current_app.config["CLUSTER_NUMBER_SMALL"], len(features)), np.nan),
+                    },
+                },
+            }
     # calculate embedding
     log.info("      Running embedding...")
     embedder = umap.UMAP(random_state=42)
@@ -534,6 +551,23 @@ def _do_embedding_2d_fixed_size(collection_id, intervals_id, binsize, interactio
     image_features = feature_extraction.extract_image_features(
         data, pixel_target=(10, 10)
     )
+    # check if bad image features and return empty arrays if so
+    if image_features is None:
+        return {
+                "embedding": np.full((len(data), 2), np.nan),
+                "clusters": {
+                    "large": {
+                        "cluster_ids": np.full((len(data)), np.nan),
+                        "thumbnails": np.full((current_app.config["CLUSTER_NUMBER_LARGE"], data[0].shape[0], data[0].shape[1]), np.nan),
+                        "distributions": np.full((current_app.config["CLUSTER_NUMBER_LARGE"], len(features)), np.nan),
+                    },
+                    "small": {
+                        "cluster_ids": np.full((len(data)), np.nan),
+                        "thumbnails": np.full((current_app.config["CLUSTER_NUMBER_SMALL"], data[0].shape[0], data[0].shape[1]), np.nan),
+                        "distributions": np.full((current_app.config["CLUSTER_NUMBER_SMALL"], len(features)), np.nan),
+                    },
+                },
+            }
     # calculate embedding
     log.info("      Running embedding...")
     embedder = umap.UMAP(random_state=42)
