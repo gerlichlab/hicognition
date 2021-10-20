@@ -43,7 +43,7 @@ export default {
                 top: this.height * 0.09,
                 bottom: this.height * 0.3,
                 right: this.width * 0.1,
-                left: this.width * 0.15,
+                left: this.width * 0.2,
             };
         },
         maxVal: function () {
