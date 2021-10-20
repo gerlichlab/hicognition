@@ -376,6 +376,39 @@ class TestEmbedding2DWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
         self.assertEqual(embedding_results["clusters"]["large"]["distributions"].shape, (20, 3))
         self.assertEqual(embedding_results["clusters"]["small"]["distributions"].shape, (10, 3))
 
+    @patch("app.pipeline_worker_functions.pd.read_csv")
+    @patch("app.pipeline_worker_functions._do_pileup_fixed_size")
+    def test_output_correct_shapes_if_feature_extraction_fails(self, mock_do_pileup, mock_read_csv):
+        """tests whether the produced outputs have correct shape"""
+        # add data to database
+        db.session.add_all(
+            [
+                self.bed_file,
+                self.intervals_1,
+                self.feature_1,
+                self.feature_2,
+                self.feature_3,
+                self.collection_1,
+            ]
+        )
+        # mock stuff
+        return_value = np.stack(
+            [np.full((10, 10),np.nan) for i in range(10)], axis=2
+        )
+        mock_do_pileup.return_value = return_value
+        mock_read_csv.return_value = "chrom_arms"
+        # make call
+        embedding_results = _do_embedding_2d_fixed_size(
+            self.collection_1.id, self.intervals_1.id, 10000, "ICCF"
+        )
+        self.assertEqual(embedding_results["embedding"].shape, (30, 2))
+        self.assertEqual(embedding_results["clusters"]["large"]["cluster_ids"].shape, (30,))
+        self.assertEqual(embedding_results["clusters"]["small"]["cluster_ids"].shape, (30,))
+        self.assertEqual(embedding_results["clusters"]["large"]["thumbnails"].shape, (20, 10, 10))
+        self.assertEqual(embedding_results["clusters"]["small"]["thumbnails"].shape, (10, 10, 10))
+        self.assertEqual(embedding_results["clusters"]["large"]["distributions"].shape, (20, 3))
+        self.assertEqual(embedding_results["clusters"]["small"]["distributions"].shape, (10, 3))
+
 
 class TestEmbedding2DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
     """Tests variable size worker function"""
@@ -459,6 +492,40 @@ class TestEmbedding2DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
         # mock stuff
         return_value = np.stack(
             [np.random.normal(size=(10, 10)) for i in range(10)], axis=2
+        )
+        mock_do_pileup.return_value = return_value
+        mock_read_csv.return_value = "chrom_arms"
+        # make call
+        embedding_results = _do_embedding_2d_variable_size(
+            self.collection_1.id, self.intervals_1.id, 10000, "ICCF"
+        )
+        self.assertEqual(embedding_results["embedding"].shape, (30, 2))
+        self.assertEqual(embedding_results["clusters"]["large"]["cluster_ids"].shape, (30,))
+        self.assertEqual(embedding_results["clusters"]["small"]["cluster_ids"].shape, (30,))
+        self.assertEqual(embedding_results["clusters"]["large"]["thumbnails"].shape, (20, 10, 10))
+        self.assertEqual(embedding_results["clusters"]["small"]["thumbnails"].shape, (10, 10, 10))
+        self.assertEqual(embedding_results["clusters"]["large"]["distributions"].shape, (20, 3))
+        self.assertEqual(embedding_results["clusters"]["small"]["distributions"].shape, (10, 3))
+
+
+    @patch("app.pipeline_worker_functions.pd.read_csv")
+    @patch("app.pipeline_worker_functions._do_pileup_variable_size")
+    def test_output_correct_shapes_if_feature_extraction_fails(self, mock_do_pileup, mock_read_csv):
+        """tests whether the produced outputs have correct shape"""
+        # add data to database
+        db.session.add_all(
+            [
+                self.bed_file,
+                self.intervals_1,
+                self.feature_1,
+                self.feature_2,
+                self.feature_3,
+                self.collection_1,
+            ]
+        )
+        # mock stuff
+        return_value = np.stack(
+            [np.full((10, 10), np.nan) for i in range(10)], axis=2
         )
         mock_do_pileup.return_value = return_value
         mock_read_csv.return_value = "chrom_arms"
