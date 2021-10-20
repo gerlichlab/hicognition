@@ -248,6 +248,12 @@ export default {
                 return "ObsExp";
             }
         },
+        showData: function () {
+            if (this.widgetData[this.valueType]) {
+                return true;
+            }
+            return false;
+        },
         widgetDataID: function(){
             if (this.binsizes && this.selectedBinsize) {
                 let valueType
@@ -265,7 +271,7 @@ export default {
             }
         },
         distributionData: function(){
-            if (this.selectedBinsize && this.widgetData) {
+            if (this.widgetData[this.valueType]) {
                 return this.widgetData[this.valueType]["distributions"]
             }
         },
@@ -280,7 +286,7 @@ export default {
             );
         },
         size: function() {
-            if (!this.widgetData) {
+            if (!this.widgetData[this.valueType]) {
                 return;
             }
             if (
@@ -327,6 +333,9 @@ export default {
             }
         },
         embeddingData: function() {
+            if (!this.widgetData[this.valueType]){
+                return
+            }
             if (this.selectedCluster === undefined) {
                 return {
                     data: flatten(

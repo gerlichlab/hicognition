@@ -100,8 +100,14 @@ export default {
                 .tickFormat(this.yAxisFormatter)
                 .tickSize(0)(args);
         },
+        getEllipsisName: function(val) {
+            if (val.length > 10) {
+                return val.slice(0, 10) + "..."
+            }
+            return val
+        },
         yAxisFormatter: function (val, index) {
-            return this.collectionNames[index].name
+            return this.getEllipsisName(this.collectionNames[index].name)
         },
         xAxisFormatter: function(val, index){
             return `${val} %`
