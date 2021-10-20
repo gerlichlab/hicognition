@@ -15,7 +15,7 @@ def extract_image_features(images, pixel_target=(10, 10)):
     if len(images) == 0:
         return None
     # replace empty arrays and arrays with single element with nans
-    images = [image if len(image) > 1 else np.empty((10, 10)) for image in images]
+    images = [image if len(image) > 1 else np.full((10, 10), np.nan) for image in images]
     # calculate features
     pixel_features = []
     for temp_image in images:

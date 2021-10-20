@@ -249,7 +249,7 @@ export default {
             }
         },
         showData: function () {
-            if (this.widgetData[this.valueType]) {
+            if (this.widgetData && this.widgetData[this.valueType]) {
                 return true;
             }
             return false;
@@ -271,7 +271,7 @@ export default {
             }
         },
         distributionData: function(){
-            if (this.widgetData[this.valueType]) {
+            if (this.widgetData && this.widgetData[this.valueType]) {
                 return this.widgetData[this.valueType]["distributions"]
             }
         },
@@ -286,7 +286,7 @@ export default {
             );
         },
         size: function() {
-            if (!this.widgetData[this.valueType]) {
+            if (!this.widgetData || !this.widgetData[this.valueType]) {
                 return;
             }
             if (
@@ -333,7 +333,7 @@ export default {
             }
         },
         embeddingData: function() {
-            if (!this.widgetData[this.valueType]){
+            if (!this.widgetData || !this.widgetData[this.valueType]){
                 return
             }
             if (this.selectedCluster === undefined) {
