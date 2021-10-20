@@ -24,6 +24,7 @@
                 >
                 <md-button
                     @click="showDialog = true"
+                    v-if="!showExpand"
                     >Create Region</md-button
                 >
                 <md-button class="md-icon-button" @click="handleExpandCard" v-if="showExpand">
