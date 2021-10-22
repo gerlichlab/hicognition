@@ -13,13 +13,6 @@ def add_app_context(app):
     return decorated
 
 
-def test():
-    """ Function for test purposes. """
-    current_app.logger.info("Scheduler is alive")
-    number_users = len(User.query.all())
-    current_app.logger.info(f"There are {number_users} users")
-
-
 def cleanup_empty_tasks():
     """Cleans up tasks that are not conneced to a redis job anymore."""
     tasks = Task.query.all()
