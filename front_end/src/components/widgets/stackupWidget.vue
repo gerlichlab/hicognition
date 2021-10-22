@@ -611,7 +611,7 @@ export default {
         // watch for changes in store to be able to update intervals
         "$store.state.compare.widgetCollections": {
             deep: true,
-            handler: function (newValue) {
+            handler: function (newValue, oldValue) {
                 // update availability object
                 this.datasets =
                     newValue[this.collectionID]["collectionConfig"][
@@ -622,11 +622,12 @@ export default {
                         "intervalSize"
                     ];
                 // reset order
-                this.selectedSortOrder =
-                    newValue[this.collectionID]["collectionConfig"]["intervalSize"] ==
-                    "variable"
-                        ? "region"
-                        : "center column";
+                if (this.selectedSortOrder === "center column" && newValue[this.collectionID]["collectionConfig"]["intervalSize"] === "variable") {
+                    this.selectedSortOrder = "region"
+                }
+                if (this.selectedSortOrder === "region" && !newValue[this.collectionID]["collectionConfig"]["intervalSize"] === "variable") {
+                    this.selectedSortOrder = "center column"
+                }
             },
         },
         datasets: function (newVal, oldVal) {

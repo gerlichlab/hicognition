@@ -462,6 +462,15 @@ export default {
             }
             this.drawHeatmap();
         },
+        showInterval: function(oldVal, newVal) {
+            if (oldVal != newVal) {
+                this.$refs["canvasDiv"].removeChild(this.renderer.view);
+                this.renderer.destroy();
+                this.renderer = null;
+                this.createRenderer()
+                this.initializeCanvas()
+            }
+        },
         valueScaleBorder: function(val) {
             if (val === undefined){
                 // if no border defined and watcher fired -> emit slider change event
