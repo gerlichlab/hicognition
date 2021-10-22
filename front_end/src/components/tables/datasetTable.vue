@@ -202,7 +202,7 @@
                         :key="key"
                     >
                         <md-checkbox v-model="selectedFields" :value="key">{{
-                            value
+                            getFilterFieldName(key, value)
                         }}</md-checkbox>
                     </div>
                 </div>
@@ -408,7 +408,6 @@ export default {
                 "dataset_name",
                 "valueType",
                 "perturbation",
-                "cellCycleStage",
                 "processing_datasets",
                 "processing_collections"
             ];
@@ -429,10 +428,27 @@ export default {
             showFilters: false,
             showFields: false,
             datasetType: "bedfile",
-            blockAssemblyBlanking: true
+            blockAssemblyBlanking: true,
+            filterFieldMaxLength: {}
         };
     },
     methods: {
+        isFilterFieldDirty(name) {
+            // checks whether a filter field has been moved from its max selection value
+            let selectedCount = this.filterSelection.map((val) => {
+                if (val.split("-")[0] == name) {
+                    return 1
+                }
+                return 0 
+            }).reduce((a, b) => a + b)
+            console.log(selectedCount)
+            // check if this is maxcount
+            if (this.filterFieldMaxLength[name] == selectedCount) {
+                return false
+            }
+            return true
+
+        },
         showPreprocessingTable(id, processing_datasets, failed_datasets) {
             this.fetchPreprocessData(id).then(response => {
                 let bigwigIDs = Object.keys(
@@ -500,6 +516,12 @@ export default {
             } else {
                 return "md-icon-button";
             }
+        },
+        getFilterFieldName(key, name){
+            if (name == "Processing") {
+                return name + " " + key.split("_")[1]
+            }
+            return name
         },
         getSortOrderIcon(fieldName) {
             if (fieldName != this.sortBy) {
@@ -617,6 +639,10 @@ export default {
                 let atLeastOne = false;
                 for (let [key, value] of Object.entries(this.filterFields)) {
                     if (!el[key]) {
+                        // this is needed to only remove datasets without field if filtering on this field is switched on
+                        if (this.isFilterFieldDirty(value)){
+                            return false
+                        }
                         continue;
                     }
                     let filterString = `${value}-${el[key]}`;
@@ -704,10 +730,16 @@ export default {
         createFilterFields() {
             let fields = {};
             this.filterSelection = [];
+            this.filterFieldMaxLength = {}
             for (let [key, value] of Object.entries(this.possibleFields)) {
                 if (this.getFieldOptions(value)) {
                     this.getFieldOptions(value).map(option => {
                         let filterString = `${value}-${option}`;
+                        if (value in this.filterFieldMaxLength){
+                            this.filterFieldMaxLength[value] += 1
+                        } else {
+                            this.filterFieldMaxLength[value] = 1
+                        }
                         this.filterSelection.push(filterString);
                     });
                     fields[key] = value;
