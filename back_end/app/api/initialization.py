@@ -50,6 +50,7 @@ def drop_tasks():
         db.session.delete(task)
     db.session.commit()
 
+
 def create_test_user(name, password):
     # check if user with such a name exists
     if User.query.filter(User.username == name).first() is not None:
