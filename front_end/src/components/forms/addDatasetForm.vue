@@ -23,6 +23,7 @@
                                     id="dataset-name"
                                     v-model="form.datasetName"
                                     :disabled="sending"
+                                    maxlength="30"
                                     required
                                 />
                                 <span

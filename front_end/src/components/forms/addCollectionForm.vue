@@ -22,6 +22,7 @@
                                     :name="`name_collections-${fileType}`"
                                     :id="`name_collections-${fileType}`"
                                     v-model="form.name"
+                                    maxlength="30"
                                     :disabled="sending"
                                     required
                                 />

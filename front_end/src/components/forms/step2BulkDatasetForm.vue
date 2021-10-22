@@ -15,7 +15,7 @@
                         :key="element.id"
                     >
                         <div class="md-layout-item md-size-30">
-                            <md-field>
+                            <md-field style="overflow-x: auto;">
                                 {{ element.filename }}
                             </md-field>
                         </div>
@@ -73,12 +73,18 @@
                                     :id="`name-${element.id}`"
                                     v-model="element.datasetName"
                                     :disabled="sending"
+                                    maxlength="30"
                                     required
                                 />
                                 <span
                                     class="md-error"
                                     v-if="!v.datasetName.required"
                                     >A dataset name is required</span
+                                >
+                                <span
+                                    class="md-error"
+                                    v-if="!v.datasetName.maxLength"
+                                    >Maximum length exceeded</span
                                 >
                             </md-field>
                         </div>
@@ -107,7 +113,7 @@
 
 <script>
 import { validationMixin } from "vuelidate";
-import { required } from "vuelidate/lib/validators";
+import { required, maxLength } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 export default {
@@ -128,7 +134,10 @@ export default {
     validations: {
         elements: {
             $each: {
-                datasetName: { required },
+                datasetName: {
+                    required,
+                    maxLength: maxLength(30)
+                 },
                 assembly: { required },
             }
         }
