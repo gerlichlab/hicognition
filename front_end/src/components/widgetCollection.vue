@@ -586,6 +586,7 @@ export default {
     },
     beforeDestroy: function() {
         this.removeSelectionEventHandlers();
+        EventBus.$emit("widget-collection-deletion", this.id)
     }
 };
 </script>

@@ -934,10 +934,18 @@ export var valueScaleSharingMixin = {
                 }
             });
         },
+        registerValueScaleWidgetCollectionHandlers: function(){
+            EventBus.$on('widget-collection-deletion', collection_id => {
+                if (collection_id == this.collectionID) {
+                    this.handleWidgetDeletion()
+                }
+            })
+        },
         registerValueScaleEventHandlers: function () {
             // event bus listeners for sort order sharing
             this.registerValueScaleClientHandlers();
             this.registerValueScaleSourceHandlers();
+            this.registerValueScaleWidgetCollectionHandlers()
         }
     }
 
