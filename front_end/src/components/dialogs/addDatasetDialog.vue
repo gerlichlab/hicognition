@@ -62,7 +62,7 @@
                 <md-tabs class="md-primary">
                     <md-tab id="tab-single" md-label="Single">
                         <div
-                            style="overflow: auto; max-height:400px; padding: 10px;"
+                            style="overflow: auto; max-height:600px; padding: 10px;"
                         >
                             <addDatasetForm
                                 @close-dialog="$emit('close-dialog')"
@@ -140,6 +140,7 @@ export default {
 .md-dialog-content {
     padding: 0px;
     min-width: 60vw;
+    min-height: 60vh;
 }
 
 .mainText {
