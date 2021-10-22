@@ -13,7 +13,7 @@ from ..models import (
 )
 import numpy as np
 
-COMMON_REQUIRED_KEYS = ["cellCycleStage", "datasetName", "perturbation", "ValueType"]
+COMMON_REQUIRED_KEYS = ["cellCycleStage", "datasetName", "perturbation", "ValueType", "public"]
 
 ADD_REQUIRED_KEYS = ["assembly", "filetype"]
 

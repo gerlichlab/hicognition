@@ -140,23 +140,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         db.session.add(self.owned_cooler_1)
         db.session.commit()
         # construct form
-        data = {"Method": "HiC", "Normalization": "ICCF"}
-        # put datasets
-        response = self.client.put(
-            f"/api/datasets/{self.owned_cooler_1.id}/",
-            headers=self.token_headers,
-            data=data,
-            content_type="multipart/form-data",
-        )
-        self.assertEqual(response.status_code, 400)
-
-    def test_badform_no_common_required_keys(self):
-        """Test 400 returned if no form is provided."""
-        # add datasets
-        db.session.add(self.owned_cooler_1)
-        db.session.commit()
-        # construct form
-        data = {"Method": "HiC", "Normalization": "ICCF"}
+        data = {"Method": "HiC", "Normalization": "ICCF", "public": "false"}
         # put datasets
         response = self.client.put(
             f"/api/datasets/{self.owned_cooler_1.id}/",
@@ -177,6 +161,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "cellCycleStage": "asynchronous",
             "perturbation": "No perturbation",
             "ValueType": "Interaction",
+            "public": "false"
         }
         # put datasets
         response = self.client.put(
@@ -199,6 +184,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "perturbation": "No perturbation",
             "ValueType": "BadValueType",
             "Method": "HiC",
+            "public": "false",
             "Normalization": "ICCF",
         }
         # put datasets
@@ -222,6 +208,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "perturbation": "No perturbation",
             "ValueType": "Interaction",
             "Method": "HiC",
+            "public": "false",
             "Normalization": "ICCF",
             "assembly": 1,
         }
@@ -245,6 +232,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "cellCycleStage": "asynchronous",
             "perturbation": "No perturbation",
             "ValueType": "Interaction",
+            "public": "false",
             "Method": "HiC",
             "Normalization": "ICCF",
             "SizeType": "IEE",
@@ -269,6 +257,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "cellCycleStage": "changedCellCycleStage",
             "perturbation": "hangedPerturbation",
             "ValueType": "Interaction",
+            "public": "false",
             "Method": "HiC",
             "Normalization": "ICCF",
         }
@@ -283,9 +272,14 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # check whether modificaiton fields were modified
         dataset = Dataset.query.get(self.owned_cooler_1.id)
         for field in data.keys():
-            self.assertEqual(
-                dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
-            )
+            if field == "public":
+                self.assertEqual(
+                    dataset.__getattribute__(self.fieldFormMapping[field]), False
+                )
+            else:
+                self.assertEqual(
+                    dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+                )
         # check whether fields that should be undefined are undefined
         for field in ["protein", "directionality", "derivationType"]:
             self.assertEqual(dataset.__getattribute__(field), "undefined")
@@ -303,6 +297,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "cellCycleStage": "asynchronous",
             "perturbation": "No perturbation",
             "ValueType": "Derived",
+            "public": "false",
             "Method": "HiC",
         }
         # put datasets
@@ -316,9 +311,14 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # check whether modificaiton fields were modified
         dataset = Dataset.query.get(self.bedfile_1.id)
         for field in data.keys():
-            self.assertEqual(
-                dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
-            )
+            if field == "public":
+                self.assertEqual(
+                    dataset.__getattribute__(self.fieldFormMapping[field]), False
+                )
+            else:
+                self.assertEqual(
+                    dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+                )
         # check whether fields that should be undefined are undefined
         for field in ["protein", "directionality"]:
             self.assertEqual(dataset.__getattribute__(field), "undefined")
@@ -336,6 +336,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "ValueType": "GenomeAnnotation",
             "Directionality": "No directionality",
             "cellCycleStage": "none",
+            "public": "false",
             "perturbation": "none",
         }
         # put datasets
@@ -349,9 +350,14 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # check whether modificaiton fields were modified
         dataset = Dataset.query.get(self.bedfile_2.id)
         for field in data.keys():
-            self.assertEqual(
-                dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
-            )
+            if field == "public":
+                self.assertEqual(
+                    dataset.__getattribute__(self.fieldFormMapping[field]), False
+                )
+            else:
+                self.assertEqual(
+                    dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+                )
         # check whether assembly and filetype are unchanged
         self.assertEqual(dataset.assembly, 1)
         self.assertEqual(dataset.filetype, "bedfile")
@@ -367,7 +373,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "Directionality": "No directionality",
             "cellCycleStage": "none",
             "perturbation": "none",
-            "public": True,
+            "public": "true",
         }
         # put datasets
         response = self.client.put(
@@ -380,9 +386,14 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # check whether modificaiton fields were modified
         dataset = Dataset.query.get(self.bedfile_2.id)
         for field in data.keys():
-            self.assertEqual(
-                dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
-            )
+            if field == "public":
+                self.assertEqual(
+                    dataset.__getattribute__(self.fieldFormMapping[field]), True
+                )
+            else:
+                self.assertEqual(
+                    dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+                )
         # check whether assembly and filetype are unchanged
         self.assertEqual(dataset.assembly, 1)
         self.assertEqual(dataset.filetype, "bedfile")
@@ -399,6 +410,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "ValueType": "ChromatinAssociation",
             "Protein": "CTCF",
             "Method": "ChipSeq",
+            "public": "false",
             "Normalization": "RPM",
         }
         # put datasets
@@ -412,9 +424,14 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # check whether modificaiton fields were modified
         dataset = Dataset.query.get(self.bigwig_1.id)
         for field in data.keys():
-            self.assertEqual(
-                dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
-            )
+            if field == "public":
+                self.assertEqual(
+                    dataset.__getattribute__(self.fieldFormMapping[field]), False
+                )
+            else:
+                self.assertEqual(
+                    dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+                )
         # check whether fields that should be undefined are undefined
         for field in ["derivationType", "directionality"]:
             self.assertEqual(dataset.__getattribute__(field), "undefined")
