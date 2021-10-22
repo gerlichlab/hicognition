@@ -462,6 +462,17 @@ export default {
             }
             this.drawHeatmap();
         },
+        valueScaleBorder: function(val) {
+            if (val === undefined){
+                // if no border defined and watcher fired -> emit slider change event
+                this.$emit("slider-change", [
+                    this.minValueRobust,
+                    this.maxValueRobust,
+                    this.minValue,
+                    this.maxValue
+                ]);
+            }
+        },
         colormap: function() {
             // if colormap changes -> reset min and max
             this.createColorMap(this.minValueRobust, this.maxValueRobust);

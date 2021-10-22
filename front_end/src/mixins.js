@@ -829,7 +829,7 @@ export var valueScaleSharingMixin = {
             this.valueScaleColor = undefined;
             EventBus.$emit("stop-value-scale-sharing", this.valueScaleTargetID);
             this.valueScaleRecipient = false;
-            this.valueScaleTargetID = undefined;
+            this.valueScaleTargetID = false;
         },
         emitEmptyValueScaleEnd: function () {
             EventBus.$emit("select-value-scale-end", undefined, undefined);
