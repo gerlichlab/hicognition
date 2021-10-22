@@ -480,8 +480,10 @@ export default {
         },
         updatedData: async function() {
             // triggers load and storing of both pileuptypes
-            // reset min and max colormap values
-            this.resetColorScale();
+            // reset min and max colormap values if not value scale recipient
+            if (!this.valueScaleRecipient) {
+                this.resetColorScale();
+            }
             // fetch widget data
             var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"];
             var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"];
