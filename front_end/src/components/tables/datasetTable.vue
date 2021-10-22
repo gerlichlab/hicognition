@@ -441,7 +441,6 @@ export default {
                 }
                 return 0 
             }).reduce((a, b) => a + b)
-            console.log(selectedCount)
             // check if this is maxcount
             if (this.filterFieldMaxLength[name] == selectedCount) {
                 return false

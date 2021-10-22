@@ -365,23 +365,32 @@ export default {
                 };
             }
         },
-        saveDataset() {
+        fetchDatasets(){
+            this.fetchData("datasets/").then(response => {
+                // success, store datasets
+                if (response){
+                    this.$store.commit("setDatasets", response.data);
+                }
+            });
+        },
+        saveDataset: function() {
             this.sending = true; // show progress bar
             // construct form data
             var formData = new FormData();
             for (var key in this.form) {
                 // only include fields if they are not null
-                if (this.form[key]) {
+                if (this.form[key] !== null) {
                         formData.append(key, this.form[key]);
                 }
             }
             // API call including upload is made in the background
-            this.putData(`datasets/${this.dataset.id}/`, formData).then((response) => {
+            this.putData(`datasets/${this.dataset.id}/`, formData).then( async (response) => {
                 this.sending = false;
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
-                    setTimeout(() => this.$emit("close-dialog"), 200)
+                    await this.fetchDatasets()
+                    this.$emit("close-dialog")
                 }
             });
         },
