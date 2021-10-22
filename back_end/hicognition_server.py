@@ -1,9 +1,13 @@
 """Start hicognition server."""
 import os
+import atexit
+import json
+from functools import partial
 from getpass import getpass
 import click
 from base64 import b64encode
 from app import create_app, db
+from app.background_tasks import test, add_app_context
 from app.models import (
     User,
     Dataset,
@@ -20,10 +24,19 @@ from app.models import (
 )
 from flask_migrate import Migrate
 from flask.cli import AppGroup
-import json
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = create_app(os.getenv("FLASK_CONFIG") or "default")
 migrate = Migrate(app, db, compare_type=True)
+
+# start background task for testing
+
+sched = BackgroundScheduler(daemon=True)
+
+sched.add_job(add_app_context(app)(test),'interval', seconds=5)
+sched.start()
+
+atexit.register(lambda: sched.shutdown(wait=False))
 
 # add command line arguments for user creation
 

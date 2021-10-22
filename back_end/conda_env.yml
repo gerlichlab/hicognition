@@ -44,6 +44,8 @@ dependencies:
   - fastparquet >= 0.4.0 
   #more ngs tools
   - pip
+  # flask related tools
+  - apscheduler
   - pip:
       # flask packages
       - alembic==1.4.2
