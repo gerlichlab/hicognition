@@ -336,7 +336,6 @@ def set_dataset_failed(dataset_id, intervals_id):
         log.error(e, exc_info=True)
     log.error("      Setting for fail finished")
 
-
 def set_collection_failed(collection_id, intervals_id):
     """Adds collection with collection_id to failed collections of region ds associated with intervals"""
     log.error("      Set for fail")

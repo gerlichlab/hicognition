@@ -643,7 +643,7 @@ def any_tasks_failed(tasks):
     # check whether any job failed
     for task in tasks:
         if task.get_rq_job() is None:
-            # job is not available in rq anymore, finished normally TODO: check in documentation about this
+            # job is not available in rq anymore
             continue
         else:
             if task.get_rq_job().get_status() == "failed":

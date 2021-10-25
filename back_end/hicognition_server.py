@@ -7,7 +7,11 @@ from getpass import getpass
 import click
 from base64 import b64encode
 from app import create_app, db
-from app.background_tasks import cleanup_empty_tasks, add_app_context
+from app.background_tasks import (
+    cleanup_empty_tasks,
+    cleanup_failed_tasks,
+    add_app_context,
+)
 from app.models import (
     User,
     Dataset,
@@ -32,7 +36,8 @@ migrate = Migrate(app, db, compare_type=True)
 # start background tasks
 
 sched = BackgroundScheduler(daemon=True)
-sched.add_job(add_app_context(app)(cleanup_empty_tasks), "interval", seconds=60)
+sched.add_job(add_app_context(app)(cleanup_empty_tasks), "interval", seconds=360)
+sched.add_job(add_app_context(app)(cleanup_failed_tasks), "interval", seconds=520)
 sched.start()
 
 atexit.register(lambda: sched.shutdown(wait=False))
