@@ -108,6 +108,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         for binsize in binsizes:
             for interval in intervals:
                 mock_launch.assert_any_call(
+                    self.app.queues["long"],
                     "pipeline_pileup",
                     "run pileup pipeline",
                     1,
@@ -195,6 +196,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         for binsize in binsizes:
             for interval in intervals:
                 mock_launch.assert_any_call(
+                    self.app.queues["long"],
                     "pipeline_pileup",
                     "run pileup pipeline",
                     5,
@@ -228,6 +230,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         for binsize in binsizes:
             for interval in intervals:
                 mock_launch.assert_any_call(
+                    self.app.queues["medium"],
                     "pipeline_stackup",
                     "run stackup pipeline",
                     6,
@@ -297,6 +300,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
             for interval in intervals:
                 for dataset_id in [2, 6]:
                     mock_launch.assert_any_call(
+                        current_app.queues[current_app.config["PIPELINE_QUEUES"][Dataset.query.get(dataset_id).filetype]],
                         *current_app.config["PIPELINE_NAMES"][
                             Dataset.query.get(dataset_id).filetype
                         ],
@@ -340,6 +344,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
             for interval in intervals:
                 for dataset_id in [6, 7]:
                     mock_launch.assert_any_call(
+                        self.app.queues["medium"],
                         "pipeline_stackup",
                         "run stackup pipeline",
                         dataset_id,

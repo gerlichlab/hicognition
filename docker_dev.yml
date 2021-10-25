@@ -1,4 +1,4 @@
-version: "3"
+version: "3.9"
 
 services:
     node:
@@ -48,8 +48,7 @@ services:
         ports:
             - 6379:6379
 
-    redis-worker:
-        container_name: redis-worker
+    redis-worker-long:
         volumes:  
             - ${HICOGNITION_DIR}:/code
         environment:
@@ -64,16 +63,15 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+        scale: 3
         image: flask:v1.0
         entrypoint: "/bin/bash"
         networks:
-            hicognition-net:
-                ipv4_address: 172.18.0.5
+            - hicognition-net
         # sleeps to wait for redis-server. TODO: make this check nicer!
-        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
+        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-long"
 
-    redis-worker2:
-        container_name: redis-worker2
+    redis-worker-medium:
         volumes:  
             - ${HICOGNITION_DIR}:/code
         environment:
@@ -88,16 +86,15 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+        scale: 10
         image: flask:v1.0
         entrypoint: "/bin/bash"
         networks:
-            hicognition-net:
-                ipv4_address: 172.18.0.6
+            - hicognition-net
         # sleeps to wait for redis-server. TODO: make this check nicer!
-        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
+        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-medium"
 
-    redis-worker3:
-        container_name: redis-worker3
+    redis-worker-short:
         volumes:  
             - ${HICOGNITION_DIR}:/code
         environment:
@@ -112,13 +109,13 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+        scale: 3
         image: flask:v1.0
         entrypoint: "/bin/bash"
         networks:
-            hicognition-net:
-                ipv4_address: 172.18.0.7
+            - hicognition-net
         # sleeps to wait for redis-server. TODO: make this check nicer!
-        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks"
+        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-short"
 
 
     mysql:

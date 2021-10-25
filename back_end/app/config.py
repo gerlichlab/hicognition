@@ -28,7 +28,7 @@ class Config:
         "variable": [1, 2, 5],  # binsize for variable sizetype is in percent
     }
     VARIABLE_SIZE_EXPANSION_FACTOR = 0.2
-    # mapping of pipeline names to filetypes
+    # mapping of pipeline names and queues to filetypes
     PIPELINE_NAMES = {
         "cooler": ("pipeline_pileup", "run pileup pipeline"),
         "bigwig": ("pipeline_stackup", "run stackup pipeline"),
@@ -37,6 +37,16 @@ class Config:
             "1d-features": ("pipeline_embedding_1d", "run 1d embedding pipeline"),
             "2d-features": ("pipeline_embedding_2d", "run 2d embedding pipeline")
         },
+    }
+    # mapping of queue types to pipeline
+    PIPELINE_QUEUES = {
+        "cooler": "long",
+        "bigwig": "medium",
+        "collections": {
+            "regions": "long",
+            "1d-features": "medium",
+            "2d-features": "long"
+        }
     }
     CLUSTER_NUMBER_LARGE = 20
     CLUSTER_NUMBER_SMALL = 10

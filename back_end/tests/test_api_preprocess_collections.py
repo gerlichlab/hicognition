@@ -83,6 +83,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         for binsize in binsizes:
             for interval in intervals:
                 mock_launch.assert_any_call(
+                    self.app.queues["long"],
                     "pipeline_lola",
                     "run lola pipeline",
                     1,
@@ -116,6 +117,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         for binsize in binsizes:
             for interval in intervals:
                 mock_launch.assert_any_call(
+                    self.app.queues["medium"],
                     "pipeline_embedding_1d",
                     "run 1d embedding pipeline",
                     3,
@@ -149,6 +151,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         for binsize in binsizes:
             for interval in intervals:
                 mock_launch.assert_any_call(
+                    self.app.queues["long"],
                     "pipeline_embedding_2d",
                     "run 2d embedding pipeline",
                     4,
