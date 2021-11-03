@@ -107,7 +107,7 @@ def add_dataset():
     db.session.add(new_entry)
     # start preprocessing of bedfile, the other filetypes do not need preprocessing
     if data["filetype"] == "bedfile":
-        current_user.launch_task("pipeline_bed", "run bed preprocessing", new_entry.id)
+        current_user.launch_task(current_app.queues["short"], "pipeline_bed", "run bed preprocessing", new_entry.id)
         new_entry.processing_state = "processing"
     # if filetype is cooler, store available binsizes
     if data["filetype"] == "cooler":
@@ -175,6 +175,7 @@ def preprocess_dataset():
         for binsize in current_app.config["PREPROCESSING_MAP"][windowsize]:
             for dataset in feature_datasets:
                 current_user.launch_task(
+                    current_app.queues[current_app.config["PIPELINE_QUEUES"][dataset.filetype]],
                     *current_app.config["PIPELINE_NAMES"][dataset.filetype],
                     dataset.id,
                     intervals_id=interval_id,
@@ -248,6 +249,7 @@ def preprocess_collections():
         for binsize in current_app.config["PREPROCESSING_MAP"][windowsize]:
             for collection in collections:
                 current_user.launch_collection_task(
+                    current_app.queues[current_app.config["PIPELINE_QUEUES"]["collections"][collection.kind]],
                     *current_app.config["PIPELINE_NAMES"]["collections"][
                         collection.kind
                     ],

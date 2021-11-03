@@ -93,8 +93,8 @@ class User(db.Model, UserMixin):
         s = Serializer(current_app.config["SECRET_KEY"], expires_in=expiration)
         return s.dumps({"id": self.id}).decode("utf-8")
 
-    def launch_task(self, name, description, dataset_id, *args, **kwargs):
-        rq_job = current_app.task_queue.enqueue(
+    def launch_task(self, queue, name, description, dataset_id, *args, **kwargs):
+        rq_job = queue.enqueue(
             "app.tasks." + name, dataset_id, job_timeout="10h", *args, **kwargs
         )
         # check whether inverals_id is in kwargs
@@ -113,8 +113,8 @@ class User(db.Model, UserMixin):
         db.session.add(task)
         return task
 
-    def launch_collection_task(self, name, description, collection_id, *args, **kwargs):
-        rq_job = current_app.task_queue.enqueue(
+    def launch_collection_task(self, queue, name, description, collection_id, *args, **kwargs):
+        rq_job = queue.enqueue(
             "app.tasks." + name, collection_id, job_timeout="10h", *args, **kwargs
         )
         # check whether inverals_id is in kwargs
@@ -643,7 +643,7 @@ def any_tasks_failed(tasks):
     # check whether any job failed
     for task in tasks:
         if task.get_rq_job() is None:
-            # job is not available in rq anymore, finished normally TODO: check in documentation about this
+            # job is not available in rq anymore
             continue
         else:
             if task.get_rq_job().get_status() == "failed":

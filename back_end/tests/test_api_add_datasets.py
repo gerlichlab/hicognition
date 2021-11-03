@@ -420,7 +420,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             content_type="multipart/form-data",
         )
         # check whether launch task has been called with the right arguments
-        mock_launch.assert_called_with("pipeline_bed", "run bed preprocessing", 1)
+        mock_launch.assert_called_with(self.app.queues["short"],"pipeline_bed", "run bed preprocessing", 1)
 
     def test_badform_no_datasetName(self):
         """Tests whether form without datasetName is rejected"""
