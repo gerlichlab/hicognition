@@ -95,6 +95,34 @@
                                 </md-list>
                             </md-list-item>
                             <md-list-item md-expand>
+                                <span class="md-body-1">Transform</span>
+
+                                <md-list slot="md-expand">
+                                    <md-list-item
+                                        class="md-inset"
+                                        @click="
+                                            isLog = true;
+                                            showMenu = false;
+                                        "
+                                        :disabled="!isICCF"
+                                    >
+                                        <span class="md-body-1">Log</span>
+                                        <md-icon v-if="isLog || !isICCF">done</md-icon>
+                                    </md-list-item>
+                                    <md-list-item
+                                        class="md-inset"
+                                        @click="
+                                            isLog = false;
+                                            showMenu = false;
+                                        "
+                                        :disabled="!isICCF"
+                                    >
+                                        <span class="md-body-1">Linear</span>
+                                        <md-icon v-if="!isLog && isICCF">done</md-icon>
+                                    </md-list-item>
+                                </md-list>
+                            </md-list-item>
+                            <md-list-item md-expand>
                                 <span class="md-body-1">Neighborhood size</span>
 
                                 <md-list slot="md-expand">
@@ -178,6 +206,7 @@
                     :regionName="regionName"
                     :collectionNames="datasetNames"
                     @close-controls="closeControls"
+                    :isLog="isLog || !isICCF"
                 />
             </div>
             <div v-if="loading" :style="waitSpinnerContainer">
@@ -492,6 +521,7 @@ export default {
                 binsize: this.selectedBinsize,
                 widgetDataRef: this.widgetDataRef,
                 isICCF: this.isICCF,
+                isLog: this.isLog,
                 widgetType: "Embedding2D",
                 minHeatmap: this.minHeatmap,
                 maxHeatmap: this.maxHeatmap,
@@ -512,6 +542,7 @@ export default {
                 regionName: collectionData["regionName"],
                 emptyClass: ["smallMargin", "empty"],
                 isICCF: true,
+                isLog: true,
                 binsizes: {},
                 datasets: collectionData["availableData"]["embedding2d"],
                 showMenu: false,
@@ -596,6 +627,7 @@ export default {
                 binsizes: widgetData["binsizes"],
                 datasets: collectionConfig["availableData"]["embedding2d"],
                 isICCF: widgetData["isICCF"],
+                isLog: widgetData["isLog"],
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,

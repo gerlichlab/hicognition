@@ -14,7 +14,7 @@
                 :maxHeatmapRange="maxHeatmapRange"
                 :allowValueScaleChange="showControls"
                 @slider-change="handleSliderChange"
-                :log="true"
+                :log="isLog"
             />
         </md-card-content>
             <md-card-actions v-if="showControls">
@@ -79,7 +79,8 @@ export default {
         embeddingID: Number,
         datasetName: String,
         regionName: String,
-        collectionNames: Array
+        collectionNames: Array,
+        isLog: Boolean
     },
     data: function () {
         return {
