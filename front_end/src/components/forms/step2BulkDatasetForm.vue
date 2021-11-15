@@ -139,6 +139,7 @@ export default {
                     maxLength: maxLength(30)
                  },
                 assembly: { required },
+                public: {}
             }
         }
     },

@@ -236,6 +236,7 @@ export default {
                     cellCycleStage: this.fileInformation[id].cellCycleStage,
                     ValueType: this.fileInformation[id].ValueType,
                     file: this.fileInformation[id].file,
+                    public: this.fileInformation[id].public,
                     state: undefined
                 };
                 for (let field of this.getFields(id)) {
