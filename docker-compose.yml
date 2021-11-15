@@ -83,8 +83,7 @@ services:
         image: flask:v1.0
         entrypoint: "/bin/bash"
         networks:
-            hicognition-net:
-                ipv4_address: 172.18.0.6
+            - hicognition-net
         # sleeps to wait for redis-server. TODO: make this check nicer!
         command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-long"
 
@@ -107,8 +106,7 @@ services:
         image: flask:v1.0
         entrypoint: "/bin/bash"
         networks:
-            hicognition-net:
-                ipv4_address: 172.18.0.7
+            - hicognition-net
         # sleeps to wait for redis-server. TODO: make this check nicer!
         command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-medium"
 
@@ -131,8 +129,7 @@ services:
         image: flask:v1.0
         entrypoint: "/bin/bash"
         networks:
-            hicognition-net:
-                ipv4_address: 172.18.0.8
+            - hicognition-net
         # sleeps to wait for redis-server. TODO: make this check nicer!
         command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-short"
 
