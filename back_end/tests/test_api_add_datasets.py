@@ -98,35 +98,6 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         actual_file = open(dataset.file_path, "rb").read()
         self.assertEqual(expected_file, actual_file)
 
-    @patch("app.api.post_routes.parse_binsizes")
-    @patch("app.models.User.launch_task")
-    def test_cooler_w_wrong_binsize_rejected(self, mock_launch, mock_parse_binsizes):
-        """Tests whether a cooler dataset lacking needed binsizes is rejected."""
-        # define return values
-        mock_parse_binsizes.return_value = [1]
-        # construct form data
-        data = {
-            "datasetName": "test",
-            "description": "test-description",
-            "assembly": "1",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
-            "ValueType": "Interaction",
-            "public": "false",
-            "Method": "HiC",
-            "Normalization": "ICCF",
-            "filetype": "cooler",
-            "file": (open("tests/testfiles/test.mcool", "rb"), "test.mcool"),
-        }
-        # dispatch post request
-        response = self.client.post(
-            "/api/datasets/",
-            data=data,
-            headers=self.token_headers,
-            content_type="multipart/form-data",
-        )
-        self.assertEqual(response.status_code, 400)
-
     @patch("app.models.User.launch_task")
     def test_dataset_added_correctly_bigwig_bw_ending(self, mock_launch):
         """Tests whether a bigwig dataset is added

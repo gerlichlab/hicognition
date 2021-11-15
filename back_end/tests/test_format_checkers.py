@@ -108,14 +108,6 @@ class TestIsCoolerCorrectlyFormatted(unittest.TestCase):
             )
         )
 
-    def test_good_cooler_resolution_not_available(self):
-        """Good cooler without required resolutions should return false."""
-        self.assertFalse(
-            format_checkers.is_mcooler(
-                "./tests/testfiles/test.mcool", self.chrom_names, [42]
-            )
-        )
-
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

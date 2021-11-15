@@ -399,6 +399,47 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
         self.assertTrue(np.allclose(result[..., 2], test_array_two))
         self.assertTrue(np.all(np.isnan(result[..., 3])))
 
+    def test_cooler_w_missing_resolutions_return_nans_w_collapse(self):
+        """Tests whether calling pileup on a cooler with
+        a binsize that is not available returns an array of nans
+        with the right shape according to windowsize and binsize"""
+        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
+        with patch("app.pipeline_worker_functions.pd.read_csv") as mock_read_csv:
+            test_df_interval = pd.DataFrame(
+                {
+                    0: ["chr1"],
+                    1: [60000000],
+                    2: [60000000],
+                }
+            )
+            mock_read_csv.return_value = test_df_interval
+            # dispatch call
+            result = _do_pileup_fixed_size(
+                self.cooler, 200000, 10000, "testpath", arms, "ICCF", collapse=True
+            )
+        self.assertEqual(result.shape, (40, 40))
+        self.assertTrue(np.all(np.isnan(result)))
+
+    def test_cooler_w_missing_resolutions_return_nans_wo_collapse(self):
+        """Tests whether calling pileup on a cooler with 
+        a binsize that is not available returns an array of nans
+        with the right shape according to windowsize and binsize"""
+        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
+        with patch("app.pipeline_worker_functions.pd.read_csv") as mock_read_csv:
+            test_df_interval = pd.DataFrame(
+                {
+                    0: ["chr1", "chr1"],
+                    1: [60000000, 10000],
+                    2: [60000000, 10000],
+                }
+            )
+            mock_read_csv.return_value = test_df_interval
+            # dispatch call
+            result = _do_pileup_fixed_size(
+                self.cooler, 200000, 10000, "testpath", arms, "ICCF", collapse=False
+            )
+        self.assertEqual(result.shape, (40, 40, 2))
+        self.assertTrue(np.all(np.isnan(result)))
 
 class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
     """Test pileup worker functions for variable sized intervals"""
@@ -552,6 +593,49 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         self.assertTrue(np.all(np.isnan(result[..., 1])))
         self.assertTrue(np.allclose(result[..., 2], test_array_two))
         self.assertTrue(np.all(np.isnan(result[..., 3])))
+
+    def test_cooler_w_missing_resolutions_return_nans_w_collapse(self):
+        """Tests whether calling pileup on a cooler with
+        a binsize that is not available returns an array of nans
+        with the right shape according to windowsize and binsize"""
+        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
+        with patch("app.pipeline_worker_functions.pd.read_csv") as mock_read_csv:
+            test_df_interval = pd.DataFrame(
+                {
+                    0: ["chr1"],
+                    1: [0],
+                    2: [100000],
+                }
+            )
+            mock_read_csv.return_value = test_df_interval
+            # dispatch call
+            result = _do_pileup_variable_size(
+                self.cooler, 1, "testpath", arms, "ICCF", collapse=True
+            )
+        self.assertEqual(result.shape, (140, 140))
+        self.assertTrue(np.all(np.isnan(result)))
+
+    def test_cooler_w_missing_resolutions_return_nans_wo_collapse(self):
+        """Tests whether calling pileup on a cooler with 
+        a binsize that is not available returns an array of nans
+        with the right shape according to windowsize and binsize"""
+        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
+        with patch("app.pipeline_worker_functions.pd.read_csv") as mock_read_csv:
+            test_df_interval = pd.DataFrame(
+                {
+                    0: ["chr1", "chr1"],
+                    1: [60000000, 10000],
+                    2: [60000000, 10000],
+                }
+            )
+            mock_read_csv.return_value = test_df_interval
+            # dispatch call
+            result = _do_pileup_variable_size(
+                self.cooler, 1, "testpath", arms, "ICCF", collapse=False
+            )
+        self.assertEqual(result.shape, (140, 140, 2))
+        self.assertTrue(np.all(np.isnan(result)))
+
 
 
 class TestGetOptimalBinsize(unittest.TestCase):

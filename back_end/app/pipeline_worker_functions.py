@@ -39,12 +39,18 @@ def _do_pileup_fixed_size(
     cooler_dataset, window_size, binsize, regions_path, arms, pileup_type, collapse=True
 ):
     """do pileup with subsequent averaging for regions with a fixed size"""
-    # open cooler
-    cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{binsize}")
     # load regions and search for center
     regions = pd.read_csv(regions_path, sep="\t", header=None)
     regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
     regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
+    # open cooler and check whether resolution is defined, if not return empty array
+    try:
+        cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{binsize}")
+    except KeyError:
+        output_shape = (2 * window_size)//binsize
+        if collapse:
+            return np.full((output_shape, output_shape), np.nan)
+        return np.full((output_shape, output_shape, len(regions)), np.nan)
     # assing regions to support
     pileup_windows = HT.assign_regions(
         window_size, int(binsize), regions["chrom"], regions["pos"], arms
@@ -96,12 +102,18 @@ def _do_pileup_variable_size(
     cooler_binsize = get_optimal_binsize(regions, bin_number_expanded)
     log.info(f"      Optimal binsize is {cooler_binsize}")
     if cooler_binsize is None:
-        empty = np.empty((bin_number_expanded, bin_number_expanded))
-        empty[:] = np.nan
-        return empty
-    cooler_file = cooler.Cooler(
-        cooler_dataset.file_path + f"::/resolutions/{cooler_binsize}"
-    )
+        if collapse:
+            return np.full((bin_number_expanded, bin_number_expanded), np.nan)
+        return np.full((bin_number_expanded, bin_number_expanded, len(regions)), np.nan)
+    # open cooler and check whether resolution is defined, if not return empty array
+    try:
+        cooler_file = cooler.Cooler(
+            cooler_dataset.file_path + f"::/resolutions/{cooler_binsize}"
+        )
+    except KeyError:
+        if collapse:
+            return np.full((bin_number_expanded, bin_number_expanded), np.nan)
+        return np.full((bin_number_expanded, bin_number_expanded, len(regions)), np.nan)
     # expand regions
     pileup_regions = interval_operations.expand_regions(
         regions, current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]
