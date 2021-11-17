@@ -584,7 +584,7 @@ def create_region_from_cluster_id(entry_id, cluster_id):
     new_entry = Dataset(
         dataset_name=form_data["name"],
         description=bed_ds.description,
-        public=bed_ds.public,
+        public=False, # derived regions should be private by default -> if people want to make pupblic they can do so
         processing_state="uploading",
         filetype="bedfile",
         user_id=g.current_user.id,
@@ -602,7 +602,7 @@ def create_region_from_cluster_id(entry_id, cluster_id):
     # add file_path to database entry
     new_entry.file_path = file_path
     # start preprocessing for bedfile
-    g.current_user.launch_task("pipeline_bed", "run bed preprocessing", new_entry.id)
+    g.current_user.launch_task(current_app.queues["short"],"pipeline_bed", "run bed preprocessing", new_entry.id)
     new_entry.processing_state = "processing"
     db.session.add(new_entry)
     db.session.commit()
