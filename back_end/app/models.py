@@ -203,6 +203,12 @@ class Dataset(db.Model):
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
+    obs_exp = db.relationship(
+        "ObsExp",
+        backref="computed_for",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
     collections = db.relationship(
         "Collection", secondary=dataset_collection_assoc_table
     )
@@ -284,6 +290,14 @@ class Dataset(db.Model):
             collection.id for collection in self.failed_collections
         ]
         return json_dataset
+
+
+class ObsExp(db.Model):
+    """Cache table for obs/exp dataframes"""
+    id = db.Column(db.Integer, primary_key=True)
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
+    binsize = db.Column(db.Integer, index=True)
+    filepath = db.Column(db.String(512), index=True)
 
 
 class Organism(db.Model):

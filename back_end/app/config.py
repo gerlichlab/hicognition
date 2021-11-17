@@ -20,12 +20,60 @@ class Config:
     END2END = False
     # allowed binsizes for given windowsizes of regions
     PREPROCESSING_MAP = {
-        50000: [1000, 2000, 5000],
-        100000: [2000, 5000, 10000],
-        400000: [5000, 10000, 20000],
-        1000000: [20000, 50000, 100000],
-        2000000: [50000, 100000, 200000],
-        "variable": [1, 2, 5],  # binsize for variable sizetype is in percent
+        50000: {
+            "cooler": [5000],
+            "bigwig": [1000, 2000],
+            "collections": {
+                "regions": [2000],
+                "1d-features": [1000, 2000],
+                "2d-features": []
+            }
+        },
+        100000: {
+            "cooler": [5000],
+            "bigwig": [2000, 5000, 10000],
+            "collections": {
+                "regions": [5000],
+                "1d-features": [2000, 5000, 10000],
+                "2d-features": [5000]
+            }
+        },
+        400000: {
+            "cooler": [10000, 20000],
+            "bigwig": [5000, 10000, 20000],
+            "collections": {
+                "regions": [10000, 20000],
+                "1d-features": [5000, 10000, 20000],
+                "2d-features": [10000, 20000]
+            }
+        },
+        1000000: {
+            "cooler": [20000, 50000],
+            "bigwig": [20000, 50000, 100000],
+            "collections": {
+                "regions": [20000, 50000],
+                "1d-features": [20000, 50000, 100000],
+                "2d-features": [20000, 50000]
+            }
+        },
+        2000000: {
+            "cooler": [50000, 100000, 200000],
+            "bigwig": [50000, 100000, 200000],
+            "collections": {
+                "regions": [50000, 100000, 200000],
+                "1d-features": [50000, 100000, 200000],
+                "2d-features": [50000, 100000, 200000]
+            }
+        },
+        "variable": {
+            "cooler": [1, 2, 5],
+            "bigwig": [1, 2, 5],
+            "collections": {
+                "regions": [1, 2, 5],
+                "1d-features": [1, 2, 5],
+                "2d-features": [1, 2, 5]
+            }
+        } # binsize for variable sizetype is in percent
     }
     VARIABLE_SIZE_EXPANSION_FACTOR = 0.2
     # mapping of pipeline names and queues to filetypes
@@ -100,9 +148,9 @@ class Config:
     }
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled
     OBS_EXP_PROCESSES = (
-        4
+        5
     )  # Number of processes to use per worker to calcualte obs/exp matrix of pileups
-    PILEUP_PROCESSES = 1  # Number of processes to use per worker to do pileups
+    PILEUP_PROCESSES = 2  # Number of processes to use per worker to do pileups
 
 
 class DevelopmentConfig(Config):

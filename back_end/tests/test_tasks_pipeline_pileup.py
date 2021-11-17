@@ -1,15 +1,17 @@
+import os
 import sys
 import unittest
 from unittest.mock import patch
 from unittest.mock import MagicMock, PropertyMock
 import pandas as pd
+from pandas.testing import assert_frame_equal
 import numpy as np
 from test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, Assembly, Task
+from app.models import Dataset, Intervals, Assembly, Task, ObsExp
 from app.tasks import pipeline_pileup
 from app.pipeline_steps import pileup_pipeline_step
 from app.pipeline_worker_functions import (
@@ -310,16 +312,13 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
         mock_Cooler.return_value = "mock_cooler"
         returned_regions = MagicMock()
         mock_assign_regions.return_value = returned_regions
-        mock_get_expected.return_value = "expected"
+        mock_get_expected.return_value = pd.DataFrame()
         # dispatch call
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
         _do_pileup_fixed_size(self.cooler, 100000, 10000, "testpath", arms, "Obs/Exp")
         # check whether get_expected was called
         mock_get_expected.assert_called()
-        expected_pileup_call = ["mock_cooler", "expected", returned_regions.dropna()]
-        mock_pileup_obs_exp.assert_called_with(
-            *expected_pileup_call, proc=1, collapse=True
-        )
+        mock_pileup_obs_exp.assert_called()
         # check whether iccf pileup is not called
         mock_pileup_iccf.assert_not_called()
 
@@ -421,7 +420,7 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
         self.assertTrue(np.all(np.isnan(result)))
 
     def test_cooler_w_missing_resolutions_return_nans_wo_collapse(self):
-        """Tests whether calling pileup on a cooler with 
+        """Tests whether calling pileup on a cooler with
         a binsize that is not available returns an array of nans
         with the right shape according to windowsize and binsize"""
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
@@ -440,6 +439,60 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
             )
         self.assertEqual(result.shape, (40, 40, 2))
         self.assertTrue(np.all(np.isnan(result)))
+
+    @patch("app.pipeline_worker_functions.HT.get_expected")
+    def test_cached_obs_exp_used(self, mock_expected):
+        """Tests whether cached obs/exp dataset is used"""
+        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
+        obs_exp = ObsExp(
+            dataset_id=self.cooler.id,
+            binsize=5000000,
+            filepath=os.path.join("./tests/testfiles", "expected.csv"),
+        )
+        db.session.add(obs_exp)
+        db.session.commit()
+        # create mock regions
+        test_df_interval = pd.DataFrame(
+            {
+                0: ["chr1", "chr1"],
+                1: [60000000, 10000],
+                2: [60000000, 10000],
+            }
+        )
+        mock_path = os.path.join(self.app.config["UPLOAD_DIR"], "mock_regions.csv")
+        test_df_interval.to_csv(mock_path, index=False, header=None, sep="\t")
+        # dispatch call
+        _do_pileup_fixed_size(
+            self.cooler, 10000000, 5000000, mock_path, arms, "Obs/Exp", collapse=False
+        )
+        mock_expected.assert_not_called()
+
+    def test_calculated_obs_exp_cached(self):
+        """Tests whether cached obs/exp dataset is created if it does not exist already"""
+        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
+        # create mock regions
+        test_df_interval = pd.DataFrame(
+            {
+                0: ["chr1", "chr1"],
+                1: [60000000, 10000],
+                2: [60000000, 10000],
+            }
+        )
+        mock_path = os.path.join(self.app.config["UPLOAD_DIR"], "mock_regions.csv")
+        test_df_interval.to_csv(mock_path, index=False, header=None, sep="\t")
+        # dispatch call
+        _do_pileup_fixed_size(
+            self.cooler, 10000000, 5000000, mock_path, arms, "Obs/Exp", collapse=False
+        )
+        self.assertEqual(1, len(ObsExp.query.all()))
+        ds = ObsExp.query.first()
+        self.assertEqual(ds.dataset_id, self.cooler.id)
+        self.assertEqual(ds.binsize, 5000000)
+        # load ds
+        expected = pd.read_csv(os.path.join("./tests/testfiles", "expected.csv"))
+        calculated = pd.read_csv(ds.filepath)
+        assert_frame_equal(expected, calculated)
+
 
 class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
     """Test pileup worker functions for variable sized intervals"""
@@ -467,7 +520,7 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
             assembly=1,
         )
         # get arms
-        self.arms =  pd.read_csv(self.app.config["CHROM_ARMS"])
+        self.arms = pd.read_csv(self.app.config["CHROM_ARMS"])
         db.session.add(self.cooler)
         db.session.commit()
 
@@ -492,7 +545,7 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         )
         mock_read_csv.return_value = test_df_interval
         mock_Cooler.return_value = "mock_cooler"
-        mock_get_expected.return_value = "expected"
+        mock_get_expected.return_value = pd.DataFrame()
         # dispatch call
         _do_pileup_variable_size(self.cooler, 5, "testpath", self.arms, "Obs/Exp")
         # check whether get_expected was called
@@ -616,7 +669,7 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         self.assertTrue(np.all(np.isnan(result)))
 
     def test_cooler_w_missing_resolutions_return_nans_wo_collapse(self):
-        """Tests whether calling pileup on a cooler with 
+        """Tests whether calling pileup on a cooler with
         a binsize that is not available returns an array of nans
         with the right shape according to windowsize and binsize"""
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
@@ -636,6 +689,63 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         self.assertEqual(result.shape, (140, 140, 2))
         self.assertTrue(np.all(np.isnan(result)))
 
+    @patch("app.pipeline_worker_functions.get_optimal_binsize")
+    @patch("app.pipeline_worker_functions.HT.get_expected")
+    def test_cached_obs_exp_used(self, mock_expected, mock_binsize):
+        """Tests whether cached obs/exp dataset is used"""
+        mock_binsize.return_value = 5000000
+        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
+        obs_exp = ObsExp(
+            dataset_id=self.cooler.id,
+            binsize=5000000,
+            filepath=os.path.join("./tests/testfiles", "expected.csv"),
+        )
+        db.session.add(obs_exp)
+        db.session.commit()
+        # create mock regions
+        test_df_interval = pd.DataFrame(
+            {
+                0: ["chr1", "chr1"],
+                1: [60000000, 10000],
+                2: [60000000, 10000],
+            }
+        )
+        mock_path = os.path.join(self.app.config["UPLOAD_DIR"], "mock_regions.csv")
+        test_df_interval.to_csv(mock_path, index=False, header=None, sep="\t")
+        # dispatch call
+        _do_pileup_variable_size(
+            self.cooler, 1, mock_path, arms, "Obs/Exp", collapse=False
+        )
+        mock_expected.assert_not_called()
+
+
+    @patch("app.pipeline_worker_functions.get_optimal_binsize")
+    def test_calculated_obs_exp_cached(self, mock_binsize):
+        mock_binsize.return_value = 5000000
+        """Tests whether cached obs/exp dataset is created if it does not exist already"""
+        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
+        # create mock regions
+        test_df_interval = pd.DataFrame(
+            {
+                0: ["chr1", "chr1"],
+                1: [60000000, 10000],
+                2: [60000000, 10000],
+            }
+        )
+        mock_path = os.path.join(self.app.config["UPLOAD_DIR"], "mock_regions.csv")
+        test_df_interval.to_csv(mock_path, index=False, header=None, sep="\t")
+        # dispatch call
+        _do_pileup_variable_size(
+            self.cooler, 1, mock_path, arms, "Obs/Exp", collapse=False
+        )
+        self.assertEqual(1, len(ObsExp.query.all()))
+        ds = ObsExp.query.first()
+        self.assertEqual(ds.dataset_id, self.cooler.id)
+        self.assertEqual(ds.binsize, 5000000)
+        # load ds
+        expected = pd.read_csv(os.path.join("./tests/testfiles", "expected.csv"))
+        calculated = pd.read_csv(ds.filepath)
+        assert_frame_equal(expected, calculated)
 
 
 class TestGetOptimalBinsize(unittest.TestCase):
@@ -654,7 +764,7 @@ class TestGetOptimalBinsize(unittest.TestCase):
     def test_correct_binsize_small_size(self):
         """tests correct handling of small regions."""
         regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [10000]})
-        self.assertEqual(get_optimal_binsize(regions, 100), 1000)
+        self.assertEqual(get_optimal_binsize(regions, 100), 2000)
 
     def test_correct_binsize_moderate_size(self):
         """tests correct handling of moderately sized regions."""
@@ -675,7 +785,7 @@ class TestGetOptimalBinsize(unittest.TestCase):
                 "end": [10000] * 99 + [1000001],
             }
         )
-        self.assertEqual(get_optimal_binsize(regions, 100), 1000)
+        self.assertEqual(get_optimal_binsize(regions, 100), 2000)
 
     def test_correct_binsize_tads(self):
         """tests correct handling of small regions with rare lare regions"""

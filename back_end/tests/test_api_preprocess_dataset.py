@@ -103,7 +103,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        binsizes = current_app.config["PREPROCESSING_MAP"][100000]
+        binsizes = current_app.config["PREPROCESSING_MAP"][100000]["cooler"]
         intervals = [1]
         for binsize in binsizes:
             for interval in intervals:
@@ -191,7 +191,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        binsizes = current_app.config["PREPROCESSING_MAP"][100000]
+        binsizes = current_app.config["PREPROCESSING_MAP"][100000]["cooler"]
         intervals = [1]
         for binsize in binsizes:
             for interval in intervals:
@@ -225,7 +225,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        binsizes = current_app.config["PREPROCESSING_MAP"][100000]
+        binsizes = current_app.config["PREPROCESSING_MAP"][100000]["bigwig"]
         intervals = [1]
         for binsize in binsizes:
             for interval in intervals:
@@ -293,7 +293,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        binsizes = current_app.config["PREPROCESSING_MAP"][100000]
+        binsizes = current_app.config["PREPROCESSING_MAP"][100000]["bigwig"]
         intervals = [1]
         datasets = [2, 6]
         for binsize in binsizes:
@@ -337,7 +337,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        binsizes = current_app.config["PREPROCESSING_MAP"][100000]
+        binsizes = current_app.config["PREPROCESSING_MAP"][100000]["bigwig"]
         intervals = [1]
         datasets = [6, 7]
         for binsize in binsizes:

@@ -6,6 +6,7 @@ import logging
 import pandas as pd
 import numpy as np
 import umap
+import uuid
 from flask.globals import current_app
 from skimage.transform import resize
 from ngs import HiCTools as HT
@@ -26,6 +27,7 @@ from .models import (
     AssociationIntervalData,
     EmbeddingIntervalData,
     Intervals,
+    ObsExp
 )
 
 # get logger
@@ -60,9 +62,19 @@ def _do_pileup_fixed_size(
     pileup_windows = pileup_windows.dropna()
     # do pileup
     if pileup_type == "Obs/Exp":
-        expected = HT.get_expected(
-            cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
-        )
+        # check whether obs_exp exists
+        if (obs_exp_entry := cooler_dataset.obs_exp.filter(ObsExp.binsize == binsize).first()) is not None:
+            # binsize exists
+            expected = pd.read_csv(obs_exp_entry.filepath)
+        else:
+            expected = HT.get_expected(
+                cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
+            )
+            file_path = os.path.join(current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + ".csv")
+            expected.to_csv(file_path, index=False)
+            new_obs_exp_ds = ObsExp(dataset_id=cooler_dataset.id, binsize=binsize, filepath=file_path)
+            db.session.add(new_obs_exp_ds)
+            db.session.commit()
         pileup_array = HT.do_pileup_obs_exp(
             cooler_file,
             expected,
@@ -119,9 +131,19 @@ def _do_pileup_variable_size(
         regions, current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]
     )
     if pileup_type == "Obs/Exp":
-        expected = HT.get_expected(
-            cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
-        )
+        # check whether obs_exp exists
+        if (obs_exp_entry := cooler_dataset.obs_exp.filter(ObsExp.binsize == cooler_binsize).first()) is not None:
+            # binsize exists
+            expected = pd.read_csv(obs_exp_entry.filepath)
+        else:
+            expected = HT.get_expected(
+                cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
+            )
+            file_path = os.path.join(current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + ".csv")
+            expected.to_csv(file_path, index=False)
+            new_obs_exp_ds = ObsExp(dataset_id=cooler_dataset.id, binsize=cooler_binsize, filepath=file_path)
+            db.session.add(new_obs_exp_ds)
+            db.session.commit()
         pileup_arrays = HT.extract_windows_different_sizes_obs_exp(
             pileup_regions, arms, cooler_file, expected
         )

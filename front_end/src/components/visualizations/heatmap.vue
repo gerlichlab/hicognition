@@ -1,7 +1,7 @@
 <template>
     <div>
         <md-list class="md-double-line">
-            <md-list-item class="md-alignment-top-center" v-if="!allNull">
+            <md-list-item class="md-alignment-top-center" v-show="!allNull">
                 <!-- this prevents drag events to allow slider change without causing widget drag -->
                 <div
                     :style="colorBarContainerStyle"
@@ -28,7 +28,7 @@
                         <div v-if="showInterval" class="small-margin-left-right" :id="xAxisdivID"/>
                 </md-content>
             </md-list-item>
-            <div v-else>
+            <div v-show="allNull">
                 <md-empty-state
                     md-icon="info"
                     md-label="Not enough data for this condition"

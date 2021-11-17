@@ -9,9 +9,14 @@ export function getScale(min, max, scaleType) {
             .range(["white", "orange", "red", "black"])
             .domain(distributeMinMax(min, max));
     }else if (scaleType == "blueWhiteRed") {
+        // check whether 0 is between min and max
+        let midpoint = 0
+        if (min * max > 0) {
+            midpoint = (min + max) /2
+        }
         return d3
             .scaleDiverging(t => d3.interpolateRdBu(1 - t))
-            .domain([min, 0, max]);
+            .domain([min, midpoint, max]);
     } else if (scaleType == "plasma") {
         return d3.scaleSequential(d3.interpolatePlasma).domain([min, max]);
     } else if (scaleType == "magma") {

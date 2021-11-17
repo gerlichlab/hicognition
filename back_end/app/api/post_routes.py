@@ -93,7 +93,7 @@ def add_dataset():
     assembly = Assembly.query.get(data["assembly"])
     # check format -> this cannot be done in form checker since file needs to be available
     chromosome_names = set(pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0])
-    needed_resolutions = parse_binsizes(current_app.config["PREPROCESSING_MAP"])
+    needed_resolutions = parse_binsizes(current_app.config["PREPROCESSING_MAP"], "cooler")
     if not FORMAT_CHECKERS[request.form["filetype"]](
         file_path, chromosome_names, needed_resolutions
     ):
@@ -172,7 +172,7 @@ def preprocess_dataset():
         windowsize = Intervals.query.get(interval_id).windowsize
         if windowsize is None:
             windowsize = "variable"
-        for binsize in current_app.config["PREPROCESSING_MAP"][windowsize]:
+        for binsize in current_app.config["PREPROCESSING_MAP"][windowsize][dataset.filetype]:
             for dataset in feature_datasets:
                 current_user.launch_task(
                     current_app.queues[current_app.config["PIPELINE_QUEUES"][dataset.filetype]],
@@ -246,7 +246,7 @@ def preprocess_collections():
         windowsize = Intervals.query.get(interval_id).windowsize
         if windowsize is None:
             windowsize = "variable"
-        for binsize in current_app.config["PREPROCESSING_MAP"][windowsize]:
+        for binsize in current_app.config["PREPROCESSING_MAP"][windowsize]["collections"][collection.kind]:
             for collection in collections:
                 current_user.launch_collection_task(
                     current_app.queues[current_app.config["PIPELINE_QUEUES"]["collections"][collection.kind]],

@@ -310,12 +310,12 @@ def get_all_interval_ids(region_datasets):
     return interval_ids
 
 
-def parse_binsizes(map):
+def parse_binsizes(map, filetype):
     """returns needed binsizes from preprocessing map."""
     binsizes = set()
     for windowsize, bins in map.items():
         if windowsize != "variable":
-            binsizes |= set(bins)
+            binsizes |= set(bins[filetype])
     return list(binsizes)
 
 
@@ -463,7 +463,7 @@ def get_optimal_binsize(regions, target_bin_number):
     binsizes = sorted(
         [
             int(entry)
-            for entry in parse_binsizes(current_app.config["PREPROCESSING_MAP"])
+            for entry in parse_binsizes(current_app.config["PREPROCESSING_MAP"], "cooler")
         ]
     )
     chunk_number = [max_size / binsize for binsize in binsizes]
