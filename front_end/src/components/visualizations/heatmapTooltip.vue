@@ -80,7 +80,11 @@ export default {
         datasetName: String,
         regionName: String,
         collectionNames: Array,
-        isLog: Boolean
+        isLog: Boolean,
+        minHeatmapAll: Number,
+        maxHeatmapAll: Number,
+        maxHeatmapAllRange: Number,
+        minHeatmapAllRange: Number
     },
     data: function () {
         return {
@@ -96,16 +100,40 @@ export default {
             showDialog: false,
             newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterID}`,
             datasetSaved: false,
-            minHeatmap: undefined,
-            maxHeatmap: undefined,
-            minHeatmapRange: undefined,
-            maxHeatmapRange: undefined,
+            minHeatmapTarget: undefined,
+            maxHeatmapTarget: undefined,
+            minHeatmapRangeTarget: undefined,
+            maxHeatmapRangeTarget: undefined,
             expanded: false
         };
     },
     computed: {
         distributionSize: function() {
             return 100
+        },
+        minHeatmap: function() {
+            if (this.minHeatmapTarget) {
+                return this.minHeatmapTarget
+            }
+            return this.minHeatmapAll
+        },
+        maxHeatmap: function() {
+            if (this.maxHeatmapTarget) {
+                return this.maxHeatmapTarget
+            }
+            return this.maxHeatmapAll
+        },
+        minHeatmapRange: function() {
+            if (this.minHeatmapAllRange) {
+                return this.minHeatmapAllRange
+            }
+            return this.minHeatmapRangeTarget
+        },
+        maxHeatmapRange: function() {
+            if (this.maxHeatmapRangeTarget) {
+                return this.maxHeatmapRangeTarget
+            }
+            return this.maxHeatmapAllRange
         },
         showExpand: function() {
             return this.collectionNames.length > 1
@@ -141,19 +169,19 @@ export default {
                 sets colorScale based on data array
                 containing minPos, maxPos, minRange, maxRange
             */
-            this.minHeatmap = data[0];
-            this.maxHeatmap = data[1];
-            this.minHeatmapRange = data[2];
-            this.maxHeatmapRange = data[3];
+            this.minHeatmapTarget = data[0];
+            this.maxHeatmapTarget = data[1];
+            this.minHeatmapRangeTarget = data[2];
+            this.maxHeatmapRangeTarget = data[3];
         },
         resetColorScale: function () {
             /*
                 resets colorscale to undefined
             */
-            this.minHeatmap = undefined;
-            this.maxHeatmap = undefined;
-            this.minHeatmapRange = undefined;
-            this.maxHeatmapRange = undefined;
+            this.minHeatmapTarget = undefined;
+            this.maxHeatmapTarget = undefined;
+            this.minHeatmapRangeTarget = undefined;
+            this.maxHeatmapRangeTarget = undefined;
         },
         handleSubmission: function () {
             // check whether there is a name

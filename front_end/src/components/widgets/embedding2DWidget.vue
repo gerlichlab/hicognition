@@ -69,6 +69,22 @@
                         </div>
                         <md-menu-content>
                             <md-list-item md-expand>
+                                <span class="md-body-1">Share</span>
+
+                                <md-list slot="md-expand">
+                                    <md-list-item
+                                        class="md-inset"
+                                        @click="
+                                            shareValueScale = !shareValueScale;
+                                            showMenu = false;
+                                        "
+                                    >
+                                        <span class="md-body-1">ValueScale</span>
+                                        <md-icon v-if="shareValueScale">done</md-icon>
+                                    </md-list-item>
+                                </md-list>
+                            </md-list-item>
+                            <md-list-item md-expand>
                                 <span class="md-body-1">Scale</span>
 
                                 <md-list slot="md-expand">
@@ -104,10 +120,9 @@
                                             isLog = true;
                                             showMenu = false;
                                         "
-                                        :disabled="!isICCF"
                                     >
                                         <span class="md-body-1">Log</span>
-                                        <md-icon v-if="isLog || !isICCF">done</md-icon>
+                                        <md-icon v-if="isLog">done</md-icon>
                                     </md-list-item>
                                     <md-list-item
                                         class="md-inset"
@@ -115,10 +130,9 @@
                                             isLog = false;
                                             showMenu = false;
                                         "
-                                        :disabled="!isICCF"
                                     >
                                         <span class="md-body-1">Linear</span>
-                                        <md-icon v-if="!isLog && isICCF">done</md-icon>
+                                        <md-icon v-if="!isLog">done</md-icon>
                                     </md-list-item>
                                 </md-list>
                             </md-list-item>
@@ -199,6 +213,10 @@
                     :distributionData="distributionData"
                     :showControls="showTooltipControls"
                     :tooltipOffsetLeft="tooltipOffsetLeft"
+                    :minHeatmapAll="minValueRobust"
+                    :maxHeatmapAll="maxValueRobust"
+                    :minHeatmapAllRange="minValue"
+                    :maxHeatmapAllRange="maxValue"
                     :tooltipOffsetTop="tooltipOffsetTop"
                     :clusterID="selectedCluster"
                     :embeddingID="widgetDataID"
@@ -206,7 +224,7 @@
                     :regionName="regionName"
                     :collectionNames="datasetNames"
                     @close-controls="closeControls"
-                    :isLog="isLog || !isICCF"
+                    :isLog="isLog"
                 />
             </div>
             <div v-if="loading" :style="waitSpinnerContainer">
@@ -236,7 +254,7 @@
 
 <script>
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
-import { rectBin, flatten, select_3d_along_first_axis } from "../../functions";
+import { rectBin, flatten, select_3d_along_first_axis, getPercentile, getPerMilRank } from "../../functions";
 import heatmap from "../visualizations/heatmap.vue";
 import tooltip from "../visualizations/heatmapTooltip.vue"
 import EventBus from "../../eventBus";
@@ -345,6 +363,42 @@ export default {
                 this.widgetData[this.valueType]["cluster_ids"].data,
                 "mode"
             );
+        },
+        minValueRobust: function () {
+            if (!this.shareValueScale) {
+                return undefined
+            }
+            if (this.isLog){
+                return Math.log2(getPercentile(this.widgetData[this.valueType]["thumbnails"].data, 1));
+            }
+            return getPercentile(this.widgetData[this.valueType]["thumbnails"].data, 1);
+        },
+        maxValueRobust: function() {
+            if (!this.shareValueScale) {
+                return undefined
+            }
+            if (this.isLog) {
+                return Math.log2(getPercentile(this.widgetData[this.valueType]["thumbnails"].data, 99));
+            }
+            return getPercentile(this.widgetData[this.valueType]["thumbnails"].data, 99);
+        },
+        minValue: function() {
+            if (!this.shareValueScale) {
+                return undefined
+            }
+            if (this.isLog) {
+                return Math.log2(getPerMilRank(this.widgetData[this.valueType]["thumbnails"].data, 1));
+            }
+            return getPerMilRank(this.widgetData[this.valueType]["thumbnails"].data, 1);
+        },
+        maxValue: function() {
+            if (!this.shareValueScale) {
+                return undefined
+            }
+            if (this.isLog) {
+                return Math.log2(getPerMilRank(this.widgetData[this.valueType]["thumbnails"].data, 999));
+            }
+            return getPerMilRank(this.widgetData[this.valueType]["thumbnails"].data, 999);
         },
         thumbnail: function() {
             if (this.selectedCluster !== undefined) {
@@ -528,7 +582,8 @@ export default {
                 minHeatmapRange: this.minHeatmapRange,
                 maxHeatmapRange: this.maxHeatmapRange,
                 selectedCluster: this.selectedCluster,
-                clusterNumber: this.clusterNumber
+                clusterNumber: this.clusterNumber,
+                shareValueScale: this.shareValueScale
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -558,7 +613,8 @@ export default {
                 showTooltip: false,
                 showTooltipControls: false,
                 tooltipOffsetTop: 0,
-                tooltipOffsetLeft: 0
+                tooltipOffsetLeft: 0,
+                shareValueScale: false
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -641,7 +697,8 @@ export default {
                 showTooltip: false,
                 showTooltipControls: false,
                 tooltipOffsetTop: 0,
-                tooltipOffsetLeft: 0
+                tooltipOffsetLeft: 0,
+                shareValueScale: widgetData["shareValueScale"]
             };
         },
         handleSliderChange: function(data) {
