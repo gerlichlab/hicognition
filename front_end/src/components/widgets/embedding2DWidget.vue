@@ -79,8 +79,12 @@
                                             showMenu = false;
                                         "
                                     >
-                                        <span class="md-body-1">ValueScale</span>
-                                        <md-icon v-if="shareValueScale">done</md-icon>
+                                        <span class="md-body-1"
+                                            >ValueScale</span
+                                        >
+                                        <md-icon v-if="shareValueScale"
+                                            >done</md-icon
+                                        >
                                     </md-list-item>
                                 </md-list>
                             </md-list-item>
@@ -254,13 +258,19 @@
 
 <script>
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
-import { rectBin, flatten, select_3d_along_first_axis, getPercentile, getPerMilRank } from "../../functions";
+import {
+    rectBin,
+    flatten,
+    select_3d_along_first_axis,
+    getPercentile,
+    getPerMilRank
+} from "../../functions";
 import heatmap from "../visualizations/heatmap.vue";
-import tooltip from "../visualizations/heatmapTooltip.vue"
+import tooltip from "../visualizations/heatmapTooltip.vue";
 import EventBus from "../../eventBus";
 
 export default {
-    components: { heatmap , tooltip},
+    components: { heatmap, tooltip },
     name: "Embedding2D",
     mixins: [apiMixin, formattingMixin, widgetMixin],
     computed: {
@@ -279,11 +289,11 @@ export default {
             }
             return "blueWhiteRed";
         },
-        tooltipHeight: function(){
-            if (this.showTooltipControls){
-                return this.height + 10
+        tooltipHeight: function() {
+            if (this.showTooltipControls) {
+                return this.height + 10;
             }
-            return this.height - 40
+            return this.height - 40;
         },
         colormap: function() {
             return "viridis";
@@ -295,31 +305,35 @@ export default {
                 return "ObsExp";
             }
         },
-        showData: function () {
+        showData: function() {
             if (this.widgetData && this.widgetData[this.valueType]) {
                 return true;
             }
             return false;
         },
-        widgetDataID: function(){
+        widgetDataID: function() {
             if (this.binsizes && this.selectedBinsize) {
-                let valueType
-                if (this.isICCF){
-                    valueType = "ICCF"
-                }else{
-                    valueType = "Obs/Exp"
+                let valueType;
+                if (this.isICCF) {
+                    valueType = "ICCF";
+                } else {
+                    valueType = "Obs/Exp";
                 }
-                return Number(this.binsizes[this.selectedBinsize][valueType][this.clusterNumber])
+                return Number(
+                    this.binsizes[this.selectedBinsize][valueType][
+                        this.clusterNumber
+                    ]
+                );
             }
         },
-        collectionName: function(){
+        collectionName: function() {
             if (this.selectedBinsize) {
-                return this.datasets[this.selectedDataset]['name']
+                return this.datasets[this.selectedDataset]["name"];
             }
         },
-        distributionData: function(){
+        distributionData: function() {
             if (this.widgetData && this.widgetData[this.valueType]) {
-                return this.widgetData[this.valueType]["distributions"]
+                return this.widgetData[this.valueType]["distributions"];
             }
         },
         message: function() {
@@ -364,41 +378,85 @@ export default {
                 "mode"
             );
         },
-        minValueRobust: function () {
-            if (!this.shareValueScale) {
-                return undefined
+        minValueRobust: function() {
+            if (
+                !this.shareValueScale ||
+                !this.widgetData[this.valueType]["thumbnails"]
+            ) {
+                return undefined;
             }
-            if (this.isLog){
-                return Math.log2(getPercentile(this.widgetData[this.valueType]["thumbnails"].data, 1));
+            if (this.isLog) {
+                return Math.log2(
+                    getPercentile(
+                        this.widgetData[this.valueType]["thumbnails"].data,
+                        1
+                    )
+                );
             }
-            return getPercentile(this.widgetData[this.valueType]["thumbnails"].data, 1);
+            return getPercentile(
+                this.widgetData[this.valueType]["thumbnails"].data,
+                1
+            );
         },
         maxValueRobust: function() {
-            if (!this.shareValueScale) {
-                return undefined
+            if (
+                !this.shareValueScale ||
+                !this.widgetData[this.valueType]["thumbnails"]
+            ) {
+                return undefined;
             }
             if (this.isLog) {
-                return Math.log2(getPercentile(this.widgetData[this.valueType]["thumbnails"].data, 99));
+                return Math.log2(
+                    getPercentile(
+                        this.widgetData[this.valueType]["thumbnails"].data,
+                        99
+                    )
+                );
             }
-            return getPercentile(this.widgetData[this.valueType]["thumbnails"].data, 99);
+            return getPercentile(
+                this.widgetData[this.valueType]["thumbnails"].data,
+                99
+            );
         },
         minValue: function() {
-            if (!this.shareValueScale) {
-                return undefined
+            if (
+                !this.shareValueScale ||
+                !this.widgetData[this.valueType]["thumbnails"]
+            ) {
+                return undefined;
             }
             if (this.isLog) {
-                return Math.log2(getPerMilRank(this.widgetData[this.valueType]["thumbnails"].data, 1));
+                return Math.log2(
+                    getPerMilRank(
+                        this.widgetData[this.valueType]["thumbnails"].data,
+                        1
+                    )
+                );
             }
-            return getPerMilRank(this.widgetData[this.valueType]["thumbnails"].data, 1);
+            return getPerMilRank(
+                this.widgetData[this.valueType]["thumbnails"].data,
+                1
+            );
         },
         maxValue: function() {
-            if (!this.shareValueScale) {
-                return undefined
+            if (
+                !this.shareValueScale ||
+                !this.widgetData[this.valueType]["thumbnails"]
+            ) {
+                return undefined;
             }
             if (this.isLog) {
-                return Math.log2(getPerMilRank(this.widgetData[this.valueType]["thumbnails"].data, 999));
+                return Math.log2(
+                    getPerMilRank(
+                        this.widgetData[this.valueType]["thumbnails"].data,
+                        999
+                    )
+                );
             }
-            return getPerMilRank(this.widgetData[this.valueType]["thumbnails"].data, 999);
+            return getPerMilRank(
+                this.widgetData[this.valueType]["thumbnails"].data,
+                999
+            );
         },
         thumbnail: function() {
             if (this.selectedCluster !== undefined) {
@@ -416,8 +474,8 @@ export default {
             }
         },
         embeddingData: function() {
-            if (!this.widgetData || !this.widgetData[this.valueType]){
-                return
+            if (!this.widgetData || !this.widgetData[this.valueType]) {
+                return;
             }
             if (this.selectedCluster === undefined) {
                 return {
@@ -525,35 +583,35 @@ export default {
         },
         handleHeatmapClick: function(x, y, adjustedX, adjustedY) {
             if (this.showTooltipControls) {
-                this.showTooltipControls = false
-            }else if (this.thumbnail){
-                this.showTooltipControls = true
+                this.showTooltipControls = false;
+            } else if (this.thumbnail) {
+                this.showTooltipControls = true;
             }
         },
         handleMouseMove: function(x, y, adjustedX, adjustedY, size) {
-            if (!this.showTooltipControls){
-                this.showTooltip = true
-                this.tooltipOffsetLeft = adjustedX + 60
-                this.tooltipOffsetTop = adjustedY
+            if (!this.showTooltipControls) {
+                this.showTooltip = true;
+                this.tooltipOffsetLeft = adjustedX + 60;
+                this.tooltipOffsetTop = adjustedY;
                 this.selectCluster(x, y, size);
             }
         },
         handleMouseEnter: function(x, y, adjustedX, adjustedY) {
-            if (!this.showTooltipControls){
-                this.showTooltip = true
-                this.tooltipOffsetLeft = adjustedX + 60
-                this.tooltipOffsetTop = adjustedY
+            if (!this.showTooltipControls) {
+                this.showTooltip = true;
+                this.tooltipOffsetLeft = adjustedX + 60;
+                this.tooltipOffsetTop = adjustedY;
             }
         },
         handleMouseLeft: function() {
-            if (!this.showTooltipControls){
-                this.showTooltip = false
+            if (!this.showTooltipControls) {
+                this.showTooltip = false;
             }
         },
         closeControls: function() {
-            this.selectedCluster = undefined
-            this.showTooltipControls = false
-            this.showTooltip = false
+            this.selectedCluster = undefined;
+            this.showTooltipControls = false;
+            this.showTooltip = false;
         },
         resetThumbnail: function() {
             this.selectedCluster = undefined;
