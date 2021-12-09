@@ -3,6 +3,7 @@ import os
 from collections import defaultdict
 from flask import current_app
 from ..models import (
+    EmbeddingIntervalData,
     Intervals,
     Dataset,
     Collection,
@@ -186,8 +187,7 @@ def parse_description(form_data):
 def delete_collection(collection, db):
     """deletes collection and associated data."""
     assoc_data = collection.associationData.all()
-    embed_data = collection.embeddingData.all()
-    deletion_queue = assoc_data + embed_data
+    deletion_queue = assoc_data
     for entry in deletion_queue:
         # remove files
         remove_safely(entry.file_path)
@@ -202,11 +202,15 @@ def delete_associated_data_of_dataset(dataset):
     intervals = []
     averageIntervalData = []
     individualIntervalData = []
+    embeddingIntervalData = []
     metadata = []
     # cooler only needs deletion of derived averageIntervalData
     if dataset.filetype == "cooler":
         averageIntervalData = AverageIntervalData.query.filter(
             AverageIntervalData.dataset_id == dataset.id
+        ).all()
+        embeddingIntervalData = EmbeddingIntervalData.query.filter(
+            EmbeddingIntervalData.dataset_id == dataset.id
         ).all()
     # bedfile needs deletion of intervals and averageIntervalData
     if dataset.filetype == "bedfile":
@@ -216,6 +220,9 @@ def delete_associated_data_of_dataset(dataset):
         ).all()
         individualIntervalData = IndividualIntervalData.query.filter(
             IndividualIntervalData.intervals_id.in_([entry.id for entry in intervals])
+        ).all()
+        embeddingIntervalData = EmbeddingIntervalData.query.filter(
+            EmbeddingIntervalData.intervals_id.in_([entry.id for entry in intervals])
         ).all()
         metadata = BedFileMetadata.query.filter(
             BedFileMetadata.dataset_id == dataset.id
@@ -229,7 +236,7 @@ def delete_associated_data_of_dataset(dataset):
         ).all()
     # delete files and remove from database
     deletion_queue = (
-        [dataset] + intervals + averageIntervalData + individualIntervalData + metadata
+        [dataset] + intervals + averageIntervalData + individualIntervalData + embeddingIntervalData + metadata
     )
     for entry in deletion_queue:
         if isinstance(entry, IndividualIntervalData):
@@ -412,38 +419,62 @@ def add_embedding_data_to_preprocessed_dataset_map(
     embedding_interval_datasets, output_object, request_context
 ):
     for embed in embedding_interval_datasets:
-        collection = Collection.query.get(embed.collection_id)
-        # check whether collection is owned
-        if is_access_to_collection_denied(collection, request_context):
-            continue
-        # check whether there are any uncompleted tasks for the feature dataset
-        interval = Intervals.query.get(embed.intervals_id)
-        region_dataset = interval.source_dataset
-        # check whether region_dataset is interval
-        if region_dataset.sizeType == "Interval":
-            windowsize = "variable"
+        if embed.value_type == "2d-embedding":
+            _add_embedding_data_2d_to_preprocessed_dataset_map(embed, output_object, request_context)
         else:
-            windowsize = interval.windowsize
-        if (collection in region_dataset.processing_collections) or (
-            collection in region_dataset.failed_collections
-        ):
-            continue
-        if embed.value_type == "1d-embedding":
-            output_object["embedding1d"][collection.id]["name"] = collection.name
-            output_object["embedding1d"][collection.id][
-                "collection_dataset_names"
-            ] = collection.to_json()["dataset_names"]
-            output_object["embedding1d"][collection.id]["data_ids"][windowsize][
-                embed.binsize
-            ] = str(embed.id)
-        else:
-            output_object["embedding2d"][collection.id]["name"] = collection.name
-            output_object["embedding2d"][collection.id][
-                "collection_dataset_names"
-            ] = collection.to_json()["dataset_names"]
-            output_object["embedding2d"][collection.id]["data_ids"][windowsize][
-                embed.binsize
-            ][embed.normalization][embed.cluster_number] = str(embed.id)
+            _add_embedding_data_1d_to_preprocessed_dataset_map(embed, output_object, request_context)
+
+
+def _add_embedding_data_1d_to_preprocessed_dataset_map(embedding_ds, output_object, request_context):
+    """adds embedding interval data for 1d dataset to preprocesse dataset map"""
+    collection = Collection.query.get(embedding_ds.collection_id)
+    # check whether collection is owned
+    if is_access_to_collection_denied(collection, request_context):
+        return
+    # check whether there are any uncompleted tasks for the feature dataset
+    interval = Intervals.query.get(embedding_ds.intervals_id)
+    region_dataset = interval.source_dataset
+    # check whether region_dataset is interval
+    if region_dataset.sizeType == "Interval":
+        windowsize = "variable"
+    else:
+        windowsize = interval.windowsize
+    if (collection in region_dataset.processing_collections) or (
+        collection in region_dataset.failed_collections
+    ):
+        return
+
+    output_object["embedding1d"][collection.id]["name"] = collection.name
+    output_object["embedding1d"][collection.id][
+        "collection_dataset_names"
+    ] = collection.to_json()["dataset_names"]
+    output_object["embedding1d"][collection.id]["data_ids"][windowsize][
+        embedding_ds.binsize
+    ] = str(embedding_ds.id)
+
+
+def _add_embedding_data_2d_to_preprocessed_dataset_map(embedding_ds, output_object, request_context):
+    """adds embedding interval data for 1d dataset to preprocesse dataset map"""
+    dataset = Dataset.query.get(embedding_ds.dataset_id)
+    # check whether collection is owned
+    if is_access_to_dataset_denied(dataset, request_context):
+        return
+    # check whether there are any uncompleted tasks for the feature dataset
+    interval = Intervals.query.get(embedding_ds.intervals_id)
+    region_dataset = interval.source_dataset
+    # check whether region_dataset is interval
+    if region_dataset.sizeType == "Interval":
+        windowsize = "variable"
+    else:
+        windowsize = interval.windowsize
+    if (dataset in region_dataset.processing_features) or (
+        dataset in region_dataset.failed_features
+    ):
+        return
+    output_object["embedding2d"][dataset.id]["name"] = dataset.dataset_name
+    output_object["embedding2d"][dataset.id]["data_ids"][windowsize][
+        embedding_ds.binsize
+    ][embedding_ds.normalization][embedding_ds.cluster_number] = str(embedding_ds.id)
 
 
 def recDict():

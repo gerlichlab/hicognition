@@ -181,8 +181,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             EmbeddingIntervalData(id=2, binsize=20000, collection_id=1, intervals_id=1, value_type="1d-embedding"),
             EmbeddingIntervalData(id=3, binsize=20000, collection_id=1, intervals_id=2, value_type="1d-embedding"),
             EmbeddingIntervalData(id=4, binsize=5, collection_id=1, intervals_id=7, value_type="1d-embedding"),
-            EmbeddingIntervalData(id=5, binsize=10000, collection_id=1, intervals_id=1, value_type="2d-embedding", normalization="ICCF", cluster_number="small"),
-            EmbeddingIntervalData(id=6, binsize=10000, collection_id=1, intervals_id=1, value_type="2d-embedding", normalization="Obs/Exp", cluster_number="small"),
+            EmbeddingIntervalData(id=5, binsize=10000, dataset_id=3, intervals_id=1, value_type="2d-embedding", normalization="ICCF", cluster_number="small"),
+            EmbeddingIntervalData(id=6, binsize=10000, dataset_id=3, intervals_id=1, value_type="2d-embedding", normalization="Obs/Exp", cluster_number="small"),
         ]
 
     def test_no_auth(self):
@@ -629,9 +629,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 }
             },
             "embedding2d": {
-                "1": {
-                    "name": "test_collection",
-                    "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                "3": {
+                    "name": "testfile3",
                     "data_ids": {
                         "10000": {"10000": {
                             "ICCF": {
@@ -754,9 +753,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 }
             },
             "embedding2d": {
-                "1": {
-                    "name": "test_collection",
-                    "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                "3": {
+                    "name": "testfile3",
                     "data_ids": {
                         "10000": {"10000": {
                             "ICCF": {

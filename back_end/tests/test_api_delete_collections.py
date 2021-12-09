@@ -29,13 +29,6 @@ class TestDeleteCollection(LoginTestCase, TempDirTestCase):
         self.assocData = AssociationIntervalData(
             file_path=self.assoc_path, collection_id=self.collection_user_1.id
         )
-        self.embed_path = self._create_empty_file_in_tempdir("test2.npy")
-        self.feature_path = self._create_empty_file_in_tempdir("test3.npy")
-        self.embedData = EmbeddingIntervalData(
-            file_path=self.embed_path,
-            file_path_feature_values=self.feature_path,
-            collection_id=self.collection_user_1.id,
-        )
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
@@ -105,7 +98,7 @@ class TestDeleteCollection(LoginTestCase, TempDirTestCase):
         # create token_headers
         token_headers = self.get_token_header(token)
         # add session
-        db.session.add_all([self.collection_user_1, self.assocData, self.embedData])
+        db.session.add_all([self.collection_user_1, self.assocData])
         db.session.commit()
         # make call
         response = self.client.delete(
@@ -116,7 +109,6 @@ class TestDeleteCollection(LoginTestCase, TempDirTestCase):
         # check whether associated data was deleted
         self.assertEqual(len(Collection.query.all()), 0)
         self.assertEqual(len(AssociationIntervalData.query.all()), 0)
-        self.assertEqual(len(EmbeddingIntervalData.query.all()), 0)
         # check wehtehr tempdir is empty
         self.assertEqual(len(os.listdir(self.TEMP_PATH)), 0)
 

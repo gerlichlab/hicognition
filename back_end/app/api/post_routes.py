@@ -558,12 +558,12 @@ def create_region_from_cluster_id(entry_id, cluster_id):
         return not_found("Embedding data does not exist!")
     # Check whether datasets are owned
     embedding_data = EmbeddingIntervalData.query.get(entry_id)
-    collection = embedding_data.source_collection
+    feature_dataset = embedding_data.source_dataset
     bed_ds = embedding_data.source_intervals.source_dataset
-    if is_access_to_collection_denied(collection, g) or is_access_to_dataset_denied(
+    if is_access_to_dataset_denied(feature_dataset, g) or is_access_to_dataset_denied(
         bed_ds, g
     ):
-        return forbidden("Collection or bed dataset is not owned by logged in user!")
+        return forbidden("Feature dataset or region dataset is not owned by logged in user!")
     # check form
     if is_form_invalid():
         return invalid("Form is not valid!")

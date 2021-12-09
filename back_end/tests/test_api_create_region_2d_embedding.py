@@ -1,6 +1,4 @@
 import os
-import gzip
-import json
 import unittest
 import numpy as np
 import pandas as pd
@@ -23,9 +21,9 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
     def setUp(self):
         super().setUp()
         # add owned collection
-        self.owned_collection = Collection(id=1, user_id=1)
+        self.owned_feature_dataset = Dataset(id=1, user_id=1, filetype="cooler")
         # add unowned collection
-        self.unowned_collection = Collection(id=2, user_id=2)
+        self.unowned_feature_dataset = Dataset(id=2, user_id=2, filetype="cooler")
         # add owned bedfile
         self.dummy_regions = pd.DataFrame(
             {
@@ -65,25 +63,25 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         self.unowned_intervals = Intervals(
             id=2, dataset_id=self.unowned_bedfile.id, windowsize=200000
         )
-        # add embeddingIntervalData with unowned collection
-        self.embeddingData_collection_unowned = EmbeddingIntervalData(
+        # add embeddingIntervalData with unowned dataset
+        self.embeddingData_dataset_unowned = EmbeddingIntervalData(
             id=1,
             binsize=10000,
-            collection_id=self.unowned_collection.id,
+            dataset_id=self.unowned_feature_dataset.id,
             intervals_id=self.owned_intervals.id,
         )
         # add embeddingIntervalData with unowned intervals
         self.embeddingData_intervals_unowned = EmbeddingIntervalData(
             id=2,
             binsize=10000,
-            collection_id=self.owned_collection.id,
+            dataset_id=self.owned_feature_dataset.id,
             intervals_id=self.unowned_intervals.id,
         )
         # add owned embeddingIntervalData without thumbnails/feature_id and cluster_did
         self.embeddingData_intervals_wo_thumbnail_data = EmbeddingIntervalData(
             id=4,
             binsize=10000,
-            collection_id=self.owned_collection.id,
+            dataset_id=self.owned_feature_dataset.id,
             intervals_id=self.owned_intervals.id,
         )
         # add embeddingIntervalData with owned intervals and collection and associated data
@@ -103,24 +101,15 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         self.cluster_data = np.array([1.0, 2.0, 3.0, 1.0, 1.0, 2.0])
         cluster_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_clusters.npy")
         np.save(cluster_path, self.cluster_data)
-        # create distributions
-        self.distribution_data = np.array(
-            [[0.1, 0.2, 0.7], [0.4, 0.2, 0.4], [0.1, 0.1, 0.8]]
-        )
-        distribution_path = os.path.join(
-            TempDirTestCase.TEMP_PATH, "test_distribution.npy"
-        )
-        np.save(distribution_path, self.distribution_data)
         # create data
         self.embeddingData_owned = EmbeddingIntervalData(
             id=3,
             binsize=10000,
             file_path=data_path,
-            collection_id=self.owned_collection.id,
+            dataset_id=self.owned_feature_dataset.id,
             intervals_id=self.owned_intervals.id,
             thumbnail_path=thumbnail_path,
             cluster_id_path=cluster_path,
-            feature_distribution_path=distribution_path,
         )
 
     def test_no_auth(self):
@@ -145,8 +134,8 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 404)
 
-    def test_collection_not_owned(self):
-        """Collection underlying embeddingIntervalData is not owned"""
+    def test_dataset_not_owned(self):
+        """dataset underlying embeddingIntervalData is not owned"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -155,15 +144,15 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         db.session.add_all(
             [
                 self.owned_bedfile,
-                self.unowned_collection,
+                self.unowned_feature_dataset,
                 self.owned_intervals,
-                self.embeddingData_collection_unowned,
+                self.embeddingData_dataset_unowned,
             ]
         )
         db.session.commit()
         # make request for forbidden collection
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embeddingData_collection_unowned.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embeddingData_dataset_unowned.id}/0/create/",
             headers=token_headers,
             content_type="multipart/form-data",
         )
@@ -178,7 +167,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         # add data
         db.session.add_all(
             [
-                self.owned_collection,
+                self.owned_feature_dataset,
                 self.unowned_bedfile,
                 self.unowned_intervals,
                 self.embeddingData_intervals_unowned,
@@ -202,7 +191,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         # add data
         db.session.add_all(
             [
-                self.owned_collection,
+                self.owned_feature_dataset,
                 self.owned_bedfile,
                 self.owned_intervals,
                 self.embeddingData_intervals_wo_thumbnail_data,
@@ -226,7 +215,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         # add data
         db.session.add_all(
             [
-                self.owned_collection,
+                self.owned_feature_dataset,
                 self.owned_bedfile,
                 self.owned_intervals,
                 self.embeddingData_intervals_wo_thumbnail_data,
@@ -253,7 +242,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         # add data
         db.session.add_all(
             [
-                self.owned_collection,
+                self.owned_feature_dataset,
                 self.owned_bedfile,
                 self.owned_intervals,
                 self.embeddingData_intervals_wo_thumbnail_data,
@@ -281,7 +270,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         # add data
         db.session.add_all(
             [
-                self.owned_collection,
+                self.owned_feature_dataset,
                 self.owned_bedfile,
                 self.owned_intervals,
                 self.embeddingData_owned,
@@ -299,8 +288,8 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # test whether region was created successfully
-        self.assertEqual(len(Dataset.query.all()), 2)
-        new_dataset = Dataset.query.all()[1]
+        self.assertEqual(len(Dataset.query.all()), 3)
+        new_dataset = Dataset.query.all()[2]
         self.assertEqual(new_dataset.dataset_name, "asdf")
         self.assertEqual(new_dataset.filetype, "bedfile")
         self.assertEqual(new_dataset.assembly, 1)

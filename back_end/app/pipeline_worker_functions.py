@@ -432,6 +432,8 @@ def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize):
 def _do_embedding_2d(
     data
 ):
+    # transpose data
+    data = data.T
     # extract features
     log.info("      Extracting image features...")
     image_features = feature_extraction.extract_image_features(

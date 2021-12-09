@@ -10,7 +10,7 @@ import sys
 
 sys.path.append("./")
 from app import db
-from app.models import Collection, Dataset, Intervals, EmbeddingIntervalData
+from app.models import Dataset, Intervals, EmbeddingIntervalData
 
 
 class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
@@ -19,9 +19,9 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
     def setUp(self):
         super().setUp()
         # add owned collection
-        self.owned_collection = Collection(id=1, user_id=1)
+        self.owned_cooler = Dataset(id=1, user_id=1, filetype="cooler")
         # add unowned collection
-        self.unowned_collection = Collection(id=2, user_id=2)
+        self.unowned_cooler = Dataset(id=2, user_id=2, filetype="cooler")
         # add owned bedfile
         self.owned_bedfile = Dataset(id=3, filetype="bedfile", user_id=1)
         # add unowned bedfile
@@ -35,18 +35,20 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
             id=2, dataset_id=self.unowned_bedfile.id, windowsize=200000
         )
         # add embeddingIntervalData with unowned collection
-        self.assocData_collection_unowned = EmbeddingIntervalData(
+        self.embedData_cooler_unowned = EmbeddingIntervalData(
             id=1,
             binsize=10000,
-            collection_id=self.unowned_collection.id,
+            dataset_id=self.unowned_cooler.id,
             intervals_id=self.owned_intervals.id,
+            value_type="2d-embedding"
         )
         # add averageIntervalData with unowned intervals
-        self.assocData_intervals_unowned = EmbeddingIntervalData(
+        self.embedData_intervals_unowned = EmbeddingIntervalData(
             id=2,
             binsize=10000,
-            collection_id=self.owned_collection.id,
+            dataset_id=self.owned_cooler.id,
             intervals_id=self.unowned_intervals.id,
+            value_type="2d-embedding"
         )
         # add embeddingIntervalData with owned intervals and collection and associated data
         self.test_data = np.array([[1., 2.], [3, 4.], [5., 6.], [7., 8.], [9., 10.], [11., 12.]])
@@ -72,7 +74,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
             id=3,
             binsize=10000,
             file_path=data_path,
-            collection_id=self.owned_collection.id,
+            dataset_id=self.owned_cooler.id,
             intervals_id=self.owned_intervals.id,
             thumbnail_path=thumbnail_path,
             cluster_id_path=cluster_path,
@@ -102,8 +104,8 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 404)
 
-    def test_collection_not_owned(self):
-        """Collection underlying embeddingIntervalData is not owned"""
+    def test_dataset_not_owned(self):
+        """Cooler dataset underlying embeddingIntervalData is not owned"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -112,15 +114,15 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         db.session.add_all(
             [
                 self.owned_bedfile,
-                self.unowned_collection,
+                self.unowned_cooler,
                 self.owned_intervals,
-                self.assocData_collection_unowned,
+                self.embedData_cooler_unowned,
             ]
         )
         db.session.commit()
         # make request for forbidden cooler
         response = self.client.get(
-            f"/api/embeddingIntervalData/{self.assocData_collection_unowned.id}/",
+            f"/api/embeddingIntervalData/{self.embedData_cooler_unowned.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -135,16 +137,16 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         # add data
         db.session.add_all(
             [
-                self.owned_collection,
+                self.owned_cooler,
                 self.unowned_bedfile,
                 self.unowned_intervals,
-                self.assocData_intervals_unowned,
+                self.embedData_intervals_unowned,
             ]
         )
         db.session.commit()
         # make request with forbidden intervall
         response = self.client.get(
-            f"/api/embeddingIntervalData/{self.assocData_intervals_unowned.id}/",
+            f"/api/embeddingIntervalData/{self.embedData_intervals_unowned.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -159,7 +161,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         # add data
         db.session.add_all(
             [
-                self.owned_collection,
+                self.owned_cooler,
                 self.owned_bedfile,
                 self.owned_intervals,
                 self.embeddingData_owned,
@@ -188,12 +190,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
                 "data": self.thumbnail_data.flatten().tolist(),
                 "shape": list(self.thumbnail_data.shape),
                 "dtype": "float32",
-            },
-            "distributions": {
-                "data":  self.distribution_data.flatten().tolist(),
-                "shape": list(self.distribution_data.shape),
-                "dtype": "float32"
-            }   
+            } 
         }
         self.assertEqual(data, expected)
 

@@ -588,6 +588,12 @@ class Collection(db.Model):
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
+    embeddingData = db.relationship(
+        "EmbeddingIntervalData",
+        backref="source_collection",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
     processing_state = db.Column(db.String(64))
 
     def get_tasks_in_progress(self):
