@@ -458,6 +458,9 @@ export default {
             );
         },
         thumbnail: function() {
+            if (!this.widgetData || !this.widgetData[this.valueType]) {
+                return;
+            }
             if (this.selectedCluster !== undefined) {
                 return {
                     data: select_3d_along_first_axis(
