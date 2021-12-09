@@ -231,6 +231,12 @@ class Dataset(db.Model):
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
+    embeddingData = db.relationship(
+        "EmbeddingIntervalData",
+        backref="source_dataset",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
     bedFileMetadata = db.relationship(
         "BedFileMetadata",
         backref="associated_dataset",
@@ -470,6 +476,7 @@ class EmbeddingIntervalData(db.Model):
     normalization = db.Column(db.String(64))
     cluster_number = db.Column(db.String(64))
     collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
 
 
@@ -577,12 +584,6 @@ class Collection(db.Model):
     sessions = db.relationship("Session", secondary=session_collection_assoc_table)
     associationData = db.relationship(
         "AssociationIntervalData",
-        backref="source_collection",
-        lazy="dynamic",
-        cascade="all, delete-orphan",
-    )
-    embeddingData = db.relationship(
-        "EmbeddingIntervalData",
         backref="source_collection",
         lazy="dynamic",
         cascade="all, delete-orphan",

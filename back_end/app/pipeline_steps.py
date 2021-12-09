@@ -86,22 +86,52 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
             )
             return
         pileup_array = worker_funcs._do_pileup_fixed_size(
-            cooler_dataset, window_size, binsize, regions_path, arms, pileup_type
+            cooler_dataset, window_size, binsize, regions_path, arms, pileup_type, collapse=False
         )
     else:
         pileup_array = worker_funcs._do_pileup_variable_size(
-            cooler_dataset, binsize, regions_path, arms, pileup_type
+            cooler_dataset, binsize, regions_path, arms, pileup_type, collapse=False
         )
+    embedding_results = worker_funcs._do_embedding_2d(pileup_array)
     # add result to database
     log.info("      Writing output...")
     file_name = uuid.uuid4().hex + ".npy"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
-    np.save(file_path, pileup_array)
+    np.save(file_path, np.nanmean(pileup_array, axis=2))
     # add this to database
-    log.info("      Adding database entry...")
+    log.info("      Adding database entry for pileup...")
     worker_funcs._add_pileup_db(
         file_path, binsize, intervals.id, cooler_dataset.id, pileup_type
     )
+    # add database entry for embedding
+    file_path_embedding = os.path.join(
+        current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + "_embedding.npy"
+    )
+    np.save(file_path_embedding, embedding_results["embedding"])
+    # write output for cluster ids
+    for size in ["small", "large"]:
+        file_path_cluster_ids = os.path.join(
+            current_app.config["UPLOAD_DIR"],
+            uuid.uuid4().hex + f"_cluster_ids_{size}.npy",
+        )
+        np.save(
+            file_path_cluster_ids, embedding_results["clusters"][size]["cluster_ids"]
+        )
+        # write output for thumbnails
+        file_path_thumbnails = os.path.join(
+            current_app.config["UPLOAD_DIR"],
+            uuid.uuid4().hex + f"_thumbnails_{size}.npy",
+        )
+        np.save(file_path_thumbnails, embedding_results["clusters"][size]["thumbnails"])
+        filepaths = {
+            "embedding": file_path,
+            "cluster_ids": file_path_cluster_ids,
+            "thumbnails": file_path_thumbnails
+        }
+        # add to database
+        worker_funcs._add_embedding_2d_to_db(
+            filepaths, binsize, intervals.id, cooler_dataset.id, pileup_type, size
+        )
     log.info("      Success!")
 
 

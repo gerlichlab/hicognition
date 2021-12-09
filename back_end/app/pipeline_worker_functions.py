@@ -429,29 +429,9 @@ def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize):
     return embedder.fit_transform(imputed_frame), feature_frame
 
 
-def _do_embedding_2d_variable_size(
-    collection_id, intervals_id, binsize, interaction_type
+def _do_embedding_2d(
+    data
 ):
-    features = Collection.query.get(collection_id).datasets
-    intervals = Intervals.query.get(intervals_id)
-    regions = intervals.source_dataset.file_path
-    chromosome_arms = pd.read_csv(
-        Assembly.query.get(intervals.source_dataset.assembly).chrom_arms
-    )
-    log.info("      Collecting HiC matrices...")
-    data = []
-    for feature in features:
-        stack = _do_pileup_variable_size(
-            feature,
-            binsize,
-            regions,
-            chromosome_arms,
-            interaction_type,
-            collapse=False,
-        )
-        data.extend(
-            stack.T
-        )  # switches dimensions such that first dimension is dimesion that indexes arrays
     # extract features
     log.info("      Extracting image features...")
     image_features = feature_extraction.extract_image_features(
@@ -465,12 +445,10 @@ def _do_embedding_2d_variable_size(
                     "large": {
                         "cluster_ids": np.full((len(data)), np.nan),
                         "thumbnails": np.full((current_app.config["CLUSTER_NUMBER_LARGE"], data[0].shape[0], data[0].shape[1]), np.nan),
-                        "distributions": np.full((current_app.config["CLUSTER_NUMBER_LARGE"], len(features)), np.nan),
                     },
                     "small": {
                         "cluster_ids": np.full((len(data)), np.nan),
                         "thumbnails": np.full((current_app.config["CLUSTER_NUMBER_SMALL"], data[0].shape[0], data[0].shape[1]), np.nan),
-                        "distributions": np.full((current_app.config["CLUSTER_NUMBER_SMALL"], len(features)), np.nan),
                     },
                 },
             }
@@ -499,18 +477,6 @@ def _do_embedding_2d_variable_size(
         thumbnail = np.nanmean(sub_stacks, axis=2)
         thumbnails_list.append(thumbnail)
     thumbnails_large = np.stack(thumbnails_list, axis=0)
-    # find out fraction of collections in each cluster
-    log.info("      Calculating distributions large...")
-    region_length = len(data) // len(features)
-    collection_ids = np.array(
-        [j for i in range(len(features)) for j in [i] * region_length]
-    )
-    distribution_list = []
-    for cluster in range(current_app.config["CLUSTER_NUMBER_LARGE"]):
-        subset = collection_ids[cluster_ids_large == cluster]
-        fractions = np.histogram(subset, bins=range(len(features) + 1))[0] / len(subset)
-        distribution_list.append(fractions)
-    distributions_large = np.stack(distribution_list, axis=0)
     #  kmeans clustering
     log.info("      Running clustering small...")
     kmeans_small = KMeans(
@@ -532,154 +498,16 @@ def _do_embedding_2d_variable_size(
         thumbnail = np.nanmean(sub_stacks, axis=2)
         thumbnails_list.append(thumbnail)
     thumbnails_small = np.stack(thumbnails_list, axis=0)
-    # find out fraction of collections in each cluster
-    log.info("      Calculating distributions small...")
-    distribution_list = []
-    for cluster in range(current_app.config["CLUSTER_NUMBER_SMALL"]):
-        subset = collection_ids[cluster_ids_small == cluster]
-        fractions = np.histogram(subset, bins=range(len(features) + 1))[0] / len(subset)
-        distribution_list.append(fractions)
-    distributions_small = np.stack(distribution_list, axis=0)
     return {
         "embedding": embedding,
         "clusters": {
             "large": {
                 "cluster_ids": cluster_ids_large,
                 "thumbnails": thumbnails_large,
-                "distributions": distributions_large,
             },
             "small": {
                 "cluster_ids": cluster_ids_small,
                 "thumbnails": thumbnails_small,
-                "distributions": distributions_small,
-            },
-        },
-    }
-
-
-def _do_embedding_2d_fixed_size(collection_id, intervals_id, binsize, interaction_type):
-    features = Collection.query.get(collection_id).datasets
-    intervals = Intervals.query.get(intervals_id)
-    windowsize = intervals.windowsize
-    regions = intervals.source_dataset.file_path
-    chromosome_arms = pd.read_csv(
-        Assembly.query.get(intervals.source_dataset.assembly).chrom_arms
-    )
-    log.info("      Collecting HiC matrices...")
-    data = []
-    for feature in features:
-        stack = _do_pileup_fixed_size(
-            feature,
-            windowsize,
-            binsize,
-            regions,
-            chromosome_arms,
-            interaction_type,
-            collapse=False,
-        )
-        data.extend(
-            stack.T
-        )  # switches dimensions such that first dimension is dimesion that indexes arrays
-    # extract features
-    log.info("      Extracting image features...")
-    image_features = feature_extraction.extract_image_features(
-        data, pixel_target=(10, 10)
-    )
-    # check if bad image features and return empty arrays if so
-    if image_features is None:
-        return {
-                "embedding": np.full((len(data), 2), np.nan),
-                "clusters": {
-                    "large": {
-                        "cluster_ids": np.full((len(data)), np.nan),
-                        "thumbnails": np.full((current_app.config["CLUSTER_NUMBER_LARGE"], data[0].shape[0], data[0].shape[1]), np.nan),
-                        "distributions": np.full((current_app.config["CLUSTER_NUMBER_LARGE"], len(features)), np.nan),
-                    },
-                    "small": {
-                        "cluster_ids": np.full((len(data)), np.nan),
-                        "thumbnails": np.full((current_app.config["CLUSTER_NUMBER_SMALL"], data[0].shape[0], data[0].shape[1]), np.nan),
-                        "distributions": np.full((current_app.config["CLUSTER_NUMBER_SMALL"], len(features)), np.nan),
-                    },
-                },
-            }
-    # calculate embedding
-    log.info("      Running embedding...")
-    embedder = umap.UMAP(random_state=42)
-    embedding = embedder.fit_transform(image_features)
-    #  kmeans clustering
-    log.info("      Running clustering large...")
-    kmeans_large = KMeans(
-        n_clusters=current_app.config["CLUSTER_NUMBER_LARGE"], random_state=0
-    ).fit(embedding)
-    cluster_ids_large = kmeans_large.labels_
-    # create thumbnails for each cluster
-    log.info("      Generating thumbnails large...")
-    thumbnails_list = []
-    for cluster in range(current_app.config["CLUSTER_NUMBER_LARGE"]):
-        sub_stacks = np.stack(
-            [
-                array
-                for index, array in enumerate(data)
-                if cluster_ids_large[index] == cluster
-            ],
-            axis=2,
-        )
-        thumbnail = np.nanmean(sub_stacks, axis=2)
-        thumbnails_list.append(thumbnail)
-    thumbnails_large = np.stack(thumbnails_list, axis=0)
-    # find out fraction of collections in each cluster
-    log.info("      Calculating distributions large...")
-    region_length = len(data) // len(features)
-    collection_ids = np.array(
-        [j for i in range(len(features)) for j in [i] * region_length]
-    )
-    distribution_list = []
-    for cluster in range(current_app.config["CLUSTER_NUMBER_LARGE"]):
-        subset = collection_ids[cluster_ids_large == cluster]
-        fractions = np.histogram(subset, bins=range(len(features) + 1))[0] / len(subset)
-        distribution_list.append(fractions)
-    distributions_large = np.stack(distribution_list, axis=0)
-    #  kmeans clustering
-    log.info("      Running clustering small...")
-    kmeans_small = KMeans(
-        n_clusters=current_app.config["CLUSTER_NUMBER_SMALL"], random_state=0
-    ).fit(embedding)
-    cluster_ids_small = kmeans_small.labels_
-    # create thumbnails for each cluster
-    log.info("      Generating thumbnails small...")
-    thumbnails_list = []
-    for cluster in range(current_app.config["CLUSTER_NUMBER_SMALL"]):
-        sub_stacks = np.stack(
-            [
-                array
-                for index, array in enumerate(data)
-                if cluster_ids_small[index] == cluster
-            ],
-            axis=2,
-        )
-        thumbnail = np.nanmean(sub_stacks, axis=2)
-        thumbnails_list.append(thumbnail)
-    thumbnails_small = np.stack(thumbnails_list, axis=0)
-    # find out fraction of collections in each cluster
-    log.info("      Calculating distributions small...")
-    distribution_list = []
-    for cluster in range(current_app.config["CLUSTER_NUMBER_SMALL"]):
-        subset = collection_ids[cluster_ids_small == cluster]
-        fractions = np.histogram(subset, bins=range(len(features) + 1))[0] / len(subset)
-        distribution_list.append(fractions)
-    distributions_small = np.stack(distribution_list, axis=0)
-    return {
-        "embedding": embedding,
-        "clusters": {
-            "large": {
-                "cluster_ids": cluster_ids_large,
-                "thumbnails": thumbnails_large,
-                "distributions": distributions_large,
-            },
-            "small": {
-                "cluster_ids": cluster_ids_small,
-                "thumbnails": thumbnails_small,
-                "distributions": distributions_small,
             },
         },
     }
@@ -689,14 +517,14 @@ def _do_embedding_2d_fixed_size(collection_id, intervals_id, binsize, interactio
 
 
 def _add_embedding_2d_to_db(
-    filepaths, binsize, intervals_id, collection_id, interaction_type, cluster_number
+    filepaths, binsize, intervals_id, dataset_id, interaction_type, cluster_number
 ):
     """Adds association data set to db"""
     # check if old association interval data exists and delete them
     test_query = EmbeddingIntervalData.query.filter(
         (EmbeddingIntervalData.binsize == int(binsize))
         & (EmbeddingIntervalData.intervals_id == intervals_id)
-        & (EmbeddingIntervalData.collection_id == collection_id)
+        & (EmbeddingIntervalData.dataset_id == dataset_id)
         & (EmbeddingIntervalData.normalization == interaction_type)
         & (EmbeddingIntervalData.cluster_number == cluster_number)
     ).all()
@@ -710,9 +538,8 @@ def _add_embedding_2d_to_db(
         file_path=filepaths["embedding"],
         thumbnail_path=filepaths["thumbnails"],
         cluster_id_path=filepaths["cluster_ids"],
-        feature_distribution_path=filepaths["distributions"],
         intervals_id=intervals_id,
-        collection_id=collection_id,
+        dataset_id=dataset_id,
         value_type="2d-embedding",
         normalization=interaction_type,
         cluster_number=cluster_number,
