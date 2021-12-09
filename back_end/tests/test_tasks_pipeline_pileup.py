@@ -209,6 +209,8 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
     ):
         """Tests whether correct worker function for pileup is used
         when intervals has fixed windowsizes"""
+        # add return values
+        mock_pileup_fixed_size.return_value = np.full((2, 2, 2), np.nan)
         # dispatch call
         dataset_id = 1
         intervals_id = 1
@@ -225,6 +227,8 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
     ):
         """Tests whether correct worker function for pileup is used
         when intervals has variable windowsizes"""
+        # add return values
+        mock_pileup_variable_size.return_value = np.full((2, 2, 2), np.nan)
         # dispatch call
         dataset_id = 1
         intervals_id = 3
@@ -235,13 +239,16 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
         mock_pileup_fixed_size.assert_not_called()
 
     @patch("app.pipeline_steps.uuid.uuid4")
+    @patch("app.pipeline_steps.worker_funcs._add_embedding_2d_to_db")
     @patch("app.pipeline_steps.worker_funcs._add_pileup_db")
     @patch("app.pipeline_steps.worker_funcs._do_pileup_fixed_size")
     @patch("app.pipeline_steps.worker_funcs._do_pileup_variable_size")
     def test_adding_to_db_called_correctly(
-        self, mock_pileup_variable_size, mock_pileup_fixed_size, mock_add_db, mock_uuid
+        self, mock_pileup_variable_size, mock_pileup_fixed_size, mock_add_pileup_db, mock_add_embedding_db, mock_uuid
     ):
         """Tests whether function to add result to database is called correctly."""
+        # add return values
+        mock_pileup_fixed_size.return_value = np.full((2, 2, 2), np.nan)
         # hack in return value of uuid4().hex to be asdf
         uuid4 = MagicMock()
         type(uuid4).hex = PropertyMock(return_value="asdf")
@@ -251,13 +258,38 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
         intervals_id = 1
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
         pileup_pipeline_step(dataset_id, intervals_id, 10000, arms, "ICCF")
-        # check whether get_expected was called
-        mock_add_db.assert_called_with(
+        # check whether adding to pileup db is called correctly
+        mock_add_pileup_db.assert_called_with(
             self.app.config["UPLOAD_DIR"] + "/asdf.npy",
             10000,
             self.intervals1.id,
             self.dataset.id,
             "ICCF",
+        )
+        # check whether adding embedding to db is called correctly
+        mock_add_embedding_db.assert_any_call(
+            {
+                "embedding": self.app.config["UPLOAD_DIR"] + "/asdf_embedding.npy",
+                "cluster_ids": self.app.config["UPLOAD_DIR"] + "/asdf_cluster_ids_small.npy",
+                "thumbnails": self.app.config["UPLOAD_DIR"] + "/asdf_thumbnails_small.npy",
+            },
+            10000,
+            self.intervals1.id,
+            self.dataset.id,
+            "ICCF",
+            "small"
+        )
+        mock_add_embedding_db.assert_any_call(
+            {
+                "embedding": self.app.config["UPLOAD_DIR"] + "/asdf_embedding.npy",
+                "cluster_ids": self.app.config["UPLOAD_DIR"] + "/asdf_cluster_ids_large.npy",
+                "thumbnails": self.app.config["UPLOAD_DIR"] + "/asdf_thumbnails_large.npy",
+            },
+            10000,
+            self.intervals1.id,
+            self.dataset.id,
+            "ICCF",
+            "large"
         )
 
 
@@ -353,7 +385,7 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
         mock_get_expected.assert_not_called()
         expected_pileup_call = ["mock_cooler", returned_regions.dropna()]
         mock_pileup_iccf.assert_called_with(
-            *expected_pileup_call, proc=1, collapse=True
+            *expected_pileup_call, proc=2, collapse=True
         )
         # check whether iccf pileup is not called
         mock_pileup_obs_exp.assert_not_called()
@@ -577,7 +609,6 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         mock_Cooler.return_value = "mock_cooler"
         mock_get_expected.return_value = "expected"
         # dispatch call
-        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
         _do_pileup_variable_size(self.cooler, 5, "testpath", self.arms, "ICCF")
         # check whether get_expected was called
         mock_get_expected.assert_not_called()
@@ -718,7 +749,6 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         )
         mock_expected.assert_not_called()
 
-
     @patch("app.pipeline_worker_functions.get_optimal_binsize")
     def test_calculated_obs_exp_cached(self, mock_binsize):
         mock_binsize.return_value = 5000000
@@ -764,7 +794,7 @@ class TestGetOptimalBinsize(unittest.TestCase):
     def test_correct_binsize_small_size(self):
         """tests correct handling of small regions."""
         regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [10000]})
-        self.assertEqual(get_optimal_binsize(regions, 100), 2000)
+        self.assertEqual(get_optimal_binsize(regions, 100), 5000)
 
     def test_correct_binsize_moderate_size(self):
         """tests correct handling of moderately sized regions."""
@@ -785,7 +815,7 @@ class TestGetOptimalBinsize(unittest.TestCase):
                 "end": [10000] * 99 + [1000001],
             }
         )
-        self.assertEqual(get_optimal_binsize(regions, 100), 2000)
+        self.assertEqual(get_optimal_binsize(regions, 100), 5000)
 
     def test_correct_binsize_tads(self):
         """tests correct handling of small regions with rare lare regions"""

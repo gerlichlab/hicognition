@@ -124,7 +124,7 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
         )
         np.save(file_path_thumbnails, embedding_results["clusters"][size]["thumbnails"])
         filepaths = {
-            "embedding": file_path,
+            "embedding": file_path_embedding,
             "cluster_ids": file_path_cluster_ids,
             "thumbnails": file_path_thumbnails
         }
