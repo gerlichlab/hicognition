@@ -35,13 +35,6 @@
                     >
                     </addCollectionForm>
                 </md-tab>
-                <md-tab id="tab-2d-features" md-label="2d-features">
-                    <addCollectionForm
-                    fileType="2d-features"
-                    @close-dialog="$emit('close-dialog')"
-                    >
-                    </addCollectionForm>
-                </md-tab>
             </md-tabs>
         </md-dialog>
     </div>

@@ -58,12 +58,6 @@
                             :disabled="!allowDatasetTypeSelection"
                             >1D-features</md-radio
                         >
-                        <md-radio
-                            v-model="datasetType"
-                            value="2d-features"
-                            :disabled="!allowDatasetTypeSelection"
-                            >2D-features</md-radio
-                        >
                     </div>
                 </div>
                 <div class="md-layout-item md-layout md-gutter md-size-25">

@@ -24,21 +24,9 @@
                 >
                 <md-button
                     @click="showDialog = true"
-                    v-if="!showExpand"
                     >Create Region</md-button
                 >
-                <md-button class="md-icon-button" @click="handleExpandCard" v-if="showExpand">
-                    <md-icon > keyboard_arrow_down</md-icon>
-                </md-button>
             </md-card-actions>
-            <md-card-content v-if="expanded" class="no-padding">
-                <embedding-distribution
-                :rawData="selectedDistribution"
-                :width="width"
-                :height="distributionSize"
-                :collectionNames="collectionNames"
-                />
-            </md-card-content>
         <md-dialog-prompt
             :md-active.sync="showDialog"
             v-model="newRegionName"
@@ -79,7 +67,6 @@ export default {
         embeddingID: Number,
         datasetName: String,
         regionName: String,
-        collectionNames: Array,
         isLog: Boolean,
         minHeatmapAll: Number,
         maxHeatmapAll: Number,
@@ -103,8 +90,7 @@ export default {
             minHeatmapTarget: undefined,
             maxHeatmapTarget: undefined,
             minHeatmapRangeTarget: undefined,
-            maxHeatmapRangeTarget: undefined,
-            expanded: false
+            maxHeatmapRangeTarget: undefined
         };
     },
     computed: {
@@ -135,9 +121,6 @@ export default {
             }
             return this.maxHeatmapAllRange
         },
-        showExpand: function() {
-            return this.collectionNames.length > 1
-        },
         heatmapSize: function () {
             return this.width * 0.8;
         },
@@ -152,15 +135,6 @@ export default {
         },
     },
     methods: {
-        handleExpandCard: function() {
-            if (this.expanded) {
-                this.tooltipStyle["height"] = `${this.height}px`;
-                this.expanded = false
-            } else {
-                this.tooltipStyle["height"] = `${this.height + this.distributionSize}px`;
-                this.expanded = true
-            }
-        },
         handleSliderChange: function (data) {
             this.setColorScale(data);
         },
@@ -212,11 +186,7 @@ export default {
             this.tooltipStyle["top"] = `${val}px`;
         },
         height: function (val) {
-            if (this.expanded) {
-                this.tooltipStyle["height"] = `${this.height + this.distributionSize}px`;
-            }else {
-                this.tooltipStyle["height"] = `${val}px`;
-            }
+            this.tooltipStyle["height"] = `${val}px`;
         },
         width: function (val) {
             this.tooltipStyle["width"] = `${val}px`;
@@ -224,7 +194,6 @@ export default {
         showControls: function (val) {
             this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterID}`;
             if (!val) {
-                this.expanded = false
                 this.tooltipStyle["height"] = `${this.height}px`;
             }
         },

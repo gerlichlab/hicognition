@@ -224,9 +224,8 @@
                     :tooltipOffsetTop="tooltipOffsetTop"
                     :clusterID="selectedCluster"
                     :embeddingID="widgetDataID"
-                    :datasetName="collectionName"
+                    :datasetName="datasetName"
                     :regionName="regionName"
-                    :collectionNames="datasetNames"
                     @close-controls="closeControls"
                     :isLog="isLog"
                 />
@@ -326,7 +325,7 @@ export default {
                 );
             }
         },
-        collectionName: function() {
+        datasetName: function() {
             if (this.selectedBinsize) {
                 return this.datasets[this.selectedDataset]["name"];
             }
@@ -511,44 +510,22 @@ export default {
                 shape: [this.size, this.size],
                 dtype: "float32"
             };
-        },
-        datasetNames: function() {
-            if (this.selectedDataset.length == 0) {
-                return [];
-            }
-            return this.datasets[this.selectedDataset][
-                "collection_dataset_names"
-            ].map((el, i) => {
-                return {
-                    name: el,
-                    index: String(i)
-                };
-            });
         }
     },
     methods: {
         startDatasetSelection: function() {
             this.expectSelection = true;
-            // get collections from store
-            let collections = this.$store.state.collections.filter(el =>
-                Object.keys(this.datasets).includes(String(el.id))
-            );
-            let preselection = this.selectedDataset
-                ? [this.selectedDataset]
-                : [];
-            EventBus.$emit(
-                "show-select-collection-dialog",
-                collections,
-                "2d-features",
-                preselection
-            );
+            // get datasets from store
+            let datasets = this.$store.state.datasets.filter( (el) => Object.keys(this.datasets).includes(String(el.id)) )
+            let preselection = this.selectedDataset ? [this.selectedDataset] : []
+            EventBus.$emit("show-select-dialog", datasets, "cooler", preselection);
         },
         registerSelectionEventHandlers: function() {
-            EventBus.$on("collection-selected", this.handleDataSelection);
+            EventBus.$on("dataset-selected", this.handleDataSelection);
             EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
         removeSelectionEventHandlers: function() {
-            EventBus.$off("collection-selected", this.handleDataSelection);
+            EventBus.$off("dataset-selected", this.handleDataSelection);
             EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
         handleDataSelection: function(id) {
@@ -692,7 +669,7 @@ export default {
             this.$store.commit("compare/deleteWidget", payload);
             // decrement dataset from used dataset in store
             this.$store.commit(
-                "compare/decrement_usage_collections",
+                "compare/decrement_usage_dataset",
                 this.selectedDataset
             );
         },
@@ -725,7 +702,7 @@ export default {
             if (widgetData["dataset"]) {
                 let datasetId = widgetData["dataset"];
                 this.$store.commit(
-                    "compare/increment_usage_collections",
+                    "compare/increment_usage_dataset",
                     datasetId
                 );
             }
@@ -920,9 +897,9 @@ export default {
             } else {
                 this.updateData();
             }
-            // add collections to store for tallying used_collections
-            this.$store.commit("compare/decrement_usage_collections", oldVal);
-            this.$store.commit("compare/increment_usage_collections", newVal);
+            // add dataset to store for tallying used_datasets
+            this.$store.commit("compare/decrement_usage_dataset", oldVal);
+            this.$store.commit("compare/increment_usage_dataset", newVal);
         },
         selectedBinsize: async function() {
             if (!this.selectedBinsize) {
