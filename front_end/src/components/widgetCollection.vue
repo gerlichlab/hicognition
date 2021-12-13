@@ -107,6 +107,7 @@
                     :collectionID="id"
                     :rowIndex="item.rowIndex"
                     :colIndex="item.colIndex"
+                    :selectionOptions="selectionOptions"
                     @widgetDrop="handleWidgetDrop"
                 />
             </md-card-content>
@@ -337,6 +338,24 @@ export default {
                 "margin-right": "0px",
                 float: "left"
             };
+        },
+        selectionOptions: function(){
+            if (Object.keys(this.availableData).length == 0) {
+                return {
+                    pileup: false,
+                    lineprofile: false,
+                    lola: false,
+                    embedding1d: false,
+                    embedding2d: false
+                }
+            }
+            return {
+                pileup: Object.keys(this.availableData.pileup).length != 0,
+                lineprofile: Object.keys(this.availableData.lineprofile).length != 0,
+                lola: Object.keys(this.availableData.lola).length != 0,
+                embedding1d: Object.keys(this.availableData.embedding1d).length != 0,
+                embedding2d: Object.keys(this.availableData.embedding2d).length != 0
+            }
         }
     },
     methods: {
@@ -548,7 +567,7 @@ export default {
                 id: this.id,
                 collectionConfig: {
                     regionID: undefined,
-                    availableData: { pileup: {}, lineprofile: {}, stackup: {} },
+                    availableData: { pileup: {}, lineprofile: {}, stackup: {}, lola: {}, embedding1d: {}, embedding2d: {} },
                     intervalSize: undefined
                 }
             };

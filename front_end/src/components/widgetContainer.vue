@@ -34,11 +34,13 @@
                                     <md-list-item
                                         class="md-inset"
                                         @click="setPileup"
+                                        :disabled="!selectionOptions.pileup"
                                         >Average 2d</md-list-item
                                     >
                                     <md-list-item
                                         class="md-inset"
                                         @click="setLineprofile"
+                                        :disabled="!selectionOptions.lineprofile"
                                         >Lineprofile</md-list-item
                                     >
                                 </md-list>
@@ -52,16 +54,19 @@
                                     <md-list-item
                                         class="md-inset"
                                         @click="setStackup"
+                                        :disabled="!selectionOptions.lineprofile"
                                         >Stacked lineprofiles</md-list-item
                                     >
                                     <md-list-item
                                         class="md-inset"
                                         @click="setEmbedding1d"
+                                        :disabled="!selectionOptions.embedding1d"
                                         >1D-Embedding</md-list-item
                                     >
                                     <md-list-item
                                         class="md-inset"
                                         @click="setEmbedding2d"
+                                        :disabled="!selectionOptions.embedding2d"
                                         >2D-Embedding</md-list-item
                                     >
                                 </md-list>
@@ -75,6 +80,7 @@
                                     <md-list-item
                                         class="md-inset"
                                         @click="setLola"
+                                        :disabled="!selectionOptions.lola"
                                         >Lola</md-list-item
                                     >
                                 </md-list>
@@ -193,9 +199,16 @@ export default {
         id: Number,
         collectionID: Number,
         rowIndex: Number,
-        colIndex: Number
+        colIndex: Number,
+        selectionOptions: Object
     },
     methods: {
+        handleExpandClick: function(event, key) {
+            console.log(event)
+            if (!selectionOptions[key]){
+
+            }
+        },
         handleMouseOverSelectionButton: function() {
             this.hideSelection = false;
             setTimeout(() => {
@@ -240,6 +253,10 @@ export default {
             this.$store.commit("compare/setWidget", payload);
         },
         setPileup: function() {
+            // check if allowed
+            if (!this.selectionOptions.pileup){
+                return
+            }
             // check if widget is in store
             if (!this.widgetIDExists()) {
                 this.initializeWidgetFromEmpty();
@@ -255,6 +272,10 @@ export default {
             this.widgetType = "Pileup";
         },
         setStackup: function() {
+            // check if allowed
+            if (!this.selectionOptions.lineprofile){
+                return
+            }
             // check if widget is in store
             if (!this.widgetIDExists()) {
                 this.initializeWidgetFromEmpty();
@@ -270,6 +291,10 @@ export default {
             this.widgetType = "Stackup";
         },
         setLineprofile: function() {
+            // check if allowed
+            if (!this.selectionOptions.lineprofile){
+                return
+            }
             // check if widget is in store
             if (!this.widgetIDExists()) {
                 this.initializeWidgetFromEmpty();
@@ -285,6 +310,10 @@ export default {
             this.widgetType = "Lineprofile";
         },
         setLola: function() {
+            // check if allowed
+            if (!this.selectionOptions.lola){
+                return
+            }
             // check if widget is in store
             if (!this.widgetIDExists()) {
                 this.initializeWidgetFromEmpty();
@@ -300,6 +329,10 @@ export default {
             this.widgetType = "Lola";
         },
         setEmbedding1d: function() {
+            // check if allowed
+            if (!this.selectionOptions.embedding1d){
+                return
+            }
             // check if widget is in store
             if (!this.widgetIDExists()) {
                 this.initializeWidgetFromEmpty();
@@ -315,6 +348,10 @@ export default {
             this.widgetType = "Embedding1D";
         },
         setEmbedding2d: function() {
+            // check if allowed
+            if (!this.selectionOptions.embedding2d){
+                return
+            }
             // check if widget is in store
             if (!this.widgetIDExists()) {
                 this.initializeWidgetFromEmpty();
