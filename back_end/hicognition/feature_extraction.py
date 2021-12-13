@@ -1,7 +1,6 @@
 """Module to extract features from genomic datasets"""
 
 from skimage.transform import resize
-from skimage.filters import sobel_h, sobel_v, sato, hessian, gaussian
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 import numpy as np

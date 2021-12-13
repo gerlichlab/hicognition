@@ -4,8 +4,8 @@ services:
     # flask-api server
     hicognition:
         container_name: flask-server
-        volumes:  
-            - ${HICOGNITION_DIR}:/code
+        volumes:  # TODO: mount only upload directory for production config to persist it
+            - ${DATA_DIR}:/code/temp/
         environment:
             - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
@@ -66,7 +66,7 @@ services:
 
     redis-worker-long:
         volumes:  
-            - ${HICOGNITION_DIR}:/code
+            - ${DATA_DIR}:/code/temp/
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
@@ -89,7 +89,7 @@ services:
 
     redis-worker-medium:
         volumes:  
-            - ${HICOGNITION_DIR}:/code
+            - ${DATA_DIR}:/code/temp/
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
@@ -112,7 +112,7 @@ services:
 
     redis-worker-short:
         volumes:  
-            - ${HICOGNITION_DIR}:/code
+            - ${DATA_DIR}:/code/temp/
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py

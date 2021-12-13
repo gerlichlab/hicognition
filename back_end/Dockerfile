@@ -32,6 +32,10 @@ RUN conda install mamba -n base -c conda-forge &&\
 
 RUN rm -rf /temp/install
 
+# add code directory so production code is packaged
+
+COPY . /code
+
 WORKDIR /home
 
 CMD ["/bin/bash"]

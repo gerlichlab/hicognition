@@ -1,0 +1,41 @@
+name: Run backend tests
+on: workflow_dispatch
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      CODE_DIR: "./"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build hicognition
+        run: |
+          VERSION=$(< VERSION) 
+          docker compose build
+      - name: Create directory structure
+        run: |
+          mkdir workdir/mysql
+      - name: Start containers
+        run: |
+          docker-compose up -d --timeout 3000
+        env:
+          HICOGNITION_DIR: "back_end"
+          DATA_DIR: "back_end/temp/"
+          DATABASE_URL: "mysql+pymysql://hicognition:ASDF@172.18.0.9/hicognition"
+          DIR_FRONT_END: "front_end/"
+          REDIS_URL: "redis://redis-server:6379/0"
+          CHROM_SIZES: "/code/data/hg19.chrom.sizes"
+          CHROM_ARMS: "/code/data/arms.hg19"
+          UPLOAD_DIR: "/code/temp/"
+          DIR_STATIC: "back_end/app/static/"
+          KEY_DIR: "keys"
+          MYSQL_PASSWORD: "ASDF"
+          MYSQL_DATA_DIR: "workdir/mysql"
+          INTEGRATION_TESTS: "front_end/e2e"
+      - name: Check running containers
+        run: docker ps -a
+      - name: Logs
+        run: docker-compose -f docker-test.yml logs
+      - name: Test
+        run:  |
+          docker exec hicognition bash -c "pytest /code/" --timeout 3000
