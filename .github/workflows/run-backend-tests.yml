@@ -10,7 +10,6 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build hicognition
         run: |
-          VERSION=$(< VERSION) 
           docker compose build
       - name: Create directory structure
         run: |
