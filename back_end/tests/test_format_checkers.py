@@ -76,11 +76,11 @@ class TestIsBedFileCorrectlyFormatted(TempDirTestCase):
         self.assertFalse(result)
 
     def test_bad_data_unsupported_chromosomes(self):
-        """Tests bedfile with unsupported chromosomes"""
+        """Tests bedfile with unsupported chromosomes should go through"""
         result = format_checkers.is_bed_file_correctly_formatted(
             "tests/testfiles/unsupported_chromosomes.bed", self.chrom_names, []
         )
-        self.assertFalse(result)
+        self.assertTrue(result)
 
 
 class TestIsCoolerCorrectlyFormatted(unittest.TestCase):

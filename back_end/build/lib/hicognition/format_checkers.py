@@ -33,7 +33,7 @@ def is_bed_file_correctly_formatted(file_path, chromosome_names, needed_resoluti
             # check whether chromosome part of line is in accepted chromosomes
             chrom = line.split("\t")[0]
             if chrom not in chromosome_names:
-                return False
+                logging.warn(f"Chromosome {chrom} does not exist in chromosome names!")
         return True
     except BaseException:
         return False
@@ -61,7 +61,7 @@ def is_mcooler(file_path, chromosome_names, needed_resolutions):
         for needed in needed_resolutions:
             if f"/resolutions/{needed}" not in resolutions:
                 logging.warn(f"resolution {needed} not in cooler!")
-    except:
+    except BaseException:
         return False
     return True
 

@@ -315,6 +315,9 @@ export function getBoundaries(x_vals, y_vals){
     for (let j = 0; j < x_vals.length; j++) {
         let x = x_vals[j]
         let y = y_vals[j]
+        if (x == undefined || y == undefined){
+            continue
+        }
         if (x < minX) {
             minX = x;
         }
@@ -410,6 +413,9 @@ export function rectBin(
         let x_bin, y_bin;
         let x_val = x_vals[i];
         let y_val = y_vals[i];
+        if (x_val == undefined || y_val == undefined){
+            continue
+        }
         let value = overlay_values ? overlay_values[i] : 1
         if (x_val == value_boundaries.maxX) {
             x_bin =

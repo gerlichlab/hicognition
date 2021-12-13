@@ -430,6 +430,12 @@ describe("When rectBin is called, it", function () {
             [undefined, undefined]
         ]);
     });
+    it("Should return empty array of size size if values are undefined", () => {
+        expect(rectBin(2, [null, null, null, null, null, null], undefined)).toEqual([
+            [undefined, undefined],
+            [undefined, undefined]
+        ]);
+    })
     it("Should bin values correctly if integers are passed", () => {
         expect(
             rectBin(
@@ -438,6 +444,22 @@ describe("When rectBin is called, it", function () {
                 flatten([[60, 100],
                 [80, 50],
                 [50, 50]]),
+
+            )
+        ).toEqual([
+            [1, undefined],
+            [1, 1]
+        ]);
+    });
+    it("Should behave correctly if a null point is passt", () => {
+        expect(
+            rectBin(
+                2,
+
+                flatten([[60, 100],
+                [80, 50],
+                [50, 50],
+                [null, null]]),
 
             )
         ).toEqual([
