@@ -64,7 +64,7 @@ services:
         build:
             context: "./back_end"
         scale: 3
-        image: flask:v1.0
+        image: hicognition:v1.0
         entrypoint: "/bin/bash"
         networks:
             - hicognition-net
@@ -87,7 +87,7 @@ services:
         build:
             context: "./back_end"
         scale: 10
-        image: flask:v1.0
+        image: hicognition:v1.0
         entrypoint: "/bin/bash"
         networks:
             - hicognition-net
@@ -110,7 +110,7 @@ services:
         build:
             context: "./back_end"
         scale: 3
-        image: flask:v1.0
+        image: hicognition:v1.0
         entrypoint: "/bin/bash"
         networks:
             - hicognition-net
