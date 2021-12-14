@@ -4,7 +4,9 @@
 [![Javascript Style Guide: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier-vscode "Prettier: An Opinionated Code Formatter")
 ![Build and push image](https://github.com/gerlichlab/HiCognition/actions/workflows/build_and_push_image.yml/badge.svg)
 ![Run backend tests](https://github.com/gerlichlab/HiCognition/actions/workflows/run-backend-tests.yml/badge.svg)
-![Run backend tests](https://github.com/gerlichlab/HiCognition/actions/workflows/run-front-end-tests.yml/badge.svg)
+![Run front-end tests](https://github.com/gerlichlab/HiCognition/actions/workflows/run-front-end-tests.yml/badge.svg)
+![Run integration tests](https://github.com/gerlichlab/HiCognition/actions/workflows/run-integration-tests.yml/badge.svg)
+
 
 [TODO:]:<> ( Add: docs badge, build badge, coverage badge. More on: https://github.com/dwyl/repo-badges)
 
