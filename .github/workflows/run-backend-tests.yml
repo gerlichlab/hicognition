@@ -45,4 +45,4 @@ jobs:
         run: docker-compose logs
       - name: Test
         run:  |
-          docker exec flask-server bash -c "pytest /code/" --timeout 3000
+          docker exec flask-server bash -c "cd /code && pytest ." --timeout 3000
