@@ -166,7 +166,7 @@ services:
       networks:
         hicognition-net:
             ipv4_address: 172.18.0.10
-      command: -c "init_tests"
+      command: -c "sleep 10000"
 
 
 networks:
