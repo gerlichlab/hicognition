@@ -42,7 +42,7 @@ jobs:
       - name: Check running containers
         run: docker ps -a
       - name: Logs
-        run: docker-compose -f docker-test.yml logs
+        run: docker-compose logs
       - name: Test
         run:  |
-          docker exec hicognition bash -c "pytest /code/" --timeout 3000
+          docker exec flask-server bash -c "pytest /code/" --timeout 3000
