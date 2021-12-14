@@ -8,12 +8,19 @@ jobs:
       CODE_DIR: "./"
     steps:
       - uses: actions/checkout@v2
-      - name: Build hicognition
+      - name: docker login
+        env:
+          DOCKER_USER: ${{secrets.DOCKER_USER}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
         run: |
-          docker compose build
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - name: pull and tag image
+        run: |
+          docker pull gerlichlab/hicognition:v1.0
+          docker tag gerlichlab/hicognition:v1.0 hicognition:v1.0
       - name: Create directory structure
         run: |
-          mkdir workdir/mysql
+          mkdir -p workdir/mysql
       - name: Start containers
         run: |
           docker-compose up -d --timeout 3000
