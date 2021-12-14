@@ -21,6 +21,7 @@ jobs:
       - name: Create directory structure
         run: |
           mkdir -p workdir/mysql
+          mkdir keys
       - name: Start containers
         run: |
           docker-compose up -d --timeout 3000
@@ -34,7 +35,7 @@ jobs:
           CHROM_ARMS: "/code/data/arms.hg19"
           UPLOAD_DIR: "/code/temp/"
           DIR_STATIC: "./back_end/app/static/"
-          KEY_DIR: "keys"
+          KEY_DIR: "./keys"
           MYSQL_PASSWORD: "ASDF"
           MYSQL_DATA_DIR: "./workdir/mysql"
           INTEGRATION_TESTS: "./front_end/e2e"
