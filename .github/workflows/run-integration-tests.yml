@@ -1,0 +1,41 @@
+name: Run backend tests
+on: workflow_dispatch
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      CODE_DIR: "./"
+    steps:
+      - uses: actions/checkout@v2
+      - name: docker login
+        env:
+          DOCKER_USER: ${{secrets.DOCKER_USER}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - name: pull and tag image
+        run: |
+          docker pull gerlichlab/hicognition:v1.0
+          docker tag gerlichlab/hicognition:v1.0 hicognition:v1.0
+      - name: Create directory structure
+        run: |
+          mkdir -p workdir/mysql
+          mkdir keys
+      - name: Start containers
+        run: |
+          docker-compose -f docker_integration_tests.yml up --exit-code-from cypress
+        env:
+          HICOGNITION_DIR: "./back_end"
+          DATA_DIR: "./back_end/temp/"
+          DATABASE_URL: "mysql+pymysql://hicognition:ASDF@172.18.0.9/hicognition"
+          DIR_FRONT_END: "./front_end/"
+          REDIS_URL: "redis://redis-server:6379/0"
+          CHROM_SIZES: "/code/data/hg19.chrom.sizes"
+          CHROM_ARMS: "/code/data/arms.hg19"
+          UPLOAD_DIR: "/code/temp/"
+          DIR_STATIC: "./back_end/app/static/"
+          KEY_DIR: "./keys"
+          MYSQL_PASSWORD: "ASDF"
+          MYSQL_DATA_DIR: "./workdir/mysql"
+          INTEGRATION_TESTS: "./front_end/e2e"
