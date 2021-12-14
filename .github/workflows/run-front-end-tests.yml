@@ -26,7 +26,7 @@ jobs:
         run: |
           docker-compose -f docker_dev.yml  up -d --timeout 3000
         env:
-          HICOGNITION_DIR: "back_end"
+          HICOGNITION_DIR: "./back_end"
           DATA_DIR: "./back_end/temp/"
           DATABASE_URL: "mysql+pymysql://hicognition:ASDF@172.18.0.9/hicognition"
           DIR_FRONT_END: "./front_end/"
