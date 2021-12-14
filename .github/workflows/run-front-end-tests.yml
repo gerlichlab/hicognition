@@ -24,7 +24,7 @@ jobs:
           mkdir keys
       - name: Start containers
         run: |
-          docker-compose -f docker_dev.yml  up -d --timeout 3000
+          docker-compose -f ./docker_dev.yml up node -d
         env:
           HICOGNITION_DIR: "./back_end"
           DATA_DIR: "./back_end/temp/"
@@ -45,4 +45,5 @@ jobs:
         run: docker-compose logs
       - name: Test
         run:  |
+          sleep 10
           docker exec node bash -c "cd /front_end && npm run test" --timeout 3000
