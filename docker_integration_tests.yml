@@ -42,6 +42,8 @@ services:
             - ${DIR_FRONT_END}:/front_end
             - ${DIR_STATIC}:/static
             - ${KEY_DIR}:/keys
+        networks:
+            - hicognition-net
 
     # container to build front-end
     node:
@@ -78,7 +80,7 @@ services:
                 - redis-server
         build:
             context: "./back_end"
-        scale: 3
+        scale: 1
         image: hicognition:v1.0
         entrypoint: "/bin/bash"
         networks:
@@ -101,7 +103,7 @@ services:
                 - redis-server
         build:
             context: "./back_end"
-        scale: 10
+        scale: 1
         image: hicognition:v1.0
         entrypoint: "/bin/bash"
         networks:
@@ -124,7 +126,7 @@ services:
                 - redis-server
         build:
             context: "./back_end"
-        scale: 3
+        scale: 1
         image: hicognition:v1.0
         entrypoint: "/bin/bash"
         networks:

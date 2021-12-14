@@ -24,7 +24,7 @@ jobs:
           mkdir keys
       - name: Start containers
         run: |
-          docker-compose -f docker_integration_tests.yml up --exit-code-from cypress
+          docker-compose -f docker_integration_tests.yml up --exit-code-from cypress --timeout 250
         env:
           HICOGNITION_DIR: "./back_end"
           DATA_DIR: "./back_end/temp/"
