@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+    node:
+        container_name: node
+        image: node:14-buster
+        ports:
+            # only map localhost-port
+            - "8080:8080"
+        volumes:
+            - ${DIR_FRONT_END}:/front_end
+        entrypoint: 
+            - "/bin/bash"
+        command: -c "cd /front_end && npm install && npm run test"

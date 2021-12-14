@@ -14,26 +14,6 @@ jobs:
           mkdir keys
       - name: Start containers
         run: |
-          docker-compose -f ./docker_dev.yml up node -d
+          docker-compose -f ./docker_front_end_test.yml up node
         env:
-          HICOGNITION_DIR: "./back_end"
-          DATA_DIR: "./back_end/temp/"
-          DATABASE_URL: "mysql+pymysql://hicognition:ASDF@172.18.0.9/hicognition"
           DIR_FRONT_END: "./front_end/"
-          REDIS_URL: "redis://redis-server:6379/0"
-          CHROM_SIZES: "/code/data/hg19.chrom.sizes"
-          CHROM_ARMS: "/code/data/arms.hg19"
-          UPLOAD_DIR: "/code/temp/"
-          DIR_STATIC: "./back_end/app/static/"
-          KEY_DIR: "./keys"
-          MYSQL_PASSWORD: "ASDF"
-          MYSQL_DATA_DIR: "./workdir/mysql"
-          INTEGRATION_TESTS: "./front_end/e2e"
-      - name: Check running containers
-        run: docker ps -a
-      - name: Logs
-        run: docker-compose logs
-      - name: Test
-        run:  |
-          sleep 10
-          docker exec node bash -c "cd /front_end && npm run test" --timeout 3000
