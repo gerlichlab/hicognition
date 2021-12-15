@@ -10,6 +10,8 @@ class ProcessingFinishedNotification(BaseModel):
     name: str
     processing_type: str
     submitted_by: int
+    region_id: int
+    region_name: str
 
 
 class NotificationHandler():

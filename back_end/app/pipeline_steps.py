@@ -9,8 +9,11 @@ import numpy as np
 from . import db
 from . import pipeline_worker_functions as worker_funcs
 from rq import get_current_job
+from .notifications import NotificationHandler
+
 from . import db
 from .models import (
+    Dataset,
     Collection,
     Dataset,
     Intervals,
@@ -21,6 +24,10 @@ from .models import (
 
 # get logger
 log = logging.getLogger("rq.worker")
+
+# set up notification handler
+
+notifcation_handler = NotificationHandler()
 
 
 def bed_preprocess_pipeline_step(dataset_id, windowsize):
@@ -273,6 +280,20 @@ def set_dataset_finished(dataset_id, intervals_id):
         )
         db.session.execute(stmt)
         db.session.commit()
+        # signal completion
+        dataset = Dataset.query.get(dataset_id)
+        log.info("      Signalling reached")
+        notifcation_handler.signal_processing_completion(
+            {
+                "data_type": dataset.filetype,
+                "id": dataset_id,
+                "name": dataset.dataset_name,
+                "processing_type": current_app.config["PIPELINE_NAMES"][dataset.filetype][0],
+                "submitted_by": Task.query.get(get_current_job().get_id()).user_id,
+                "region_id": region.id,
+                "region_name": region.dataset_name
+            }
+        )
 
 
 def set_task_progress(progress):
@@ -360,3 +381,16 @@ def set_collection_finished(collection_id, intervals_id):
         )
         db.session.execute(stmt)
         db.session.commit()
+        # signal completion
+        collection = Collection.query.get(collection_id)
+        notifcation_handler.signal_processing_completion(
+            {
+                "data_type": collection.kind,
+                "id": collection_id,
+                "name": collection.name,
+                "processing_type": current_app.config["PIPELINE_NAMES"]["collections"][collection.kind][0],
+                "submitted_by": Task.query.get(get_current_job().get_id()).user_id,
+                "region_id": region.id,
+                "region_name": region.dataset_name
+            }
+        )

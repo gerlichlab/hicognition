@@ -63,17 +63,6 @@ def pipeline_bed(dataset_id):
         # preprocessing
         pipeline_steps.bed_preprocess_pipeline_step(dataset_id, window)
     pipeline_steps.set_task_progress(100)
-    # get user id
-    notifcation_handler.signal_processing_completion(
-        {
-            "data_type": "bed",
-            "id": dataset_id,
-            "name": dataset_object.dataset_name,
-            "processing_type": "pipeline_bed",
-            "submitted_by": Task.query.get(get_current_job().get_id()).user_id
-        }
-    )
-
 
 def pipeline_pileup(dataset_id, intervals_id, binsize):
     """Start pileup pipeline for specified combination of
