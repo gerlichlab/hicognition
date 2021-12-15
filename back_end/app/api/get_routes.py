@@ -19,6 +19,7 @@ from .helpers import (
 )
 from . import api
 from .. import db
+from .. import sse
 from ..models import (
     BedFileMetadata,
     Intervals,
@@ -33,7 +34,6 @@ from ..models import (
 )
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
-
 
 @api.route("/test", methods=["GET"])
 def test():

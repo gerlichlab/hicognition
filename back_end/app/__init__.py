@@ -2,6 +2,7 @@
 from flask import Flask
 from .config import config
 from flask_sqlalchemy import SQLAlchemy
+from flask_sse import sse
 from flask_login import LoginManager
 from redis import Redis
 import rq
@@ -29,4 +30,6 @@ def create_app(config_name):
     from .api import api as api_blueprint
 
     app.register_blueprint(api_blueprint, url_prefix="/api/")
+    # register sse blueprint
+    app.register_blueprint(sse, url_prefix='/stream')
     return app
