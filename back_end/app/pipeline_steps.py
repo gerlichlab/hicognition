@@ -2,6 +2,7 @@
 import os
 import uuid
 import logging
+from datetime import datetime
 
 from flask.globals import current_app
 import pandas as pd
@@ -291,7 +292,9 @@ def set_dataset_finished(dataset_id, intervals_id):
                 "processing_type": current_app.config["PIPELINE_NAMES"][dataset.filetype][0],
                 "submitted_by": Task.query.get(get_current_job().get_id()).user_id,
                 "region_id": region.id,
-                "region_name": region.dataset_name
+                "region_name": region.dataset_name,
+                "time": datetime.now(),
+                "id": get_current_job().get_id()
             }
         )
 
@@ -391,6 +394,8 @@ def set_collection_finished(collection_id, intervals_id):
                 "processing_type": current_app.config["PIPELINE_NAMES"]["collections"][collection.kind][0],
                 "submitted_by": Task.query.get(get_current_job().get_id()).user_id,
                 "region_id": region.id,
-                "region_name": region.dataset_name
+                "region_name": region.dataset_name,
+                "time": datetime.now(),
+                "id": get_current_job().get_id()
             }
         )

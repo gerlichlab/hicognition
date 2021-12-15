@@ -2,7 +2,7 @@
 from . import api
 
 
-@api.after_request
+@api.after_app_request
 def after_request(response):
     response.headers.add("Access-Control-Allow-Origin", "*")  # TODO finer control
     response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")

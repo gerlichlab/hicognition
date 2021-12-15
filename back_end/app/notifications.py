@@ -1,5 +1,6 @@
 """Handling of notifications"""
 from pydantic import BaseModel, validate_arguments
+from datetime import datetime
 from . import sse
 
 
@@ -12,6 +13,8 @@ class ProcessingFinishedNotification(BaseModel):
     submitted_by: int
     region_id: int
     region_name: str
+    time: datetime
+    id: str
 
 
 class NotificationHandler():
