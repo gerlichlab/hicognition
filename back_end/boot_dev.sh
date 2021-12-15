@@ -7,4 +7,4 @@ while true; do
     echo Upgrade command failed, retrying in 5 secs...
     sleep 5
 done
-exec flask run --host=0.0.0.0
+exec gunicorn --bind 0.0.0.0:5000 --reload --access-logfile - --worker-class gevent hicognition_server:app

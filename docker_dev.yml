@@ -35,7 +35,7 @@ services:
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.3
-        command: -c "cd /code && ./boot.sh"
+        command: -c "cd /code && ./boot_dev.sh"
 
 
     redis-server:

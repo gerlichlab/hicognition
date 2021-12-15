@@ -61,6 +61,9 @@ dependencies:
       - Flask-Babel==1.0.0
       - Flask-Bootstrap==3.3.7.1
       - flask-cors
+      - flask-sse
+      - gunicorn
+      - gevent
       - flask-httpauth==4.1.0
       - Flask-Login==0.5.0
       - Flask-Mail==0.9.1

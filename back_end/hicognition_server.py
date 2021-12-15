@@ -2,7 +2,6 @@
 import os
 import atexit
 import json
-from functools import partial
 from getpass import getpass
 import click
 from base64 import b64encode
@@ -172,3 +171,9 @@ def _get_api_headers(username, password):
         "Accept": "application/json",
         "Content-Type": "application/json",
     }
+
+# make script entrypoint
+
+
+if __name__ == "__main__":
+    app.run()

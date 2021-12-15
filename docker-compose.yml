@@ -21,7 +21,7 @@ services:
             context: "./back_end"
         image: hicognition:v1.0
         entrypoint: "/bin/bash"
-        command: -c "cd /code && ./boot.sh"
+        command: -c "cd /code && ./boot_prod.sh"
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.3
