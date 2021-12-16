@@ -3,6 +3,7 @@ from flask.globals import current_app
 from .pipeline_steps import set_dataset_failed, set_collection_failed
 from .models import Task
 from . import db
+from .notifications import NotificationHandler
 
 
 def add_app_context(app):
@@ -50,3 +51,8 @@ def cleanup_failed_tasks():
                 db.session.delete(task)
     current_app.logger.info(f"Background process deleted {deletion_number} failed tasks")
     db.session.commit()
+
+
+def send_keep_alive_message():
+    NotificationHandler().send_keep_alive()
+

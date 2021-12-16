@@ -416,8 +416,8 @@ const store = new Vuex.Store({
         usedSortOrders: Array(COLORPALETTE.length).fill(0), // flags for used numbers
         usedValueScales: Array(COLORPALETTE.length).fill(0),
         notifications: {
-            "read": [],
-            "new": []
+            read: [],
+            new: []
         }
     },
     getters: {
@@ -456,22 +456,26 @@ const store = new Vuex.Store({
             return state.datasets.filter(el => el.id === id)[0];
         },
         getNewNotifications: state => {
-            return state.notifications.new.sort((a, b) => a.time - b.time)
+            return state.notifications.new.sort((a, b) => a.time - b.time);
         }
     },
     mutations: {
         addNewNotification(state, notification) {
-            state.notifications.new.push(notification)
+            state.notifications.new.push(notification);
         },
         setNotificationRead(state, id) {
             state.notifications.read.push(
-                state.notifications.new.filter((el) => el.id === id)
-            )
-            state.notifications.new = state.notifications.new.filter((el) => el.id !== id)
+                state.notifications.new.filter(el => el.id === id)
+            );
+            state.notifications.new = state.notifications.new.filter(
+                el => el.id !== id
+            );
         },
         clearNewNotifications(state, id) {
-            state.notifications.read = state.notifications.read.concat(state.notifications.new)
-            state.notifications.new = []
+            state.notifications.read = state.notifications.read.concat(
+                state.notifications.new
+            );
+            state.notifications.new = [];
         },
         setColorUsage(state, color) {
             let colorIndex = COLORPALETTE.indexOf(color);

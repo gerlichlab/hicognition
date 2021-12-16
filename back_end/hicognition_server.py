@@ -10,6 +10,7 @@ from app.background_tasks import (
     cleanup_empty_tasks,
     cleanup_failed_tasks,
     add_app_context,
+    send_keep_alive_message
 )
 from app.models import (
     User,
@@ -37,6 +38,7 @@ migrate = Migrate(app, db, compare_type=True)
 sched = BackgroundScheduler(daemon=True)
 sched.add_job(add_app_context(app)(cleanup_empty_tasks), "interval", seconds=360)
 sched.add_job(add_app_context(app)(cleanup_failed_tasks), "interval", seconds=520)
+sched.add_job(add_app_context(app)(send_keep_alive_message), "interval", seconds=30)
 sched.start()
 
 atexit.register(lambda: sched.shutdown(wait=False))

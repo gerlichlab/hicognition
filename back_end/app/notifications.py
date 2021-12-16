@@ -24,3 +24,6 @@ class NotificationHandler():
     @validate_arguments
     def signal_processing_completion(self, data: ProcessingFinishedNotification):
         sse.publish(data.dict(), type="processing_finished")
+
+    def send_keep_alive(self):
+        sse.publish({"data": 42}, type="keepalive")

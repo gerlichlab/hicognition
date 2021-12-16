@@ -10,6 +10,16 @@ import rq
 db = SQLAlchemy()
 login = LoginManager()
 
+# create sse request handler
+
+
+@sse.after_request
+def add_sse_headers(response):
+    """Adds sse specific headers"""
+    response.headers["X-Accel-Buffering"] = "no"
+    response.headers["Cache-Control"] = "no-cache"
+    return response
+
 
 def create_app(config_name):
     """factory to create app."""
@@ -22,14 +32,14 @@ def create_app(config_name):
     # add redis queue
     app.redis = Redis.from_url(app.config["REDIS_URL"])
     app.queues = {
-        "long":rq.Queue("hicognition-tasks-long", connection=app.redis),
-        "medium":rq.Queue("hicognition-tasks-medium", connection=app.redis),
-        "short":rq.Queue("hicognition-tasks-short", connection=app.redis)
+        "long": rq.Queue("hicognition-tasks-long", connection=app.redis),
+        "medium": rq.Queue("hicognition-tasks-medium", connection=app.redis),
+        "short": rq.Queue("hicognition-tasks-short", connection=app.redis),
     }
     # register api blueprint
     from .api import api as api_blueprint
 
     app.register_blueprint(api_blueprint, url_prefix="/api/")
     # register sse blueprint
-    app.register_blueprint(sse, url_prefix='/stream')
+    app.register_blueprint(sse, url_prefix="/stream")
     return app
