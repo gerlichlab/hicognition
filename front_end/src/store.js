@@ -455,7 +455,7 @@ const store = new Vuex.Store({
         getDataset: state => id => {
             return state.datasets.filter(el => el.id === id)[0];
         },
-        getNewNotifications: state => {
+        notifications: state => {
             return state.notifications.new.sort((a, b) => a.time - b.time);
         }
     },

@@ -13,34 +13,20 @@
             </div>
 
             <div class="md-toolbar-section-end">
-                <md-menu md-size="auto" md-align-trigger>
-                    <div class="md-badge-content">
-                        <md-button
-                            class="md-icon-button"
-                            md-menu-trigger
-                            :disabled="numberNotifications == 0"
-                        >
-                            <md-icon>notifications</md-icon>
-                        </md-button>
-                        <div
-                            class="md-badge md-position-top md-dense md-theme-default"
-                            v-show="numberNotifications > 0"
-                        >
-                            {{ this.numberNotifications }}
-                        </div>
+                <div class="md-badge-content">
+                    <md-button
+                        class="md-icon-button"
+                        @click="$emit('showNotificationDrawer')"
+                    >
+                        <md-icon>notifications</md-icon>
+                    </md-button>
+                    <div
+                        class="md-badge position-top-right md-dense red"
+                        v-show="numberNotifications > 0"
+                    >
+                        {{ this.numberNotifications }}
                     </div>
-
-                    <md-menu-content>
-                        <md-menu-item
-                            v-for="item in notifications"
-                            :key="item.id"
-                            @click="handleSetNotificatonRead(item.id)"
-                        >
-                            {{ item.name }} | {{ item.region_name }}
-                            <md-icon>done</md-icon>
-                        </md-menu-item>
-                    </md-menu-content>
-                </md-menu>
+                </div>
 
                 <md-menu md-size="medium" md-align-trigger>
                     <md-button md-menu-trigger>
@@ -63,20 +49,25 @@
 </template>
 
 <script>
+
+import { mapGetters } from 'vuex'
+
 export default {
     name: "toolbar",
     data: function() {
         return {
             appversion: process.env.VERSION,
             notificationSource: null,
-            notificationUrl: process.env.NOTIFICATION_URL,
-            notifications: []
+            notificationUrl: process.env.NOTIFICATION_URL
         };
     },
     computed: {
         numberNotifications: function() {
             return this.notifications.length;
-        }
+        },
+        ...mapGetters([
+            'notifications'
+        ])
     },
     methods: {
         logout: function() {
@@ -87,20 +78,23 @@ export default {
             this.$router.push("/login");
         },
         handleProcessingFinished: function(event) {
-            this.$store.commit("addNewNotification", JSON.parse(event.data));
-            this.notifications = this.$store.getters.getNewNotifications;
+            // check whether you are the issuing user
+            let data = JSON.parse(event.data)
+            if (data.submitted_by == this.$store.getters.getUserId){
+                this.$store.commit("addNewNotification", data);
+            }
         },
-        handleSetNotificatonRead: function(id) {
-            this.$store.commit("setNotificationRead", id);
-            this.notifications = this.$store.getters.getNewNotifications;
-        }
     },
     mounted: function() {
-        // fill in notifications
-        this.notifications = this.$store.getters.getNewNotifications;
         this.notificationSource = new EventSource(this.notificationUrl);
         // attach event listener
         this.notificationSource.addEventListener(
+            "processing_finished",
+            this.handleProcessingFinished
+        );
+    },
+    beforeDestroy: function() {
+        this.notificationSource.removeEventListener(
             "processing_finished",
             this.handleProcessingFinished
         );
@@ -112,4 +106,14 @@ export default {
 .span-window-horizontal {
     width: 97vw !important;
 }
+
+.red {
+    background-color: #E34234;
+}
+
+.position-top-right {
+    top: 0px;
+    right: 8px;
+}
+
 </style>
