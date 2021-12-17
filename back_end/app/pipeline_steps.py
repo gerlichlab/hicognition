@@ -305,7 +305,7 @@ def set_task_progress(progress):
         job.meta["progress"] = progress
         job.save_meta()
         task = Task.query.get(job.get_id())
-        if progress >= 100:
+        if progress >= 100 and (task is not None):
             task.complete = True
             db.session.commit()
 

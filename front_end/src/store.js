@@ -456,7 +456,7 @@ const store = new Vuex.Store({
             return state.datasets.filter(el => el.id === id)[0];
         },
         notifications: state => {
-            return state.notifications.new.sort((a, b) => a.time - b.time);
+            return state.notifications.new.sort((a, b) => new Date(b.time) - new Date(a.time));
         }
     },
     mutations: {

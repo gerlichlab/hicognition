@@ -26,7 +26,6 @@ class Config:
             "collections": {
                 "regions": [2000],
                 "1d-features": [1000, 2000],
-                "2d-features": []
             }
         },
         100000: {
@@ -39,30 +38,27 @@ class Config:
             }
         },
         400000: {
-            "cooler": [10000, 20000],
+            "cooler": [10000],
             "bigwig": [5000, 10000, 20000],
             "collections": {
                 "regions": [10000, 20000],
                 "1d-features": [5000, 10000, 20000],
-                "2d-features": [10000, 20000]
             }
         },
         1000000: {
-            "cooler": [20000, 50000],
+            "cooler": [20000],
             "bigwig": [20000, 50000, 100000],
             "collections": {
                 "regions": [20000, 50000],
                 "1d-features": [20000, 50000, 100000],
-                "2d-features": [20000, 50000]
             }
         },
         2000000: {
-            "cooler": [50000, 100000, 200000],
+            "cooler": [50000],
             "bigwig": [50000, 100000, 200000],
             "collections": {
                 "regions": [50000, 100000, 200000],
                 "1d-features": [50000, 100000, 200000],
-                "2d-features": [50000, 100000, 200000]
             }
         },
         "variable": {

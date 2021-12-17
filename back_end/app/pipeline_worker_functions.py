@@ -90,6 +90,7 @@ def _do_pileup_fixed_size(
             collapse=collapse,
         )
     # put togehter output if collapse is false
+    # DEBUG TODO
     if collapse is False:
         pileup_shape = pileup_array[..., 0].shape[0]
         output = np.empty((pileup_shape, pileup_shape, len(regions)))
@@ -432,6 +433,8 @@ def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize):
 def _do_embedding_2d(
     data
 ):
+    """Embeds examples in the n x k array into a 2-dimensional space
+    using umap."""
     # transpose data
     data = data.T
     # extract features

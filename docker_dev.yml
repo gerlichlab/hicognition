@@ -30,7 +30,7 @@ services:
             - "5000:5000"
         build:
             context: "./back_end"
-        image: flask:v1.0
+        image: hicognition:v1.0
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
@@ -63,7 +63,7 @@ services:
                 - redis-server
         build:
             context: "./back_end"
-        scale: 3
+        scale: 6
         image: hicognition:v1.0
         entrypoint: "/bin/bash"
         networks:

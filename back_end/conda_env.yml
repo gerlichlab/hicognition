@@ -96,3 +96,4 @@ dependencies:
       # HiC realted packages
       - clodius
       - pybbi
+      - opencv-python-headless

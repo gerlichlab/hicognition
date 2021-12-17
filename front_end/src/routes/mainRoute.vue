@@ -323,6 +323,7 @@ export default {
 <style scoped>
 .page-container {
     height: 100vh;
+    background-color: #fff;
     overflow-x: hidden;
     position: relative;
     border: 1px solid rgba(#000, 0.12);
@@ -330,6 +331,7 @@ export default {
 
 .md-content {
     padding: 16px;
+    background-color: transparent;
 }
 
 .small-padding {
