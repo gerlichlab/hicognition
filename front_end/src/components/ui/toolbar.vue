@@ -24,7 +24,7 @@
                         class="md-badge position-top-right md-dense red"
                         v-show="numberNotifications > 0"
                     >
-                        <span class="md-subheading">{{ this.numberNotifications }}</span>
+                        <span class="md-body-2">{{ this.numberNotifications }}</span>
                     </div>
                 </div>
 

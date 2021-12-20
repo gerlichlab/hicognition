@@ -284,7 +284,7 @@ def set_dataset_finished(dataset_id, intervals_id):
         # signal completion
         dataset = Dataset.query.get(dataset_id)
         log.info("      Signalling reached")
-        notification_handler.signal_processing_completion(
+        notification_handler.signal_processing_update(
             {
                 "data_type": dataset.filetype,
                 "id": dataset_id,
@@ -332,6 +332,23 @@ def set_dataset_failed(dataset_id, intervals_id):
     try:
         region.failed_features.append(feature)
         db.session.commit()
+        # signal failure
+        dataset = Dataset.query.get(dataset_id)
+        log.info("      Signalling reached")
+        notification_handler.signal_processing_update(
+            {
+                "data_type": dataset.filetype,
+                "id": dataset_id,
+                "name": dataset.dataset_name,
+                "processing_type": current_app.config["PIPELINE_NAMES"][dataset.filetype][0],
+                "owner": Task.query.get(get_current_job().get_id()).user_id,
+                "region_id": region.id,
+                "region_name": region.dataset_name,
+                "time": datetime.now(),
+                "notification_type": "processing_failed",
+                "id": get_current_job().get_id()
+            }
+        )
     except BaseException as e:
         log.error(e, exc_info=True)
     log.error("      Setting for fail finished")
@@ -357,6 +374,20 @@ def set_collection_failed(collection_id, intervals_id):
     try:
         region.failed_collections.append(collection)
         db.session.commit()
+        notification_handler.signal_processing_update(
+            {
+                "data_type": collection.kind,
+                "id": collection_id,
+                "name": collection.name,
+                "processing_type": current_app.config["PIPELINE_NAMES"]["collections"][collection.kind][0],
+                "owner": Task.query.get(get_current_job().get_id()).user_id,
+                "region_id": region.id,
+                "region_name": region.dataset_name,
+                "time": datetime.now(),
+                "notification_type": "processing_failed",
+                "id": get_current_job().get_id()
+            }
+        )
     except BaseException as e:
         log.error(e, exc_info=True)
     log.error("      Setting for fail finished")
@@ -387,7 +418,7 @@ def set_collection_finished(collection_id, intervals_id):
         db.session.commit()
         # signal completion
         collection = Collection.query.get(collection_id)
-        notification_handler.signal_processing_completion(
+        notification_handler.signal_processing_update(
             {
                 "data_type": collection.kind,
                 "id": collection_id,
