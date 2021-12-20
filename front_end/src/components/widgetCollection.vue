@@ -339,7 +339,7 @@ export default {
                 float: "left"
             };
         },
-        selectionOptions: function(){
+        selectionOptions: function() {
             if (Object.keys(this.availableData).length == 0) {
                 return {
                     pileup: false,
@@ -347,15 +347,18 @@ export default {
                     lola: false,
                     embedding1d: false,
                     embedding2d: false
-                }
+                };
             }
             return {
                 pileup: Object.keys(this.availableData.pileup).length != 0,
-                lineprofile: Object.keys(this.availableData.lineprofile).length != 0,
+                lineprofile:
+                    Object.keys(this.availableData.lineprofile).length != 0,
                 lola: Object.keys(this.availableData.lola).length != 0,
-                embedding1d: Object.keys(this.availableData.embedding1d).length != 0,
-                embedding2d: Object.keys(this.availableData.embedding2d).length != 0
-            }
+                embedding1d:
+                    Object.keys(this.availableData.embedding1d).length != 0,
+                embedding2d:
+                    Object.keys(this.availableData.embedding2d).length != 0
+            };
         }
     },
     methods: {
@@ -491,6 +494,39 @@ export default {
             );
             // update changed data in store
             this.$store.commit("compare/setWidget", widgetData);
+        },
+        handleNewDataAvailable: async function(notification) {
+            let data = JSON.parse(notification.data);
+            console.log(data)
+            if (
+                data.owner == this.$store.getters.getUserId &&
+                data.notification_type == "processing_finished" &&
+                data.region_id == this.selectedRegionID
+            ) {
+                await this.updateAvailableData(this.selectedRegionID);
+            }
+            this.storeCollectionConfig();
+        },
+        updateAvailableData: function(id) {
+            // get availability object
+            return this.fetchData(`datasets/${id}/processedDataMap/`).then(
+                response => {
+                    // success, store availability object
+                    this.availableData = response.data;
+                }
+            );
+        },
+        registerNotificationHandler: function() {
+            this.$store.state.notificationSource.addEventListener(
+                "notification",
+                this.handleNewDataAvailable
+            );
+        },
+        removeNotificationHandler: function() {
+            this.$store.state.notificationSource.removeEventListener(
+                "notification",
+                this.handleNewDataAvailable
+            );
         }
     },
     watch: {
@@ -515,12 +551,7 @@ export default {
                 return;
             }
             // get availability object
-            await this.fetchData(`datasets/${newVal}/processedDataMap/`).then(
-                response => {
-                    // success, store availability object
-                    this.availableData = response.data;
-                }
-            );
+            await this.updateAvailableData(newVal);
             if (
                 !this.selectedWindowSize ||
                 (this.isPointFeature &&
@@ -550,6 +581,7 @@ export default {
     mounted: function() {
         // register event handlers
         this.registerSelectionEventHandlers();
+        this.registerNotificationHandler()
         // initialize from store
         var collectionData = this.$store.getters[
             "compare/getCollectionProperties"
@@ -567,7 +599,14 @@ export default {
                 id: this.id,
                 collectionConfig: {
                     regionID: undefined,
-                    availableData: { pileup: {}, lineprofile: {}, stackup: {}, lola: {}, embedding1d: {}, embedding2d: {} },
+                    availableData: {
+                        pileup: {},
+                        lineprofile: {},
+                        stackup: {},
+                        lola: {},
+                        embedding1d: {},
+                        embedding2d: {}
+                    },
                     intervalSize: undefined
                 }
             };
@@ -605,7 +644,8 @@ export default {
     },
     beforeDestroy: function() {
         this.removeSelectionEventHandlers();
-        EventBus.$emit("widget-collection-deletion", this.id)
+        this.removeNotificationHandler()
+        EventBus.$emit("widget-collection-deletion", this.id);
     }
 };
 </script>
