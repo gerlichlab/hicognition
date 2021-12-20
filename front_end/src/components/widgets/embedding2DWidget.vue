@@ -516,6 +516,33 @@ export default {
         }
     },
     methods: {
+        handleDragStart: function (e) {
+            /*
+                Needs to be overriden to remove thumbnail
+            */
+            // remove thumbnail
+            this.showTooltip = false
+            // commit to store once drag starts
+            var newObject = this.toStoreObject();
+            this.$store.commit("compare/setWidget", newObject);
+            // create data transfer object
+            e.dataTransfer.setData("widget-id", this.id);
+            e.dataTransfer.setData("collection-id", this.collectionID);
+            // set dragimage. Dragimage dom element needs to be present before it can be passed
+            // to setDragImage. Div is positioned outside of visible area for this
+            this.dragImage = document.createElement("div");
+            this.dragImage.style.backgroundColor = "grey";
+            this.dragImage.style.height = `${this.height}px`;
+            this.dragImage.style.width = `${this.width}px`;
+            this.dragImage.style.position = "absolute";
+            this.dragImage.style.top = `-${this.width}px`; // positioning outside of visible area
+            document.body.appendChild(this.dragImage);
+            e.dataTransfer.setDragImage(
+                this.dragImage,
+                this.height / 2,
+                this.width / 2
+            );
+        },
         startDatasetSelection: function() {
             this.expectSelection = true;
             // get datasets from store
@@ -542,6 +569,10 @@ export default {
             let x_bin = Math.round(x / bin_width);
             let y_bin = Math.round(y / bin_width);
             if (this.clusterMap) {
+                // guard against weird artefacts
+                if (x_bin < -0 || x_bin > this.clusterMap.length || this.clusterMap[x_bin] == undefined){
+                    return
+                }
                 this.selectedCluster = this.clusterMap[y_bin][x_bin];
             }
         },
