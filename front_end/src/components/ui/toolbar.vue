@@ -24,7 +24,7 @@
                         class="md-badge position-top-right md-dense red"
                         v-show="numberNotifications > 0"
                     >
-                        {{ this.numberNotifications }}
+                        <span class="md-subheading">{{ this.numberNotifications }}</span>
                     </div>
                 </div>
 
@@ -77,10 +77,10 @@ export default {
             this.$store.commit("compare/clearAll");
             this.$router.push("/login");
         },
-        handleProcessingFinished: function(event) {
+        handleNewNotification: function(event) {
             // check whether you are the issuing user
             let data = JSON.parse(event.data)
-            if (data.submitted_by == this.$store.getters.getUserId){
+            if (data.owner == this.$store.getters.getUserId){
                 this.$store.commit("addNewNotification", data);
             }
         },
@@ -89,14 +89,14 @@ export default {
         this.notificationSource = new EventSource(this.notificationUrl);
         // attach event listener
         this.notificationSource.addEventListener(
-            "processing_finished",
-            this.handleProcessingFinished
+            "notification",
+            this.handleNewNotification
         );
     },
     beforeDestroy: function() {
         this.notificationSource.removeEventListener(
-            "processing_finished",
-            this.handleProcessingFinished
+            "notification",
+            this.handleNewNotification
         );
     }
 };

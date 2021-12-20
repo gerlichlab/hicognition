@@ -4,17 +4,21 @@ from datetime import datetime
 from . import sse
 
 
-class ProcessingFinishedNotification(BaseModel):
+class Notification(BaseModel):
+    """Base model for notifications."""
+    id: str
+    owner: int
+    time: datetime
+    notification_type: str
+
+
+class ProcessingFinishedNotification(Notification):
     """Notification that signals finished processing"""
     data_type: str
-    id: int
     name: str
     processing_type: str
-    submitted_by: int
     region_id: int
     region_name: str
-    time: datetime
-    id: str
 
 
 class NotificationHandler():
@@ -23,7 +27,7 @@ class NotificationHandler():
 
     @validate_arguments
     def signal_processing_completion(self, data: ProcessingFinishedNotification):
-        sse.publish(data.dict(), type="processing_finished")
+        sse.publish(data.dict(), type="notification")
 
     def send_keep_alive(self):
         sse.publish({"data": 42}, type="keepalive")

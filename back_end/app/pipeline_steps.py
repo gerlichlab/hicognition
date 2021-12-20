@@ -28,7 +28,7 @@ log = logging.getLogger("rq.worker")
 
 # set up notification handler
 
-notifcation_handler = NotificationHandler()
+notification_handler = NotificationHandler()
 
 
 def bed_preprocess_pipeline_step(dataset_id, windowsize):
@@ -284,16 +284,17 @@ def set_dataset_finished(dataset_id, intervals_id):
         # signal completion
         dataset = Dataset.query.get(dataset_id)
         log.info("      Signalling reached")
-        notifcation_handler.signal_processing_completion(
+        notification_handler.signal_processing_completion(
             {
                 "data_type": dataset.filetype,
                 "id": dataset_id,
                 "name": dataset.dataset_name,
                 "processing_type": current_app.config["PIPELINE_NAMES"][dataset.filetype][0],
-                "submitted_by": Task.query.get(get_current_job().get_id()).user_id,
+                "owner": Task.query.get(get_current_job().get_id()).user_id,
                 "region_id": region.id,
                 "region_name": region.dataset_name,
                 "time": datetime.now(),
+                "notification_type": "processing_finished",
                 "id": get_current_job().get_id()
             }
         )
@@ -386,16 +387,17 @@ def set_collection_finished(collection_id, intervals_id):
         db.session.commit()
         # signal completion
         collection = Collection.query.get(collection_id)
-        notifcation_handler.signal_processing_completion(
+        notification_handler.signal_processing_completion(
             {
                 "data_type": collection.kind,
                 "id": collection_id,
                 "name": collection.name,
                 "processing_type": current_app.config["PIPELINE_NAMES"]["collections"][collection.kind][0],
-                "submitted_by": Task.query.get(get_current_job().get_id()).user_id,
+                "owner": Task.query.get(get_current_job().get_id()).user_id,
                 "region_id": region.id,
                 "region_name": region.dataset_name,
                 "time": datetime.now(),
+                "notification_type": "processing_finished",
                 "id": get_current_job().get_id()
             }
         )

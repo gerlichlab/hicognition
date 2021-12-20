@@ -14,30 +14,10 @@
         </md-toolbar>
         <md-list v-if="notifications.length != 0">
             <div v-for="item in notifications" :key="item.id">
-                <md-list-item>
-                    <md-icon class="md-primary">check_circle_outline</md-icon>
-
-                    <div class="md-list-item-text">
-                        <span class="md-subheading"
-                            ><span class="md-title">Dataset </span
-                            >{{ item.name }}</span
-                        >
-                        <span class="md-subheading"
-                            ><span class="md-title">Regions </span
-                            >{{ item.region_name }}</span
-                        >
-                        <p>
-                            Processing finished!
-                        </p>
-                    </div>
-
-                    <md-button
-                        class="md-icon-button md-list-action"
-                        @click="handleSetNotificatonRead(item.id)"
-                    >
-                        <md-icon>mark_email_read</md-icon>
-                    </md-button>
-                </md-list-item>
+                <component
+                    :is="getNotificationComponent(item.notification_type)"
+                    :item="item"
+                ></component>
                 <md-divider></md-divider>
             </div>
         </md-list>
@@ -54,18 +34,28 @@
 
 <script>
 import { mapGetters } from "vuex";
+import processingFinishedNotification from "../notifications/processingFinishedNotification.vue"
 
 export default {
     name: "notificationDrawer",
+    components: {
+        processingFinishedNotification
+    },
     computed: {
         ...mapGetters(["notifications"])
     },
     methods: {
-        handleSetNotificatonRead: function(id) {
-            this.$store.commit("setNotificationRead", id);
-        },
         clearNotifications: function() {
             this.$store.commit("clearNewNotifications");
+        },
+        getNotificationComponent: function(notificationType){
+            switch (notificationType){
+                case "processing_finished":
+                    return "processingFinishedNotification"
+                default:
+                    return "processingFinishedNotification"
+            }
+
         }
     }
 };
