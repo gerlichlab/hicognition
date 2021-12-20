@@ -1,0 +1,49 @@
+FROM rapidsai/rapidsai-core:21.12-cuda11.5-base-ubuntu20.04-py3.8
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG C.UTF-8  
+ENV LC_ALL C.UTF-8
+
+# Update and create base image
+RUN apt-get --allow-releaseinfo-change update &&\
+    apt-get update -y &&\
+    apt-get install -y gcc g++ make libz-dev &&\
+    apt-get clean
+
+# Install conda
+
+RUN conda update -y conda
+
+# Add yml file for conda environment
+ADD conda_env.yml /temp/install/
+
+# Add hicognition package for installation
+
+ADD setup.py /temp/install/
+ADD VERSION /temp/install/
+ADD hicognition /temp/install/hicognition/
+
+# install packages
+RUN conda install mamba -n rapids -c conda-forge &&\
+    mamba env update -n rapids --f /temp/install/conda_env.yml &&\
+    mamba list > software_versions_conda.txt &&\
+    # install version 0.3 of ngs
+    source activate rapids && pip install git+git://github.com/gerlichlab/ngs@v0.3b &&\
+    # install pylola
+    pip install git+git://github.com/Mittmich/pylola
+
+# install hicognition 
+RUN  source activate rapids && pip install /temp/install
+
+# clean up install
+
+RUN rm -rf /temp/install
+
+# add code directory so production code is packaged
+
+COPY . /code
+
+WORKDIR /home
+
+RUN /bin/bash -c "source activate rapids"
+
+CMD ["/bin/bash"]
