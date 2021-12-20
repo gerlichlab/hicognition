@@ -20,6 +20,8 @@ from .models import (
     Intervals,
     Task,
     dataset_preprocessing_table,
+    dataset_failed_table,
+    collections_failed_table,
     collections_preprocessing_table,
 )
 
@@ -330,7 +332,11 @@ def set_dataset_failed(dataset_id, intervals_id):
     db.session.commit()
     # add region to failed_features -> if this combination is already in, this operation will fail, but the first one will succeed
     try:
-        region.failed_features.append(feature)
+        stmt = dataset_failed_table.insert().values(
+            dataset_region=region.id,
+            dataset_feature=feature.id
+        )
+        db.session.execute(stmt)
         db.session.commit()
         # signal failure
         dataset = Dataset.query.get(dataset_id)
@@ -372,7 +378,11 @@ def set_collection_failed(collection_id, intervals_id):
     db.session.commit()
     # add region to failed_features -> if this combination is already in, this operation will fail, but the first one will succeed
     try:
-        region.failed_collections.append(collection)
+        stmt = collections_failed_table.insert().values(
+            dataset_region=region.id,
+            collection_feature=collection.id
+        )
+        db.session.execute(stmt)
         db.session.commit()
         notification_handler.signal_processing_update(
             {

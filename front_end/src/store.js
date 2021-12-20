@@ -415,12 +415,16 @@ const store = new Vuex.Store({
         datasets: null, // datasets are in the global store because they will be shared for all functionalities for a given user throughout a session
         usedSortOrders: Array(COLORPALETTE.length).fill(0), // flags for used numbers
         usedValueScales: Array(COLORPALETTE.length).fill(0),
+        notificationSource: null,
         notifications: {
             read: [],
             new: []
         }
     },
     getters: {
+        notificationSource: state => {
+            return state.notificationSource
+        }, 
         getNextSortOrderColor: state => {
             let nextEmptyIndex = state.usedSortOrders.indexOf(0);
             if (nextEmptyIndex == -1) {
@@ -460,6 +464,13 @@ const store = new Vuex.Store({
         }
     },
     mutations: {
+        releaseNotificationSource(state){
+            state.notificationSource.close()
+            state.notificationSource = null
+        },
+        createNotificationSource(state){
+            state.notificationSource =  new EventSource(process.env.NOTIFICATION_URL)
+        },
         addNewNotification(state, notification) {
             state.notifications.new.push(notification);
         },

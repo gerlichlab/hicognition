@@ -38,6 +38,7 @@ if (localStorage.getItem("hicognition-token")){
     store.commit("setUserId", localStorage.getItem("hicognition-User"))
 }
 
+
 // define global flags
 
 Vue.prototype.$globalFlags = {
@@ -51,6 +52,13 @@ new Vue({
     store,
     components: {
         App
+    },
+    created: function(){
+        // create event source for notifications -> doing it once limits the number of open connections to server
+        store.commit("createNotificationSource")
+    },
+    beforeDestroy: function(){
+        store.commit("releaseNotificationSource")
     },
     template: "<App/>"
 });

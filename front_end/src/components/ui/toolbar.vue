@@ -57,8 +57,6 @@ export default {
     data: function() {
         return {
             appversion: process.env.VERSION,
-            notificationSource: null,
-            notificationUrl: process.env.NOTIFICATION_URL
         };
     },
     computed: {
@@ -86,15 +84,14 @@ export default {
         },
     },
     mounted: function() {
-        this.notificationSource = new EventSource(this.notificationUrl);
         // attach event listener
-        this.notificationSource.addEventListener(
+        this.$store.state.notificationSource.addEventListener(
             "notification",
             this.handleNewNotification
         );
     },
     beforeDestroy: function() {
-        this.notificationSource.removeEventListener(
+        this.$store.state.notificationSource.removeEventListener(
             "notification",
             this.handleNewNotification
         );
