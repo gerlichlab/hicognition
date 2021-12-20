@@ -6,9 +6,11 @@ from sklearn.impute import SimpleImputer
 import numpy as np
 
 
-def _downscale_images(
-    images, blurring_kernel_size, blurring_kernel_sigma, pixel_target
-):
+def _downscale_images(images, pixel_target):
+    # get parameters
+    downsampling_factor = images[0].shape[0] // pixel_target[0]
+    blurring_kernel_sigma = (downsampling_factor - 1) // 2
+    blurring_kernel_size = (blurring_kernel_sigma * 4) + 1
     pixel_features = []
     for temp_image in images:
         pixel_features.append(
@@ -18,7 +20,7 @@ def _downscale_images(
                     (blurring_kernel_size, blurring_kernel_size),
                     blurring_kernel_sigma,
                 ),
-                pixel_target
+                pixel_target,
             ).flatten()
         )
     return pixel_features
@@ -44,14 +46,9 @@ def extract_image_features(images, pixel_target=(10, 10)):
         downsampling = False
     else:
         downsampling = True
-        downsampling_factor = images[0].shape[0] // pixel_target[0]
-        blurring_kernel_sigma = (downsampling_factor - 1) // 2
-        blurring_kernel_size = (blurring_kernel_sigma * 4) + 1
     # calculate features
     pixel_features = (
-        _downscale_images(
-            images, blurring_kernel_size, blurring_kernel_sigma, pixel_target
-        )
+        _downscale_images(images, pixel_target)
         if downsampling
         else _upscale_images(images, pixel_target)
     )
