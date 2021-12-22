@@ -1,11 +1,7 @@
 """DELETE API endpoints for hicognition"""
 from flask.json import jsonify
-from flask import g
-from .helpers import (
-    delete_collection,
-    delete_associated_data_of_dataset,
-    remove_safely,
-)
+from flask import g, current_app
+import hicognition
 from . import api
 from .. import db
 from ..models import Assembly, Collection, Dataset, Session
@@ -30,7 +26,7 @@ def delete_dataset_handler(dataset_id):
     ):
         return invalid(f"Dataset is in processing state!")
     # delete associated data of dataset
-    delete_associated_data_of_dataset(dataset)
+    dataset.delete_data_of_associated_entries()
     # get collections and sessions
     collections = dataset.collections
     sessions = dataset.sessions
@@ -39,7 +35,8 @@ def delete_dataset_handler(dataset_id):
     db.session.commit()
     # delete associated collections
     for collection in collections:
-        delete_collection(collection, db)
+        collection.delete_data_of_associated_entries()
+        db.session.delete(collection)
     # delete associated sessions
     for session in sessions:
         db.session.delete(session)
@@ -80,7 +77,8 @@ def delete_collection_handler(collection_id):
     if collection.is_deletion_denied(g):
         return forbidden(f"Collection with id {collection_id} is not owned by user!")
     # delete session
-    delete_collection(collection, db)
+    collection.delete_data_of_associated_entries()
+    db.session.delete(collection)
     db.session.commit()
     response = jsonify({"message": "success"})
     response.status_code = 200
@@ -104,8 +102,8 @@ def delete_assembly_handler(assembly_id):
             f"Assembly can only be deleted if it is not associated with any datasets!"
         )
     # delete assembly
-    remove_safely(assembly.chrom_sizes)
-    remove_safely(assembly.chrom_arms)
+    hicognition.io_helpers.remove_safely(assembly.chrom_sizes, current_app.logger)
+    hicognition.io_helpers.remove_safely(assembly.chrom_arms, current_app.logger)
     db.session.delete(assembly)
     db.session.commit()
     response = jsonify({"message": "success"})

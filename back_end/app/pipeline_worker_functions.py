@@ -17,7 +17,8 @@ import bioframe as bf
 from sklearn.impute import SimpleImputer
 from sklearn.cluster import KMeans
 import pylola
-from .api.helpers import remove_safely, get_optimal_binsize
+from .api.helpers import get_optimal_binsize
+import hicognition
 from . import db
 from .models import (
     Assembly,
@@ -534,7 +535,7 @@ def _add_embedding_2d_to_db(
         & (EmbeddingIntervalData.cluster_number == cluster_number)
     ).all()
     for entry in test_query:
-        remove_safely(entry.file_path)
+        hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
         db.session.delete(entry)
     # add new entry
     new_entry = EmbeddingIntervalData(
@@ -564,7 +565,7 @@ def _add_embedding_1d_to_db(
         & (EmbeddingIntervalData.collection_id == collection_id)
     ).all()
     for entry in test_query:
-        remove_safely(entry.file_path)
+        hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
         db.session.delete(entry)
     # add new entry
     new_entry = EmbeddingIntervalData(
@@ -589,7 +590,7 @@ def _add_association_data_to_db(file_path, binsize, intervals_id, collection_id)
         & (AssociationIntervalData.collection_id == collection_id)
     ).all()
     for entry in test_query:
-        remove_safely(entry.file_path)
+        hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
         db.session.delete(entry)
     # add new entry
     new_entry = AssociationIntervalData(
@@ -614,8 +615,8 @@ def _add_stackup_db(
         & (IndividualIntervalData.dataset_id == bigwig_dataset_id)
     ).all()
     for entry in test_query:
-        remove_safely(entry.file_path)
-        remove_safely(entry.file_path_small)
+        hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
+        hicognition.io_helpers.remove_safely(entry.file_path_small, current_app.logger)
         db.session.delete(entry)
     # add new entry
     new_entry = IndividualIntervalData(
@@ -639,7 +640,7 @@ def _add_line_db(file_path, binsize, intervals_id, bigwig_dataset_id):
         & (AverageIntervalData.dataset_id == bigwig_dataset_id)
     ).all()
     for entry in test_query:
-        remove_safely(entry.file_path)
+        hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
         db.session.delete(entry)
     # add new entry
     new_entry = AverageIntervalData(
@@ -665,7 +666,7 @@ def _add_pileup_db(file_path, binsize, intervals_id, cooler_dataset_id, pileup_t
         & (AverageIntervalData.value_type == pileup_type)
     ).all()
     for entry in test_query:
-        remove_safely(entry.file_path)
+        hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
         db.session.delete(entry)
     # add new entry
     new_entry = AverageIntervalData(

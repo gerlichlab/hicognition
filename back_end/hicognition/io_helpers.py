@@ -2,7 +2,7 @@
 data formats."""
 import pandas as pd
 import numpy as np
-import bioframe
+import os
 import logging
 from functools import partial
 from .format_checkers import _is_bed_row
@@ -145,3 +145,13 @@ def load_chromsizes(path):
     chromsize_frame = pd.read_csv(path, sep="\t", header=None)
     chromsize_series = pd.Series(chromsize_frame[1].values, index=chromsize_frame[0])
     return chromsize_series
+
+
+def remove_safely(file_path, logger):
+    """Tries to remove a file and logs warning with app logger if this does not work."""
+    try:
+        os.remove(file_path)
+    except BaseException:
+        logger.warning(
+            f"Tried removing {file_path}, but file does not exist!"
+        )

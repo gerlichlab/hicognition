@@ -9,6 +9,7 @@ from flask_login import UserMixin
 import redis
 import rq
 from app import db, login
+import hicognition
 
 # define association tables
 
@@ -403,6 +404,57 @@ class Dataset(db.Model):
                 return False
         return True
 
+    def delete_data_of_associated_entries(self):
+        """deletes files of associated entries"""
+        intervals = []
+        averageIntervalData = []
+        individualIntervalData = []
+        embeddingIntervalData = []
+        metadata = []
+        # cooler only needs deletion of derived averageIntervalData
+        if self.filetype == "cooler":
+            averageIntervalData = AverageIntervalData.query.filter(
+                AverageIntervalData.dataset_id == self.id
+            ).all()
+            embeddingIntervalData = EmbeddingIntervalData.query.filter(
+                EmbeddingIntervalData.dataset_id == self.id
+            ).all()
+        # bedfile needs deletion of intervals and averageIntervalData
+        if self.filetype == "bedfile":
+            intervals = Intervals.query.filter(Intervals.dataset_id == self.id).all()
+            averageIntervalData = AverageIntervalData.query.filter(
+                AverageIntervalData.intervals_id.in_([entry.id for entry in intervals])
+            ).all()
+            individualIntervalData = IndividualIntervalData.query.filter(
+                IndividualIntervalData.intervals_id.in_([entry.id for entry in intervals])
+            ).all()
+            embeddingIntervalData = EmbeddingIntervalData.query.filter(
+                EmbeddingIntervalData.intervals_id.in_([entry.id for entry in intervals])
+            ).all()
+            metadata = BedFileMetadata.query.filter(
+                BedFileMetadata.dataset_id == self.id
+            ).all()
+        if self.filetype == "bigwig":
+            averageIntervalData = AverageIntervalData.query.filter(
+                AverageIntervalData.dataset_id == self.id
+            ).all()
+            individualIntervalData = IndividualIntervalData.query.filter(
+                IndividualIntervalData.dataset_id ==self.id
+            ).all()
+        # delete files and remove from database
+        deletion_queue = (
+            [self] + intervals + averageIntervalData + individualIntervalData + embeddingIntervalData + metadata
+        )
+        for entry in deletion_queue:
+            if isinstance(entry, IndividualIntervalData):
+                hicognition.io_helpers.remove_safely(entry.file_path_small, current_app.logger)
+            if hasattr(entry, "file_path") and (entry.file_path is not None):
+                hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
+            if hasattr(entry, "file_path_sub_sample_index") and (
+                entry.file_path_sub_sample_index is not None
+            ):
+                hicognition.io_helpers.remove_safely(entry.file_path_sub_sample_index, current_app.logger)
+
     def to_json(self):
         json_dataset = {}
         for key in inspect(Dataset).columns.keys():
@@ -747,6 +799,16 @@ class Collection(db.Model):
         """Determines whether context
         allows dataset deletion"""
         return self.user_id != app_context.current_user.id
+
+    def delete_data_of_associated_entries(self):
+        """"""
+        assoc_data = self.associationData.all()
+        deletion_queue = assoc_data
+        for entry in deletion_queue:
+            # remove files
+            hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
+            if hasattr(entry, "file_path_feature_values"):
+                hicognition.io_helpers.remove_safely(entry.file_path_feature_values, current_app.logger)
 
     def set_processing_state(self, db):
         """sets the current processing state of the collection instance.

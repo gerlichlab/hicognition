@@ -1,6 +1,7 @@
 """Tasks for the redis-queue"""
 import os
 import logging
+from flask import current_app
 
 
 import pandas as pd
@@ -8,7 +9,6 @@ from hicognition import io_helpers
 from . import create_app, db
 from .models import Assembly, Dataset, IndividualIntervalData, Collection
 from . import pipeline_steps
-from .api.helpers import remove_safely
 from .notifications import NotificationHandler
 
 # get logger
@@ -56,7 +56,7 @@ def pipeline_bed(dataset_id):
     dataset_object.file_path = cleaned_file_name
     # delete old file
     log.info("      Delete Unsorted...")
-    remove_safely(file_path)
+    io_helpers.remove_safely(file_path, current_app.logger)
     db.session.commit()
     for window in window_sizes:
         # preprocessing
