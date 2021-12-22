@@ -15,6 +15,7 @@
                 :allowValueScaleChange="showControls"
                 @slider-change="handleSliderChange"
                 :log="isLog"
+                :showInterval="isVariableSize"
             />
         </md-card-content>
             <md-card-actions v-if="showControls">
@@ -71,7 +72,8 @@ export default {
         minHeatmapAll: Number,
         maxHeatmapAll: Number,
         maxHeatmapAllRange: Number,
-        minHeatmapAllRange: Number
+        minHeatmapAllRange: Number,
+        isVariableSize: Boolean
     },
     data: function () {
         return {

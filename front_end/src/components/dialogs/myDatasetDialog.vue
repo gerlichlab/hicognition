@@ -137,7 +137,7 @@ export default {
     },
     computed: {
         notProcessing: function(){
-            return this.datasets.every(el => el.processing_datasets.length === 0)
+            return this.datasets.every(el => el.processing_datasets.length === 0 && el.processing_collections.length === 0)
         },
         singleDatasetSelected: function(){
             return this.selection.length === 1;

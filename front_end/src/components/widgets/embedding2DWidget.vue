@@ -228,6 +228,7 @@
                     :regionName="regionName"
                     @close-controls="closeControls"
                     :isLog="isLog"
+                    :isVariableSize="isVariableSize"
                 />
             </div>
             <div v-if="loading" :style="waitSpinnerContainer">
@@ -380,7 +381,7 @@ export default {
         minValueRobust: function() {
             if (
                 !this.shareValueScale ||
-                !this.widgetData[this.valueType]["thumbnails"]
+                !this.widgetData[this.valueType]
             ) {
                 return undefined;
             }
@@ -400,7 +401,7 @@ export default {
         maxValueRobust: function() {
             if (
                 !this.shareValueScale ||
-                !this.widgetData[this.valueType]["thumbnails"]
+                !this.widgetData[this.valueType]
             ) {
                 return undefined;
             }
@@ -420,7 +421,7 @@ export default {
         minValue: function() {
             if (
                 !this.shareValueScale ||
-                !this.widgetData[this.valueType]["thumbnails"]
+                !this.widgetData[this.valueType]
             ) {
                 return undefined;
             }
@@ -440,7 +441,7 @@ export default {
         maxValue: function() {
             if (
                 !this.shareValueScale ||
-                !this.widgetData[this.valueType]["thumbnails"]
+                !this.widgetData[this.valueType]
             ) {
                 return undefined;
             }

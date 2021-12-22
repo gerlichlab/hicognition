@@ -128,7 +128,7 @@ export default {
     position: fixed;
     right: 10vw;
     bottom: 10vh;
-    z-index: 999;
+    z-index: 1;
 }
 .top-margin {
     margin-top: 10px;
