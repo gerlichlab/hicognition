@@ -1,0 +1,141 @@
+version: "3"
+
+services:
+    node:
+        container_name: node
+        image: node:14-buster
+        ports:
+            # only map localhost-port
+            - "8080:8080"
+        volumes:
+            - ${DIR_FRONT_END}:/front_end
+        entrypoint: 
+            - "/bin/bash"
+        command: -c "cd /front_end && npm install && npm run dev"
+
+    hicognition:
+        container_name: flask-server
+        volumes:  
+            - ${HICOGNITION_DIR}:/code
+        environment:
+            - FLASK_DEBUG=0
+            - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=${DATABASE_URL}
+            - REDIS_URL=${REDIS_URL}
+            - UPLOAD_DIR=${UPLOAD_DIR}
+            - CHROM_SIZES=${CHROM_SIZES}
+            - CHROM_ARMS=${CHROM_ARMS}
+        ports:
+            # only map localhost-port
+            - "5000:5000"
+        build:
+            context: "./back_end"
+            dockerfile: "Docker_gpu"
+        runtime: nvidia
+        image: hicognition-gpu:v1.0
+        entrypoint: "/bin/bash"
+        command: -c "source activate rapids && cd /code && ./boot_prod.sh"
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.3
+
+    redis-server:
+        container_name: redis-server
+        build:
+            context: "./redis"
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.5
+        ports:
+            - 6379:6379
+
+    redis-worker-long:
+        volumes:  
+            - ${HICOGNITION_DIR}:/code
+        environment:
+            - FLASK_DEBUG=1
+            - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=${DATABASE_URL}
+            - REDIS_URL=${REDIS_URL}
+            - UPLOAD_DIR=${UPLOAD_DIR}
+            - CHROM_SIZES=${CHROM_SIZES}
+            - CHROM_ARMS=${CHROM_ARMS}
+        depends_on:
+                - redis-server
+        runtime: nvidia
+        scale: 3
+        image: hicognition-gpu:v1.0
+        entrypoint: "/bin/bash"
+        networks:
+            - hicognition-net
+        # sleeps to wait for redis-server. TODO: make this check nicer!
+        command: -c "source activate rapids && sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-long"
+
+    redis-worker-medium:
+        volumes:  
+            - ${HICOGNITION_DIR}:/code
+        environment:
+            - FLASK_DEBUG=1
+            - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=${DATABASE_URL}
+            - REDIS_URL=${REDIS_URL}
+            - UPLOAD_DIR=${UPLOAD_DIR}
+            - CHROM_SIZES=${CHROM_SIZES}
+            - CHROM_ARMS=${CHROM_ARMS}
+        depends_on:
+                - redis-server
+        runtime: nvidia
+        scale: 10
+        image: hicognition-gpu:v1.0
+        entrypoint: "/bin/bash"
+        networks:
+            - hicognition-net
+        # sleeps to wait for redis-server. TODO: make this check nicer!
+        command: -c "source activate rapids && sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-medium"
+
+    redis-worker-short:
+        volumes:  
+            - ${HICOGNITION_DIR}:/code
+        environment:
+            - FLASK_DEBUG=1
+            - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=${DATABASE_URL}
+            - REDIS_URL=${REDIS_URL}
+            - UPLOAD_DIR=${UPLOAD_DIR}
+            - CHROM_SIZES=${CHROM_SIZES}
+            - CHROM_ARMS=${CHROM_ARMS}
+        depends_on:
+                - redis-server
+        runtime: nvidia
+        scale: 3
+        image: hicognition-gpu:v1.0
+        entrypoint: "/bin/bash"
+        networks:
+            - hicognition-net
+        # sleeps to wait for redis-server. TODO: make this check nicer!
+        command: -c "source activate rapids && sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-short"
+
+    mysql:
+        container_name: mysql
+        ports:
+            # map port out for diagnostics
+            - "3306:3306"
+        environment:
+            - MYSQL_RANDOM_ROOT_PASSWORD=yes
+            - MYSQL_DATABASE=hicognition
+            - MYSQL_USER=hicognition
+            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        image: mysql/mysql-server:8.0
+        volumes:
+            - ${MYSQL_DATA_DIR}:/var/lib/mysql
+            - ./mysql/mysql.cnf:/etc/my.cnf
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.9
+
+networks:
+    hicognition-net:
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.18.0.0/16
