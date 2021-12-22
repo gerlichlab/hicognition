@@ -156,6 +156,33 @@ class User(db.Model, UserMixin):
 
 
 class Dataset(db.Model):
+    # define groups of fields for requirement checking
+    COMMON_REQUIRED_KEYS = ["cellCycleStage", "datasetName", "perturbation", "ValueType", "public"]
+    ADD_REQUIRED_KEYS = ["assembly", "filetype"]
+    DATASET_META_FIELDS = {
+        "assembly": "assembly",
+        "cellCycleStage": "cellCycleStage",
+        "perturbation": "perturbation",
+        "ValueType": "valueType",
+        "Method": "method",
+        "SizeType": "sizeType",
+        "Normalization": "normalization",
+        "DerivationType": "derivationType",
+        "Protein": "protein",
+        "Directionality": "directionality",
+    }
+    DATASET_META_FIELDS_MODIFY = {
+        "datasetName": "dataset_name",
+        "cellCycleStage": "cellCycleStage",
+        "perturbation": "perturbation",
+        "ValueType": "valueType",
+        "Method": "method",
+        "Normalization": "normalization",
+        "DerivationType": "derivationType",
+        "Protein": "protein",
+        "Directionality": "directionality",
+        "public": "public",
+    }
     # fields
     id = db.Column(db.Integer, primary_key=True)
     dataset_name = db.Column(db.String(512), index=True)
@@ -288,6 +315,93 @@ class Dataset(db.Model):
         """Determines whether context
         allows dataset deletion"""
         return self.user_id != app_context.current_user.id
+
+    def add_fields_from_form(self, form, requirement_spec=None):
+        """Adds values for fields from form"""
+        if requirement_spec is None:
+            requirement_spec = self.DATASET_META_FIELDS
+        for form_key, dataset_field in requirement_spec.items():
+            if form_key in form:
+                if form_key == "public":
+                    self.__setattr__(
+                        dataset_field, "public" in form and form["public"].lower() == "true"
+                    )
+                else:
+                    self.__setattr__(dataset_field, form[form_key])
+
+    def add_fields_from_dataset(self, other_dataset):
+        """adds metadata from other dataset"""
+        for dataset_field in self.DATASET_META_FIELDS.values():
+            if other_dataset.__getattribute__(dataset_field) is not None:
+                self.__setattr__(dataset_field, other_dataset.__getattribute__(dataset_field))
+
+    def blank_fields(self):
+        """Blanks dataset fields"""
+        # common fields
+        for field in self.COMMON_REQUIRED_KEYS:
+            self.__setattr__(field, "undefined")
+        # metadata_fields
+        for key in self.DATASET_META_FIELDS_MODIFY.keys():
+            if key == "public":
+                continue
+            self.__setattr__(key, "undefined")
+
+    @classmethod
+    def modify_dataset_requirements_fulfilled(cls, form, filetype):
+        """Checks whether all fields that are needed to modiy a dataset are fulfilled"""
+        form_keys = set(form.keys())
+        if any(key not in form_keys for key in cls.COMMON_REQUIRED_KEYS):
+            return False
+        # check metadata
+        datasetTypeMapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
+        value_types = datasetTypeMapping[filetype]["ValueType"]
+        if form["ValueType"] not in value_types.keys():
+            return False
+        # check value type members
+        for key, possible_values in value_types[form["ValueType"]].items():
+            # skip size type
+            if key == "SizeType":
+                continue
+            if key not in form_keys:
+                return False
+            # check whether field is freetext
+            if possible_values == "freetext":
+                continue
+            # check that value in form corresponds to possible values
+            if form[key] not in possible_values:
+                return False
+        # check whether there is a field that is unsuitable
+        for key in cls.ADD_REQUIRED_KEYS + ["SizeType"]:
+            if key in form_keys:
+                return False
+        return True
+
+    @classmethod
+    def post_dataset_requirements_fullfilled(cls, form):
+        """checks whether form containing information to create dataset conforms
+        with the passed dataset_attribute_mapping."""
+        # check common things
+        form_keys = set(form.keys())
+        if any(key not in form_keys for key in cls.COMMON_REQUIRED_KEYS):
+            return False
+        if any(key not in form_keys for key in cls.ADD_REQUIRED_KEYS):
+            return False
+        # check metadata
+        datasetTypeMapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
+        value_types = datasetTypeMapping[form["filetype"]]["ValueType"]
+        if form["ValueType"] not in value_types.keys():
+            return False
+        # check value type members
+        for key, possible_values in value_types[form["ValueType"]].items():
+            if key not in form_keys:
+                return False
+            # check whether field is freetext
+            if possible_values == "freetext":
+                continue
+            # check that value in form corresponds to possible values
+            if form[key] not in possible_values:
+                return False
+        return True
 
     def to_json(self):
         json_dataset = {}

@@ -25,10 +25,7 @@ from .helpers import (
     remove_failed_tasks_dataset,
     remove_failed_tasks_collection,
     get_all_interval_ids,
-    parse_binsizes,
-    post_dataset_requirements_fullfilled,
-    add_fields_to_dataset_from_form,
-    add_fields_to_dataset_from_dataset
+    parse_binsizes
 )
 from .errors import forbidden, invalid, not_found
 from hicognition.format_checkers import FORMAT_CHECKERS
@@ -57,7 +54,7 @@ def add_dataset():
         if fileEnding.lower() not in correctFileEndings[request.form["filetype"]]:
             return True
         # check attributes
-        if not post_dataset_requirements_fullfilled(request.form):
+        if not Dataset.post_dataset_requirements_fullfilled(request.form):
             return True
         return False
 
@@ -81,7 +78,7 @@ def add_dataset():
         filetype=data["filetype"],
         user_id=current_user.id,
     )
-    add_fields_to_dataset_from_form(new_entry, data)
+    new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
     db.session.commit()
     # save file in upload directory with database_id as prefix
@@ -584,7 +581,7 @@ def create_region_from_cluster_id(entry_id, cluster_id):
         user_id=g.current_user.id,
     )
     # add fields
-    add_fields_to_dataset_from_dataset(new_entry, bed_ds)
+    new_entry.add_fields_from_dataset(bed_ds)
     db.session.add(new_entry)
     db.session.commit()
     # subset and write to file

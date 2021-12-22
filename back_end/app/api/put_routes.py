@@ -5,11 +5,6 @@ from . import api
 from .. import db
 from ..models import Dataset
 from .authentication import auth
-from .helpers import (
-    modify_dataset_requirements_fulfilled,
-    blank_dataset,
-    add_fields_to_dataset_modify,
-)
 from .errors import forbidden, invalid, not_found
 
 
@@ -22,7 +17,7 @@ def modify_dataset(dataset_id):
         if not hasattr(request, "form"):
             return True
         # check attributes
-        if not modify_dataset_requirements_fulfilled(request.form, filetype):
+        if not Dataset.modify_dataset_requirements_fulfilled(request.form, filetype):
             return True
         return False
 
@@ -42,8 +37,10 @@ def modify_dataset(dataset_id):
     # get data from form
     data = request.form
     # blank metadata fields
-    blank_dataset(dataset)
-    add_fields_to_dataset_modify(dataset, data)
+    dataset.blank_fields()
+    dataset.add_fields_from_form(
+        data, requirement_spec=Dataset.DATASET_META_FIELDS_MODIFY
+    )
     db.session.add(dataset)
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
