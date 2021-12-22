@@ -113,7 +113,9 @@ class User(db.Model, UserMixin):
         db.session.add(task)
         return task
 
-    def launch_collection_task(self, queue, name, description, collection_id, *args, **kwargs):
+    def launch_collection_task(
+        self, queue, name, description, collection_id, *args, **kwargs
+    ):
         rq_job = queue.enqueue(
             "app.tasks." + name, collection_id, job_timeout="10h", *args, **kwargs
         )
@@ -271,6 +273,22 @@ class Dataset(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    def is_access_denied(self, app_context):
+        """Determine whether context
+        allows access to dataset."""
+        if self.public:
+            return False
+        if (self.user_id != app_context.current_user.id) and (
+            self.id not in app_context.session_datasets
+        ):
+            return True
+        return False
+
+    def is_deletion_denied(self, app_context):
+        """Determines whether context
+        allows dataset deletion"""
+        return self.user_id != app_context.current_user.id
+
     def to_json(self):
         json_dataset = {}
         for key in inspect(Dataset).columns.keys():
@@ -300,6 +318,7 @@ class Dataset(db.Model):
 
 class ObsExp(db.Model):
     """Cache table for obs/exp dataframes"""
+
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     binsize = db.Column(db.Integer, index=True)
@@ -598,6 +617,22 @@ class Collection(db.Model):
 
     def get_tasks_in_progress(self):
         return Task.query.filter_by(collection=self, complete=False).all()
+
+    def is_access_denied(self, app_context):
+        """Determine whether context
+        allows access to collection."""
+        if self.public:
+            return False
+        if (self.user_id != app_context.current_user.id) and (
+            self.id not in app_context.session_collections
+        ):
+            return True
+        return False
+
+    def is_deletion_denied(self, app_context):
+        """Determines whether context
+        allows dataset deletion"""
+        return self.user_id != app_context.current_user.id
 
     def set_processing_state(self, db):
         """sets the current processing state of the collection instance.

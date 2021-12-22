@@ -140,36 +140,6 @@ def blank_dataset(entry):
         entry.__setattr__(key, "undefined")
 
 
-def is_access_to_dataset_denied(dataset, g):
-    """Checks whether access to a certian dataset is denied
-    for a given user."""
-    if dataset.public:
-        return False
-    if (dataset.user_id != g.current_user.id) and (
-        dataset.id not in g.session_datasets
-    ):
-        return True
-    return False
-
-
-def is_access_to_collection_denied(collection, g):
-    """Checks whether access to a certian dataset is denied
-    for a given user."""
-    if collection.public:
-        return False
-    if (collection.user_id != g.current_user.id) and (
-        collection.id not in g.session_collections
-    ):
-        return True
-    return False
-
-
-def is_dataset_deletion_denied(dataset_id, current_user):
-    """Checks whether access to a certian dataset is denied
-    for a given user."""
-    return dataset_id.user_id != current_user.id
-
-
 def update_processing_state(entries, db):
     """updates processing state of all entries (must implement set_processing_state) in the supplied iterable"""
     for entry in entries:
@@ -332,7 +302,7 @@ def add_average_data_to_preprocessed_dataset_map(
     for average in average_interval_datasets:
         dataset = Dataset.query.get(average.dataset_id)
         # check whether dataset is owned
-        if is_access_to_dataset_denied(dataset, request_context):
+        if dataset.is_access_denied(request_context):
             continue
         # check whether there are any uncompleted tasks for the region dataset associated with these features
         interval = Intervals.query.get(average.intervals_id)
@@ -365,7 +335,7 @@ def add_individual_data_to_preprocessed_dataset_map(
     for individual in individual_interval_datasets:
         dataset = Dataset.query.get(individual.dataset_id)
         # check whether dataset is owned
-        if is_access_to_dataset_denied(dataset, request_context):
+        if dataset.is_access_denied(request_context):
             continue
         # check whether there are any uncompleted tasks for the feature dataset
         interval = Intervals.query.get(individual.intervals_id)
@@ -392,7 +362,7 @@ def add_association_data_to_preprocessed_dataset_map(
     for assoc in association_interval_datasets:
         collection = Collection.query.get(assoc.collection_id)
         # check whether collection is owned
-        if is_access_to_collection_denied(collection, request_context):
+        if collection.is_access_denied(request_context):
             continue
         # check whether there are any uncompleted tasks for the feature dataset
         interval = Intervals.query.get(assoc.intervals_id)
@@ -429,7 +399,7 @@ def _add_embedding_data_1d_to_preprocessed_dataset_map(embedding_ds, output_obje
     """adds embedding interval data for 1d dataset to preprocesse dataset map"""
     collection = Collection.query.get(embedding_ds.collection_id)
     # check whether collection is owned
-    if is_access_to_collection_denied(collection, request_context):
+    if collection.is_access_denied(request_context):
         return
     # check whether there are any uncompleted tasks for the feature dataset
     interval = Intervals.query.get(embedding_ds.intervals_id)
@@ -457,7 +427,7 @@ def _add_embedding_data_2d_to_preprocessed_dataset_map(embedding_ds, output_obje
     """adds embedding interval data for 1d dataset to preprocesse dataset map"""
     dataset = Dataset.query.get(embedding_ds.dataset_id)
     # check whether collection is owned
-    if is_access_to_dataset_denied(dataset, request_context):
+    if dataset.is_access_denied(request_context):
         return
     # check whether there are any uncompleted tasks for the feature dataset
     interval = Intervals.query.get(embedding_ds.intervals_id)

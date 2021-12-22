@@ -2,7 +2,6 @@
 from flask.json import jsonify
 from flask import g
 from .helpers import (
-    is_dataset_deletion_denied,
     delete_collection,
     delete_associated_data_of_dataset,
     remove_safely,
@@ -23,7 +22,7 @@ def delete_dataset_handler(dataset_id):
     if dataset is None:
         return not_found(f"Dataset id {dataset_id} does not exist!")
     # check if data set can be accessed
-    if is_dataset_deletion_denied(dataset, g.current_user):
+    if dataset.is_deletion_denied(g):
         return forbidden(f"Dataset with id {dataset_id} is not owned by user!")
     # check if data set is processing
     if (len(dataset.processing_features) != 0) or (
@@ -78,7 +77,7 @@ def delete_collection_handler(collection_id):
     if collection is None:
         return not_found(f"Collection with id {collection_id} does not exist!")
     # check if data set can be accessed
-    if collection.user_id != g.current_user.id:
+    if collection.is_deletion_denied(g):
         return forbidden(f"Collection with id {collection_id} is not owned by user!")
     # delete session
     delete_collection(collection, db)

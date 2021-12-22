@@ -8,8 +8,6 @@ from flask.json import jsonify
 from flask import g, make_response
 from .helpers import (
     update_processing_state,
-    is_access_to_dataset_denied,
-    is_access_to_collection_denied,
     add_average_data_to_preprocessed_dataset_map,
     add_individual_data_to_preprocessed_dataset_map,
     add_association_data_to_preprocessed_dataset_map,
@@ -137,7 +135,7 @@ def get_name_of_dataset(dataset_id):
     if dataset is None:
         return not_found(f"Dataset with id '{dataset_id}' does not exist!")
     # check whether user owns the dataset
-    if is_access_to_dataset_denied(dataset, g):
+    if dataset.is_access_denied(g):
         return forbidden(
             f"Dataset with id '{dataset_id}' is not owned by logged in user!"
         )
@@ -176,7 +174,7 @@ def get_processed_data_mapping_of_dataset(dataset_id):
     if dataset is None:
         return not_found(f"Dataset with id '{dataset_id}' does not exist!")
     # check whether user owns the dataset
-    if is_access_to_dataset_denied(dataset, g):
+    if dataset.is_access_denied(g):
         return forbidden(
             f"Dataset with id '{dataset_id}' is not owned by logged in user!"
         )
@@ -232,7 +230,7 @@ def get_interval_metadata(interval_id):
     if interval is None:
         return not_found(f"Intervals with id {interval_id} do not exist!")
     # check if associated dataset is owned
-    if is_access_to_dataset_denied(interval.source_dataset, g):
+    if interval.source_dataset.is_access_denied(g):
         return forbidden(
             f"Dataset associated with interval id {interval.id} is not owned by logged in user!"
         )
@@ -270,9 +268,7 @@ def get_pileup_data(entry_id):
     pileup = AverageIntervalData.query.get(entry_id)
     cooler_ds = pileup.source_dataset
     bed_ds = pileup.source_intervals.source_dataset
-    if is_access_to_dataset_denied(cooler_ds, g) or is_access_to_dataset_denied(
-        bed_ds, g
-    ):
+    if cooler_ds.is_access_denied(g) or bed_ds.is_access_denied(g):
         return forbidden(
             "Cooler dataset or bed dataset is not owned by logged in user!"
         )
@@ -299,9 +295,7 @@ def get_association_data(entry_id):
     association_data = AssociationIntervalData.query.get(entry_id)
     collection = association_data.source_collection
     bed_ds = association_data.source_intervals.source_dataset
-    if is_access_to_collection_denied(collection, g) or is_access_to_dataset_denied(
-        bed_ds, g
-    ):
+    if collection.is_access_denied(g) or bed_ds.is_access_denied(g):
         return forbidden("Collection or bed dataset is not owned by logged in user!")
     # Dataset is owned, return the data
     np_data = np.load(association_data.file_path)
@@ -328,9 +322,7 @@ def get_embedding_data(entry_id):
         # Check whether datasets are owned
         feature_dataset = embedding_data.source_dataset
         bed_ds = embedding_data.source_intervals.source_dataset
-        if is_access_to_dataset_denied(feature_dataset, g) or is_access_to_dataset_denied(
-            bed_ds, g
-        ):
+        if feature_dataset.is_access_denied(g) or bed_ds.is_access_denied(g):
             return forbidden("Feature dataset or region dataset is not owned by logged in user!")
         embedding = np.load(embedding_data.file_path).astype(float)
         cluster_ids = np.load(embedding_data.cluster_id_path).astype(float)
@@ -357,9 +349,7 @@ def get_embedding_data(entry_id):
         # Check whether collections are owned
         collection = embedding_data.source_collection
         bed_ds = embedding_data.source_intervals.source_dataset
-        if is_access_to_collection_denied(collection, g) or is_access_to_dataset_denied(
-            bed_ds, g
-        ):
+        if collection.is_access_denied(collection, g) or bed_ds.is_access_denied(g):
             return forbidden("Collection dataset or region dataset is not owned by logged in user!")
         embedding = np.load(embedding_data.file_path).astype(float)
         json_data = {
@@ -386,9 +376,7 @@ def get_embedding_feature(entry_id, feature_index):
     embedding_data = EmbeddingIntervalData.query.get(entry_id)
     collection = embedding_data.source_collection
     bed_ds = embedding_data.source_intervals.source_dataset
-    if is_access_to_collection_denied(collection, g) or is_access_to_dataset_denied(
-        bed_ds, g
-    ):
+    if collection.is_access_denied(g) or bed_ds.is_access_denied(g):
         return forbidden("Collection or bed dataset is not owned by logged in user!")
     # return the feature data
     feature_data = np.load(embedding_data.file_path_feature_values, mmap_mode="r")
@@ -417,9 +405,7 @@ def get_stackup_data(entry_id):
     stackup = IndividualIntervalData.query.get(entry_id)
     bigwig_ds = stackup.source_dataset
     bed_ds = stackup.source_intervals.source_dataset
-    if is_access_to_dataset_denied(bigwig_ds, g) or is_access_to_dataset_denied(
-        bed_ds, g
-    ):
+    if bigwig_ds.is_access_denied(g) or bed_ds.is_access_denied(g):
         return forbidden(
             "Bigwig dataset or bed dataset is not owned by logged in user!"
         )
@@ -451,9 +437,7 @@ def get_stackup_metadata_small(entry_id):
     ).file_path_sub_sample_index
     bigwig_ds = stackup.source_dataset
     bed_ds = stackup.source_intervals.source_dataset
-    if is_access_to_dataset_denied(bigwig_ds, g) or is_access_to_dataset_denied(
-        bed_ds, g
-    ):
+    if bigwig_ds.is_access_denied(g) or bed_ds.is_access_denied(g):
         return forbidden(
             "Bigwig dataset or bed dataset is not owned by logged in user!"
         )

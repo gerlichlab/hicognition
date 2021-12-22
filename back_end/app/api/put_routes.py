@@ -1,17 +1,11 @@
 """API endpoints for hicognition"""
-import os
-import json
-import pandas as pd
-import cooler
-import numpy as np
 from flask.json import jsonify
-from flask import g, request, current_app
+from flask import g, request
 from . import api
 from .. import db
 from ..models import Dataset
 from .authentication import auth
 from .helpers import (
-    is_access_to_dataset_denied,
     modify_dataset_requirements_fulfilled,
     blank_dataset,
     add_fields_to_dataset_modify,
@@ -38,7 +32,7 @@ def modify_dataset(dataset_id):
     if dataset is None:
         return not_found(f"Dataset with id '{dataset_id}' does not exist!")
     # check whether user owns the dataset
-    if is_access_to_dataset_denied(dataset, g):
+    if dataset.is_access_denied(g):
         return forbidden(
             f"Dataset with id '{dataset_id}' is not owned by logged in user!"
         )

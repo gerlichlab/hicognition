@@ -21,8 +21,6 @@ from ..models import (
 )
 from .authentication import auth
 from .helpers import (
-    is_access_to_dataset_denied,
-    is_access_to_collection_denied,
     parse_description,
     remove_failed_tasks_dataset,
     remove_failed_tasks_collection,
@@ -145,7 +143,7 @@ def preprocess_dataset():
     feature_datasets = [Dataset.query.get(feature_id) for feature_id in dataset_ids]
     if any(entry is None for entry in feature_datasets):
         return not_found("Dataset does not exist!")
-    if any(is_access_to_dataset_denied(entry, g) for entry in feature_datasets):
+    if any(entry.is_access_denied(g) for entry in feature_datasets):
         return forbidden(f"Dataset is not owned by logged in user!")
     # check whether region datasets exists
     region_datasets = [
@@ -154,7 +152,7 @@ def preprocess_dataset():
     if any(entry is None for entry in region_datasets):
         return not_found("Region dataset does not exist!")
     # check whether region datasets are owned
-    if any(is_access_to_dataset_denied(entry, g) for entry in region_datasets):
+    if any(entry.is_access_denied(g) for entry in region_datasets):
         return forbidden(f"Dataset is not owned by logged in user!")
     # delete all jobs that are in database and have failed and remove failed entries
     for dataset in feature_datasets:
@@ -218,7 +216,7 @@ def preprocess_collections():
     ]
     if any(entry is None for entry in collections):
         return not_found("Collection does not exist!")
-    if any(is_access_to_collection_denied(collection, g) for collection in collections):
+    if any(collection.is_access_denied(g) for collection in collections):
         return forbidden(f"Collection is not owned by logged in user!")
     # check whether region datasets exists
     region_datasets = [
@@ -227,7 +225,7 @@ def preprocess_collections():
     if any(entry is None for entry in region_datasets):
         return not_found("Region dataset does not exist!")
     # check whether region datasets are owned
-    if any(is_access_to_dataset_denied(entry, g) for entry in region_datasets):
+    if any(entry.is_access_denied(g) for entry in region_datasets):
         return forbidden(f"Region dataset is not owned by logged in user!")
     # delete all jobs that are in database and have failed
     for collection in collections:
@@ -301,7 +299,7 @@ def add_bedfile_metadata():
     # check whether dataset exists and user is allowed to access
     if Dataset.query.get(dataset_id) is None:
         return not_found("Dataset does not exist!")
-    if is_access_to_dataset_denied(Dataset.query.get(dataset_id), g):
+    if Dataset.query.get(dataset_id).is_access_denied(g):
         return forbidden(f"Dataset is not owned by logged in user!")
     # check whether row-number is correct
     dataset = Dataset.query.get(dataset_id)
@@ -357,9 +355,7 @@ def add_bedfile_metadata_fields(metadata_id):
     # check whether dataset exists and user is allowed to access
     if BedFileMetadata.query.get(metadata_id) is None:
         return not_found("Metadataset does not exist!")
-    if is_access_to_dataset_denied(
-        BedFileMetadata.query.get(metadata_id).associated_dataset, g
-    ):
+    if BedFileMetadata.query.get(metadata_id).associated_dataset.is_access_denied(g):
         return forbidden(f"Associated dataset is not owned by logged in user!")
     # check whether field_names are correct
     metadata = BedFileMetadata.query.get(metadata_id)
@@ -408,7 +404,7 @@ def create_session():
     if any(dataset is None for dataset in datasets):
         return invalid(f"Some of the datasets in used_datasets do not exist!")
     # check whether dataset is owned or session token is valid
-    if any(is_access_to_dataset_denied(dataset, g) for dataset in datasets):
+    if any(dataset.is_access_denied(g) for dataset in datasets):
         return forbidden(
             f"Some of the datasets associated with this session are not owned!"
         )
@@ -418,7 +414,7 @@ def create_session():
     ]
     if any(collection is None for collection in collections):
         return invalid(f"Some of the collections in used_collections do not exist!")
-    if any(is_access_to_collection_denied(collection, g) for collection in collections):
+    if any(collection.is_access_denied(g) for collection in collections):
         return forbidden(
             f"Some of the collections associated with this session are not owned!"
         )
@@ -464,7 +460,7 @@ def create_collection():
     if any(dataset is None for dataset in datasets):
         return invalid(f"Some of the datasets in used_datasets do not exist!")
     # check whether dataset is owned or session token is valid
-    if any(is_access_to_dataset_denied(dataset, g) for dataset in datasets):
+    if any(dataset.is_access_denied(g) for dataset in datasets):
         return forbidden(
             f"Some of the datasets associated with this collection are not owned!"
         )
@@ -560,9 +556,7 @@ def create_region_from_cluster_id(entry_id, cluster_id):
     embedding_data = EmbeddingIntervalData.query.get(entry_id)
     feature_dataset = embedding_data.source_dataset
     bed_ds = embedding_data.source_intervals.source_dataset
-    if is_access_to_dataset_denied(feature_dataset, g) or is_access_to_dataset_denied(
-        bed_ds, g
-    ):
+    if feature_dataset.is_access_denied(g) or bed_ds.is_access_denied(g):
         return forbidden("Feature dataset or region dataset is not owned by logged in user!")
     # check form
     if is_form_invalid():

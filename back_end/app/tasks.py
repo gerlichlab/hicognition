@@ -5,9 +5,8 @@ import logging
 
 import pandas as pd
 from hicognition import io_helpers
-from rq import get_current_job
 from . import create_app, db
-from .models import Assembly, Dataset, IndividualIntervalData, Collection, Task
+from .models import Assembly, Dataset, IndividualIntervalData, Collection
 from . import pipeline_steps
 from .api.helpers import remove_safely
 from .notifications import NotificationHandler
