@@ -17,7 +17,7 @@ import bioframe as bf
 from sklearn.impute import SimpleImputer
 from sklearn.cluster import KMeans
 import pylola
-from .api.helpers import get_optimal_binsize
+from hicognition.utils import get_optimal_binsize
 import hicognition
 from . import db
 from .models import (
@@ -113,7 +113,7 @@ def _do_pileup_variable_size(
     bin_number_expanded = interval_operations.get_bin_number_for_expanded_intervals(
         binsize, current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]
     )
-    cooler_binsize = get_optimal_binsize(regions, bin_number_expanded)
+    cooler_binsize = get_optimal_binsize(regions, bin_number_expanded, current_app.config["PREPROCESSING_MAP"])
     log.info(f"      Optimal binsize is {cooler_binsize}")
     if cooler_binsize is None:
         if collapse:

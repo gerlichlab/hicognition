@@ -7,7 +7,7 @@ import numpy as np
 from flask.json import jsonify
 from flask import g, make_response
 from hicognition import data_structures
-from .helpers import (
+from hicognition.utils import (
     update_processing_state,
     flatten_and_clean_array,
 )

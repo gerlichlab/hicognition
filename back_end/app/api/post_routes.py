@@ -20,7 +20,7 @@ from ..models import (
     EmbeddingIntervalData
 )
 from .authentication import auth
-from .helpers import (
+from hicognition.utils import (
     parse_description,
     get_all_interval_ids,
     parse_binsizes

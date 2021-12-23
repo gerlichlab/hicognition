@@ -1,17 +1,4 @@
-"""Helper functions for api routes"""
-import os
-from collections import defaultdict
-from flask import current_app
-from ..models import (
-    EmbeddingIntervalData,
-    Intervals,
-    Dataset,
-    Collection,
-    Task,
-    IndividualIntervalData,
-    AverageIntervalData,
-    BedFileMetadata,
-)
+"""Convenience functions for hicognition"""
 import numpy as np
 
 
@@ -45,7 +32,8 @@ def parse_binsizes(map, filetype):
             binsizes |= set(bins[filetype])
     return list(binsizes)
 
-def get_optimal_binsize(regions, target_bin_number):
+
+def get_optimal_binsize(regions, target_bin_number, processing_map):
     """given a dataframe of regions defined via (chrom, start, end) and a
     target bin number, decide which binsize to use for variable size pileup/enrichment analysis"""
     MAX_CHUNK_NUMBER = 250
@@ -53,10 +41,7 @@ def get_optimal_binsize(regions, target_bin_number):
     max_size = np.percentile(sizes, 80)
     median_size = np.median(sizes)
     binsizes = sorted(
-        [
-            int(entry)
-            for entry in parse_binsizes(current_app.config["PREPROCESSING_MAP"], "cooler")
-        ]
+        [int(entry) for entry in parse_binsizes(processing_map, "cooler")]
     )
     chunk_number = [max_size / binsize for binsize in binsizes]
     # check if first chunk_number is below 1 -> should indicate error
