@@ -8,7 +8,7 @@ from itsdangerous import JSONWebSignatureSerializer
 from flask_login import UserMixin
 import redis
 import rq
-from app import db, login
+from app import db
 import hicognition
 
 # define association tables
@@ -158,7 +158,13 @@ class User(db.Model, UserMixin):
 
 class Dataset(db.Model):
     # define groups of fields for requirement checking
-    COMMON_REQUIRED_KEYS = ["cellCycleStage", "datasetName", "perturbation", "ValueType", "public"]
+    COMMON_REQUIRED_KEYS = [
+        "cellCycleStage",
+        "datasetName",
+        "perturbation",
+        "ValueType",
+        "public",
+    ]
     ADD_REQUIRED_KEYS = ["assembly", "filetype"]
     DATASET_META_FIELDS = {
         "assembly": "assembly",
@@ -325,7 +331,8 @@ class Dataset(db.Model):
             if form_key in form:
                 if form_key == "public":
                     self.__setattr__(
-                        dataset_field, "public" in form and form["public"].lower() == "true"
+                        dataset_field,
+                        "public" in form and form["public"].lower() == "true",
                     )
                 else:
                     self.__setattr__(dataset_field, form[form_key])
@@ -334,7 +341,9 @@ class Dataset(db.Model):
         """adds metadata from other dataset"""
         for dataset_field in self.DATASET_META_FIELDS.values():
             if other_dataset.__getattribute__(dataset_field) is not None:
-                self.__setattr__(dataset_field, other_dataset.__getattribute__(dataset_field))
+                self.__setattr__(
+                    dataset_field, other_dataset.__getattribute__(dataset_field)
+                )
 
     def blank_fields(self):
         """Blanks dataset fields"""
@@ -426,10 +435,14 @@ class Dataset(db.Model):
                 AverageIntervalData.intervals_id.in_([entry.id for entry in intervals])
             ).all()
             individualIntervalData = IndividualIntervalData.query.filter(
-                IndividualIntervalData.intervals_id.in_([entry.id for entry in intervals])
+                IndividualIntervalData.intervals_id.in_(
+                    [entry.id for entry in intervals]
+                )
             ).all()
             embeddingIntervalData = EmbeddingIntervalData.query.filter(
-                EmbeddingIntervalData.intervals_id.in_([entry.id for entry in intervals])
+                EmbeddingIntervalData.intervals_id.in_(
+                    [entry.id for entry in intervals]
+                )
             ).all()
             metadata = BedFileMetadata.query.filter(
                 BedFileMetadata.dataset_id == self.id
@@ -439,21 +452,32 @@ class Dataset(db.Model):
                 AverageIntervalData.dataset_id == self.id
             ).all()
             individualIntervalData = IndividualIntervalData.query.filter(
-                IndividualIntervalData.dataset_id ==self.id
+                IndividualIntervalData.dataset_id == self.id
             ).all()
         # delete files and remove from database
         deletion_queue = (
-            [self] + intervals + averageIntervalData + individualIntervalData + embeddingIntervalData + metadata
+            [self]
+            + intervals
+            + averageIntervalData
+            + individualIntervalData
+            + embeddingIntervalData
+            + metadata
         )
         for entry in deletion_queue:
             if isinstance(entry, IndividualIntervalData):
-                hicognition.io_helpers.remove_safely(entry.file_path_small, current_app.logger)
+                hicognition.io_helpers.remove_safely(
+                    entry.file_path_small, current_app.logger
+                )
             if hasattr(entry, "file_path") and (entry.file_path is not None):
-                hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
+                hicognition.io_helpers.remove_safely(
+                    entry.file_path, current_app.logger
+                )
             if hasattr(entry, "file_path_sub_sample_index") and (
                 entry.file_path_sub_sample_index is not None
             ):
-                hicognition.io_helpers.remove_safely(entry.file_path_sub_sample_index, current_app.logger)
+                hicognition.io_helpers.remove_safely(
+                    entry.file_path_sub_sample_index, current_app.logger
+                )
 
     def to_json(self):
         json_dataset = {}
@@ -480,6 +504,111 @@ class Dataset(db.Model):
             collection.id for collection in self.failed_collections
         ]
         return json_dataset
+
+
+class Collection(db.Model):
+    """Collections of datasets with optional name and description.
+    One dataset can belong to many collections and one collection can
+    have many datasets."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(1024))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    public = db.Column(db.Boolean, default=False)
+    kind = db.Column(
+        db.String(256)
+    )  # What kind of datasets are collected (regions, 1d-features, 2d-features)
+    tasks = db.relationship("Task", backref="collection", lazy="dynamic")
+    datasets = db.relationship("Dataset", secondary=dataset_collection_assoc_table)
+    processing_for_datasets = db.relationship(
+        "Dataset", secondary=collections_preprocessing_table
+    )
+    failed_for_datasets = db.relationship("Dataset", secondary=collections_failed_table)
+    sessions = db.relationship("Session", secondary=session_collection_assoc_table)
+    associationData = db.relationship(
+        "AssociationIntervalData",
+        backref="source_collection",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
+    embeddingData = db.relationship(
+        "EmbeddingIntervalData",
+        backref="source_collection",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
+    processing_state = db.Column(db.String(64))
+
+    def get_tasks_in_progress(self):
+        return Task.query.filter_by(collection=self, complete=False).all()
+
+    def is_access_denied(self, app_context):
+        """Determine whether context
+        allows access to collection."""
+        if self.public:
+            return False
+        if (self.user_id != app_context.current_user.id) and (
+            self.id not in app_context.session_collections
+        ):
+            return True
+        return False
+
+    def is_deletion_denied(self, app_context):
+        """Determines whether context
+        allows dataset deletion"""
+        return self.user_id != app_context.current_user.id
+
+    def delete_data_of_associated_entries(self):
+        """"""
+        assoc_data = self.associationData.all()
+        deletion_queue = assoc_data
+        for entry in deletion_queue:
+            # remove files
+            hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
+            if hasattr(entry, "file_path_feature_values"):
+                hicognition.io_helpers.remove_safely(
+                    entry.file_path_feature_values, current_app.logger
+                )
+
+    def set_processing_state(self, db):
+        """sets the current processing state of the collection instance.
+        Launching task sets processing state, this sets finished/failed state"""
+        if self.processing_state not in ["processing", "finished", "failed"]:
+            return
+        # check if there are any unfinished tasks
+        tasks = self.tasks.filter(Task.complete == False).all()
+        if len(tasks) == 0:
+            self.processing_state = "finished"
+        else:
+            if all_tasks_finished(tasks):
+                self.processing_state = "finished"
+            elif any_tasks_failed(tasks):
+                self.processing_state = "failed"
+            else:
+                self.processing_state = "processing"
+        db.session.add(self)
+        db.session.commit()
+
+    def to_json(self):
+        """Formats json output."""
+        json_session = {
+            "id": self.id,
+            "name": self.name,
+            "kind": self.kind,
+            "assembly": self.datasets[0].assembly,
+            "number_datasets": len(self.datasets),
+            "dataset_names": [dataset.dataset_name for dataset in self.datasets],
+            "dataset_ids": [dataset.id for dataset in self.datasets],
+            "processing_state": self.processing_state,
+            "processing_for_regions": [
+                region.id for region in self.processing_for_datasets
+            ],
+        }
+        return json_session
+
+    def __repr__(self):
+        """Format print output."""
+        return f"<Collection {self.name}>"
 
 
 class ObsExp(db.Model):
@@ -552,6 +681,15 @@ class Intervals(db.Model):
         "Task", backref="intervals", lazy="dynamic", cascade="all, delete-orphan"
     )
 
+    def get_associated_preprocessed_datasets(self):
+        """returns all associated datasets"""
+        return (
+            self.averageIntervalData.all()
+            + self.individualIntervalData.all()
+            + self.associationIntervalData.all()
+            + self.embeddingIntervalData.all()
+        )
+
     def __repr__(self):
         """Format print output."""
         return f"<Intervals {self.name}>"
@@ -575,6 +713,37 @@ class AverageIntervalData(db.Model):
     value_type = db.Column(db.String(64))
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
+
+    def add_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
+        """Adds self to preprocessed dataset map"""
+        dataset = Dataset.query.get(self.dataset_id)
+        # check whether there are any uncompleted tasks for the region dataset associated with these features
+        interval = Intervals.query.get(self.intervals_id)
+        region_dataset = interval.source_dataset
+        # check whether region_dataset is interval
+        if region_dataset.sizeType == "Interval":
+            windowsize = "variable"
+        else:
+            windowsize = interval.windowsize
+        # check whether dataset is in failed or processing datasets
+        if (dataset in region_dataset.processing_features) or (
+            dataset in region_dataset.failed_features
+        ):
+            return
+        if self.value_type in ["Obs/Exp", "ICCF"]:
+            preprocessed_dataset_map["pileup"][dataset.id][
+                "name"
+            ] = dataset.dataset_name
+            preprocessed_dataset_map["pileup"][dataset.id]["data_ids"][windowsize][
+                self.binsize
+            ][self.value_type] = str(self.id)
+        else:
+            preprocessed_dataset_map["lineprofile"][dataset.id][
+                "name"
+            ] = dataset.dataset_name
+            preprocessed_dataset_map["lineprofile"][dataset.id]["data_ids"][windowsize][
+                self.binsize
+            ] = str(self.id)
 
     def __repr__(self):
         """Format print output."""
@@ -613,6 +782,27 @@ class IndividualIntervalData(db.Model):
         db.Integer, db.ForeignKey("intervals.id")
     )  # intervals over which the values were extracted
 
+    def add_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
+        """Adds self to preprocessed dataset map"""
+        dataset = Dataset.query.get(self.dataset_id)
+        # check whether there are any uncompleted tasks for the feature dataset
+        interval = Intervals.query.get(self.intervals_id)
+        region_dataset = interval.source_dataset
+        # check whether region_dataset is interval
+        if region_dataset.sizeType == "Interval":
+            windowsize = "variable"
+        else:
+            windowsize = interval.windowsize
+        # check whether dataset is in failed or processing datasets
+        if (dataset in region_dataset.processing_features) or (
+            dataset in region_dataset.failed_features
+        ):
+            return
+        preprocessed_dataset_map["stackup"][dataset.id]["name"] = dataset.dataset_name
+        preprocessed_dataset_map["stackup"][dataset.id]["data_ids"][windowsize][
+            self.binsize
+        ] = str(self.id)
+
     def __repr__(self):
         """Format print output."""
         return f"<IndividualIntervalData {self.name}>"
@@ -643,6 +833,28 @@ class AssociationIntervalData(db.Model):
     collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
     intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
 
+    def add_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
+        """Adds self to preprocessed dataset map"""
+        collection = Collection.query.get(self.collection_id)
+        interval = Intervals.query.get(self.intervals_id)
+        region_dataset = interval.source_dataset
+        # check whether region_dataset is interval
+        if region_dataset.sizeType == "Interval":
+            windowsize = "variable"
+        else:
+            windowsize = interval.windowsize
+        if (collection in region_dataset.processing_collections) or (
+            collection in region_dataset.failed_collections
+        ):
+            return
+        preprocessed_dataset_map["lola"][collection.id]["name"] = collection.name
+        preprocessed_dataset_map["lola"][collection.id][
+            "collection_dataset_names"
+        ] = collection.to_json()["dataset_names"]
+        preprocessed_dataset_map["lola"][collection.id]["data_ids"][windowsize][
+            self.binsize
+        ] = str(self.id)
+
 
 class EmbeddingIntervalData(db.Model):
     """Table to hold information and pointers to data for values extracted by calculating
@@ -663,6 +875,58 @@ class EmbeddingIntervalData(db.Model):
     collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
+
+    def _add_1d_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
+        """Adds self if 1d embedding"""
+        collection = Collection.query.get(self.collection_id)
+        # check whether there are any uncompleted tasks for the feature dataset
+        interval = Intervals.query.get(self.intervals_id)
+        region_dataset = interval.source_dataset
+        # check whether region_dataset is interval
+        if region_dataset.sizeType == "Interval":
+            windowsize = "variable"
+        else:
+            windowsize = interval.windowsize
+        if (collection in region_dataset.processing_collections) or (
+            collection in region_dataset.failed_collections
+        ):
+            return
+        preprocessed_dataset_map["embedding1d"][collection.id]["name"] = collection.name
+        preprocessed_dataset_map["embedding1d"][collection.id][
+            "collection_dataset_names"
+        ] = collection.to_json()["dataset_names"]
+        preprocessed_dataset_map["embedding1d"][collection.id]["data_ids"][windowsize][
+            self.binsize
+        ] = str(self.id)
+
+    def _add_2d_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
+        """Adds self if 2d embedding"""
+        dataset = Dataset.query.get(self.dataset_id)
+        # check whether there are any uncompleted tasks for the feature dataset
+        interval = Intervals.query.get(self.intervals_id)
+        region_dataset = interval.source_dataset
+        # check whether region_dataset is interval
+        if region_dataset.sizeType == "Interval":
+            windowsize = "variable"
+        else:
+            windowsize = interval.windowsize
+        if (dataset in region_dataset.processing_features) or (
+            dataset in region_dataset.failed_features
+        ):
+            return
+        preprocessed_dataset_map["embedding2d"][dataset.id][
+            "name"
+        ] = dataset.dataset_name
+        preprocessed_dataset_map["embedding2d"][dataset.id]["data_ids"][windowsize][
+            self.binsize
+        ][self.normalization][self.cluster_number] = str(self.id)
+
+    def add_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
+        """Add self to preprocesse dataset_map"""
+        if self.value_type == "2d-embedding":
+            self._add_2d_to_preprocessed_dataset_map(preprocessed_dataset_map)
+        else:
+            self._add_1d_to_preprocessed_dataset_map(preprocessed_dataset_map)
 
 
 class Task(db.Model):
@@ -748,116 +1012,7 @@ class Session(db.Model):
         return f"<Session {self.name}>"
 
 
-class Collection(db.Model):
-    """Collections of datasets with optional name and description.
-    One dataset can belong to many collections and one collection can
-    have many datasets."""
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(1024))
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    public = db.Column(db.Boolean, default=False)
-    kind = db.Column(
-        db.String(256)
-    )  # What kind of datasets are collected (regions, 1d-features, 2d-features)
-    tasks = db.relationship("Task", backref="collection", lazy="dynamic")
-    datasets = db.relationship("Dataset", secondary=dataset_collection_assoc_table)
-    processing_for_datasets = db.relationship(
-        "Dataset", secondary=collections_preprocessing_table
-    )
-    failed_for_datasets = db.relationship("Dataset", secondary=collections_failed_table)
-    sessions = db.relationship("Session", secondary=session_collection_assoc_table)
-    associationData = db.relationship(
-        "AssociationIntervalData",
-        backref="source_collection",
-        lazy="dynamic",
-        cascade="all, delete-orphan",
-    )
-    embeddingData = db.relationship(
-        "EmbeddingIntervalData",
-        backref="source_collection",
-        lazy="dynamic",
-        cascade="all, delete-orphan",
-    )
-    processing_state = db.Column(db.String(64))
-
-    def get_tasks_in_progress(self):
-        return Task.query.filter_by(collection=self, complete=False).all()
-
-    def is_access_denied(self, app_context):
-        """Determine whether context
-        allows access to collection."""
-        if self.public:
-            return False
-        if (self.user_id != app_context.current_user.id) and (
-            self.id not in app_context.session_collections
-        ):
-            return True
-        return False
-
-    def is_deletion_denied(self, app_context):
-        """Determines whether context
-        allows dataset deletion"""
-        return self.user_id != app_context.current_user.id
-
-    def delete_data_of_associated_entries(self):
-        """"""
-        assoc_data = self.associationData.all()
-        deletion_queue = assoc_data
-        for entry in deletion_queue:
-            # remove files
-            hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
-            if hasattr(entry, "file_path_feature_values"):
-                hicognition.io_helpers.remove_safely(entry.file_path_feature_values, current_app.logger)
-
-    def set_processing_state(self, db):
-        """sets the current processing state of the collection instance.
-        Launching task sets processing state, this sets finished/failed state"""
-        if self.processing_state not in ["processing", "finished", "failed"]:
-            return
-        # check if there are any unfinished tasks
-        tasks = self.tasks.filter(Task.complete == False).all()
-        if len(tasks) == 0:
-            self.processing_state = "finished"
-        else:
-            if all_tasks_finished(tasks):
-                self.processing_state = "finished"
-            elif any_tasks_failed(tasks):
-                self.processing_state = "failed"
-            else:
-                self.processing_state = "processing"
-        db.session.add(self)
-        db.session.commit()
-
-    def to_json(self):
-        """Formats json output."""
-        json_session = {
-            "id": self.id,
-            "name": self.name,
-            "kind": self.kind,
-            "assembly": self.datasets[0].assembly,
-            "number_datasets": len(self.datasets),
-            "dataset_names": [dataset.dataset_name for dataset in self.datasets],
-            "dataset_ids": [dataset.id for dataset in self.datasets],
-            "processing_state": self.processing_state,
-            "processing_for_regions": [
-                region.id for region in self.processing_for_datasets
-            ],
-        }
-        return json_session
-
-    def __repr__(self):
-        """Format print output."""
-        return f"<Collection {self.name}>"
-
-
 # helpers
-
-
-@login.user_loader
-def load_user(id):
-    """Helper function to load user."""
-    return User.query.get(int(id))
 
 
 def all_tasks_finished(tasks):

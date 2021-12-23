@@ -177,12 +177,52 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         ]
         # create embedding data
         self.embedding_data = [
-            EmbeddingIntervalData(id=1, binsize=10000, collection_id=1, intervals_id=1, value_type="1d-embedding"),
-            EmbeddingIntervalData(id=2, binsize=20000, collection_id=1, intervals_id=1, value_type="1d-embedding"),
-            EmbeddingIntervalData(id=3, binsize=20000, collection_id=1, intervals_id=2, value_type="1d-embedding"),
-            EmbeddingIntervalData(id=4, binsize=5, collection_id=1, intervals_id=7, value_type="1d-embedding"),
-            EmbeddingIntervalData(id=5, binsize=10000, dataset_id=3, intervals_id=1, value_type="2d-embedding", normalization="ICCF", cluster_number="small"),
-            EmbeddingIntervalData(id=6, binsize=10000, dataset_id=3, intervals_id=1, value_type="2d-embedding", normalization="Obs/Exp", cluster_number="small"),
+            EmbeddingIntervalData(
+                id=1,
+                binsize=10000,
+                collection_id=1,
+                intervals_id=1,
+                value_type="1d-embedding",
+            ),
+            EmbeddingIntervalData(
+                id=2,
+                binsize=20000,
+                collection_id=1,
+                intervals_id=1,
+                value_type="1d-embedding",
+            ),
+            EmbeddingIntervalData(
+                id=3,
+                binsize=20000,
+                collection_id=1,
+                intervals_id=2,
+                value_type="1d-embedding",
+            ),
+            EmbeddingIntervalData(
+                id=4,
+                binsize=5,
+                collection_id=1,
+                intervals_id=7,
+                value_type="1d-embedding",
+            ),
+            EmbeddingIntervalData(
+                id=5,
+                binsize=10000,
+                dataset_id=3,
+                intervals_id=1,
+                value_type="2d-embedding",
+                normalization="ICCF",
+                cluster_number="small",
+            ),
+            EmbeddingIntervalData(
+                id=6,
+                binsize=10000,
+                dataset_id=3,
+                intervals_id=1,
+                value_type="2d-embedding",
+                normalization="Obs/Exp",
+                cluster_number="small",
+            ),
         ]
 
     def test_no_auth(self):
@@ -328,7 +368,11 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                         "10000": {"1000": {"ICCF": "2", "Obs/Exp": "1"}},
                         "20000": {"2000": {"ICCF": "4", "Obs/Exp": "3"}},
                     },
-                }
+                },
+                "6": {
+                    "name": "testfile6",
+                    "data_ids": {"20000": {"2000": {"ICCF": "5"}}},
+                },
             },
             "stackup": {},
             "lineprofile": {},
@@ -364,7 +408,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 "3": {
                     "name": "testfile3",
                     "data_ids": {"variable": {"2": {"ICCF": "10", "Obs/Exp": "11"}}},
-                }
+                },
             },
             "stackup": {},
             "lineprofile": {},
@@ -403,7 +447,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}},
             },
             "embedding1d": {},
             "embedding2d": {},
@@ -470,7 +515,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}},
             },
             "lineprofile": {},
             "lola": {},
@@ -632,17 +678,12 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 "3": {
                     "name": "testfile3",
                     "data_ids": {
-                        "10000": {"10000": {
-                            "ICCF": {
-                                "small": "5"
-                            },
-                            "Obs/Exp": {
-                                "small": "6"
-                            }
-                        }},
+                        "10000": {
+                            "10000": {"ICCF": {"small": "5"}, "Obs/Exp": {"small": "6"}}
+                        },
                     },
                 }
-            }
+            },
         }
         self.assertEqual(response.json, expected)
 
@@ -680,7 +721,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "data_ids": {"variable": {"5": "4"}},
                 }
             },
-            "embedding2d": {}
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -718,19 +759,25 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                         "10000": {"1000": {"ICCF": "2", "Obs/Exp": "1"}},
                         "20000": {"2000": {"ICCF": "4", "Obs/Exp": "3"}},
                     },
-                }
+                },
+                "6": {
+                    "name": "testfile6",
+                    "data_ids": {"20000": {"2000": {"ICCF": "5"}}},
+                },
             },
             "stackup": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}},
             },
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}},
             },
             "lola": {
                 "1": {
@@ -756,17 +803,12 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 "3": {
                     "name": "testfile3",
                     "data_ids": {
-                        "10000": {"10000": {
-                            "ICCF": {
-                                "small": "5"
-                            },
-                            "Obs/Exp": {
-                                "small": "6"
-                            }
-                        }},
+                        "10000": {
+                            "10000": {"ICCF": {"small": "5"}, "Obs/Exp": {"small": "6"}}
+                        },
                     },
                 }
-            }
+            },
         }
         self.assertEqual(response.json, expected)
 
@@ -805,10 +847,18 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                         "10000": {"1000": {"ICCF": "2", "Obs/Exp": "1"}},
                         "20000": {"2000": {"ICCF": "4", "Obs/Exp": "3"}},
                     },
-                }
+                },
+                "6": {
+                    "name": "testfile6",
+                    "data_ids": {"20000": {"2000": {"ICCF": "5"}}},
+                },
             },
-            "stackup": {},
-            "lineprofile": {},
+            "stackup": {
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
+            },
+            "lineprofile": {
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
+            },
             "lola": {
                 "1": {
                     "name": "test_collection",
@@ -820,7 +870,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 }
             },
             "embedding1d": {},
-            "embedding2d": {}
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 
@@ -859,10 +909,18 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                         "10000": {"1000": {"ICCF": "2", "Obs/Exp": "1"}},
                         "20000": {"2000": {"ICCF": "4", "Obs/Exp": "3"}},
                     },
-                }
+                },
+                "6": {
+                    "name": "testfile6",
+                    "data_ids": {"20000": {"2000": {"ICCF": "5"}}},
+                },
             },
-            "stackup": {},
-            "lineprofile": {},
+            "stackup": {
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
+            },
+            "lineprofile": {
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
+            },
             "lola": {
                 "1": {
                     "name": "test_collection",
@@ -913,19 +971,25 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                         "10000": {"1000": {"ICCF": "2", "Obs/Exp": "1"}},
                         "20000": {"2000": {"ICCF": "4", "Obs/Exp": "3"}},
                     },
-                }
+                },
+                "6": {
+                    "name": "testfile6",
+                    "data_ids": {"20000": {"2000": {"ICCF": "5"}}},
+                },
             },
             "stackup": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
             },
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
             },
             "lola": {
                 "1": {
@@ -977,19 +1041,25 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                         "10000": {"1000": {"ICCF": "2", "Obs/Exp": "1"}},
                         "20000": {"2000": {"ICCF": "4", "Obs/Exp": "3"}},
                     },
-                }
+                },
+                "6": {
+                    "name": "testfile6",
+                    "data_ids": {"20000": {"2000": {"ICCF": "5"}}},
+                },
             },
             "stackup": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
             },
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
             },
             "lola": {
                 "1": {
@@ -1034,18 +1104,25 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         self.assertEqual(response.status_code, 200)
         # check whether response is correct
         expected = {
-            "pileup": {},
+            "pileup": {
+                "6": {
+                    "name": "testfile6",
+                    "data_ids": {"20000": {"2000": {"ICCF": "5"}}},
+                },
+            },
             "stackup": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
             },
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
             },
             "lola": {
                 "1": {
@@ -1090,18 +1167,25 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         self.assertEqual(response.status_code, 200)
         # check whether response is correct
         expected = {
-            "pileup": {},
+            "pileup": {
+                "6": {
+                    "name": "testfile6",
+                    "data_ids": {"20000": {"2000": {"ICCF": "5"}}},
+                },
+            },
             "stackup": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
             },
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
             },
             "lola": {
                 "1": {
@@ -1153,19 +1237,25 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                         "10000": {"1000": {"ICCF": "2", "Obs/Exp": "1"}},
                         "20000": {"2000": {"ICCF": "4", "Obs/Exp": "3"}},
                     },
-                }
+                },
+                "6": {
+                    "name": "testfile6",
+                    "data_ids": {"20000": {"2000": {"ICCF": "5"}}},
+                },
             },
             "stackup": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
             },
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
             },
             "lola": {
                 "1": {
@@ -1217,21 +1307,28 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                         "10000": {"1000": {"ICCF": "2", "Obs/Exp": "1"}},
                         "20000": {"2000": {"ICCF": "4", "Obs/Exp": "3"}},
                     },
-                }
+                },
+                "6": {
+                    "name": "testfile6",
+                    "data_ids": {"20000": {"2000": {"ICCF": "5"}}},
+                },
             },
             "stackup": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
             },
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
             },
-            "lola": {},
+            "lola": {
+            },
             "embedding1d": {},
             "embedding2d": {},
         }
@@ -1272,21 +1369,28 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                         "10000": {"1000": {"ICCF": "2", "Obs/Exp": "1"}},
                         "20000": {"2000": {"ICCF": "4", "Obs/Exp": "3"}},
                     },
-                }
+                },
+                "6": {
+                    "name": "testfile6",
+                    "data_ids": {"20000": {"2000": {"ICCF": "5"}}},
+                },
             },
             "stackup": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
             },
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
-                }
+                },
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
             },
-            "lola": {},
+            "lola": {
+            },
             "embedding1d": {},
             "embedding2d": {},
         }

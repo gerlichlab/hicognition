@@ -6,18 +6,13 @@ import pandas as pd
 import numpy as np
 from flask.json import jsonify
 from flask import g, make_response
+from hicognition import data_structures
 from .helpers import (
     update_processing_state,
-    add_average_data_to_preprocessed_dataset_map,
-    add_individual_data_to_preprocessed_dataset_map,
-    add_association_data_to_preprocessed_dataset_map,
-    add_embedding_data_to_preprocessed_dataset_map,
-    recDict,
     flatten_and_clean_array,
 )
 from . import api
 from .. import db
-from .. import sse
 from ..models import (
     BedFileMetadata,
     Intervals,
@@ -32,6 +27,7 @@ from ..models import (
 )
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
+
 
 @api.route("/test", methods=["GET"])
 def test():
@@ -183,25 +179,18 @@ def get_processed_data_mapping_of_dataset(dataset_id):
         return invalid(f"Dataset with id '{dataset_id}' is not a bedfile!")
     # create output object
     output = {
-        "pileup": recDict(),
-        "stackup": recDict(),
-        "lineprofile": recDict(),
-        "lola": recDict(),
-        "embedding1d": recDict(),
-        "embedding2d": recDict(),
+        "pileup": data_structures.recDict(),
+        "stackup": data_structures.recDict(),
+        "lineprofile": data_structures.recDict(),
+        "lola": data_structures.recDict(),
+        "embedding1d": data_structures.recDict(),
+        "embedding2d": data_structures.recDict(),
     }
     # populate output object
     associated_intervals = dataset.intervals.all()
     for interval in associated_intervals:
-        average_data = interval.averageIntervalData.all()
-        individual_data = interval.individualIntervalData.all()
-        association_data = interval.associationIntervalData.all()
-        embedding_data = interval.embeddingIntervalData.all()
-        # add data
-        add_average_data_to_preprocessed_dataset_map(average_data, output, g)
-        add_individual_data_to_preprocessed_dataset_map(individual_data, output, g)
-        add_association_data_to_preprocessed_dataset_map(association_data, output, g)
-        add_embedding_data_to_preprocessed_dataset_map(embedding_data, output, g)
+        for preprocessed_dataset in interval.get_associated_preprocessed_datasets():
+            preprocessed_dataset.add_to_preprocessed_dataset_map(output)
     return jsonify(output)
 
 
@@ -323,7 +312,9 @@ def get_embedding_data(entry_id):
         feature_dataset = embedding_data.source_dataset
         bed_ds = embedding_data.source_intervals.source_dataset
         if feature_dataset.is_access_denied(g) or bed_ds.is_access_denied(g):
-            return forbidden("Feature dataset or region dataset is not owned by logged in user!")
+            return forbidden(
+                "Feature dataset or region dataset is not owned by logged in user!"
+            )
         embedding = np.load(embedding_data.file_path).astype(float)
         cluster_ids = np.load(embedding_data.cluster_id_path).astype(float)
         thumbnails = np.load(embedding_data.thumbnail_path).astype(float)
@@ -343,19 +334,21 @@ def get_embedding_data(entry_id):
                 "data": flatten_and_clean_array(thumbnails),
                 "shape": thumbnails.shape,
                 "dtype": "float32",
-            }
+            },
         }
     else:
         # Check whether collections are owned
         collection = embedding_data.source_collection
         bed_ds = embedding_data.source_intervals.source_dataset
         if collection.is_access_denied(collection, g) or bed_ds.is_access_denied(g):
-            return forbidden("Collection dataset or region dataset is not owned by logged in user!")
+            return forbidden(
+                "Collection dataset or region dataset is not owned by logged in user!"
+            )
         embedding = np.load(embedding_data.file_path).astype(float)
         json_data = {
-                "data": flatten_and_clean_array(embedding),
-                "shape": embedding.shape,
-                "dtype": "float32",
+            "data": flatten_and_clean_array(embedding),
+            "shape": embedding.shape,
+            "dtype": "float32",
         }
     # compress
     content = gzip.compress(json.dumps(json_data).encode("utf8"), 4)
