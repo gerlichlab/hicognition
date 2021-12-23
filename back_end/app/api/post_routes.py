@@ -22,8 +22,6 @@ from ..models import (
 from .authentication import auth
 from .helpers import (
     parse_description,
-    remove_failed_tasks_dataset,
-    remove_failed_tasks_collection,
     get_all_interval_ids,
     parse_binsizes
 )
@@ -159,7 +157,7 @@ def preprocess_dataset():
                 feature for feature in region_ds.failed_features if feature != dataset
             ]
             # remove associated tasks
-            remove_failed_tasks_dataset(db, dataset, region_ds)
+            dataset.remove_failed_tasks_for_region(db, region_ds)
     # get interval ids of selected regions
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
@@ -233,7 +231,7 @@ def preprocess_collections():
                 for candidate in region_ds.failed_collections
                 if candidate != collection
             ]
-            remove_failed_tasks_collection(db, collection, region_ds)
+            collection.remove_failed_tasks_for_region(db, region_ds)
     # get interval ids of selected regions
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines

@@ -479,6 +479,23 @@ class Dataset(db.Model):
                     entry.file_path_sub_sample_index, current_app.logger
                 )
 
+    def remove_failed_tasks_for_region(self, db, region):
+        """Remove failed tasks for self with region"""
+        associated_tasks = (
+        Task.query.join(Intervals)
+            .join(Dataset)
+            .filter(
+                (Dataset.id == region.id)
+                & (Task.dataset_id == self.id)
+                & (Task.complete == False)
+            )
+            .all()
+        )
+        failed_tasks = Task.filter_failed_tasks(associated_tasks)
+        for task in failed_tasks:
+            db.session.delete(task)
+        db.session.commit()
+
     def to_json(self):
         json_dataset = {}
         for key in inspect(Dataset).columns.keys():
@@ -587,6 +604,23 @@ class Collection(db.Model):
             else:
                 self.processing_state = "processing"
         db.session.add(self)
+        db.session.commit()
+
+    def remove_failed_tasks_for_region(self, db, region):
+        """Remove failed tasks for self with region"""
+        associated_tasks = (
+        Task.query.join(Intervals)
+            .join(Dataset)
+            .filter(
+                (Dataset.id == region.id)
+                & (Task.collection_id == self.id)
+                & (Task.complete == False)
+            )
+            .all()
+        )
+        failed_tasks = Task.filter_failed_tasks(associated_tasks)
+        for task in failed_tasks:
+            db.session.delete(task)
         db.session.commit()
 
     def to_json(self):
@@ -938,6 +972,18 @@ class Task(db.Model):
     collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
     intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
     complete = db.Column(db.Boolean, default=False)
+
+    @staticmethod
+    def filter_failed_tasks(tasks):
+        """returns failed tasks of the tasks provided"""
+        output = []
+        for task in tasks:
+            if task.get_rq_job() is None:
+                output.append(task)
+                continue
+            if task.get_rq_job().get_status() == "failed":
+                output.append(task)
+        return output
 
     def get_rq_job(self):
         try:

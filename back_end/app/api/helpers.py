@@ -28,55 +28,6 @@ def parse_description(form_data):
         description = form_data["description"]
     return description
 
-def remove_tasks(tasks, db):
-    for task in tasks:
-        db.session.delete(task)
-    db.session.commit()
-
-
-def filter_failed_tasks(tasks):
-    """filters tasks for failed tasks"""
-    output = []
-    for task in tasks:
-        if task.get_rq_job() is None:
-            output.append(task)
-            continue
-        if task.get_rq_job().get_status() == "failed":
-            output.append(task)
-    return output
-
-
-def remove_failed_tasks_dataset(db, dataset, region):
-    """Removes all failed tasks that are associated with a particular dataset/region combination"""
-    associated_tasks = (
-        Task.query.join(Intervals)
-        .join(Dataset)
-        .filter(
-            (Dataset.id == region.id)
-            & (Task.dataset_id == dataset.id)
-            & (Task.complete == False)
-        )
-        .all()
-    )
-    failed_tasks = filter_failed_tasks(associated_tasks)
-    remove_tasks(failed_tasks, db)
-
-
-def remove_failed_tasks_collection(db, collection, region):
-    """Removes all failed tasks that are associated with a particular collection/region combination"""
-    associated_tasks = (
-        Task.query.join(Intervals)
-        .join(Dataset)
-        .filter(
-            (Dataset.id == region.id)
-            & (Task.collection_id == collection.id)
-            & (Task.complete == False)
-        )
-        .all()
-    )
-    failed_tasks = filter_failed_tasks(associated_tasks)
-    remove_tasks(failed_tasks, db)
-
 
 def get_all_interval_ids(region_datasets):
     """Returns ids of all intervals associated with list or region datasets."""
