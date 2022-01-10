@@ -340,7 +340,7 @@ def get_embedding_data(entry_id):
         # Check whether collections are owned
         collection = embedding_data.source_collection
         bed_ds = embedding_data.source_intervals.source_dataset
-        if collection.is_access_denied(collection, g) or bed_ds.is_access_denied(g):
+        if collection.is_access_denied(g) or bed_ds.is_access_denied(g):
             return forbidden(
                 "Collection dataset or region dataset is not owned by logged in user!"
             )

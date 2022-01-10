@@ -147,6 +147,7 @@ services:
         volumes:
             - ${MYSQL_DATA_DIR}:/var/lib/mysql
             - ./mysql/mysql.cnf:/etc/my.cnf
+            - ${MYSQL_BACKUP_DIR}:/backups
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.9

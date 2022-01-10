@@ -25,6 +25,8 @@ workdir/mysql/*
 
 keys/*
 
+db_backups/*
+
 .DS_Store
 front_end/node_modules/
 front_end/dist/
