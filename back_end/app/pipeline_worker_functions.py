@@ -205,6 +205,15 @@ def _do_stackup_fixed_size(bigwig_filepath, regions, window_size, binsize):
     ]
     good_chromosome_indices = np.arange(len(stackup_regions))[is_good_chromosome]
     good_regions = stackup_regions.iloc[good_chromosome_indices, :]
+    # if no good chromosomes found, try to remove chr suffix
+    if not any(is_good_chromosome):
+        stackup_regions.loc[:, "chrom"] = [entry.strip("chr") for entry in stackup_regions["chrom"]]
+        is_good_chromosome = [
+            True if chrom in chromosome_names else False
+            for chrom in stackup_regions["chrom"]
+        ]
+        good_chromosome_indices = np.arange(len(stackup_regions))[is_good_chromosome]
+        good_regions = stackup_regions.iloc[good_chromosome_indices, :]
     # extract data
     stackup_array = bbi.stackup(
         bigwig_filepath,
