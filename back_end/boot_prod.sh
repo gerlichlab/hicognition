@@ -7,4 +7,4 @@ while true; do
     echo Upgrade command failed, retrying in 5 secs...
     sleep 5
 done
-exec gunicorn --bind 0.0.0.0:5000 --access-logfile - --worker-class gevent hicognition_server:app
+exec gunicorn --bind 0.0.0.0:5000 --timeout 400 --access-logfile - --worker-class gevent hicognition_server:app
