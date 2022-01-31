@@ -931,7 +931,7 @@ class EmbeddingIntervalData(db.Model):
         ] = collection.to_json()["dataset_names"]
         preprocessed_dataset_map["embedding1d"][collection.id]["data_ids"][windowsize][
             self.binsize
-        ] = str(self.id)
+        ][self.cluster_number] = str(self.id)
 
     def _add_2d_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
         """Adds self if 2d embedding"""

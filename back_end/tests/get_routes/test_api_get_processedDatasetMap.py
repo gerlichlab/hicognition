@@ -183,6 +183,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 collection_id=1,
                 intervals_id=1,
                 value_type="1d-embedding",
+                cluster_number="small",
             ),
             EmbeddingIntervalData(
                 id=2,
@@ -190,6 +191,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 collection_id=1,
                 intervals_id=1,
                 value_type="1d-embedding",
+                cluster_number="small",
             ),
             EmbeddingIntervalData(
                 id=3,
@@ -197,6 +199,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 collection_id=1,
                 intervals_id=2,
                 value_type="1d-embedding",
+                cluster_number="small",
             ),
             EmbeddingIntervalData(
                 id=4,
@@ -204,6 +207,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 collection_id=1,
                 intervals_id=7,
                 value_type="1d-embedding",
+                cluster_number="small",
             ),
             EmbeddingIntervalData(
                 id=5,
@@ -669,8 +673,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "name": "test_collection",
                     "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
                     "data_ids": {
-                        "10000": {"10000": "1", "20000": "2"},
-                        "20000": {"20000": "3"},
+                        "10000": {"10000": {"small": "1"}, "20000": {"small": "2"}},
+                        "20000": {"20000": {"small": "3"}},
                     },
                 }
             },
@@ -718,7 +722,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 "1": {
                     "name": "test_collection",
                     "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
-                    "data_ids": {"variable": {"5": "4"}},
+                    "data_ids": {"variable": {"5": {"small": "4"}}},
                 }
             },
             "embedding2d": {},
@@ -794,8 +798,8 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "name": "test_collection",
                     "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
                     "data_ids": {
-                        "10000": {"10000": "1", "20000": "2"},
-                        "20000": {"20000": "3"},
+                        "10000": {"10000": {"small": "1"}, "20000": {"small": "2"}},
+                        "20000": {"20000": {"small": "3"}},
                     },
                 }
             },
