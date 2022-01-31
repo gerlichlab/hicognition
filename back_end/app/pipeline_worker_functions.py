@@ -401,7 +401,40 @@ def _do_embedding_1d_fixed_size(collection_id, intervals_id, binsize):
     # calculate embedding
     log.info("      Running embedding...")
     embedder = umap.UMAP(random_state=42)
-    return embedder.fit_transform(imputed_frame), feature_frame
+    embedding = embedder.fit_transform(imputed_frame)
+    # do clustering and extract values
+    log.info("      Running clustering large...")
+    kmeans_large = KMeans(
+        n_clusters=current_app.config["CLUSTER_NUMBER_LARGE"], random_state=0
+    ).fit(embedding)
+    cluster_ids_large = kmeans_large.labels_
+    log.info("      Generating average values large...")
+    imputed_w_clusters = pd.DataFrame(imputed_frame)
+    imputed_w_clusters.loc[:, "cluster_id"] = cluster_ids_large
+    average_cluster_values_large = imputed_w_clusters.groupby(cluster_ids_large).mean().values
+    log.info("      Running clustering small...")
+    kmeans_large = KMeans(
+        n_clusters=current_app.config["CLUSTER_NUMBER_SMALL"], random_state=0
+    ).fit(embedding)
+    cluster_ids_small = kmeans_large.labels_
+    log.info("      Generating average values small...")
+    imputed_w_clusters = pd.DataFrame(imputed_frame)
+    imputed_w_clusters.loc[:, "cluster_id"] = cluster_ids_large
+    average_cluster_values_small = imputed_w_clusters.groupby(cluster_ids_small).mean().values
+    return {
+        "embedding": embedding,
+        "clusters": {
+            "large": {
+                "cluster_ids": cluster_ids_large,
+                "average_values": average_cluster_values_large,
+            },
+            "small": {
+                "cluster_ids": cluster_ids_small,
+                "average_values": average_cluster_values_small,
+            },
+        },
+        "features": feature_frame
+    }
 
 
 def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize):
@@ -428,7 +461,40 @@ def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize):
     # calculate embedding
     log.info("      Running embedding...")
     embedder = umap.UMAP(random_state=42)
-    return embedder.fit_transform(imputed_frame), feature_frame
+    embedding = embedder.fit_transform(imputed_frame)
+    # do clustering and extract values
+    log.info("      Running clustering large...")
+    kmeans_large = KMeans(
+        n_clusters=current_app.config["CLUSTER_NUMBER_LARGE"], random_state=0
+    ).fit(embedding)
+    cluster_ids_large = kmeans_large.labels_
+    log.info("      Generating average values large...")
+    imputed_w_clusters = pd.DataFrame(imputed_frame)
+    imputed_w_clusters.loc[:, "cluster_id"] = cluster_ids_large
+    average_cluster_values_large = imputed_w_clusters.groupby(cluster_ids_large).mean().values
+    log.info("      Running clustering small...")
+    kmeans_large = KMeans(
+        n_clusters=current_app.config["CLUSTER_NUMBER_SMALL"], random_state=0
+    ).fit(embedding)
+    cluster_ids_small = kmeans_large.labels_
+    log.info("      Generating average values small...")
+    imputed_w_clusters = pd.DataFrame(imputed_frame)
+    imputed_w_clusters.loc[:, "cluster_id"] = cluster_ids_large
+    average_cluster_values_small = imputed_w_clusters.groupby(cluster_ids_small).mean().values
+    return {
+        "embedding": embedding,
+        "clusters": {
+            "large": {
+                "cluster_ids": cluster_ids_large,
+                "average_values": average_cluster_values_large,
+            },
+            "small": {
+                "cluster_ids": cluster_ids_small,
+                "average_values": average_cluster_values_small,
+            },
+        },
+        "features": feature_frame
+    }
 
 
 def _do_embedding_2d(
@@ -555,7 +621,7 @@ def _add_embedding_2d_to_db(
 
 
 def _add_embedding_1d_to_db(
-    file_path, file_path_features, binsize, intervals_id, collection_id
+    filepaths, binsize, intervals_id, collection_id, cluster_number
 ):
     """Adds association data set to db"""
     # check if old association interval data exists and delete them
@@ -563,6 +629,7 @@ def _add_embedding_1d_to_db(
         (EmbeddingIntervalData.binsize == int(binsize))
         & (EmbeddingIntervalData.intervals_id == intervals_id)
         & (EmbeddingIntervalData.collection_id == collection_id)
+        & (EmbeddingIntervalData.cluster_number == cluster_number)
     ).all()
     for entry in test_query:
         hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
@@ -570,12 +637,15 @@ def _add_embedding_1d_to_db(
     # add new entry
     new_entry = EmbeddingIntervalData(
         binsize=int(binsize),
-        name=os.path.basename(file_path),
-        file_path=file_path,
-        file_path_feature_values=file_path_features,
+        name=os.path.basename(filepaths["embedding"]),
+        file_path=filepaths["embedding"],
+        file_path_feature_values=filepaths["features"],
+        cluster_id_path=filepaths["cluster_ids"],
+        thumbnail_path=filepaths["average_values"],
         intervals_id=intervals_id,
         collection_id=collection_id,
         value_type="1d-embedding",
+        cluster_number=cluster_number,
     )
     db.session.add(new_entry)
     db.session.commit()
