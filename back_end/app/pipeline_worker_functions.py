@@ -1,6 +1,7 @@
 """Worker functions for pipeline steps that 
 perform the actual calculations and database state
 changes"""
+import imp
 import os
 import logging
 import pandas as pd
@@ -16,6 +17,7 @@ from hicognition import io_helpers, interval_operations, feature_extraction
 import bioframe as bf
 from sklearn.impute import SimpleImputer
 from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 import pylola
 from hicognition.utils import get_optimal_binsize
 import hicognition
@@ -409,18 +411,15 @@ def _do_embedding_1d_fixed_size(collection_id, intervals_id, binsize):
     ).fit(embedding)
     cluster_ids_large = kmeans_large.labels_
     log.info("      Generating average values large...")
-    imputed_w_clusters = pd.DataFrame(imputed_frame)
-    imputed_w_clusters.loc[:, "cluster_id"] = cluster_ids_large
-    average_cluster_values_large = imputed_w_clusters.groupby(cluster_ids_large).mean().values
+    scaled = StandardScaler().fit_transform(imputed_frame)
+    average_cluster_values_large = pd.DataFrame(scaled).groupby(cluster_ids_large).mean().values
     log.info("      Running clustering small...")
     kmeans_large = KMeans(
         n_clusters=current_app.config["CLUSTER_NUMBER_SMALL"], random_state=0
     ).fit(embedding)
     cluster_ids_small = kmeans_large.labels_
     log.info("      Generating average values small...")
-    imputed_w_clusters = pd.DataFrame(imputed_frame)
-    imputed_w_clusters.loc[:, "cluster_id"] = cluster_ids_large
-    average_cluster_values_small = imputed_w_clusters.groupby(cluster_ids_small).mean().values
+    average_cluster_values_small = pd.DataFrame(scaled).groupby(cluster_ids_small).mean().values
     return {
         "embedding": embedding,
         "clusters": {
@@ -469,18 +468,15 @@ def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize):
     ).fit(embedding)
     cluster_ids_large = kmeans_large.labels_
     log.info("      Generating average values large...")
-    imputed_w_clusters = pd.DataFrame(imputed_frame)
-    imputed_w_clusters.loc[:, "cluster_id"] = cluster_ids_large
-    average_cluster_values_large = imputed_w_clusters.groupby(cluster_ids_large).mean().values
+    scaled = StandardScaler().fit_transform(imputed_frame)
+    average_cluster_values_large = pd.DataFrame(scaled).groupby(cluster_ids_large).mean().values
     log.info("      Running clustering small...")
     kmeans_large = KMeans(
         n_clusters=current_app.config["CLUSTER_NUMBER_SMALL"], random_state=0
     ).fit(embedding)
     cluster_ids_small = kmeans_large.labels_
     log.info("      Generating average values small...")
-    imputed_w_clusters = pd.DataFrame(imputed_frame)
-    imputed_w_clusters.loc[:, "cluster_id"] = cluster_ids_large
-    average_cluster_values_small = imputed_w_clusters.groupby(cluster_ids_small).mean().values
+    average_cluster_values_small = pd.DataFrame(scaled).groupby(cluster_ids_small).mean().values
     return {
         "embedding": embedding,
         "clusters": {

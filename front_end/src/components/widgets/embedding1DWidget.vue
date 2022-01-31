@@ -148,25 +148,43 @@
                     </div>
                 </div>
             </div>
-            <heatmap
-                v-if="showData && !loading"
-                :stackupID="id"
-                :width="visualizationWidth"
-                :height="visualizationHeight"
-                :stackupData="embeddingData"
-                :minHeatmapValue="minHeatmap"
-                :maxHeatmapValue="maxHeatmap"
-                :minHeatmapRange="minHeatmapRange"
-                :maxHeatmapRange="maxHeatmapRange"
-                :colormap="colormap"
-                :allowValueScaleChange="true"
-                @slider-change="handleSliderChange"
-                @heatmap-clicked="handleHeatmapClick"
-                @mouse-move="handleMouseMove"
-                @mouse-enter="handleMouseEnter"
-                @mouse-leave="handleMouseLeft"
-                :log="false"
-            />
+            <div style="position: relative;">
+                <heatmap
+                    v-if="showData && !loading"
+                    :stackupID="id"
+                    :width="visualizationWidth"
+                    :height="visualizationHeight"
+                    :stackupData="embeddingData"
+                    :minHeatmapValue="minHeatmap"
+                    :maxHeatmapValue="maxHeatmap"
+                    :minHeatmapRange="minHeatmapRange"
+                    :maxHeatmapRange="maxHeatmapRange"
+                    :colormap="colormap"
+                    :allowValueScaleChange="true"
+                    @slider-change="handleSliderChange"
+                    @heatmap-clicked="handleHeatmapClick"
+                    @mouse-move="handleMouseMove"
+                    @mouse-enter="handleMouseEnter"
+                    @mouse-leave="handleMouseLeft"
+                    :log="false"
+                />
+                <tooltip
+                    :id="id"
+                    :width="width"
+                    :height="tooltipHeight"
+                    :showTooltip="showTooltip"
+                    :averageValues="averageValues"
+                    :showControls="showTooltipControls"
+                    :tooltipOffsetLeft="tooltipOffsetLeft"
+                    :tooltipOffsetTop="tooltipOffsetTop"
+                    :clusterID="selectedCluster"
+                    :embeddingID="widgetDataID"
+                    :collectionName="collectionName"
+                    :regionName="regionName"
+                    :datasetNames="datasetNames"
+                    @close-controls="closeControls"
+                />
+            </div>
             <div v-if="loading" :style="waitSpinnerContainer">
                 <md-progress-spinner
                     :md-diameter="100"
@@ -197,9 +215,10 @@ import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
 import { rectBin, flatten } from "../../functions";
 import heatmap from "../visualizations/heatmap.vue";
 import EventBus from "../../eventBus";
+import tooltip from "../visualizations/barPlotTooltip.vue";
 
 export default {
-    components: { heatmap },
+    components: { heatmap, tooltip },
     name: "Embedding1D",
     mixins: [apiMixin, formattingMixin, widgetMixin],
     computed: {
@@ -217,6 +236,17 @@ export default {
                 return "viridis";
             }
             return "magma";
+        },
+        tooltipHeight: function() {
+            if (this.showTooltipControls) {
+                return this.height + 10;
+            }
+            return this.height - 40;
+        },
+        collectionName: function() {
+            if (this.selectedBinsize) {
+                return this.datasets[this.selectedDataset]["name"];
+            }
         },
         message: function() {
             let overlayMessage;
@@ -262,6 +292,12 @@ export default {
             }
             return "mean";
         },
+        averageValues: function() {
+            if (!this.widgetData) {
+                return;
+            }
+            return this.widgetData["thumbnails"]
+        },
         embeddingData: function() {
             if (!this.widgetData) {
                 return;
@@ -280,14 +316,14 @@ export default {
                     dtype: "float32"
                 };
             }
-            let overlayClusters = this.widgetData[
-                "cluster_ids"
-            ]["data"].map(el => {
-                if (el === this.selectedCluster) {
-                    return 99999999;
+            let overlayClusters = this.widgetData["cluster_ids"]["data"].map(
+                el => {
+                    if (el === this.selectedCluster) {
+                        return 99999999;
+                    }
+                    return 1;
                 }
-                return 1;
-            });
+            );
             return {
                 data: flatten(
                     rectBin(
@@ -313,7 +349,16 @@ export default {
                     index: String(i)
                 };
             });
-        }
+        },
+        widgetDataID: function() {
+            if (this.binsizes && this.selectedBinsize) {
+                return Number(
+                    this.binsizes[this.selectedBinsize][
+                        this.clusterNumber
+                    ]
+                );
+            }
+        },
     },
     methods: {
         startDatasetSelection: function() {
@@ -349,10 +394,10 @@ export default {
         hanldeSelectionAbortion: function() {
             this.expectSelection = false;
         },
-                handleHeatmapClick: function(x, y, adjustedX, adjustedY) {
+        handleHeatmapClick: function(x, y, adjustedX, adjustedY) {
             if (this.showTooltipControls) {
                 this.showTooltipControls = false;
-            } else if (this.thumbnail) {
+            } else if (this.showTooltip && this.selectedCluster !== undefined) {
                 this.showTooltipControls = true;
             }
         },
@@ -382,11 +427,20 @@ export default {
             let y_bin = Math.round(y / bin_width);
             if (this.clusterMap) {
                 // guard against weird artefacts
-                if (x_bin < -0 || x_bin > this.clusterMap.length || this.clusterMap[x_bin] == undefined){
-                    return
+                if (
+                    x_bin < -0 ||
+                    x_bin > this.clusterMap.length ||
+                    this.clusterMap[x_bin] == undefined
+                ) {
+                    return;
                 }
                 this.selectedCluster = this.clusterMap[y_bin][x_bin];
             }
+        },
+        closeControls: function() {
+            this.selectedCluster = undefined;
+            this.showTooltipControls = false;
+            this.showTooltip = false;
         },
         blankWidget: function() {
             // removes all information that the user can set in case a certain region/dataset combination is not available
@@ -424,7 +478,7 @@ export default {
                 minHeatmapRange: this.minHeatmapRange,
                 maxHeatmapRange: this.maxHeatmapRange,
                 clusterNumber: this.clusterNumber,
-                selectedCluster: this.selectedCluster,
+                selectedCluster: this.selectedCluster
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -435,6 +489,7 @@ export default {
                 selectedDataset: [],
                 selectedBinsize: undefined,
                 intervalSize: collectionData["intervalSize"],
+                regionName: collectionData["regionName"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: {},
                 datasets: collectionData["availableData"]["embedding1d"],
@@ -449,7 +504,11 @@ export default {
                 maxHeatmapRange: undefined,
                 overlayValues: undefined,
                 loading: false,
-                selectedCluster: undefined
+                selectedCluster: undefined,
+                showTooltip: false,
+                showTooltipControls: false,
+                tooltipOffsetTop: 0,
+                tooltipOffsetLeft: 0,
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -514,6 +573,7 @@ export default {
                 selectedDataset: widgetData["dataset"],
                 selectedBinsize: widgetData["binsize"],
                 intervalSize: collectionConfig["intervalSize"],
+                regionName: collectionConfig["regionName"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
                 datasets: collectionConfig["availableData"]["embedding1d"],
@@ -528,7 +588,11 @@ export default {
                 maxHeatmapRange: widgetData["maxHeatmapRange"],
                 loading: false,
                 clusterNumber: widgetData["clusterNumber"],
-                selectedCluster: widgetData["selectedCluster"]
+                selectedCluster: widgetData["selectedCluster"],
+                showTooltipControls: false,
+                showTooltip: false,
+                tooltipOffsetTop: 0,
+                tooltipOffsetLeft: 0,
             };
         },
         handleSliderChange: function(data) {
@@ -636,7 +700,9 @@ export default {
         updateData: async function() {
             this.loading = true;
             // construct data ids to be fecthed
-            let selected_id = this.binsizes[this.selectedBinsize][this.clusterNumber];
+            let selected_id = this.binsizes[this.selectedBinsize][
+                this.clusterNumber
+            ];
             // store widget data ref
             this.widgetDataRef = selected_id;
             // fetch data
@@ -736,7 +802,9 @@ export default {
             // fetch overlay if needed
             this.loading = true;
             if (this.overlay != "density") {
-                let selected_id = this.binsizes[this.selectedBinsize][this.clusterNumber];
+                let selected_id = this.binsizes[this.selectedBinsize][
+                    this.clusterNumber
+                ];
                 this.overlayValues = await this.getOverlayData(
                     selected_id,
                     Number(this.overlay)

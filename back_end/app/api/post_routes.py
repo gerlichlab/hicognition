@@ -551,6 +551,7 @@ def create_region_from_cluster_id(entry_id, cluster_id):
     embedding_data = EmbeddingIntervalData.query.get(entry_id)
     feature_dataset = embedding_data.source_dataset
     bed_ds = embedding_data.source_intervals.source_dataset
+    # TODO: handle 1d and 2d embeddings differently
     if feature_dataset.is_access_denied(g) or bed_ds.is_access_denied(g):
         return forbidden("Feature dataset or region dataset is not owned by logged in user!")
     # check form
