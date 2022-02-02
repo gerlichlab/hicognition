@@ -1,7 +1,7 @@
 ---
 title: "Development manifest"
 date: 2022-02-02T13:07:22+01:00
-draft: true
+draft: false
 tags: ["development", "architecture"]
 ---
 
