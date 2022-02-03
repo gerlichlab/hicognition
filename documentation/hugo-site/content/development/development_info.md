@@ -29,7 +29,7 @@ This document contains design decisions and description of concrete implementati
 The architecture of our app is summarized in the following figure:
 
 
-![Architecture](/Architecture_v1-01.png)
+![Architecture](/docs/Architecture_v1-01.png)
 
 ## Back-end
 
@@ -79,7 +79,7 @@ Interactions with the database are managed by [FLASK-SQLAlchemy](https://flask-s
 
 Details are [here](https://github.com/gerlichlab/HiCognition_flask/blob/master/app/models.py), this is an overview drawn using https://dbdiagram.io/home:
 
-![DB-model](/Hicognition_db.png)
+![DB-model](/docs/Hicognition_db.png)
 
 
 The tables are used to store the following information:

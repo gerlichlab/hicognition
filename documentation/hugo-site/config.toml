@@ -9,6 +9,9 @@ home = [ "HTML", "RSS", "JSON"]
 [params]
   # Change default color scheme with a variant one. Can be "red", "blue", "green".
   themeVariant = "blue"
+  disableLandingPageButton = true
+  disableNextPrev = true
+  disableInlineCopyToClipBoard = true
 
 [[menu.shortcuts]]
 name = "<i class='fas fa-tags'></i> Tags"
