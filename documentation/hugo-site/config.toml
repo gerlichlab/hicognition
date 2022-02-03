@@ -8,12 +8,19 @@ home = [ "HTML", "RSS", "JSON"]
 
 [params]
   # Change default color scheme with a variant one. Can be "red", "blue", "green".
-  themeVariant = "blue"
+  themeVariant = "mine"
   disableLandingPageButton = true
   disableNextPrev = true
   disableInlineCopyToClipBoard = true
+  custom_css = ["css/custom.css"]
 
 [[menu.shortcuts]]
 name = "<i class='fas fa-tags'></i> Tags"
 url = "/tags"
 weight = 30
+
+[[menu.shortcuts]] 
+name = "<i class='fab fa-github'></i> Github repo"
+identifier = "ds"
+url = "https://github.com/gerlichlab/HiCognition"
+weight = 10
