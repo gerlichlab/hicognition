@@ -41,6 +41,7 @@ services:
             - ${DIR_FRONT_END}:/front_end
             - ${DIR_STATIC}:/static
             - ${KEY_DIR}:/keys
+            - ${DOC_PATH}:/docs
         networks:
             - hicognition-net
 
@@ -151,6 +152,14 @@ services:
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.9
+
+    hugo-builder:
+        container_name: hugo-builder
+        image: klakegg/hugo
+        volumes:
+            - ${DOC_PATH}:/doc
+        entrypoint: "/bin/sh"
+        command: -c "rm -r /doc/public && cd /doc && hugo"
 
 networks:
     hicognition-net:

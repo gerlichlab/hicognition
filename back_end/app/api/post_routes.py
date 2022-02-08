@@ -549,9 +549,13 @@ def create_region_from_cluster_id(entry_id, cluster_id):
         return not_found("Embedding data does not exist!")
     # Check whether datasets are owned
     embedding_data = EmbeddingIntervalData.query.get(entry_id)
-    feature_dataset = embedding_data.source_dataset
+    # Check whehter dataset/collections are owned
+    if embedding_data.value_type == "1d-embedding":
+        features = embedding_data.source_collection
+    else:
+        features = embedding_data.source_dataset
     bed_ds = embedding_data.source_intervals.source_dataset
-    if feature_dataset.is_access_denied(g) or bed_ds.is_access_denied(g):
+    if features.is_access_denied(g) or bed_ds.is_access_denied(g):
         return forbidden("Feature dataset or region dataset is not owned by logged in user!")
     # check form
     if is_form_invalid():

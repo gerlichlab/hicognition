@@ -96,7 +96,13 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
             )
             return
         pileup_array = worker_funcs._do_pileup_fixed_size(
-            cooler_dataset, window_size, binsize, regions_path, arms, pileup_type, collapse=False
+            cooler_dataset,
+            window_size,
+            binsize,
+            regions_path,
+            arms,
+            pileup_type,
+            collapse=False,
         )
     else:
         pileup_array = worker_funcs._do_pileup_variable_size(
@@ -136,7 +142,7 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
         filepaths = {
             "embedding": file_path_embedding,
             "cluster_ids": file_path_cluster_ids,
-            "thumbnails": file_path_thumbnails
+            "thumbnails": file_path_thumbnails,
         }
         # add to database
         worker_funcs._add_embedding_2d_to_db(
@@ -236,28 +242,53 @@ def embedding_1d_pipeline_step(collection_id, intervals_id, binsize):
     # get intervals to decide whether fixed size or variable size
     intervals = Intervals.query.get(intervals_id)
     if intervals.windowsize is None:
-        embedding, feature_frame = worker_funcs._do_embedding_1d_variable_size(
+        embedding_results = worker_funcs._do_embedding_1d_variable_size(
             collection_id, intervals_id, binsize
         )
     else:
-        embedding, feature_frame = worker_funcs._do_embedding_1d_fixed_size(
+        embedding_results = worker_funcs._do_embedding_1d_fixed_size(
             collection_id, intervals_id, binsize
         )
     # write output for embedding
     log.info("      Writing output...")
-    file_path = os.path.join(
+    file_path_embedding = os.path.join(
         current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + "_embedding.npy"
     )
-    np.save(file_path, embedding)
+    np.save(file_path_embedding, embedding_results["embedding"])
     # write output for feature_overlay
     file_path_features = os.path.join(
         current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + "_features.npy"
     )
-    np.save(file_path_features, feature_frame)
-    # add to database
-    worker_funcs._add_embedding_1d_to_db(
-        file_path, file_path_features, binsize, intervals_id, collection_id
-    )
+    np.save(file_path_features, embedding_results["features"])
+    # write output for clusters
+    for size in ["small", "large"]:
+        file_path_cluster_ids = os.path.join(
+            current_app.config["UPLOAD_DIR"],
+            uuid.uuid4().hex + f"_cluster_ids_{size}.npy",
+        )
+        np.save(
+            file_path_cluster_ids, embedding_results["clusters"][size]["cluster_ids"]
+        )
+        # write output for average_features
+        file_path_average_values = os.path.join(
+            current_app.config["UPLOAD_DIR"],
+            uuid.uuid4().hex + f"_average_values_{size}.npy",
+        )
+        np.save(
+            file_path_average_values,
+            embedding_results["clusters"][size]["average_values"],
+        )
+        filepaths = {
+            "embedding": file_path_embedding,
+            "cluster_ids": file_path_cluster_ids,
+            "average_values": file_path_average_values,
+            "features": file_path_features,
+        }
+        # add to database
+        worker_funcs._add_embedding_1d_to_db(
+            filepaths, binsize, intervals.id, collection_id, size
+        )
+    log.info("      Success!")
 
 
 def set_dataset_finished(dataset_id, intervals_id):
@@ -291,13 +322,15 @@ def set_dataset_finished(dataset_id, intervals_id):
                 "data_type": dataset.filetype,
                 "id": dataset_id,
                 "name": dataset.dataset_name,
-                "processing_type": current_app.config["PIPELINE_NAMES"][dataset.filetype][0],
+                "processing_type": current_app.config["PIPELINE_NAMES"][
+                    dataset.filetype
+                ][0],
                 "owner": Task.query.get(get_current_job().get_id()).user_id,
                 "region_id": region.id,
                 "region_name": region.dataset_name,
                 "time": datetime.now(),
                 "notification_type": "processing_finished",
-                "id": get_current_job().get_id()
+                "id": get_current_job().get_id(),
             }
         )
 
@@ -333,8 +366,7 @@ def set_dataset_failed(dataset_id, intervals_id):
     # add region to failed_features -> if this combination is already in, this operation will fail, but the first one will succeed
     try:
         stmt = dataset_failed_table.insert().values(
-            dataset_region=region.id,
-            dataset_feature=feature.id
+            dataset_region=region.id, dataset_feature=feature.id
         )
         db.session.execute(stmt)
         db.session.commit()
@@ -346,18 +378,21 @@ def set_dataset_failed(dataset_id, intervals_id):
                 "data_type": dataset.filetype,
                 "id": dataset_id,
                 "name": dataset.dataset_name,
-                "processing_type": current_app.config["PIPELINE_NAMES"][dataset.filetype][0],
+                "processing_type": current_app.config["PIPELINE_NAMES"][
+                    dataset.filetype
+                ][0],
                 "owner": Task.query.get(get_current_job().get_id()).user_id,
                 "region_id": region.id,
                 "region_name": region.dataset_name,
                 "time": datetime.now(),
                 "notification_type": "processing_failed",
-                "id": get_current_job().get_id()
+                "id": get_current_job().get_id(),
             }
         )
     except BaseException as e:
         log.error(e, exc_info=True)
     log.error("      Setting for fail finished")
+
 
 def set_collection_failed(collection_id, intervals_id):
     """Adds collection with collection_id to failed collections of region ds associated with intervals"""
@@ -379,8 +414,7 @@ def set_collection_failed(collection_id, intervals_id):
     # add region to failed_features -> if this combination is already in, this operation will fail, but the first one will succeed
     try:
         stmt = collections_failed_table.insert().values(
-            dataset_region=region.id,
-            collection_feature=collection.id
+            dataset_region=region.id, collection_feature=collection.id
         )
         db.session.execute(stmt)
         db.session.commit()
@@ -389,13 +423,15 @@ def set_collection_failed(collection_id, intervals_id):
                 "data_type": collection.kind,
                 "id": collection_id,
                 "name": collection.name,
-                "processing_type": current_app.config["PIPELINE_NAMES"]["collections"][collection.kind][0],
+                "processing_type": current_app.config["PIPELINE_NAMES"]["collections"][
+                    collection.kind
+                ][0],
                 "owner": Task.query.get(get_current_job().get_id()).user_id,
                 "region_id": region.id,
                 "region_name": region.dataset_name,
                 "time": datetime.now(),
                 "notification_type": "processing_failed",
-                "id": get_current_job().get_id()
+                "id": get_current_job().get_id(),
             }
         )
     except BaseException as e:
@@ -428,17 +464,27 @@ def set_collection_finished(collection_id, intervals_id):
         db.session.commit()
         # signal completion
         collection = Collection.query.get(collection_id)
+        # get owner of task
+        if get_current_job() is None:
+            owner = 0
+            job_id = "undefined"
+        else:
+            owner = Task.query.get(get_current_job().get_id()).user_id
+            job_id = get_current_job().get_id()
+        # send notification
         notification_handler.signal_processing_update(
             {
                 "data_type": collection.kind,
                 "id": collection_id,
                 "name": collection.name,
-                "processing_type": current_app.config["PIPELINE_NAMES"]["collections"][collection.kind][0],
-                "owner": Task.query.get(get_current_job().get_id()).user_id,
+                "processing_type": current_app.config["PIPELINE_NAMES"]["collections"][
+                    collection.kind
+                ][0],
+                "owner": owner,
                 "region_id": region.id,
                 "region_name": region.dataset_name,
                 "time": datetime.now(),
                 "notification_type": "processing_finished",
-                "id": get_current_job().get_id()
+                "id": job_id,
             }
         )

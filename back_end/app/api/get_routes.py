@@ -345,11 +345,44 @@ def get_embedding_data(entry_id):
                 "Collection dataset or region dataset is not owned by logged in user!"
             )
         embedding = np.load(embedding_data.file_path).astype(float)
-        json_data = {
-            "data": flatten_and_clean_array(embedding),
-            "shape": embedding.shape,
-            "dtype": "float32",
-        }
+        if embedding_data.cluster_id_path is not None:
+            cluster_ids = np.load(embedding_data.cluster_id_path).astype(float)
+            average_data = np.load(embedding_data.thumbnail_path).astype(float)
+            json_data = {
+                "embedding": {
+                    "data": flatten_and_clean_array(embedding),
+                    "shape": embedding.shape,
+                    "dtype": "float32",
+                },
+                "cluster_ids": {
+                    "data": flatten_and_clean_array(cluster_ids),
+                    "shape": cluster_ids.shape,
+                    "dtype": "float32",
+                },
+                "thumbnails": {
+                    "data": flatten_and_clean_array(average_data),
+                    "shape": average_data.shape,
+                    "dtype": "float32",
+                },
+            }
+        else:
+            json_data = {
+                "embedding": {
+                    "data": flatten_and_clean_array(embedding),
+                    "shape": embedding.shape,
+                    "dtype": "float32",
+                },
+                "cluster_ids": {
+                    "data": None,
+                    "shape": None,
+                    "dtype": None,
+                },
+                "thumbnails": {
+                    "data": None,
+                    "shape": None,
+                    "dtype": None,
+                },
+            }
     # compress
     content = gzip.compress(json.dumps(json_data).encode("utf8"), 4)
     response = make_response(content)

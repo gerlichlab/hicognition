@@ -1,0 +1,19 @@
+p {
+    text-align: justify !important;
+}
+
+#shortcuts h3 {
+    color: #ccc !important;
+}
+
+#chapter h3 {
+    text-align: left;
+}
+
+code {
+    padding: 0.2em 0.4em;
+    background: rgba(175,184,193,0.2);
+    border-radius: 6px;
+    font-size: 85%;
+    border: 0px;
+}
