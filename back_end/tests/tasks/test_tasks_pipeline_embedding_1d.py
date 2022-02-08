@@ -1,6 +1,7 @@
 import sys
 import os
 import unittest
+from unittest import mock
 from unittest.mock import patch
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
@@ -47,7 +48,7 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # create bed dataset
-        self.bed_file = Dataset(id=1, user_id=1, filetype="bedfile", assembly=1)
+        self.bed_file = Dataset(id=1, user_id=1, filetype="bedfile", assembly=1, dataset_name="test")
         # create intervals
         self.intervals_1 = Intervals(id=1, windowsize=100000, dataset_id=1)
         # create feature datasets
@@ -56,7 +57,7 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
         self.feature_3 = Dataset(id=4, user_id=1, filetype="bigwig", assembly=1)
         # create collection
         self.collection_1 = Collection(
-            id=1, datasets=[self.feature_1, self.feature_2, self.feature_3]
+            id=1, datasets=[self.feature_1, self.feature_2, self.feature_3], kind="1d-features", name="test"
         )
         # create stackups
         self.ind_data_1 = IndividualIntervalData(
@@ -73,9 +74,11 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
             id="test1", collection_id=1, intervals_id=1, complete=False
         )
 
+    @patch("app.pipeline_steps.set_collection_finished")
+    @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.stackup_pipeline_step")
     @patch("app.pipeline_steps.embedding_1d_pipeline_step")
-    def test_stackups_triggered_if_they_dont_exist(self, mock_embedding, mock_stackup):
+    def test_stackups_triggered_if_they_dont_exist(self, mock_embedding, mock_stackup, mock_set_progress, mock_set_finished):
         """Test if stackups are retriggered if they do not exist for a given parameters combination"""
         # add data to database
         db.session.add_all(
@@ -235,9 +238,35 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_fixed_size")
     def test_database_entry_added_correctly(self, mock_fixed_size, mock_variable_size):
         """Tests whether database entry is added correctly"""
-        # ad return values
-        mock_fixed_size.return_value = [np.empty((1, 1))] * 2
-        mock_variable_size.return_value = [np.empty((1, 1))] * 2
+        # add return values
+        mock_fixed_size.return_value = {
+            "embedding": np.full((1,1), 1),
+            "clusters": {
+                "large": {
+                    "cluster_ids": np.full((1,1), 2),
+                    "average_values": np.full((1, 1), 3)
+                },
+                "small": {
+                    "cluster_ids": np.full((1,1), 4),
+                    "average_values": np.full((1, 1), 5)
+                }
+            },
+            "features": np.full((1,1), 6)
+        }
+        mock_variable_size.return_value = {
+            "embedding": np.full((1,1), 1),
+            "clusters": {
+                "large": {
+                    "cluster_ids": np.full((1,1), 2),
+                    "average_values": np.full((1, 1), 3)
+                },
+                "small": {
+                    "cluster_ids": np.full((1,1), 4),
+                    "average_values": np.full((1, 1), 5)
+                }
+            },
+            "features": np.full((1,1), 6)
+        }
         # add data to database
         db.session.add_all(
             [
@@ -255,9 +284,15 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
         embedding_1d_pipeline_step(self.collection_1.id, self.intervals_1.id, 10000)
         # test whether database entry has been added
         embeddings = EmbeddingIntervalData.query.all()
-        self.assertEqual(len(embeddings), 1)
+        self.assertEqual(len(embeddings), 2)
+        self.assertEqual({"small", "large"}, set([emb.cluster_number for emb in embeddings]))
         # test whehter addition is correct
         embedding = embeddings[0]
+        self.assertEqual(embedding.binsize, 10000)
+        self.assertEqual(embedding.value_type, "1d-embedding")
+        self.assertEqual(embedding.collection_id, self.collection_1.id)
+        self.assertEqual(embedding.intervals_id, self.intervals_1.id)
+        embedding = embeddings[1]
         self.assertEqual(embedding.binsize, 10000)
         self.assertEqual(embedding.value_type, "1d-embedding")
         self.assertEqual(embedding.collection_id, self.collection_1.id)
@@ -269,9 +304,35 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
         self, mock_fixed_size, mock_variable_size
     ):
         """Tests whether correct worker function is called with fixed size intervals"""
-        # ad return values
-        mock_fixed_size.return_value = [np.empty((1, 1))] * 2
-        mock_variable_size.return_value = [np.empty((1, 1))] * 2
+        # add return values
+        mock_fixed_size.return_value = {
+            "embedding": np.full((1,1), 1),
+            "clusters": {
+                "large": {
+                    "cluster_ids": np.full((1,1), 2),
+                    "average_values": np.full((1, 1), 3)
+                },
+                "small": {
+                    "cluster_ids": np.full((1,1), 4),
+                    "average_values": np.full((1, 1), 5)
+                }
+            },
+            "features": np.full((1,1), 6)
+        }
+        mock_variable_size.return_value = {
+            "embedding": np.full((1,1), 1),
+            "clusters": {
+                "large": {
+                    "cluster_ids": np.full((1,1), 2),
+                    "average_values": np.full((1, 1), 3)
+                },
+                "small": {
+                    "cluster_ids": np.full((1,1), 4),
+                    "average_values": np.full((1, 1), 5)
+                }
+            },
+            "features": np.full((1,1), 6)
+        }
         # add data to database
         db.session.add_all(
             [
@@ -297,9 +358,35 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
         self, mock_fixed_size, mock_variable_size
     ):
         """Tests whether correct worker function is called with fixed size intervals"""
-        # ad return values
-        mock_fixed_size.return_value = [np.empty((1, 1))] * 2
-        mock_variable_size.return_value = [np.empty((1, 1))] * 2
+        # add return values
+        mock_fixed_size.return_value = {
+            "embedding": np.full((1,1), 1),
+            "clusters": {
+                "large": {
+                    "cluster_ids": np.full((1,1), 2),
+                    "average_values": np.full((1, 1), 3)
+                },
+                "small": {
+                    "cluster_ids": np.full((1,1), 4),
+                    "average_values": np.full((1, 1), 5)
+                }
+            },
+            "features": np.full((1,1), 6)
+        }
+        mock_variable_size.return_value = {
+            "embedding": np.full((1,1), 1),
+            "clusters": {
+                "large": {
+                    "cluster_ids": np.full((1,1), 2),
+                    "average_values": np.full((1, 1), 3)
+                },
+                "small": {
+                    "cluster_ids": np.full((1,1), 4),
+                    "average_values": np.full((1, 1), 5)
+                }
+            },
+            "features": np.full((1,1), 6)
+        }
         # add data to database
         db.session.add_all(
             [
@@ -379,45 +466,51 @@ class TestEmbedding1DWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
 
     def test_correct_features_produced(self):
         """Tests whether produced features are correct"""
-        # add data to database
-        db.session.add_all(
-            [
-                self.bed_file,
-                self.intervals_1,
-                self.feature_1,
-                self.feature_2,
-                self.feature_3,
-                self.collection_1,
-                self.ind_data_1,
-                self.ind_data_2,
-                self.ind_data_3,
-            ]
-        )
-        # dispatch call
-        embedding, features = _do_embedding_1d_fixed_size(
-            self.collection_1.id, self.intervals_1.id, 10000
-        )
-        # test whether feature frame used is correct
-        expected_features = np.array(
-            [
-                [2.0, 0.2, 0.3],
-                [6.0, 0.6, 0.7],
-                [10.0, 0.1, 1.1],
-                [2.0, 0.2, 0.3],
-                [6.0, 0.6, 0.7],
-                [10.0, 0.1, 1.1],
-                [2.0, 0.2, 0.3],
-                [6.0, 0.6, 0.7],
-                [10.0, 0.1, 1.1],
-                [2.0, 0.2, 0.3],
-                [6.0, 0.6, 0.7],
-                [10.0, 0.1, 1.1],
-                [2.0, 0.2, 0.3],
-                [6.0, 0.6, 0.7],
-                [10.0, 0.1, 1.1],
-            ]
-        )
-        self.assertTrue(np.array_equal(features, expected_features))
+        # add smaller cluster sizes
+        d = self.app.config.copy()
+        d["CLUSTER_NUMBER_LARGE"] = 5
+        d["CLUSTER_NUMBER_SMALL"] = 2
+        with patch("app.pipeline_worker_functions.current_app.config") as mock_config:
+            mock_config.__getitem__.side_effect = d.__getitem__
+            # add data to database
+            db.session.add_all(
+                [
+                    self.bed_file,
+                    self.intervals_1,
+                    self.feature_1,
+                    self.feature_2,
+                    self.feature_3,
+                    self.collection_1,
+                    self.ind_data_1,
+                    self.ind_data_2,
+                    self.ind_data_3,
+                ]
+            )
+            # dispatch call
+            embedding_results = _do_embedding_1d_fixed_size(
+                self.collection_1.id, self.intervals_1.id, 10000
+            )
+            # test whether feature frame used is correct
+            expected_features = np.array(
+                [
+                    [2.0, 0.2, 0.3],
+                    [6.0, 0.6, 0.7],
+                    [10.0, 0.1, 1.1],
+                    [2.0, 0.2, 0.3],
+                    [6.0, 0.6, 0.7],
+                    [10.0, 0.1, 1.1],
+                    [2.0, 0.2, 0.3],
+                    [6.0, 0.6, 0.7],
+                    [10.0, 0.1, 1.1],
+                    [2.0, 0.2, 0.3],
+                    [6.0, 0.6, 0.7],
+                    [10.0, 0.1, 1.1],
+                    [2.0, 0.2, 0.3],
+                    [6.0, 0.6, 0.7],
+                    [10.0, 0.1, 1.1],
+                ]
+            )
+            self.assertTrue(np.array_equal(embedding_results["features"], expected_features))
 
 
 class TestEmbedding1DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
@@ -478,35 +571,41 @@ class TestEmbedding1DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
 
     def test_correct_features_produced(self):
         """Tests whether produced features are correct"""
-        # add data to database
-        db.session.add_all(
-            [
-                self.bed_file,
-                self.intervals_1,
-                self.feature_1,
-                self.feature_2,
-                self.feature_3,
-                self.collection_1,
-                self.ind_data_1,
-                self.ind_data_2,
-                self.ind_data_3,
-            ]
-        )
-        # dispatch call
-        embedding, features = _do_embedding_1d_variable_size(
-            self.collection_1.id, self.intervals_1.id, 10
-        )
-        # test whether feature frame used is correct
-        expected_features = np.array(
-            [
-                [7.5, 7.5, 7.5],
-                [7.5, 7.5, 7.5],
-                [7.5, 7.5, 7.5],
-                [7.5, 7.5, 7.5],
-                [7.5, 7.5, 7.5],
-            ]
-        )
-        self.assertTrue(np.array_equal(features, expected_features))
+        # add smaller cluster sizes
+        d = self.app.config.copy()
+        d["CLUSTER_NUMBER_LARGE"] = 5
+        d["CLUSTER_NUMBER_SMALL"] = 2
+        with patch("app.pipeline_worker_functions.current_app.config") as mock_config:
+            mock_config.__getitem__.side_effect = d.__getitem__
+            # add data to database
+            db.session.add_all(
+                [
+                    self.bed_file,
+                    self.intervals_1,
+                    self.feature_1,
+                    self.feature_2,
+                    self.feature_3,
+                    self.collection_1,
+                    self.ind_data_1,
+                    self.ind_data_2,
+                    self.ind_data_3,
+                ]
+            )
+            # dispatch call
+            embedding_results = _do_embedding_1d_variable_size(
+                self.collection_1.id, self.intervals_1.id, 10
+            )
+            # test whether feature frame used is correct
+            expected_features = np.array(
+                [
+                    [7.5, 7.5, 7.5],
+                    [7.5, 7.5, 7.5],
+                    [7.5, 7.5, 7.5],
+                    [7.5, 7.5, 7.5],
+                    [7.5, 7.5, 7.5],
+                ]
+            )
+            self.assertTrue(np.array_equal(embedding_results["features"], expected_features))
 
 
 if __name__ == "__main__":
