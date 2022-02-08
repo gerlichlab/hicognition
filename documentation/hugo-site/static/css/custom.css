@@ -6,9 +6,20 @@ p {
     color: #ccc !important;
 }
 
-#chapter h3 {
+#chapter h3  {
     text-align: left;
 }
+
+h1 {
+    text-align: left !important;
+}
+
+
+#chapter h2 {
+    text-align: left;
+}
+
+
 
 code {
     padding: 0.2em 0.4em;

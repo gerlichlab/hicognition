@@ -3,6 +3,7 @@ title: "Development manifest"
 date: 2022-02-02T13:07:22+01:00
 draft: false
 tags: ["development", "architecture"]
+weight: 1
 ---
 
 This document contains design decisions and description of concrete implementation of HiCognition.
