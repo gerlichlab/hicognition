@@ -1,7 +1,7 @@
 ---
 title: "Development environment"
 date: 2022-02-08T17:40:50+01:00
-draft: true
+draft: false
 weight: 2
 tags: ["development"]
 ---

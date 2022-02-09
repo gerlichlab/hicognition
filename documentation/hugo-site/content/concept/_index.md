@@ -6,8 +6,9 @@ chapter = true
 pre = "<b>2. </b>"
 +++
 
-### Chapter X
+# Concept
 
-# Some Chapter title
+In this section, we talk about why we think HiCognition is a good idea and present the concepts behind the app.
 
-Lorem Ipsum.
+## [Background](/docs/concept/background/)
+## [Region-set focus approach](/docs/concept/region_set_focus/)

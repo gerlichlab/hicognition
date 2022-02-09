@@ -10,6 +10,12 @@ pre = "<b>8. </b>"
 
 This page contains information about how HiCognition is structured and should be a starting point for people who consider contributing to HiCognition.
 
+## [App architecture](/docs/development/development_info/)
+## [Development environment](/docs/development/dev_env/)
+## [Tests](/docs/development/tests)
+## [Contribution guide](/docs/development/cont_guide)
+
+
 {{% notice tip %}}
 Before contributing, we recommend that you read the [contribution guide](/docs/development/cont_guide)
 {{% /notice %}}

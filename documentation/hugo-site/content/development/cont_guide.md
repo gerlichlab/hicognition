@@ -1,8 +1,9 @@
 ---
 title: "Contribution guide"
 date: 2022-02-09T13:44:15+01:00
-draft: true
+draft: false
 weight: 5
+tags: ["development"]
 ---
 
 HiCognition is an open source project and as such we welcome all contributions to our code base. The main requirement for a contribution to be accepted is that it passes all test (described in detail [here](/docs/development/tests)) and conforms to our style decisions. 
