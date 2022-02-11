@@ -5,3 +5,14 @@ draft: true
 weight: 5
 ---
 
+## Suitable data
+
+## Preprocessing algorithm
+
+### Point-regions
+
+### Interval-regions
+
+## Visualization
+
+## Widget controls
