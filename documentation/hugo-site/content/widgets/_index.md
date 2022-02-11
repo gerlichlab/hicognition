@@ -6,8 +6,42 @@ chapter = true
 pre = "<b>6. </b>"
 +++
 
-### Chapter X
+# Widgets
 
-# Some Chapter title
+HiCognition implements the region-set focus approach (see the [concept section](/docs/concept/region_set_focus/) for details) on a visualization level using widget collections and widgets. Widget collections represent a single set of genomic regions (e.g. Chip-Seq peaks of a target protein) and can host one or more widgets that represent genomic features (e.g. Chip-Seq tracks or Hi-C tracks).
 
-Lorem Ipsum.
+![Widget concept](/docs/Widget_concept.png)
+
+Features are linked to genomic regions via preprocessing steps (see the [preprocessing section](/docs/preprocessing/) for more details), which mostly represent data aggregation. Once preprocessing has linked features to genomic regions, they are available for addition to a widget collection via appropriate widgets.
+
+HiCognition implements preprocessing to allow answering three main questions at a genomic region set (see the [concept section](/docs/concept/region_set_focus/) for more details):
+
+1. __Exploring average behaviour__: What is the average magnitude of a specific 1d-/2d-genomic signal?
+2. __Exploring heterogeneity__ : Is the population of regions homogeneous with respect to a collection of 1d- or 2d-features? What subsets have different behaviour with respect to a collection of 1d- or 2d-features?
+3. __Enrichment analysis__: What other regions are enriched? 
+
+These abstract analysis tasks can be performed using a collection of specific widgets:
+
+## [Lineprofile widget](/docs/widgets/lineprofile/)
+
+Allows to assess what the average magnitude of a 1d-genomic signal is at a genomic region set (__Question 1__)
+
+## [2D-average widget](/docs/widgets/2d_average/)
+
+Allows to assess what the average magnitude of a 2d-genomic signal is at a genomic region set (__Question 1__)
+
+## [Stackup widget](/docs/widgets/stackup/)
+
+Allows to assess whether a population of regions is homogeneous with regards to a 1d-genomic signal (__Question 2__)
+
+## [1D-feature embedding widget](/docs/widgets/1d_feature_embedding/)
+
+Allows to assess whether a population of regions is homogeneous with regards to a set of 1d-genomic signals (__Question 2__)
+
+## [2D-feature embedding widget](/docs/widgets/2d_feature_embedding/)
+
+Allows to assess whether a population of regions is homogeneous with regards to a 2d-genomic signal (__Question 2__)
+
+## [Association widget](/docs/widgets/association/)
+
+Allows to assess what other regions overlap with a set of genomic regions (__Question 3__)
