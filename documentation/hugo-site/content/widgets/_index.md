@@ -20,9 +20,9 @@ HiCognition implements preprocessing to allow answering three main questions at 
 2. __Exploring heterogeneity__ : Is the population of regions homogeneous with respect to a collection of 1d- or 2d-features? What subsets have different behaviour with respect to a collection of 1d- or 2d-features?
 3. __Enrichment analysis__: What other regions are enriched? 
 
-These abstract analysis tasks can be performed using a collection of specific widgets:
+The results of these preprocessing steps can be visualized using specific widgets:
 
-## [Lineprofile widget](/docs/widgets/lineprofile/)
+## [1D-average widget](/docs/widgets/lineprofile/)
 
 Allows to assess what the average magnitude of a 1d-genomic signal is at a genomic region set (__Question 1__)
 
