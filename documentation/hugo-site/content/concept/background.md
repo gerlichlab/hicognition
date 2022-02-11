@@ -30,7 +30,7 @@ This approach of analysing genomic data presents multiple problems (Fig. 1b). Fi
 
 ### Quality of hypotheses
 
-The second problem using track-based exploration is that the quality of possible data hypotheses is likely limited. This is partly because simultaneous viewing of multiple genomic tracks is akin to finding patterns in a multidimensional dataset, a task that humans are notoriously bad at 23,24. Additionally,  track-based exploration only allows viewing of a limited number of associations simultaneously, posing the danger of missing rare associations and proposing spurious ones. Thus, track-based exploration is not an ideal analysis approach for multidimensional genomic data.
+The second problem using track-based exploration is that the quality of possible data hypotheses is likely limited. This is partly because simultaneous viewing of multiple genomic tracks is akin to finding patterns in a multidimensional dataset, a task that humans are notoriously bad at. Additionally,  track-based exploration only allows viewing of a limited number of associations simultaneously, posing the danger of missing rare associations and proposing spurious ones. Thus, track-based exploration is not an ideal analysis approach for multidimensional genomic data.
 
 Last but not least, a well-established principle that any visual system should follow is Schneiderman's mantra: overview first, zoom and filter, then details-on-demand. However, a track-based system is ill-suited to give an overview since, per definition, it focuses on the details of a single region. It mainly helps us detect anomalies but can not give us an overview or explicitly display its properties and pattern on a system-wide level.
 
