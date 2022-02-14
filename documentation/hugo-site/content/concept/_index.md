@@ -12,3 +12,4 @@ In this section, we talk about why we think HiCognition is a good idea and prese
 
 ## [Background](/docs/concept/background/)
 ## [Region-set focus approach](/docs/concept/region_set_focus/)
+## [Implementation](/docs/concept/hicognition/)

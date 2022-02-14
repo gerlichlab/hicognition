@@ -32,7 +32,7 @@ The 2D-average widget displays aggregated data sets as a heatmap. The color scal
 
 ## Widget controls
 
-The 2D-average widget defines two widget controls, one for setting the type of value-scale and the other for sharing value scales between two widgets.
+The 2D-average widget defines two widget controls, one for setting the type of value-scale and the other for sharing value scales between widgets.
 
 ### Scale
 
@@ -51,7 +51,7 @@ After that, a colored line next to the colorbars indicates that the two widgets 
 
 ![Widget controls take value scale from](/docs/2d_average_widget_shared_value_scale.png)
 
-When the colorbar sliders are changed at the donor, the acceptor changes the colorscale accordingly. You can link multiple widgets together by taking the colorscale of shared donor. You can also link multiple widgets independently, which then are marked by differently colored color lines.
+When the colorbar sliders are changed at the donor, the acceptor changes the colorscale accordingly. You can link multiple widgets together by taking the colorscale of the same shared donor. You can also link multiple widgets independently, which then are marked by differently colored color lines.
 
 ![Multiple_shared_scales](/docs/2d_average_widget_multiple_shared_scales.png)
 

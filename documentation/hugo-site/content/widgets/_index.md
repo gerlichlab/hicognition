@@ -30,7 +30,7 @@ Allows to assess what the average magnitude of a 1d-genomic signal is at a genom
 
 Allows to assess what the average magnitude of a 2d-genomic signal is at a genomic region set (__Question 1__)
 
-## [Stackup widget](/docs/widgets/stackup/)
+## [Stacked lineprofile widget](/docs/widgets/stackup/)
 
 Allows to assess whether a population of regions is homogeneous with regards to a 1d-genomic signal (__Question 2__)
 
