@@ -67,6 +67,6 @@ One can use the neighborhood size option to choose whether to display large or s
 
 ### Create new regions
 
-If one of the highlighted clusters are interesting and you want to further explore them, you can create a new genomic region set just representing the highlighted regions. For this, when the bar plot tooltip is shown, click and the "Create new region" button will appear. After clicking that button, a dialog pops up that lets you define the name for your new region set.
+If one of the highlighted clusters are interesting and you want to further explore them, you can create a new genomic region set just representing the highlighted regions. For this, when the barplot tooltip is shown, click on the "Create new region" button will appear. After clicking that button, a dialog pops up that lets you define the name for your new region set.
 
 ![Create new region 1d](/docs/Create_new_region_1d_feature.png)

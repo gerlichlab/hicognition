@@ -57,7 +57,7 @@ For interval-regions, the sort values are the following:
 - __Right boundary__ | sort by right boundary
 - __Random__ | shuffle rows
 
-### Shareing
+### Sharing
 
 The stacked lineprofile widget supports sharing value scales in a similar fashion to the [2d-average widget](/docs/widgets/2d_average/#share-value-scale). In addition, the stacked lineprofile widget allows to share sort-order between widgets that reside in the same widget collection. For this, click on "Take sort order from" on then click on the traget widget
 
