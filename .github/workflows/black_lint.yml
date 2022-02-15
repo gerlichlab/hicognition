@@ -1,6 +1,6 @@
 # This is a black&lint workflow that is manually triggered
 
-name: Black & lint
+name: Black and lint
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
@@ -19,6 +19,12 @@ jobs:
     container: gerlichlab/hicognition:v1.0
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+    - name: docker login
+      env:
+        DOCKER_USER: ${{secrets.DOCKER_USER}}
+        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+      run: |
+        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
     # Run python default tests
