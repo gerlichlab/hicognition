@@ -7,7 +7,7 @@ weight: 3
 
 ## Architecture overview
 
-In order to provide a reference implementation of the region-set focus approach, we developed HiCognition. HiCognition is a containerized web application that uses a Task-queue in conjunction with multiple workers to allow precomputation of the analysis tasks mentioned. For visualization, HiCognition draws upon powerful javascript frameworks such as d3.js and pixi.js to allow the efficient display of the pre-computed data (see the [app architecture section](/docs/development/development_info/) for more details).
+In order to provide a reference implementation of the region-set focus approach, we developed HiCognition. HiCognition is a containerized web application that uses a Task-queue in conjunction with multiple workers to allow precomputation of the analysis tasks mentioned. For visualization, HiCognition draws upon powerful javascript frameworks such as [d3.js](https://d3js.org/) and [pixi.js](https://pixijs.com/) to allow the efficient display of the pre-computed data (see the [app architecture section](/docs/development/development_info/) for more details).
 
 ## Data management
 
