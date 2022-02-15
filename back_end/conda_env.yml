@@ -94,6 +94,6 @@ dependencies:
       - wincertstore==0.2
       - WTForms==2.3.1
       # HiC realted packages
-      - clodius
+      # - clodius - removed because needs very old pandas
       - pybbi
       - opencv-python-headless
