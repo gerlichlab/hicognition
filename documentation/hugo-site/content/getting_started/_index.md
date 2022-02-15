@@ -8,7 +8,7 @@ pre = "<b>1. </b>"
 
 # Getting started
 
-This section assumes that you have a HiCognition instance running and your user is set-up in the database. If this is not the case, see the [installation guide](/docs/installation/).
+This section assumes that you have a HiCognition instance running, and your user is set up in the database. If this is not the case, see the [installation guide](/docs/installation/).
 
 ## Get started with example data
 

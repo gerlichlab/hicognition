@@ -26,7 +26,7 @@ class Config:
             "collections": {
                 "regions": [2000],
                 "1d-features": [1000, 2000],
-            }
+            },
         },
         100000: {
             "cooler": [5000],
@@ -34,8 +34,8 @@ class Config:
             "collections": {
                 "regions": [5000],
                 "1d-features": [2000, 5000, 10000],
-                "2d-features": [5000]
-            }
+                "2d-features": [5000],
+            },
         },
         400000: {
             "cooler": [10000],
@@ -43,7 +43,7 @@ class Config:
             "collections": {
                 "regions": [10000, 20000],
                 "1d-features": [5000, 10000, 20000],
-            }
+            },
         },
         1000000: {
             "cooler": [20000],
@@ -51,7 +51,7 @@ class Config:
             "collections": {
                 "regions": [20000, 50000],
                 "1d-features": [20000, 50000, 100000],
-            }
+            },
         },
         2000000: {
             "cooler": [50000],
@@ -59,7 +59,7 @@ class Config:
             "collections": {
                 "regions": [50000, 100000, 200000],
                 "1d-features": [50000, 100000, 200000],
-            }
+            },
         },
         "variable": {
             "cooler": [1, 2, 5],
@@ -67,9 +67,9 @@ class Config:
             "collections": {
                 "regions": [1, 2, 5],
                 "1d-features": [1, 2, 5],
-                "2d-features": [1, 2, 5]
-            }
-        } # binsize for variable sizetype is in percent
+                "2d-features": [1, 2, 5],
+            },
+        },  # binsize for variable sizetype is in percent
     }
     VARIABLE_SIZE_EXPANSION_FACTOR = 0.2
     # mapping of pipeline names and queues to filetypes
@@ -79,7 +79,7 @@ class Config:
         "collections": {
             "regions": ("pipeline_lola", "run lola pipeline"),
             "1d-features": ("pipeline_embedding_1d", "run 1d embedding pipeline"),
-            "2d-features": ("pipeline_embedding_2d", "run 2d embedding pipeline")
+            "2d-features": ("pipeline_embedding_2d", "run 2d embedding pipeline"),
         },
     }
     # mapping of queue types to pipeline
@@ -89,8 +89,8 @@ class Config:
         "collections": {
             "regions": "long",
             "1d-features": "medium",
-            "2d-features": "long"
-        }
+            "2d-features": "long",
+        },
     }
     CLUSTER_NUMBER_LARGE = 20
     CLUSTER_NUMBER_SMALL = 10
@@ -109,7 +109,10 @@ class Config:
                         "SizeType": ["Point", "Interval"],
                         "Directionality": ["+", "-", "No directionality"],
                     },
-                    "Derived": {"Method": ["HiC", "Other Dataset"], "SizeType": ["Point", "Interval"]},
+                    "Derived": {
+                        "Method": ["HiC", "Other Dataset"],
+                        "SizeType": ["Point", "Interval"],
+                    },
                 }
             },
             "bigwig": {
@@ -143,9 +146,7 @@ class Config:
         }
     }
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled
-    OBS_EXP_PROCESSES = (
-        5
-    )  # Number of processes to use per worker to calcualte obs/exp matrix of pileups
+    OBS_EXP_PROCESSES = 5  # Number of processes to use per worker to calcualte obs/exp matrix of pileups
     PILEUP_PROCESSES = 2  # Number of processes to use per worker to do pileups
 
 
@@ -161,6 +162,7 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     UPLOAD_DIR = "./tmp_test"
     STACKUP_THRESHOLD = 10  # Threshold of when stackup is downsampled
+
 
 class End2EndConfig(DevelopmentConfig):
     END2END = True
@@ -178,5 +180,5 @@ config = {
     "testing": TestingConfig,
     "production": ProductionConfig,
     "default": DevelopmentConfig,
-    "end2end": End2EndConfig
+    "end2end": End2EndConfig,
 }

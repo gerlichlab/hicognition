@@ -6,6 +6,7 @@ from . import sse
 
 class Notification(BaseModel):
     """Base model for notifications."""
+
     id: str
     owner: int
     time: datetime
@@ -14,6 +15,7 @@ class Notification(BaseModel):
 
 class ProcessingFinishedNotification(Notification):
     """Notification that signals finished processing"""
+
     data_type: str
     name: str
     processing_type: str
@@ -21,7 +23,7 @@ class ProcessingFinishedNotification(Notification):
     region_name: str
 
 
-class NotificationHandler():
+class NotificationHandler:
     """Class that manages sending notifications
     throuth pydantic guarded notification data model"""
 

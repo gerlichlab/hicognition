@@ -482,7 +482,7 @@ class Dataset(db.Model):
     def remove_failed_tasks_for_region(self, db, region):
         """Remove failed tasks for self with region"""
         associated_tasks = (
-        Task.query.join(Intervals)
+            Task.query.join(Intervals)
             .join(Dataset)
             .filter(
                 (Dataset.id == region.id)
@@ -609,7 +609,7 @@ class Collection(db.Model):
     def remove_failed_tasks_for_region(self, db, region):
         """Remove failed tasks for self with region"""
         associated_tasks = (
-        Task.query.join(Intervals)
+            Task.query.join(Intervals)
             .join(Dataset)
             .filter(
                 (Dataset.id == region.id)
@@ -1018,7 +1018,7 @@ class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    session_object = db.Column(db.Text(10 ** 9))
+    session_object = db.Column(db.Text(10**9))
     created_utc = db.Column(
         db.DateTime, nullable=False, default=datetime.datetime.utcnow
     )

@@ -152,6 +152,4 @@ def remove_safely(file_path, logger):
     try:
         os.remove(file_path)
     except BaseException:
-        logger.warning(
-            f"Tried removing {file_path}, but file does not exist!"
-        )
+        logger.warning(f"Tried removing {file_path}, but file does not exist!")

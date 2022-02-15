@@ -10,7 +10,7 @@ from app.background_tasks import (
     cleanup_empty_tasks,
     cleanup_failed_tasks,
     add_app_context,
-    send_keep_alive_message
+    send_keep_alive_message,
 )
 from app.models import (
     User,
@@ -173,6 +173,7 @@ def _get_api_headers(username, password):
         "Accept": "application/json",
         "Content-Type": "application/json",
     }
+
 
 # make script entrypoint
 

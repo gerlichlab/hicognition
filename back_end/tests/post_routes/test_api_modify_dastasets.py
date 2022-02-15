@@ -161,7 +161,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "cellCycleStage": "asynchronous",
             "perturbation": "No perturbation",
             "ValueType": "Interaction",
-            "public": "false"
+            "public": "false",
         }
         # put datasets
         response = self.client.put(

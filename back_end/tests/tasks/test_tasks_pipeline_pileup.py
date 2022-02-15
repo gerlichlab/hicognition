@@ -244,7 +244,12 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.worker_funcs._do_pileup_fixed_size")
     @patch("app.pipeline_steps.worker_funcs._do_pileup_variable_size")
     def test_adding_to_db_called_correctly(
-        self, mock_pileup_variable_size, mock_pileup_fixed_size, mock_add_pileup_db, mock_add_embedding_db, mock_uuid
+        self,
+        mock_pileup_variable_size,
+        mock_pileup_fixed_size,
+        mock_add_pileup_db,
+        mock_add_embedding_db,
+        mock_uuid,
     ):
         """Tests whether function to add result to database is called correctly."""
         # add return values
@@ -270,26 +275,30 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
         mock_add_embedding_db.assert_any_call(
             {
                 "embedding": self.app.config["UPLOAD_DIR"] + "/asdf_embedding.npy",
-                "cluster_ids": self.app.config["UPLOAD_DIR"] + "/asdf_cluster_ids_small.npy",
-                "thumbnails": self.app.config["UPLOAD_DIR"] + "/asdf_thumbnails_small.npy",
+                "cluster_ids": self.app.config["UPLOAD_DIR"]
+                + "/asdf_cluster_ids_small.npy",
+                "thumbnails": self.app.config["UPLOAD_DIR"]
+                + "/asdf_thumbnails_small.npy",
             },
             10000,
             self.intervals1.id,
             self.dataset.id,
             "ICCF",
-            "small"
+            "small",
         )
         mock_add_embedding_db.assert_any_call(
             {
                 "embedding": self.app.config["UPLOAD_DIR"] + "/asdf_embedding.npy",
-                "cluster_ids": self.app.config["UPLOAD_DIR"] + "/asdf_cluster_ids_large.npy",
-                "thumbnails": self.app.config["UPLOAD_DIR"] + "/asdf_thumbnails_large.npy",
+                "cluster_ids": self.app.config["UPLOAD_DIR"]
+                + "/asdf_cluster_ids_large.npy",
+                "thumbnails": self.app.config["UPLOAD_DIR"]
+                + "/asdf_thumbnails_large.npy",
             },
             10000,
             self.intervals1.id,
             self.dataset.id,
             "ICCF",
-            "large"
+            "large",
         )
 
 
@@ -784,27 +793,42 @@ class TestGetOptimalBinsize(LoginTestCase):
     def test_none_if_regions_too_small(self):
         """tests if none is returned if regions are too small."""
         regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [10]})
-        self.assertEqual(get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]), None)
+        self.assertEqual(
+            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            None,
+        )
 
     def test_none_if_regions_too_large(self):
         """tests if none is returned if regions too large"""
-        regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [10 ** 9]})
-        self.assertEqual(get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]), None)
+        regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [10**9]})
+        self.assertEqual(
+            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            None,
+        )
 
     def test_correct_binsize_small_size(self):
         """tests correct handling of small regions."""
         regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [10000]})
-        self.assertEqual(get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]), 5000)
+        self.assertEqual(
+            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            5000,
+        )
 
     def test_correct_binsize_moderate_size(self):
         """tests correct handling of moderately sized regions."""
         regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [500001]})
-        self.assertEqual(get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]), 5000)
+        self.assertEqual(
+            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            5000,
+        )
 
     def test_correct_binsize_large_size(self):
         """tests correct handling of large regions."""
         regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [1000001]})
-        self.assertEqual(get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]), 10000)
+        self.assertEqual(
+            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            10000,
+        )
 
     def test_correct_binsize_rare_large_size(self):
         """tests correct handling of small regions with rare lare regions"""
@@ -815,21 +839,30 @@ class TestGetOptimalBinsize(LoginTestCase):
                 "end": [10000] * 99 + [1000001],
             }
         )
-        self.assertEqual(get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]), 5000)
+        self.assertEqual(
+            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            5000,
+        )
 
     def test_correct_binsize_tads(self):
         """tests correct handling of small regions with rare lare regions"""
         regions = pd.read_csv(
             "tests/testfiles/G2_tads_w_size.bed", sep="\t", header=None
         ).rename(columns={0: "chrom", 1: "start", 2: "end"})
-        self.assertEqual(get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]), 10000)
+        self.assertEqual(
+            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            10000,
+        )
 
     def test_correct_binsize_tads_low_number_target_bins(self):
         """tests correct handling of small regions with rare lare regions"""
         regions = pd.read_csv(
             "tests/testfiles/G2_tads_w_size.bed", sep="\t", header=None
         ).rename(columns={0: "chrom", 1: "start", 2: "end"})
-        self.assertEqual(get_optimal_binsize(regions, 50, self.app.config["PREPROCESSING_MAP"]), 20000)
+        self.assertEqual(
+            get_optimal_binsize(regions, 50, self.app.config["PREPROCESSING_MAP"]),
+            20000,
+        )
 
 
 if __name__ == "__main__":
