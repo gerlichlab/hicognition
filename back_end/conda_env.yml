@@ -51,6 +51,7 @@ dependencies:
       - alembic==1.4.2
       - Babel==2.8.0
       - blinker==1.4
+      - black
       - certifi==2020.6.20
       - chardet==3.0.4
       - click==7.1.2
@@ -83,6 +84,7 @@ dependencies:
       - python-editor==1.0.4
       - pytz==2020.1
       - pymysql==1.0.2
+      - pylama[all]
       - redis==3.5.3
       - requests==2.24.0
       - rq==1.4.3
