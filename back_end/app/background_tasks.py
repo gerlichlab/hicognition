@@ -11,7 +11,9 @@ def add_app_context(app):
         def wrapper(*args, **kwargs):
             with app.app_context():
                 return func(*args, **kwargs)
-        return wrapper   
+
+        return wrapper
+
     return decorated
 
 
@@ -23,12 +25,15 @@ def cleanup_empty_tasks():
         if task.get_rq_job() is None:
             deletion_number += 1
             db.session.delete(task)
-    current_app.logger.info(f"Background process deleted {deletion_number} detached tasks")
+    current_app.logger.info(
+        f"Background process deleted {deletion_number} detached tasks"
+    )
     db.session.commit()
+
 
 def cleanup_failed_tasks():
     """Checks whether there are failed tasks and adds this to database.
-    This is a rare event since task failure is usually handled during 
+    This is a rare event since task failure is usually handled during
     pipeline exception handling. Tasks will only be set as failed
     if there is a low-level problem, e.g. a C-extension wants to
     allocate memory and this fails."""
@@ -49,10 +54,11 @@ def cleanup_failed_tasks():
                     set_dataset_failed(task.dataset_id, task.intervals_id)
                 # delete tasks
                 db.session.delete(task)
-    current_app.logger.info(f"Background process deleted {deletion_number} failed tasks")
+    current_app.logger.info(
+        f"Background process deleted {deletion_number} failed tasks"
+    )
     db.session.commit()
 
 
 def send_keep_alive_message():
     NotificationHandler().send_keep_alive()
-

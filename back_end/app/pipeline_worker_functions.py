@@ -30,7 +30,7 @@ from .models import (
     AssociationIntervalData,
     EmbeddingIntervalData,
     Intervals,
-    ObsExp
+    ObsExp,
 )
 
 # get logger
@@ -50,9 +50,11 @@ def _do_pileup_fixed_size(
     regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
     # open cooler and check whether resolution is defined, if not return empty array
     try:
-        cooler_file = cooler.Cooler(cooler_dataset.file_path + f"::/resolutions/{binsize}")
+        cooler_file = cooler.Cooler(
+            cooler_dataset.file_path + f"::/resolutions/{binsize}"
+        )
     except KeyError:
-        output_shape = (2 * window_size)//binsize
+        output_shape = (2 * window_size) // binsize
         if collapse:
             return np.full((output_shape, output_shape), np.nan)
         return np.full((output_shape, output_shape, len(regions)), np.nan)
@@ -66,16 +68,24 @@ def _do_pileup_fixed_size(
     # do pileup
     if pileup_type == "Obs/Exp":
         # check whether obs_exp exists
-        if (obs_exp_entry := cooler_dataset.obs_exp.filter(ObsExp.binsize == binsize).first()) is not None:
+        if (
+            obs_exp_entry := cooler_dataset.obs_exp.filter(
+                ObsExp.binsize == binsize
+            ).first()
+        ) is not None:
             # binsize exists
             expected = pd.read_csv(obs_exp_entry.filepath)
         else:
             expected = HT.get_expected(
                 cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
             )
-            file_path = os.path.join(current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + ".csv")
+            file_path = os.path.join(
+                current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + ".csv"
+            )
             expected.to_csv(file_path, index=False)
-            new_obs_exp_ds = ObsExp(dataset_id=cooler_dataset.id, binsize=binsize, filepath=file_path)
+            new_obs_exp_ds = ObsExp(
+                dataset_id=cooler_dataset.id, binsize=binsize, filepath=file_path
+            )
             db.session.add(new_obs_exp_ds)
             db.session.commit()
         pileup_array = HT.do_pileup_obs_exp(
@@ -115,7 +125,9 @@ def _do_pileup_variable_size(
     bin_number_expanded = interval_operations.get_bin_number_for_expanded_intervals(
         binsize, current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]
     )
-    cooler_binsize = get_optimal_binsize(regions, bin_number_expanded, current_app.config["PREPROCESSING_MAP"])
+    cooler_binsize = get_optimal_binsize(
+        regions, bin_number_expanded, current_app.config["PREPROCESSING_MAP"]
+    )
     log.info(f"      Optimal binsize is {cooler_binsize}")
     if cooler_binsize is None:
         if collapse:
@@ -136,16 +148,24 @@ def _do_pileup_variable_size(
     )
     if pileup_type == "Obs/Exp":
         # check whether obs_exp exists
-        if (obs_exp_entry := cooler_dataset.obs_exp.filter(ObsExp.binsize == cooler_binsize).first()) is not None:
+        if (
+            obs_exp_entry := cooler_dataset.obs_exp.filter(
+                ObsExp.binsize == cooler_binsize
+            ).first()
+        ) is not None:
             # binsize exists
             expected = pd.read_csv(obs_exp_entry.filepath)
         else:
             expected = HT.get_expected(
                 cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
             )
-            file_path = os.path.join(current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + ".csv")
+            file_path = os.path.join(
+                current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + ".csv"
+            )
             expected.to_csv(file_path, index=False)
-            new_obs_exp_ds = ObsExp(dataset_id=cooler_dataset.id, binsize=cooler_binsize, filepath=file_path)
+            new_obs_exp_ds = ObsExp(
+                dataset_id=cooler_dataset.id, binsize=cooler_binsize, filepath=file_path
+            )
             db.session.add(new_obs_exp_ds)
             db.session.commit()
         pileup_arrays = HT.extract_windows_different_sizes_obs_exp(
@@ -209,7 +229,9 @@ def _do_stackup_fixed_size(bigwig_filepath, regions, window_size, binsize):
     good_regions = stackup_regions.iloc[good_chromosome_indices, :]
     # if no good chromosomes found, try to remove chr suffix
     if not any(is_good_chromosome):
-        stackup_regions.loc[:, "chrom"] = [entry.strip("chr") for entry in stackup_regions["chrom"]]
+        stackup_regions.loc[:, "chrom"] = [
+            entry.strip("chr") for entry in stackup_regions["chrom"]
+        ]
         is_good_chromosome = [
             True if chrom in chromosome_names else False
             for chrom in stackup_regions["chrom"]
@@ -421,14 +443,18 @@ def _do_embedding_1d_fixed_size(collection_id, intervals_id, binsize):
     cluster_ids_large = kmeans_large.labels_
     log.info("      Generating average values large...")
     scaled = StandardScaler().fit_transform(imputed_frame)
-    average_cluster_values_large = pd.DataFrame(scaled).groupby(cluster_ids_large).mean().values
+    average_cluster_values_large = (
+        pd.DataFrame(scaled).groupby(cluster_ids_large).mean().values
+    )
     log.info("      Running clustering small...")
     kmeans_large = KMeans(
         n_clusters=current_app.config["CLUSTER_NUMBER_SMALL"], random_state=0
     ).fit(embedding)
     cluster_ids_small = kmeans_large.labels_
     log.info("      Generating average values small...")
-    average_cluster_values_small = pd.DataFrame(scaled).groupby(cluster_ids_small).mean().values
+    average_cluster_values_small = (
+        pd.DataFrame(scaled).groupby(cluster_ids_small).mean().values
+    )
     return {
         "embedding": embedding,
         "clusters": {
@@ -441,7 +467,7 @@ def _do_embedding_1d_fixed_size(collection_id, intervals_id, binsize):
                 "average_values": average_cluster_values_small,
             },
         },
-        "features": feature_frame
+        "features": feature_frame,
     }
 
 
@@ -478,14 +504,18 @@ def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize):
     cluster_ids_large = kmeans_large.labels_
     log.info("      Generating average values large...")
     scaled = StandardScaler().fit_transform(imputed_frame)
-    average_cluster_values_large = pd.DataFrame(scaled).groupby(cluster_ids_large).mean().values
+    average_cluster_values_large = (
+        pd.DataFrame(scaled).groupby(cluster_ids_large).mean().values
+    )
     log.info("      Running clustering small...")
     kmeans_large = KMeans(
         n_clusters=current_app.config["CLUSTER_NUMBER_SMALL"], random_state=0
     ).fit(embedding)
     cluster_ids_small = kmeans_large.labels_
     log.info("      Generating average values small...")
-    average_cluster_values_small = pd.DataFrame(scaled).groupby(cluster_ids_small).mean().values
+    average_cluster_values_small = (
+        pd.DataFrame(scaled).groupby(cluster_ids_small).mean().values
+    )
     return {
         "embedding": embedding,
         "clusters": {
@@ -498,13 +528,11 @@ def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize):
                 "average_values": average_cluster_values_small,
             },
         },
-        "features": feature_frame
+        "features": feature_frame,
     }
 
 
-def _do_embedding_2d(
-    data
-):
+def _do_embedding_2d(data):
     """Embeds examples in the n x k array into a 2-dimensional space
     using umap."""
     # transpose data
@@ -517,18 +545,32 @@ def _do_embedding_2d(
     # check if bad image features and return empty arrays if so
     if image_features is None:
         return {
-                "embedding": np.full((len(data), 2), np.nan),
-                "clusters": {
-                    "large": {
-                        "cluster_ids": np.full((len(data)), np.nan),
-                        "thumbnails": np.full((current_app.config["CLUSTER_NUMBER_LARGE"], data[0].shape[0], data[0].shape[1]), np.nan),
-                    },
-                    "small": {
-                        "cluster_ids": np.full((len(data)), np.nan),
-                        "thumbnails": np.full((current_app.config["CLUSTER_NUMBER_SMALL"], data[0].shape[0], data[0].shape[1]), np.nan),
-                    },
+            "embedding": np.full((len(data), 2), np.nan),
+            "clusters": {
+                "large": {
+                    "cluster_ids": np.full((len(data)), np.nan),
+                    "thumbnails": np.full(
+                        (
+                            current_app.config["CLUSTER_NUMBER_LARGE"],
+                            data[0].shape[0],
+                            data[0].shape[1],
+                        ),
+                        np.nan,
+                    ),
                 },
-            }
+                "small": {
+                    "cluster_ids": np.full((len(data)), np.nan),
+                    "thumbnails": np.full(
+                        (
+                            current_app.config["CLUSTER_NUMBER_SMALL"],
+                            data[0].shape[0],
+                            data[0].shape[1],
+                        ),
+                        np.nan,
+                    ),
+                },
+            },
+        }
     # calculate embedding
     log.info("      Running embedding...")
     embedder = umap.UMAP(random_state=42)
