@@ -20,7 +20,7 @@ from app.models import (
 
 
 class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
-    """ Tests for deletion of datasets."""
+    """Tests for deletion of datasets."""
 
     def _create_empty_file_in_tempdir(self, file_name):
         file_path = os.path.join(self.TEMP_PATH, file_name)

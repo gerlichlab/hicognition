@@ -33,9 +33,9 @@ class TestExtractImageFeatures(unittest.TestCase):
     def test_correct_arrays_returned(self):
         """Test whether correct array is returned for small example"""
         images = [
-            np.array([[1., 2.], [5., 6.]]),
-            np.array([[8., 9.], [1., 1.]]),
-            np.array([[100., 1.], [87., 2.]]),
+            np.array([[1.0, 2.0], [5.0, 6.0]]),
+            np.array([[8.0, 9.0], [1.0, 1.0]]),
+            np.array([[100.0, 1.0], [87.0, 2.0]]),
         ]
         result = feature_extraction.extract_image_features(images, (1, 1))
         expected = np.array([[-0.74355736], [-0.67001872], [1.41357609]])

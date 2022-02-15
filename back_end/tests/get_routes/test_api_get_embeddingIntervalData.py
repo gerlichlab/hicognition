@@ -40,7 +40,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
             binsize=10000,
             dataset_id=self.unowned_cooler.id,
             intervals_id=self.owned_intervals.id,
-            value_type="2d-embedding"
+            value_type="2d-embedding",
         )
         # add averageIntervalData with unowned intervals
         self.embedData_intervals_unowned = EmbeddingIntervalData(
@@ -48,26 +48,34 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
             binsize=10000,
             dataset_id=self.owned_cooler.id,
             intervals_id=self.unowned_intervals.id,
-            value_type="2d-embedding"
+            value_type="2d-embedding",
         )
         # add embeddingIntervalData with owned intervals and collection and associated data
-        self.test_data = np.array([[1., 2.], [3, 4.], [5., 6.], [7., 8.], [9., 10.], [11., 12.]])
+        self.test_data = np.array(
+            [[1.0, 2.0], [3, 4.0], [5.0, 6.0], [7.0, 8.0], [9.0, 10.0], [11.0, 12.0]]
+        )
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, self.test_data)
         # create thumbnails
-        thumbnails = [np.array([[5., 6.], [ 7., 7.]]), np.array([[1., 2.], [3., 4.]]), np.array([[1.5, 10.], [7.0, 3.4]])]
+        thumbnails = [
+            np.array([[5.0, 6.0], [7.0, 7.0]]),
+            np.array([[1.0, 2.0], [3.0, 4.0]]),
+            np.array([[1.5, 10.0], [7.0, 3.4]]),
+        ]
         self.thumbnail_data = np.stack(thumbnails)
         thumbnail_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_thumbnails.npy")
         np.save(thumbnail_path, self.thumbnail_data)
         # create clusters
-        self.cluster_data = np.array([1., 2., 3., 1., 1., 2.])
+        self.cluster_data = np.array([1.0, 2.0, 3.0, 1.0, 1.0, 2.0])
         cluster_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_clusters.npy")
         np.save(cluster_path, self.cluster_data)
         # create distributions
         self.distribution_data = np.array(
             [[0.1, 0.2, 0.7], [0.4, 0.2, 0.4], [0.1, 0.1, 0.8]]
         )
-        distribution_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_distribution.npy")
+        distribution_path = os.path.join(
+            TempDirTestCase.TEMP_PATH, "test_distribution.npy"
+        )
         np.save(distribution_path, self.distribution_data)
         # create data
         self.embeddingData_owned = EmbeddingIntervalData(
@@ -79,7 +87,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
             thumbnail_path=thumbnail_path,
             cluster_id_path=cluster_path,
             feature_distribution_path=distribution_path,
-            value_type="2d-embedding"
+            value_type="2d-embedding",
         )
 
     def test_no_auth(self):
@@ -184,13 +192,13 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
             "cluster_ids": {
                 "data": self.cluster_data.tolist(),
                 "shape": list(self.cluster_data.shape),
-                "dtype": "float32"
+                "dtype": "float32",
             },
             "thumbnails": {
                 "data": self.thumbnail_data.flatten().tolist(),
                 "shape": list(self.thumbnail_data.shape),
                 "dtype": "float32",
-            } 
+            },
         }
         self.assertEqual(data, expected)
 

@@ -56,7 +56,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
                 collection,
                 collection2,
                 collection3,
-                collection4
+                collection4,
             ]
         )
         db.session.commit()
@@ -78,7 +78,9 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        binsizes = current_app.config["PREPROCESSING_MAP"][100000]["collections"]["regions"]
+        binsizes = current_app.config["PREPROCESSING_MAP"][100000]["collections"][
+            "regions"
+        ]
         intervals = [1]
         for binsize in binsizes:
             for interval in intervals:
@@ -112,7 +114,9 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        binsizes = current_app.config["PREPROCESSING_MAP"][100000]["collections"]["1d-features"]
+        binsizes = current_app.config["PREPROCESSING_MAP"][100000]["collections"][
+            "1d-features"
+        ]
         intervals = [1]
         for binsize in binsizes:
             for interval in intervals:
@@ -146,7 +150,9 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        binsizes = current_app.config["PREPROCESSING_MAP"][100000]["collections"]["2d-features"]
+        binsizes = current_app.config["PREPROCESSING_MAP"][100000]["collections"][
+            "2d-features"
+        ]
         intervals = [1]
         for binsize in binsizes:
             for interval in intervals:

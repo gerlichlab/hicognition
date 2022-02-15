@@ -11,7 +11,7 @@ from app.models import Session
 
 
 class TestDeleteSession(LoginTestCase, TempDirTestCase):
-    """ Tests for deletion of datasets."""
+    """Tests for deletion of datasets."""
 
     def setUp(self):
         super().setUp()
