@@ -1,4 +1,4 @@
-name: ngs_base
+name: hicognition_base
 channels:
   - bioconda
   - conda-forge
