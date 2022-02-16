@@ -18,7 +18,7 @@ jobs:
         run: |
           VERSION=$(< back_end/VERSION)
           docker pull gerlichlab/hicognition:v$VERSION
-          docker tag gerlichlab/hicognition::v$VERSION hicognition:latest
+          docker tag gerlichlab/hicognition:v$VERSION hicognition:latest
       - name: Create directory structure
         run: |
           mkdir -p workdir/mysql
