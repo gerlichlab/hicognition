@@ -16,8 +16,9 @@ jobs:
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
       - name: pull and tag image
         run: |
-          docker pull gerlichlab/hicognition:latest
-          docker tag gerlichlab/hicognition:latest hicognition:latest
+          VERSION=$(< back_end/VERSION)
+          docker pull gerlichlab/hicognition:v$VERSION
+          docker tag gerlichlab/hicognition:v$VERSION hicognition:latest
       - name: Create directory structure
         run: |
           mkdir -p workdir/mysql
