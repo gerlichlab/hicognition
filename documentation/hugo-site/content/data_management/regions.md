@@ -105,7 +105,7 @@ Then, the `ValueType` needs to be selected. This describes what kind of genomic 
 
 - __Peak__ | A peak from an experiment that produces continuous genomic data e.g. ChiP-Seq
 - __GenomeAnnotation__ | A genomic region set that is obtained by integrating multiple data sources and human intervention (e.g. genes, transcriptional start sites etc.)
-- __Derived__ | If regions have been derived from a single other dataset through an aggregation procedure (e.g. insulation score in Hi-C)
+- __Derived__ | If regions have been derived from a single other dataset (e.g. TADs derived from a Hi-C experiment)
 
 Selection of a specific `ValueType` leads to different required metadata downstream. E.g. if the `ValueType` is `Peak` than the possible selection of methods is different than when the `ValueType` is `Derived`.
 
