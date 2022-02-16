@@ -15,11 +15,12 @@ jobs:
         DOCKER_USER: ${{secrets.DOCKER_USER}}
         DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
       run: |
+        VERSION=$(< back_end/VERSION)
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
     - name: Build the Docker image
       run: docker compose build hicognition
     - name: Docker Push
       run: |
-        VERSION=$(< VERSION)
+        VERSION=$(< back_end/VERSION)
         docker tag hicognition:v$VERSION gerlichlab/hicognition:v$VERSION
         docker push gerlichlab/hicognition:v$VERSION
