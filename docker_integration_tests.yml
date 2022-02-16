@@ -20,7 +20,7 @@ services:
             - "5000:5000"
         build:
             context: "./back_end"
-        image: hicognition:v1.0
+        image: hicognition:latest
         entrypoint: "/bin/bash"
         command: -c "cd /code && ./boot_prod.sh"
         networks:
@@ -81,7 +81,7 @@ services:
         build:
             context: "./back_end"
         scale: 1
-        image: hicognition:v1.0
+        image: hicognition:latest
         entrypoint: "/bin/bash"
         networks:
             - hicognition-net
@@ -104,7 +104,7 @@ services:
         build:
             context: "./back_end"
         scale: 1
-        image: hicognition:v1.0
+        image: hicognition:latest
         entrypoint: "/bin/bash"
         networks:
             - hicognition-net
@@ -127,7 +127,7 @@ services:
         build:
             context: "./back_end"
         scale: 1
-        image: hicognition:v1.0
+        image: hicognition:latest
         entrypoint: "/bin/bash"
         networks:
             - hicognition-net
