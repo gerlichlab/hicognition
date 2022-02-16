@@ -29,19 +29,19 @@ jobs:
     # Run python default tests
     - name: Run black
       run: |
-        docker run gerlichlab/hicognition:v1.0 black --check --extend-exclude /code/migrations /code/
+        docker run gerlichlab/hicognition:latest black --check --extend-exclude /code/migrations /code/
     - name: Run pylint /app
     # More or less ignore for now
       run: |
-        docker run gerlichlab/hicognition:v1.0 pylint --disable=C0330 --fail-under=-3 /code/app/
+        docker run gerlichlab/hicognition:latest pylint --disable=C0330 --fail-under=-3 /code/app/
     - name: Run pylint /hicognition
     # More or less ignore for now
       run: |
-        docker run gerlichlab/hicognition:v1.0 pylint --disable=C0330 --fail-under=-3 /code/hicognition/
+        docker run gerlichlab/hicognition:latest pylint --disable=C0330 --fail-under=-3 /code/hicognition/
     - name: Run pylint /tests
     # More or less ignore for now
       run: |
-        docker run gerlichlab/hicognition:v1.0 pylint --disable=C0330 --fail-under=-3 /code/tests/ 
+        docker run gerlichlab/hicognition:latest pylint --disable=C0330 --fail-under=-3 /code/tests/ 
     - name: Check code complexity
       run: |
-        docker run gerlichlab/hicognition:v1.0 pylama --linters mccabe /code/
+        docker run gerlichlab/hicognition:latest pylama --linters mccabe /code/
