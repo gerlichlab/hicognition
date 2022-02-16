@@ -127,7 +127,7 @@ The default `PREPROCESSING_MAP` has been chosen to provide a balance between res
 
 This floating point number is used when preprocessing regions that have been added as interval features. It specifies how much the snippets should expand to the left and right as a fraction of the specific region.
 
-```python
+```txt
 Left Expansion                 Region             Right Expansion
 ---------------|---------------------------------|---------------
 ```
