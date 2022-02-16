@@ -20,5 +20,6 @@ jobs:
       run: docker compose build hicognition
     - name: Docker Push
       run: |
-         docker tag hicognition:v1.0 gerlichlab/hicognition:v1.0
-         docker push gerlichlab/hicognition:v1.0
+        VERSION=$(< VERSION)
+        docker tag hicognition:v$VERSION gerlichlab/hicognition:v$VERSION
+        docker push gerlichlab/hicognition:v$VERSION
