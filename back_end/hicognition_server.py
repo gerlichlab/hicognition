@@ -1,10 +1,10 @@
 """Start hicognition server."""
 import os
 import atexit
-import json
+#import json
 from getpass import getpass
-import click
 from base64 import b64encode
+import click
 from app import create_app, db
 from app.background_tasks import (
     cleanup_empty_tasks,
@@ -71,76 +71,76 @@ def create_user(name, password):
 
 app.cli.add_command(user_group)
 
-# add command line arguments for dataset addition/preprocessing
+# # add command line arguments for dataset addition/preprocessing
 
-dataset_group = AppGroup("dataset")
-
-
-@dataset_group.command("add")
-@click.argument("json_path")
-@click.argument("user")
-@click.argument("password")
-def add_dataset(json_path, user, password):
-    """Adds datasets defined in a JSON to database and uploads it."""
-    client = app.test_client()
-    headers = _get_api_headers(user, password)
-    # construct form data from JSON
-    with open(json_path, "rb") as json_data:
-        all_data = json.load(json_data)
-        for dataset_item in all_data["dataset"]:
-            # print(dataset_item)
-            with open(dataset_item["file"], "rb") as f:
-                # open and pass the file into the data array as well
-                dataset_item["file"] = (f, dataset_item["file"])
-                response = client.post(
-                    "/api/datasets/",
-                    data=dataset_item,
-                    headers=headers,
-                    content_type="multipart/form-data",
-                )
-                print(
-                    f"Request dispatched with status code {response.status_code} and response {response.json}"
-                )
+# dataset_group = AppGroup("dataset")
 
 
-@dataset_group.command("preprocess")
-@click.argument("name")
-@click.argument("user")
-@click.argument("password")
-def add_dataset(name, user, password):
-    """Triggers preprocessing for all datasets with name with all available regions."""
-    client = app.test_client()
-    headers = _get_api_headers(user, password)
-    # get dataset with name
-    datasets = Dataset.query.filter(Dataset.dataset_name == name).all()
-    # check if dataset name is unique
-    if len(datasets) > 1:
-        raise ValueError("Name refers to multiple datasets!")
-    dataset = datasets[0]
-    if dataset.filetype not in ["cooler", "bigwig"]:
-        raise ValueError("Source dataset is not a genomic feature dataset!")
-    # get ids of all bedfiles
-    bedfiles = Dataset.query.filter(Dataset.filetype == "bedfile").all()
-    if len(bedfiles) == 0:
-        raise ValueError("No bedfiles available!")
-    # start preprocessing
-    data = {
-        "dataset_id": str(dataset.id),
-        "region_ids": str([bedfile.id for bedfile in bedfiles]),
-    }
-    # dispatch post request
-    response = client.post(
-        "/api/preprocess/",
-        data=data,
-        headers=headers,
-        content_type="multipart/form-data",
-    )
-    print(
-        f"Request dispatched with status code {response.status_code} and response {response.json}"
-    )
+# @dataset_group.command("add")
+# @click.argument("json_path")
+# @click.argument("user")
+# @click.argument("password")
+# def add_dataset(json_path, user, password):
+#     """Adds datasets defined in a JSON to database and uploads it."""
+#     client = app.test_client()
+#     headers = _get_api_headers(user, password)
+#     # construct form data from JSON
+#     with open(json_path, "rb") as json_data:
+#         all_data = json.load(json_data)
+#         for dataset_item in all_data["dataset"]:
+#             # print(dataset_item)
+#             with open(dataset_item["file"], "rb") as file:
+#                 # open and pass the file into the data array as well
+#                 dataset_item["file"] = (file, dataset_item["file"])
+#                 response = client.post(
+#                     "/api/datasets/",
+#                     data=dataset_item,
+#                     headers=headers,
+#                     content_type="multipart/form-data",
+#                 )
+#                 print(
+#                     f"Request dispatched with status code {response.status_code} and response {response.json}"
+#                 )
 
 
-app.cli.add_command(dataset_group)
+# @dataset_group.command("preprocess")
+# @click.argument("name")
+# @click.argument("user")
+# @click.argument("password")
+# def add_dataset(name, user, password):
+#     """Triggers preprocessing for all datasets with name with all available regions."""
+#     client = app.test_client()
+#     headers = _get_api_headers(user, password)
+#     # get dataset with name
+#     datasets = Dataset.query.filter(Dataset.dataset_name == name).all()
+#     # check if dataset name is unique
+#     if len(datasets) > 1:
+#         raise ValueError("Name refers to multiple datasets!")
+#     dataset = datasets[0]
+#     if dataset.filetype not in ["cooler", "bigwig"]:
+#         raise ValueError("Source dataset is not a genomic feature dataset!")
+#     # get ids of all bedfiles
+#     bedfiles = Dataset.query.filter(Dataset.filetype == "bedfile").all()
+#     if len(bedfiles) == 0:
+#         raise ValueError("No bedfiles available!")
+#     # start preprocessing
+#     data = {
+#         "dataset_id": str(dataset.id),
+#         "region_ids": str([bedfile.id for bedfile in bedfiles]),
+#     }
+#     # dispatch post request
+#     response = client.post(
+#         "/api/preprocess/",
+#         data=data,
+#         headers=headers,
+#         content_type="multipart/form-data",
+#     )
+#     print(
+#         f"Request dispatched with status code {response.status_code} and response {response.json}"
+#     )
+
+
+# app.cli.add_command(dataset_group)
 
 
 @app.shell_context_processor
@@ -163,7 +163,7 @@ def make_shell_context():
     }
 
 
-# Helpers
+# helpers
 
 
 def _get_api_headers(username, password):
