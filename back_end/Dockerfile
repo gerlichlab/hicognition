@@ -27,7 +27,7 @@ RUN conda install mamba -n base -c conda-forge &&\
     # install pylola
     pip install git+git://github.com/Mittmich/pylola &&\
     # install hicognition 
-    pip install /temp/install
+    pip install git+git://github.com/gerlichlab/hicognition_lib
 
 # clean up install
 
