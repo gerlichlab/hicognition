@@ -1,6 +1,6 @@
 """Config class for hicognition server."""
 import os
-import json
+#import json
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -151,6 +151,7 @@ class Config:
 
 
 class DevelopmentConfig(Config):
+    """Config class for development server."""
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL"
@@ -158,6 +159,7 @@ class DevelopmentConfig(Config):
 
 
 class TestingConfig(Config):
+    """Config class for testing server."""
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     UPLOAD_DIR = "./tmp_test"
@@ -165,11 +167,12 @@ class TestingConfig(Config):
 
 
 class End2EndConfig(DevelopmentConfig):
+    """Extension of the development config class."""
     END2END = True
-    pass
 
 
 class ProductionConfig(Config):
+    """Config class for production server."""
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL"
     ) or "sqlite:///" + os.path.join(basedir, "data.sqlite")

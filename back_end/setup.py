@@ -1,6 +1,7 @@
+"""Installs the hicognition package."""
 import setuptools
 
-with open("VERSION") as version_file:
+with open("VERSION", encoding="utf-8") as version_file:
     version_number = version_file.read().strip()
 
 
