@@ -20,6 +20,11 @@ h1 {
 }
 
 
+.padding.highlightable {
+    max-width: 1500px;
+    margin: auto;
+}
+
 
 code {
     padding: 0.2em 0.4em;
