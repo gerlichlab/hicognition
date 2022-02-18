@@ -3,7 +3,7 @@ title: "Association"
 date: 2022-02-11T09:58:12+01:00
 draft: true
 tags: ["widgets", "enrichment"]
-weight: 6
+weight: 7
 ---
 The association widget allows you to determine what other genomic regions are enriched at your target genomic region set. It contains two visualizations that allow you to get an overview of where the most enrichment happens (upper plot) and what exactly is enriched at those sites (lower plot).
 

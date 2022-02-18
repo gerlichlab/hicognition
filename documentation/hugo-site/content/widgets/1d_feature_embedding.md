@@ -3,7 +3,7 @@ title: "1D-feature embedding"
 date: 2022-02-11T09:56:26+01:00
 draft: true
 tags: ["widgets", "1D-features"]
-weight: 4
+weight: 5
 ---
 
 The 1D-feature embedding widget can be used to display the distribution of genomic regions with regards to a collection (see [here](TODO) for more details on collections) of 1D-features. It represents a 2-dimensional embedding of the genomic regions as a heatmap of points.

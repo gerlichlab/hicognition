@@ -13,7 +13,3 @@ This section assumes that you have a HiCognition instance running, and your user
 ## Get started with example data
 
 Start creating your first [visualizations with our example data](/docs/getting_started/get_started_w_example_data/).
-
-## Add your own data 
-
-Once you have played with our example data, go through the [tutorial](/docs/getting_started/uploading_data) for data addition to add your own datasets to explore. If you need more details about how data managed in HiCognition, go through our [data management guide](/docs/data_management).

@@ -3,7 +3,7 @@ title: "2D-feature embedding"
 date: 2022-02-11T09:56:29+01:00
 draft: true
 tags: ["widgets", "2D-features"]
-weight: 5
+weight: 6
 ---
 
 The 2D-feature embedding widget can be used to display the distribution of genomic regions with regards to a 2D-genomic feature. It represents a 2-dimensional embedding of the genomic regions as a heatmap of points.

@@ -3,7 +3,7 @@ title: "2D-average"
 date: 2022-02-11T09:56:10+01:00
 draft: true
 tags: ["widgets", "2D-features"]
-weight: 2
+weight: 3
 ---
 
 The 2D-average widget can be used to display the average magnitude of a 2D-genomic feature over a specific region set. It is a heatmap representation of the underlying aggregated data.

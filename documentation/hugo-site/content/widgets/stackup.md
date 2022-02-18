@@ -3,7 +3,7 @@ title: "Stacked lineprofiles"
 date: 2022-02-11T09:56:17+01:00
 draft: true
 tags: ["widgets", "1D-features"]
-weight: 3
+weight: 4
 ---
 
 The stacked lineprofile widget can be used to display individual examples of 1D-genomic features over a specific region set. It is a heatmap representation, where each row corresponds to one genomic region.

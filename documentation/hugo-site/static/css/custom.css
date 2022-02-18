@@ -46,6 +46,11 @@ code {
     width: 25% !important;
 }
 
+.inline-picture {
+    height: 2em !important;
+    display: inline !important;
+    margin: 2px !important;
+}
 
 @font-face {
     font-family: 'Material Icons';
