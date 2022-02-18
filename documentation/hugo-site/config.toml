@@ -24,3 +24,8 @@ name = "<i class='fab fa-github'></i> Github repo"
 identifier = "ds"
 url = "https://github.com/gerlichlab/HiCognition"
 weight = 10
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
