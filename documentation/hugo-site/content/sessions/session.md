@@ -1,7 +1,6 @@
 ---
 title: "Session"
 date: 2022-02-21T10:29:41+01:00
-draft: true
 ---
 
 HiCognition sessions encapsulate a particular configuration of widgets inside all open widgets.

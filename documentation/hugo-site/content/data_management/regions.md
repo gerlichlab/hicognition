@@ -2,7 +2,6 @@
 title: "Regions"
 date: 2022-02-16T10:09:52+01:00
 weight: 1
-draft: true
 ---
 
 Genomic regions are the central element of the [region-set focus approach](/docs/concept/region_set_focus/) and are represented in practice by `BED` files that the user uploads to the server.

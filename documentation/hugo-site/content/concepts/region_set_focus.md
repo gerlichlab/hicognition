@@ -1,7 +1,6 @@
 ---
 title: "Region-set focus approach"
 date: 2022-02-09T15:40:53+01:00
-draft: true
 weight: 2
 ---
 

@@ -1,7 +1,6 @@
 ---
 title: "Quick start with example data"
 date: 2022-02-03T15:25:44+01:00
-draft: true
 ---
 
 To take your first steps with HiCognition, you can download example data from our [dropbox location](https://www.dropbox.com/sh/zjfc6sgkbdp3ksh/AAAWrbgKt8hz4npNxSfh-RBja?dl=0). The files located there are centered on analysis that is connected to [sister chromatid sensitive Hi-C](https://doi.org/10.1038/s41586-020-2744-4).

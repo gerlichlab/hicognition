@@ -1,7 +1,6 @@
 ---
 title: "Manage preprocessing"
 date: 2022-02-17T10:29:35+01:00
-draft: true
 weight: 2
 ---
 

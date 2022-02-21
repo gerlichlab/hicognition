@@ -1,7 +1,6 @@
 ---
 title: "Genome assemblies"
 date: 2022-02-16T10:27:11+01:00
-draft: true
 ---
 
 HiCognition allows managing genome assemblies in order to be able to work with different assemblies and organisms in parallel.
