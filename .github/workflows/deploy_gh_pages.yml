@@ -21,11 +21,9 @@ jobs:
         run: |
           cd documentation/hugo-site
           hugo
-          pwd
-          ls
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.2.5
         with:
           branch: gh-pages # The branch the action should deploy to.
-          folder: ./documentation/build # The folder the action should deploy.
+          folder: ./documentation/hugo-site/build # The folder the action should deploy.
