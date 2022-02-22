@@ -12,6 +12,7 @@ p {
 
 h1 {
     text-align: left !important;
+    display: none;
 }
 
 

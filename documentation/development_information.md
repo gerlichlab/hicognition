@@ -231,6 +231,9 @@ We will use [black](https://github.com/psf/black) for code formatting and [pylam
 
 Install black via `pip install black` and set it as your python formatting provider in VSCode (see [here](https://medium.com/@marcobelo/setting-up-python-black-on-visual-studio-code-5318eba4cd00) for details). Then, you can use the `Format document` command in VSCode to format a file. Black does not support selection formatting.
 
+## Language convention
+We will use american english spelling conventions.
+
 ## Documentation guidelines
 
 Every function/class should have docstrings according to the rules laid out in [PEP257](https://www.python.org/dev/peps/pep-0257/):
