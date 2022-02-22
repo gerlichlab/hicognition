@@ -14,8 +14,18 @@
 
             <div class="md-toolbar-section-end">
                 <div class="md-badge-content">
+                    <transition name="slide-fade">
+                        <span class="md-title" style="padding: 8px; color:#264D69;" v-if="showDocumentationText">Documentation</span>
+                    </transition>
+                </div>
+                <div class="md-badge-content">
+                    <md-button class="md-icon-button no-margin" @mouseenter="showDocumentationText = true" @mouseleave="showDocumentationText=false" href="/docs">
+                        <md-icon>article</md-icon>
+                    </md-button>
+                </div>
+                <div class="md-badge-content">
                     <md-button
-                        class="md-icon-button"
+                        class="md-icon-button no-margin"
                         @click="$emit('showNotificationDrawer')"
                     >
                         <md-icon>notifications</md-icon>
@@ -29,7 +39,7 @@
                 </div>
 
                 <md-menu md-size="medium" md-align-trigger>
-                    <md-button md-menu-trigger>
+                    <md-button md-menu-trigger class="md-icon-button">
                         <md-icon>more_vert</md-icon>
                     </md-button>
 
@@ -57,6 +67,7 @@ export default {
     data: function() {
         return {
             appversion: process.env.VERSION,
+            showDocumentationText: false
         };
     },
     computed: {
@@ -112,5 +123,28 @@ export default {
     top: 0px;
     right: 8px;
 }
+
+.no-margin {
+    margin: 0px;
+}
+
+/*
+  Enter and leave animations can use different
+  durations and timing functions.
+*/
+.slide-fade-enter-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-leave-active {
+  transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
 
 </style>
