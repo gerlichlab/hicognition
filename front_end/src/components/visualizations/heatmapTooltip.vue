@@ -82,7 +82,7 @@ export default {
                 "background-color": "white",
                 top: "0px",
                 left: "0px",
-                "z-index": "100",
+                "z-index": "10",
                 width: `${this.width}px`,
                 height: `${this.height}px`,
             },
