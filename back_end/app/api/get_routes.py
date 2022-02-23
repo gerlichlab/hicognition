@@ -162,7 +162,7 @@ def get_dataset_file(dataset_id):
     # get bedfile
     data = pd.read_csv(dataset.file_path, sep="\t", header=None).iloc[:, :3]
     data.columns = ["chrom", "start", "end"]
-    return jsonify(data.to_json(orient="records"))
+    return data.to_json(orient="records")
 
 
 @api.route("/datasets/<dataset_id>/processedDataMap/", methods=["GET"])

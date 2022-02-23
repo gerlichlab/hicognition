@@ -322,7 +322,7 @@ class TestGetBedFile(LoginTestCase):
         response = self.client.get(f"/api/datasets/{self.owned_dataset_w_file.id}/bedFile/", content_type="application/json", headers=self.token_headers)
         expected = pd.read_csv(self.owned_dataset_w_file.file_path, sep="\t", header=None)
         expected.columns = ["chrom", "start", "end"]
-        self.assertEqual(response.json, expected.to_json(orient="records"))
+        self.assertEqual(response.data.decode(), expected.to_json(orient="records"))
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)
