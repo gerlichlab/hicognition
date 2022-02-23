@@ -1,6 +1,8 @@
 """GET API endpoints for hicognition"""
+import imp
 import json
 import gzip
+import re
 from flask.globals import current_app
 import pandas as pd
 import numpy as np
@@ -136,6 +138,31 @@ def get_name_of_dataset(dataset_id):
             f"Dataset with id '{dataset_id}' is not owned by logged in user!"
         )
     return jsonify(dataset.dataset_name)
+
+
+@api.route("/datasets/<dataset_id>/bedFile/", methods=["GET"])
+@auth.login_required
+def get_dataset_file(dataset_id):
+    """Returns the bedFile associate with a region dataset"""
+    dataset = Dataset.query.get(dataset_id)
+    # check whether dataset exists
+    if dataset is None:
+        return not_found(f"Dataset with id '{dataset_id}' does not exist!")
+    # check whether user owns the dataset
+    if dataset.is_access_denied(g):
+        return forbidden(
+            f"Dataset with id '{dataset_id}' is not owned by logged in user!"
+        )
+    # check whether the dataset is a bedfile
+    if dataset.filetype != "bedfile":
+        return invalid("Requested dataset is not a bedfile")
+    # check whether file exists
+    if dataset.file_path is None:
+        return not_found("Dataset has not associated bedfile")
+    # get bedfile
+    data = pd.read_csv(dataset.file_path, sep="\t", header=None).iloc[:, :3]
+    data.columns = ["chrom", "start", "end"]
+    return jsonify(data.to_json(orient="records"))
 
 
 @api.route("/datasets/<dataset_id>/processedDataMap/", methods=["GET"])

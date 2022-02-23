@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+import pandas as pd
 from hicognition.test_helpers import LoginTestCase
 
 # add path to import app
@@ -261,6 +261,68 @@ class TestGetDatasets(LoginTestCase):
         )
         self.assertEqual(sorted(response.json, key=lambda x: x["id"]), expected)
 
+
+class TestGetBedFile(LoginTestCase):
+    """Test route for receiving a bedfile from the server."""
+
+    def setUp(self):
+        """adds test datasets to db"""
+        super().setUp()
+        # create test datasets
+        self.unowned_dataset = Dataset(id=1, user_id=2, filetype="bedfile")
+        self.owned_dataset_not_bed = Dataset(id=2, user_id=1, filetype="cooler")
+        self.owned_dataset_wo_file = Dataset(id=3, user_id=1, filetype="bedfile")
+        self.owned_dataset_w_file = Dataset(id=4, user_id=1, file_path="tests/testfiles/tad_boundaries.bed", filetype="bedfile")
+        # set up headers
+        token = self.add_and_authenticate("test", "asdf")
+        self.token_headers = self.get_token_header(token)
+
+    def test_no_auth(self):
+        """No authentication provided, response should be 401"""
+        # add datasets
+        db.session.add(self.owned_dataset_w_file)
+        db.session.commit()
+        # protected route
+        response = self.client.get(f"/api/datasets/{self.owned_dataset_w_file.id}/bedFile/", content_type="application/json")
+        self.assertEqual(response.status_code, 401)
+
+    def test_dataset_not_owned(self):
+        """Dataset not owned, response should be 403"""
+        # add datasets
+        db.session.add(self.unowned_dataset)
+        db.session.commit()
+        # protected route
+        response = self.client.get(f"/api/datasets/{self.unowned_dataset.id}/bedFile/", content_type="application/json", headers=self.token_headers)
+        self.assertEqual(response.status_code, 403)
+
+    def test_dataset_not_bedfile(self):
+        """Dataset not bedfile, response should be 400"""
+        # add datasets
+        db.session.add(self.owned_dataset_not_bed)
+        db.session.commit()
+        # protected route
+        response = self.client.get(f"/api/datasets/{self.owned_dataset_not_bed.id}/bedFile/", content_type="application/json", headers=self.token_headers)
+        self.assertEqual(response.status_code, 400)
+
+    def test_dataset_wo_file(self):
+        """Test dataset wo file gives 404"""
+        # add datasets
+        db.session.add(self.owned_dataset_wo_file)
+        db.session.commit()
+        # protected route
+        response = self.client.get(f"/api/datasets/{self.owned_dataset_wo_file.id}/bedFile/", content_type="application/json", headers=self.token_headers)
+        self.assertEqual(response.status_code, 404)
+
+    def test_owned_dataset_w_file_returned_correctly(self):
+        """test whether an owned bedfile returns correct json"""
+        # add datasets
+        db.session.add(self.owned_dataset_w_file)
+        db.session.commit()
+        # protected route
+        response = self.client.get(f"/api/datasets/{self.owned_dataset_w_file.id}/bedFile/", content_type="application/json", headers=self.token_headers)
+        expected = pd.read_csv(self.owned_dataset_w_file.file_path, sep="\t", header=None)
+        expected.columns = ["chrom", "start", "end"]
+        self.assertEqual(response.json, expected.to_json(orient="records"))
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)
