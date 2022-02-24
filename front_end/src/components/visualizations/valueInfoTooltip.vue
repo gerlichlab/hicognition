@@ -10,7 +10,11 @@ export default {
     props: {
         message: String,
         tooltipOffsetLeft: Number,
-        tooltipOffsetTop: Number
+        tooltipOffsetTop: Number,
+        minWidth: {
+            default: 150,
+            type: Number
+        }
     },
     data: function() {
         return {
@@ -24,7 +28,7 @@ export default {
                 "opacity": "0.7",
                 "border-radius": "5px",
                 "padding": "5px",
-                "min-width": "150px",
+                "min-width": `${this.minWidth}px`,
                 "color": "white"
             }
         };

@@ -303,11 +303,16 @@ export default {
                     .tickSizeOuter(0)
                     .tickValues([this.intervalStartBin, this.intervalEndBin])(args); 
             } else {
+                // get start and end bin
+                let startOffsetBp = Math.round(this.windowsize * EXPANSION_FACTOR)
+                let binsize = Math.round(2 * this.windowsize / this.stackupDimensions[1])
+                let startBin = Math.round(startOffsetBp/binsize)
+                let endBin = this.stackupDimensions[1] - startBin
                 return d3
                     .axisBottom(this.xScale)
                     .tickFormat(val => this.getXaxisFormatPoint(val))
                     .tickSizeOuter(0)
-                    .tickValues([this.intervalStartBin, Math.round(this.stackupDimensions[1]/2), this.intervalEndBin])(args);    
+                    .tickValues([startBin, Math.round(this.stackupDimensions[1]/2), endBin])(args);    
             }
         },
         getXaxisFormatInterval: function(val){
@@ -320,14 +325,19 @@ export default {
             return undefined
         },
         getXaxisFormatPoint: function(val){
+            // get start and end bin
+            let startOffsetBp = Math.round(this.windowsize * EXPANSION_FACTOR)
+            let binsize = Math.round( 2*this.windowsize / this.stackupDimensions[1])
+            let startBin = Math.round(startOffsetBp/binsize)
+            let endBin = this.stackupDimensions[1] - startBin
             let tickIndicator = Number(this.windowsize) - (Math.round(Number(this.windowsize)) * EXPANSION_FACTOR)
-            if (val == this.intervalStartBin){
+            if (val == startBin){
                 return `-${this.convertBasePairsToReadable(tickIndicator)}`
             }
             if (val == Math.round(this.stackupDimensions[1]/2)){
                 return "0"
             }
-            if (val == this.intervalEndBin){
+            if (val == endBin){
                 return `+${this.convertBasePairsToReadable(tickIndicator)}`
             }
             return undefined
@@ -448,12 +458,13 @@ export default {
             this.texture = PIXI.Texture.from(this.pseudoCanvas);
             this.sprite = PIXI.Sprite.from(this.texture);
             //  attach event handlers
-            this.sprite.interactive = true
-            this.sprite.hitArea = new PIXI.Rectangle(0, 0 , this.visualizationSize, this.visualizationSize)
+            let scalingFactor = this.stackupDimensions[0]/this.stackupDimensions[1]
+            this.sprite.hitArea = new PIXI.Rectangle(0, 0 , this.visualizationSize, this.visualizationSize * scalingFactor )
             this.sprite.click = this.hanldeMouseClick
             this.sprite.pointermove = this.throttleFunction(this.handleMouseMove, 50)
             this.sprite.mouseover = this.handleMouseOver
             this.sprite.mouseout = this.handleMouseOut
+            this.sprite.interactive = true
             // position sprite at top left and make it stretch the canvas
             this.sprite.x = 0;
             this.sprite.y = 0;
@@ -462,6 +473,9 @@ export default {
             // add and render
             this.stage.addChild(this.sprite);
             this.renderer.render(this.stage);
+            // add hit area
+
+            this.renderer.render(this.stage)
             // add x Axis if necessary
             if (this.showXaxis){
                 this.createXaxisScales()
