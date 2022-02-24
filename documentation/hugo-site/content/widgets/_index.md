@@ -8,16 +8,16 @@ pre = "<b>6. </b>"
 
 # Widgets
 
-HiCognition implements the region-set focus approach (see the [concept section](/docs/concept/region_set_focus/) for details) on a visualization level using widget collections and widgets. Widget collections represent a single set of genomic regions (e.g. Chip-Seq peaks of a target protein) and can host one or more widgets that represent genomic features (e.g. Chip-Seq tracks or Hi-C tracks).
+HiCognition implements the region-set focus approach (see the [concept section](/docs/concept/region_set_focus/) for details) on a visualization level using widget collections and widgets. Widget collections represent a single set of genomic regions (e.g., Chip-Seq peaks of a target protein) and host one or more widgets representing genomic features (e.g., Chip-Seq tracks or Hi-C tracks).
 
 ![Widget concept](/docs/Widget_concept.png)
 
-Features are linked to genomic regions via preprocessing steps (see the [preprocessing section](/docs/preprocessing/) for more details), which mostly represent data aggregation. Once preprocessing has linked features to genomic regions, they are available for addition to a widget collection via appropriate widgets (see the [widget controls section](/docs/widgets/widget_controls) on how to do that).
+Features are linked to genomic regions via preprocessing steps (see the [preprocessing section](/docs/preprocessing/) for more details), which primarily represent data aggregation. Once preprocessing has linked features to genomic regions, they are available for addition to a widget collection via appropriate widgets (see the [widget controls section](/docs/widgets/widget_controls) on how to do that).
 
 HiCognition implements preprocessing to allow answering three main questions at a genomic region set (see the [concept section](/docs/concept/region_set_focus/) for more details):
 
-1. __Exploring average behaviour__: What is the average magnitude of a specific 1d-/2d-genomic signal?
-2. __Exploring heterogeneity__ : Is the population of regions homogeneous with respect to a collection of 1d- or 2d-features? What subsets have different behaviour with respect to a collection of 1d- or 2d-features?
+1. __Exploring average behavior__: What is the average magnitude of a specific 1d-/2d-genomic signal?
+2. __Exploring heterogeneity__: Is the population of regions homogeneous with respect to a collection of 1d- or 2d-features? What subsets have different behavior with respect to a collection of 1d- or 2d-features?
 3. __Enrichment analysis__: What other regions are enriched? 
 
 The results of these preprocessing steps can be visualized using specific widgets:

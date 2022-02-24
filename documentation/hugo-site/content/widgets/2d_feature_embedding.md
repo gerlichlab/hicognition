@@ -5,24 +5,24 @@ tags: ["widgets", "2D-features"]
 weight: 6
 ---
 
-The 2D-feature embedding widget can be used to display the distribution of genomic regions with regards to a 2D-genomic feature. It represents a 2-dimensional embedding of the genomic regions as a heatmap of points.
+The 2D-feature embedding widget can be used to display the distribution of genomic regions regarding a 2D-genomic feature. It represents a 2-dimensional embedding of the genomic regions as a heatmap of points.
 
 ![2d embedding](/docs/2d_feature_embedding.png)
 
 
 ## Suitable data
 
-The 2D-feature embedding widget is suitable for any genomic dataset that can be represented using a multiresolution [cooler file](https://cooler.readthedocs.io/en/latest/). This is mostly suitable for Hi-C data, but can also include other data sets that assign a value to a tuple of genomic coordinates.
+The 2D-feature embedding widget is suitable for any genomic dataset that can be represented using a multiresolution [cooler file](https://cooler.readthedocs.io/en/latest/). This is mostly suitable for Hi-C data but can include other data sets that assign a value to a tuple of genomic coordinates.
 
 
 ## Preprocessing algorithm
 
-In general, the preprocessing for data to be displayed in the 2D-feature embedding widget happens together with preprocessing for the [2D-average widget](/docs/widgets/2d_average/) and thus many of the steps are shared.
+In general, the preprocessing for data to be displayed in the 2D-feature embedding widget happens together with preprocessing for the [2D-average widget](/docs/widgets/2d_average/), and thus many of the steps are shared.
 
 
 ### Point-regions
 
-During the preprocessing state, snippets of the underlying interaction matrix are extracted from the mcool file for each entry in the genomic region set, with different window sizes. Then, these images are downsampled and flattened into a "feature-representation". The resulting feature matrix has the following shape:
+During the preprocessing state, snippets of the underlying interaction matrix are extracted from the mcool file for each entry in the genomic region set, with different window sizes. Then, these images are downsampled and flattened into a "feature representation". The resulting feature matrix has the following shape:
 
 |                  | Image feature 1 | ... | Image feature k |
 |------------------|-----------|-----|-----------|
@@ -40,7 +40,7 @@ Interval features are treated exactly as point features, except that images are 
 
 ## Visualization
 
-The distribution of the genomic regions with regards to a 2D-feature is visualized as a 2D-histogram, with the density of points being displayed using a colormap. This widget defines a tooltip that, when hovered over the points, will display a cluster thumbnail that represents the average image within that cluster.
+The distribution of the genomic regions regarding a 2D feature is visualized as a 2D-histogram, with the density of points being displayed using a colormap. This widget defines a tooltip that will display a cluster thumbnail that represents the average image within that cluster when hovered over the points.
 
 ![2d embedding tooltip](/docs/2d_feature_embedding_tooltip.png)
 
@@ -51,18 +51,18 @@ The 2D-feature embedding widget defines four controls on the widget and one cont
 
 ### Sharing 
 
-The sharing controls allows you to select whether all thumbnail representations should share a common color scale or not.
+The sharing controls allow you to select whether all thumbnail representations should share a common color scale or not.
 
 ![2d feature value scale](/docs/2d_feature_value_scale.png)
 
 
 ### Scale
 
-The scale widget control allows to switch between ICCF values (__I__ teratively __C__ orrected __C__ ontact __F__ requency) and Observer/expected values, which were normalized to the genome-wide, distance dependent decay of contact frequency.
+The scale widget control allows to switch between ICCF values (__I__ teratively __C__ orrected __C__ ontact __F__ requency) and Observer/expected values, which were normalized to the genome-wide distance-dependent decay of contact frequency.
 
 ### Transform
 
-The transform widget control allows you select whether the values displayed in the thumbnails should be log-transformed or not.
+The transform widget control allows you to select whether the values displayed in the thumbnails should be log-transformed or not.
 
 ### Neighborhood size
 
@@ -71,6 +71,6 @@ One can use the neighborhood size option to choose whether to display large or s
 
 ### Create new region
 
-If one of the highlighted clusters are interesting and you want to further explore them, you can create a new genomic region set just representing the highlighted regions. For this, when the thumbnail tooltip is shown, click and the "Create new region" button will appear. After clicking that button, a dialog pops up that lets you define the name for your new region set.
+If one of the highlighted clusters is interesting and you want to explore them further, you can create a new genomic region set representing the highlighted regions. For this, when the thumbnail tooltip is shown, click, and the "Create new region" button will appear. After clicking that button, a dialog pops up that lets you define the name for your new region set.
 
 ![2d feature create new region](/docs/2d_feature_create_new_region.png)

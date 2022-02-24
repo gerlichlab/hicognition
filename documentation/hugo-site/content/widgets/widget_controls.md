@@ -4,11 +4,11 @@ date: 2022-02-18T12:06:53+01:00
 weight: 1
 ---
 
-Widget collections and widgets have controls that allow resizing, zooming and selecting hosted datasets. Widget collections always have the same set of controls, whereas widgets have additional, context-dependent controls that depend on the type of widgets that is loaded (see the description of widget types in this section).
+Widget collections and widgets have controls that allow resizing, zooming, and selecting hosted datasets. Widget collections always have the same set of controls. In contrast, widgets have additional, context-dependent controls that depend on the type of loaded widgets (see the description of widget types in this section).
 
 ## Widget Collection
 
-Widget collections represent genomic region sets and can host a variable number of widgets that represent genomic features at this shared region set. Thus, the controls found on widget collections can be used to change the selected region set and change the arrangement of contained widgets.
+Widget collections represent genomic region sets and can host a variable number of widgets representing genomic features at this shared region set. Thus, the controls found on widget collections can change the selected region set and the arrangement of contained widgets.
 
 ### Select genomic region set
 
@@ -25,11 +25,11 @@ Once selected, the name of the selected region set will be displayed on the blue
 
 ### Set window size
 
-If your region set is a point-features (see [this section](/docs/data_management/regions/#types-of-genomic-regions) for a detailed explanation), the top controls of the widget collection will allows you to select the specific window size that all the widgets inside the collection display:
+If your region set is a point-features (see [this section](/docs/data_management/regions/#types-of-genomic-regions) for a detailed explanation), the top controls of the widget collection will allow you to select the specific window size that all the widgets inside the collection display:
 
 <img src="/docs/window_size_selection.png" class="quarter-width">
 
-This means that with this selection you can "zoom" in and out of your genomic region of interest to observe effect at different genomic scales.
+This means that with this selection, you can "zoom" in and out of your genomic region of interest to observe effect at different genomic scales.
 
 ### Resize and delete widget collection
 
@@ -38,14 +38,14 @@ You can resize the widget collection with all of its containing widgets using th
 <img src="/docs/widget_collection_context_bar.png" class="quarter-width">
 
 {{% notice note %}}
-Note that widget collections have a set minimum-size beyond which you cannot shrink the widget collection.
+Note that widget collections have a set minimum size beyond which you cannot shrink the widget collection.
 {{% /notice %}}
 
 If you want to delete a widget collection, you can click on the garbage can at the top right.
 
 ### Creating slots
 
-Widget collections can contain multiple slots for widgets. These slots can be created, by hitting the arrow buttons on the right and bottom of a widget collection. For example, you can click the arrow on the right to create an additional slot for a widget:
+Widget collections can contain multiple slots for widgets. These slots can be created by hitting the arrow buttons on the right and bottom of a widget collection. For example, you can click the arrow on the right to create an additional slot for a widget:
 
 
 <img src="/docs/resize_widget_collection.png" class="half-width">
@@ -70,11 +70,11 @@ Widgets can be dragged from one slot to another in order to create the perfect a
 
 ## Widgets
 
-All of the widget types have their own "widget controls" that are described in the chapter of the respective widgets. In addition to that, all widgets share controls for selecting datasets, selecting binsize and deleting widgets.
+All widget types have their own "widget controls" described in the chapter of the respective widgets. In addition to that, all widgets share controls for selecting datasets, selecting bin size, and deleting widgets.
 
 ### Selecting genomic features
 
-In order to to select a genomic feature for a given widget, click the button on the top right
+To select a genomic feature for a given widget, click the button on the top right.
 
 <img src="/docs/select_dataset_widget.png" class="one-quarter-width">
 
@@ -82,10 +82,10 @@ This will open the [dataset selection table](/docs/data_management/regions/#view
 
 ### Changing bin size
 
-In order to change the genomic resolution at which you want look at the data, you can select the desired binsize from the binsize dropdown at the top of each widget.
+To change the genomic resolution at which you want to look at the data, you can select the desired binsize from the binsize dropdown at the top of each widget.
 
 <img src="/docs/changing_binsize.png" class="one-quarter-width">
 
 {{% notice note %}}
-For point features, binsize will be in genomic coordinates, whereas for interval features, binsize will be in percentage of the respective region size. See this [section](/docs/data_management/regions/#types-of-genomic-regions) for a more detailed explanation.
+For point features, binsize will be in genomic coordinates, whereas for interval features, binsize will be in the percentage of the respective region size. See this [section](/docs/data_management/regions/#types-of-genomic-regions) for a more detailed explanation.
 {{% /notice %}}

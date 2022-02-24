@@ -5,13 +5,13 @@ tags: ["widgets", "1D-features"]
 weight: 5
 ---
 
-The 1D-feature embedding widget can be used to display the distribution of genomic regions with regards to a collection (see [here](TODO) for more details on collections) of 1D-features. It represents a 2-dimensional embedding of the genomic regions as a heatmap of points.
+The 1D-feature embedding widget can be used to display the distribution of genomic regions with regards to a collection (see [here](TODO) for more details on collections) of 1D features. It represents a 2-dimensional embedding of the genomic regions as a heatmap of points.
 
 ![1d embedding](/docs/1d_embedding.png)
 
 ## Suitable data
 
-The 1D-feature embedding widget is suitable for a collection of 1D-features. 1D-features are any genomic dataset that can be represented using a [bigwig file](https://genome.ucsc.edu/goldenpath/help/bigWig.html). This includes coverage tracks for Chip-seq experiments, Gro-seq experiments, but also features derived from Hi-C data such as insulation scores.
+The 1D-feature embedding widget is suitable for a collection of 1D features. 1D-features are any genomic dataset that can be represented using a [bigwig file](https://genome.ucsc.edu/goldenpath/help/bigWig.html). This includes coverage tracks for Chip-seq experiments, Gro-seq experiments, but also features derived from Hi-C data such as insulation scores.
 
 ## Preprocessing algorithm
 
@@ -40,9 +40,9 @@ The distribution of the genomic regions with regards to a collection of 1D-featu
 
 ![1d embedding tooltip](/docs/1d_feature_tooltip.png)
 
-The highlighted clusters are defined as described [above](/docs/widgets/1d_feature_embedding/#point-regions) and the bar plot of the features define the standardized feature values (0 mean and unit variance), with positive values being marked red and negative values being marked blue.
+The highlighted clusters are defined as described [above](/docs/widgets/1d_feature_embedding/#point-regions), and the bar plot of the features defines the standardized feature values (0 mean and unit variance), with positive values being marked red and negative values being marked blue.
 
-The underlying 1D-features can also be visualized by overlaying the respective values using the overlay controls (see [below](/docs/widgets/1d_feature_embedding/#overlay)). Here, the colormap is switched to represent the selected feature value
+The underlying 1D features can also be visualized by overlaying the respective values using the overlay controls (see [below](/docs/widgets/1d_feature_embedding/#overlay)). Here, the colormap is switched to represent the selected feature value.
 
 
 ![1d feature overlay](/docs/1d_feature_overlay.png)
@@ -53,7 +53,7 @@ The 1D-feature embedding widget defines two controls on the widget and one contr
 
 ### Overlay
 
-The overlay controls, allows the choose a feature from the underlying 1D-feature collection to overlay over the heatmap. To avoid mixing density and overlay magnitude, the average value of the overlayed feature is displayed for each bin. In addition, the default density overlay can also be selected here.
+The overlay controls allow choosing a feature from the underlying 1D-feature collection to overlay over the heatmap. To avoid mixing density and overlay magnitude, the average value of the overlayed feature is displayed for each bin. In addition, the default density overlay can also be selected here.
 
 ![Overlay option](/docs/Overlay_dialog_1d.png)
 
@@ -66,6 +66,6 @@ One can use the neighborhood size option to choose whether to display large or s
 
 ### Create new regions
 
-If one of the highlighted clusters are interesting and you want to further explore them, you can create a new genomic region set just representing the highlighted regions. For this, when the barplot tooltip is shown, click on the "Create new region" button will appear. After clicking that button, a dialog pops up that lets you define the name for your new region set.
+If one of the highlighted clusters is interesting and you want to explore them further, you can create a new genomic region set representing the highlighted regions. For this, when the barplot tooltip is shown, click on the "Create new region" button will appear. After clicking that button, a dialog pops up that lets you define the name for your new region set.
 
 ![Create new region 1d](/docs/Create_new_region_1d_feature.png)
