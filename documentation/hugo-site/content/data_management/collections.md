@@ -4,7 +4,7 @@ date: 2022-02-16T10:11:34+01:00
 weight: 3
 ---
 
-HiCognition uses collections to group datasets together in order for them to be available for some of the more complex processing algorithms.
+HiCognition uses collections to group datasets together for them to be available for some of the more complex processing algorithms.
 
 ## Collection types
 
@@ -24,7 +24,7 @@ Creating collections can be done by first clicking the `Create Dataset Collectio
 
 ![create collection menu](/docs/create_collection_menu.png)
 
-This causes a dialogue to pop-up:
+This causes a dialogue to pop up:
 
 ![create collection dialogue](/docs/create_dataset_collection_dialogue.png)
 
@@ -32,7 +32,7 @@ Datasets can be selected via the `Select Datasets` button that causes the [datas
 
 ## Managing collections
 
-In order to view your collections, you can hit the `Show Dataset Collections` button in the data management drawer:
+To view your collections, you can hit the `Show Dataset Collections` button in the data management drawer:
 
 ![show dataset collections menu](/docs/show_dataset_collections_menu.png)
 
@@ -40,11 +40,11 @@ This will cause a dialogue to appear that lets you look at all your dataset coll
 
 ![collection table](/docs/dataset_collection_table.png)
 
-This table is similar to the table that [allows viewing datasets](/docs/data_management/regions/#viewing) except that it does not allow filtering based on descriptions (because collections have no description) and that the number of available fields are much lower. If you want to view which datasets are contained in a collections, you need to click on the number of contained datasets:
+This table is similar to the table that [allows viewing datasets](/docs/data_management/regions/#viewing) except that it does not allow filtering based on descriptions (because collections have no description) and that the number of available fields is much lower. If you want to view which datasets are contained in a collection, you need to click on the number of contained datasets:
 
 ![click contained datasets](/docs/click_on_contained_datasets.png)
 
-This will cause a dialogue to pop-up that allows you to view the contained datasets:
+This will cause a dialogue to pop up that allows you to view the contained datasets:
 
 ![contained dataset table](/docs/contained_dataset_table.png)
 
