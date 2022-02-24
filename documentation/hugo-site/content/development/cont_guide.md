@@ -6,11 +6,11 @@ weight: 5
 tags: ["development"]
 ---
 
-HiCognition is an open source project and as such we welcome all contributions to our code base. The main requirement for a contribution to be accepted is that it passes all test (described in detail [here](/docs/development/tests)) and conforms to our style decisions. 
+HiCognition is an open-source project, and as such, we welcome all contributions to our codebase. The main requirement for a contribution to be accepted is that it passes all tests (described in detail [here](/docs/development/tests)) and conforms to our style decisions. 
 
 ## Automatic testing
 
-When a pull request is issued on the HiCognition github repository, we have set up git actions that check the code for linting issues, run it against or formatting guidelines and dispatch our testing suite. This means that in principle you don't need to setup local testing, although we highly recommend doing so to decrease frustration (see our [testing guide](/docs/development/tests) to learn how to set up local testing.).
+When a pull request is issued on the HiCognition GitHub repository, we have set up git actions that check the code for linting issues, run it against formatting guidelines, and dispatch our testing suite. This means that, in principle, you don't need to set up local testing, although we highly recommend doing so to decrease frustration (see our [testing guide](/docs/development/tests) to learn how to set up local testing.).
 
 
 ## Formatting guidelines
@@ -20,7 +20,7 @@ We use [black](https://github.com/psf/black) for code formatting to have a consi
 ```bash
 black --check .
 ```
-against your code, so we recommend to use black for python code formatting beforehand.
+against your code, so we recommend using black for python code formatting beforehand.
 
 ## Linting
 

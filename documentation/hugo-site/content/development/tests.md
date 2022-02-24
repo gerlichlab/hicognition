@@ -14,7 +14,7 @@ The backend tests test both the request handling of the flask server as well as 
 
 ### Structure
 
-The tests are located in the `back_end\tests` directory relative to the HiCognition repository. The are further structured into the following categories that reside in individual directories:
+The tests are located in the `back_end\tests` directory relative to the HiCognition repository. They are further structured into the following categories that reside in individual directories:
 
 - __Database models__ | Test the convenience methods of database model classes
 - __Delete routes__ | Test flask server delete routes
@@ -24,7 +24,7 @@ The tests are located in the `back_end\tests` directory relative to the HiCognit
 - __Tasks__ | Test preprocessing tasks
 - __Testfiles__ | Examples needed to run the tests
 
-Within these directories the tests are distributed to different python files that use the `unittest` framework to setup test-cases and run them. Many of the tests need asses to a test instance of the flask app. This functionality is provided by the `LoginTestCase` class that can be imported from `hicognition.test_helpers`. If tests inherit from this class, each call to `setUp` will create a fresh flask app instance with an in-memory sqlite database. Be sure to call `super().setUp()` if you want to add other setup steps! The `hicognition.test_helpers` file also contains a `TempDirTestCase` class that can be mixed into a testcase to create a temporary directory (accessible via `Te) before the test-suite and clean it up after the suite ash run.
+Within these directories, the tests are distributed to different python files that use the `unittest` framework to set up test cases and run them. Many of the tests need asses to a test instance of the flask app. This functionality is provided by the `LoginTestCase` class that can be imported from `hicognition.test_helpers`. If tests inherit from this class, each call to `setUp` will create a fresh flask app instance with an in-memory SQLite database. Be sure to call `super().setUp()` if you want to add other setup steps! The `hicognition.test_helpers` file also contains a `TempDirTestCase` class that can be mixed into a test case to create a temporary directory (accessible via `Te) before the test-suite and clean it up after the suite ash run.
 
 
 ### Running the tests
@@ -42,7 +42,7 @@ You can then run the entire backend suite using pytest:
 cd /code
 pytest .
 ```
-Alternatively, you can run a specific test file using python (all test files have a unittest entrypoint defined):
+Alternatively, you can run a specific test file using python (all test files have a unit test entry point defined):
 
 ```bash
 python tests/get_routes/test_api_auth.py
@@ -85,11 +85,11 @@ The integration tests test common user flows on a running test instance of HiCog
 
 ### Structure
 
-The tests are located in `front_end\e2e` relative to the HiCognition repository. This directory contains both the definitions of the tests as well as a `Dockerfile` that defines the cypress docker image to use. The main reason we have a separate image for this is that we include a custom test initialization script (`init.sh`) that defines how to wait on resources needed for running the test (in this cause the flask server startup and finishing the front-end build).
+The tests are located in `front_end\e2e` relative to the HiCognition repository. This directory contains both the definitions of the tests as well as a `Dockerfile` that defines the cypress docker image to use. The main reason we have a separate image for this is that we include a custom test initialization script (`init.sh`) that defines how to wait on resources needed for running the test (in this case, the flask server startup and finishing the frontend build).
 
 ### Running the tests
 
-To run the tests, we provide an integration docker-compose file called `docker_integration_tests.yml` that starts the flask server in `end2end` mode and runs the integration tests. `End2end` mode means that a volatile MySql database is used (no data is persisted outside the MySql docker container) and a test-user is created at app start-up. In addition, the integration test docker-compose file has a slightly different way of building the front-end files such that the file `/dist/static/finished.json` is deposited into the static directory after the build is finished. This file is used by the `init.sh` script of the cypress container to determine that the front-end build has finished.
+To run the tests, we provide an integration docker-compose file called `docker_integration_tests.yml` that starts the flask server in `end2end` mode and runs the integration tests. `End2end` mode means that a volatile MySql database is used (no data is persisted outside the MySql docker container), and a test-user is created at app startup. In addition, the integration test docker-compose file has a slightly different way of building the frontend files such that the file `/dist/static/finished.json` is deposited into the static directory after the build is finished. This file is used by the `init.sh` script of the cypress container to determine that the frontend build has finished.
 
 You can run the integration tests as follows:
 
