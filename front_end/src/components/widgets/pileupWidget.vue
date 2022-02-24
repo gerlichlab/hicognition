@@ -200,6 +200,9 @@ import {
 } from "../../mixins";
 import valueInfoTooltip from "../visualizations/valueInfoTooltip.vue"
 
+
+const EXPANSION_FACTOR = 0.2
+
 export default {
     name: "pileupWidget",
     mixins: [apiMixin, formattingMixin, widgetMixin, valueScaleSharingMixin],
@@ -261,14 +264,28 @@ export default {
             let bin_width = size / this.widgetData[this.pileupType].shape[0];
             let x_bin = Math.round(x / bin_width);
             let y_bin = Math.round(y / bin_width);
+            let xoffset;
+            let yoffset;
             if (this.isVariableSize){
-                return "not implemented"
+                let intervalSize = Math.round(this.widgetData[this.pileupType].shape[0]/ (1 + 2*EXPANSION_FACTOR))
+                let intervalStartBin = Math.round(intervalSize * EXPANSION_FACTOR)
+                // get x offset
+                if (x_bin > intervalStartBin){
+                    xoffset = (x_bin - intervalStartBin) * Number(this.selectedBinsize)
+                } else {
+                    xoffset = - ((EXPANSION_FACTOR * 100) - (x_bin * Number(this.selectedBinsize)))
+                }
+                // get y offset
+                if (y_bin > intervalStartBin){
+                    yoffset = (y_bin - intervalStartBin) * Number(this.selectedBinsize)
+                } else {
+                    yoffset = -((EXPANSION_FACTOR * 100) - (y_bin * Number(this.selectedBinsize)))
+                }
+                return `x: ${xoffset} % | y: ${yoffset} %`
             }
             let totalSize = Number(this.intervalSize)
             let numberBins = Math.round(this.widgetData[this.pileupType].shape[0]) // pileup is symmetric
             let halfBins = Math.round(numberBins/2)
-            let xoffset;
-            let yoffset;
             // get x offset
             if (x_bin < halfBins) {
                 xoffset = -(totalSize - (x_bin * Number(this.selectedBinsize)))
