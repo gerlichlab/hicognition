@@ -165,7 +165,8 @@
                     @heatmap-clicked="handleHeatmapClick"
                     @mouse-move="handleMouseMove"
                     @mouse-enter="handleMouseEnter"
-                    @mouse-leave="handleMouseLeft"
+                    @mouse-leave="handleMouseLeftTooltip"
+                    @mouse-leave-container="handleMouseLeftContainer"
                     :log="false"
                 />
                 <tooltip
@@ -330,7 +331,7 @@ export default {
                         this.size,
                         this.widgetData["embedding"].data,
                         overlayClusters,
-                        this.aggregationType
+                        "mean"
                     )
                 ),
                 shape: [this.size, this.size],
@@ -416,10 +417,25 @@ export default {
                 this.tooltipOffsetTop = adjustedY;
             }
         },
-        handleMouseLeft: function() {
+        handleMouseLeftTooltip: function() {
             if (!this.showTooltipControls) {
                 this.showTooltip = false;
             }
+        },
+        handleMouseLeftContainer: function() {
+            if (!this.showTooltipControls){
+                this.selectedCluster = undefined
+            }
+        },
+        areBinsOutsideClusterMapBounds(x_bin, y_bin) {
+            // checks whether x_bin, y_bin is within clustermap bounds
+            if (x_bin < 0 || y_bin < 0){
+                return true
+            }
+            if (x_bin > this.size - 1 || y_bin > this.size - 1){
+                return true
+            }
+            return false
         },
         selectCluster: function(x, y, visualizationSize) {
             let bin_width = visualizationSize / this.size;
@@ -427,11 +443,8 @@ export default {
             let y_bin = Math.round(y / bin_width);
             if (this.clusterMap) {
                 // guard against weird artefacts
-                if (
-                    x_bin < -0 ||
-                    x_bin > this.clusterMap.length ||
-                    this.clusterMap[x_bin] == undefined
-                ) {
+                if (this.areBinsOutsideClusterMapBounds(x_bin, y_bin)) {
+                    this.selectedCluster = undefined
                     return;
                 }
                 this.selectedCluster = this.clusterMap[y_bin][x_bin];

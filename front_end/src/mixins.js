@@ -297,7 +297,10 @@ export var widgetMixin = {
             return false;
         },
         allowBinsizeSelection: function () {
-            return Object.keys(this.binsizes).length != 0;
+            if (this.binsizes){
+                return Object.keys(this.binsizes).length != 0;
+            }
+            return false
         },
         cssStyle: function () {
             return {

@@ -24,7 +24,7 @@
                 </div>
                 <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-4" ref="contentDiv">
-                        <div :class="heatmapClass"  ref="canvasDiv"/>
+                        <div :class="heatmapClass"  ref="canvasDiv" @mouseleave="handleMouseLeaveContainer"/>
                         <div v-if="showInterval" class="small-margin-left-right" :id="xAxisdivID"/>
                 </md-content>
             </md-list-item>
@@ -401,6 +401,11 @@ export default {
         handleMouseOut: function(mousedata){
             this.trackMouse = false
             this.$emit("mouse-leave")
+        },
+        handleMouseLeaveContainer: function() {
+            // triggers when mouse leaves the heatmap container
+            this.trackMouse = false
+            this.$emit("mouse-leave-container")
         },
         drawHeatmap: function() {
             // destroy old pseudocanvas if existing
