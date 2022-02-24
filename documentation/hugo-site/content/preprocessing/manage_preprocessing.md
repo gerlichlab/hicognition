@@ -26,18 +26,18 @@ Here, you first need to select for which region you want to start preprocessing.
 <img src="/docs/select_dataset_preprocessing.png" class="three-quarter-width">
 
 
-Once you selected the region, the `Select Features`/`Select Collections` button becomes available. If you click on it, this will again open either the dataset management table or the [collection management table](/docs/data_management/collections/#managing-collections). Here, you can then select which features/collections should be preprocessed. Once you hit `Select` the dialogue disappears and you can hit the `Submit Job` button, which will cause preprocessing to be started.
+Once you select the region, the `Select Features`/`Select Collections` button becomes available. If you click on it, this will again open either the dataset management table or the [collection management table](/docs/data_management/collections/#managing-collections). Here, you can then select which features/collections should be preprocessed. Once you hit `Select`, the dialogue disappears, and you can hit the `Submit Job` button, which will cause preprocessing to be started.
 
 <img src="/docs/preprocessing_both_things_selected.png" class="three-quarter-width">
 
 
 {{% notice note %}}
-Currently, there is a one-to-one mapping between preprocessing tasks and types of datasets. E.g. there is only one possible task for a 2D-feature. Therefore, the preprocessing dialogue does not require selection of the task type. In the future, this might change and the dialogue will become more complex.
+Currently, there is a one-to-one mapping between preprocessing tasks and types of datasets. E.g., there is only one possible task for a 2D feature. Therefore, the preprocessing dialogue does not require the selection of the task type. In the future, this might change, and the dialogue will become more complex.
 {{% /notice %}}
 
 ## Check tasks
 
-Once your tasks are running, you can check their progress via the [dataset management table](/docs/data_management/regions/#viewing). If you open up the table, you can see two fields that are called `Processing Features` and `Processing Collections`. These indicate at a glance how many genomic features and feature collections are being processed for a given genomic region set. If you click on the columns you can sort the table by this field and quickly see which datasets are processing:
+Once your tasks are running, you can check their progress via the [dataset management table](/docs/data_management/regions/#viewing). If you open up the table, you can see two fields that are called `Processing Features` and `Processing Collections`. These indicate at a glance how many genomic features and feature collections are being processed for a given genomic region set. If you click on the columns, you can sort the table by this field and quickly see which datasets are processing:
 
 <img src="/docs/processing_datasets_table.png" class="three-quarter-width">
 
@@ -46,7 +46,7 @@ If you want more information about task progress and also view which features an
 
 <img src="/docs/processing_status_table.png" class="three-quarter-width">
 
-This table shows an additional status column that indicates whether a feature is currently processing, is already available or has not been processed yet:
+This table shows an additional status column that indicates whether a feature is currently processing, is already available, or has not been processed yet:
 
 
 
