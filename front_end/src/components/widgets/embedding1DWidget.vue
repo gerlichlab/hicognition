@@ -184,6 +184,7 @@
                     :regionName="regionName"
                     :datasetNames="datasetNames"
                     @close-controls="closeControls"
+                    :clusterCounts="clusterCounts"
                 />
             </div>
             <div v-if="loading" :style="waitSpinnerContainer">
@@ -298,6 +299,21 @@ export default {
                 return;
             }
             return this.widgetData["thumbnails"]
+        },
+        clusterCounts: function() {
+            if (!this.widgetData) {
+                return;
+            }
+            // count how many of which cluster are there
+            let clusterCounts = new Map()
+            for (let cluster_id of this.widgetData["cluster_ids"]["data"]) {
+                if (clusterCounts.has(cluster_id)){
+                    clusterCounts.set(cluster_id, clusterCounts.get(cluster_id) + 1)
+                }else{
+                    clusterCounts.set(cluster_id, 1)
+                }
+            }
+            return clusterCounts
         },
         embeddingData: function() {
             if (!this.widgetData) {

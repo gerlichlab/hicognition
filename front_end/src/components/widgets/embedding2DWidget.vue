@@ -230,6 +230,7 @@
                     @close-controls="closeControls"
                     :isLog="isLog"
                     :isVariableSize="isVariableSize"
+                    :clusterCounts="clusterCounts"
                 />
             </div>
             <div v-if="loading" :style="waitSpinnerContainer">
@@ -476,6 +477,21 @@ export default {
                     dtype: "float32"
                 };
             }
+        },
+        clusterCounts: function() {
+            if (!this.widgetData || !this.widgetData[this.valueType]) {
+                return;
+            }
+            // count how many of which cluster are there
+            let clusterCounts = new Map()
+            for (let cluster_id of this.widgetData[this.valueType]["cluster_ids"]["data"]) {
+                if (clusterCounts.has(cluster_id)){
+                    clusterCounts.set(cluster_id, clusterCounts.get(cluster_id) + 1)
+                }else{
+                    clusterCounts.set(cluster_id, 1)
+                }
+            }
+            return clusterCounts
         },
         embeddingData: function() {
             if (!this.widgetData || !this.widgetData[this.valueType]) {

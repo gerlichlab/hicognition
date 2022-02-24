@@ -61,7 +61,8 @@ export default {
         embeddingID: Number,
         collectionName: String,
         regionName: String,
-        datasetNames: Array
+        datasetNames: Array,
+        clusterCounts: Map
     },
     data: function () {
         return {
@@ -80,8 +81,18 @@ export default {
         };
     },
     computed: {
+        totalRegions: function(){
+            let sum = 0
+            for (let [key, value] of this.clusterCounts){
+                sum += value
+            }
+            return sum
+        },
         dataInfo: function() {
-            return `Cluster: ${this.clusterID}`
+            if (this.clusterCounts !== undefined && this.clusterCounts.get(this.clusterID) !== undefined){
+                return `Cluster: ${this.clusterID} | ${this.clusterCounts.get(this.clusterID)}/${this.totalRegions} Regions`
+            }
+            return  `Cluster: ${this.clusterID}`
         },
         plotSize: function () {
             return this.width * 0.8;

@@ -70,7 +70,8 @@ export default {
         maxHeatmapAll: Number,
         maxHeatmapAllRange: Number,
         minHeatmapAllRange: Number,
-        isVariableSize: Boolean
+        isVariableSize: Boolean,
+        clusterCounts: Map
     },
     data: function() {
         return {
@@ -93,8 +94,18 @@ export default {
         };
     },
     computed: {
+        totalRegions: function(){
+            let sum = 0
+            for (let [key, value] of this.clusterCounts){
+                sum += value
+            }
+            return sum
+        },
         dataInfo: function() {
-            return `Cluster: ${this.clusterID}`
+            if (this.clusterCounts !== undefined && this.clusterCounts.get(this.clusterID) !== undefined){
+                return `Cluster: ${this.clusterID} | ${this.clusterCounts.get(this.clusterID)}/${this.totalRegions} Regions`
+            }
+            return  `Cluster: ${this.clusterID}`
         },
         distributionSize: function() {
             return 100;
