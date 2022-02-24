@@ -186,7 +186,9 @@
                 :allowValueScaleChange="allowValueScaleChange"
                 @slider-change="handleSliderChange"
                 :log="false"
-                :showInterval="isVariableSize"
+                :isInterval="isVariableSize"
+                :windowsize="intervalSize"
+                :showXaxis="true"
             >
             </heatmap>
             <div

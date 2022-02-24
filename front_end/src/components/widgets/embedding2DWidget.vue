@@ -231,6 +231,7 @@
                     :isLog="isLog"
                     :isVariableSize="isVariableSize"
                     :clusterCounts="clusterCounts"
+                    :intervalSize="intervalSize"
                 />
             </div>
             <div v-if="loading" :style="waitSpinnerContainer">
@@ -293,9 +294,9 @@ export default {
         },
         tooltipHeight: function() {
             if (this.showTooltipControls) {
-                return this.height + 20;
+                return this.height + 30;
             }
-            return this.height - 20;
+            return this.height - 10;
         },
         colormap: function() {
             return "viridis";

@@ -247,7 +247,7 @@ export var formattingMixin = {
             if (Math.abs(basePairs) < 1000000) {
                 return Math.round(basePairs / 1000) + " kb";
             }
-            return Math.round(basePairs / 1000000) + " Mb";
+            return Math.round(basePairs / 100000)/10 + " Mb";
         }
     }
 };

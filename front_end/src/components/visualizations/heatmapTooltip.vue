@@ -17,8 +17,10 @@
                 :maxHeatmapRange="maxHeatmapRange"
                 :allowValueScaleChange="showControls"
                 @slider-change="handleSliderChange"
+                :windowsize="intervalSize"
                 :log="isLog"
-                :showInterval="isVariableSize"
+                :isInterval="isVariableSize"
+                :showXaxis="true"
             />
         </md-card-content>
         <md-card-actions v-if="showControls">
@@ -71,7 +73,8 @@ export default {
         maxHeatmapAllRange: Number,
         minHeatmapAllRange: Number,
         isVariableSize: Boolean,
-        clusterCounts: Map
+        clusterCounts: Map,
+        intervalSize: String
     },
     data: function() {
         return {
