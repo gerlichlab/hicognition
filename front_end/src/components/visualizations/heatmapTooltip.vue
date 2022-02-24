@@ -137,6 +137,14 @@ export default {
         },
     },
     methods: {
+        fetchDatasets: function() {
+            this.fetchData("datasets/").then((response) => {
+                if (response) {
+                    // success, store datasets
+                    this.$store.commit("setDatasets", response.data);
+                }
+            });
+        },
         handleSliderChange: function (data) {
             this.setColorScale(data);
         },
@@ -176,6 +184,8 @@ export default {
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
+                    // fetch datasets so that they are available in table
+                    this.fetchDatasets()
                 }
             });
         },

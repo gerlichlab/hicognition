@@ -111,6 +111,14 @@ export default {
         }
     },
     methods: {
+        fetchDatasets: function() {
+            this.fetchData("datasets/").then((response) => {
+                if (response) {
+                    // success, store datasets
+                    this.$store.commit("setDatasets", response.data);
+                }
+            });
+        },
         handleSubmission: function () {
             // check whether there is a name
             if (this.newRegionName.length === 0) {
@@ -128,6 +136,8 @@ export default {
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
+                    // fetch datasets so that they are available in table
+                    this.fetchDatasets()
                 }
             });
         },
