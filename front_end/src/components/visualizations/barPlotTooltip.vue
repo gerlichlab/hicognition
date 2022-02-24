@@ -1,5 +1,8 @@
 <template>
     <md-card :style="tooltipStyle" v-show="showTooltip && clusterID !== undefined">
+        <div class="md-layout-item md-size-100 blue-background">
+            <span class="md-caption padding-left">{{ dataInfo }}</span>
+        </div>
         <md-card-content class="no-padding">
             <embedding-distribution
                 v-if="clusterID !== undefined"
@@ -77,6 +80,9 @@ export default {
         };
     },
     computed: {
+        dataInfo: function() {
+            return `Cluster: ${this.clusterID}`
+        },
         plotSize: function () {
             return this.width * 0.8;
         },
@@ -165,4 +171,13 @@ export default {
 .no-padding {
     padding: 0px !important;
 }
+
+.blue-background {
+    background: var(--md-theme-default-primary);
+}
+
+.padding-left {
+    padding-left: 10px;
+}
+
 </style>

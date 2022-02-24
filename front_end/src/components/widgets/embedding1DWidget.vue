@@ -241,7 +241,7 @@ export default {
             if (this.showTooltipControls) {
                 return this.height + 10;
             }
-            return this.height - 40;
+            return this.height - 30;
         },
         collectionName: function() {
             if (this.selectedBinsize) {
