@@ -48,7 +48,9 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # create bed dataset
-        self.bed_file = Dataset(id=1, user_id=1, filetype="bedfile", assembly=1, dataset_name="test")
+        self.bed_file = Dataset(
+            id=1, user_id=1, filetype="bedfile", assembly=1, dataset_name="test"
+        )
         # create intervals
         self.intervals_1 = Intervals(id=1, windowsize=100000, dataset_id=1)
         # create feature datasets
@@ -57,7 +59,10 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
         self.feature_3 = Dataset(id=4, user_id=1, filetype="bigwig", assembly=1)
         # create collection
         self.collection_1 = Collection(
-            id=1, datasets=[self.feature_1, self.feature_2, self.feature_3], kind="1d-features", name="test"
+            id=1,
+            datasets=[self.feature_1, self.feature_2, self.feature_3],
+            kind="1d-features",
+            name="test",
         )
         # create stackups
         self.ind_data_1 = IndividualIntervalData(
@@ -78,7 +83,9 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.stackup_pipeline_step")
     @patch("app.pipeline_steps.embedding_1d_pipeline_step")
-    def test_stackups_triggered_if_they_dont_exist(self, mock_embedding, mock_stackup, mock_set_progress, mock_set_finished):
+    def test_stackups_triggered_if_they_dont_exist(
+        self, mock_embedding, mock_stackup, mock_set_progress, mock_set_finished
+    ):
         """Test if stackups are retriggered if they do not exist for a given parameters combination"""
         # add data to database
         db.session.add_all(
@@ -240,32 +247,32 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
         """Tests whether database entry is added correctly"""
         # add return values
         mock_fixed_size.return_value = {
-            "embedding": np.full((1,1), 1),
+            "embedding": np.full((1, 1), 1),
             "clusters": {
                 "large": {
-                    "cluster_ids": np.full((1,1), 2),
-                    "average_values": np.full((1, 1), 3)
+                    "cluster_ids": np.full((1, 1), 2),
+                    "average_values": np.full((1, 1), 3),
                 },
                 "small": {
-                    "cluster_ids": np.full((1,1), 4),
-                    "average_values": np.full((1, 1), 5)
-                }
+                    "cluster_ids": np.full((1, 1), 4),
+                    "average_values": np.full((1, 1), 5),
+                },
             },
-            "features": np.full((1,1), 6)
+            "features": np.full((1, 1), 6),
         }
         mock_variable_size.return_value = {
-            "embedding": np.full((1,1), 1),
+            "embedding": np.full((1, 1), 1),
             "clusters": {
                 "large": {
-                    "cluster_ids": np.full((1,1), 2),
-                    "average_values": np.full((1, 1), 3)
+                    "cluster_ids": np.full((1, 1), 2),
+                    "average_values": np.full((1, 1), 3),
                 },
                 "small": {
-                    "cluster_ids": np.full((1,1), 4),
-                    "average_values": np.full((1, 1), 5)
-                }
+                    "cluster_ids": np.full((1, 1), 4),
+                    "average_values": np.full((1, 1), 5),
+                },
             },
-            "features": np.full((1,1), 6)
+            "features": np.full((1, 1), 6),
         }
         # add data to database
         db.session.add_all(
@@ -285,7 +292,9 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
         # test whether database entry has been added
         embeddings = EmbeddingIntervalData.query.all()
         self.assertEqual(len(embeddings), 2)
-        self.assertEqual({"small", "large"}, set([emb.cluster_number for emb in embeddings]))
+        self.assertEqual(
+            {"small", "large"}, set([emb.cluster_number for emb in embeddings])
+        )
         # test whehter addition is correct
         embedding = embeddings[0]
         self.assertEqual(embedding.binsize, 10000)
@@ -306,32 +315,32 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
         """Tests whether correct worker function is called with fixed size intervals"""
         # add return values
         mock_fixed_size.return_value = {
-            "embedding": np.full((1,1), 1),
+            "embedding": np.full((1, 1), 1),
             "clusters": {
                 "large": {
-                    "cluster_ids": np.full((1,1), 2),
-                    "average_values": np.full((1, 1), 3)
+                    "cluster_ids": np.full((1, 1), 2),
+                    "average_values": np.full((1, 1), 3),
                 },
                 "small": {
-                    "cluster_ids": np.full((1,1), 4),
-                    "average_values": np.full((1, 1), 5)
-                }
+                    "cluster_ids": np.full((1, 1), 4),
+                    "average_values": np.full((1, 1), 5),
+                },
             },
-            "features": np.full((1,1), 6)
+            "features": np.full((1, 1), 6),
         }
         mock_variable_size.return_value = {
-            "embedding": np.full((1,1), 1),
+            "embedding": np.full((1, 1), 1),
             "clusters": {
                 "large": {
-                    "cluster_ids": np.full((1,1), 2),
-                    "average_values": np.full((1, 1), 3)
+                    "cluster_ids": np.full((1, 1), 2),
+                    "average_values": np.full((1, 1), 3),
                 },
                 "small": {
-                    "cluster_ids": np.full((1,1), 4),
-                    "average_values": np.full((1, 1), 5)
-                }
+                    "cluster_ids": np.full((1, 1), 4),
+                    "average_values": np.full((1, 1), 5),
+                },
             },
-            "features": np.full((1,1), 6)
+            "features": np.full((1, 1), 6),
         }
         # add data to database
         db.session.add_all(
@@ -360,32 +369,32 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
         """Tests whether correct worker function is called with fixed size intervals"""
         # add return values
         mock_fixed_size.return_value = {
-            "embedding": np.full((1,1), 1),
+            "embedding": np.full((1, 1), 1),
             "clusters": {
                 "large": {
-                    "cluster_ids": np.full((1,1), 2),
-                    "average_values": np.full((1, 1), 3)
+                    "cluster_ids": np.full((1, 1), 2),
+                    "average_values": np.full((1, 1), 3),
                 },
                 "small": {
-                    "cluster_ids": np.full((1,1), 4),
-                    "average_values": np.full((1, 1), 5)
-                }
+                    "cluster_ids": np.full((1, 1), 4),
+                    "average_values": np.full((1, 1), 5),
+                },
             },
-            "features": np.full((1,1), 6)
+            "features": np.full((1, 1), 6),
         }
         mock_variable_size.return_value = {
-            "embedding": np.full((1,1), 1),
+            "embedding": np.full((1, 1), 1),
             "clusters": {
                 "large": {
-                    "cluster_ids": np.full((1,1), 2),
-                    "average_values": np.full((1, 1), 3)
+                    "cluster_ids": np.full((1, 1), 2),
+                    "average_values": np.full((1, 1), 3),
                 },
                 "small": {
-                    "cluster_ids": np.full((1,1), 4),
-                    "average_values": np.full((1, 1), 5)
-                }
+                    "cluster_ids": np.full((1, 1), 4),
+                    "average_values": np.full((1, 1), 5),
+                },
             },
-            "features": np.full((1,1), 6)
+            "features": np.full((1, 1), 6),
         }
         # add data to database
         db.session.add_all(
@@ -510,7 +519,9 @@ class TestEmbedding1DWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
                     [10.0, 0.1, 1.1],
                 ]
             )
-            self.assertTrue(np.array_equal(embedding_results["features"], expected_features))
+            self.assertTrue(
+                np.array_equal(embedding_results["features"], expected_features)
+            )
 
 
 class TestEmbedding1DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
@@ -605,7 +616,9 @@ class TestEmbedding1DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
                     [7.5, 7.5, 7.5],
                 ]
             )
-            self.assertTrue(np.array_equal(embedding_results["features"], expected_features))
+            self.assertTrue(
+                np.array_equal(embedding_results["features"], expected_features)
+            )
 
 
 if __name__ == "__main__":

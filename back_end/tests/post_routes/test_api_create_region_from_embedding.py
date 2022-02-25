@@ -50,8 +50,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
             method="ChipSeq",
             sizeType="Point",
             protein="CTCF",
-            directionality="+"
-
+            directionality="+",
         )
         # add unowned bedfile
         self.unowned_bedfile = Dataset(id=4, filetype="bedfile", user_id=2)
@@ -303,8 +302,9 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         # test whether subset is correct
         created_subset = pd.read_csv(new_dataset.file_path, sep="\t", header=None)
         expected_subset = self.dummy_regions.iloc[[0, 3, 4], :].reset_index(drop=True)
-        expected_subset.columns = [0, 1 ,2]
+        expected_subset.columns = [0, 1, 2]
         assert_frame_equal(created_subset, expected_subset)
+
 
 class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
     """Tests creating a new region from a cluster_id associated with
@@ -315,7 +315,9 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
         # add owned collection
         self.owned_feature_collection = Collection(id=1, user_id=1, kind="1d-features")
         # add unowned collection
-        self.unowned_feature_collection = Collection(id=2, user_id=2, kind="1d-features")
+        self.unowned_feature_collection = Collection(
+            id=2, user_id=2, kind="1d-features"
+        )
         # add owned bedfile
         self.dummy_regions = pd.DataFrame(
             {
@@ -342,8 +344,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
             method="ChipSeq",
             sizeType="Point",
             protein="CTCF",
-            directionality="+"
-
+            directionality="+",
         )
         # add unowned bedfile
         self.unowned_bedfile = Dataset(id=4, filetype="bedfile", user_id=2)
@@ -591,9 +592,8 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
         # test whether subset is correct
         created_subset = pd.read_csv(new_dataset.file_path, sep="\t", header=None)
         expected_subset = self.dummy_regions.iloc[[0, 3, 4], :].reset_index(drop=True)
-        expected_subset.columns = [0, 1 ,2]
+        expected_subset.columns = [0, 1, 2]
         assert_frame_equal(created_subset, expected_subset)
-
 
 
 if __name__ == "__main__":

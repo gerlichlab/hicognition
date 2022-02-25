@@ -986,14 +986,14 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
                 },
-                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}},
             },
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
                 },
-                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}},
             },
             "lola": {
                 "1": {
@@ -1056,14 +1056,14 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
                 },
-                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}},
             },
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
                 },
-                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}},
             },
             "lola": {
                 "1": {
@@ -1119,14 +1119,14 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
                 },
-                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}},
             },
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
                 },
-                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}},
             },
             "lola": {
                 "1": {
@@ -1182,14 +1182,14 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
                 },
-                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}},
             },
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
                 },
-                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}},
             },
             "lola": {
                 "1": {
@@ -1252,14 +1252,14 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
                 },
-                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}},
             },
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
                 },
-                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}},
             },
             "lola": {
                 "1": {
@@ -1322,17 +1322,16 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
                 },
-                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}},
             },
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
                 },
-                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}},
             },
-            "lola": {
-            },
+            "lola": {},
             "embedding1d": {},
             "embedding2d": {},
         }
@@ -1384,17 +1383,16 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
                 },
-                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}}
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}},
             },
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
                     "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
                 },
-                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}}
+                "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}},
             },
-            "lola": {
-            },
+            "lola": {},
             "embedding1d": {},
             "embedding2d": {},
         }

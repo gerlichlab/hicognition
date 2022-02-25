@@ -203,7 +203,8 @@
                     @heatmap-clicked="handleHeatmapClick"
                     @mouse-move="handleMouseMove"
                     @mouse-enter="handleMouseEnter"
-                    @mouse-leave="handleMouseLeft"
+                    @mouse-leave="handleMouseLeftTooltip"
+                    @mouse-leave-container="handleMouseLeftContainer"
                     :log="false"
                 />
                 <tooltip
@@ -229,6 +230,8 @@
                     @close-controls="closeControls"
                     :isLog="isLog"
                     :isVariableSize="isVariableSize"
+                    :clusterCounts="clusterCounts"
+                    :intervalSize="intervalSize"
                 />
             </div>
             <div v-if="loading" :style="waitSpinnerContainer">
@@ -291,9 +294,9 @@ export default {
         },
         tooltipHeight: function() {
             if (this.showTooltipControls) {
-                return this.height + 10;
+                return this.height + 30;
             }
-            return this.height - 40;
+            return this.height - 10;
         },
         colormap: function() {
             return "viridis";
@@ -476,6 +479,21 @@ export default {
                 };
             }
         },
+        clusterCounts: function() {
+            if (!this.widgetData || !this.widgetData[this.valueType]) {
+                return;
+            }
+            // count how many of which cluster are there
+            let clusterCounts = new Map()
+            for (let cluster_id of this.widgetData[this.valueType]["cluster_ids"]["data"]) {
+                if (clusterCounts.has(cluster_id)){
+                    clusterCounts.set(cluster_id, clusterCounts.get(cluster_id) + 1)
+                }else{
+                    clusterCounts.set(cluster_id, 1)
+                }
+            }
+            return clusterCounts
+        },
         embeddingData: function() {
             if (!this.widgetData || !this.widgetData[this.valueType]) {
                 return;
@@ -508,7 +526,7 @@ export default {
                         this.size,
                         this.widgetData[this.valueType]["embedding"].data,
                         overlayClusters,
-                        this.aggregationType
+                        "mean"
                     )
                 ),
                 shape: [this.size, this.size],
@@ -565,13 +583,24 @@ export default {
                 this.expectSelection = false;
             }
         },
+        areBinsOutsideClusterMapBounds(x_bin, y_bin) {
+            // checks whether x_bin, y_bin is within clustermap bounds
+            if (x_bin < 0 || y_bin < 0){
+                return true
+            }
+            if (x_bin > this.size - 1 || y_bin > this.size - 1){
+                return true
+            }
+            return false
+        },
         selectCluster: function(x, y, visualizationSize) {
             let bin_width = visualizationSize / this.size;
             let x_bin = Math.round(x / bin_width);
             let y_bin = Math.round(y / bin_width);
             if (this.clusterMap) {
                 // guard against weird artefacts
-                if (x_bin < -0 || x_bin > this.clusterMap.length || this.clusterMap[x_bin] == undefined){
+                if (this.areBinsOutsideClusterMapBounds(x_bin, y_bin)){
+                    this.selectedCluster = undefined
                     return
                 }
                 this.selectedCluster = this.clusterMap[y_bin][x_bin];
@@ -615,9 +644,14 @@ export default {
                 this.tooltipOffsetTop = adjustedY;
             }
         },
-        handleMouseLeft: function() {
+        handleMouseLeftTooltip: function() {
             if (!this.showTooltipControls) {
                 this.showTooltip = false;
+            }
+        },
+        handleMouseLeftContainer: function() {
+            if (!this.showTooltipControls){
+                this.selectedCluster = undefined
             }
         },
         closeControls: function() {

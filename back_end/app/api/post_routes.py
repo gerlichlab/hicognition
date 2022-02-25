@@ -17,14 +17,10 @@ from ..models import (
     Session,
     Intervals,
     Collection,
-    EmbeddingIntervalData
+    EmbeddingIntervalData,
 )
 from .authentication import auth
-from hicognition.utils import (
-    parse_description,
-    get_all_interval_ids,
-    parse_binsizes
-)
+from hicognition.utils import parse_description, get_all_interval_ids, parse_binsizes
 from .errors import forbidden, invalid, not_found
 from hicognition.format_checkers import FORMAT_CHECKERS
 
@@ -86,7 +82,9 @@ def add_dataset():
     assembly = Assembly.query.get(data["assembly"])
     # check format -> this cannot be done in form checker since file needs to be available
     chromosome_names = set(pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0])
-    needed_resolutions = parse_binsizes(current_app.config["PREPROCESSING_MAP"], "cooler")
+    needed_resolutions = parse_binsizes(
+        current_app.config["PREPROCESSING_MAP"], "cooler"
+    )
     if not FORMAT_CHECKERS[request.form["filetype"]](
         file_path, chromosome_names, needed_resolutions
     ):
@@ -100,7 +98,12 @@ def add_dataset():
     db.session.add(new_entry)
     # start preprocessing of bedfile, the other filetypes do not need preprocessing
     if data["filetype"] == "bedfile":
-        current_user.launch_task(current_app.queues["short"], "pipeline_bed", "run bed preprocessing", new_entry.id)
+        current_user.launch_task(
+            current_app.queues["short"],
+            "pipeline_bed",
+            "run bed preprocessing",
+            new_entry.id,
+        )
         new_entry.processing_state = "processing"
     # if filetype is cooler, store available binsizes
     if data["filetype"] == "cooler":
@@ -165,10 +168,14 @@ def preprocess_dataset():
         windowsize = Intervals.query.get(interval_id).windowsize
         if windowsize is None:
             windowsize = "variable"
-        for binsize in current_app.config["PREPROCESSING_MAP"][windowsize][dataset.filetype]:
+        for binsize in current_app.config["PREPROCESSING_MAP"][windowsize][
+            dataset.filetype
+        ]:
             for dataset in feature_datasets:
                 current_user.launch_task(
-                    current_app.queues[current_app.config["PIPELINE_QUEUES"][dataset.filetype]],
+                    current_app.queues[
+                        current_app.config["PIPELINE_QUEUES"][dataset.filetype]
+                    ],
                     *current_app.config["PIPELINE_NAMES"][dataset.filetype],
                     dataset.id,
                     intervals_id=interval_id,
@@ -239,10 +246,16 @@ def preprocess_collections():
         windowsize = Intervals.query.get(interval_id).windowsize
         if windowsize is None:
             windowsize = "variable"
-        for binsize in current_app.config["PREPROCESSING_MAP"][windowsize]["collections"][collection.kind]:
+        for binsize in current_app.config["PREPROCESSING_MAP"][windowsize][
+            "collections"
+        ][collection.kind]:
             for collection in collections:
                 current_user.launch_collection_task(
-                    current_app.queues[current_app.config["PIPELINE_QUEUES"]["collections"][collection.kind]],
+                    current_app.queues[
+                        current_app.config["PIPELINE_QUEUES"]["collections"][
+                            collection.kind
+                        ]
+                    ],
                     *current_app.config["PIPELINE_NAMES"]["collections"][
                         collection.kind
                     ],
@@ -534,6 +547,7 @@ def create_assembly():
 @auth.login_required
 def create_region_from_cluster_id(entry_id, cluster_id):
     """creates new region for cluster_id at entry_id"""
+
     def is_form_invalid():
         if not hasattr(request, "form"):
             return True
@@ -556,14 +570,16 @@ def create_region_from_cluster_id(entry_id, cluster_id):
         features = embedding_data.source_dataset
     bed_ds = embedding_data.source_intervals.source_dataset
     if features.is_access_denied(g) or bed_ds.is_access_denied(g):
-        return forbidden("Feature dataset or region dataset is not owned by logged in user!")
+        return forbidden(
+            "Feature dataset or region dataset is not owned by logged in user!"
+        )
     # check form
     if is_form_invalid():
         return invalid("Form is not valid!")
     # get data from form
     form_data = request.form
     # check whetehr thumbnails exist
-    if (embedding_data.cluster_id_path is None):
+    if embedding_data.cluster_id_path is None:
         return not_found("ClusterIDs do not exist")
     # load cluster ids
     cluster_ids = np.load(embedding_data.cluster_id_path).astype(int)
@@ -577,7 +593,7 @@ def create_region_from_cluster_id(entry_id, cluster_id):
     new_entry = Dataset(
         dataset_name=form_data["name"],
         description=bed_ds.description,
-        public=False, # derived regions should be private by default -> if people want to make pupblic they can do so
+        public=False,  # derived regions should be private by default -> if people want to make pupblic they can do so
         processing_state="uploading",
         filetype="bedfile",
         user_id=g.current_user.id,
@@ -595,7 +611,12 @@ def create_region_from_cluster_id(entry_id, cluster_id):
     # add file_path to database entry
     new_entry.file_path = file_path
     # start preprocessing for bedfile
-    g.current_user.launch_task(current_app.queues["short"],"pipeline_bed", "run bed preprocessing", new_entry.id)
+    g.current_user.launch_task(
+        current_app.queues["short"],
+        "pipeline_bed",
+        "run bed preprocessing",
+        new_entry.id,
+    )
     new_entry.processing_state = "processing"
     db.session.add(new_entry)
     db.session.commit()

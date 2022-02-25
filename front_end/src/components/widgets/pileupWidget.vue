@@ -139,25 +139,38 @@
                     </div>
                 </div>
             </div>
-            <heatmap
-                v-if="showData"
-                :pileupID="id"
-                :width="visualizationWidth"
-                :height="visualizationHeight"
-                :stackupData="widgetData[pileupType]"
-                :colormap="colormap"
-                :minHeatmapValue="minHeatmap"
-                :maxHeatmapValue="maxHeatmap"
-                :minHeatmapRange="minHeatmapRange"
-                :maxHeatmapRange="maxHeatmapRange"
-                :valueScaleColor="valueScaleColor"
-                :valueScaleBorder="valueScaleBorder"
-                :allowValueScaleChange="allowValueScaleChange"
-                :log="true"
-                :showInterval="isVariableSize"
-                @slider-change="handleSliderChange"
-            >
-            </heatmap>
+            <div style="position: relative;">
+                <heatmap
+                    v-if="showData"
+                    :pileupID="id"
+                    :width="visualizationWidth"
+                    :height="visualizationHeight"
+                    :stackupData="widgetData[pileupType]"
+                    :colormap="colormap"
+                    :minHeatmapValue="minHeatmap"
+                    :maxHeatmapValue="maxHeatmap"
+                    :minHeatmapRange="minHeatmapRange"
+                    :maxHeatmapRange="maxHeatmapRange"
+                    :valueScaleColor="valueScaleColor"
+                    :valueScaleBorder="valueScaleBorder"
+                    :allowValueScaleChange="allowValueScaleChange"
+                    :log="true"
+                    :isInterval="isVariableSize"
+                    :windowsize="intervalSize"
+                    :showXaxis="true"
+                    @slider-change="handleSliderChange"
+                    @mouse-move="handleMouseMoveHeatmap"
+                    @mouse-enter="handleMouseEnterHeatmap"
+                    @mouse-leave="handleMouseLeftHeatmap"
+                    @mouse-leave-container="handleMouseLeftHeatmapContainer"
+                />
+                <value-info-tooltip
+                v-if="showTooltip"
+                :message="tooltipMessage"
+                :tooltipOffsetLeft="tooltipOffsetLeft"
+                :tooltipOffsetTop="tooltipOffsetTop"
+                />
+            </div>
             <div
                 v-if="!showData"
                 class="md-layout md-alignment-center-center"
@@ -185,12 +198,17 @@ import {
     widgetMixin,
     valueScaleSharingMixin
 } from "../../mixins";
+import valueInfoTooltip from "../visualizations/valueInfoTooltip.vue"
+
+
+const EXPANSION_FACTOR = 0.2
 
 export default {
     name: "pileupWidget",
     mixins: [apiMixin, formattingMixin, widgetMixin, valueScaleSharingMixin],
     components: {
-        heatmap
+        heatmap,
+        valueInfoTooltip
     },
     computed: {
         colormap: function() {
@@ -215,6 +233,93 @@ export default {
         }
     },
     methods: {
+        handleDragStart: function (e) {
+            /*
+                Needs to be overriden to remove tooltip
+            */
+            // remove thumbnail
+            this.showTooltip = false
+            // commit to store once drag starts
+            var newObject = this.toStoreObject();
+            this.$store.commit("compare/setWidget", newObject);
+            // create data transfer object
+            e.dataTransfer.setData("widget-id", this.id);
+            e.dataTransfer.setData("collection-id", this.collectionID);
+            // set dragimage. Dragimage dom element needs to be present before it can be passed
+            // to setDragImage. Div is positioned outside of visible area for this
+            this.dragImage = document.createElement("div");
+            this.dragImage.style.backgroundColor = "grey";
+            this.dragImage.style.height = `${this.height}px`;
+            this.dragImage.style.width = `${this.width}px`;
+            this.dragImage.style.position = "absolute";
+            this.dragImage.style.top = `-${this.width}px`; // positioning outside of visible area
+            document.body.appendChild(this.dragImage);
+            e.dataTransfer.setDragImage(
+                this.dragImage,
+                this.height / 2,
+                this.width / 2
+            );
+        },
+        translateMouseToPosition: function(x, y, size) {
+            let bin_width = size / this.widgetData[this.pileupType].shape[0];
+            let x_bin = Math.round(x / bin_width);
+            let y_bin = Math.round(y / bin_width);
+            let xoffset;
+            let yoffset;
+            if (this.isVariableSize){
+                let intervalSize = Math.round(this.widgetData[this.pileupType].shape[0]/ (1 + 2*EXPANSION_FACTOR))
+                let intervalStartBin = Math.round(intervalSize * EXPANSION_FACTOR)
+                // get x offset
+                if (x_bin > intervalStartBin){
+                    xoffset = (x_bin - intervalStartBin) * Number(this.selectedBinsize)
+                } else {
+                    xoffset = - ((EXPANSION_FACTOR * 100) - (x_bin * Number(this.selectedBinsize)))
+                }
+                // get y offset
+                if (y_bin > intervalStartBin){
+                    yoffset = (y_bin - intervalStartBin) * Number(this.selectedBinsize)
+                } else {
+                    yoffset = -((EXPANSION_FACTOR * 100) - (y_bin * Number(this.selectedBinsize)))
+                }
+                return `x: ${xoffset} % | y: ${yoffset} %`
+            }
+            let totalSize = Number(this.intervalSize)
+            let numberBins = Math.round(this.widgetData[this.pileupType].shape[0]) // pileup is symmetric
+            let halfBins = Math.round(numberBins/2)
+            // get x offset
+            if (x_bin < halfBins) {
+                xoffset = -(totalSize - (x_bin * Number(this.selectedBinsize)))
+            } else {
+                xoffset = (x_bin - halfBins) * Number(this.selectedBinsize)
+            }
+            // get y offset
+            if (y_bin < halfBins) {
+                yoffset = totalSize - (y_bin * Number(this.selectedBinsize))
+            } else {
+                yoffset = -((y_bin - halfBins) * Number(this.selectedBinsize))
+            }
+            return `x: ${this.convertBasePairsToReadable(xoffset)} | y: ${this.convertBasePairsToReadable(yoffset)}`
+        },
+        handleMouseEnterHeatmap: function(x, y, adjustedX, adjustedY){
+            this.showTooltip = true
+            this.tooltipOffsetLeft = adjustedX + 50;
+            this.tooltipOffsetTop = adjustedY;
+        },
+        handleMouseMoveHeatmap: function(x, y, adjustedX, adjustedY, size) {
+            // only show tooltip if widget is not being dragged
+            if (this.dragImage === undefined) {
+                this.showTooltip = true;
+                this.tooltipOffsetLeft = adjustedX + 50;
+                this.tooltipOffsetTop = adjustedY;
+                this.tooltipMessage = this.translateMouseToPosition(x, y, size)
+            }
+        },
+        handleMouseLeftHeatmap: function(){
+            this.showTooltip = false
+        },
+        handleMouseLeftHeatmapContainer: function(){
+            this.showTooltip = false
+        },
         startDatasetSelection: function () {
             this.expectSelection = true;
             // get datasets from store
@@ -378,7 +483,11 @@ export default {
                 reactToUpdate: true, // whether to react to updates in binsize/dataset
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
-                expectSelection: false
+                expectSelection: false,
+                showTooltip: false,
+                tooltipOffsetTop: 0,
+                tooltipOffsetLeft: 0,
+                tooltipMessage: undefined
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -451,7 +560,11 @@ export default {
                 reactToUpdate: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
-                expectSelection: false
+                expectSelection: false,
+                showTooltip: false,
+                tooltipOffsetTop: 0,
+                tooltipOffsetLeft: 0,
+                tooltipMessage: undefined
             };
         },
         getPileupData: async function(pileupType, id) {

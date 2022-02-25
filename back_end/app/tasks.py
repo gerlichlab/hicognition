@@ -63,6 +63,7 @@ def pipeline_bed(dataset_id):
         pipeline_steps.bed_preprocess_pipeline_step(dataset_id, window)
     pipeline_steps.set_task_progress(100)
 
+
 def pipeline_pileup(dataset_id, intervals_id, binsize):
     """Start pileup pipeline for specified combination of
     dataset_id (cooler_file), binsize and intervals_id"""

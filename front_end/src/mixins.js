@@ -15,6 +15,24 @@ import {
 
 export var apiMixin = {
     methods: {
+        fetchAndStoreDatasets: function() {
+            // convenience method for fetching datasets and storing them in vuex store
+            this.fetchData("datasets/").then((response) => {
+                if (response) {
+                    // success, store datasets
+                    this.$store.commit("setDatasets", response.data);
+                }
+            });
+        },
+        fetchAndStoreCollections: function() {
+            // convenience method for fetching collections and storing them in vuex store
+            this.fetchData("collections/").then(response => {
+                if (response) {
+                    // update displayed datasets
+                    this.$store.commit("setCollections", response.data)
+                }
+            });
+        },
         fetchAndStoreToken: function (username, password) {
             /* fetches token with username ande password and stores it
             using the mutation "setToken". Returns a promise
@@ -229,7 +247,7 @@ export var formattingMixin = {
             if (Math.abs(basePairs) < 1000000) {
                 return Math.round(basePairs / 1000) + " kb";
             }
-            return Math.round(basePairs / 1000000) + " Mb";
+            return Math.round(basePairs / 100000)/10 + " Mb";
         }
     }
 };
@@ -279,7 +297,10 @@ export var widgetMixin = {
             return false;
         },
         allowBinsizeSelection: function () {
-            return Object.keys(this.binsizes).length != 0;
+            if (this.binsizes){
+                return Object.keys(this.binsizes).length != 0;
+            }
+            return false
         },
         cssStyle: function () {
             return {

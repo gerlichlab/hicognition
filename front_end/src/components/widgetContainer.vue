@@ -35,13 +35,13 @@
                                         class="md-inset"
                                         @click="setPileup"
                                         :disabled="!selectionOptions.pileup"
-                                        >Average 2d</md-list-item
+                                        >Average 2D</md-list-item
                                     >
                                     <md-list-item
                                         class="md-inset"
                                         @click="setLineprofile"
                                         :disabled="!selectionOptions.lineprofile"
-                                        >Lineprofile</md-list-item
+                                        >Average 1D</md-list-item
                                     >
                                 </md-list>
                             </md-list-item>

@@ -1,4 +1,5 @@
 version: "3.9"
+# attention this is the docker-compose version
 
 services:
     node:
@@ -30,7 +31,7 @@ services:
             - "5000:5000"
         build:
             context: "./back_end"
-        image: hicognition:v1.0
+        image: hicognition:latest
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
@@ -64,7 +65,7 @@ services:
         build:
             context: "./back_end"
         scale: 6
-        image: hicognition:v1.0
+        image: hicognition:latest
         entrypoint: "/bin/bash"
         networks:
             - hicognition-net
@@ -87,7 +88,7 @@ services:
         build:
             context: "./back_end"
         scale: 10
-        image: hicognition:v1.0
+        image: hicognition:latest
         entrypoint: "/bin/bash"
         networks:
             - hicognition-net
@@ -110,7 +111,7 @@ services:
         build:
             context: "./back_end"
         scale: 3
-        image: hicognition:v1.0
+        image: hicognition:latest
         entrypoint: "/bin/bash"
         networks:
             - hicognition-net
