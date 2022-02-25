@@ -24,8 +24,8 @@
                 </div>
                 <!-- Pileup display -->
                 <md-content class="center-horizontal md-elevation-4" ref="contentDiv">
-                        <div :class="heatmapClass"  ref="canvasDiv"/>
-                        <div v-if="showInterval" class="small-margin-left-right" :id="xAxisdivID"/>
+                        <div :class="heatmapClass"  ref="canvasDiv" @mouseleave="handleMouseLeaveContainer"/>
+                        <div v-if="showXaxis" class="small-margin-left-right" :id="xAxisdivID"/>
                 </md-content>
             </md-list-item>
             <div v-show="allNull">
@@ -45,6 +45,7 @@ import * as d3 from "d3";
 import { getScale } from "../../colorScales.js";
 import colorBarSlider from "../ui/colorBarSlider.vue";
 import { getPercentile, getPerMilRank } from "../../functions";
+import {formattingMixin} from "../../mixins"
 
 
 // set pixi scale mode
@@ -64,6 +65,7 @@ export default {
     components: {
         colorBarSlider
     },
+    mixins: [formattingMixin],
     props: {
         title: String,
         stackupData: Object,
@@ -78,8 +80,13 @@ export default {
         valueScaleColor: String,
         valueScaleBorder: String,
         allowValueScaleChange: Boolean,
+        windowsize: String,
         log: Boolean,
-        showInterval: { //  whehter to show interval start and end on x axis
+        showXaxis: {
+            type: Boolean,
+            default: false
+        },
+        isInterval: { //  whehter to show interval start and end on x axis
             type: Boolean,
             default: false
         }
@@ -87,7 +94,7 @@ export default {
     },
     computed: {
         heatmapClass: function(){
-            if (this.showInterval){
+            if (this.isInterval){
                 return "small-margin-left-right-top"
             }
             return "small-margin"
@@ -114,10 +121,7 @@ export default {
             return this.visualizationSize - this.xAxismargin.left - this.xAxismargin.right
         },
         heatMapHeight: function(){
-            if (this.showInterval){
-                return (this.height * 0.93) - 7
-            }
-            return this.height
+            return (this.height * 0.93) - 7
         },
         xAxisdivID: function() {
             // ID for the div containing the lineprofile
@@ -256,17 +260,18 @@ export default {
             pseudoCanvasContext: undefined,
             pseudoCanvas: undefined,
             allNull: false,
-            trackMouse: false
+            trackMouse: false,
+            xScale: undefined
         };
     },
     methods: {
-        createColorBarScales: function() {
+        createXaxisScales: function() {
             this.xScale = d3
                 .scaleLinear()
                 .domain([0, this.stackupData.shape[1]])
                 .range([0, this.xAxisWidth]);
         },
-        createColorBarSvg: function() {
+        createXaxisSvg: function() {
             d3.select(`#${this.xAxisdivID}Svg`).remove();
             this.svg = d3
                 .select(`#${this.xAxisdivID}`)
@@ -291,18 +296,49 @@ export default {
                 );
         },
         xAxisGenerator: function(args){
-            return d3
-                .axisBottom(this.xScale)
-                .tickFormat(val => this.getXaxisFormat(val))
-                .tickSizeOuter(0)
-                .tickValues([this.intervalStartBin, this.intervalEndBin])(args); 
+            if (this.isInterval) {
+                return d3
+                    .axisBottom(this.xScale)
+                    .tickFormat(val => this.getXaxisFormatInterval(val))
+                    .tickSizeOuter(0)
+                    .tickValues([this.intervalStartBin, this.intervalEndBin])(args); 
+            } else {
+                // get start and end bin
+                let startOffsetBp = Math.round(this.windowsize * EXPANSION_FACTOR)
+                let binsize = Math.round(2 * this.windowsize / this.stackupDimensions[1])
+                let startBin = Math.round(startOffsetBp/binsize)
+                let endBin = this.stackupDimensions[1] - startBin
+                return d3
+                    .axisBottom(this.xScale)
+                    .tickFormat(val => this.getXaxisFormatPoint(val))
+                    .tickSizeOuter(0)
+                    .tickValues([startBin, Math.round(this.stackupDimensions[1]/2), endBin])(args);    
+            }
         },
-        getXaxisFormat: function(val){
+        getXaxisFormatInterval: function(val){
             if (val == this.intervalStartBin){
                 return "Start"
             }
             if (val == this.intervalEndBin){
                 return "End"
+            }
+            return undefined
+        },
+        getXaxisFormatPoint: function(val){
+            // get start and end bin
+            let startOffsetBp = Math.round(this.windowsize * EXPANSION_FACTOR)
+            let binsize = Math.round( 2*this.windowsize / this.stackupDimensions[1])
+            let startBin = Math.round(startOffsetBp/binsize)
+            let endBin = this.stackupDimensions[1] - startBin
+            let tickIndicator = Number(this.windowsize) - (Math.round(Number(this.windowsize)) * EXPANSION_FACTOR)
+            if (val == startBin){
+                return `-${this.convertBasePairsToReadable(tickIndicator)}`
+            }
+            if (val == Math.round(this.stackupDimensions[1]/2)){
+                return "0"
+            }
+            if (val == endBin){
+                return `+${this.convertBasePairsToReadable(tickIndicator)}`
             }
             return undefined
         },
@@ -402,6 +438,11 @@ export default {
             this.trackMouse = false
             this.$emit("mouse-leave")
         },
+        handleMouseLeaveContainer: function() {
+            // triggers when mouse leaves the heatmap container
+            this.trackMouse = false
+            this.$emit("mouse-leave-container")
+        },
         drawHeatmap: function() {
             // destroy old pseudocanvas if existing
             this.destroyPseudoCanvas();
@@ -417,12 +458,13 @@ export default {
             this.texture = PIXI.Texture.from(this.pseudoCanvas);
             this.sprite = PIXI.Sprite.from(this.texture);
             //  attach event handlers
-            this.sprite.interactive = true
-            this.sprite.hitArea = new PIXI.Rectangle(0, 0 , this.visualizationSize, this.visualizationSize)
+            let scalingFactor = this.stackupDimensions[0]/this.stackupDimensions[1]
+            this.sprite.hitArea = new PIXI.Rectangle(0, 0 , this.visualizationSize, this.visualizationSize * scalingFactor )
             this.sprite.click = this.hanldeMouseClick
             this.sprite.pointermove = this.throttleFunction(this.handleMouseMove, 50)
             this.sprite.mouseover = this.handleMouseOver
             this.sprite.mouseout = this.handleMouseOut
+            this.sprite.interactive = true
             // position sprite at top left and make it stretch the canvas
             this.sprite.x = 0;
             this.sprite.y = 0;
@@ -431,10 +473,13 @@ export default {
             // add and render
             this.stage.addChild(this.sprite);
             this.renderer.render(this.stage);
+            // add hit area
+
+            this.renderer.render(this.stage)
             // add x Axis if necessary
-            if (this.showInterval){
-                this.createColorBarScales()
-                this.createColorBarSvg()
+            if (this.showXaxis){
+                this.createXaxisScales()
+                this.createXaxisSvg()
                 this.createAxes()
             }
         },
@@ -462,7 +507,7 @@ export default {
             }
             this.drawHeatmap();
         },
-        showInterval: function(oldVal, newVal) {
+        isInterval: function(oldVal, newVal) {
             if (oldVal != newVal) {
                 this.$refs["canvasDiv"].removeChild(this.renderer.view);
                 this.renderer.destroy();

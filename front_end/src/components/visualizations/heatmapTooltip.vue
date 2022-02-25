@@ -1,5 +1,8 @@
 <template>
     <md-card :style="tooltipStyle" v-show="showTooltip && thumbnail">
+        <div class="md-layout-item md-size-100 blue-background">
+            <span class="md-caption padding-left">{{ dataInfo }}</span>
+        </div>
         <md-card-content class="no-padding">
             <heatmap
                 v-if="thumbnail"
@@ -14,20 +17,16 @@
                 :maxHeatmapRange="maxHeatmapRange"
                 :allowValueScaleChange="showControls"
                 @slider-change="handleSliderChange"
+                :windowsize="intervalSize"
                 :log="isLog"
-                :showInterval="isVariableSize"
+                :isInterval="isVariableSize"
+                :showXaxis="true"
             />
         </md-card-content>
-            <md-card-actions v-if="showControls">
-                <md-button
-                    @click="$emit('close-controls')"
-                    >Close</md-button
-                >
-                <md-button
-                    @click="showDialog = true"
-                    >Create Region</md-button
-                >
-            </md-card-actions>
+        <md-card-actions v-if="showControls">
+            <md-button @click="$emit('close-controls')">Close</md-button>
+            <md-button @click="showDialog = true">Create Region</md-button>
+        </md-card-actions>
         <md-dialog-prompt
             :md-active.sync="showDialog"
             v-model="newRegionName"
@@ -46,7 +45,7 @@
 import heatmap from "../visualizations/heatmap.vue";
 import { apiMixin } from "../../mixins";
 import { select_row } from "../../functions";
-import embeddingDistribution from "../visualizations/embeddingDistribution.vue"
+import embeddingDistribution from "../visualizations/embeddingDistribution.vue";
 
 export default {
     name: "HeatmapTooltip",
@@ -73,18 +72,20 @@ export default {
         maxHeatmapAll: Number,
         maxHeatmapAllRange: Number,
         minHeatmapAllRange: Number,
-        isVariableSize: Boolean
+        isVariableSize: Boolean,
+        clusterCounts: Map,
+        intervalSize: String
     },
-    data: function () {
+    data: function() {
         return {
             tooltipStyle: {
                 position: "absolute",
                 "background-color": "white",
                 top: "0px",
                 left: "0px",
-                "z-index": "100",
+                "z-index": "10",
                 width: `${this.width}px`,
-                height: `${this.height}px`,
+                height: `${this.height}px`
             },
             showDialog: false,
             newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterID}`,
@@ -92,41 +93,54 @@ export default {
             minHeatmapTarget: undefined,
             maxHeatmapTarget: undefined,
             minHeatmapRangeTarget: undefined,
-            maxHeatmapRangeTarget: undefined
+            maxHeatmapRangeTarget: undefined,
         };
     },
     computed: {
+        totalRegions: function(){
+            let sum = 0
+            for (let [key, value] of this.clusterCounts){
+                sum += value
+            }
+            return sum
+        },
+        dataInfo: function() {
+            if (this.clusterCounts !== undefined && this.clusterCounts.get(this.clusterID) !== undefined){
+                return `Cluster: ${this.clusterID} | ${this.clusterCounts.get(this.clusterID)}/${this.totalRegions} Regions`
+            }
+            return  `Cluster: ${this.clusterID}`
+        },
         distributionSize: function() {
-            return 100
+            return 100;
         },
         minHeatmap: function() {
             if (this.minHeatmapTarget) {
-                return this.minHeatmapTarget
+                return this.minHeatmapTarget;
             }
-            return this.minHeatmapAll
+            return this.minHeatmapAll;
         },
         maxHeatmap: function() {
             if (this.maxHeatmapTarget) {
-                return this.maxHeatmapTarget
+                return this.maxHeatmapTarget;
             }
-            return this.maxHeatmapAll
+            return this.maxHeatmapAll;
         },
         minHeatmapRange: function() {
             if (this.minHeatmapAllRange) {
-                return this.minHeatmapAllRange
+                return this.minHeatmapAllRange;
             }
-            return this.minHeatmapRangeTarget
+            return this.minHeatmapRangeTarget;
         },
         maxHeatmapRange: function() {
             if (this.maxHeatmapRangeTarget) {
-                return this.maxHeatmapRangeTarget
+                return this.maxHeatmapRangeTarget;
             }
-            return this.maxHeatmapAllRange
+            return this.maxHeatmapAllRange;
         },
-        heatmapSize: function () {
+        heatmapSize: function() {
             return this.width * 0.8;
         },
-        selectedDistribution: function () {
+        selectedDistribution: function() {
             if (this.clusterID !== undefined) {
                 return select_row(
                     this.distributionData.data,
@@ -134,13 +148,13 @@ export default {
                     this.clusterID
                 );
             }
-        },
+        }
     },
     methods: {
-        handleSliderChange: function (data) {
+        handleSliderChange: function(data) {
             this.setColorScale(data);
         },
-        setColorScale: function (data) {
+        setColorScale: function(data) {
             /* 
                 sets colorScale based on data array
                 containing minPos, maxPos, minRange, maxRange
@@ -150,7 +164,7 @@ export default {
             this.minHeatmapRangeTarget = data[2];
             this.maxHeatmapRangeTarget = data[3];
         },
-        resetColorScale: function () {
+        resetColorScale: function() {
             /*
                 resets colorscale to undefined
             */
@@ -159,7 +173,7 @@ export default {
             this.minHeatmapRangeTarget = undefined;
             this.maxHeatmapRangeTarget = undefined;
         },
-        handleSubmission: function () {
+        handleSubmission: function() {
             // check whether there is a name
             if (this.newRegionName.length === 0) {
                 console.log("no region name provided");
@@ -172,37 +186,39 @@ export default {
             this.postData(
                 `embeddingIntervalData/${this.embeddingID}/${this.clusterID}/create/`,
                 formData
-            ).then((response) => {
+            ).then(response => {
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
+                    // fetch datasets so that they are available in table
+                    this.fetchAndStoreDatasets();
                 }
             });
-        },
+        }
     },
     watch: {
-        tooltipOffsetLeft: function (val) {
+        tooltipOffsetLeft: function(val) {
             this.tooltipStyle["left"] = `${val}px`;
         },
-        tooltipOffsetTop: function (val) {
+        tooltipOffsetTop: function(val) {
             this.tooltipStyle["top"] = `${val}px`;
         },
-        height: function (val) {
+        height: function(val) {
             this.tooltipStyle["height"] = `${val}px`;
         },
-        width: function (val) {
+        width: function(val) {
             this.tooltipStyle["width"] = `${val}px`;
         },
-        showControls: function (val) {
+        showControls: function(val) {
             this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterID}`;
             if (!val) {
                 this.tooltipStyle["height"] = `${this.height}px`;
             }
         },
-        thumbnail: function () {
+        thumbnail: function() {
             this.resetColorScale();
-        },
-    },
+        }
+    }
 };
 </script>
 
@@ -213,5 +229,13 @@ export default {
 
 .no-padding {
     padding: 0px !important;
+}
+
+.blue-background {
+    background: var(--md-theme-default-primary);
+}
+
+.padding-left {
+    padding-left: 10px;
 }
 </style>

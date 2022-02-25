@@ -1,5 +1,8 @@
 <template>
     <md-card :style="tooltipStyle" v-show="showTooltip && clusterID !== undefined">
+        <div class="md-layout-item md-size-100 blue-background">
+            <span class="md-caption padding-left">{{ dataInfo }}</span>
+        </div>
         <md-card-content class="no-padding">
             <embedding-distribution
                 v-if="clusterID !== undefined"
@@ -31,7 +34,7 @@
             @md-confirm="handleSubmission"
         />
         <md-snackbar :md-active.sync="datasetSaved"
-            >The region was added succesfully!</md-snackbar
+            >The region was added successfully!</md-snackbar
         >
     </md-card>
 </template>
@@ -58,7 +61,8 @@ export default {
         embeddingID: Number,
         collectionName: String,
         regionName: String,
-        datasetNames: Array
+        datasetNames: Array,
+        clusterCounts: Map
     },
     data: function () {
         return {
@@ -67,7 +71,7 @@ export default {
                 "background-color": "white",
                 top: "0px",
                 left: "0px",
-                "z-index": "100",
+                "z-index": "10",
                 width: `${this.width}px`,
                 height: `${this.height}px`,
             },
@@ -77,6 +81,19 @@ export default {
         };
     },
     computed: {
+        totalRegions: function(){
+            let sum = 0
+            for (let [key, value] of this.clusterCounts){
+                sum += value
+            }
+            return sum
+        },
+        dataInfo: function() {
+            if (this.clusterCounts !== undefined && this.clusterCounts.get(this.clusterID) !== undefined){
+                return `Cluster: ${this.clusterID} | ${this.clusterCounts.get(this.clusterID)}/${this.totalRegions} Regions`
+            }
+            return  `Cluster: ${this.clusterID}`
+        },
         plotSize: function () {
             return this.width * 0.8;
         },
@@ -128,6 +145,8 @@ export default {
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
+                    // fetch datasets so that they are available in table
+                    this.fetchAndStoreDatasets()
                 }
             });
         },
@@ -163,4 +182,13 @@ export default {
 .no-padding {
     padding: 0px !important;
 }
+
+.blue-background {
+    background: var(--md-theme-default-primary);
+}
+
+.padding-left {
+    padding-left: 10px;
+}
+
 </style>

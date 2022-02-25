@@ -29,9 +29,11 @@
 
 <script>
 import preprocessDatasetForm from "../forms/preprocessDatasetForm";
+import { apiMixin } from "../../mixins";
 
 export default {
     name: "PreprocessDatasetDialog",
+    mixins: [apiMixin],
     components: {
         preprocessDatasetForm
     },
@@ -47,6 +49,13 @@ export default {
             },
             get: function() {
                 return this.dialog;
+            }
+        }
+    },
+    watch: {
+        dialog: function(val){
+            if (val){
+                this.fetchAndStoreDatasets()
             }
         }
     }
