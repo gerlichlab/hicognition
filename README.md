@@ -11,11 +11,11 @@
 
 HiCognition is a data exploration tool that allows stream-lined exploration of aggregate genomic data. HiCognition is centered around Hi-C data but also enables integration of Chip-seq and region-based data.
 
-HiCognition implements the region-set focus approach, a concept that allows exploration of genomic region sets. For more details see the [concepts section](https://gerlichlab.github.io/hicognition/docs/getting_started/) of our documentation.
+HiCognition implements the region-set focus approach, a concept that allows exploration of genomic region sets. For more details see the [concepts section](https://gerlichlab.github.io/hicognition/docs/concepts/) of our documentation.
 
 ## Get started
 
-To get started using HiCognition, check out the [quickstart section](https://gerlichlab.github.io/hicognition/docs/concepts/) of our documentation.
+To get started using HiCognition, check out the [quickstart section](https://gerlichlab.github.io/hicognition/docs/getting_started/get_started_w_example_data/) of our documentation.
 
 
 ## Installation
