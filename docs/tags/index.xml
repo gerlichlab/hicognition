@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on HiCognition</title>
+    <link>http://localhost/docs/tags/</link>
+    <description>Recent content in Tags on HiCognition</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Fri, 11 Feb 2022 09:58:12 +0100</lastBuildDate>
+    
+	<atom:link href="http://localhost/docs/tags/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>enrichment</title>
+      <link>http://localhost/docs/tags/enrichment/</link>
+      <pubDate>Fri, 11 Feb 2022 09:58:12 +0100</pubDate>
+      
+      <guid>http://localhost/docs/tags/enrichment/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>widgets</title>
+      <link>http://localhost/docs/tags/widgets/</link>
+      <pubDate>Fri, 11 Feb 2022 09:58:12 +0100</pubDate>
+      
+      <guid>http://localhost/docs/tags/widgets/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>2D-features</title>
+      <link>http://localhost/docs/tags/2d-features/</link>
+      <pubDate>Fri, 11 Feb 2022 09:56:29 +0100</pubDate>
+      
+      <guid>http://localhost/docs/tags/2d-features/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>1D-features</title>
+      <link>http://localhost/docs/tags/1d-features/</link>
+      <pubDate>Fri, 11 Feb 2022 09:56:26 +0100</pubDate>
+      
+      <guid>http://localhost/docs/tags/1d-features/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>development</title>
+      <link>http://localhost/docs/tags/development/</link>
+      <pubDate>Wed, 09 Feb 2022 13:44:15 +0100</pubDate>
+      
+      <guid>http://localhost/docs/tags/development/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>architecture</title>
+      <link>http://localhost/docs/tags/architecture/</link>
+      <pubDate>Wed, 02 Feb 2022 13:07:22 +0100</pubDate>
+      
+      <guid>http://localhost/docs/tags/architecture/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

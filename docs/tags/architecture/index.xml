@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>architecture on HiCognition</title>
+    <link>http://localhost/docs/tags/architecture/</link>
+    <description>Recent content in architecture on HiCognition</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Wed, 02 Feb 2022 13:07:22 +0100</lastBuildDate>
+    
+	<atom:link href="http://localhost/docs/tags/architecture/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>App architecture</title>
+      <link>http://localhost/docs/development/development_info/</link>
+      <pubDate>Wed, 02 Feb 2022 13:07:22 +0100</pubDate>
+      
+      <guid>http://localhost/docs/development/development_info/</guid>
+      <description>This document contains a description of the architecture of HiCognition, which can be summarized in the following scheme:
+Back-end Docker network All the docker containers that work together in the back-end are coordinated by docker-compose (see docker-compose file) and reside within a docker-network called hicognition-net, to facilitate networking between them. The docker containers that are used are the following:
+ hicognition - Container that harbors the flask-server mysql - contains Mysql database nginx - contains nginx reverse-proxy redis-server - contains the redis-server redis-worker - redis-worker container  Additionally, there is a transient container used:</description>
+    </item>
+    
+  </channel>
+</rss>

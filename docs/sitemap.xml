@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>http://localhost/docs/widgets/widget_controls/</loc>
+    <lastmod>2022-02-18T12:06:53+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/preprocessing/job_types/</loc>
+    <lastmod>2022-02-17T10:19:25+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/data_management/regions/</loc>
+    <lastmod>2022-02-16T10:09:52+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/concepts/background/</loc>
+    <lastmod>2022-02-09T15:40:22+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/installation/requirements/</loc>
+    <lastmod>2022-02-04T14:04:22+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/getting_started/</loc>
+    <lastmod>2022-02-03T14:25:47+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/development/development_info/</loc>
+    <lastmod>2022-02-02T13:07:22+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/preprocessing/manage_preprocessing/</loc>
+    <lastmod>2022-02-17T10:29:35+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/data_management/features/</loc>
+    <lastmod>2022-02-16T10:09:57+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/widgets/lineprofile/</loc>
+    <lastmod>2022-02-11T09:56:01+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/concepts/region_set_focus/</loc>
+    <lastmod>2022-02-09T15:40:53+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/development/dev_env/</loc>
+    <lastmod>2022-02-08T17:40:50+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/installation/build/</loc>
+    <lastmod>2022-02-04T14:06:58+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/concepts/</loc>
+    <lastmod>2022-02-03T15:34:45+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/data_management/collections/</loc>
+    <lastmod>2022-02-16T10:11:34+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/widgets/2d_average/</loc>
+    <lastmod>2022-02-11T09:56:10+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/concepts/hicognition/</loc>
+    <lastmod>2022-02-11T08:43:32+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/development/tests/</loc>
+    <lastmod>2022-02-08T18:24:38+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/installation/configuration/</loc>
+    <lastmod>2022-02-04T14:06:13+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/installation/</loc>
+    <lastmod>2022-02-03T15:31:03+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/widgets/stackup/</loc>
+    <lastmod>2022-02-11T09:56:17+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/installation/updating/</loc>
+    <lastmod>2022-02-04T14:07:42+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/data_management/</loc>
+    <lastmod>2022-02-04T13:35:46+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/widgets/1d_feature_embedding/</loc>
+    <lastmod>2022-02-11T09:56:26+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/development/cont_guide/</loc>
+    <lastmod>2022-02-09T13:44:15+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/preprocessing/</loc>
+    <lastmod>2022-02-03T15:34:57+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/widgets/2d_feature_embedding/</loc>
+    <lastmod>2022-02-11T09:56:29+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/widgets/</loc>
+    <lastmod>2022-02-03T15:35:17+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/widgets/association/</loc>
+    <lastmod>2022-02-11T09:58:12+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/sessions/</loc>
+    <lastmod>2022-02-03T15:35:30+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/development/</loc>
+    <lastmod>2022-02-02T13:06:08+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/</loc>
+    <lastmod>2022-02-21T10:29:41+01:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/sessions/session/</loc>
+    <lastmod>2022-02-21T10:29:41+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/data_management/genome_assemblies/</loc>
+    <lastmod>2022-02-16T10:27:11+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/tags/enrichment/</loc>
+    <lastmod>2022-02-11T09:58:12+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/tags/</loc>
+    <lastmod>2022-02-11T09:58:12+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/tags/widgets/</loc>
+    <lastmod>2022-02-11T09:58:12+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/tags/2d-features/</loc>
+    <lastmod>2022-02-11T09:56:29+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/tags/1d-features/</loc>
+    <lastmod>2022-02-11T09:56:26+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/tags/development/</loc>
+    <lastmod>2022-02-09T13:44:15+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/getting_started/get_started_w_example_data/</loc>
+    <lastmod>2022-02-03T15:25:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/tags/architecture/</loc>
+    <lastmod>2022-02-02T13:07:22+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost/docs/categories/</loc>
+  </url>
+  
+</urlset>

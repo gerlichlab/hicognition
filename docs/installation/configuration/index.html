@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html lang="en" class="js csstransforms3d">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="Hugo 0.64.0" />
+    <meta name="description" content="">
+
+
+    <link rel="icon" href="/docs/images/favicon.png" type="image/png">
+
+    <title>Configuration :: HiCognition</title>
+
+    
+    <link href="/docs/css/nucleus.css?1645796054" rel="stylesheet">
+    <link href="/docs/css/fontawesome-all.min.css?1645796054" rel="stylesheet">
+    <link href="/docs/css/hybrid.css?1645796054" rel="stylesheet">
+    <link href="/docs/css/featherlight.min.css?1645796054" rel="stylesheet">
+    <link href="/docs/css/perfect-scrollbar.min.css?1645796054" rel="stylesheet">
+    <link href="/docs/css/auto-complete.css?1645796054" rel="stylesheet">
+    <link href="/docs/css/atom-one-dark-reasonable.css?1645796054" rel="stylesheet">
+    <link href="/docs/css/theme.css?1645796054" rel="stylesheet">
+    <link href="/docs/css/tabs.css?1645796054" rel="stylesheet">
+    <link href="/docs/css/hugo-theme.css?1645796054" rel="stylesheet">
+    
+    <link href="/docs/css/theme-mine.css?1645796054" rel="stylesheet">
+    
+    <link href="/docs/css/custom.css?1645796054" rel="stylesheet">
+
+    <script src="/docs/js/jquery-3.3.1.min.js?1645796054"></script>
+
+    <style>
+      :root #header + #content > #left > #rlblock_left{
+          display:none !important;
+      }
+      
+        :not(pre) > code + span.copy-to-clipboard {
+            display: none;
+        }
+      
+    </style>
+    
+  </head>
+  <body class="" data-url="/docs/installation/configuration/">
+    <nav id="sidebar" class="">
+
+
+
+  <div id="header-wrapper">
+    <div id="header">
+      <html>
+    
+    <svg
+        id="Layer_1"
+        data-name="Layer 1"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 384.38 92.84"
+    >
+    <a href="/">
+        <rect width="100%" height="100%" opacity="0"></rect>
+        <path
+            d="M13,69.69V24.34A3.26,3.26,0,0,1,13.94,22a2.89,2.89,0,0,1,2.2-1,2.93,2.93,0,0,1,2.19,1,3.23,3.23,0,0,1,.93,2.31V43.67h19V24.34A3.26,3.26,0,0,1,39.17,22a3,3,0,0,1,4.42,0,3.41,3.41,0,0,1,.91,2.39V69.69a3.21,3.21,0,0,1-1,2.3,3,3,0,0,1-4.4,0,3.28,3.28,0,0,1-.89-2.32V50.24H19.34V69.69a3.21,3.21,0,0,1-.95,2.3,3,3,0,0,1-2.25,1A3,3,0,0,1,14,72,3.22,3.22,0,0,1,13,69.69Z"
+            transform="translate(-12.28 -17.42)"
+            style="
+                fill: #254e69;
+                stroke: #f1f2f2;
+                stroke-miterlimit: 10;
+                stroke-width: 1.5px;
+            "
+        />
+        <path
+            d="M74.44,72.89h-19a2.92,2.92,0,0,1-2.21-1,3.21,3.21,0,0,1-.91-2.32,3.25,3.25,0,0,1,.91-2.3,2.9,2.9,0,0,1,2.21-1h6.38V41.84H55.51a2.92,2.92,0,0,1-2.21-1,3.29,3.29,0,0,1-.91-2.3,3.43,3.43,0,0,1,.91-2.37,2.89,2.89,0,0,1,2.21-1H65a2.89,2.89,0,0,1,2.21,1,3.43,3.43,0,0,1,.91,2.37V66.33h6.23a3,3,0,0,1,2.25,1,3.35,3.35,0,0,1,0,4.64A2.91,2.91,0,0,1,74.44,72.89ZM61.74,18.17H65a2.92,2.92,0,0,1,2.21.95,3.3,3.3,0,0,1,.91,2.33v2.81a3.4,3.4,0,0,1-.91,2.36,2.87,2.87,0,0,1-2.21,1H61.67a2.91,2.91,0,0,1-2.25-1,3.19,3.19,0,0,1-.87-2.26l.08-2.89a3.25,3.25,0,0,1,.91-2.33A2.9,2.9,0,0,1,61.74,18.17Z"
+            transform="translate(-12.28 -17.42)"
+            style="
+                fill: #254e69;
+                stroke: #f1f2f2;
+                stroke-miterlimit: 10;
+                stroke-width: 1.5px;
+            "
+        />
+        <path
+            d="M92.77,88.88H104a3,3,0,0,1,2.25,1,3.32,3.32,0,0,1,0,4.65,3,3,0,0,1-2.25,1H92.37a10.11,10.11,0,0,1-7.9-4.81L77.27,76a15.32,15.32,0,0,1-1.45-6.48,14,14,0,0,1,1.37-6.37l7.28-14.49a10,10,0,0,1,3.23-3.57,7.39,7.39,0,0,1,4.23-1.55h12.32a2.93,2.93,0,0,1,2.21,1,3.29,3.29,0,0,1,.9,2.31,3.41,3.41,0,0,1-.9,2.36,2.91,2.91,0,0,1-2.21,1H92.38A2.78,2.78,0,0,0,90,52L83.05,65.59a8.31,8.31,0,0,0-.81,3.79,8.81,8.81,0,0,0,.89,4.07l6.6,13.36A3.14,3.14,0,0,0,92.77,88.88Z"
+            transform="translate(-12.28 -17.42)"
+            style="
+                fill: #254e69;
+                stroke: #f1f2f2;
+                stroke-miterlimit: 10;
+                stroke-width: 1.5px;
+            "
+        />
+        <path
+            d="M143.17,69.58V83.45q0,4.41-3.95,8.16c-2.64,2.5-5.35,3.75-8.15,3.75h-7.31q-4.28,0-8.16-3.81t-3.9-8.1V69.58q0-4.31,3.8-8.11a11.53,11.53,0,0,1,8.26-3.81h7.31c2.8,0,5.51,1.18,8.15,3.68S143.17,66.58,143.17,69.58ZM118,69.85V83.13A3.58,3.58,0,0,0,119.23,86l2.34,2.11a3.15,3.15,0,0,0,2.19.71H131a4.18,4.18,0,0,0,2.89-1.21l1.89-1.76a3.19,3.19,0,0,0,1.15-2.62V69.93A3.5,3.5,0,0,0,135.78,67l-2.19-1.84a3.79,3.79,0,0,0-2.59-1h-6.46a4.69,4.69,0,0,0-3.27,1l-2.11,1.92A3.35,3.35,0,0,0,118,69.85Z"
+            transform="translate(-12.28 -17.42)"
+            style="
+                fill: #254e69;
+                stroke: #f1f2f2;
+                stroke-miterlimit: 10;
+                stroke-width: 1.5px;
+            "
+        />
+        <path
+            d="M167.47,109.5H154a3,3,0,0,1-2.21-.94,3.43,3.43,0,0,1,0-4.65A3,3,0,0,1,154,103h13.51a3.4,3.4,0,0,0,2.3-1l2.11-1.91A2.77,2.77,0,0,0,173,97.82v-10q-4.38,4.65-8.54,4.65h-4.78a9.67,9.67,0,0,1-6.68-2.7l-2.34-2.18a8.24,8.24,0,0,1-2-3,9.8,9.8,0,0,1-.83-3.83V69.93a11.67,11.67,0,0,1,.83-4.37,8.13,8.13,0,0,1,2-3.09l2.56-2.31a9.31,9.31,0,0,1,6.46-2.5h4.49a9.73,9.73,0,0,1,6.68,2.74L173,62.31,172.89,61a3.22,3.22,0,0,1,.92-2.3,2.94,2.94,0,0,1,2.19-1,3,3,0,0,1,2.25,1,3.18,3.18,0,0,1,.94,2.32v36.8A9.41,9.41,0,0,1,176,105l-2.52,2.3a8.28,8.28,0,0,1-2.73,1.57A9.38,9.38,0,0,1,167.47,109.5Zm-3.56-45.27h-4.2a3.89,3.89,0,0,0-2.63,1.13L155.15,67A3.37,3.37,0,0,0,154,69.7V80.63a3.43,3.43,0,0,0,1.23,2.5l2,1.92a3,3,0,0,0,2,.86h5.08a3.85,3.85,0,0,0,2.45-1.18l4.94-4.41A3.35,3.35,0,0,0,173,77.74v-5a3.7,3.7,0,0,0-1.3-2.93l-5.08-4.57A3.68,3.68,0,0,0,163.91,64.23Z"
+            transform="translate(-12.28 -17.42)"
+            style="
+                fill: #254e69;
+                stroke: #f1f2f2;
+                stroke-miterlimit: 10;
+                stroke-width: 1.5px;
+            "
+        />
+        <path
+            d="M198.72,65.36l-8.51,5.82v21a3.23,3.23,0,0,1-.93,2.3,2.94,2.94,0,0,1-4.38,0,3.23,3.23,0,0,1-.93-2.3V61a3.4,3.4,0,0,1,.91-2.36,2.92,2.92,0,0,1,4.4,0,3.33,3.33,0,0,1,.93,2.36v2.19l5.69-3.63a11.33,11.33,0,0,1,6.46-1.92h2.9a8.7,8.7,0,0,1,6.43,2.78,10,10,0,0,1,2.86,6.83l.86,24.89a3.12,3.12,0,0,1-.9,2.3,3,3,0,0,1-2.22,1,3,3,0,0,1-2.15-.88,3.3,3.3,0,0,1-1-2.4l-.93-24.5q-.11-3.43-3.42-3.43h-3A5.42,5.42,0,0,0,198.72,65.36Z"
+            transform="translate(-12.28 -17.42)"
+            style="
+                fill: #254e69;
+                stroke: #f1f2f2;
+                stroke-miterlimit: 10;
+                stroke-width: 1.5px;
+            "
+        />
+        <path
+            d="M245.23,95.36h-19a2.91,2.91,0,0,1-2.2-1,3.21,3.21,0,0,1-.91-2.32,3.27,3.27,0,0,1,.91-2.31,2.89,2.89,0,0,1,2.2-1h6.39V64.31h-6.31a2.92,2.92,0,0,1-2.21-1,3.26,3.26,0,0,1-.91-2.31,3.36,3.36,0,0,1,.91-2.36,2.9,2.9,0,0,1,2.21-1h9.5a2.92,2.92,0,0,1,2.21,1,3.4,3.4,0,0,1,.91,2.36V88.8h6.23a3.09,3.09,0,0,1,2.25,1,3.36,3.36,0,0,1,0,4.65A2.94,2.94,0,0,1,245.23,95.36ZM232.54,40.63h3.27a3,3,0,0,1,2.21,1,3.27,3.27,0,0,1,.91,2.32v2.82a3.4,3.4,0,0,1-.91,2.36,2.92,2.92,0,0,1-2.21,1h-3.34a2.91,2.91,0,0,1-2.25-1,3.21,3.21,0,0,1-.87-2.26l.08-2.9a3.26,3.26,0,0,1,.9-2.32A3,3,0,0,1,232.54,40.63Z"
+            transform="translate(-12.28 -17.42)"
+            style="
+                fill: #254e69;
+                stroke: #f1f2f2;
+                stroke-miterlimit: 10;
+                stroke-width: 1.5px;
+            "
+        />
+        <path
+            d="M278.07,95.44h-6.24a8.9,8.9,0,0,1-6.64-2.89,9.7,9.7,0,0,1-2.78-7V64.31h-3.19a3,3,0,0,1-2.21-.94,3.45,3.45,0,0,1,0-4.67,2.93,2.93,0,0,1,2.21-1h3.26v-8a3.28,3.28,0,0,1,.91-2.33,3,3,0,0,1,4.38,0,3.21,3.21,0,0,1,1,2.31v8h12.54a2.94,2.94,0,0,1,2.19,1,3.35,3.35,0,0,1,0,4.63,3,3,0,0,1-2.19,1H268.64V85.59a3.21,3.21,0,0,0,.95,2.31,3,3,0,0,0,2.24,1h6.09q2.49,0,3.3-2.84c.55-1.88,1.6-2.83,3.16-2.83a2.89,2.89,0,0,1,2.24,1,3.44,3.44,0,0,1,.87,2.4,8.91,8.91,0,0,1-2.65,5.92A8.68,8.68,0,0,1,278.07,95.44Z"
+            transform="translate(-12.28 -17.42)"
+            style="
+                fill: #254e69;
+                stroke: #f1f2f2;
+                stroke-miterlimit: 10;
+                stroke-width: 1.5px;
+            "
+        />
+        <path
+            d="M317.44,95.36h-19a2.92,2.92,0,0,1-2.21-1,3.21,3.21,0,0,1-.91-2.32,3.27,3.27,0,0,1,.91-2.31,2.89,2.89,0,0,1,2.21-1h6.38V64.31h-6.31a2.92,2.92,0,0,1-2.21-1,3.3,3.3,0,0,1-.91-2.31,3.4,3.4,0,0,1,.91-2.36,2.9,2.9,0,0,1,2.21-1H308a2.92,2.92,0,0,1,2.21,1,3.4,3.4,0,0,1,.91,2.36V88.8h6.23a3.08,3.08,0,0,1,2.25,1,3.36,3.36,0,0,1,0,4.65A2.91,2.91,0,0,1,317.44,95.36Zm-12.7-54.73H308a3,3,0,0,1,2.21,1,3.27,3.27,0,0,1,.91,2.32v2.82a3.4,3.4,0,0,1-.91,2.36,2.92,2.92,0,0,1-2.21,1h-3.34a2.91,2.91,0,0,1-2.25-1,3.21,3.21,0,0,1-.87-2.26l.08-2.9a3.23,3.23,0,0,1,.91-2.32A2.91,2.91,0,0,1,304.74,40.63Z"
+            transform="translate(-12.28 -17.42)"
+            style="
+                fill: #254e69;
+                stroke: #f1f2f2;
+                stroke-miterlimit: 10;
+                stroke-width: 1.5px;
+            "
+        />
+        <path
+            d="M359.77,69.58V83.45q0,4.41-3.95,8.16c-2.64,2.5-5.35,3.75-8.15,3.75h-7.31q-4.26,0-8.16-3.81t-3.9-8.1V69.58q0-4.31,3.81-8.11a11.49,11.49,0,0,1,8.25-3.81h7.31c2.8,0,5.51,1.18,8.15,3.68S359.77,66.58,359.77,69.58Zm-25.16.27V83.13A3.58,3.58,0,0,0,335.83,86l2.34,2.11a3.15,3.15,0,0,0,2.19.71h7.24a4.16,4.16,0,0,0,2.89-1.21l1.9-1.76a3.22,3.22,0,0,0,1.15-2.62V69.93A3.53,3.53,0,0,0,352.39,67L350.2,65.2a3.83,3.83,0,0,0-2.6-1h-6.46a4.65,4.65,0,0,0-3.26,1l-2.12,1.92A3.35,3.35,0,0,0,334.61,69.85Z"
+            transform="translate(-12.28 -17.42)"
+            style="
+                fill: #254e69;
+                stroke: #f1f2f2;
+                stroke-miterlimit: 10;
+                stroke-width: 1.5px;
+            "
+        />
+        <path
+            d="M379.23,65.36l-8.52,5.82v21a3.23,3.23,0,0,1-.93,2.3,2.94,2.94,0,0,1-4.38,0,3.22,3.22,0,0,1-.92-2.3V61a3.36,3.36,0,0,1,.91-2.36,2.88,2.88,0,0,1,2.2-1,2.92,2.92,0,0,1,2.19,1,3.33,3.33,0,0,1,.93,2.36v2.19l5.69-3.63a11.34,11.34,0,0,1,6.47-1.92h2.89a8.7,8.7,0,0,1,6.43,2.78,10,10,0,0,1,2.86,6.83l.86,24.89a3.11,3.11,0,0,1-.89,2.3,3,3,0,0,1-2.23,1,3,3,0,0,1-2.15-.88,3.3,3.3,0,0,1-1-2.4l-.92-24.5q-.12-3.43-3.43-3.43h-3A5.39,5.39,0,0,0,379.23,65.36Z"
+            transform="translate(-12.28 -17.42)"
+            style="
+                fill: #254e69;
+                stroke: #f1f2f2;
+                stroke-miterlimit: 10;
+                stroke-width: 1.5px;
+            "
+        />
+        </a>
+    </svg>
+</html>
+
+    </div>
+    
+        <div class="searchbox">
+    <label for="search-by"><i class="fas fa-search"></i></label>
+    <input data-search-input id="search-by" type="search" placeholder="Search...">
+    <span data-search-clear=""><i class="fas fa-times"></i></span>
+</div>
+
+<script type="text/javascript" src="/docs/js/lunr.min.js?1645796054"></script>
+<script type="text/javascript" src="/docs/js/auto-complete.js?1645796054"></script>
+<script type="text/javascript">
+    
+        var baseurl = "http:\/\/localhost\/docs\/";
+    
+</script>
+<script type="text/javascript" src="/docs/js/search.js?1645796054"></script>
+
+    
+  </div>
+  
+
+    <div class="highlightable">
+    <ul class="topics">
+
+        
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/docs/getting_started/" title="Getting started" class="dd-item
+        
+        
+        
+        ">
+      <a href="/docs/getting_started/">
+          <b>1. </b>Getting started
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/getting_started/get_started_w_example_data/" title="Quick start with example data" class="dd-item ">
+        <a href="/docs/getting_started/get_started_w_example_data/">
+        Quick start with example data
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/docs/concepts/" title="Concepts" class="dd-item
+        
+        
+        
+        ">
+      <a href="/docs/concepts/">
+          <b>2. </b>Concepts
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/concepts/background/" title="Background" class="dd-item ">
+        <a href="/docs/concepts/background/">
+        Background
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/concepts/region_set_focus/" title="Region-set focus approach" class="dd-item ">
+        <a href="/docs/concepts/region_set_focus/">
+        Region-set focus approach
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/concepts/hicognition/" title="Implementation" class="dd-item ">
+        <a href="/docs/concepts/hicognition/">
+        Implementation
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/docs/installation/" title="Installation" class="dd-item
+        parent
+        
+        
+        ">
+      <a href="/docs/installation/">
+          <b>3. </b>Installation
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/installation/requirements/" title="Requirements" class="dd-item ">
+        <a href="/docs/installation/requirements/">
+        Requirements
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/installation/build/" title="Build" class="dd-item ">
+        <a href="/docs/installation/build/">
+        Build
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/installation/configuration/" title="Configuration" class="dd-item active">
+        <a href="/docs/installation/configuration/">
+        Configuration
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/installation/updating/" title="Updating" class="dd-item ">
+        <a href="/docs/installation/updating/">
+        Updating
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/docs/data_management/" title="Data management" class="dd-item
+        
+        
+        
+        ">
+      <a href="/docs/data_management/">
+          <b>4. </b>Data management
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/data_management/regions/" title="Regions" class="dd-item ">
+        <a href="/docs/data_management/regions/">
+        Regions
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/data_management/features/" title="Features" class="dd-item ">
+        <a href="/docs/data_management/features/">
+        Features
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/data_management/collections/" title="Collections" class="dd-item ">
+        <a href="/docs/data_management/collections/">
+        Collections
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/data_management/genome_assemblies/" title="Genome assemblies" class="dd-item ">
+        <a href="/docs/data_management/genome_assemblies/">
+        Genome assemblies
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/docs/preprocessing/" title="Preprocessing" class="dd-item
+        
+        
+        
+        ">
+      <a href="/docs/preprocessing/">
+          <b>5. </b>Preprocessing
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/preprocessing/job_types/" title="Preprocessing tasks" class="dd-item ">
+        <a href="/docs/preprocessing/job_types/">
+        Preprocessing tasks
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/preprocessing/manage_preprocessing/" title="Manage preprocessing" class="dd-item ">
+        <a href="/docs/preprocessing/manage_preprocessing/">
+        Manage preprocessing
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/docs/widgets/" title="Widgets" class="dd-item
+        
+        
+        
+        ">
+      <a href="/docs/widgets/">
+          <b>6. </b>Widgets
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/widgets/widget_controls/" title="Widget controls" class="dd-item ">
+        <a href="/docs/widgets/widget_controls/">
+        Widget controls
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/widgets/lineprofile/" title="1D-average" class="dd-item ">
+        <a href="/docs/widgets/lineprofile/">
+        1D-average
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/widgets/2d_average/" title="2D-average" class="dd-item ">
+        <a href="/docs/widgets/2d_average/">
+        2D-average
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/widgets/stackup/" title="Stacked lineprofiles" class="dd-item ">
+        <a href="/docs/widgets/stackup/">
+        Stacked lineprofiles
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/widgets/1d_feature_embedding/" title="1D-feature embedding" class="dd-item ">
+        <a href="/docs/widgets/1d_feature_embedding/">
+        1D-feature embedding
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/widgets/2d_feature_embedding/" title="2D-feature embedding" class="dd-item ">
+        <a href="/docs/widgets/2d_feature_embedding/">
+        2D-feature embedding
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/widgets/association/" title="Association" class="dd-item ">
+        <a href="/docs/widgets/association/">
+        Association
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/docs/sessions/" title="Data sharing" class="dd-item
+        
+        
+        
+        ">
+      <a href="/docs/sessions/">
+          <b>7. </b>Data sharing
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/sessions/session/" title="Session" class="dd-item ">
+        <a href="/docs/sessions/session/">
+        Session
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/docs/development/" title="Development" class="dd-item
+        
+        
+        
+        ">
+      <a href="/docs/development/">
+          <b>8. </b>Development
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/development/development_info/" title="App architecture" class="dd-item ">
+        <a href="/docs/development/development_info/">
+        App architecture
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/development/dev_env/" title="Development environment" class="dd-item ">
+        <a href="/docs/development/dev_env/">
+        Development environment
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/development/tests/" title="Tests" class="dd-item ">
+        <a href="/docs/development/tests/">
+        Tests
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/docs/development/cont_guide/" title="Contribution guide" class="dd-item ">
+        <a href="/docs/development/cont_guide/">
+        Contribution guide
+        
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+          
+        
+    </ul>
+
+    
+    
+      <section id="shortcuts">
+        <h3>More</h3>
+        <ul>
+          
+              <li>
+                  <a class="padding" href="https://github.com/gerlichlab/HiCognition"><i class='fab fa-github'></i> Github repo</a>
+              </li>
+          
+              <li>
+                  <a class="padding" href="http://localhost/docs/tags"><i class='fas fa-tags'></i> Tags</a>
+              </li>
+          
+        </ul>
+      </section>
+    
+
+    
+    <section id="footer">
+      <p>Built with <a href="https://github.com/matcornic/hugo-theme-learn"><i class="fas fa-heart"></i></a> from <a href="https://getgrav.org">Grav</a> and <a href="https://gohugo.io/">Hugo</a></p>
+
+    </section>
+  </div>
+</nav>
+
+
+
+
+        <section id="body">
+        <div id="overlay"></div>
+        <div class="padding highlightable">
+              
+              <div>
+                <div id="top-bar">
+                
+                
+                <div id="breadcrumbs" itemscope="" itemtype="http://data-vocabulary.org/Breadcrumb">
+                    <span id="sidebar-toggle-span">
+                        <a href="#" id="sidebar-toggle" data-sidebar-toggle="">
+                          <i class="fas fa-bars"></i>
+                        </a>
+                    </span>
+                  
+                  <span id="toc-menu"><i class="fas fa-list-alt"></i></span>
+                  
+                  <span class="links">
+                 
+                 
+                    
+          
+          
+            
+            
+          
+          
+            
+            
+          
+          
+            <a href='/docs/'></a> > <a href='/docs/installation/'>Installation</a> > Configuration
+          
+        
+          
+        
+          
+        
+                 
+                  </span>
+                </div>
+                
+                    <div class="progress">
+    <div class="wrapper">
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#environment-variables">Environment variables</a>
+      <ul>
+        <li><a href="#setting-environment-variables">Setting environment variables</a></li>
+        <li><a href="#available-environment-variables">Available environment variables</a></li>
+      </ul>
+    </li>
+    <li><a href="#flask-configuration-files">Flask configuration files</a>
+      <ul>
+        <li><a href="#configuration-variables-related-to-server-setup">Configuration variables related to server setup</a></li>
+        <li><a href="#configuration-variables-related-to-preprocessing">Configuration variables related to preprocessing</a></li>
+      </ul>
+    </li>
+    <li><a href="#docker-compose-files">Docker compose files</a></li>
+  </ul>
+</nav>
+    </div>
+</div>
+
+                
+              </div>
+            </div>
+            
+        <div id="head-tags">
+        
+        </div>
+        
+        <div id="body-inner">
+          
+            <h1>
+              
+              Configuration
+            </h1>
+          
+
+        
+
+
+<p>Configuring your HiCognition instance can be done using two approaches:</p>
+<ul>
+<li>For common setup tasks, we defined environment variables that need to be available during the start-up</li>
+<li>For more specific configuration, you can edit the flask configuration files</li>
+</ul>
+<h2 id="environment-variables">Environment variables</h2>
+<h3 id="setting-environment-variables">Setting environment variables</h3>
+<p>The most convenient way of setting your environment variables is using a <code>.env</code> file that specifies them as key-value pairs. <code>docker-compose</code> will use this file - if it is in the same directory -  and inject the variables during start-up.</p>
+
+<div class="notices warning" ><p>Never commit a <code>.env</code> file for your production server to version control!</p>
+</div>
+
+<p>Alternatively, you can inject the environment variables in your deploy pipeline. This is probably the cleanest approach and can be easily done with, for example, <a href="https://docs.github.com/en/actions">github actions</a>.</p>
+<h3 id="available-environment-variables">Available environment variables</h3>
+<h4 id="production-instance">Production instance</h4>
+<p>We expose a wide array of environment variables, some of which you don&rsquo;t need to change, whereas others we highly recommend changing.</p>
+<h5 id="redefine-for-new-instance">Redefine for new instance</h5>
+<p>These environment variables should be redefined if you deploy a new HiCognition instance.</p>
+<ul>
+<li><code>SECRET_KEY</code> | Secret key of flask app that is used to sign the generated token</li>
+<li><code>DATABASE_URI</code> | Connection string to the HiCogntion MySQL database (including username and password)</li>
+<li><code>MYQSL_PASSWORD</code> | Password for MySQL database</li>
+</ul>
+<h5 id="take-from-example-env-file">Take from example <code>.env</code> file</h5>
+<p>These environment variables can likely be taken from our example <code>.env</code> file and probably only need changing if you are deploying a custom setup.</p>
+<ul>
+<li><code>UPLOAD_DIR</code> | Directory that is used to store uploaded datasets. This filepath is used inside the Docker container and should therefore be in relation to the mounted folder with code and data.</li>
+<li><code>CHROM_SIZES</code> | Path to the chromosome sizes file on the server filesystem that is needed for the <code>hicognition</code> module. This filepath is used inside the Docker container and should therefore be in relation to the mounted folder with code and data.</li>
+<li><code>CHROM_ARMS</code> | Path to the file harboring genomic locations of chromosomal arms on the server filesystem that is needed for pileups in the <code>tasks.py</code> file containing different background tasks. This filepath is used inside the Docker container and should therefore be in relation to the mounted folder with code and data.</li>
+<li><code>REDIS_URL</code> | URL of Redis server</li>
+<li><code>DIR_FRONT_END</code> | Relative path to the front_end files.</li>
+<li><code>DIR_STATIC</code> | Static directory for the Nginx server</li>
+<li><code>MYSQL_DATA_DIR</code> | Relative directory to persist MySQL database to</li>
+<li><code>INTEGRATION_TESTS</code> | Relative path to the integration test directory</li>
+<li><code>DOC_PATH</code> | Relative path to documentation files</li>
+</ul>
+<h4 id="development-instance">Development instance</h4>
+
+<div class="notices tip" ><p>If you are thinking about setting up a development instance of HiCognition, be sure to check out the <a href="/docs/development">development section</a>.</p>
+</div>
+
+<p>In the development instance, the entire HiCognition backend repository is mounted through into the flask server to facilitate hot-reload. You can specify the location of the repository using the following environment variable:</p>
+<ul>
+<li><code>HICOGNITION_DIR</code> | Location of the backend part of the HiCognition repository.</li>
+</ul>
+<p>This variable can be taken from our example <code>.env</code> file.</p>
+<h2 id="flask-configuration-files">Flask configuration files</h2>
+<p>If you need to dive deeper into the configuration of HiCognition, you can edit the config file of the flask app (located at <code>back_end/app/config.py</code> relative to the HiCognition repository). This config file defines data classes for different configuration states of HiCognition:</p>
+<ul>
+<li><code>Config</code> | Main config class that defines common configuration settings between all config classes</li>
+<li><code>DevelopmentConfig</code> | Development config file that defines settings for flask in development mode</li>
+<li><code>TestingConfig</code> | Config file for flask unittests</li>
+<li><code>End2EndConfig</code> | Config file for integration tests</li>
+</ul>
+
+<div class="notices tip" ><p>Be sure to rebuild the HiCognition container after you change this config file!</p>
+</div>
+
+<h3 id="configuration-variables-related-to-server-setup">Configuration variables related to server setup</h3>
+
+<div class="notices warning" ><p>Note that some of the configuration variables are initialized from environment variables. So if you change them, be sure that environment variables do not override these changes!</p>
+</div>
+
+<p>The following configuration variables are related to how the flask server is set up and are most likely not candidates for tuning since they refer to simple paths, flags are secrets:</p>
+<ul>
+<li><code>SECTRET_KEY</code> | Secret key of flask app that is used to sign the generated token</li>
+<li><code>SQLALCHEMY_TRACK_MODIFICATIONS</code> | Flag that specifies whether database modifications should be tracked</li>
+<li><code>UPLOAD_DIR</code> | Directory that is used to store uploaded datasets. This filepath is used inside the Docker container and should therefore be in relation to the mounted folder with code and data.</li>
+<li><code>CHROM_SIZES</code> | Path to the chromosome sizes file on the server filesystem that is needed for the <code>hicognition</code> module. This filepath is used inside the Docker container and should therefore be in relation to the mounted folder with code and data.</li>
+<li><code>CHROM_ARMS</code> | Path to the file harboring genomic locations of chromosomal arms on the server filesystem that is needed for pileups in the <code>tasks.py</code> file containing different background tasks. This filepath is used inside the Docker container and should therefore be in relation to the mounted folder with code and data.</li>
+<li><code>REDIS_URL</code> | URL of Redis server</li>
+<li><code>TESTING</code> | Whether the server is in unittesting mode</li>
+<li><code>END2END</code> | Whether the server is in integration testing mode (this is needed for setup of test users in the database)</li>
+</ul>
+<h3 id="configuration-variables-related-to-preprocessing">Configuration variables related to preprocessing</h3>
+<p>These configuration variables determine how preprocessing is performed and, depending on the types of tasks at hand, might be in need of adjustment.</p>
+<h4 id="preprocessing_map"><code>PREPROCESSING_MAP</code></h4>
+<p>The <code>PREPROCESSING_MAP</code> configuration variable defines which types of datasets should be processed with what binsize for a given windowsize. The general structure is the following:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#f92672">{</span>
+    windowsize: <span style="color:#f92672">{</span>
+        datatype: <span style="color:#f92672">[</span>
+            binsize,
+            .
+            .
+            .
+        <span style="color:#f92672">]</span>,
+        .
+        .
+        .
+    <span style="color:#f92672">}</span>,
+    .
+    .
+    .
+<span style="color:#f92672">}</span>
+</code></pre></div><p>The default <code>PREPROCESSING_MAP</code> has been chosen to provide a balance between resolution and preprocessing time. If your application requires finer resolution or different binsizes, keep in mind that small binsizes at large windowsizes can cause large loads on your server and adjustments should be made with caution.</p>
+<h4 id="variable_size_expansion_factor"><code>VARIABLE_SIZE_EXPANSION_FACTOR</code></h4>
+<p>This floating-point number is used when preprocessing regions that have been added as interval features. It specifies how much the snippets should expand to the left and right as a fraction of the specific region.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-txt" data-lang="txt">Left Expansion                 Region             Right Expansion
+---------------|---------------------------------|---------------
+</code></pre></div><h4 id="pipeline_names"><code>PIPELINE_NAMES</code></h4>
+<p>This configuration variable defines the preprocessing pipelines to be used for a given datatype. The structure of these values is:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#f92672">{</span>
+    datatype: <span style="color:#f92672">(</span>pipeline_function, pipeline_description<span style="color:#f92672">)</span>,
+    .
+    .
+    .
+<span style="color:#f92672">}</span>
+</code></pre></div><p>The <code>pipeline_function</code> refers to a function in the file <code>back_end/app/tasks.py</code>.</p>
+<h4 id="pipeline_queues"><code>PIPELINE_QUEUES</code></h4>
+<p>This configuration variable holds a mapping between data types and the queue it should be processed on. Currently, we define three different queues:</p>
+<ul>
+<li><code>short</code></li>
+<li><code>medium</code></li>
+<li><code>long</code></li>
+</ul>
+<p>The <code>short</code> queues is reserved for small tasks that are not related to preprocessing. The <code>medium</code> queue refers to tasks that can be typically completed in less than 30s, and the <code>long</code> queue refers to tasks that run longer than 30s. The structure of the mapping is:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#f92672">{</span>
+    datatype: queue,
+    .
+    .
+    .
+<span style="color:#f92672">}</span>
+</code></pre></div><h4 id="cluster_number_large-and-cluster_number_small"><code>CLUSTER_NUMBER_LARGE</code> and <code>CLUSTER_NUMBER_SMALL</code></h4>
+<p>These variables refer to the number of clusters to use when grouping regions in the embedding widgets (the <a href="/docs/widgets/1d_feature_embedding/">1d-feature embedding widget</a> and <a href="/docs/widgets/2d_feature_embedding/">2d-feature embedding widget</a>). The variable <code>CLUSTER_NUMBER_LARGE</code> is used to define small neighborhoods, and the variable <code>CLUSTER_NUMBER_SMALL</code> is used to define large neighborhoods (a large number of clusters means that the neighborhood they represent is smaller).</p>
+<h4 id="dataset_option_mapping"><code>DATASET_OPTION_MAPPING</code></h4>
+<p>This configuration variable defines metadata options for different data types. The general structure is:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#f92672">{</span>
+        <span style="color:#e6db74">&#34;DatasetType&#34;</span>: <span style="color:#f92672">{</span>
+            <span style="color:#e6db74">&#34;bedfile&#34;</span>: <span style="color:#f92672">{</span>
+                <span style="color:#e6db74">&#34;ValueType&#34;</span>: <span style="color:#f92672">{</span>
+                    <span style="color:#e6db74">&#34;ValueType1&#34;</span>: <span style="color:#f92672">{</span>
+                        <span style="color:#e6db74">&#34;Option1&#34;</span>: <span style="color:#f92672">[</span><span style="color:#e6db74">&#34;Possible&#34;</span>, <span style="color:#e6db74">&#34;Values&#34;</span><span style="color:#f92672">]</span>,
+                        .
+                        .
+                        .
+                    <span style="color:#f92672">}</span>,
+                    .
+                    .
+                    .
+                <span style="color:#f92672">}</span>
+            <span style="color:#f92672">}</span>,
+            <span style="color:#e6db74">&#34;bigwig&#34;</span>: <span style="color:#f92672">{</span>
+                <span style="color:#e6db74">&#34;ValueType&#34;</span>: <span style="color:#f92672">{</span>
+                    <span style="color:#e6db74">&#34;ValueType1&#34;</span>: <span style="color:#f92672">{</span>
+                        <span style="color:#e6db74">&#34;Option1&#34;</span>: <span style="color:#f92672">[</span><span style="color:#e6db74">&#34;Possible&#34;</span>, <span style="color:#e6db74">&#34;Values&#34;</span><span style="color:#f92672">]</span>,
+                        .
+                        .
+                        .
+                    <span style="color:#f92672">}</span>,
+                    .
+                    .
+                    .
+                <span style="color:#f92672">}</span>
+            <span style="color:#f92672">}</span>,
+            <span style="color:#e6db74">&#34;cooler&#34;</span>: <span style="color:#f92672">{</span>
+                <span style="color:#e6db74">&#34;ValueType&#34;</span>: <span style="color:#f92672">{</span>
+                    <span style="color:#e6db74">&#34;ValueType1&#34;</span>: <span style="color:#f92672">{</span>
+                        <span style="color:#e6db74">&#34;Option1&#34;</span>: <span style="color:#f92672">[</span><span style="color:#e6db74">&#34;Possible&#34;</span>, <span style="color:#e6db74">&#34;Values&#34;</span><span style="color:#f92672">]</span>,
+                        .
+                        .
+                        .
+                    <span style="color:#f92672">}</span>,
+                    .
+                    .
+                    .
+                <span style="color:#f92672">}</span>
+            <span style="color:#f92672">}</span>,
+        <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+</code></pre></div><p>Here, each dataset type can define multiple value types that can have multiple custom options. Note that changing option values only requires changing this configuration option, whereas adding value types and types of options requires changing the <code>Dataset</code> database model.</p>
+<h4 id="stackup_threshold"><code>STACKUP_THRESHOLD</code></h4>
+<p>This configuration variable defines the number of rows above which intervals are downsampled for displaying in the <a href="/docs/widgets/stackup/">stacked lineprofile widget</a>.</p>
+<h4 id="obs_exp_processes-and-pileup_processes"><code>OBS_EXP_PROCESSES</code> and <code>PILEUP_PROCESSES</code></h4>
+<p>Defines the number of processes to use per worker to calculate observed/expected matrices and pileups, respectively.</p>
+<h2 id="docker-compose-files">Docker compose files</h2>
+<p>There are three different Docker compose files that allow starting HiCognition in different modes:</p>
+<ul>
+<li><code>docker-compose.yml</code> | This file is used to start HiCognition in &ldquo;production mode&rdquo;</li>
+<li><code>docker_dev.yml</code> | This file is used to start HiCognition in &ldquo;development mode&rdquo;</li>
+<li><code>docker_integration_tests.yml</code> | This file is used to run the integration tests (see the <a href="/docs/development/tests/">testing section</a> for more details)</li>
+</ul>
+
+
+<footer class="footline">
+	
+</footer>
+
+        
+        </div>
+        
+
+      </div>
+
+    <div id="navigation">
+        
+        
+
+        
+            
+            
+                
+                    
+                    
+                
+                
+
+                    
+                    
+                        
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                        
+                        
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                        
+                        
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                        
+                        
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+            
+        
+                    
+            
+        
+
+        
+
+
+	 
+	 
+    </div>
+
+    </section>
+
+    <div style="left: -1000px; overflow: scroll; position: absolute; top: -1000px; border: none; box-sizing: content-box; height: 200px; margin: 0px; padding: 0px; width: 200px;">
+      <div style="border: none; box-sizing: content-box; height: 200px; margin: 0px; padding: 0px; width: 200px;"></div>
+    </div>
+    <script src="/docs/js/clipboard.min.js?1645796054"></script>
+    <script src="/docs/js/perfect-scrollbar.min.js?1645796054"></script>
+    <script src="/docs/js/perfect-scrollbar.jquery.min.js?1645796054"></script>
+    <script src="/docs/js/jquery.sticky.js?1645796054"></script>
+    <script src="/docs/js/featherlight.min.js?1645796054"></script>
+    <script src="/docs/js/highlight.pack.js?1645796054"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script src="/docs/js/modernizr.custom-3.6.0.js?1645796054"></script>
+    <script src="/docs/js/learn.js?1645796054"></script>
+    <script src="/docs/js/hugo-learn.js?1645796054"></script>
+    
+        
+            <script src="/docs/mermaid/mermaid.js?1645796054"></script>
+        
+        <script>
+            mermaid.initialize({ startOnLoad: true });
+        </script>
+    
+    
+
+  </body>
+</html>
+
