@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>enrichment on HiCognition</title>
-    <link>http://localhost/docs/tags/enrichment/</link>
+    <link>https://gerlichlab.github.io/hicognition/docs/tags/enrichment/</link>
     <description>Recent content in enrichment on HiCognition</description>
     <generator>Hugo -- gohugo.io</generator>
     <lastBuildDate>Fri, 11 Feb 2022 09:58:12 +0100</lastBuildDate>
     
-	<atom:link href="http://localhost/docs/tags/enrichment/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://gerlichlab.github.io/hicognition/docs/tags/enrichment/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Association</title>
-      <link>http://localhost/docs/widgets/association/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/association/</link>
       <pubDate>Fri, 11 Feb 2022 09:58:12 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/association/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/association/</guid>
       <description>The association widget allows you to determine what other genomic regions are enriched at your target genomic region set. It contains two visualizations that give you an overview of where the most enrichment happens (upper plot) and what is enriched at those sites (lower plot).
 Suitable data The association widget is suitable for a collection of genomic regions (see here for more information about collections).
 Preprocessing algorithm Point-regions During the preprocessing stage, the LOLA algorithm is run for each bin along the specific windowsize.</description>

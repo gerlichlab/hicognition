@@ -2,40 +2,40 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>HiCognition</title>
-    <link>http://localhost/docs/</link>
+    <link>https://gerlichlab.github.io/hicognition/docs/</link>
     <description>Recent content on HiCognition</description>
     <generator>Hugo -- gohugo.io</generator>
     <lastBuildDate>Mon, 21 Feb 2022 10:29:41 +0100</lastBuildDate>
     
-	<atom:link href="http://localhost/docs/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://gerlichlab.github.io/hicognition/docs/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Widget controls</title>
-      <link>http://localhost/docs/widgets/widget_controls/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/widget_controls/</link>
       <pubDate>Fri, 18 Feb 2022 12:06:53 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/widget_controls/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/widget_controls/</guid>
       <description>Widget collections and widgets have controls that allow resizing, zooming, and selecting hosted datasets. Widget collections always have the same set of controls. In contrast, widgets have additional, context-dependent controls that depend on the type of loaded widgets (see the description of widget types in this section).
 Widget Collection Widget collections represent genomic region sets and can host a variable number of widgets representing genomic features at this shared region set.</description>
     </item>
     
     <item>
       <title>Preprocessing tasks</title>
-      <link>http://localhost/docs/preprocessing/job_types/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/preprocessing/job_types/</link>
       <pubDate>Thu, 17 Feb 2022 10:19:25 +0100</pubDate>
       
-      <guid>http://localhost/docs/preprocessing/job_types/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/preprocessing/job_types/</guid>
       <description>HiCognition provides a number of concrete preprocessing tasks that are related to the abstract tasks defined in the concepts section. These can be structured as tasks that aggregate genomic features for a given region set or tasks that aggregate collections of features. The preprocessing tasks are related to the types of widgets available for exploration, although some tasks produce data for multiple widgets.
 Tasks for single genomic features These tasks aggregate a single genomic feature on a genomic region set and thus make this feature available for exploration.</description>
     </item>
     
     <item>
       <title>Regions</title>
-      <link>http://localhost/docs/data_management/regions/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/data_management/regions/</link>
       <pubDate>Wed, 16 Feb 2022 10:09:52 +0100</pubDate>
       
-      <guid>http://localhost/docs/data_management/regions/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/data_management/regions/</guid>
       <description>Genomic regions are the central element of the region-set focus approach and are represented in practice by BED files that the user uploads to the server.
 Data requirements BED-files should conform to the BED-standard, meaning that they should contain all required BED fields with tab-separated entries:
  chrom chromStart chromEnd  BED-files that are accepted by HiCognition may contain column names, so the following is acceptable:
@@ -44,29 +44,29 @@ chrom start end chr1 1234 5678 .</description>
     
     <item>
       <title>Background</title>
-      <link>http://localhost/docs/concepts/background/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/concepts/background/</link>
       <pubDate>Wed, 09 Feb 2022 15:40:22 +0100</pubDate>
       
-      <guid>http://localhost/docs/concepts/background/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/concepts/background/</guid>
       <description>Genomic data exploration The advent of high throughput sequencing has not only enabled researchers to assemble a multitude of different genomes but also firmly established sequencing-based readouts as tools to quantify genome function. This capability has sparked the ENCODE project (Encyclopedia of DNA Elements) that aims to segment genomes into discrete functional units such as genes, insulators, and enhancers based on an extensive catalog of quantitative genomics datasets. Through this and other resources, researchers can draw upon a wealth of genome annotations and integrate them with their own datasets.</description>
     </item>
     
     <item>
       <title>Requirements</title>
-      <link>http://localhost/docs/installation/requirements/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/installation/requirements/</link>
       <pubDate>Fri, 04 Feb 2022 14:04:22 +0100</pubDate>
       
-      <guid>http://localhost/docs/installation/requirements/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/installation/requirements/</guid>
       <description>Software The only software requirement for HiCognition is docker. To install Docker, follow the respective installation guide for your platform. All needed containers are specified in the docker-compose file in the HiCognition repository (see build for more details).
 Hardware HiCognition is an integrated data exploration and preprocessing platform. This means that it is not only responsible for displaying visualizations but also provides a preprocessing queue (see preprocessing for more details) to calculate aggregation data of large genomic data sets.</description>
     </item>
     
     <item>
       <title>App architecture</title>
-      <link>http://localhost/docs/development/development_info/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/development/development_info/</link>
       <pubDate>Wed, 02 Feb 2022 13:07:22 +0100</pubDate>
       
-      <guid>http://localhost/docs/development/development_info/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/development/development_info/</guid>
       <description>This document contains a description of the architecture of HiCognition, which can be summarized in the following scheme:
 Back-end Docker network All the docker containers that work together in the back-end are coordinated by docker-compose (see docker-compose file) and reside within a docker-network called hicognition-net, to facilitate networking between them. The docker containers that are used are the following:
  hicognition - Container that harbors the flask-server mysql - contains Mysql database nginx - contains nginx reverse-proxy redis-server - contains the redis-server redis-worker - redis-worker container  Additionally, there is a transient container used:</description>
@@ -74,10 +74,10 @@ Back-end Docker network All the docker containers that work together in the back
     
     <item>
       <title>Manage preprocessing</title>
-      <link>http://localhost/docs/preprocessing/manage_preprocessing/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/preprocessing/manage_preprocessing/</link>
       <pubDate>Thu, 17 Feb 2022 10:29:35 +0100</pubDate>
       
-      <guid>http://localhost/docs/preprocessing/manage_preprocessing/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/preprocessing/manage_preprocessing/</guid>
       <description>HiCognition provides a user interface to submit preprocessing tasks and check their progress.
 Submit tasks Depending on whether you want to submit a task for features or collections (see here for more details), click either Preprocess Features or Preprocess Collections in the data management drawer:
 This will open the preprocessing dialogue:
@@ -86,48 +86,48 @@ Here, you first need to select for which region you want to start preprocessing.
     
     <item>
       <title>Features</title>
-      <link>http://localhost/docs/data_management/features/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/data_management/features/</link>
       <pubDate>Wed, 16 Feb 2022 10:09:57 +0100</pubDate>
       
-      <guid>http://localhost/docs/data_management/features/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/data_management/features/</guid>
       <description>Genomic features are an essential part of the region-set focus approach and are defined as 1D- or 2D-continuous data that is mapped to a genomic coordinate system. Examples are ChiP-seq read density, Hi-C interaction values, and GRO-seq tracks. Genomic features are mainly used to understand genomic regions in the context of the region-set focus approach. They can thus be thought of as &amp;ldquo;independent variables&amp;rdquo; that are used to explain the &amp;ldquo;dependent&amp;rdquo; genomic regions.</description>
     </item>
     
     <item>
       <title>1D-average</title>
-      <link>http://localhost/docs/widgets/lineprofile/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/lineprofile/</link>
       <pubDate>Fri, 11 Feb 2022 09:56:01 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/lineprofile/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/lineprofile/</guid>
       <description>The 1D-average widget can be used to display the average magnitude of a 1D-genomic feature over a specific region set. It is a simple line-profile visualization that can load one or more genomic datasets and implements a simple tooltip that shows the magnitude of the specific data sets.
 Suitable data The 1D-average widget is suitable for any genomic dataset that can be represented using a bigwig file. This includes coverage tracks for Chip-seq experiments, Gro-seq experiments, and features derived from Hi-C data, such as insulation scores.</description>
     </item>
     
     <item>
       <title>Region-set focus approach</title>
-      <link>http://localhost/docs/concepts/region_set_focus/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/concepts/region_set_focus/</link>
       <pubDate>Wed, 09 Feb 2022 15:40:53 +0100</pubDate>
       
-      <guid>http://localhost/docs/concepts/region_set_focus/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/concepts/region_set_focus/</guid>
       <description>Region-set focus approach The idea behind the region-set focus approach is that there is a central region-set of particular interest in many biological questions. In contrast, other genomic data is mainly used to find associations. Specifically, a region-set of interest often arises either because the broad biological question gives a natural constraint (e.g., genes/enhancers in the gene expression field), or a particular experimental procedure produces a new region-set that is not characterized, for example, the set of expressed genes or changed 3d-genome interaction patterns in a perturbation condition.</description>
     </item>
     
     <item>
       <title>Development environment</title>
-      <link>http://localhost/docs/development/dev_env/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/development/dev_env/</link>
       <pubDate>Tue, 08 Feb 2022 17:40:50 +0100</pubDate>
       
-      <guid>http://localhost/docs/development/dev_env/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/development/dev_env/</guid>
       <description>Starting HiCognition in development mode We provide a docker-compose file that sets up the local development environment. This file uses the same containers as the production compose file, so if you haven&amp;rsquo;t done so, follow the instructions for building the containers.
 When you start a development HiCognition instance, the front-end files will be served by a node.js development server with enabled hot reload. You can then also use the Vue.js devtools Chrome extension for debugging.</description>
     </item>
     
     <item>
       <title>Build</title>
-      <link>http://localhost/docs/installation/build/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/installation/build/</link>
       <pubDate>Fri, 04 Feb 2022 14:06:58 +0100</pubDate>
       
-      <guid>http://localhost/docs/installation/build/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/installation/build/</guid>
       <description>Clone repository To get started, first clone the HiCognition GitHub repository:
 git clone https://github.com/gerlichlab/HiCognition Build docker images HiCognition consists of multiple docker images that work together to power the app. The needed images are specified in the docker-compose.yml configuration file contained in the Github repository. Once you have cloned the repository, you can build the required images as follows:
 cd HiCognition # The location that has the cloned GitHub repository docker-compose build This step will pull multiple large base images and start the build process for HiCognition custom images.</description>
@@ -135,10 +135,10 @@ cd HiCognition # The location that has the cloned GitHub repository docker-compo
     
     <item>
       <title>Collections</title>
-      <link>http://localhost/docs/data_management/collections/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/data_management/collections/</link>
       <pubDate>Wed, 16 Feb 2022 10:11:34 +0100</pubDate>
       
-      <guid>http://localhost/docs/data_management/collections/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/data_management/collections/</guid>
       <description>HiCognition uses collections to group datasets together for them to be available for some of the more complex processing algorithms.
 Collection types There are two types of collections in HiCognition, which are defined by the types of datasets they contain.
 1D-feature collections 1D-feature collections are named groups of 1D-features, which can be used for preprocessing data for display in the 1D-feature embedding widget
@@ -147,50 +147,50 @@ Region collections Region collections are named groups of genomic regions, which
     
     <item>
       <title>2D-average</title>
-      <link>http://localhost/docs/widgets/2d_average/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/2d_average/</link>
       <pubDate>Fri, 11 Feb 2022 09:56:10 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/2d_average/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/2d_average/</guid>
       <description>The 2D-average widget can be used to display the average magnitude of a 2D-genomic feature over a specific region set. It is a heatmap representation of the underlying aggregated data.
 Suitable data The 2D-average widget is suitable for any genomic dataset that can be represented using a multiresolution cooler file. This is primarily suitable for Hi-C data but can also include other data sets that assign a value to a tuple of genomic coordinates.</description>
     </item>
     
     <item>
       <title>Implementation</title>
-      <link>http://localhost/docs/concepts/hicognition/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/concepts/hicognition/</link>
       <pubDate>Fri, 11 Feb 2022 08:43:32 +0100</pubDate>
       
-      <guid>http://localhost/docs/concepts/hicognition/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/concepts/hicognition/</guid>
       <description>Architecture overview To provide a reference implementation of the region-set focus approach, we developed HiCognition. HiCognition is a containerized web application that uses a Task-queue in conjunction with multiple workers to allow precomputation of the analysis tasks mentioned. For visualization, HiCognition draws upon powerful javascript frameworks such as D3.js and PixiJS to allow the efficient display of the pre-computed data (see the app architecture section for more details).
 Data management To make managing genomic datasets for exploration practical, HiCognition contains a dataset manager that stores available datasets as well as finished pre-computations in a MySQL database.</description>
     </item>
     
     <item>
       <title>Tests</title>
-      <link>http://localhost/docs/development/tests/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/development/tests/</link>
       <pubDate>Tue, 08 Feb 2022 18:24:38 +0100</pubDate>
       
-      <guid>http://localhost/docs/development/tests/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/development/tests/</guid>
       <description>All contributions to HiCognition must pass all existing tests and ideally implement new test-cases that test all aspects of new features. The tests are stratified into test for the the flask server (Backend test), tests for the front-end (Frontend tests) and integration tests that test typical user flows (Integration tests).
 Backend tests The backend tests test both the request handling of the flask server as well as the preprocessing tasks that run inside the queue worker instances.</description>
     </item>
     
     <item>
       <title>Configuration</title>
-      <link>http://localhost/docs/installation/configuration/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/installation/configuration/</link>
       <pubDate>Fri, 04 Feb 2022 14:06:13 +0100</pubDate>
       
-      <guid>http://localhost/docs/installation/configuration/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/installation/configuration/</guid>
       <description>Configuring your HiCognition instance can be done using two approaches:
  For common setup tasks, we defined environment variables that need to be available during the start-up For more specific configuration, you can edit the flask configuration files  Environment variables Setting environment variables The most convenient way of setting your environment variables is using a .env file that specifies them as key-value pairs. docker-compose will use this file - if it is in the same directory - and inject the variables during start-up.</description>
     </item>
     
     <item>
       <title>Stacked lineprofiles</title>
-      <link>http://localhost/docs/widgets/stackup/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/stackup/</link>
       <pubDate>Fri, 11 Feb 2022 09:56:17 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/stackup/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/stackup/</guid>
       <description>The stacked line profile widget can be used to display individual examples of 1D-genomic features over a specific region set. It is a heatmap representation, where each row corresponds to one genomic region.
 The stacked line profile widget does not show the entirety of the selected region-set, but only a subset. The down-sampling ratio can be defined as configuration variable (see the configuration section for details)
  Suitable data The stacked line profile widget is suitable for any genomic dataset that can be represented using a bigwig file.</description>
@@ -198,49 +198,49 @@ The stacked line profile widget does not show the entirety of the selected regio
     
     <item>
       <title>Updating</title>
-      <link>http://localhost/docs/installation/updating/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/installation/updating/</link>
       <pubDate>Fri, 04 Feb 2022 14:07:42 +0100</pubDate>
       
-      <guid>http://localhost/docs/installation/updating/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/installation/updating/</guid>
       <description>Updating HiCognition is relatively easy since all changes to the code can be integrated by rebuilding the containers. Since we use automatic database migration tools, all changes to the MySQL database are applied automatically. The only exception would change that breaks compatibility with older, cached preprocessing data. But these exceptions will be communicated with the newest release and contain a detailed guide on the migrate old versions to new ones.</description>
     </item>
     
     <item>
       <title>1D-feature embedding</title>
-      <link>http://localhost/docs/widgets/1d_feature_embedding/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/1d_feature_embedding/</link>
       <pubDate>Fri, 11 Feb 2022 09:56:26 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/1d_feature_embedding/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/1d_feature_embedding/</guid>
       <description>The 1D-feature embedding widget can be used to display the distribution of genomic regions with regards to a collection (see here for more details on collections) of 1D features. It represents a 2-dimensional embedding of the genomic regions as a heatmap of points.
 Suitable data The 1D-feature embedding widget is suitable for a collection of 1D features. 1D-features are any genomic dataset that can be represented using a bigwig file. This includes coverage tracks for Chip-seq experiments, Gro-seq experiments, but also features derived from Hi-C data such as insulation scores.</description>
     </item>
     
     <item>
       <title>Contribution guide</title>
-      <link>http://localhost/docs/development/cont_guide/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/development/cont_guide/</link>
       <pubDate>Wed, 09 Feb 2022 13:44:15 +0100</pubDate>
       
-      <guid>http://localhost/docs/development/cont_guide/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/development/cont_guide/</guid>
       <description>HiCognition is an open-source project, and as such, we welcome all contributions to our codebase. The main requirement for a contribution to be accepted is that it passes all tests (described in detail here) and conforms to our style decisions.
 Automatic testing When a pull request is issued on the HiCognition GitHub repository, we have set up git actions that check the code for linting issues, run it against formatting guidelines, and dispatch our testing suite.</description>
     </item>
     
     <item>
       <title>2D-feature embedding</title>
-      <link>http://localhost/docs/widgets/2d_feature_embedding/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/2d_feature_embedding/</link>
       <pubDate>Fri, 11 Feb 2022 09:56:29 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/2d_feature_embedding/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/2d_feature_embedding/</guid>
       <description>The 2D-feature embedding widget can be used to display the distribution of genomic regions regarding a 2D-genomic feature. It represents a 2-dimensional embedding of the genomic regions as a heatmap of points.
 Suitable data The 2D-feature embedding widget is suitable for any genomic dataset that can be represented using a multiresolution cooler file. This is mostly suitable for Hi-C data but can include other data sets that assign a value to a tuple of genomic coordinates.</description>
     </item>
     
     <item>
       <title>Association</title>
-      <link>http://localhost/docs/widgets/association/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/association/</link>
       <pubDate>Fri, 11 Feb 2022 09:58:12 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/association/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/association/</guid>
       <description>The association widget allows you to determine what other genomic regions are enriched at your target genomic region set. It contains two visualizations that give you an overview of where the most enrichment happens (upper plot) and what is enriched at those sites (lower plot).
 Suitable data The association widget is suitable for a collection of genomic regions (see here for more information about collections).
 Preprocessing algorithm Point-regions During the preprocessing stage, the LOLA algorithm is run for each bin along the specific windowsize.</description>
@@ -248,10 +248,10 @@ Preprocessing algorithm Point-regions During the preprocessing stage, the LOLA a
     
     <item>
       <title>Session</title>
-      <link>http://localhost/docs/sessions/session/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/sessions/session/</link>
       <pubDate>Mon, 21 Feb 2022 10:29:41 +0100</pubDate>
       
-      <guid>http://localhost/docs/sessions/session/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/sessions/session/</guid>
       <description>HiCognition sessions encapsulate a particular configuration of widgets inside all open widgets.
 Creating a session To save the current state of all your widget collections, click on Save Session in the top-right menu:
 This will open a dialogue, which allows you to name your current session:
@@ -261,10 +261,10 @@ Restoring sessions After you create a session, you can restore your session by c
     
     <item>
       <title>Genome assemblies</title>
-      <link>http://localhost/docs/data_management/genome_assemblies/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/data_management/genome_assemblies/</link>
       <pubDate>Wed, 16 Feb 2022 10:27:11 +0100</pubDate>
       
-      <guid>http://localhost/docs/data_management/genome_assemblies/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/data_management/genome_assemblies/</guid>
       <description>HiCognition allows managing genome assemblies to be able to work with different assemblies and organisms in parallel.
 Adding genome assemblies To add a genome assembly click the Add Genome Assembly button in the data management drawer:
 This will open a dialogue that lets you define a new genome assembly:
@@ -273,10 +273,10 @@ Here you need to give your assembly a name (this needs to be unique), select the
     
     <item>
       <title>Quick start with example data</title>
-      <link>http://localhost/docs/getting_started/get_started_w_example_data/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/getting_started/get_started_w_example_data/</link>
       <pubDate>Thu, 03 Feb 2022 15:25:44 +0100</pubDate>
       
-      <guid>http://localhost/docs/getting_started/get_started_w_example_data/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/getting_started/get_started_w_example_data/</guid>
       <description>Quick start with example data To take your first steps with HiCognition, you can download example data from our dropbox location. The files located there are centered on analysis connected to sister chromatid sensitive Hi-C.
 Example 1: Conformation of sister chromatids around TADs Needed data:
  G2_tads_w_size.bed | The location of TADs in G2 synchronized HeLa cells G2.fc_1_2_3_4.wOldG2.cis.1000.mcool | Cis-sister contacts in G2 synchronized HeLa cells G2.fc_1_2_3_4.wOldG2.trans.1000.mcool | Trans-sister contacts in G2 synchronized HeLa cells  To upload the files, follow our upload instructions for genomic regions and genomic features.</description>

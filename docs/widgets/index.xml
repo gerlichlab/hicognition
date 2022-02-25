@@ -2,50 +2,50 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Widgets on HiCognition</title>
-    <link>http://localhost/docs/widgets/</link>
+    <link>https://gerlichlab.github.io/hicognition/docs/widgets/</link>
     <description>Recent content in Widgets on HiCognition</description>
     <generator>Hugo -- gohugo.io</generator>
     <lastBuildDate>Thu, 03 Feb 2022 15:35:17 +0100</lastBuildDate>
     
-	<atom:link href="http://localhost/docs/widgets/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://gerlichlab.github.io/hicognition/docs/widgets/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Widget controls</title>
-      <link>http://localhost/docs/widgets/widget_controls/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/widget_controls/</link>
       <pubDate>Fri, 18 Feb 2022 12:06:53 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/widget_controls/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/widget_controls/</guid>
       <description>Widget collections and widgets have controls that allow resizing, zooming, and selecting hosted datasets. Widget collections always have the same set of controls. In contrast, widgets have additional, context-dependent controls that depend on the type of loaded widgets (see the description of widget types in this section).
 Widget Collection Widget collections represent genomic region sets and can host a variable number of widgets representing genomic features at this shared region set.</description>
     </item>
     
     <item>
       <title>1D-average</title>
-      <link>http://localhost/docs/widgets/lineprofile/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/lineprofile/</link>
       <pubDate>Fri, 11 Feb 2022 09:56:01 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/lineprofile/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/lineprofile/</guid>
       <description>The 1D-average widget can be used to display the average magnitude of a 1D-genomic feature over a specific region set. It is a simple line-profile visualization that can load one or more genomic datasets and implements a simple tooltip that shows the magnitude of the specific data sets.
 Suitable data The 1D-average widget is suitable for any genomic dataset that can be represented using a bigwig file. This includes coverage tracks for Chip-seq experiments, Gro-seq experiments, and features derived from Hi-C data, such as insulation scores.</description>
     </item>
     
     <item>
       <title>2D-average</title>
-      <link>http://localhost/docs/widgets/2d_average/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/2d_average/</link>
       <pubDate>Fri, 11 Feb 2022 09:56:10 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/2d_average/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/2d_average/</guid>
       <description>The 2D-average widget can be used to display the average magnitude of a 2D-genomic feature over a specific region set. It is a heatmap representation of the underlying aggregated data.
 Suitable data The 2D-average widget is suitable for any genomic dataset that can be represented using a multiresolution cooler file. This is primarily suitable for Hi-C data but can also include other data sets that assign a value to a tuple of genomic coordinates.</description>
     </item>
     
     <item>
       <title>Stacked lineprofiles</title>
-      <link>http://localhost/docs/widgets/stackup/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/stackup/</link>
       <pubDate>Fri, 11 Feb 2022 09:56:17 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/stackup/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/stackup/</guid>
       <description>The stacked line profile widget can be used to display individual examples of 1D-genomic features over a specific region set. It is a heatmap representation, where each row corresponds to one genomic region.
 The stacked line profile widget does not show the entirety of the selected region-set, but only a subset. The down-sampling ratio can be defined as configuration variable (see the configuration section for details)
  Suitable data The stacked line profile widget is suitable for any genomic dataset that can be represented using a bigwig file.</description>
@@ -53,30 +53,30 @@ The stacked line profile widget does not show the entirety of the selected regio
     
     <item>
       <title>1D-feature embedding</title>
-      <link>http://localhost/docs/widgets/1d_feature_embedding/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/1d_feature_embedding/</link>
       <pubDate>Fri, 11 Feb 2022 09:56:26 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/1d_feature_embedding/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/1d_feature_embedding/</guid>
       <description>The 1D-feature embedding widget can be used to display the distribution of genomic regions with regards to a collection (see here for more details on collections) of 1D features. It represents a 2-dimensional embedding of the genomic regions as a heatmap of points.
 Suitable data The 1D-feature embedding widget is suitable for a collection of 1D features. 1D-features are any genomic dataset that can be represented using a bigwig file. This includes coverage tracks for Chip-seq experiments, Gro-seq experiments, but also features derived from Hi-C data such as insulation scores.</description>
     </item>
     
     <item>
       <title>2D-feature embedding</title>
-      <link>http://localhost/docs/widgets/2d_feature_embedding/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/2d_feature_embedding/</link>
       <pubDate>Fri, 11 Feb 2022 09:56:29 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/2d_feature_embedding/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/2d_feature_embedding/</guid>
       <description>The 2D-feature embedding widget can be used to display the distribution of genomic regions regarding a 2D-genomic feature. It represents a 2-dimensional embedding of the genomic regions as a heatmap of points.
 Suitable data The 2D-feature embedding widget is suitable for any genomic dataset that can be represented using a multiresolution cooler file. This is mostly suitable for Hi-C data but can include other data sets that assign a value to a tuple of genomic coordinates.</description>
     </item>
     
     <item>
       <title>Association</title>
-      <link>http://localhost/docs/widgets/association/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/association/</link>
       <pubDate>Fri, 11 Feb 2022 09:58:12 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/association/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/association/</guid>
       <description>The association widget allows you to determine what other genomic regions are enriched at your target genomic region set. It contains two visualizations that give you an overview of where the most enrichment happens (upper plot) and what is enriched at those sites (lower plot).
 Suitable data The association widget is suitable for a collection of genomic regions (see here for more information about collections).
 Preprocessing algorithm Point-regions During the preprocessing stage, the LOLA algorithm is run for each bin along the specific windowsize.</description>

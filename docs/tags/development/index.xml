@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>development on HiCognition</title>
-    <link>http://localhost/docs/tags/development/</link>
+    <link>https://gerlichlab.github.io/hicognition/docs/tags/development/</link>
     <description>Recent content in development on HiCognition</description>
     <generator>Hugo -- gohugo.io</generator>
     <lastBuildDate>Wed, 09 Feb 2022 13:44:15 +0100</lastBuildDate>
     
-	<atom:link href="http://localhost/docs/tags/development/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://gerlichlab.github.io/hicognition/docs/tags/development/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>App architecture</title>
-      <link>http://localhost/docs/development/development_info/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/development/development_info/</link>
       <pubDate>Wed, 02 Feb 2022 13:07:22 +0100</pubDate>
       
-      <guid>http://localhost/docs/development/development_info/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/development/development_info/</guid>
       <description>This document contains a description of the architecture of HiCognition, which can be summarized in the following scheme:
 Back-end Docker network All the docker containers that work together in the back-end are coordinated by docker-compose (see docker-compose file) and reside within a docker-network called hicognition-net, to facilitate networking between them. The docker containers that are used are the following:
  hicognition - Container that harbors the flask-server mysql - contains Mysql database nginx - contains nginx reverse-proxy redis-server - contains the redis-server redis-worker - redis-worker container  Additionally, there is a transient container used:</description>
@@ -23,30 +23,30 @@ Back-end Docker network All the docker containers that work together in the back
     
     <item>
       <title>Development environment</title>
-      <link>http://localhost/docs/development/dev_env/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/development/dev_env/</link>
       <pubDate>Tue, 08 Feb 2022 17:40:50 +0100</pubDate>
       
-      <guid>http://localhost/docs/development/dev_env/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/development/dev_env/</guid>
       <description>Starting HiCognition in development mode We provide a docker-compose file that sets up the local development environment. This file uses the same containers as the production compose file, so if you haven&amp;rsquo;t done so, follow the instructions for building the containers.
 When you start a development HiCognition instance, the front-end files will be served by a node.js development server with enabled hot reload. You can then also use the Vue.js devtools Chrome extension for debugging.</description>
     </item>
     
     <item>
       <title>Tests</title>
-      <link>http://localhost/docs/development/tests/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/development/tests/</link>
       <pubDate>Tue, 08 Feb 2022 18:24:38 +0100</pubDate>
       
-      <guid>http://localhost/docs/development/tests/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/development/tests/</guid>
       <description>All contributions to HiCognition must pass all existing tests and ideally implement new test-cases that test all aspects of new features. The tests are stratified into test for the the flask server (Backend test), tests for the front-end (Frontend tests) and integration tests that test typical user flows (Integration tests).
 Backend tests The backend tests test both the request handling of the flask server as well as the preprocessing tasks that run inside the queue worker instances.</description>
     </item>
     
     <item>
       <title>Contribution guide</title>
-      <link>http://localhost/docs/development/cont_guide/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/development/cont_guide/</link>
       <pubDate>Wed, 09 Feb 2022 13:44:15 +0100</pubDate>
       
-      <guid>http://localhost/docs/development/cont_guide/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/development/cont_guide/</guid>
       <description>HiCognition is an open-source project, and as such, we welcome all contributions to our codebase. The main requirement for a contribution to be accepted is that it passes all tests (described in detail here) and conforms to our style decisions.
 Automatic testing When a pull request is issued on the HiCognition GitHub repository, we have set up git actions that check the code for linting issues, run it against formatting guidelines, and dispatch our testing suite.</description>
     </item>

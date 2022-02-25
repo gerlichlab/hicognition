@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Getting started on HiCognition</title>
-    <link>http://localhost/docs/getting_started/</link>
+    <link>https://gerlichlab.github.io/hicognition/docs/getting_started/</link>
     <description>Recent content in Getting started on HiCognition</description>
     <generator>Hugo -- gohugo.io</generator>
     <lastBuildDate>Thu, 03 Feb 2022 14:25:47 +0100</lastBuildDate>
     
-	<atom:link href="http://localhost/docs/getting_started/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://gerlichlab.github.io/hicognition/docs/getting_started/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Quick start with example data</title>
-      <link>http://localhost/docs/getting_started/get_started_w_example_data/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/getting_started/get_started_w_example_data/</link>
       <pubDate>Thu, 03 Feb 2022 15:25:44 +0100</pubDate>
       
-      <guid>http://localhost/docs/getting_started/get_started_w_example_data/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/getting_started/get_started_w_example_data/</guid>
       <description>Quick start with example data To take your first steps with HiCognition, you can download example data from our dropbox location. The files located there are centered on analysis connected to sister chromatid sensitive Hi-C.
 Example 1: Conformation of sister chromatids around TADs Needed data:
  G2_tads_w_size.bed | The location of TADs in G2 synchronized HeLa cells G2.fc_1_2_3_4.wOldG2.cis.1000.mcool | Cis-sister contacts in G2 synchronized HeLa cells G2.fc_1_2_3_4.wOldG2.trans.1000.mcool | Trans-sister contacts in G2 synchronized HeLa cells  To upload the files, follow our upload instructions for genomic regions and genomic features.</description>

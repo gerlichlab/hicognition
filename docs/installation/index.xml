@@ -2,30 +2,30 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Installation on HiCognition</title>
-    <link>http://localhost/docs/installation/</link>
+    <link>https://gerlichlab.github.io/hicognition/docs/installation/</link>
     <description>Recent content in Installation on HiCognition</description>
     <generator>Hugo -- gohugo.io</generator>
     <lastBuildDate>Thu, 03 Feb 2022 15:31:03 +0100</lastBuildDate>
     
-	<atom:link href="http://localhost/docs/installation/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://gerlichlab.github.io/hicognition/docs/installation/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Requirements</title>
-      <link>http://localhost/docs/installation/requirements/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/installation/requirements/</link>
       <pubDate>Fri, 04 Feb 2022 14:04:22 +0100</pubDate>
       
-      <guid>http://localhost/docs/installation/requirements/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/installation/requirements/</guid>
       <description>Software The only software requirement for HiCognition is docker. To install Docker, follow the respective installation guide for your platform. All needed containers are specified in the docker-compose file in the HiCognition repository (see build for more details).
 Hardware HiCognition is an integrated data exploration and preprocessing platform. This means that it is not only responsible for displaying visualizations but also provides a preprocessing queue (see preprocessing for more details) to calculate aggregation data of large genomic data sets.</description>
     </item>
     
     <item>
       <title>Build</title>
-      <link>http://localhost/docs/installation/build/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/installation/build/</link>
       <pubDate>Fri, 04 Feb 2022 14:06:58 +0100</pubDate>
       
-      <guid>http://localhost/docs/installation/build/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/installation/build/</guid>
       <description>Clone repository To get started, first clone the HiCognition GitHub repository:
 git clone https://github.com/gerlichlab/HiCognition Build docker images HiCognition consists of multiple docker images that work together to power the app. The needed images are specified in the docker-compose.yml configuration file contained in the Github repository. Once you have cloned the repository, you can build the required images as follows:
 cd HiCognition # The location that has the cloned GitHub repository docker-compose build This step will pull multiple large base images and start the build process for HiCognition custom images.</description>
@@ -33,20 +33,20 @@ cd HiCognition # The location that has the cloned GitHub repository docker-compo
     
     <item>
       <title>Configuration</title>
-      <link>http://localhost/docs/installation/configuration/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/installation/configuration/</link>
       <pubDate>Fri, 04 Feb 2022 14:06:13 +0100</pubDate>
       
-      <guid>http://localhost/docs/installation/configuration/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/installation/configuration/</guid>
       <description>Configuring your HiCognition instance can be done using two approaches:
  For common setup tasks, we defined environment variables that need to be available during the start-up For more specific configuration, you can edit the flask configuration files  Environment variables Setting environment variables The most convenient way of setting your environment variables is using a .env file that specifies them as key-value pairs. docker-compose will use this file - if it is in the same directory - and inject the variables during start-up.</description>
     </item>
     
     <item>
       <title>Updating</title>
-      <link>http://localhost/docs/installation/updating/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/installation/updating/</link>
       <pubDate>Fri, 04 Feb 2022 14:07:42 +0100</pubDate>
       
-      <guid>http://localhost/docs/installation/updating/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/installation/updating/</guid>
       <description>Updating HiCognition is relatively easy since all changes to the code can be integrated by rebuilding the containers. Since we use automatic database migration tools, all changes to the MySQL database are applied automatically. The only exception would change that breaks compatibility with older, cached preprocessing data. But these exceptions will be communicated with the newest release and contain a detailed guide on the migrate old versions to new ones.</description>
     </item>
     

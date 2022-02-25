@@ -2,38 +2,38 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Concepts on HiCognition</title>
-    <link>http://localhost/docs/concepts/</link>
+    <link>https://gerlichlab.github.io/hicognition/docs/concepts/</link>
     <description>Recent content in Concepts on HiCognition</description>
     <generator>Hugo -- gohugo.io</generator>
     <lastBuildDate>Thu, 03 Feb 2022 15:34:45 +0100</lastBuildDate>
     
-	<atom:link href="http://localhost/docs/concepts/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://gerlichlab.github.io/hicognition/docs/concepts/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Background</title>
-      <link>http://localhost/docs/concepts/background/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/concepts/background/</link>
       <pubDate>Wed, 09 Feb 2022 15:40:22 +0100</pubDate>
       
-      <guid>http://localhost/docs/concepts/background/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/concepts/background/</guid>
       <description>Genomic data exploration The advent of high throughput sequencing has not only enabled researchers to assemble a multitude of different genomes but also firmly established sequencing-based readouts as tools to quantify genome function. This capability has sparked the ENCODE project (Encyclopedia of DNA Elements) that aims to segment genomes into discrete functional units such as genes, insulators, and enhancers based on an extensive catalog of quantitative genomics datasets. Through this and other resources, researchers can draw upon a wealth of genome annotations and integrate them with their own datasets.</description>
     </item>
     
     <item>
       <title>Region-set focus approach</title>
-      <link>http://localhost/docs/concepts/region_set_focus/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/concepts/region_set_focus/</link>
       <pubDate>Wed, 09 Feb 2022 15:40:53 +0100</pubDate>
       
-      <guid>http://localhost/docs/concepts/region_set_focus/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/concepts/region_set_focus/</guid>
       <description>Region-set focus approach The idea behind the region-set focus approach is that there is a central region-set of particular interest in many biological questions. In contrast, other genomic data is mainly used to find associations. Specifically, a region-set of interest often arises either because the broad biological question gives a natural constraint (e.g., genes/enhancers in the gene expression field), or a particular experimental procedure produces a new region-set that is not characterized, for example, the set of expressed genes or changed 3d-genome interaction patterns in a perturbation condition.</description>
     </item>
     
     <item>
       <title>Implementation</title>
-      <link>http://localhost/docs/concepts/hicognition/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/concepts/hicognition/</link>
       <pubDate>Fri, 11 Feb 2022 08:43:32 +0100</pubDate>
       
-      <guid>http://localhost/docs/concepts/hicognition/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/concepts/hicognition/</guid>
       <description>Architecture overview To provide a reference implementation of the region-set focus approach, we developed HiCognition. HiCognition is a containerized web application that uses a Task-queue in conjunction with multiple workers to allow precomputation of the analysis tasks mentioned. For visualization, HiCognition draws upon powerful javascript frameworks such as D3.js and PixiJS to allow the efficient display of the pre-computed data (see the app architecture section for more details).
 Data management To make managing genomic datasets for exploration practical, HiCognition contains a dataset manager that stores available datasets as well as finished pre-computations in a MySQL database.</description>
     </item>

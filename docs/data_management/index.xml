@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Data management on HiCognition</title>
-    <link>http://localhost/docs/data_management/</link>
+    <link>https://gerlichlab.github.io/hicognition/docs/data_management/</link>
     <description>Recent content in Data management on HiCognition</description>
     <generator>Hugo -- gohugo.io</generator>
     <lastBuildDate>Fri, 04 Feb 2022 13:35:46 +0100</lastBuildDate>
     
-	<atom:link href="http://localhost/docs/data_management/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://gerlichlab.github.io/hicognition/docs/data_management/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Regions</title>
-      <link>http://localhost/docs/data_management/regions/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/data_management/regions/</link>
       <pubDate>Wed, 16 Feb 2022 10:09:52 +0100</pubDate>
       
-      <guid>http://localhost/docs/data_management/regions/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/data_management/regions/</guid>
       <description>Genomic regions are the central element of the region-set focus approach and are represented in practice by BED files that the user uploads to the server.
 Data requirements BED-files should conform to the BED-standard, meaning that they should contain all required BED fields with tab-separated entries:
  chrom chromStart chromEnd  BED-files that are accepted by HiCognition may contain column names, so the following is acceptable:
@@ -24,19 +24,19 @@ chrom start end chr1 1234 5678 .</description>
     
     <item>
       <title>Features</title>
-      <link>http://localhost/docs/data_management/features/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/data_management/features/</link>
       <pubDate>Wed, 16 Feb 2022 10:09:57 +0100</pubDate>
       
-      <guid>http://localhost/docs/data_management/features/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/data_management/features/</guid>
       <description>Genomic features are an essential part of the region-set focus approach and are defined as 1D- or 2D-continuous data that is mapped to a genomic coordinate system. Examples are ChiP-seq read density, Hi-C interaction values, and GRO-seq tracks. Genomic features are mainly used to understand genomic regions in the context of the region-set focus approach. They can thus be thought of as &amp;ldquo;independent variables&amp;rdquo; that are used to explain the &amp;ldquo;dependent&amp;rdquo; genomic regions.</description>
     </item>
     
     <item>
       <title>Collections</title>
-      <link>http://localhost/docs/data_management/collections/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/data_management/collections/</link>
       <pubDate>Wed, 16 Feb 2022 10:11:34 +0100</pubDate>
       
-      <guid>http://localhost/docs/data_management/collections/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/data_management/collections/</guid>
       <description>HiCognition uses collections to group datasets together for them to be available for some of the more complex processing algorithms.
 Collection types There are two types of collections in HiCognition, which are defined by the types of datasets they contain.
 1D-feature collections 1D-feature collections are named groups of 1D-features, which can be used for preprocessing data for display in the 1D-feature embedding widget
@@ -45,10 +45,10 @@ Region collections Region collections are named groups of genomic regions, which
     
     <item>
       <title>Genome assemblies</title>
-      <link>http://localhost/docs/data_management/genome_assemblies/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/data_management/genome_assemblies/</link>
       <pubDate>Wed, 16 Feb 2022 10:27:11 +0100</pubDate>
       
-      <guid>http://localhost/docs/data_management/genome_assemblies/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/data_management/genome_assemblies/</guid>
       <description>HiCognition allows managing genome assemblies to be able to work with different assemblies and organisms in parallel.
 Adding genome assemblies To add a genome assembly click the Add Genome Assembly button in the data management drawer:
 This will open a dialogue that lets you define a new genome assembly:

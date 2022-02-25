@@ -2,11 +2,11 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Categories on HiCognition</title>
-    <link>http://localhost/docs/categories/</link>
+    <link>https://gerlichlab.github.io/hicognition/docs/categories/</link>
     <description>Recent content in Categories on HiCognition</description>
     <generator>Hugo -- gohugo.io</generator>
     
-	<atom:link href="http://localhost/docs/categories/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://gerlichlab.github.io/hicognition/docs/categories/index.xml" rel="self" type="application/rss+xml" />
     
     
   </channel>

@@ -2,30 +2,30 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>2D-features on HiCognition</title>
-    <link>http://localhost/docs/tags/2d-features/</link>
+    <link>https://gerlichlab.github.io/hicognition/docs/tags/2d-features/</link>
     <description>Recent content in 2D-features on HiCognition</description>
     <generator>Hugo -- gohugo.io</generator>
     <lastBuildDate>Fri, 11 Feb 2022 09:56:29 +0100</lastBuildDate>
     
-	<atom:link href="http://localhost/docs/tags/2d-features/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://gerlichlab.github.io/hicognition/docs/tags/2d-features/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>2D-average</title>
-      <link>http://localhost/docs/widgets/2d_average/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/2d_average/</link>
       <pubDate>Fri, 11 Feb 2022 09:56:10 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/2d_average/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/2d_average/</guid>
       <description>The 2D-average widget can be used to display the average magnitude of a 2D-genomic feature over a specific region set. It is a heatmap representation of the underlying aggregated data.
 Suitable data The 2D-average widget is suitable for any genomic dataset that can be represented using a multiresolution cooler file. This is primarily suitable for Hi-C data but can also include other data sets that assign a value to a tuple of genomic coordinates.</description>
     </item>
     
     <item>
       <title>2D-feature embedding</title>
-      <link>http://localhost/docs/widgets/2d_feature_embedding/</link>
+      <link>https://gerlichlab.github.io/hicognition/docs/widgets/2d_feature_embedding/</link>
       <pubDate>Fri, 11 Feb 2022 09:56:29 +0100</pubDate>
       
-      <guid>http://localhost/docs/widgets/2d_feature_embedding/</guid>
+      <guid>https://gerlichlab.github.io/hicognition/docs/widgets/2d_feature_embedding/</guid>
       <description>The 2D-feature embedding widget can be used to display the distribution of genomic regions regarding a 2D-genomic feature. It represents a 2-dimensional embedding of the genomic regions as a heatmap of points.
 Suitable data The 2D-feature embedding widget is suitable for any genomic dataset that can be represented using a multiresolution cooler file. This is mostly suitable for Hi-C data but can include other data sets that assign a value to a tuple of genomic coordinates.</description>
     </item>
