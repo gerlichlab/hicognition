@@ -17,6 +17,11 @@ jobs:
         with:
           hugo-version: "0.64.0"
 
+      - name: Set github pages domain
+        run: |
+          cd documentation/hugo-site
+          sed -i 's/http:\/\/localhost\/docs\//https:\/\/gerlichlab.github.io\/hicognition\/docs\//' config.toml
+
       - name: Build 🔧 # This example project is built using npm and outputs the result to the 'build' folder. Replace with the commands required to build your project, or remove this step entirely if your site is pre-built.
         run: |
           cd documentation/hugo-site

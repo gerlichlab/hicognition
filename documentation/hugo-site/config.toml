@@ -2,6 +2,8 @@ baseURL = "http://localhost/docs/"
 title = "HiCognition"
 theme = "learn"
 
+canonifyURLs = true
+
 # For search functionality
 [outputs]
 home = [ "HTML", "RSS", "JSON"]

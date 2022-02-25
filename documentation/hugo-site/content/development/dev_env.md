@@ -8,11 +8,11 @@ tags: ["development"]
 
 ## Starting HiCognition in development mode
 
-We provide a docker-compose file that sets up the local development environment. This file uses the same containers as the production compose file, so if you haven't done so, follow the instructions for [building the containers](/docs/installation/build).
+We provide a docker-compose file that sets up the local development environment. This file uses the same containers as the production compose file, so if you haven't done so, follow the instructions for [building the containers](/installation/build).
 
 When you start a development HiCognition instance, the front-end files will be served by a node.js development server with enabled hot reload. You can then also use the [Vue.js devtools Chrome extension](https://chrome.google.com/webstore/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd?hl=en) for debugging. The back-end server that is started in the development instance is a flask development server, also with hot reload.
 
-To get information about how to configure the environment variables for the development instance, see the [configuration](/docs/installation/configuration) chapter.
+To get information about how to configure the environment variables for the development instance, see the [configuration](/installation/configuration) chapter.
 
 {{% notice note %}}
 The production HiCognition container copies the server code into the container during the build process and runs the server from there. In contrast, the development setup mounts the local code repository into the container to enable fast editing and hot-reload.

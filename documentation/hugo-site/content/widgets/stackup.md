@@ -8,10 +8,10 @@ weight: 4
 The stacked line profile widget can be used to display individual examples of 1D-genomic features over a specific region set. It is a heatmap representation, where each row corresponds to one genomic region.
 
 {{% notice note %}}
-The stacked line profile widget does not show the entirety of the selected region-set, but only a subset. The down-sampling ratio can be defined as configuration variable (see the [configuration section](/docs/installation/configuration) for details)
+The stacked line profile widget does not show the entirety of the selected region-set, but only a subset. The down-sampling ratio can be defined as configuration variable (see the [configuration section](/installation/configuration) for details)
 {{% /notice %}}
 
-![Stackup](/docs/stackup.png)
+![Stackup](/stackup.png)
 
 ## Suitable data
 
@@ -19,7 +19,7 @@ The stacked line profile widget is suitable for any genomic dataset that can be 
 
 ## Preprocessing algorithm
 
-The preprocessing algorithms are very similar to the ones used in the [1D-average widget](/docs/widgets/widgets/lineprofile/)
+The preprocessing algorithms are very similar to the ones used in the [1D-average widget](/widgets/widgets/lineprofile/)
 
 ### Point-regions
 
@@ -42,7 +42,7 @@ The stacked line profile widget defines two widget controls, one for specifying 
 
 The sort order widget control option specifies which values to sort and whether to sort in an ascending or descending fashion.
 
-![Stackup sort order](/docs/stackup_sort_order.png)
+![Stackup sort order](/stackup_sort_order.png)
 
 For point-regions, the sort values are the following:
 
@@ -58,21 +58,21 @@ For interval regions, the sort values are the following:
 
 ### Sharing
 
-The stacked line profile widget supports sharing value scales in a similar fashion to the [2d-average widget](/docs/widgets/2d_average/#share-value-scale). In addition, the stacked line profile widget allows sharing sort-order between widgets that reside in the same widget collection. For this, click on "Take sort order from" then click on the target widget.
+The stacked line profile widget supports sharing value scales in a similar fashion to the [2d-average widget](/widgets/2d_average/#share-value-scale). In addition, the stacked line profile widget allows sharing sort-order between widgets that reside in the same widget collection. For this, click on "Take sort order from" then click on the target widget.
 
-![Stackup sort order controls](/docs/stackup_sort_order_sharing_controls.png)
+![Stackup sort order controls](/stackup_sort_order_sharing_controls.png)
 
 After that, a colored line under the stacked line profile indicates that the two widgets are linked. The sort order donor has a continuous colored line, whereas the sort order acceptor has a dashed colored line.
 
-![Stackup sort order sharing](/docs/stackup_sort_order_sharing.png)
+![Stackup sort order sharing](/stackup_sort_order_sharing.png)
 
 The sort order acceptance widgets can now no longer change their sort orders, and their sort order is set to share.
 
-![Stackup sort order sharing controls](/docs/stackup_sort_order_shared_controls.png)
+![Stackup sort order sharing controls](/stackup_sort_order_shared_controls.png)
 
 When the sort order is changed on the donor widget, however, all acceptor widgets follow the suite. You can link multiple widgets together by taking the sort order of a shared donor. You can also link multiple widgets independently, which are then marked by differently colored color lines.
 
-![Multiple sort order sharing](/docs/Multiple_sort_order_sharing.png)
+![Multiple sort order sharing](/Multiple_sort_order_sharing.png)
 
 
 If you want to stop sharing sort orders, you can select "Release sort order" on the sort order acceptor.

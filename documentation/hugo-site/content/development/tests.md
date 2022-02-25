@@ -6,7 +6,7 @@ tags: ["development"]
 weight: 3
 ---
 
-All contributions to HiCognition must pass all existing tests and ideally implement new test-cases that test all aspects of new features. The tests are stratified into test for the the flask server ([Backend test](/docs/development/tests/#backend-tests)), tests for the front-end ([Frontend tests](/docs/development/tests/#frontend-tests)) and integration tests that test typical user flows ([Integration tests](/docs/development/tests/#integration-tests)).
+All contributions to HiCognition must pass all existing tests and ideally implement new test-cases that test all aspects of new features. The tests are stratified into test for the the flask server ([Backend test](/development/tests/#backend-tests)), tests for the front-end ([Frontend tests](/development/tests/#frontend-tests)) and integration tests that test typical user flows ([Integration tests](/development/tests/#integration-tests)).
 
 ## Backend tests
 
@@ -29,7 +29,7 @@ Within these directories, the tests are distributed to different python files th
 
 ### Running the tests
 
-If you want to run the tests, you need a running development HiCognition instance (see the [guide](/docs/development/dev_env) to find out how you can set this up). Then, you need to attach a shell to the `flask-server` container:
+If you want to run the tests, you need a running development HiCognition instance (see the [guide](/development/dev_env) to find out how you can set this up). Then, you need to attach a shell to the `flask-server` container:
 
 ```bash
 docker exec -it flask-server bash
@@ -64,7 +64,7 @@ The tests are written using `jest` and are located in `front_end\src\tests` rela
 
 ### Running the tests
 
-If you want to run the tests, you need a running development HiCognition instance (see the [guide](/docs/development/dev_env) to find out how you can set this up). Then, you need to attach a shell to the `node` container:
+If you want to run the tests, you need a running development HiCognition instance (see the [guide](/development/dev_env) to find out how you can set this up). Then, you need to attach a shell to the `node` container:
 
 
 ```bash

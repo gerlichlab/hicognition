@@ -35,5 +35,5 @@ docker-compose up -d
 The `-d` flag specifies that docker-compose should run in the background. The docker-compose configuration starts all components and builds the files for the front-end part of HiCognition. This is expected to take roughly 1 minute. After that, HiCognition is available on port 80 on your local machine!
 
 {{% notice warning %}}
-The HiCognition repository contains an example environment file that specifies all the needed environment variables. You must change these to ensure that you use non-public passwords and secrets! See the [configuration](/docs/installation/configuration) section for details. 
+The HiCognition repository contains an example environment file that specifies all the needed environment variables. You must change these to ensure that you use non-public passwords and secrets! See the [configuration](/installation/configuration) section for details. 
 {{% /notice %}}

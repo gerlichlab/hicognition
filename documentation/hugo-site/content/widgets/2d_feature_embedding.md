@@ -7,7 +7,7 @@ weight: 6
 
 The 2D-feature embedding widget can be used to display the distribution of genomic regions regarding a 2D-genomic feature. It represents a 2-dimensional embedding of the genomic regions as a heatmap of points.
 
-![2d embedding](/docs/2d_feature_embedding.png)
+![2d embedding](/2d_feature_embedding.png)
 
 
 ## Suitable data
@@ -17,7 +17,7 @@ The 2D-feature embedding widget is suitable for any genomic dataset that can be 
 
 ## Preprocessing algorithm
 
-In general, the preprocessing for data to be displayed in the 2D-feature embedding widget happens together with preprocessing for the [2D-average widget](/docs/widgets/2d_average/), and thus many of the steps are shared.
+In general, the preprocessing for data to be displayed in the 2D-feature embedding widget happens together with preprocessing for the [2D-average widget](/widgets/2d_average/), and thus many of the steps are shared.
 
 
 ### Point-regions
@@ -32,7 +32,7 @@ During the preprocessing state, snippets of the underlying interaction matrix ar
 
 Where `k` refers to the number of pixels in the downsampled images and `n` refers to the number of genomic regions in the respective region set. Following this step, [umap](https://umap-learn.readthedocs.io/en/latest/) is used with default parameters to get a 2-dimensional embedding of the genomic regions.
 
-Additionally, the regions are clustered using [k-means clustering](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html) into two different cluster-sets (one with a high number of clusters and one with a low number of clusters; see the [configuration section](/docs/installation/configuration) on how to change these numbers). A cluster "thumbnail" that represents the average image within this cluster is saved and then used to display information thumbnails (see the [visualization section](/docs/widgets/1d_feature_embedding/#visualization) for more details).
+Additionally, the regions are clustered using [k-means clustering](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html) into two different cluster-sets (one with a high number of clusters and one with a low number of clusters; see the [configuration section](/installation/configuration) on how to change these numbers). A cluster "thumbnail" that represents the average image within this cluster is saved and then used to display information thumbnails (see the [visualization section](/widgets/1d_feature_embedding/#visualization) for more details).
 
 ### Interval-regions
 
@@ -42,7 +42,7 @@ Interval features are treated exactly as point features, except that images are 
 
 The distribution of the genomic regions regarding a 2D feature is visualized as a 2D-histogram, with the density of points being displayed using a colormap. This widget defines a tooltip that will display a cluster thumbnail that represents the average image within that cluster when hovered over the points.
 
-![2d embedding tooltip](/docs/2d_feature_embedding_tooltip.png)
+![2d embedding tooltip](/2d_feature_embedding_tooltip.png)
 
 
 ## Widget controls
@@ -53,7 +53,7 @@ The 2D-feature embedding widget defines four controls on the widget and one cont
 
 The sharing controls allow you to select whether all thumbnail representations should share a common color scale or not.
 
-![2d feature value scale](/docs/2d_feature_value_scale.png)
+![2d feature value scale](/2d_feature_value_scale.png)
 
 
 ### Scale
@@ -66,11 +66,11 @@ The transform widget control allows you to select whether the values displayed i
 
 ### Neighborhood size
 
-One can use the neighborhood size option to choose whether to display large or small clusters (for defining the respective sizes, see the [configuration section](/docs/installation/configuration)) in the thumbnail tooltip.
+One can use the neighborhood size option to choose whether to display large or small clusters (for defining the respective sizes, see the [configuration section](/installation/configuration)) in the thumbnail tooltip.
 
 
 ### Create new region
 
 If one of the highlighted clusters is interesting and you want to explore them further, you can create a new genomic region set representing the highlighted regions. For this, when the thumbnail tooltip is shown, click, and the "Create new region" button will appear. After clicking that button, a dialog pops up that lets you define the name for your new region set.
 
-![2d feature create new region](/docs/2d_feature_create_new_region.png)
+![2d feature create new region](/2d_feature_create_new_region.png)

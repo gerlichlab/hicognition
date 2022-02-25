@@ -9,7 +9,7 @@ weight: 1
 This document contains a description of the architecture of HiCognition, which can be summarized in the following scheme:
 
 
-![Architecture](/docs/Architecture_v1-01.png)
+![Architecture](/Architecture_v1-01.png)
 
 ## Back-end
 
@@ -41,7 +41,7 @@ Different configurations of the server are collected in a `config.py` file that 
 - `ProductionConfig` - This configuration class is used in production and specifies that the database should be created in the app directory resides in a file.
 - `End2EndConfig` - This configuration class specifies the configurations for end2end integration testing
 
-The general policy is to provide default values for development but get the values from environment variables in production. This is achieved by using the following pattern for each config-variable: `Config = os.environ.get("ENV_VAR") or default`. For a detailed description of the configuration variables see the [configuration section](/docs/installation/configuration).
+The general policy is to provide default values for development but get the values from environment variables in production. This is achieved by using the following pattern for each config-variable: `Config = os.environ.get("ENV_VAR") or default`. For a detailed description of the configuration variables see the [configuration section](/installation/configuration).
 
 ### Database
 
@@ -62,7 +62,7 @@ Interactions with the database are managed by [FLASK-SQLAlchemy](https://flask-s
 
 Details are [here](https://github.com/gerlichlab/HiCognition_flask/blob/master/app/models.py), this is an overview drawn using https://dbdiagram.io/home:
 
-![DB-model](/docs/Hicognition_db.png)
+![DB-model](/Hicognition_db.png)
 
 #### Filesystem interactions
 
@@ -83,7 +83,7 @@ There are three different queues:
 - medium
 - long
 
-The tasks are distributed to these queues based on the `PIPELINE_QUEUES` configuration parameter (see the [configuration section](/docs/installation/configuration) for more details)
+The tasks are distributed to these queues based on the `PIPELINE_QUEUES` configuration parameter (see the [configuration section](/installation/configuration) for more details)
 
 ## Front-end
 

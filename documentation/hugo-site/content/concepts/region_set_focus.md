@@ -5,7 +5,7 @@ weight: 2
 ---
 
 ## Region-set focus approach
-![Fig1](/docs/Fig2_rsfa.png)
+![Fig1](/Fig2_rsfa.png)
 
 The idea behind the region-set focus approach is that there is a central region-set of particular interest in many biological questions. In contrast, other genomic data is mainly used to find associations. Specifically, a region-set of interest often arises either because the broad biological question gives a natural constraint (e.g., genes/enhancers in the gene expression field), or a particular experimental procedure produces a new region-set that is not characterized, for example, the set of expressed genes or changed 3d-genome interaction patterns in a perturbation condition. Many analysis questions associated with these region-sets of interest can be abstracted into a small number of tasks that are either associated with testing a specific hypothesis or with generating new hypotheses:
 

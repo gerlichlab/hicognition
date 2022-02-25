@@ -11,7 +11,7 @@ The advent of high throughput sequencing has not only enabled researchers to ass
  
 Genome browsers are amongst the most prominent tools used for this task and allow non-programmers to quickly explore multidimensional datasets by relating genomic tracks to each other and offer the capability to manage genomic datasets. These tools, however, only allow exploration of a limited set of views and thus make it challenging to visualize behavior at multiple related genomic regions. More specialized tools have been developed recently to partially solve this problem, namely [HiPiler](https://hipiler.lekschas.de/) as a standalone GUI and [Piling.js](https://piling.js.org/) as a javascript framework. These tools allow manipulation and aggregation of a small set of 1D- or 2D genomic regions via the concept of a visual pile. While these tools have introduced important visual concepts, there are practical challenges when analyzing real-world genomic data, where sets of regions of interest routinely surpass 50,000 entries. 
 
-![Fig1](/docs/Fig1_concept.png)
+![Fig1](/Fig1_concept.png)
 __Fig. 1__
 
 ## Genomic analysis cycle: The status-quo
@@ -35,4 +35,4 @@ Last but not least, a well-established principle that any visual system should f
 
 ## HiCognition can help solve these problems
 
-In order to overcome this problem, we conceptualized the [region-set focus approach](/docs/concept/region_set_focus/) and implemented it in HiCognition.
+In order to overcome this problem, we conceptualized the [region-set focus approach](/concept/region_set_focus/) and implemented it in HiCognition.
