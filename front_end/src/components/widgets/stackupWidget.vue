@@ -200,7 +200,6 @@
                     :message="tooltipMessage"
                     :tooltipOffsetLeft="tooltipOffsetLeft"
                     :tooltipOffsetTop="tooltipOffsetTop"
-                    :minWidth="70"
                 />
             </div>
             <div
