@@ -126,7 +126,7 @@ def preprocess_dataset():
     def is_form_invalid():
         if not hasattr(request, "form"):
             return True
-        if sorted(list(request.form.keys())) != sorted(["dataset_ids", "region_ids", "options"]):
+        if sorted(list(request.form.keys())) != sorted(["dataset_ids", "region_ids", "preprocessing_map"]):
             return True
         return False
 
@@ -138,7 +138,7 @@ def preprocess_dataset():
     data = request.form
     dataset_ids = json.loads(data["dataset_ids"])
     region_datasets_ids = json.loads(data["region_ids"])
-    preprocessing_map_type = json.loads(data["options"])["preprocessing_map"]
+    preprocessing_map_type = data["preprocessing_map"]
     # check whether preprocessing map exists
     if preprocessing_map_type not in current_app.config:
         return invalid("Preprocessing map does not exist!")
@@ -196,10 +196,10 @@ def preprocess_dataset():
                     intervals_id=interval_id,
                     binsize=binsize,
                 )
-                # add parent id # TODO: guard against duplicate processing
-                dataset.processing_regions.append(
-                    Intervals.query.get(interval_id).source_dataset
-                )
+                if Intervals.query.get(interval_id).source_dataset not in dataset.processing_regions:
+                    dataset.processing_regions.append(
+                        Intervals.query.get(interval_id).source_dataset
+                    )
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 

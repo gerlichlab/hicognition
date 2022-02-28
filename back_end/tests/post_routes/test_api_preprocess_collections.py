@@ -118,8 +118,8 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
         intervals = [1,2,3,4,5]
-        for interval in intervals:
-            interval = Intervals.query.get(interval)
+        for interval_id in intervals:
+            interval = Intervals.query.get(interval_id)
             for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize]["collections"]["regions"]:
                 mock_launch.assert_any_call(
                     self.app.queues["long"],
@@ -151,8 +151,8 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
         intervals = [2, 6, 7]
-        for interval in intervals:
-            interval = Intervals.query.get(interval)
+        for interval_id in intervals:
+            interval = Intervals.query.get(interval_id)
             for binsize in current_app.config["PREPROCESSING_MAP_SMALL_WINDOWSIZES"][interval.windowsize]["collections"]["regions"]:
                 mock_launch.assert_any_call(
                     self.app.queues["long"],
@@ -207,8 +207,8 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
         intervals = [1,2,3,4,5]
-        for interval in intervals:
-            interval = Intervals.query.get(interval)
+        for interval_id in intervals:
+            interval = Intervals.query.get(interval_id)
             for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize]["collections"]["1d-features"]:
                 mock_launch.assert_any_call(
                     self.app.queues["medium"],
