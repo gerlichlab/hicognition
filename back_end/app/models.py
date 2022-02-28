@@ -496,6 +496,19 @@ class Dataset(db.Model):
             db.session.delete(task)
         db.session.commit()
 
+    def get_missing_windowsizes(self, preprocessing_map):
+        """Creates intervals that are in preprocessing_map, but
+        do not exist for dataset"""
+        if self.sizeType == "Interval":
+            return []
+        windowsizes = [windowsize for windowsize in preprocessing_map.keys() if windowsize != "variable"]
+        existing_windowsizes = set([intervals.windowsize for intervals in self.intervals])
+        missing_windowsizes = []
+        for target_windowsize in windowsizes:
+            if target_windowsize not in existing_windowsizes:
+                missing_windowsizes.append(target_windowsize)
+        return missing_windowsizes
+
     def to_json(self):
         json_dataset = {}
         for key in inspect(Dataset).columns.keys():
