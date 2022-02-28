@@ -521,7 +521,7 @@ export default {
                 regionName: collectionData["regionName"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: {},
-                datasets: collectionData["availableData"]["embedding1d"],
+                datasets: collectionData["datasetsForIntervalSize"]["embedding1d"],
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
@@ -605,7 +605,7 @@ export default {
                 regionName: collectionConfig["regionName"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
-                datasets: collectionConfig["availableData"]["embedding1d"],
+                datasets: collectionConfig["datasetsForIntervalSize"]["embedding1d"],
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
@@ -758,7 +758,7 @@ export default {
                 // update availability object
                 this.datasets =
                     newValue[this.collectionID]["collectionConfig"][
-                        "availableData"
+                        "datasetsForIntervalSize"
                     ]["embedding1d"];
                 this.intervalSize =
                     newValue[this.collectionID]["collectionConfig"][

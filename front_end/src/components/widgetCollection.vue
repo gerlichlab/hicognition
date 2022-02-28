@@ -165,6 +165,8 @@ import { apiMixin, formattingMixin } from "../mixins";
 import { max_array } from "../functions";
 import EventBus from "../eventBus";
 
+const DEFAULT_WINDOWSIZE = "400000"
+
 export default {
     name: "widgetCollection",
     mixins: [apiMixin, formattingMixin],
@@ -211,6 +213,21 @@ export default {
             }
             // sort
             return Array.from(windowsizes).sort((a, b) => a - b)
+        },
+        datasetsForIntervalSize: function() {
+            // subset available data for this region-set based on selected interval size
+            if (Object.keys(this.availableData).length === 0){
+                return {}
+            }
+            let output = JSON.parse(JSON.stringify(this.availableData))
+            for (let [dataset_type, dataset_collection] of Object.entries(output)){
+                for (let [dataset_id, dataset_id_object] of Object.entries(dataset_collection)){
+                    if (!(this.selectedWindowSize in dataset_id_object["data_ids"])){
+                        delete output[dataset_type][dataset_id]
+                    }
+                }
+            }
+            return output
         },
         pointWindowSizes: function() {
             return this.windowSizes.filter(el => el != "variable");
@@ -456,6 +473,7 @@ export default {
                         el => el.id == this.selectedRegionID
                     )[0].dataset_name,
                     availableData: this.availableData,
+                    datasetsForIntervalSize: this.datasetsForIntervalSize,
                     intervalSize: this.selectedWindowSize
                 }
             };
@@ -570,9 +588,7 @@ export default {
             ) {
                 // set default -> middle of available windwosizes if point, otherwise variable
                 if (this.isPointFeature) {
-                    this.selectedWindowSize = this.pointWindowSizes[
-                        Math.floor(this.pointWindowSizes.length / 2)
-                    ];
+                    this.selectedWindowSize = DEFAULT_WINDOWSIZE
                 } else {
                     this.selectedWindowSize = "variable";
                 }

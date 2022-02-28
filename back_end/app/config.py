@@ -72,7 +72,7 @@ class Config:
     # preprocessing maps for small genomic windowsizes
     PREPROCESSING_MAP_SMALL_WINDOWSIZES = {
         10000: {
-            "cooler": [1000],
+            "cooler": [],
             "bigwig": [100, 500],
             "collections": {
                 "regions": [1000],
@@ -80,7 +80,7 @@ class Config:
             },
         },
         20000: {
-            "cooler": [1000],
+            "cooler": [],
             "bigwig": [500, 1000],
             "collections": {
                 "regions": [1000],

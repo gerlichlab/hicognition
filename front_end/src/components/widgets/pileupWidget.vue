@@ -465,7 +465,7 @@ export default {
                 intervalSize: collectionData["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
-                datasets: collectionData["availableData"]["pileup"],
+                datasets: collectionData["datasetsForIntervalSize"]["pileup"],
                 minHeatmap: undefined,
                 maxHeatmap: undefined,
                 isICCF: true,
@@ -544,7 +544,7 @@ export default {
                 intervalSize: collectionConfig["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
-                datasets: collectionConfig["availableData"]["pileup"],
+                datasets: collectionConfig["datasetsForIntervalSize"]["pileup"],
                 isICCF: widgetData["isICCF"],
                 valueScaleSelectionState: false,
                 valueScaleRecipient: widgetData["valueScaleRecipient"],
@@ -624,7 +624,7 @@ export default {
                 // update availability object
                 this.datasets =
                     newValue[this.collectionID]["collectionConfig"][
-                        "availableData"
+                        "datasetsForIntervalSize"
                     ]["pileup"];
                 this.intervalSize =
                     newValue[this.collectionID]["collectionConfig"][

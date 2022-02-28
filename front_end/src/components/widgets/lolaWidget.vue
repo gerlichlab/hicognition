@@ -190,7 +190,7 @@ export default {
                 intervalSize: collectionData["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: {},
-                datasets: collectionData["availableData"]["lola"],
+                datasets: collectionData["datasetsForIntervalSize"]["lola"],
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
@@ -247,7 +247,7 @@ export default {
                 intervalSize: collectionConfig["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
-                datasets: collectionConfig["availableData"]["lola"],
+                datasets: collectionConfig["datasetsForIntervalSize"]["lola"],
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
@@ -296,7 +296,7 @@ export default {
                 // update availability object
                 this.datasets =
                     newValue[this.collectionID]["collectionConfig"][
-                        "availableData"
+                        "datasetsForIntervalSize"
                     ]["lola"];
                 this.intervalSize =
                     newValue[this.collectionID]["collectionConfig"][

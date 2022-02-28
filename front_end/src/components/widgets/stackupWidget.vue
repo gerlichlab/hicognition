@@ -506,7 +506,7 @@ export default {
                 intervalSize: collectionConfig["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
-                datasets: collectionConfig["availableData"]["stackup"],
+                datasets: collectionConfig["datasetsForIntervalSize"]["stackup"],
                 minHeatmap: undefined,
                 maxHeatmap: undefined,
                 selectedSortOrder: sortOrderDefault,
@@ -584,7 +584,7 @@ export default {
                 intervalSize: collectionConfig["intervalSize"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
-                datasets: collectionConfig["availableData"]["stackup"],
+                datasets: collectionConfig["datasetsForIntervalSize"]["stackup"],
                 sortorders: widgetData["sortorders"],
                 isAscending: widgetData["isAscending"],
                 expectingSortOrder: false,
@@ -685,7 +685,7 @@ export default {
                 // update availability object
                 this.datasets =
                     newValue[this.collectionID]["collectionConfig"][
-                        "availableData"
+                        "datasetsForIntervalSize"
                     ]["stackup"];
                 this.intervalSize =
                     newValue[this.collectionID]["collectionConfig"][
