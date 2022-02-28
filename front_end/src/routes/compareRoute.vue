@@ -48,14 +48,6 @@ export default {
                 }
             });
         },
-        fetchResolutions: function(){
-            this.fetchData("resolutions/").then(response => {
-                // success, store resolutions
-                if (response){
-                    this.$store.commit("setResolutions", response.data)
-                }
-            })
-        },
         fetchDatasetMetadataMapping: function(){
             this.fetchData("datasetMetadataMapping/").then(response => {
                 // success, store resolutions
@@ -109,7 +101,6 @@ export default {
         EventBus.$on("session-loaded", this.updateMaxID)
         this.fetchDatasets()
         this.fetchCollections()
-        this.fetchResolutions()
         this.fetchDatasetMetadataMapping()
     },
     beforeDestroy: function(){

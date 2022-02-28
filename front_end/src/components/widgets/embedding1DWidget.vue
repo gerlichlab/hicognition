@@ -783,6 +783,12 @@ export default {
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
                 this.intervalSize
             ];
+            // check whether binsizes are defined
+            if (this.binsizes === undefined) {
+                // not data exists, blank widget DAta
+                this.widgetData = undefined
+                return
+            }
             this.selectedBinsize = this.getCenterOfArray(
                 Object.keys(this.binsizes)
             );
@@ -796,6 +802,12 @@ export default {
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
                 this.intervalSize
             ];
+            // check whether binsizes are defined
+            if (this.binsizes === undefined) {
+                // not data exists, blank widget DAta
+                this.widgetData = undefined
+                return
+            }
             this.selectedBinsize = this.getCenterOfArray(
                 Object.keys(this.binsizes)
             );
@@ -810,6 +822,12 @@ export default {
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
                 this.intervalSize
             ];
+            // check whether binsizes are defined
+            if (this.binsizes === undefined) {
+                // not data exists, blank widget DAta
+                this.widgetData = undefined
+                return
+            }
             if (!this.selectedBinsize) {
                 this.selectedBinsize = this.getCenterOfArray(
                     Object.keys(this.binsizes)

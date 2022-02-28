@@ -177,7 +177,6 @@ export default {
     data: function() {
         return {
             regions: [],
-            windowSizes: [],
             selectedRegionID: null,
             selectedWindowSize: null,
             marginSizeWidth: 4,
@@ -195,6 +194,24 @@ export default {
         };
     },
     computed: {
+        windowSizes: function() {
+            if (Object.keys(this.availableData).length === 0){
+                return []
+            }
+            // get windowsizes from availableData object
+            let windowsizes = new Set()
+            for (let [dataset_type, dataset_collection] of Object.entries(this.availableData)){
+                for (let [dastaset_id, dataset_object] of Object.entries(dataset_collection)){
+                    for (let windowsize of Object.keys(dataset_object["data_ids"])){
+                        if (windowsize !== "name"){
+                            windowsizes.add(windowsize)
+                        }
+                    }
+                }
+            }
+            // sort
+            return Array.from(windowsizes).sort((a, b) => a - b)
+        },
         pointWindowSizes: function() {
             return this.windowSizes.filter(el => el != "variable");
         },
@@ -422,13 +439,6 @@ export default {
                 }
             });
         },
-        fetchResolutions: function() {
-            this.fetchData("resolutions/").then(response => {
-                // success, store resolutions
-                this.$store.commit("setResolutions", response.data);
-                this.windowSizes = Object.keys(response.data);
-            });
-        },
         handleZoomIn: function() {
             this.baseWidth += 50;
             this.baseHeight += 50;
@@ -635,12 +645,6 @@ export default {
         this.getDatasets();
         // get collections
         this.fetchCollections();
-        // get resolutions
-        if (this.$store.state.resolutions) {
-            this.windowSizes = Object.keys(this.$store.getters.getResolutions);
-        } else {
-            this.fetchResolutions();
-        }
     },
     beforeDestroy: function() {
         this.removeSelectionEventHandlers();

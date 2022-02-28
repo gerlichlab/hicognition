@@ -362,6 +362,10 @@ export default {
                 let temp_binsizes = this.datasets[selectedDataset]["data_ids"][
                     this.intervalSize
                 ];
+                // if temp binsizes is undefined, there is no data for these binsizes -> return undefined to blank widget
+                if (temp_binsizes === undefined) {
+                    return undefined
+                }
                 for (let [key, value] of Object.entries(temp_binsizes)) {
                     if (!(key in binsizes)) {
                         binsizes[key] = [value];
@@ -406,6 +410,12 @@ export default {
                 }
             }
             this.binsizes = this.getIdsOfBinsizes();
+            // check whether binsizes are defined
+            if (this.binsizes === undefined) {
+                // not data exists, blank widget DAta
+                this.widgetData = undefined
+                return
+            }
             this.selectedBinsize = this.getCenterOfArray(
                 Object.keys(this.binsizes)
             );
@@ -417,6 +427,12 @@ export default {
                 return;
             }
             this.binsizes = this.getIdsOfBinsizes();
+            // check whether binsizes are defined
+            if (this.binsizes === undefined) {
+                // not data exists, blank widget DAta
+                this.widgetData = undefined
+                return
+            }
             this.selectedBinsize = this.getCenterOfArray(
                 Object.keys(this.binsizes)
             );
@@ -429,6 +445,12 @@ export default {
             }
             // set binsizes -> there can be multiple datasets, binsizes need to be collected for them
             this.binsizes = this.getIdsOfBinsizes();
+            // check whether binsizes are defined
+            if (this.binsizes === undefined) {
+                // not data exists, blank widget DAta
+                this.widgetData = undefined
+                return
+            }
             // remove old dataset ids from used values in store
             for (let dataset_id_old of oldVal) {
                 this.$store.commit(
