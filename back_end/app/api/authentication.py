@@ -1,7 +1,7 @@
 """ Authenticating credentials of a request and dealing with the tokens. """
+from flask import g, request
 from flask.json import jsonify
 from flask_httpauth import HTTPBasicAuth
-from flask import g, request
 from . import api
 from . import errors
 from ..models import User, Session

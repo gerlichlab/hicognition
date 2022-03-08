@@ -24,7 +24,7 @@ def delete_dataset_handler(dataset_id):
     if (len(dataset.processing_features) != 0) or (
         len(dataset.processing_regions) != 0
     ):
-        return invalid(f"Dataset is in processing state!")
+        return invalid("Dataset is in processing state!")
     # delete associated data of dataset
     dataset.delete_data_of_associated_entries()
     # get collections and sessions
@@ -99,7 +99,7 @@ def delete_assembly_handler(assembly_id):
     # check whether assembly is associated with datasets
     if len(Dataset.query.filter(Dataset.assembly == assembly.id).all()) != 0:
         return forbidden(
-            f"Assembly can only be deleted if it is not associated with any datasets!"
+            "Assembly can only be deleted if it is not associated with any datasets!"
         )
     # delete assembly
     hicognition.io_helpers.remove_safely(assembly.chrom_sizes, current_app.logger)
