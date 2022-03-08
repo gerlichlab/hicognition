@@ -3,20 +3,16 @@ import os
 import uuid
 import logging
 from datetime import datetime
-
 from flask.globals import current_app
 import pandas as pd
 import numpy as np
+from rq import get_current_job
 from . import db
 from . import pipeline_worker_functions as worker_funcs
-from rq import get_current_job
 from .notifications import NotificationHandler
-
-from . import db
 from .models import (
     Dataset,
     Collection,
-    Dataset,
     Intervals,
     Task,
     dataset_preprocessing_table,
@@ -300,7 +296,7 @@ def set_dataset_finished(dataset_id, intervals_id):
         .filter(
             (Dataset.id == region.id)
             & (Task.dataset_id == dataset_id)
-            & (Task.complete == False)
+            & (Task.complete is False)
         )
         .all()
     )
@@ -336,6 +332,7 @@ def set_dataset_finished(dataset_id, intervals_id):
 
 
 def set_task_progress(progress):
+    """Sets the progress of the task."""
     job = get_current_job()
     if job:
         job.meta["progress"] = progress
@@ -354,7 +351,8 @@ def set_dataset_failed(dataset_id, intervals_id):
     log.error(
         f"      Region: {region} with processing features {region.processing_features} and dataset {feature}"
     )
-    # remove feature from preprocessing list -> this needs to be done on the association table to avoid concurrency problems
+    # remove feature from preprocessing list
+    # -> this needs to be done on the association table to avoid concurrency problems
     stmt = dataset_preprocessing_table.delete().where(
         db.and_(
             (dataset_preprocessing_table.c.dataset_region == region.id),
@@ -363,7 +361,8 @@ def set_dataset_failed(dataset_id, intervals_id):
     )
     db.session.execute(stmt)
     db.session.commit()
-    # add region to failed_features -> if this combination is already in, this operation will fail, but the first one will succeed
+    # add region to failed_features -
+    # > if this combination is already in, this operation will fail, but the first one will succeed
     try:
         stmt = dataset_failed_table.insert().values(
             dataset_region=region.id, dataset_feature=feature.id
@@ -402,7 +401,8 @@ def set_collection_failed(collection_id, intervals_id):
     log.error(
         f"      Region: {region} with processing collections {region.processing_collections} and collection {collection}"
     )
-    # remove feature from preprocessing list -> this needs to be done on the association table to avoid concurrency problems
+    # remove feature from preprocessing list
+    # -> this needs to be done on the association table to avoid concurrency problems
     stmt = collections_preprocessing_table.delete().where(
         db.and_(
             (collections_preprocessing_table.c.dataset_region == region.id),
@@ -411,7 +411,8 @@ def set_collection_failed(collection_id, intervals_id):
     )
     db.session.execute(stmt)
     db.session.commit()
-    # add region to failed_features -> if this combination is already in, this operation will fail, but the first one will succeed
+    # add region to failed_features
+    # -> if this combination is already in, this operation will fail, but the first one will succeed
     try:
         stmt = collections_failed_table.insert().values(
             dataset_region=region.id, collection_feature=collection.id
@@ -448,7 +449,7 @@ def set_collection_finished(collection_id, intervals_id):
         .filter(
             (Dataset.id == region.id)
             & (Task.collection_id == collection_id)
-            & (Task.complete == False)
+            & (Task.complete is False)
         )
         .all()
     )

@@ -1,6 +1,6 @@
 """API endpoints for hicognition"""
-from flask.json import jsonify
 from flask import g, request
+from flask.json import jsonify
 from . import api
 from .. import db
 from ..models import Dataset

@@ -4,9 +4,11 @@ import json
 import pandas as pd
 import cooler
 import numpy as np
-from flask.json import jsonify
 from werkzeug.utils import secure_filename
 from flask import g, request, current_app
+from flask.json import jsonify
+from hicognition.utils import parse_description, get_all_interval_ids, parse_binsizes
+from hicognition.format_checkers import FORMAT_CHECKERS
 from . import api
 from .. import db
 from ..models import (
@@ -20,9 +22,7 @@ from ..models import (
     EmbeddingIntervalData,
 )
 from .authentication import auth
-from hicognition.utils import parse_description, get_all_interval_ids, parse_binsizes
 from .errors import forbidden, invalid, not_found
-from hicognition.format_checkers import FORMAT_CHECKERS
 
 
 @api.route("/datasets/", methods=["POST"])
@@ -142,7 +142,7 @@ def preprocess_dataset():
     if any(entry is None for entry in feature_datasets):
         return not_found("Dataset does not exist!")
     if any(entry.is_access_denied(g) for entry in feature_datasets):
-        return forbidden(f"Dataset is not owned by logged in user!")
+        return forbidden("Dataset is not owned by logged in user!")
     # check whether region datasets exists
     region_datasets = [
         Dataset.query.get(region_id) for region_id in region_datasets_ids
@@ -151,7 +151,7 @@ def preprocess_dataset():
         return not_found("Region dataset does not exist!")
     # check whether region datasets are owned
     if any(entry.is_access_denied(g) for entry in region_datasets):
-        return forbidden(f"Dataset is not owned by logged in user!")
+        return forbidden("Dataset is not owned by logged in user!")
     # delete all jobs that are in database and have failed and remove failed entries
     for dataset in feature_datasets:
         for region_ds in region_datasets:
@@ -219,7 +219,7 @@ def preprocess_collections():
     if any(entry is None for entry in collections):
         return not_found("Collection does not exist!")
     if any(collection.is_access_denied(g) for collection in collections):
-        return forbidden(f"Collection is not owned by logged in user!")
+        return forbidden("Collection is not owned by logged in user!")
     # check whether region datasets exists
     region_datasets = [
         Dataset.query.get(region_id) for region_id in region_datasets_ids
@@ -228,7 +228,7 @@ def preprocess_collections():
         return not_found("Region dataset does not exist!")
     # check whether region datasets are owned
     if any(entry.is_access_denied(g) for entry in region_datasets):
-        return forbidden(f"Region dataset is not owned by logged in user!")
+        return forbidden("Region dataset is not owned by logged in user!")
     # delete all jobs that are in database and have failed
     for collection in collections:
         for region_ds in region_datasets:
@@ -308,7 +308,7 @@ def add_bedfile_metadata():
     if Dataset.query.get(dataset_id) is None:
         return not_found("Dataset does not exist!")
     if Dataset.query.get(dataset_id).is_access_denied(g):
-        return forbidden(f"Dataset is not owned by logged in user!")
+        return forbidden("Dataset is not owned by logged in user!")
     # check whether row-number is correct
     dataset = Dataset.query.get(dataset_id)
     dataset_file = pd.read_csv(
@@ -364,7 +364,7 @@ def add_bedfile_metadata_fields(metadata_id):
     if BedFileMetadata.query.get(metadata_id) is None:
         return not_found("Metadataset does not exist!")
     if BedFileMetadata.query.get(metadata_id).associated_dataset.is_access_denied(g):
-        return forbidden(f"Associated dataset is not owned by logged in user!")
+        return forbidden("Associated dataset is not owned by logged in user!")
     # check whether field_names are correct
     metadata = BedFileMetadata.query.get(metadata_id)
     metadata_file = pd.read_csv(metadata.file_path)
@@ -410,21 +410,21 @@ def create_session():
     # check whether datasets exist
     datasets = [Dataset.query.get(dataset_id) for dataset_id in used_datasets]
     if any(dataset is None for dataset in datasets):
-        return invalid(f"Some of the datasets in used_datasets do not exist!")
+        return invalid("Some of the datasets in used_datasets do not exist!")
     # check whether dataset is owned or session token is valid
     if any(dataset.is_access_denied(g) for dataset in datasets):
         return forbidden(
-            f"Some of the datasets associated with this session are not owned!"
+            "Some of the datasets associated with this session are not owned!"
         )
     # check whether collections exist
     collections = [
         Collection.query.get(collection_id) for collection_id in used_collections
     ]
     if any(collection is None for collection in collections):
-        return invalid(f"Some of the collections in used_collections do not exist!")
+        return invalid("Some of the collections in used_collections do not exist!")
     if any(collection.is_access_denied(g) for collection in collections):
         return forbidden(
-            f"Some of the collections associated with this session are not owned!"
+            "Some of the collections associated with this session are not owned!"
         )
     # create session
     session = Session(
@@ -466,11 +466,11 @@ def create_collection():
     # check whether datasets exist
     datasets = [Dataset.query.get(dataset_id) for dataset_id in used_datasets]
     if any(dataset is None for dataset in datasets):
-        return invalid(f"Some of the datasets in used_datasets do not exist!")
+        return invalid("Some of the datasets in used_datasets do not exist!")
     # check whether dataset is owned or session token is valid
     if any(dataset.is_access_denied(g) for dataset in datasets):
         return forbidden(
-            f"Some of the datasets associated with this collection are not owned!"
+            "Some of the datasets associated with this collection are not owned!"
         )
     # create collection
     collection = Collection(user_id=g.current_user.id, name=name, kind=kind)
@@ -546,7 +546,7 @@ def create_assembly():
 @api.route("/embeddingIntervalData/<entry_id>/<cluster_id>/create/", methods=["POST"])
 @auth.login_required
 def create_region_from_cluster_id(entry_id, cluster_id):
-    """creates new region for cluster_id at entry_id"""
+    """Creates new region for cluster_id at entry_id"""
 
     def is_form_invalid():
         if not hasattr(request, "form"):
@@ -593,7 +593,7 @@ def create_region_from_cluster_id(entry_id, cluster_id):
     new_entry = Dataset(
         dataset_name=form_data["name"],
         description=bed_ds.description,
-        public=False,  # derived regions should be private by default -> if people want to make pupblic they can do so
+        public=False,  # derived regions are private by default - you can choose to make them public
         processing_state="uploading",
         filetype="bedfile",
         user_id=g.current_user.id,

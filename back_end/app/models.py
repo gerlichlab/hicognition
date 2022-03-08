@@ -1,15 +1,16 @@
 """Database models for HiCognition."""
 import datetime
 from flask.globals import current_app
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import inspect
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import JSONWebSignatureSerializer
-from flask_login import UserMixin
-import redis
 import rq
-from app import db
 import hicognition
+import redis
+from . import db
+
 
 # define association tables
 
@@ -95,6 +96,7 @@ class User(db.Model, UserMixin):
         return s.dumps({"id": self.id}).decode("utf-8")
 
     def launch_task(self, queue, name, description, dataset_id, *args, **kwargs):
+        """adds task to queue"""
         rq_job = queue.enqueue(
             "app.tasks." + name, dataset_id, job_timeout="10h", *args, **kwargs
         )
@@ -117,6 +119,7 @@ class User(db.Model, UserMixin):
     def launch_collection_task(
         self, queue, name, description, collection_id, *args, **kwargs
     ):
+        """adds task based on collection to queue"""
         rq_job = queue.enqueue(
             "app.tasks." + name, collection_id, job_timeout="10h", *args, **kwargs
         )
@@ -137,13 +140,16 @@ class User(db.Model, UserMixin):
         return task
 
     def get_tasks_in_progress(self):
+        """gets all uncompleted tasks"""
         return Task.query.filter_by(user=self, complete=False).all()
 
     def get_task_in_progress(self, name):
+        """gets a particular uncompleted task"""
         return Task.query.filter_by(name=name, user=self, complete=False).first()
 
     @staticmethod
     def verify_auth_token(token):
+        """verify the user token"""
         s = Serializer(current_app.config["SECRET_KEY"])
         try:
             data = s.loads(token)
@@ -157,6 +163,7 @@ class User(db.Model, UserMixin):
 
 
 class Dataset(db.Model):
+    """Dataset database model"""
     # define groups of fields for requirement checking
     COMMON_REQUIRED_KEYS = [
         "cellCycleStage",
@@ -294,7 +301,7 @@ class Dataset(db.Model):
         if self.processing_state not in ["processing", "finished", "failed"]:
             return
         # check if there are any unfinished tasks
-        tasks = self.tasks.filter(Task.complete == False).all()
+        tasks = self.tasks.filter(Task.complete is False).all()
         if len(tasks) == 0:
             self.processing_state = "finished"
         else:
@@ -487,7 +494,7 @@ class Dataset(db.Model):
             .filter(
                 (Dataset.id == region.id)
                 & (Task.dataset_id == self.id)
-                & (Task.complete == False)
+                & (Task.complete is False)
             )
             .all()
         )
@@ -593,7 +600,7 @@ class Collection(db.Model):
         if self.processing_state not in ["processing", "finished", "failed"]:
             return
         # check if there are any unfinished tasks
-        tasks = self.tasks.filter(Task.complete == False).all()
+        tasks = self.tasks.filter(Task.complete is False).all()
         if len(tasks) == 0:
             self.processing_state = "finished"
         else:
@@ -614,7 +621,7 @@ class Collection(db.Model):
             .filter(
                 (Dataset.id == region.id)
                 & (Task.collection_id == self.id)
-                & (Task.complete == False)
+                & (Task.complete is False)
             )
             .all()
         )

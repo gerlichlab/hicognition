@@ -1,10 +1,10 @@
 """Init script for HiCognition"""
 from flask import Flask
-from .config import config
 from flask_sqlalchemy import SQLAlchemy
 from flask_sse import sse
-from redis import Redis
 import rq
+from redis import Redis
+from .config import config
 
 db = SQLAlchemy()
 
