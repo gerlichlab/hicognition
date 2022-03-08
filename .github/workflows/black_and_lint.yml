@@ -34,10 +34,6 @@ jobs:
     # More or less ignore for now
       run: |
         docker run gerlichlab/hicognition:latest pylint --disable=C0330 --fail-under=-3 /code/app/
-    - name: Run pylint /hicognition
-    # More or less ignore for now
-      run: |
-        docker run gerlichlab/hicognition:latest pylint --disable=C0330 --fail-under=-3 /code/hicognition/
     - name: Run pylint /tests
     # More or less ignore for now
       run: |
