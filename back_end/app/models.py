@@ -302,7 +302,7 @@ class Dataset(db.Model):
         if self.processing_state not in ["processing", "finished", "failed"]:
             return
         # check if there are any unfinished tasks
-        tasks = self.tasks.filter(Task.complete is False).all()
+        tasks = self.tasks.filter(Task.complete == False).all()
         if len(tasks) == 0:
             self.processing_state = "finished"
         else:
@@ -495,7 +495,7 @@ class Dataset(db.Model):
             .filter(
                 (Dataset.id == region.id)
                 & (Task.dataset_id == self.id)
-                & (Task.complete is False)
+                & (Task.complete == False)
             )
             .all()
         )
@@ -601,7 +601,7 @@ class Collection(db.Model):
         if self.processing_state not in ["processing", "finished", "failed"]:
             return
         # check if there are any unfinished tasks
-        tasks = self.tasks.filter(Task.complete is False).all()
+        tasks = self.tasks.filter(Task.complete == False).all()
         if len(tasks) == 0:
             self.processing_state = "finished"
         else:
@@ -622,7 +622,7 @@ class Collection(db.Model):
             .filter(
                 (Dataset.id == region.id)
                 & (Task.collection_id == self.id)
-                & (Task.complete is False)
+                & (Task.complete == False)
             )
             .all()
         )
