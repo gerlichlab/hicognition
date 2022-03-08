@@ -164,6 +164,7 @@ class User(db.Model, UserMixin):
 
 class Dataset(db.Model):
     """Dataset database model"""
+
     # define groups of fields for requirement checking
     COMMON_REQUIRED_KEYS = [
         "cellCycleStage",

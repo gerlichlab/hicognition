@@ -316,7 +316,6 @@ def set_dataset_finished(dataset_id, intervals_id):
         notification_handler.signal_processing_update(
             {
                 "data_type": dataset.filetype,
-                "id": dataset_id,
                 "name": dataset.dataset_name,
                 "processing_type": current_app.config["PIPELINE_NAMES"][
                     dataset.filetype
@@ -375,7 +374,6 @@ def set_dataset_failed(dataset_id, intervals_id):
         notification_handler.signal_processing_update(
             {
                 "data_type": dataset.filetype,
-                "id": dataset_id,
                 "name": dataset.dataset_name,
                 "processing_type": current_app.config["PIPELINE_NAMES"][
                     dataset.filetype
@@ -422,7 +420,6 @@ def set_collection_failed(collection_id, intervals_id):
         notification_handler.signal_processing_update(
             {
                 "data_type": collection.kind,
-                "id": collection_id,
                 "name": collection.name,
                 "processing_type": current_app.config["PIPELINE_NAMES"]["collections"][
                     collection.kind
@@ -476,7 +473,6 @@ def set_collection_finished(collection_id, intervals_id):
         notification_handler.signal_processing_update(
             {
                 "data_type": collection.kind,
-                "id": collection_id,
                 "name": collection.name,
                 "processing_type": current_app.config["PIPELINE_NAMES"]["collections"][
                     collection.kind
