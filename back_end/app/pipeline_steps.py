@@ -3,20 +3,16 @@ import os
 import uuid
 import logging
 from datetime import datetime
-
 from flask.globals import current_app
 import pandas as pd
 import numpy as np
+from rq import get_current_job
 from . import db
 from . import pipeline_worker_functions as worker_funcs
-from rq import get_current_job
 from .notifications import NotificationHandler
-
-from . import db
 from .models import (
     Dataset,
     Collection,
-    Dataset,
     Intervals,
     Task,
     dataset_preprocessing_table,
