@@ -85,6 +85,8 @@ dependencies:
       - pytz==2020.1
       - pymysql==1.0.2
       - pylama[all]
+      - pylint
+      - pylint-flask-sqlalchemy
       - redis==3.5.3
       - requests==2.24.0
       - rq==1.8.1
