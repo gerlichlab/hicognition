@@ -1,15 +1,16 @@
 """Database models for HiCognition."""
 import datetime
 from flask.globals import current_app
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import inspect
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import JSONWebSignatureSerializer
-from flask_login import UserMixin
 import redis
 import rq
-from app import db
 import hicognition
+from app import db
+
 
 # define association tables
 

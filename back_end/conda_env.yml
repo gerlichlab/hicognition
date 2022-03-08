@@ -86,6 +86,7 @@ dependencies:
       - pymysql==1.0.2
       - pylama[all]
       - pylint
+      - pylint-flask
       - pylint-flask-sqlalchemy
       - redis==3.5.3
       - requests==2.24.0

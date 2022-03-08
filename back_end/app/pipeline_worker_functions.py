@@ -13,14 +13,14 @@ from skimage.transform import resize
 from ngs import HiCTools as HT
 import cooler
 import bbi
-from hicognition import io_helpers, interval_operations, feature_extraction
 import bioframe as bf
 from sklearn.impute import SimpleImputer
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 import pylola
-from hicognition.utils import get_optimal_binsize
 import hicognition
+from hicognition import io_helpers, interval_operations, feature_extraction
+from hicognition.utils import get_optimal_binsize
 from . import db
 from .models import (
     Assembly,

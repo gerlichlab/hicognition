@@ -2,8 +2,6 @@
 import os
 import logging
 from flask import current_app
-
-
 import pandas as pd
 from hicognition import io_helpers
 from . import create_app, db

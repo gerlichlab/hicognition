@@ -25,7 +25,6 @@ from .authentication import auth
 from .errors import forbidden, invalid, not_found
 
 
-
 @api.route("/datasets/", methods=["POST"])
 @auth.login_required
 def add_dataset():
@@ -594,7 +593,7 @@ def create_region_from_cluster_id(entry_id, cluster_id):
     new_entry = Dataset(
         dataset_name=form_data["name"],
         description=bed_ds.description,
-        public=False,  # derived regions are private by default -> you can choose to make them public
+        public=False,  # derived regions are private by default - you can choose to make them public
         processing_state="uploading",
         filetype="bedfile",
         user_id=g.current_user.id,

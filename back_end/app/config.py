@@ -1,6 +1,7 @@
 """Config class for hicognition server."""
 import os
-#import json
+
+# import json
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -146,12 +147,13 @@ class Config:
         }
     }
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled
-    OBS_EXP_PROCESSES = 5  # Number of processes to use per worker to calcualte obs/exp matrix of pileups
-    PILEUP_PROCESSES = 2  # Number of processes to use per worker to do pileups
+    OBS_EXP_PROCESSES = 5  # Number of processes/worker to calculate obs/exp matrix of pileups
+    PILEUP_PROCESSES = 2  # Number of processes/worker to do pileups
 
 
 class DevelopmentConfig(Config):
     """Config class for development server."""
+
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL"
@@ -160,6 +162,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     """Config class for testing server."""
+
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     UPLOAD_DIR = "./tmp_test"
@@ -168,11 +171,13 @@ class TestingConfig(Config):
 
 class End2EndConfig(DevelopmentConfig):
     """Extension of the development config class."""
+
     END2END = True
 
 
 class ProductionConfig(Config):
     """Config class for production server."""
+
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL"
     ) or "sqlite:///" + os.path.join(basedir, "data.sqlite")
