@@ -296,7 +296,7 @@ def set_dataset_finished(dataset_id, intervals_id):
         .filter(
             (Dataset.id == region.id)
             & (Task.dataset_id == dataset_id)
-            & (Task.complete == False)
+            & (Task.complete is False)
         )
         .all()
     )
@@ -332,6 +332,7 @@ def set_dataset_finished(dataset_id, intervals_id):
 
 
 def set_task_progress(progress):
+    """Sets the progress of the task."""
     job = get_current_job()
     if job:
         job.meta["progress"] = progress
@@ -448,7 +449,7 @@ def set_collection_finished(collection_id, intervals_id):
         .filter(
             (Dataset.id == region.id)
             & (Task.collection_id == collection_id)
-            & (Task.complete == False)
+            & (Task.complete is False)
         )
         .all()
     )

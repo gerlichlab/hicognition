@@ -1,13 +1,12 @@
-"""Worker functions for pipeline steps that 
+"""Worker functions for pipeline steps that
 perform the actual calculations and database state
 changes"""
-import imp
 import os
 import logging
+import uuid
 import pandas as pd
 import numpy as np
 import umap
-import uuid
 from flask.globals import current_app
 from skimage.transform import resize
 from ngs import HiCTools as HT
@@ -29,7 +28,6 @@ from .models import (
     IndividualIntervalData,
     AssociationIntervalData,
     EmbeddingIntervalData,
-    Intervals,
     ObsExp,
 )
 
