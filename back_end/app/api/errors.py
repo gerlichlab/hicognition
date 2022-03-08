@@ -1,3 +1,4 @@
+""" Convenience functions for handling server errors."""
 from flask.json import jsonify
 from . import api
 

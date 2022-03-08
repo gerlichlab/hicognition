@@ -4,9 +4,9 @@ import json
 import pandas as pd
 import cooler
 import numpy as np
-from flask.json import jsonify
 from werkzeug.utils import secure_filename
 from flask import g, request, current_app
+from flask.json import jsonify
 from hicognition.utils import parse_description, get_all_interval_ids, parse_binsizes
 from hicognition.format_checkers import FORMAT_CHECKERS
 from . import api
