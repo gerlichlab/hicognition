@@ -8,6 +8,7 @@ from .notifications import NotificationHandler
 
 def add_app_context(app):
     """Adds app context."""
+
     def decorated(func):
         def wrapper(*args, **kwargs):
             with app.app_context():

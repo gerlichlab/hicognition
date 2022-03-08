@@ -296,7 +296,7 @@ def set_dataset_finished(dataset_id, intervals_id):
         .filter(
             (Dataset.id == region.id)
             & (Task.dataset_id == dataset_id)
-            & (Task.complete is False)
+            & (Task.complete == False)
         )
         .all()
     )
@@ -316,7 +316,6 @@ def set_dataset_finished(dataset_id, intervals_id):
         notification_handler.signal_processing_update(
             {
                 "data_type": dataset.filetype,
-                "id": dataset_id,
                 "name": dataset.dataset_name,
                 "processing_type": current_app.config["PIPELINE_NAMES"][
                     dataset.filetype
@@ -375,7 +374,6 @@ def set_dataset_failed(dataset_id, intervals_id):
         notification_handler.signal_processing_update(
             {
                 "data_type": dataset.filetype,
-                "id": dataset_id,
                 "name": dataset.dataset_name,
                 "processing_type": current_app.config["PIPELINE_NAMES"][
                     dataset.filetype
@@ -422,7 +420,6 @@ def set_collection_failed(collection_id, intervals_id):
         notification_handler.signal_processing_update(
             {
                 "data_type": collection.kind,
-                "id": collection_id,
                 "name": collection.name,
                 "processing_type": current_app.config["PIPELINE_NAMES"]["collections"][
                     collection.kind
@@ -449,7 +446,7 @@ def set_collection_finished(collection_id, intervals_id):
         .filter(
             (Dataset.id == region.id)
             & (Task.collection_id == collection_id)
-            & (Task.complete is False)
+            & (Task.complete == False)
         )
         .all()
     )
@@ -476,7 +473,6 @@ def set_collection_finished(collection_id, intervals_id):
         notification_handler.signal_processing_update(
             {
                 "data_type": collection.kind,
-                "id": collection_id,
                 "name": collection.name,
                 "processing_type": current_app.config["PIPELINE_NAMES"]["collections"][
                     collection.kind
