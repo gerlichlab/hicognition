@@ -1,13 +1,11 @@
 """GET API endpoints for hicognition"""
-import imp
 import json
 import gzip
-import re
-from flask.globals import current_app
 import pandas as pd
 import numpy as np
-from flask.json import jsonify
 from flask import g, make_response
+from flask.json import jsonify
+from flask.globals import current_app
 from hicognition import data_structures
 from hicognition.utils import (
     update_processing_state,

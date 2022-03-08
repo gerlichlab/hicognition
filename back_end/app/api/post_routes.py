@@ -7,6 +7,8 @@ import numpy as np
 from flask.json import jsonify
 from werkzeug.utils import secure_filename
 from flask import g, request, current_app
+from hicognition.utils import parse_description, get_all_interval_ids, parse_binsizes
+from hicognition.format_checkers import FORMAT_CHECKERS
 from . import api
 from .. import db
 from ..models import (
@@ -20,9 +22,8 @@ from ..models import (
     EmbeddingIntervalData,
 )
 from .authentication import auth
-from hicognition.utils import parse_description, get_all_interval_ids, parse_binsizes
 from .errors import forbidden, invalid, not_found
-from hicognition.format_checkers import FORMAT_CHECKERS
+
 
 
 @api.route("/datasets/", methods=["POST"])

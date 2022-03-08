@@ -1,4 +1,5 @@
 """Helpers to populate database"""
+from flask.globals import current_app
 from ..models import (
     User,
     Organism,
@@ -9,7 +10,6 @@ from ..models import (
     Task,
 )
 from . import api
-from flask.globals import current_app
 from .. import db
 
 
