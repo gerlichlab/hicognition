@@ -2,8 +2,9 @@
 # import sys
 import unittest
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+
 # add path to import app
-#sys.path.append("./")
+# sys.path.append("./")
 from app import db
 from app.models import Dataset, Session, Collection
 

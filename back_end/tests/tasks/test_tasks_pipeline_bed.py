@@ -4,6 +4,7 @@ from unittest.mock import patch
 import pandas as pd
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+
 # add path to import app
 # sys.path.append("./")
 from app import db

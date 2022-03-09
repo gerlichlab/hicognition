@@ -1,12 +1,13 @@
 """Module with the tests for the stackup creation realted tasks."""
-# import sys
 import unittest
 from unittest.mock import patch
 import pandas as pd
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 from hicognition import interval_operations
+
 # add path to import app
+# import sys
 # sys.path.append("./")
 from app import db
 from app.models import Dataset, Intervals, Assembly, Task

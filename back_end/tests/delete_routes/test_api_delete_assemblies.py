@@ -2,6 +2,7 @@
 import os
 import unittest
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+
 # add path to import app
 # import sys
 # sys.path.append("./")

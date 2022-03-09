@@ -2,10 +2,12 @@
 # import sys
 import os
 import unittest
+
 # from unittest import mock
 from unittest.mock import patch
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+
 # add path to import app
 # sys.path.append("./")
 from app import db

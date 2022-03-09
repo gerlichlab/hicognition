@@ -1,5 +1,4 @@
 """Module with tests realted adding and managing metadata."""
-# import sys
 import os
 import json
 import io
@@ -7,8 +6,10 @@ import unittest
 import pandas as pd
 from pandas.testing import assert_frame_equal
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+
+# import sys
 # add path to import app
-#sys.path.append("./")
+# sys.path.append("./")
 from app import db
 from app.models import Dataset, BedFileMetadata
 

@@ -1,13 +1,14 @@
 """Module with tests realted adding datasets."""
-# import sys
 import os
 import io
 import json
 import unittest
 from unittest.mock import patch
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+
 # add path to import app
-#sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app.models import Dataset, Assembly
 from app import db
 

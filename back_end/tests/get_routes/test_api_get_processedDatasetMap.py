@@ -1,6 +1,7 @@
 """Tests for /api/datasets/<dataset_id>/processedDatasetMap/ route to list and query sessions."""
 import unittest
 from hicognition.test_helpers import LoginTestCase
+
 # add path to import app
 # import sys
 # sys.path.append("./")
@@ -12,7 +13,7 @@ from app.models import (
     IndividualIntervalData,
     Collection,
     AssociationIntervalData,
-    EmbeddingIntervalData
+    EmbeddingIntervalData,
 )
 
 
