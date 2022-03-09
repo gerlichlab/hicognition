@@ -4,7 +4,6 @@ from pathlib import Path
 import unittest
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
-# from unittest.mock import patch
 # add path to import app
 # import sys
 # sys.path.append("./")

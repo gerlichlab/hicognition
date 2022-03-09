@@ -1,14 +1,12 @@
 """Module with the tests for the 1D-data embedding preprocessing realted tasks."""
-# import sys
 import os
 import unittest
-
-# from unittest import mock
 from unittest.mock import patch
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
+# import sys
 # sys.path.append("./")
 from app import db
 from app.models import (

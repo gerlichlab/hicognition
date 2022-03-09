@@ -1,7 +1,5 @@
 """Tests for /api/collections/ route to list collections."""
 import unittest
-
-# from unittest.mock import patch
 from hicognition.test_helpers import LoginTestCase
 
 # add path to import app
