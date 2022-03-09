@@ -7,6 +7,7 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from hicognition.utils import get_optimal_binsize
 
 # add path to import app
 # import sys
@@ -19,7 +20,6 @@ from app.pipeline_worker_functions import (
     _do_pileup_fixed_size,
     _do_pileup_variable_size,
 )
-from hicognition.utils import get_optimal_binsize
 
 
 class TestPipelinePileup(LoginTestCase, TempDirTestCase):
@@ -162,6 +162,8 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
 
 
 class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
+    """Test pileup worker functions for point and interval features."""
+
     def setUp(self):
         """Add test dataset"""
         # call setUp of LoginTestCase to initialize app

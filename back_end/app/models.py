@@ -584,7 +584,7 @@ class Collection(db.Model):
         return self.user_id != app_context.current_user.id
 
     def delete_data_of_associated_entries(self):
-        """"""
+        """Deletes associated Data"""
         assoc_data = self.associationData.all()
         deletion_queue = assoc_data
         for entry in deletion_queue:
@@ -596,7 +596,7 @@ class Collection(db.Model):
                 )
 
     def set_processing_state(self, db):
-        """sets the current processing state of the collection instance.
+        """Sets the current processing state of the collection instance.
         Launching task sets processing state, this sets finished/failed state"""
         if self.processing_state not in ["processing", "finished", "failed"]:
             return
@@ -655,7 +655,6 @@ class Collection(db.Model):
 
 class ObsExp(db.Model):
     """Cache table for obs/exp dataframes"""
-
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     binsize = db.Column(db.Integer, index=True)
@@ -663,6 +662,7 @@ class ObsExp(db.Model):
 
 
 class Organism(db.Model):
+    """Organism table for genome assembly"""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512))
     assemblies = db.relationship(
@@ -677,6 +677,7 @@ class Organism(db.Model):
 
 
 class Assembly(db.Model):
+    """Genome assembly database model"""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512))
     chrom_sizes = db.Column(db.String(512), index=True)
@@ -690,6 +691,7 @@ class Assembly(db.Model):
 
 
 class Intervals(db.Model):
+    """Genomic IntervalData database model"""
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     name = db.Column(db.String(512), index=True)
@@ -748,6 +750,8 @@ class Intervals(db.Model):
 
 
 class AverageIntervalData(db.Model):
+    """Table to hold information and pointers to data for
+    average values of a dataset at the linked intervals dataset."""
     id = db.Column(db.Integer, primary_key=True)
     binsize = db.Column(db.Integer)
     name = db.Column(db.String(512), index=True)
@@ -972,6 +976,7 @@ class EmbeddingIntervalData(db.Model):
 
 
 class Task(db.Model):
+    """Models the tasks dispatched to the redis queue."""
     id = db.Column(db.String(36), primary_key=True)
     name = db.Column(db.String(512), index=True)
     description = db.Column(db.String(512))
@@ -1006,6 +1011,7 @@ class Task(db.Model):
 
 
 class BedFileMetadata(db.Model):
+    """Models the associated with a bedfile"""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512))
     file_path = db.Column(db.String(512))
