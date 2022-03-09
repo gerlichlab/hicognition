@@ -159,7 +159,7 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         """Format print output."""
-        return "<User {}>".format(self.username)
+        return f"<User {self.username}>"
 
 
 class Dataset(db.Model):

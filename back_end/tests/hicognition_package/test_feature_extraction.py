@@ -8,10 +8,10 @@ class TestExtractImageFeatures(unittest.TestCase):
     """Tests for function to extract image features"""
 
     @classmethod
-    def setUp(self):
+    def setUp(cls):
         array = np.empty((100, 100))
         array.fill(np.nan)
-        self.nan_array = array
+        cls.nan_array = array
 
     def test_empty_input_returns_none(self):
         """Tests whether calling with empty input returns None"""
