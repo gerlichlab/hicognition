@@ -1,3 +1,4 @@
+"""Tests whether preprocessing states for collections are set correctly."""
 import unittest
 from unittest.mock import patch
 from hicognition.test_helpers import LoginTestCase

@@ -1,3 +1,4 @@
+"""Tests for /api/intervals route to list intervals."""
 import unittest
 import os
 import json

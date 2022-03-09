@@ -1,4 +1,4 @@
-"""Tests for io_helpers.py."""
+"""Tests the image feature extraction in the hicognition library"""
 import unittest
 import numpy as np
 from hicognition import feature_extraction
@@ -14,7 +14,7 @@ class TestExtractImageFeatures(unittest.TestCase):
         self.nan_array = array
 
     def test_empty_input_returns_none(self):
-        """tests whether calling with empty input returns None"""
+        """Tests whether calling with empty input returns None"""
         result = feature_extraction.extract_image_features([])
         self.assertEqual(result, None)
 

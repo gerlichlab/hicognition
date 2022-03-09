@@ -1,3 +1,4 @@
+"""Module with the tests for the pyLOLA calculation realted tasks."""
 import sys
 import os
 import unittest

@@ -1,3 +1,4 @@
+"""Module with tests realted to preprocessign collections."""
 import sys
 import unittest
 from unittest.mock import patch, MagicMock

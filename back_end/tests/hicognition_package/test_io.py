@@ -1,4 +1,4 @@
-"""Tests for io_helpers.py."""
+"""Tests the io helpers in the hicognition library."""
 import unittest
 from unittest.mock import patch
 import os

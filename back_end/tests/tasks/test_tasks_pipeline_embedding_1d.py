@@ -1,3 +1,4 @@
+"""Module with the tests for the 1D-data embedding preprocessing realted tasks."""
 import sys
 import os
 import unittest

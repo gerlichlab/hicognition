@@ -1,3 +1,4 @@
+"""Module with tests realted adding and managing genome assemblies."""
 import sys
 import os
 import unittest

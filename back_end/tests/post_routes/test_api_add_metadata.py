@@ -1,3 +1,4 @@
+"""Module with tests realted adding and managing metadata."""
 import sys
 import os
 import json

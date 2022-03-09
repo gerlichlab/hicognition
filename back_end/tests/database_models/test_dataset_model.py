@@ -1,3 +1,4 @@
+"""Tests whether preprocessing states for datasets are set correctly."""
 from hicognition.test_helpers import LoginTestCase
 from unittest.mock import patch
 

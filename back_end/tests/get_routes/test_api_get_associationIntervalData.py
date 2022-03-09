@@ -1,3 +1,4 @@
+"""Tests for get route of association interval data."""
 import os
 import unittest
 import numpy as np

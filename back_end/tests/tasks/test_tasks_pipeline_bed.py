@@ -1,3 +1,4 @@
+"""Module with the tests for all bed-file preprocessing realted tasks."""
 import sys
 import unittest
 from unittest.mock import patch

@@ -1,3 +1,4 @@
+"""Tests api-authentication"""
 from hicognition.test_helpers import LoginTestCase
 
 # add path to import app
@@ -38,20 +39,7 @@ class TestAuth(LoginTestCase):
         # test authentication for protected routes
         headers = self.get_api_headers("test", "asdf")
         response = self.client.get(
-            "/api/testProtected", headers=headers, content_type="application/json"
-        )
-        self.assertEqual(response.status_code, 200)
-        # test authentication for unprotected routes
-        response = self.client.get(
-            "/api/test", headers=headers, content_type="application/json"
-        )
-        self.assertEqual(response.status_code, 200)
-
-    def test_token_auth(self):
-        """tests whether obtained token can be used
-        for authentication."""
-        # add new user
-        new_user = User(username="test")
+            "/api/testProtected", headers=headers, content_type="application/_helpers.py.
         new_user.set_password("asdf")
         db.session.add(new_user)
         db.session.commit()
@@ -91,3 +79,4 @@ class TestAuth(LoginTestCase):
             "/api/tokens/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 403)
+_helpers.py.

@@ -1,3 +1,4 @@
+"""Tests for /api/sessions route to list and query sessions."""
 import datetime
 import unittest
 from hicognition.test_helpers import LoginTestCase

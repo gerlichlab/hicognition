@@ -1,3 +1,4 @@
+"""Module with tests realted adding and managing collections."""
 import sys
 import unittest
 from hicognition.test_helpers import LoginTestCase

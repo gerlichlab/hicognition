@@ -1,3 +1,4 @@
+"""Test to check whether retrieving of individualIntervalData data works."""
 import os
 import pandas as pd
 import unittest

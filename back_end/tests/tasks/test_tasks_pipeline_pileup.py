@@ -1,3 +1,4 @@
+"""Module with the tests for the pileup creation realted tasks."""
 import os
 import sys
 import unittest

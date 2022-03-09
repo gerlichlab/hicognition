@@ -1,3 +1,4 @@
+"""Module with the tests for the 2D-data embedding preprocessing realted tasks."""
 import sys
 import unittest
 import numpy as np

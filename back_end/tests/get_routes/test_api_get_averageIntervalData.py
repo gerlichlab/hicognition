@@ -1,3 +1,4 @@
+ """Test to check whether retrieving of averageIntervalData data works."""
 import os
 import unittest
 import numpy as np

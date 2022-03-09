@@ -1,3 +1,4 @@
+"""Tests for deletion of datasets."""
 import os
 from pathlib import Path
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase

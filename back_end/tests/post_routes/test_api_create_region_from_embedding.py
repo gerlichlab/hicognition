@@ -1,3 +1,4 @@
+"""Module with tests realted to creating new regions from local neighborhoods in embeddings."""
 import os
 import unittest
 import numpy as np

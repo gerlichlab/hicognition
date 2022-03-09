@@ -1,3 +1,4 @@
+"""Module with tests realted adding datasets."""
 import sys
 import os
 import io

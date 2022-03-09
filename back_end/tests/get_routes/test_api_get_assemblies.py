@@ -1,3 +1,4 @@
+"""Test getting genome assemblies."""
 import unittest
 from hicognition.test_helpers import LoginTestCase
 

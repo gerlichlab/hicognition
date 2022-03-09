@@ -1,3 +1,4 @@
+"""Tests the interval operations in the hicognition library"""
 import unittest
 import pandas as pd
 from pandas.testing import assert_frame_equal

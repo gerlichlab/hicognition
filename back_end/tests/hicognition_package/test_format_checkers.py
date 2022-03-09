@@ -1,4 +1,4 @@
-"""Tests for io_helpers.py."""
+"""Tests the formatcheckers in the hicognition library"""
 import unittest
 from hicognition.test_helpers import TempDirTestCase
 from hicognition import format_checkers
@@ -14,7 +14,7 @@ class TestIsBedFileCorrectlyFormatted(TempDirTestCase):
         )
 
     def test_real_data_normal(self):
-        """Tests good bedfilewithou any header"""
+        """Tests good bedfile without any header"""
         result = format_checkers.is_bed_file_correctly_formatted(
             "tests/testfiles/real_data_tricky_header_cleaned.bed", self.chrom_names, []
         )
