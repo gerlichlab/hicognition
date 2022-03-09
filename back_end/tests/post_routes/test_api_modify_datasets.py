@@ -285,6 +285,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset.filetype, "cooler")
 
     def test_modification_goes_through_bedfile(self):
+        """Test whether correct combination of metadata causes database modifiction."""
         # add datasets
         db.session.add(self.bedfile_1)
         db.session.commit()
@@ -324,6 +325,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset.filetype, "bedfile")
 
     def test_modification_goes_through_bedfile_genome_annotation(self):
+        """Test whether correct combination of metadata causes database modifiction."""
         # add datasets
         db.session.add(self.bedfile_2)
         db.session.commit()
@@ -360,6 +362,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset.filetype, "bedfile")
 
     def test_public_flag_set_correctly(self):
+        """Test if public flag is set correctly."""
         # add datasets
         db.session.add(self.bedfile_2)
         db.session.commit()
@@ -396,6 +399,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset.filetype, "bedfile")
 
     def test_modification_goes_through_bigwig(self):
+        """Test whether correct combination of metadata causes database modifiction."""
         # add datasets
         db.session.add(self.bigwig_1)
         db.session.commit()

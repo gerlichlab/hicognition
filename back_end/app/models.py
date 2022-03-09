@@ -290,6 +290,7 @@ class Dataset(db.Model):
     tasks = db.relationship("Task", backref="dataset", lazy="dynamic")
 
     def get_tasks_in_progress(self):
+        """Gets the tasks in progress for the dataset."""
         return Task.query.filter_by(dataset=self, complete=False).all()
 
     def __repr__(self):
@@ -505,6 +506,7 @@ class Dataset(db.Model):
         db.session.commit()
 
     def to_json(self):
+        """Generates a JSON from the model"""
         json_dataset = {}
         for key in inspect(Dataset).columns.keys():
             if key == "processing_id":
@@ -565,6 +567,7 @@ class Collection(db.Model):
     processing_state = db.Column(db.String(64))
 
     def get_tasks_in_progress(self):
+        """Gets the Task that are in progress for the collection"""
         return Task.query.filter_by(collection=self, complete=False).all()
 
     def is_access_denied(self, app_context):
@@ -673,6 +676,7 @@ class Organism(db.Model):
     )
 
     def to_json(self):
+        """Generates json output."""
         return {"id": self.id, "name": self.name}
 
 
@@ -686,6 +690,7 @@ class Assembly(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
     def to_json(self):
+        """Generates json output."""
         json_dataset = {"id": self.id, "name": self.name, "user_id": self.user_id}
         return json_dataset
 
@@ -988,7 +993,7 @@ class Task(db.Model):
 
     @staticmethod
     def filter_failed_tasks(tasks):
-        """returns failed tasks of the tasks provided"""
+        """Returns failed tasks of the tasks provided"""
         output = []
         for task in tasks:
             if task.get_rq_job() is None:
@@ -999,6 +1004,7 @@ class Task(db.Model):
         return output
 
     def get_rq_job(self):
+        """Fetches the rq job of the task"""
         try:
             rq_job = rq.job.Job.fetch(self.id, connection=current_app.redis)
         except (redis.exceptions.RedisError, rq.exceptions.NoSuchJobError):
@@ -1006,6 +1012,7 @@ class Task(db.Model):
         return rq_job
 
     def get_progress(self):
+        """Fetches the progress of the rq job"""
         job = self.get_rq_job()
         return job.meta.get("progress", 0) if job is not None else 100
 
@@ -1043,12 +1050,13 @@ class Session(db.Model):
     )
 
     def generate_session_token(self):
-        """generates session token"""
+        """Generates session token"""
         s = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
         return s.dumps({"session_id": self.id}).decode("utf-8")
 
     @staticmethod
     def verify_auth_token(token):
+        """Verifies the session token"""
         s = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
         try:
             data = s.loads(token)
@@ -1076,6 +1084,7 @@ class Session(db.Model):
 
 
 def all_tasks_finished(tasks):
+    """Returns True if all rq jobs are finished."""
     for task in tasks:
         job = task.get_rq_job()
         if job is None:
@@ -1087,7 +1096,7 @@ def all_tasks_finished(tasks):
 
 
 def any_tasks_failed(tasks):
-    # check whether any job failed
+    """Return True if any rq job failed."""
     for task in tasks:
         if task.get_rq_job() is None:
             # job is not available in rq anymore

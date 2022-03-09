@@ -42,6 +42,8 @@ class TestSetProcessingState(LoginTestCase):
         self.assertEqual(collection.processing_state, "processing")
 
     def test_finished_when_no_task(self):
+        """Tests whether processing status is set correctly
+        when there is no task for the collection."""
         # add new datasets
         self.add_test_collection("processing")
         # set processing state
@@ -50,6 +52,8 @@ class TestSetProcessingState(LoginTestCase):
         self.assertEqual(collection.processing_state, "finished")
 
     def test_uploaded_no_update_wo_task(self):
+        """Tests whether processing status is set correctly
+        when a collections wo tasks has an uploading status."""
         # add new datasets
         self.add_test_collection("uploading")
         # set processing state
@@ -58,6 +62,8 @@ class TestSetProcessingState(LoginTestCase):
         self.assertEqual(collection.processing_state, "uploading")
 
     def test_uploaded_no_update_w_task(self):
+        """Tests whether processing status is set correctly
+        when a collections with tasks has an uploading status."""
         # add new datasets
         self.add_test_collection("uploading")
         # add Task

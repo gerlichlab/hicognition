@@ -763,8 +763,8 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
 
     @patch("app.pipeline_worker_functions.get_optimal_binsize")
     def test_calculated_obs_exp_cached(self, mock_binsize):
-        mock_binsize.return_value = 5000000
         """Tests whether cached obs/exp dataset is created if it does not exist already"""
+        mock_binsize.return_value = 5000000
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
         # create mock regions
         test_df_interval = pd.DataFrame(
