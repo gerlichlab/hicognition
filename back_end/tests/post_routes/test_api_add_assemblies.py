@@ -1,10 +1,12 @@
-import sys
+"""Module with tests realted adding and managing genome assemblies."""
+
 import os
 import unittest
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import Organism, Assembly
 
@@ -95,7 +97,7 @@ class TestAddAssembly(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_badform_no_chrom_sizes(self):
-        """Tests whether form without file is rejected"""
+        """Tests whether form with missing file is rejected"""
         # add datasets
         db.session.add(self.human)
         db.session.commit()
@@ -115,7 +117,7 @@ class TestAddAssembly(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_badform_no_chrom_arms(self):
-        """Tests whether form without file is rejected"""
+        """Tests whether form with missing file is rejected."""
         # add datasets
         db.session.add(self.human)
         db.session.commit()
@@ -138,7 +140,7 @@ class TestAddAssembly(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_badform_wrong_format(self):
-        """Tests whether form without file is rejected"""
+        """Tests whether form without file is rejected."""
         # add datasets
         db.session.add(self.human)
         db.session.commit()
@@ -161,6 +163,7 @@ class TestAddAssembly(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_good_form_added_correctly(self):
+        """Test if a valid Form with all files is added correctly."""
         # construct form data
         data = {
             "organism": "1",

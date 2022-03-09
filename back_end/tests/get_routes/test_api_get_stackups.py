@@ -1,14 +1,14 @@
+"""Test to check whether retrieving of individualIntervalData data works."""
 import os
-import pandas as pd
 import unittest
 import json
+import pandas as pd
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
-import sys
-
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import Dataset, Intervals, IndividualIntervalData, BedFileMetadata
 

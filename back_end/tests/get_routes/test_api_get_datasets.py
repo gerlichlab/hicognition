@@ -1,13 +1,13 @@
+"""Tests for /api/datasets route to list datasets."""
 import unittest
 import pandas as pd
 from hicognition.test_helpers import LoginTestCase
 
 # add path to import app
-import sys
-
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
-from app.models import Dataset, Task, Session
+from app.models import Dataset, Session
 
 
 class TestGetDatasets(LoginTestCase):

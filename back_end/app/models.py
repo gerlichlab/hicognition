@@ -159,7 +159,7 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         """Format print output."""
-        return "<User {}>".format(self.username)
+        return f"<User {self.username}>"
 
 
 class Dataset(db.Model):
@@ -290,6 +290,7 @@ class Dataset(db.Model):
     tasks = db.relationship("Task", backref="dataset", lazy="dynamic")
 
     def get_tasks_in_progress(self):
+        """Gets the tasks in progress for the dataset."""
         return Task.query.filter_by(dataset=self, complete=False).all()
 
     def __repr__(self):
@@ -505,6 +506,7 @@ class Dataset(db.Model):
         db.session.commit()
 
     def to_json(self):
+        """Generates a JSON from the model"""
         json_dataset = {}
         for key in inspect(Dataset).columns.keys():
             if key == "processing_id":
@@ -565,6 +567,7 @@ class Collection(db.Model):
     processing_state = db.Column(db.String(64))
 
     def get_tasks_in_progress(self):
+        """Gets the Task that are in progress for the collection"""
         return Task.query.filter_by(collection=self, complete=False).all()
 
     def is_access_denied(self, app_context):
@@ -584,7 +587,7 @@ class Collection(db.Model):
         return self.user_id != app_context.current_user.id
 
     def delete_data_of_associated_entries(self):
-        """"""
+        """Deletes associated Data"""
         assoc_data = self.associationData.all()
         deletion_queue = assoc_data
         for entry in deletion_queue:
@@ -596,7 +599,7 @@ class Collection(db.Model):
                 )
 
     def set_processing_state(self, db):
-        """sets the current processing state of the collection instance.
+        """Sets the current processing state of the collection instance.
         Launching task sets processing state, this sets finished/failed state"""
         if self.processing_state not in ["processing", "finished", "failed"]:
             return
@@ -655,7 +658,6 @@ class Collection(db.Model):
 
 class ObsExp(db.Model):
     """Cache table for obs/exp dataframes"""
-
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     binsize = db.Column(db.Integer, index=True)
@@ -663,6 +665,7 @@ class ObsExp(db.Model):
 
 
 class Organism(db.Model):
+    """Organism table for genome assembly"""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512))
     assemblies = db.relationship(
@@ -673,10 +676,12 @@ class Organism(db.Model):
     )
 
     def to_json(self):
+        """Generates json output."""
         return {"id": self.id, "name": self.name}
 
 
 class Assembly(db.Model):
+    """Genome assembly database model"""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512))
     chrom_sizes = db.Column(db.String(512), index=True)
@@ -685,11 +690,13 @@ class Assembly(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
     def to_json(self):
+        """Generates json output."""
         json_dataset = {"id": self.id, "name": self.name, "user_id": self.user_id}
         return json_dataset
 
 
 class Intervals(db.Model):
+    """Genomic IntervalData database model"""
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     name = db.Column(db.String(512), index=True)
@@ -748,6 +755,8 @@ class Intervals(db.Model):
 
 
 class AverageIntervalData(db.Model):
+    """Table to hold information and pointers to data for
+    average values of a dataset at the linked intervals dataset."""
     id = db.Column(db.Integer, primary_key=True)
     binsize = db.Column(db.Integer)
     name = db.Column(db.String(512), index=True)
@@ -972,6 +981,7 @@ class EmbeddingIntervalData(db.Model):
 
 
 class Task(db.Model):
+    """Models the tasks dispatched to the redis queue."""
     id = db.Column(db.String(36), primary_key=True)
     name = db.Column(db.String(512), index=True)
     description = db.Column(db.String(512))
@@ -983,7 +993,7 @@ class Task(db.Model):
 
     @staticmethod
     def filter_failed_tasks(tasks):
-        """returns failed tasks of the tasks provided"""
+        """Returns failed tasks of the tasks provided"""
         output = []
         for task in tasks:
             if task.get_rq_job() is None:
@@ -994,6 +1004,7 @@ class Task(db.Model):
         return output
 
     def get_rq_job(self):
+        """Fetches the rq job of the task"""
         try:
             rq_job = rq.job.Job.fetch(self.id, connection=current_app.redis)
         except (redis.exceptions.RedisError, rq.exceptions.NoSuchJobError):
@@ -1001,11 +1012,13 @@ class Task(db.Model):
         return rq_job
 
     def get_progress(self):
+        """Fetches the progress of the rq job"""
         job = self.get_rq_job()
         return job.meta.get("progress", 0) if job is not None else 100
 
 
 class BedFileMetadata(db.Model):
+    """Models the associated with a bedfile"""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512))
     file_path = db.Column(db.String(512))
@@ -1037,12 +1050,13 @@ class Session(db.Model):
     )
 
     def generate_session_token(self):
-        """generates session token"""
+        """Generates session token"""
         s = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
         return s.dumps({"session_id": self.id}).decode("utf-8")
 
     @staticmethod
     def verify_auth_token(token):
+        """Verifies the session token"""
         s = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
         try:
             data = s.loads(token)
@@ -1070,6 +1084,7 @@ class Session(db.Model):
 
 
 def all_tasks_finished(tasks):
+    """Returns True if all rq jobs are finished."""
     for task in tasks:
         job = task.get_rq_job()
         if job is None:
@@ -1081,7 +1096,7 @@ def all_tasks_finished(tasks):
 
 
 def any_tasks_failed(tasks):
-    # check whether any job failed
+    """Return True if any rq job failed."""
     for task in tasks:
         if task.get_rq_job() is None:
             # job is not available in rq anymore

@@ -1,5 +1,5 @@
+"""Module with the tests for the pileup creation realted tasks."""
 import os
-import sys
 import unittest
 from unittest.mock import patch
 from unittest.mock import MagicMock, PropertyMock
@@ -7,9 +7,11 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from hicognition.utils import get_optimal_binsize
 
 # add path to import app
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import Dataset, Intervals, Assembly, Task, ObsExp
 from app.tasks import pipeline_pileup
@@ -18,7 +20,6 @@ from app.pipeline_worker_functions import (
     _do_pileup_fixed_size,
     _do_pileup_variable_size,
 )
-from hicognition.utils import get_optimal_binsize
 
 
 class TestPipelinePileup(LoginTestCase, TempDirTestCase):
@@ -161,6 +162,8 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
 
 
 class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
+    """Test pileup worker functions for point and interval features."""
+
     def setUp(self):
         """Add test dataset"""
         # call setUp of LoginTestCase to initialize app
@@ -760,8 +763,8 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
 
     @patch("app.pipeline_worker_functions.get_optimal_binsize")
     def test_calculated_obs_exp_cached(self, mock_binsize):
-        mock_binsize.return_value = 5000000
         """Tests whether cached obs/exp dataset is created if it does not exist already"""
+        mock_binsize.return_value = 5000000
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
         # create mock regions
         test_df_interval = pd.DataFrame(

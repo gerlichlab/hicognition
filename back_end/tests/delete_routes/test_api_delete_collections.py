@@ -1,17 +1,17 @@
+"""Tests for deletion of collections."""
 import os
 import unittest
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
-import sys
-
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
-from app.models import Collection, AssociationIntervalData, EmbeddingIntervalData
+from app.models import Collection, AssociationIntervalData
 
 
 class TestDeleteCollection(LoginTestCase, TempDirTestCase):
-    """Tests for deletion of datasets."""
+    """Tests for deletion of collections."""
 
     def _create_empty_file_in_tempdir(self, file_name):
         file_path = os.path.join(self.TEMP_PATH, file_name)

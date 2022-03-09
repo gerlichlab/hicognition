@@ -1,12 +1,12 @@
-import sys
+"""Module with tests realted to preprocessign collections."""
 import unittest
 from unittest.mock import patch, MagicMock
-
 from flask.globals import current_app
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import Dataset, Collection, Intervals, Task
 

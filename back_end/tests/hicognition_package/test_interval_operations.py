@@ -1,3 +1,4 @@
+"""Tests the interval operations in the hicognition library"""
 import unittest
 import pandas as pd
 from pandas.testing import assert_frame_equal
@@ -108,14 +109,17 @@ class TestGetBinNumberExpandedIntervals(unittest.TestCase):
     """Tests for get_bin_number_for_expanded_intervals"""
 
     def test_correct_number_produced_large_bins(self):
+        """tests large bins"""
         result = interval_operations.get_bin_number_for_expanded_intervals(10, 0.2)
         self.assertEqual(result, 14)
 
     def test_correct_number_produced_medium_bins(self):
+        """tests medium bins"""
         result = interval_operations.get_bin_number_for_expanded_intervals(5, 0.2)
         self.assertEqual(result, 28)
 
     def test_correct_number_produced_small_bins(self):
+        """tests small bins"""
         result = interval_operations.get_bin_number_for_expanded_intervals(1, 0.2)
         self.assertEqual(result, 140)
 
@@ -124,6 +128,7 @@ class TestExpandRegions(unittest.TestCase):
     """Tests for expand regions."""
 
     def test_regions_correctly_expanded(self):
+        """tests if regions are correctly expanded"""
         test_region = pd.DataFrame(
             {"chrom": ["chr1", "chr1"], "start": [100, 200], "end": [200, 400]}
         )
