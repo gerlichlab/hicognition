@@ -105,7 +105,7 @@ class TestCleanupFailedTasks(LoginTestCase):
         """Tests whether tasks that are not failed are not deleted"""
         db.session.add_all([self.detached_task, self.completed_task])
         db.session.commit()
-        # disptach call
+        # dispatch call
         add_app_context(self.app)(cleanup_failed_tasks)()
         # check whether all tasks are still there
         self.assertEqual(2, len(Task.query.all()))
@@ -120,7 +120,7 @@ class TestCleanupFailedTasks(LoginTestCase):
             [self.detached_task, self.completed_task, self.failed_task_no_associations]
         )
         db.session.commit()
-        # disptach call
+        # dispatch call
         add_app_context(self.app)(cleanup_failed_tasks)()
         # check whether all tasks are still there
         self.assertEqual(2, len(Task.query.all()))
@@ -138,7 +138,7 @@ class TestCleanupFailedTasks(LoginTestCase):
         add_app_context(self.app)(cleanup_failed_tasks)()
         # check whether task has been removed
         self.assertEqual(0, len(Task.query.all()))
-        # check whetehr dataset has been set failed
+        # check whether dataset has been set failed
         bedfile = Dataset.query.get(1)
         coolerfile = Dataset.query.get(2)
         self.assertEqual(bedfile.failed_features[0], coolerfile)
@@ -155,7 +155,7 @@ class TestCleanupFailedTasks(LoginTestCase):
         add_app_context(self.app)(cleanup_failed_tasks)()
         # check whether task has been removed
         self.assertEqual(0, len(Task.query.all()))
-        # check whetehr dataset has been set failed
+        # check whether dataset has been set failed
         bedfile = Dataset.query.get(1)
         collection = Collection.query.get(1)
         self.assertEqual(bedfile.failed_collections[0], collection)
