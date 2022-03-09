@@ -1,11 +1,9 @@
 """Tests whether preprocessing states for datasets are set correctly."""
-from hicognition.test_helpers import LoginTestCase
 from unittest.mock import patch
-
+from hicognition.test_helpers import LoginTestCase
 # add path to import app
-import sys
-
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import Dataset, Task
 

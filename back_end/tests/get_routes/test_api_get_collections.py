@@ -1,14 +1,12 @@
 """Tests for /api/collections/ route to list collections."""
 import unittest
-from unittest.mock import patch
+# from unittest.mock import patch
 from hicognition.test_helpers import LoginTestCase
-
 # add path to import app
-import sys
-
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
-from app.models import Collection, Dataset, Session, Task
+from app.models import Collection, Dataset, Session
 
 
 class TestGetCollections(LoginTestCase):

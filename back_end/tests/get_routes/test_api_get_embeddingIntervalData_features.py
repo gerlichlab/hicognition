@@ -5,11 +5,9 @@ import json
 import unittest
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
-
 # add path to import app
-import sys
-
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import Collection, Dataset, Intervals, EmbeddingIntervalData
 

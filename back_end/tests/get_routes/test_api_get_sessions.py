@@ -2,11 +2,9 @@
 import datetime
 import unittest
 from hicognition.test_helpers import LoginTestCase
-
 # add path to import app
-import sys
-
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import Session
 

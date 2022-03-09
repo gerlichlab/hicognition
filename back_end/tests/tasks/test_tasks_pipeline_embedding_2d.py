@@ -1,11 +1,10 @@
 """Module with the tests for the 2D-data embedding preprocessing realted tasks."""
-import sys
+# import sys
 import unittest
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
-
 # add path to import app
-sys.path.append("./")
+# sys.path.append("./")
 from app.pipeline_worker_functions import _do_embedding_2d
 
 

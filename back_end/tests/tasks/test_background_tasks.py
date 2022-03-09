@@ -2,12 +2,9 @@
 import unittest
 from unittest.mock import MagicMock, patch
 from hicognition.test_helpers import LoginTestCase
-
-
 # add path to import app
-import sys
-
-sys.path.append("./")
+#import sys
+#sys.path.append("./")
 from app import db
 from app.models import Collection, Dataset, Intervals, Task
 from app.background_tasks import (

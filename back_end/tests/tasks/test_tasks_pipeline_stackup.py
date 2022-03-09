@@ -1,18 +1,18 @@
 """Module with the tests for the stackup creation realted tasks."""
-import sys
+# import sys
 import unittest
 from unittest.mock import patch
 import pandas as pd
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
-
+from hicognition import interval_operations
 # add path to import app
-sys.path.append("./")
+# sys.path.append("./")
 from app import db
 from app.models import Dataset, Intervals, Assembly, Task
 from app.tasks import pipeline_stackup
 from app.pipeline_steps import stackup_pipeline_step
-from hicognition import interval_operations
+
 from app.pipeline_worker_functions import (
     _do_stackup_fixed_size,
     _do_stackup_variable_size,

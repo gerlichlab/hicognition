@@ -1,6 +1,6 @@
 """Module with the tests for the pileup creation realted tasks."""
 import os
-import sys
+# import sys
 import unittest
 from unittest.mock import patch
 from unittest.mock import MagicMock, PropertyMock
@@ -8,9 +8,8 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
-
 # add path to import app
-sys.path.append("./")
+# sys.path.append("./")
 from app import db
 from app.models import Dataset, Intervals, Assembly, Task, ObsExp
 from app.tasks import pipeline_pileup

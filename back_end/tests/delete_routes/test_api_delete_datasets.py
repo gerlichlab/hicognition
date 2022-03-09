@@ -1,14 +1,12 @@
 """Tests for deletion of datasets."""
 import os
 from pathlib import Path
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 import unittest
-from unittest.mock import patch
-
+from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+# from unittest.mock import patch
 # add path to import app
-import sys
-
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import (
     Dataset,

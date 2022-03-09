@@ -1,14 +1,12 @@
 """Module with tests realted to preprocessign datasets."""
-import sys
+# import sys
 import unittest
 from unittest.mock import MagicMock, patch
-
 from flask.globals import current_app
-from redis.client import Pipeline
+# from redis.client import Pipeline
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
-
 # add path to import app
-sys.path.append("./")
+#sys.path.append("./")
 from app import db
 from app.models import Dataset, Task, Intervals
 

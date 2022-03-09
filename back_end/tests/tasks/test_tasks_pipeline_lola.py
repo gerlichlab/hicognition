@@ -1,14 +1,13 @@
 """Module with the tests for the pyLOLA calculation realted tasks."""
-import sys
+# import sys
 import os
 import unittest
 from unittest.mock import patch
 import pandas as pd
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
-
 # add path to import app
-sys.path.append("./")
+# sys.path.append("./")
 from app import db
 from app.models import (
     Dataset,

@@ -1,13 +1,11 @@
 """Module with the tests for all bed-file preprocessing realted tasks."""
-import sys
 import unittest
 from unittest.mock import patch
 import pandas as pd
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
-
 # add path to import app
-sys.path.append("./")
+# sys.path.append("./")
 from app import db
 from app.models import Dataset, Intervals, Assembly
 from app.tasks import pipeline_bed
