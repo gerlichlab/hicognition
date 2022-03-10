@@ -37,15 +37,15 @@ def add_dataset():
         if len(request.files) == 0:
             return True
         # check filename
-        fileEnding = request.files["file"].filename.split(".")[-1]
-        correctFileEndings = {
+        file_ending = request.files["file"].filename.split(".")[-1]
+        correct_file_endings = {
             "bedfile": ["bed"],
             "cooler": ["mcool"],
             "bigwig": ["bw", "bigwig"],
         }
-        if request.form["filetype"] not in correctFileEndings:
+        if request.form["filetype"] not in correct_file_endings:
             return True
-        if fileEnding.lower() not in correctFileEndings[request.form["filetype"]]:
+        if file_ending.lower() not in correct_file_endings[request.form["filetype"]]:
             return True
         # check attributes
         if not Dataset.post_dataset_requirements_fullfilled(request.form):
@@ -58,16 +58,16 @@ def add_dataset():
         return invalid("Form is not valid!")
     # get data from form
     data = request.form
-    fileObject = request.files["file"]
+    file_object = request.files["file"]
     # check whether description is there
     description = parse_description(data)
     # check whether dataset should be public
-    setPublic = "public" in data and data["public"].lower() == "true"
+    set_public = "public" in data and data["public"].lower() == "true"
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
         dataset_name=data["datasetName"],
         description=description,
-        public=setPublic,
+        public=set_public,
         processing_state="uploading",
         filetype=data["filetype"],
         user_id=current_user.id,
@@ -76,9 +76,9 @@ def add_dataset():
     db.session.add(new_entry)
     db.session.commit()
     # save file in upload directory with database_id as prefix
-    filename = f"{new_entry.id}_{secure_filename(fileObject.filename)}"
+    filename = f"{new_entry.id}_{secure_filename(file_object.filename)}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
-    fileObject.save(file_path)
+    file_object.save(file_path)
     assembly = Assembly.query.get(data["assembly"])
     # check format -> this cannot be done in form checker since file needs to be available
     chromosome_names = set(pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0])
@@ -291,9 +291,9 @@ def add_bedfile_metadata():
         if len(request.files) == 0:
             return True
         # check filename
-        fileEnding = request.files["file"].filename.split(".")[-1]
-        correctFileEndings = ["csv", "txt", "bed"]  # textfiles and bedfiles supported
-        if fileEnding not in correctFileEndings:
+        file_ending = request.files["file"].filename.split(".")[-1]
+        correct_file_endings = ["csv", "txt", "bed"]  # textfiles and bedfiles supported
+        if file_ending not in correct_file_endings:
             return True
         return False
 
@@ -302,7 +302,7 @@ def add_bedfile_metadata():
         return invalid("Form is not valid!")
     # get data from form
     data = request.form
-    fileObject = request.files["file"]
+    file_object = request.files["file"]
     dataset_id = json.loads(data["datasetID"])
     # check whether dataset exists and user is allowed to access
     if Dataset.query.get(dataset_id) is None:
@@ -315,14 +315,14 @@ def add_bedfile_metadata():
         dataset.file_path, sep="\t", header=None
     )  # during upload process, the header of bedfiles is removed
     uploaded_file = pd.read_csv(
-        fileObject, sep=SEPARATOR_MAP[data["separator"]]
+        file_object, sep=SEPARATOR_MAP[data["separator"]]
     )  # generate uploaded dataframe from io-stream in memory
     if len(dataset_file) != len(uploaded_file):
         return jsonify({"ValidationError": "Dataset length missmatch!"})
     # detect numeric columns
     only_numeric = uploaded_file.select_dtypes(include=np.number)
     # save with standard separator
-    filename = secure_filename(fileObject.filename)
+    filename = secure_filename(file_object.filename)
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     only_numeric.to_csv(file_path, index=False)
     # add to database

@@ -33,14 +33,14 @@ class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):
             id=2, dataset_id=self.unowned_bedfile.id, windowsize=200000
         )
         # add associationIntervalData with unowned collection
-        self.assocData_collection_unowned = AssociationIntervalData(
+        self.assoc_data_collection_unowned = AssociationIntervalData(
             id=1,
             binsize=10000,
             collection_id=self.unowned_collection.id,
             intervals_id=self.owned_intervals.id,
         )
         # add averageIntervalData with unowned intervals
-        self.assocData_intervals_unowned = AssociationIntervalData(
+        self.assoc_data_intervals_unowned = AssociationIntervalData(
             id=2,
             binsize=10000,
             collection_id=self.owned_collection.id,
@@ -50,7 +50,7 @@ class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):
         self.test_data = np.array([[1.66, 2.2, 3.8, 4.5]])
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, self.test_data)
-        self.assocData_owned = AssociationIntervalData(
+        self.assoc_data_owned = AssociationIntervalData(
             id=3, binsize=10000, file_path=data_path, collection_id=1, intervals_id=1
         )
 
@@ -62,7 +62,7 @@ class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_associationIntervalData_does_not_exist(self):
+    def test_association_interval_data_does_not_exist(self):
         """Test 404 is returned if associationIntervalData does not exist."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -88,13 +88,13 @@ class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_bedfile,
                 self.unowned_collection,
                 self.owned_intervals,
-                self.assocData_collection_unowned,
+                self.assoc_data_collection_unowned,
             ]
         )
         db.session.commit()
         # make request for forbidden cooler
         response = self.client.get(
-            f"/api/associationIntervalData/{self.assocData_collection_unowned.id}/",
+            f"/api/associationIntervalData/{self.assoc_data_collection_unowned.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -112,13 +112,13 @@ class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_collection,
                 self.unowned_bedfile,
                 self.unowned_intervals,
-                self.assocData_intervals_unowned,
+                self.assoc_data_intervals_unowned,
             ]
         )
         db.session.commit()
-        # make request with forbidden intervall
+        # make request with forbidden interval
         response = self.client.get(
-            f"/api/associationIntervalData/{self.assocData_intervals_unowned.id}/",
+            f"/api/associationIntervalData/{self.assoc_data_intervals_unowned.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -136,13 +136,13 @@ class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_collection,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.assocData_owned,
+                self.assoc_data_owned,
             ]
         )
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/associationIntervalData/{self.assocData_owned.id}/",
+            f"/api/associationIntervalData/{self.assoc_data_owned.id}/",
             headers=token_headers,
             content_type="application/json",
         )

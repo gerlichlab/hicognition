@@ -317,9 +317,9 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
             len(intervals) * len(binsizes) * len(datasets),
         )
         # check whether processing datasets where added correctly
-        regionDataset = Dataset.query.get(4)
-        featureDatasets = Dataset.query.filter(Dataset.id.in_([2, 6])).all()
-        self.assertEqual(regionDataset.processing_features, featureDatasets)
+        region_dataset = Dataset.query.get(4)
+        feature_datasets = Dataset.query.filter(Dataset.id.in_([2, 6])).all()
+        self.assertEqual(region_dataset.processing_features, feature_datasets)
 
     @patch("app.models.User.launch_task")
     def test_pipeline_stackup_is_called_correctly_for_multiple_owned_datasets(

@@ -51,30 +51,6 @@ class TestSetProcessingState(LoginTestCase):
         collection.set_processing_state(db)
         self.assertEqual(collection.processing_state, "finished")
 
-    def test_uploaded_no_update_wo_task(self):
-        """Tests whether processing status is set correctly
-        when a collections wo tasks has an uploading status."""
-        # add new datasets
-        self.add_test_collection("uploading")
-        # set processing state
-        collection = Collection.query.get(1)
-        collection.set_processing_state(db)
-        self.assertEqual(collection.processing_state, "uploading")
-
-    def test_uploaded_no_update_w_task(self):
-        """Tests whether processing status is set correctly
-        when a collections with tasks has an uploading status."""
-        # add new datasets
-        self.add_test_collection("uploading")
-        # add Task
-        new_task = Task(id="asdf", name="test", dataset_id=1)
-        db.session.add(new_task)
-        db.session.commit()
-        # set processing state
-        collection = Collection.query.get(1)
-        collection.set_processing_state(db)
-        self.assertEqual(collection.processing_state, "uploading")
-
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

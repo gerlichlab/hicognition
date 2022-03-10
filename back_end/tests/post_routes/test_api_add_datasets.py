@@ -396,7 +396,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             self.app.queues["short"], "pipeline_bed", "run bed preprocessing", 1
         )
 
-    def test_badform_no_datasetName(self):
+    def test_badform_no_dataset_name(self):
         """Tests whether form without datasetName is rejected"""
         # construct form data
         data = {
@@ -421,7 +421,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_badform_no_fileObject(self):
+    def test_badform_no_file_object(self):
         """Tests whether form without file is rejected"""
         # construct form data
         data = {

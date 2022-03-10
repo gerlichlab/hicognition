@@ -24,7 +24,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # create field form mapping
-        self.fieldFormMapping = {
+        self.field_form_mapping = {
             "datasetName": "dataset_name",
             "cellCycleStage": "cellCycleStage",
             "perturbation": "perturbation",
@@ -169,7 +169,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_badform_incorrect_Valuetype(self):
+    def test_badform_incorrect_valuetype(self):
         """Test 400 returned if no form is provided."""
         # add datasets
         db.session.add(self.owned_cooler_1)
@@ -271,11 +271,11 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         for field in data.keys():
             if field == "public":
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), False
+                    dataset.__getattribute__(self.field_form_mapping[field]), False
                 )
             else:
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+                    dataset.__getattribute__(self.field_form_mapping[field]), data[field]
                 )
         # check whether fields that should be undefined are undefined
         for field in ["protein", "directionality", "derivationType"]:
@@ -311,11 +311,11 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         for field in data.keys():
             if field == "public":
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), False
+                    dataset.__getattribute__(self.field_form_mapping[field]), False
                 )
             else:
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+                    dataset.__getattribute__(self.field_form_mapping[field]), data[field]
                 )
         # check whether fields that should be undefined are undefined
         for field in ["protein", "directionality"]:
@@ -351,11 +351,11 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         for field in data.keys():
             if field == "public":
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), False
+                    dataset.__getattribute__(self.field_form_mapping[field]), False
                 )
             else:
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+                    dataset.__getattribute__(self.field_form_mapping[field]), data[field]
                 )
         # check whether assembly and filetype are unchanged
         self.assertEqual(dataset.assembly, 1)
@@ -388,11 +388,11 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         for field in data.keys():
             if field == "public":
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), True
+                    dataset.__getattribute__(self.field_form_mapping[field]), True
                 )
             else:
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+                    dataset.__getattribute__(self.field_form_mapping[field]), data[field]
                 )
         # check whether assembly and filetype are unchanged
         self.assertEqual(dataset.assembly, 1)
@@ -427,11 +427,11 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         for field in data.keys():
             if field == "public":
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), False
+                    dataset.__getattribute__(self.field_form_mapping[field]), False
                 )
             else:
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+                    dataset.__getattribute__(self.field_form_mapping[field]), data[field]
                 )
         # check whether fields that should be undefined are undefined
         for field in ["derivationType", "directionality"]:
