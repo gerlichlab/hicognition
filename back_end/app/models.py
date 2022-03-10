@@ -92,15 +92,15 @@ class User(db.Model, UserMixin):
 
     def generate_auth_token(self, expiration):
         """generates authentication token"""
-        s = Serializer(current_app.config["SECRET_KEY"], expires_in=expiration)
-        return s.dumps({"id": self.id}).decode("utf-8")
+        serializer = Serializer(current_app.config["SECRET_KEY"], expires_in=expiration)
+        return serializer.dumps({"id": self.id}).decode("utf-8")
 
     def launch_task(self, queue, name, description, dataset_id, *args, **kwargs):
         """adds task to queue"""
         rq_job = queue.enqueue(
             "app.tasks." + name, dataset_id, job_timeout="10h", *args, **kwargs
         )
-        # check whether inverals_id is in kwargs
+        # check whether intervals_id is in kwargs
         if "intervals_id" in kwargs:
             intervals_id = kwargs["intervals_id"]
         else:
@@ -150,9 +150,9 @@ class User(db.Model, UserMixin):
     @staticmethod
     def verify_auth_token(token):
         """verify the user token"""
-        s = Serializer(current_app.config["SECRET_KEY"])
+        serializer = Serializer(current_app.config["SECRET_KEY"])
         try:
-            data = s.loads(token)
+            data = serializer.loads(token)
         except:
             return None
         return User.query.get(data["id"])
@@ -297,7 +297,7 @@ class Dataset(db.Model):
         """Format print output."""
         return f"<Dataset {self.dataset_name}>"
 
-    def set_processing_state(self, db):
+    def set_processing_state(self, database):
         """sets the current processing state of the dataset instance.
         Launching task sets processing state, this sets finished/failed state"""
         if self.processing_state not in ["processing", "finished", "failed"]:
@@ -313,8 +313,8 @@ class Dataset(db.Model):
                 self.processing_state = "failed"
             else:
                 self.processing_state = "processing"
-        db.session.add(self)
-        db.session.commit()
+        database.session.add(self)
+        database.session.commit()
 
     def is_access_denied(self, app_context):
         """Determine whether context
@@ -372,8 +372,8 @@ class Dataset(db.Model):
         if any(key not in form_keys for key in cls.COMMON_REQUIRED_KEYS):
             return False
         # check metadata
-        datasetTypeMapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
-        value_types = datasetTypeMapping[filetype]["ValueType"]
+        dataset_type_mapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
+        value_types = dataset_type_mapping[filetype]["ValueType"]
         if form["ValueType"] not in value_types.keys():
             return False
         # check value type members
@@ -406,8 +406,8 @@ class Dataset(db.Model):
         if any(key not in form_keys for key in cls.ADD_REQUIRED_KEYS):
             return False
         # check metadata
-        datasetTypeMapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
-        value_types = datasetTypeMapping[form["filetype"]]["ValueType"]
+        dataset_type_mapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
+        value_types = dataset_type_mapping[form["filetype"]]["ValueType"]
         if form["ValueType"] not in value_types.keys():
             return False
         # check value type members
@@ -425,30 +425,30 @@ class Dataset(db.Model):
     def delete_data_of_associated_entries(self):
         """deletes files of associated entries"""
         intervals = []
-        averageIntervalData = []
-        individualIntervalData = []
-        embeddingIntervalData = []
+        average_interval_data = []
+        individual_interval_data = []
+        embedding_interval_data = []
         metadata = []
         # cooler only needs deletion of derived averageIntervalData
         if self.filetype == "cooler":
-            averageIntervalData = AverageIntervalData.query.filter(
+            average_interval_data = AverageIntervalData.query.filter(
                 AverageIntervalData.dataset_id == self.id
             ).all()
-            embeddingIntervalData = EmbeddingIntervalData.query.filter(
+            embedding_interval_data = EmbeddingIntervalData.query.filter(
                 EmbeddingIntervalData.dataset_id == self.id
             ).all()
         # bedfile needs deletion of intervals and averageIntervalData
         if self.filetype == "bedfile":
             intervals = Intervals.query.filter(Intervals.dataset_id == self.id).all()
-            averageIntervalData = AverageIntervalData.query.filter(
+            average_interval_data = AverageIntervalData.query.filter(
                 AverageIntervalData.intervals_id.in_([entry.id for entry in intervals])
             ).all()
-            individualIntervalData = IndividualIntervalData.query.filter(
+            individual_interval_data = IndividualIntervalData.query.filter(
                 IndividualIntervalData.intervals_id.in_(
                     [entry.id for entry in intervals]
                 )
             ).all()
-            embeddingIntervalData = EmbeddingIntervalData.query.filter(
+            embedding_interval_data = EmbeddingIntervalData.query.filter(
                 EmbeddingIntervalData.intervals_id.in_(
                     [entry.id for entry in intervals]
                 )
@@ -457,19 +457,19 @@ class Dataset(db.Model):
                 BedFileMetadata.dataset_id == self.id
             ).all()
         if self.filetype == "bigwig":
-            averageIntervalData = AverageIntervalData.query.filter(
+            average_interval_data = AverageIntervalData.query.filter(
                 AverageIntervalData.dataset_id == self.id
             ).all()
-            individualIntervalData = IndividualIntervalData.query.filter(
+            individual_interval_data = IndividualIntervalData.query.filter(
                 IndividualIntervalData.dataset_id == self.id
             ).all()
         # delete files and remove from database
         deletion_queue = (
             [self]
             + intervals
-            + averageIntervalData
-            + individualIntervalData
-            + embeddingIntervalData
+            + average_interval_data
+            + individual_interval_data
+            + embedding_interval_data
             + metadata
         )
         for entry in deletion_queue:
@@ -488,7 +488,7 @@ class Dataset(db.Model):
                     entry.file_path_sub_sample_index, current_app.logger
                 )
 
-    def remove_failed_tasks_for_region(self, db, region):
+    def remove_failed_tasks_for_region(self, database, region):
         """Remove failed tasks for self with region"""
         associated_tasks = (
             Task.query.join(Intervals)
@@ -502,8 +502,8 @@ class Dataset(db.Model):
         )
         failed_tasks = Task.filter_failed_tasks(associated_tasks)
         for task in failed_tasks:
-            db.session.delete(task)
-        db.session.commit()
+            database.session.delete(task)
+        database.session.commit()
 
     def to_json(self):
         """Generates a JSON from the model"""
@@ -598,7 +598,7 @@ class Collection(db.Model):
                     entry.file_path_feature_values, current_app.logger
                 )
 
-    def set_processing_state(self, db):
+    def set_processing_state(self, database):
         """Sets the current processing state of the collection instance.
         Launching task sets processing state, this sets finished/failed state"""
         if self.processing_state not in ["processing", "finished", "failed"]:
@@ -614,10 +614,10 @@ class Collection(db.Model):
                 self.processing_state = "failed"
             else:
                 self.processing_state = "processing"
-        db.session.add(self)
-        db.session.commit()
+        database.session.add(self)
+        database.session.commit()
 
-    def remove_failed_tasks_for_region(self, db, region):
+    def remove_failed_tasks_for_region(self, database, region):
         """Remove failed tasks for self with region"""
         associated_tasks = (
             Task.query.join(Intervals)
@@ -631,8 +631,8 @@ class Collection(db.Model):
         )
         failed_tasks = Task.filter_failed_tasks(associated_tasks)
         for task in failed_tasks:
-            db.session.delete(task)
-        db.session.commit()
+            database.session.delete(task)
+        database.session.commit()
 
     def to_json(self):
         """Formats json output."""
@@ -802,7 +802,7 @@ class AverageIntervalData(db.Model):
 
     def to_json(self):
         """Formats json output."""
-        json_averageIntervalData = {
+        json_average_interval_data = {
             "id": self.id,
             "binsize": self.binsize,
             "name": self.name,
@@ -811,7 +811,7 @@ class AverageIntervalData(db.Model):
             "intervals_id": self.intervals_id,
             "value_type": self.value_type,
         }
-        return json_averageIntervalData
+        return json_average_interval_data
 
 
 class IndividualIntervalData(db.Model):
@@ -860,7 +860,7 @@ class IndividualIntervalData(db.Model):
 
     def to_json(self):
         """Formats json output."""
-        json_individualIntervalData = {
+        json_individual_interval_data = {
             "id": self.id,
             "binsize": self.binsize,
             "name": self.name,
@@ -868,7 +868,7 @@ class IndividualIntervalData(db.Model):
             "dataset_id": self.dataset_id,
             "intervals_id": self.intervals_id,
         }
-        return json_individualIntervalData
+        return json_individual_interval_data
 
 
 class AssociationIntervalData(db.Model):
@@ -1051,15 +1051,15 @@ class Session(db.Model):
 
     def generate_session_token(self):
         """Generates session token"""
-        s = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
-        return s.dumps({"session_id": self.id}).decode("utf-8")
+        serializer = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
+        return serializer.dumps({"session_id": self.id}).decode("utf-8")
 
     @staticmethod
     def verify_auth_token(token):
         """Verifies the session token"""
-        s = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
+        serializer = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
         try:
-            data = s.loads(token)
+            data = serializer.loads(token)
         except:
             return None
         return Session.query.get(data["session_id"])

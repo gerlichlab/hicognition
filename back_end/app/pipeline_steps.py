@@ -432,8 +432,8 @@ def set_collection_failed(collection_id, intervals_id):
                 "id": get_current_job().get_id(),
             }
         )
-    except BaseException as e:
-        log.error(e, exc_info=True)
+    except BaseException as err:
+        log.error(err, exc_info=True)
     log.error("      Setting for fail finished")
 
 
