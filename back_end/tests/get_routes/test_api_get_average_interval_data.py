@@ -89,7 +89,7 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
             windowsize=200000,
         )
         # add averageIntervalData with unowned cooler
-        self.avgData_cooler_unowned = AverageIntervalData(
+        self.avg_data_cooler_unowned = AverageIntervalData(
             id=1,
             name="testAverageIntervalData1",
             binsize=10000,
@@ -99,7 +99,7 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
             value_type="ICCF",
         )
         # add averageIntervalData with unowned intervals
-        self.avgData_intervals_unowned = AverageIntervalData(
+        self.avg_data_intervals_unowned = AverageIntervalData(
             id=2,
             name="testAverageIntervalData1",
             binsize=10000,
@@ -112,7 +112,7 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
         self.test_data = np.array([[1.66, 2.2, 3.8, 4.5]])
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, self.test_data)
-        self.avgData_owned = AverageIntervalData(
+        self.avg_data_owned = AverageIntervalData(
             id=3,
             name="testAverageIntervalData1",
             binsize=10000,
@@ -125,7 +125,7 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
         self.test_data_w_nans = np.array([[1.66, 2.2, 3.8, 4.5, np.nan]])
         data_path_w_nans = os.path.join(TempDirTestCase.TEMP_PATH, "test1.npy")
         np.save(data_path_w_nans, self.test_data_w_nans)
-        self.avgData_owned_w_nans = AverageIntervalData(
+        self.avg_data_owned_w_nans = AverageIntervalData(
             id=4,
             name="testAverageIntervalData1",
             binsize=10000,
@@ -138,7 +138,7 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
         self.test_data_w_inf = np.array([[1.66, 2.2, 3.8, 4.5, np.inf]])
         data_path_w_inf = os.path.join(TempDirTestCase.TEMP_PATH, "test2.npy")
         np.save(data_path_w_inf, self.test_data_w_inf)
-        self.avgData_owned_w_inf = AverageIntervalData(
+        self.avg_data_owned_w_inf = AverageIntervalData(
             id=5,
             name="testAverageIntervalData1",
             binsize=10000,
@@ -148,7 +148,7 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
             value_type="ICCF",
         )
         # add averageIntervalData with public intervals and cooler and associated data
-        self.avgData_unowned_public = AverageIntervalData(
+        self.avg_data_unowned_public = AverageIntervalData(
             id=6,
             name="testAverageIntervalData1",
             binsize=10000,
@@ -166,7 +166,7 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_averageIntervalData_does_not_exist(self):
+    def test_average_interval_data_does_not_exist(self):
         """Test 404 is returned if averageIntervalData does not exist."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -192,13 +192,13 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_bedfile,
                 self.unowned_cooler,
                 self.owned_intervals,
-                self.avgData_cooler_unowned,
+                self.avg_data_cooler_unowned,
             ]
         )
         db.session.commit()
         # make request for forbidden cooler
         response = self.client.get(
-            f"/api/averageIntervalData/{self.avgData_cooler_unowned.id}/",
+            f"/api/averageIntervalData/{self.avg_data_cooler_unowned.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -216,13 +216,13 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_cooler,
                 self.unowned_bedfile,
                 self.unowned_intervals,
-                self.avgData_intervals_unowned,
+                self.avg_data_intervals_unowned,
             ]
         )
         db.session.commit()
         # make request with forbidden intervall
         response = self.client.get(
-            f"/api/averageIntervalData/{self.avgData_intervals_unowned.id}/",
+            f"/api/averageIntervalData/{self.avg_data_intervals_unowned.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -240,13 +240,13 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_cooler,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.avgData_owned,
+                self.avg_data_owned,
             ]
         )
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/averageIntervalData/{self.avgData_owned.id}/",
+            f"/api/averageIntervalData/{self.avg_data_owned.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -270,13 +270,13 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_cooler,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.avgData_owned_w_nans,
+                self.avg_data_owned_w_nans,
             ]
         )
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/averageIntervalData/{self.avgData_owned_w_nans.id}/",
+            f"/api/averageIntervalData/{self.avg_data_owned_w_nans.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -302,13 +302,13 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_cooler,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.avgData_owned_w_inf,
+                self.avg_data_owned_w_inf,
             ]
         )
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/averageIntervalData/{self.avgData_owned_w_inf.id}/",
+            f"/api/averageIntervalData/{self.avg_data_owned_w_inf.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -333,14 +333,14 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
                 self.unowned_public_cooler,
                 self.unowned_public_bedfile,
                 self.unowned_public_intervals,
-                self.avgData_unowned_public,
+                self.avg_data_unowned_public,
             ]
         )
         db.session.commit()
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/averageIntervalData/{self.avgData_unowned_public.id}/",
+            f"/api/averageIntervalData/{self.avg_data_unowned_public.id}/",
             headers=token_headers,
             content_type="application/json",
         )
