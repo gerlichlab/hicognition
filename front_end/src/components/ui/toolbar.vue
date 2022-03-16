@@ -9,7 +9,8 @@
                 >
                     <md-icon>menu</md-icon>
                 </md-button>
-                <span class="md-title">HiCognition {{ appversion }}</span>
+                <span class="md-title">{{userName}} @ &nbsp</span>
+                <span class="md-headline">HiCognition {{ appversion }}</span>
             </div>
 
             <div class="md-toolbar-section-end">
@@ -75,7 +76,8 @@ export default {
             return this.notifications.length;
         },
         ...mapGetters([
-            'notifications'
+            'notifications',
+            'userName'
         ])
     },
     methods: {

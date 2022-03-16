@@ -36,6 +36,7 @@ Vue.use(VueRouter);
 if (localStorage.getItem("hicognition-token")){
     store.commit("setToken", localStorage.getItem("hicognition-token"))
     store.commit("setUserId", localStorage.getItem("hicognition-User"))
+    store.commit("setUserName", localStorage.getItem("hicognition-UserName"))
 }
 
 
