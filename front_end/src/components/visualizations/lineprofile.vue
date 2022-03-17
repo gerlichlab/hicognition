@@ -2,7 +2,7 @@
     <div>
         <md-list class="md-double-line">
             <md-list-item class="md-alignment-top-center">
-                <div :id="lineprofileDivID" class="small-margin" />
+                <div :id="lineprofileDivID" class="small-margin" :style="divStyle"/>
             </md-list-item>
         </md-list>
     </div>
@@ -11,7 +11,7 @@
 import * as d3 from "d3";
 import { min_array, max_array, normalizeLineProfile } from "../../functions";
 
-const EXPANSION_FACTOR = 0.2
+const EXPANSION_FACTOR = 0.2;
 
 export default {
     name: "lineprofile",
@@ -22,8 +22,13 @@ export default {
         normalized: Boolean,
         width: Number,
         height: Number,
+        valueScaleColor: String,
+        valueScaleBorder: String,
+        minValueRange: Number,
+        maxValueRange: Number,
         lineprofileID: Number, // lineprofile ID is needed because I am accessing the div of the lineprofile via id and they must be different for different pilups
-        showInterval: { //  whehter to show interval start and end on x axis
+        showInterval: {
+            //  whehter to show interval start and end on x axis
             type: Boolean,
             default: false
         }
@@ -41,43 +46,64 @@ export default {
         margin: function() {
             return {
                 top: this.height * 0.01,
-                bottom: this.showInterval ? this.height * 0.03 : this.height * 0.01,
-                left: this.width * 0.12,
+                bottom: this.showInterval
+                    ? this.height * 0.03
+                    : this.height * 0.01,
+                left: this.width * 0.14,
                 right: this.width * 0.1
+            };
+        },
+        divStyle: function(){
+            let borderStyle = this.valueScaleBorder ? this.valueScaleBorder : "solid"
+            return {
+                width: "100%",
+                height: "100%",
+                "box-sizing": "border-box",
+                "border-style": `none none none ${borderStyle}`,
+                "border-width": "3px",
+                "border-color": this.valueScaleColor
+                    ? this.valueScaleColor
+                    : "white"
             }
         },
-        intervalStartBin: function(){
+        intervalStartBin: function() {
             if (this.lineData && this.lineData.length != 0) {
-                let intervalSize = Math.round(this.lineData[0].data.length/ (1 + 2*EXPANSION_FACTOR))
-                return Math.round(intervalSize * EXPANSION_FACTOR)
+                let intervalSize = Math.round(
+                    this.lineData[0].data.length / (1 + 2 * EXPANSION_FACTOR)
+                );
+                return Math.round(intervalSize * EXPANSION_FACTOR);
             }
-            return undefined
+            return undefined;
         },
-        intervalEndBin: function(){
+        intervalEndBin: function() {
             if (this.lineData && this.lineData.length != 0) {
-                let intervalSize = Math.round(this.lineData[0].data.length/ (1 + 2*EXPANSION_FACTOR))
-                return intervalSize + Math.round(intervalSize * EXPANSION_FACTOR)
+                let intervalSize = Math.round(
+                    this.lineData[0].data.length / (1 + 2 * EXPANSION_FACTOR)
+                );
+                return (
+                    intervalSize + Math.round(intervalSize * EXPANSION_FACTOR)
+                );
             }
-            return undefined
+            return undefined;
         },
-        fontSize: function(){
-            let additionalSize = Math.floor((this.width - 350)/50)
-            let fontSize = 10 + additionalSize * 2
-            return `${fontSize}px`
+        fontSize: function() {
+            let additionalSize = Math.floor((this.width - 350) / 50);
+            let fontSize = 10 + additionalSize * 2;
+            return `${fontSize}px`;
         },
-        strokeWidth: function(){
-            let additionalSize = Math.floor((this.width - 350)/50)
-            return 2 + 0.5 * additionalSize
+        strokeWidth: function() {
+            let additionalSize = Math.floor((this.width - 350) / 50);
+            return 2 + 0.5 * additionalSize;
         },
         lineprofileDivID: function() {
             // ID for the div containing the lineprofile
             return "lineprofile_" + this.lineprofileID;
         },
-        plotWidth: function(){
-            return this.width - this.margin.left - this.margin.right
+        plotWidth: function() {
+            return this.width - this.margin.left - this.margin.right;
         },
-        plotHeight: function(){
-            return this.height - this.margin.top - this.margin.bottom
+        plotHeight: function() {
+            return this.height - this.margin.top - this.margin.bottom;
         },
         lineData: function() {
             if (this.normalized) {
@@ -94,29 +120,6 @@ export default {
         lineNames: function() {
             return this.lineprofileNames;
         },
-        valueBoundaries: function() {
-            var minX = 0;
-            var maxX = undefined;
-            var minY = undefined;
-            var maxY = undefined;
-            for (let single_data of this.lineData) {
-                if (maxX == undefined || maxX < single_data.data.length) {
-                    maxX = single_data.data.length;
-                }
-                if (minY == undefined || minY > min_array(single_data.data)) {
-                    minY = min_array(single_data.data);
-                }
-                if (maxY == undefined || maxY < max_array(single_data.data)) {
-                    maxY = max_array(single_data.data);
-                }
-            }
-            return {
-                minX: minX,
-                maxX: maxX,
-                minY: minY,
-                maxY: maxY
-            };
-        }
     },
     methods: {
         getValueFromIndex: function(val_index, val_name) {
@@ -135,26 +138,26 @@ export default {
             }
             return val;
         },
-        getXaxisFormat: function(val){
-            if (val == this.intervalStartBin){
-                return "Start"
+        getXaxisFormat: function(val) {
+            if (val == this.intervalStartBin) {
+                return "Start";
             }
-            if (val == this.intervalEndBin){
-                return "End"
+            if (val == this.intervalEndBin) {
+                return "End";
             }
-            return undefined
+            return undefined;
         },
-        formatLabel: function(label){
-            if (label.length > 10){
-                return label.slice(0, 10) + "..."
+        formatLabel: function(label) {
+            if (label.length > 10) {
+                return label.slice(0, 10) + "...";
             }
-            return label
+            return label;
         },
-        xAxisGenerator: function(args){
+        xAxisGenerator: function(args) {
             return d3
                 .axisBottom(this.xScale)
                 .tickFormat(val => this.getXaxisFormat(val))
-                .tickValues([this.intervalStartBin, this.intervalEndBin])(args); 
+                .tickValues([this.intervalStartBin, this.intervalEndBin])(args);
         },
         yAxisGenerator: function(args) {
             return d3
@@ -273,8 +276,43 @@ export default {
                 focus.style("display", "none");
             });
         },
+        createValueBoundaries: function() {
+            var minX = 0;
+            var maxX = undefined;
+            var minY = undefined;
+            var maxY = undefined;
+            for (let single_data of this.lineData) {
+                if (maxX == undefined || maxX < single_data.data.length) {
+                    maxX = single_data.data.length;
+                }
+                if (minY == undefined || minY > min_array(single_data.data)) {
+                    minY = min_array(single_data.data);
+                }
+                if (maxY == undefined || maxY < max_array(single_data.data)) {
+                    maxY = max_array(single_data.data);
+                }
+            }
+            this.$emit("value-scale-change", [0, 0, minY, maxY])
+            if (
+                this.minValueRange !== undefined &&
+                this.maxValueRange !== undefined
+            ) {
+                return {
+                    minX: minX,
+                    maxX: maxX,
+                    minY: this.minValueRange,
+                    maxY: this.maxValueRange
+                };
+            }
+            return {
+                minX: minX,
+                maxX: maxX,
+                minY: minY,
+                maxY: maxY
+            };
+        },
         createScales: function() {
-            let { minX, maxX, minY, maxY } = this.valueBoundaries;
+            let { minX, maxX, minY, maxY } = this.createValueBoundaries();
             this.xScale = d3
                 .scaleLinear()
                 .domain([minX, maxX])
@@ -291,14 +329,8 @@ export default {
                 .append("svg")
                 .attr("id", `${this.lineprofileDivID}Svg`)
                 .style("overflow", "visible") // needed for when tooltip goes over borders of svg
-                .attr(
-                    "width",
-                    this.width
-                )
-                .attr(
-                    "height",
-                    this.height
-                )
+                .attr("width", this.width)
+                .attr("height", this.height)
                 .append("g")
                 .attr(
                     "transform",
@@ -315,12 +347,12 @@ export default {
                 .attr("class", "y axis")
                 .call(this.yAxisGenerator);
             // set font-size
-            if (this.showInterval){
+            if (this.showInterval) {
                 this.svg
-                .append("g")
-                .attr("class", "x axis")
-                .attr("transform", `translate(0, ${this.plotHeight})`)
-                .call(this.xAxisGenerator);
+                    .append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", `translate(0, ${this.plotHeight})`)
+                    .call(this.xAxisGenerator);
             }
             this.svg.selectAll("text").style("font-size", this.fontSize);
         },
@@ -360,6 +392,12 @@ export default {
         },
         width: function() {
             this.drawLinechart();
+        },
+        minValueRange: function(){
+            this.drawLinechart()
+        },
+        maxValueRange: function() {
+            this.drawLinechart()
         },
         lineData: {
             deep: true,
