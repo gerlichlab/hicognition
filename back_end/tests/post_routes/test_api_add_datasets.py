@@ -1,4 +1,4 @@
-import sys
+"""Module with tests realted adding datasets."""
 import os
 import io
 import json
@@ -7,7 +7,8 @@ from unittest.mock import patch
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app.models import Dataset, Assembly
 from app import db
 
@@ -395,7 +396,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             self.app.queues["short"], "pipeline_bed", "run bed preprocessing", 1
         )
 
-    def test_badform_no_datasetName(self):
+    def test_badform_no_dataset_name(self):
         """Tests whether form without datasetName is rejected"""
         # construct form data
         data = {
@@ -420,7 +421,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_badform_no_fileObject(self):
+    def test_badform_no_file_object(self):
         """Tests whether form without file is rejected"""
         # construct form data
         data = {

@@ -1,15 +1,16 @@
 """Database models for HiCognition."""
 import datetime
 from flask.globals import current_app
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import inspect
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import JSONWebSignatureSerializer
-from flask_login import UserMixin
-import redis
 import rq
-from app import db
 import hicognition
+import redis
+from . import db
+
 
 # define association tables
 
@@ -91,14 +92,15 @@ class User(db.Model, UserMixin):
 
     def generate_auth_token(self, expiration):
         """generates authentication token"""
-        s = Serializer(current_app.config["SECRET_KEY"], expires_in=expiration)
-        return s.dumps({"id": self.id}).decode("utf-8")
+        serializer = Serializer(current_app.config["SECRET_KEY"], expires_in=expiration)
+        return serializer.dumps({"id": self.id}).decode("utf-8")
 
     def launch_task(self, queue, name, description, dataset_id, *args, **kwargs):
+        """adds task to queue"""
         rq_job = queue.enqueue(
             "app.tasks." + name, dataset_id, job_timeout="10h", *args, **kwargs
         )
-        # check whether inverals_id is in kwargs
+        # check whether intervals_id is in kwargs
         if "intervals_id" in kwargs:
             intervals_id = kwargs["intervals_id"]
         else:
@@ -117,6 +119,7 @@ class User(db.Model, UserMixin):
     def launch_collection_task(
         self, queue, name, description, collection_id, *args, **kwargs
     ):
+        """adds task based on collection to queue"""
         rq_job = queue.enqueue(
             "app.tasks." + name, collection_id, job_timeout="10h", *args, **kwargs
         )
@@ -137,26 +140,31 @@ class User(db.Model, UserMixin):
         return task
 
     def get_tasks_in_progress(self):
+        """gets all uncompleted tasks"""
         return Task.query.filter_by(user=self, complete=False).all()
 
     def get_task_in_progress(self, name):
+        """gets a particular uncompleted task"""
         return Task.query.filter_by(name=name, user=self, complete=False).first()
 
     @staticmethod
     def verify_auth_token(token):
-        s = Serializer(current_app.config["SECRET_KEY"])
+        """verify the user token"""
+        serializer = Serializer(current_app.config["SECRET_KEY"])
         try:
-            data = s.loads(token)
+            data = serializer.loads(token)
         except:
             return None
         return User.query.get(data["id"])
 
     def __repr__(self):
         """Format print output."""
-        return "<User {}>".format(self.username)
+        return f"<User {self.username}>"
 
 
 class Dataset(db.Model):
+    """Dataset database model"""
+
     # define groups of fields for requirement checking
     COMMON_REQUIRED_KEYS = [
         "cellCycleStage",
@@ -282,19 +290,20 @@ class Dataset(db.Model):
     tasks = db.relationship("Task", backref="dataset", lazy="dynamic")
 
     def get_tasks_in_progress(self):
+        """Gets the tasks in progress for the dataset."""
         return Task.query.filter_by(dataset=self, complete=False).all()
 
     def __repr__(self):
         """Format print output."""
         return f"<Dataset {self.dataset_name}>"
 
-    def set_processing_state(self, db):
+    def set_processing_state(self, database):
         """sets the current processing state of the dataset instance.
         Launching task sets processing state, this sets finished/failed state"""
         if self.processing_state not in ["processing", "finished", "failed"]:
             return
         # check if there are any unfinished tasks
-        tasks = self.tasks.filter(Task.complete == False).all()
+        tasks = self.tasks.filter(Task.complete.is_(False)).all()
         if len(tasks) == 0:
             self.processing_state = "finished"
         else:
@@ -304,8 +313,8 @@ class Dataset(db.Model):
                 self.processing_state = "failed"
             else:
                 self.processing_state = "processing"
-        db.session.add(self)
-        db.session.commit()
+        database.session.add(self)
+        database.session.commit()
 
     def is_access_denied(self, app_context):
         """Determine whether context
@@ -363,8 +372,8 @@ class Dataset(db.Model):
         if any(key not in form_keys for key in cls.COMMON_REQUIRED_KEYS):
             return False
         # check metadata
-        datasetTypeMapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
-        value_types = datasetTypeMapping[filetype]["ValueType"]
+        dataset_type_mapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
+        value_types = dataset_type_mapping[filetype]["ValueType"]
         if form["ValueType"] not in value_types.keys():
             return False
         # check value type members
@@ -397,8 +406,8 @@ class Dataset(db.Model):
         if any(key not in form_keys for key in cls.ADD_REQUIRED_KEYS):
             return False
         # check metadata
-        datasetTypeMapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
-        value_types = datasetTypeMapping[form["filetype"]]["ValueType"]
+        dataset_type_mapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
+        value_types = dataset_type_mapping[form["filetype"]]["ValueType"]
         if form["ValueType"] not in value_types.keys():
             return False
         # check value type members
@@ -416,30 +425,30 @@ class Dataset(db.Model):
     def delete_data_of_associated_entries(self):
         """deletes files of associated entries"""
         intervals = []
-        averageIntervalData = []
-        individualIntervalData = []
-        embeddingIntervalData = []
+        average_interval_data = []
+        individual_interval_data = []
+        embedding_interval_data = []
         metadata = []
         # cooler only needs deletion of derived averageIntervalData
         if self.filetype == "cooler":
-            averageIntervalData = AverageIntervalData.query.filter(
+            average_interval_data = AverageIntervalData.query.filter(
                 AverageIntervalData.dataset_id == self.id
             ).all()
-            embeddingIntervalData = EmbeddingIntervalData.query.filter(
+            embedding_interval_data = EmbeddingIntervalData.query.filter(
                 EmbeddingIntervalData.dataset_id == self.id
             ).all()
         # bedfile needs deletion of intervals and averageIntervalData
         if self.filetype == "bedfile":
             intervals = Intervals.query.filter(Intervals.dataset_id == self.id).all()
-            averageIntervalData = AverageIntervalData.query.filter(
+            average_interval_data = AverageIntervalData.query.filter(
                 AverageIntervalData.intervals_id.in_([entry.id for entry in intervals])
             ).all()
-            individualIntervalData = IndividualIntervalData.query.filter(
+            individual_interval_data = IndividualIntervalData.query.filter(
                 IndividualIntervalData.intervals_id.in_(
                     [entry.id for entry in intervals]
                 )
             ).all()
-            embeddingIntervalData = EmbeddingIntervalData.query.filter(
+            embedding_interval_data = EmbeddingIntervalData.query.filter(
                 EmbeddingIntervalData.intervals_id.in_(
                     [entry.id for entry in intervals]
                 )
@@ -448,19 +457,19 @@ class Dataset(db.Model):
                 BedFileMetadata.dataset_id == self.id
             ).all()
         if self.filetype == "bigwig":
-            averageIntervalData = AverageIntervalData.query.filter(
+            average_interval_data = AverageIntervalData.query.filter(
                 AverageIntervalData.dataset_id == self.id
             ).all()
-            individualIntervalData = IndividualIntervalData.query.filter(
+            individual_interval_data = IndividualIntervalData.query.filter(
                 IndividualIntervalData.dataset_id == self.id
             ).all()
         # delete files and remove from database
         deletion_queue = (
             [self]
             + intervals
-            + averageIntervalData
-            + individualIntervalData
-            + embeddingIntervalData
+            + average_interval_data
+            + individual_interval_data
+            + embedding_interval_data
             + metadata
         )
         for entry in deletion_queue:
@@ -479,7 +488,7 @@ class Dataset(db.Model):
                     entry.file_path_sub_sample_index, current_app.logger
                 )
 
-    def remove_failed_tasks_for_region(self, db, region):
+    def remove_failed_tasks_for_region(self, database, region):
         """Remove failed tasks for self with region"""
         associated_tasks = (
             Task.query.join(Intervals)
@@ -487,14 +496,14 @@ class Dataset(db.Model):
             .filter(
                 (Dataset.id == region.id)
                 & (Task.dataset_id == self.id)
-                & (Task.complete == False)
+                & (Task.complete.is_(False))
             )
             .all()
         )
         failed_tasks = Task.filter_failed_tasks(associated_tasks)
         for task in failed_tasks:
-            db.session.delete(task)
-        db.session.commit()
+            database.session.delete(task)
+        database.session.commit()
 
     def get_missing_windowsizes(self, preprocessing_map):
         """Creates intervals that are in preprocessing_map, but
@@ -510,6 +519,7 @@ class Dataset(db.Model):
         return missing_windowsizes
 
     def to_json(self):
+        """Generates a JSON from the model"""
         json_dataset = {}
         for key in inspect(Dataset).columns.keys():
             if key == "processing_id":
@@ -570,6 +580,7 @@ class Collection(db.Model):
     processing_state = db.Column(db.String(64))
 
     def get_tasks_in_progress(self):
+        """Gets the Task that are in progress for the collection"""
         return Task.query.filter_by(collection=self, complete=False).all()
 
     def is_access_denied(self, app_context):
@@ -589,7 +600,7 @@ class Collection(db.Model):
         return self.user_id != app_context.current_user.id
 
     def delete_data_of_associated_entries(self):
-        """"""
+        """Deletes associated Data"""
         assoc_data = self.associationData.all()
         deletion_queue = assoc_data
         for entry in deletion_queue:
@@ -600,13 +611,13 @@ class Collection(db.Model):
                     entry.file_path_feature_values, current_app.logger
                 )
 
-    def set_processing_state(self, db):
-        """sets the current processing state of the collection instance.
+    def set_processing_state(self, database):
+        """Sets the current processing state of the collection instance.
         Launching task sets processing state, this sets finished/failed state"""
         if self.processing_state not in ["processing", "finished", "failed"]:
             return
         # check if there are any unfinished tasks
-        tasks = self.tasks.filter(Task.complete == False).all()
+        tasks = self.tasks.filter(Task.complete.is_(False)).all()
         if len(tasks) == 0:
             self.processing_state = "finished"
         else:
@@ -616,10 +627,10 @@ class Collection(db.Model):
                 self.processing_state = "failed"
             else:
                 self.processing_state = "processing"
-        db.session.add(self)
-        db.session.commit()
+        database.session.add(self)
+        database.session.commit()
 
-    def remove_failed_tasks_for_region(self, db, region):
+    def remove_failed_tasks_for_region(self, database, region):
         """Remove failed tasks for self with region"""
         associated_tasks = (
             Task.query.join(Intervals)
@@ -627,14 +638,14 @@ class Collection(db.Model):
             .filter(
                 (Dataset.id == region.id)
                 & (Task.collection_id == self.id)
-                & (Task.complete == False)
+                & (Task.complete.is_(False))
             )
             .all()
         )
         failed_tasks = Task.filter_failed_tasks(associated_tasks)
         for task in failed_tasks:
-            db.session.delete(task)
-        db.session.commit()
+            database.session.delete(task)
+        database.session.commit()
 
     def to_json(self):
         """Formats json output."""
@@ -660,7 +671,6 @@ class Collection(db.Model):
 
 class ObsExp(db.Model):
     """Cache table for obs/exp dataframes"""
-
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     binsize = db.Column(db.Integer, index=True)
@@ -668,6 +678,7 @@ class ObsExp(db.Model):
 
 
 class Organism(db.Model):
+    """Organism table for genome assembly"""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512))
     assemblies = db.relationship(
@@ -678,10 +689,12 @@ class Organism(db.Model):
     )
 
     def to_json(self):
+        """Generates json output."""
         return {"id": self.id, "name": self.name}
 
 
 class Assembly(db.Model):
+    """Genome assembly database model"""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512))
     chrom_sizes = db.Column(db.String(512), index=True)
@@ -690,11 +703,13 @@ class Assembly(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
     def to_json(self):
+        """Generates json output."""
         json_dataset = {"id": self.id, "name": self.name, "user_id": self.user_id}
         return json_dataset
 
 
 class Intervals(db.Model):
+    """Genomic IntervalData database model"""
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     name = db.Column(db.String(512), index=True)
@@ -753,6 +768,8 @@ class Intervals(db.Model):
 
 
 class AverageIntervalData(db.Model):
+    """Table to hold information and pointers to data for
+    average values of a dataset at the linked intervals dataset."""
     id = db.Column(db.Integer, primary_key=True)
     binsize = db.Column(db.Integer)
     name = db.Column(db.String(512), index=True)
@@ -798,7 +815,7 @@ class AverageIntervalData(db.Model):
 
     def to_json(self):
         """Formats json output."""
-        json_averageIntervalData = {
+        json_average_interval_data = {
             "id": self.id,
             "binsize": self.binsize,
             "name": self.name,
@@ -807,7 +824,7 @@ class AverageIntervalData(db.Model):
             "intervals_id": self.intervals_id,
             "value_type": self.value_type,
         }
-        return json_averageIntervalData
+        return json_average_interval_data
 
 
 class IndividualIntervalData(db.Model):
@@ -856,7 +873,7 @@ class IndividualIntervalData(db.Model):
 
     def to_json(self):
         """Formats json output."""
-        json_individualIntervalData = {
+        json_individual_interval_data = {
             "id": self.id,
             "binsize": self.binsize,
             "name": self.name,
@@ -864,7 +881,7 @@ class IndividualIntervalData(db.Model):
             "dataset_id": self.dataset_id,
             "intervals_id": self.intervals_id,
         }
-        return json_individualIntervalData
+        return json_individual_interval_data
 
 
 class AssociationIntervalData(db.Model):
@@ -977,6 +994,7 @@ class EmbeddingIntervalData(db.Model):
 
 
 class Task(db.Model):
+    """Models the tasks dispatched to the redis queue."""
     id = db.Column(db.String(36), primary_key=True)
     name = db.Column(db.String(512), index=True)
     description = db.Column(db.String(512))
@@ -988,7 +1006,7 @@ class Task(db.Model):
 
     @staticmethod
     def filter_failed_tasks(tasks):
-        """returns failed tasks of the tasks provided"""
+        """Returns failed tasks of the tasks provided"""
         output = []
         for task in tasks:
             if task.get_rq_job() is None:
@@ -999,6 +1017,7 @@ class Task(db.Model):
         return output
 
     def get_rq_job(self):
+        """Fetches the rq job of the task"""
         try:
             rq_job = rq.job.Job.fetch(self.id, connection=current_app.redis)
         except (redis.exceptions.RedisError, rq.exceptions.NoSuchJobError):
@@ -1006,11 +1025,13 @@ class Task(db.Model):
         return rq_job
 
     def get_progress(self):
+        """Fetches the progress of the rq job"""
         job = self.get_rq_job()
         return job.meta.get("progress", 0) if job is not None else 100
 
 
 class BedFileMetadata(db.Model):
+    """Models the associated with a bedfile"""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512))
     file_path = db.Column(db.String(512))
@@ -1042,15 +1063,16 @@ class Session(db.Model):
     )
 
     def generate_session_token(self):
-        """generates session token"""
-        s = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
-        return s.dumps({"session_id": self.id}).decode("utf-8")
+        """Generates session token"""
+        serializer = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
+        return serializer.dumps({"session_id": self.id}).decode("utf-8")
 
     @staticmethod
     def verify_auth_token(token):
-        s = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
+        """Verifies the session token"""
+        serializer = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
         try:
-            data = s.loads(token)
+            data = serializer.loads(token)
         except:
             return None
         return Session.query.get(data["session_id"])
@@ -1075,6 +1097,7 @@ class Session(db.Model):
 
 
 def all_tasks_finished(tasks):
+    """Returns True if all rq jobs are finished."""
     for task in tasks:
         job = task.get_rq_job()
         if job is None:
@@ -1086,7 +1109,7 @@ def all_tasks_finished(tasks):
 
 
 def any_tasks_failed(tasks):
-    # check whether any job failed
+    """Return True if any rq job failed."""
     for task in tasks:
         if task.get_rq_job() is None:
             # job is not available in rq anymore

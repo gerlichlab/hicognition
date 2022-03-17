@@ -1,13 +1,11 @@
 """GET API endpoints for hicognition"""
-import imp
 import json
 import gzip
-import re
-from flask.globals import current_app
 import pandas as pd
 import numpy as np
-from flask.json import jsonify
 from flask import g, make_response
+from flask.json import jsonify
+from flask.globals import current_app
 from hicognition import data_structures
 from hicognition.utils import (
     update_processing_state,
@@ -106,22 +104,21 @@ def get_datasets(dtype):
         ).all()
         update_processing_state(cooler_files, db)
         return jsonify([cfile.to_json() for cfile in cooler_files])
-    elif dtype == "bed":
+    if dtype == "bed":
         bed_files = Dataset.query.filter(
             (Dataset.filetype == "bedfile")
             & ((g.current_user.id == Dataset.user_id) | (Dataset.public))
         ).all()
         update_processing_state(bed_files, db)
         return jsonify([bfile.to_json() for bfile in bed_files])
-    elif dtype == "bigwig":
+    if dtype == "bigwig":
         bed_files = Dataset.query.filter(
             (Dataset.filetype == "bigwig")
             & ((g.current_user.id == Dataset.user_id) | (Dataset.public))
         ).all()
         update_processing_state(bed_files, db)
         return jsonify([bfile.to_json() for bfile in bed_files])
-    else:
-        return not_found(f"option: '{dtype}' not understood")
+    return not_found(f"option: '{dtype}' not understood")
 
 
 @api.route("/datasets/<dataset_id>/name/", methods=["GET"])
@@ -250,7 +247,8 @@ def get_interval_metadata(interval_id):
         return forbidden(
             f"Dataset associated with interval id {interval.id} is not owned by logged in user!"
         )
-    # get associated metadata entries sorted by id in desecnding order; id sorting is necessary for newer metadata to win in field names
+    # get associated metadata entries sorted by id in descending order
+    # id sorting is necessary for newer metadata to win in field names
     metadata_entries = interval.source_dataset.bedFileMetadata.order_by(
         BedFileMetadata.id.desc()
     ).all()
@@ -267,7 +265,8 @@ def get_interval_metadata(interval_id):
         temp_frame = pd.read_csv(metadata_entry.file_path, usecols=columns_retained)
         temp_frames.append(temp_frame)
     output_frame = pd.concat(temp_frames, axis=1)
-    # this drops all occurences of a given column but the first, since ids are sorted by descending order, the newest one wins
+    # this drops all occurrences of a given column but the first,
+    # since ids are sorted by descending order, the newest one wins
     output_frame_unique = output_frame.loc[:, ~output_frame.columns.duplicated()]
     return jsonify(output_frame_unique.to_dict(orient="list"))
 
@@ -494,9 +493,10 @@ def get_stackup_metadata_small(entry_id):
         return forbidden(
             "Bigwig dataset or bed dataset is not owned by logged in user!"
         )
-    # get associated metadata entries sorted by id; id sorting is necessary for newer metadata to win in field names
+    # get associated metadata entries sorted by id;
+    # id sorting is necessary for newer metadata to win in field names
     metadata_entries = bed_ds.bedFileMetadata.order_by(BedFileMetadata.id.desc()).all()
-    # check if list is empty or all metadata entries have undefiend metadata fields
+    # check if list is empty or all metadata entries have undefined metadata fields
     if (len(metadata_entries) == 0) or all(
         metadata_entry.metadata_fields is None for metadata_entry in metadata_entries
     ):
@@ -511,7 +511,8 @@ def get_stackup_metadata_small(entry_id):
         temp_frame = pd.read_csv(metadata_entry.file_path, usecols=columns_retained)
         temp_frames.append(temp_frame)
     output_frame_large = pd.concat(temp_frames, axis=1)
-    # this drops all occurences of a given column but the first, since ids are sorted by descending order, the newest one wins
+    # this drops all occurrences of a given column but the first,
+    # since ids are sorted by descending order, the newest one wins
     output_frame_unique = output_frame_large.loc[
         :, ~output_frame_large.columns.duplicated()
     ]

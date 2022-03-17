@@ -1,13 +1,13 @@
-import sys
+"""Module with tests realted to preprocessign datasets."""
 import unittest
 from unittest.mock import MagicMock, patch
-
 import pandas as pd
 from flask.globals import current_app
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import Dataset, Task, Intervals
 
@@ -390,9 +390,9 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                         binsize=binsize,
                     )
         # check whether processing datasets where added correctly
-        regionDataset = Dataset.query.get(4)
-        featureDatasets = Dataset.query.filter(Dataset.id.in_([2, 6])).all()
-        self.assertEqual(regionDataset.processing_features, featureDatasets)
+        region_dataset = Dataset.query.get(4)
+        feature_datasets = Dataset.query.filter(Dataset.id.in_([2, 6])).all()
+        self.assertEqual(region_dataset.processing_features, feature_datasets)
 
     @patch("app.models.User.launch_task")
     def test_pipeline_stackup_is_called_correctly_for_multiple_owned_datasets(

@@ -1,3 +1,4 @@
+"""Tests for /api/intervals route to list intervals."""
 import unittest
 import os
 import json
@@ -5,9 +6,8 @@ import pandas as pd
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
-import sys
-
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import Dataset, Intervals, BedFileMetadata, Session
 

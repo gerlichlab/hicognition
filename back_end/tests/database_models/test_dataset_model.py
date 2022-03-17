@@ -1,10 +1,10 @@
-from hicognition.test_helpers import LoginTestCase
+"""Tests whether preprocessing states for datasets are set correctly."""
 from unittest.mock import patch
+from hicognition.test_helpers import LoginTestCase
 
 # add path to import app
-import sys
-
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import Dataset, Task
 
@@ -46,6 +46,8 @@ class TestSetProcessingState(LoginTestCase):
         self.assertEqual(dataset.processing_state, "processing")
 
     def test_finished_when_no_task(self):
+        """Tests whether processing status is set correctly
+        when there is no task for the dataset."""
         # add new datasets
         self.add_test_datasets("processing")
         # set processing state
@@ -54,6 +56,8 @@ class TestSetProcessingState(LoginTestCase):
         self.assertEqual(dataset.processing_state, "finished")
 
     def test_uploaded_no_update_wo_task(self):
+        """Tests whether processing status is set correctly
+        when a dataset wo tasks has an uploading status."""
         # add new datasets
         self.add_test_datasets("uploading")
         # set processing state
@@ -62,6 +66,8 @@ class TestSetProcessingState(LoginTestCase):
         self.assertEqual(dataset.processing_state, "uploading")
 
     def test_uploaded_no_update_w_task(self):
+        """Tests whether processing status is set correctly
+        when a dataset with tasks has an uploading status."""
         # add new datasets
         self.add_test_datasets("uploading")
         # add Task

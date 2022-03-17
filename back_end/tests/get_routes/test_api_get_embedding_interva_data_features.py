@@ -1,18 +1,20 @@
+"""Tests for get route of features associated with embedding interval data."""
 import os
+import gzip
+import json
 import unittest
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
-import sys
-
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
-from app.models import Collection, Dataset, Intervals, AssociationIntervalData
+from app.models import Collection, Dataset, Intervals, EmbeddingIntervalData
 
 
-class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):
-    """Tests for get route of association interval data."""
+class TestGetEmbeddingIntervalDataFeatures(LoginTestCase, TempDirTestCase):
+    """Tests for get route of features associated with embedding interval data."""
 
     def setUp(self):
         super().setUp()
@@ -32,52 +34,60 @@ class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):
         self.unowned_intervals = Intervals(
             id=2, dataset_id=self.unowned_bedfile.id, windowsize=200000
         )
-        # add associationIntervalData with unowned collection
-        self.assocData_collection_unowned = AssociationIntervalData(
+        # add embeddingIntervalData with unowned collection
+        self.assoc_data_collection_unowned = EmbeddingIntervalData(
             id=1,
             binsize=10000,
             collection_id=self.unowned_collection.id,
             intervals_id=self.owned_intervals.id,
         )
         # add averageIntervalData with unowned intervals
-        self.assocData_intervals_unowned = AssociationIntervalData(
+        self.assoc_data_intervals_unowned = EmbeddingIntervalData(
             id=2,
             binsize=10000,
             collection_id=self.owned_collection.id,
             intervals_id=self.unowned_intervals.id,
         )
-        # add associationIntervalData with owned intervals and collection and associated data
+        # add embeddingIntervalData with owned intervals and collection and associated data
         self.test_data = np.array([[1.66, 2.2, 3.8, 4.5]])
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, self.test_data)
-        self.assocData_owned = AssociationIntervalData(
-            id=3, binsize=10000, file_path=data_path, collection_id=1, intervals_id=1
+        self.feature_data = np.array([[5.0, 6.0, 7.0, 8.0], [1.0, 2.0, 3.0, 4.0]])
+        feature_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_features.npy")
+        np.save(feature_path, self.feature_data)
+        self.assoc_data_owned = EmbeddingIntervalData(
+            id=3,
+            binsize=10000,
+            file_path=data_path,
+            collection_id=1,
+            intervals_id=1,
+            file_path_feature_values=feature_path,
         )
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
         # protected route
         response = self.client.get(
-            "/api/associationIntervalData/1/", content_type="application/json"
+            "/api/embeddingIntervalData/1/0/", content_type="application/json"
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_associationIntervalData_does_not_exist(self):
-        """Test 404 is returned if associationIntervalData does not exist."""
+    def test_embedding_interval_data_does_not_exist(self):
+        """Test 404 is returned if embeddingIntervalData does not exist."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
         token_headers = self.get_token_header(token)
         # make request
         response = self.client.get(
-            "/api/associationIntervalData/500/",
+            "/api/embeddingIntervalData/500/0/",
             headers=token_headers,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 404)
 
     def test_collection_not_owned(self):
-        """Collection underlying associationIntervalData is not owned"""
+        """Collection underlying embeddingIntervalData is not owned"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -88,20 +98,20 @@ class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_bedfile,
                 self.unowned_collection,
                 self.owned_intervals,
-                self.assocData_collection_unowned,
+                self.assoc_data_collection_unowned,
             ]
         )
         db.session.commit()
         # make request for forbidden cooler
         response = self.client.get(
-            f"/api/associationIntervalData/{self.assocData_collection_unowned.id}/",
+            f"/api/embeddingIntervalData/{self.assoc_data_collection_unowned.id}/0/",
             headers=token_headers,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
     def test_intervals_not_owned(self):
-        """Intervals dataset underlying associationIntervalData are not owned"""
+        """Intervals dataset underlying embeddingIntervalData are not owned"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -112,20 +122,20 @@ class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_collection,
                 self.unowned_bedfile,
                 self.unowned_intervals,
-                self.assocData_intervals_unowned,
+                self.assoc_data_intervals_unowned,
             ]
         )
         db.session.commit()
         # make request with forbidden intervall
         response = self.client.get(
-            f"/api/associationIntervalData/{self.assocData_intervals_unowned.id}/",
+            f"/api/embeddingIntervalData/{self.assoc_data_intervals_unowned.id}/0/",
             headers=token_headers,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_correct_data_returned(self):
-        """Correct data is returned from an owned associationIntervalData"""
+    def test_correct_data_returned_index_0(self):
+        """Correct feature data is returned from an owned embeddingIntervalData"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -136,22 +146,53 @@ class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_collection,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.assocData_owned,
+                self.assoc_data_owned,
             ]
         )
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/associationIntervalData/{self.assocData_owned.id}/",
+            f"/api/embeddingIntervalData/{self.assoc_data_owned.id}/0/",
             headers=token_headers,
             content_type="application/json",
         )
+        data = json.loads(gzip.decompress(response.data))
         expected = {
-            "data": self.test_data.flatten().tolist(),
-            "shape": list(self.test_data.shape),
+            "data": self.feature_data[:, 0].flatten().tolist(),
+            "shape": list(self.feature_data[:, 0].shape),
             "dtype": "float32",
         }
-        self.assertEqual(response.json, expected)
+        self.assertEqual(data, expected)
+
+    def test_correct_data_returned_index_2(self):
+        """Correct feature data is returned from an owned embeddingIntervalData"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add data
+        db.session.add_all(
+            [
+                self.owned_collection,
+                self.owned_bedfile,
+                self.owned_intervals,
+                self.assoc_data_owned,
+            ]
+        )
+        db.session.commit()
+        # make request
+        response = self.client.get(
+            f"/api/embeddingIntervalData/{self.assoc_data_owned.id}/2/",
+            headers=token_headers,
+            content_type="application/json",
+        )
+        data = json.loads(gzip.decompress(response.data))
+        expected = {
+            "data": self.feature_data[:, 2].flatten().tolist(),
+            "shape": list(self.feature_data[:, 2].shape),
+            "dtype": "float32",
+        }
+        self.assertEqual(data, expected)
 
 
 if __name__ == "__main__":

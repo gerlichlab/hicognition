@@ -7,6 +7,8 @@ from .notifications import NotificationHandler
 
 
 def add_app_context(app):
+    """Adds app context."""
+
     def decorated(func):
         def wrapper(*args, **kwargs):
             with app.app_context():
@@ -18,7 +20,7 @@ def add_app_context(app):
 
 
 def cleanup_empty_tasks():
-    """Cleans up tasks that are not conneced to a redis job anymore."""
+    """Cleans up tasks that are not connected to a redis job anymore."""
     tasks = Task.query.all()
     deletion_number = 0
     for task in tasks:
@@ -61,4 +63,5 @@ def cleanup_failed_tasks():
 
 
 def send_keep_alive_message():
+    """Prevents Chrome from closing the NotificationHandler."""
     NotificationHandler().send_keep_alive()

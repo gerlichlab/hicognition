@@ -4,9 +4,11 @@ import json
 import pandas as pd
 import cooler
 import numpy as np
-from flask.json import jsonify
 from werkzeug.utils import secure_filename
 from flask import g, request, current_app
+from flask.json import jsonify
+from hicognition.utils import parse_description, get_all_interval_ids, parse_binsizes
+from hicognition.format_checkers import FORMAT_CHECKERS
 from . import api
 from .. import db
 from ..models import (
@@ -21,9 +23,7 @@ from ..models import (
 )
 from .authentication import auth
 from .. import pipeline_steps
-from hicognition.utils import parse_description, get_all_interval_ids, parse_binsizes
 from .errors import forbidden, invalid, not_found
-from hicognition.format_checkers import FORMAT_CHECKERS
 
 
 @api.route("/datasets/", methods=["POST"])
@@ -38,15 +38,15 @@ def add_dataset():
         if len(request.files) == 0:
             return True
         # check filename
-        fileEnding = request.files["file"].filename.split(".")[-1]
-        correctFileEndings = {
+        file_ending = request.files["file"].filename.split(".")[-1]
+        correct_file_endings = {
             "bedfile": ["bed"],
             "cooler": ["mcool"],
             "bigwig": ["bw", "bigwig"],
         }
-        if request.form["filetype"] not in correctFileEndings:
+        if request.form["filetype"] not in correct_file_endings:
             return True
-        if fileEnding.lower() not in correctFileEndings[request.form["filetype"]]:
+        if file_ending.lower() not in correct_file_endings[request.form["filetype"]]:
             return True
         # check attributes
         if not Dataset.post_dataset_requirements_fullfilled(request.form):
@@ -59,16 +59,16 @@ def add_dataset():
         return invalid("Form is not valid!")
     # get data from form
     data = request.form
-    fileObject = request.files["file"]
+    file_object = request.files["file"]
     # check whether description is there
     description = parse_description(data)
     # check whether dataset should be public
-    setPublic = "public" in data and data["public"].lower() == "true"
+    set_public = "public" in data and data["public"].lower() == "true"
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
         dataset_name=data["datasetName"],
         description=description,
-        public=setPublic,
+        public=set_public,
         processing_state="uploading",
         filetype=data["filetype"],
         user_id=current_user.id,
@@ -77,9 +77,9 @@ def add_dataset():
     db.session.add(new_entry)
     db.session.commit()
     # save file in upload directory with database_id as prefix
-    filename = f"{new_entry.id}_{secure_filename(fileObject.filename)}"
+    filename = f"{new_entry.id}_{secure_filename(file_object.filename)}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
-    fileObject.save(file_path)
+    file_object.save(file_path)
     assembly = Assembly.query.get(data["assembly"])
     # check format -> this cannot be done in form checker since file needs to be available
     chromosome_names = set(pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0])
@@ -149,7 +149,7 @@ def preprocess_dataset():
     if any(entry is None for entry in feature_datasets):
         return not_found("Dataset does not exist!")
     if any(entry.is_access_denied(g) for entry in feature_datasets):
-        return forbidden(f"Dataset is not owned by logged in user!")
+        return forbidden("Dataset is not owned by logged in user!")
     # check whether region datasets exists
     region_datasets = [
         Dataset.query.get(region_id) for region_id in region_datasets_ids
@@ -158,7 +158,7 @@ def preprocess_dataset():
         return not_found("Region dataset does not exist!")
     # check whether region datasets are owned
     if any(entry.is_access_denied(g) for entry in region_datasets):
-        return forbidden(f"Dataset is not owned by logged in user!")
+        return forbidden("Dataset is not owned by logged in user!")
     # delete all jobs that are in database and have failed and remove failed entries
     for dataset in feature_datasets:
         for region_ds in region_datasets:
@@ -240,7 +240,7 @@ def preprocess_collections():
     if any(entry is None for entry in collections):
         return not_found("Collection does not exist!")
     if any(collection.is_access_denied(g) for collection in collections):
-        return forbidden(f"Collection is not owned by logged in user!")
+        return forbidden("Collection is not owned by logged in user!")
     # check whether region datasets exists
     region_datasets = [
         Dataset.query.get(region_id) for region_id in region_datasets_ids
@@ -249,7 +249,7 @@ def preprocess_collections():
         return not_found("Region dataset does not exist!")
     # check whether region datasets are owned
     if any(entry.is_access_denied(g) for entry in region_datasets):
-        return forbidden(f"Region dataset is not owned by logged in user!")
+        return forbidden("Region dataset is not owned by logged in user!")
     # delete all jobs that are in database and have failed
     for collection in collections:
         for region_ds in region_datasets:
@@ -321,9 +321,9 @@ def add_bedfile_metadata():
         if len(request.files) == 0:
             return True
         # check filename
-        fileEnding = request.files["file"].filename.split(".")[-1]
-        correctFileEndings = ["csv", "txt", "bed"]  # textfiles and bedfiles supported
-        if fileEnding not in correctFileEndings:
+        file_ending = request.files["file"].filename.split(".")[-1]
+        correct_file_endings = ["csv", "txt", "bed"]  # textfiles and bedfiles supported
+        if file_ending not in correct_file_endings:
             return True
         return False
 
@@ -332,27 +332,27 @@ def add_bedfile_metadata():
         return invalid("Form is not valid!")
     # get data from form
     data = request.form
-    fileObject = request.files["file"]
+    file_object = request.files["file"]
     dataset_id = json.loads(data["datasetID"])
     # check whether dataset exists and user is allowed to access
     if Dataset.query.get(dataset_id) is None:
         return not_found("Dataset does not exist!")
     if Dataset.query.get(dataset_id).is_access_denied(g):
-        return forbidden(f"Dataset is not owned by logged in user!")
+        return forbidden("Dataset is not owned by logged in user!")
     # check whether row-number is correct
     dataset = Dataset.query.get(dataset_id)
     dataset_file = pd.read_csv(
         dataset.file_path, sep="\t", header=None
     )  # during upload process, the header of bedfiles is removed
     uploaded_file = pd.read_csv(
-        fileObject, sep=SEPARATOR_MAP[data["separator"]]
+        file_object, sep=SEPARATOR_MAP[data["separator"]]
     )  # generate uploaded dataframe from io-stream in memory
     if len(dataset_file) != len(uploaded_file):
         return jsonify({"ValidationError": "Dataset length missmatch!"})
     # detect numeric columns
     only_numeric = uploaded_file.select_dtypes(include=np.number)
     # save with standard separator
-    filename = secure_filename(fileObject.filename)
+    filename = secure_filename(file_object.filename)
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     only_numeric.to_csv(file_path, index=False)
     # add to database
@@ -394,7 +394,7 @@ def add_bedfile_metadata_fields(metadata_id):
     if BedFileMetadata.query.get(metadata_id) is None:
         return not_found("Metadataset does not exist!")
     if BedFileMetadata.query.get(metadata_id).associated_dataset.is_access_denied(g):
-        return forbidden(f"Associated dataset is not owned by logged in user!")
+        return forbidden("Associated dataset is not owned by logged in user!")
     # check whether field_names are correct
     metadata = BedFileMetadata.query.get(metadata_id)
     metadata_file = pd.read_csv(metadata.file_path)
@@ -440,21 +440,21 @@ def create_session():
     # check whether datasets exist
     datasets = [Dataset.query.get(dataset_id) for dataset_id in used_datasets]
     if any(dataset is None for dataset in datasets):
-        return invalid(f"Some of the datasets in used_datasets do not exist!")
+        return invalid("Some of the datasets in used_datasets do not exist!")
     # check whether dataset is owned or session token is valid
     if any(dataset.is_access_denied(g) for dataset in datasets):
         return forbidden(
-            f"Some of the datasets associated with this session are not owned!"
+            "Some of the datasets associated with this session are not owned!"
         )
     # check whether collections exist
     collections = [
         Collection.query.get(collection_id) for collection_id in used_collections
     ]
     if any(collection is None for collection in collections):
-        return invalid(f"Some of the collections in used_collections do not exist!")
+        return invalid("Some of the collections in used_collections do not exist!")
     if any(collection.is_access_denied(g) for collection in collections):
         return forbidden(
-            f"Some of the collections associated with this session are not owned!"
+            "Some of the collections associated with this session are not owned!"
         )
     # create session
     session = Session(
@@ -496,11 +496,11 @@ def create_collection():
     # check whether datasets exist
     datasets = [Dataset.query.get(dataset_id) for dataset_id in used_datasets]
     if any(dataset is None for dataset in datasets):
-        return invalid(f"Some of the datasets in used_datasets do not exist!")
+        return invalid("Some of the datasets in used_datasets do not exist!")
     # check whether dataset is owned or session token is valid
     if any(dataset.is_access_denied(g) for dataset in datasets):
         return forbidden(
-            f"Some of the datasets associated with this collection are not owned!"
+            "Some of the datasets associated with this collection are not owned!"
         )
     # create collection
     collection = Collection(user_id=g.current_user.id, name=name, kind=kind)
@@ -576,7 +576,7 @@ def create_assembly():
 @api.route("/embeddingIntervalData/<entry_id>/<cluster_id>/create/", methods=["POST"])
 @auth.login_required
 def create_region_from_cluster_id(entry_id, cluster_id):
-    """creates new region for cluster_id at entry_id"""
+    """Creates new region for cluster_id at entry_id"""
 
     def is_form_invalid():
         if not hasattr(request, "form"):
@@ -623,7 +623,7 @@ def create_region_from_cluster_id(entry_id, cluster_id):
     new_entry = Dataset(
         dataset_name=form_data["name"],
         description=bed_ds.description,
-        public=False,  # derived regions should be private by default -> if people want to make pupblic they can do so
+        public=False,  # derived regions are private by default - you can choose to make them public
         processing_state="uploading",
         filetype="bedfile",
         user_id=g.current_user.id,

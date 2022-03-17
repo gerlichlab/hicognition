@@ -1,5 +1,5 @@
+"""Module with the tests for the pileup creation realted tasks."""
 import os
-import sys
 import unittest
 from unittest.mock import patch
 from unittest.mock import MagicMock, PropertyMock
@@ -7,9 +7,11 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from hicognition.utils import get_optimal_binsize
 
 # add path to import app
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import Dataset, Intervals, Assembly, Task, ObsExp
 from app.tasks import pipeline_pileup
@@ -18,7 +20,6 @@ from app.pipeline_worker_functions import (
     _do_pileup_fixed_size,
     _do_pileup_variable_size,
 )
-from hicognition.utils import get_optimal_binsize
 
 
 class TestPipelinePileup(LoginTestCase, TempDirTestCase):
@@ -161,6 +162,8 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
 
 
 class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
+    """Test pileup worker functions for point and interval features."""
+
     def setUp(self):
         """Add test dataset"""
         # call setUp of LoginTestCase to initialize app
@@ -336,10 +339,10 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_worker_functions.HT.assign_regions")
     @patch("app.pipeline_worker_functions.cooler.Cooler")
     @patch("app.pipeline_worker_functions.pd.read_csv")
-    def test_correct_functions_called_ObsExp(
+    def test_correct_functions_called_obs_exp(
         self,
         mock_read_csv,
-        mock_Cooler,
+        mock_cooler,
         mock_assign_regions,
         mock_get_expected,
         mock_pileup_obs_exp,
@@ -350,7 +353,7 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
             {0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000]}
         )
         mock_read_csv.return_value = test_df_interval
-        mock_Cooler.return_value = "mock_cooler"
+        mock_cooler.return_value = "mock_cooler"
         returned_regions = MagicMock()
         mock_assign_regions.return_value = returned_regions
         mock_get_expected.return_value = pd.DataFrame()
@@ -369,10 +372,10 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_worker_functions.HT.assign_regions")
     @patch("app.pipeline_worker_functions.cooler.Cooler")
     @patch("app.pipeline_worker_functions.pd.read_csv")
-    def test_correct_functions_called_ICCF(
+    def test_correct_functions_called_iccf(
         self,
         mock_read_csv,
-        mock_Cooler,
+        mock_cooler,
         mock_assign_regions,
         mock_get_expected,
         mock_pileup_obs_exp,
@@ -383,7 +386,7 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
             {0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000]}
         )
         mock_read_csv.return_value = test_df_interval
-        mock_Cooler.return_value = "mock_cooler"
+        mock_cooler.return_value = "mock_cooler"
         returned_regions = MagicMock()
         mock_assign_regions.return_value = returned_regions
         mock_get_expected.return_value = "expected"
@@ -526,12 +529,12 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
             self.cooler, 10000000, 5000000, mock_path, arms, "Obs/Exp", collapse=False
         )
         self.assertEqual(1, len(ObsExp.query.all()))
-        ds = ObsExp.query.first()
-        self.assertEqual(ds.dataset_id, self.cooler.id)
-        self.assertEqual(ds.binsize, 5000000)
-        # load ds
+        dataset = ObsExp.query.first()
+        self.assertEqual(dataset.dataset_id, self.cooler.id)
+        self.assertEqual(dataset.binsize, 5000000)
+        # load datset
         expected = pd.read_csv(os.path.join("./tests/testfiles", "expected.csv"))
-        calculated = pd.read_csv(ds.filepath)
+        calculated = pd.read_csv(dataset.filepath)
         assert_frame_equal(expected, calculated)
 
 
@@ -571,10 +574,10 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_worker_functions.HT.get_expected")
     @patch("app.pipeline_worker_functions.cooler.Cooler")
     @patch("app.pipeline_worker_functions.pd.read_csv")
-    def test_correct_pileup_function_called_ObsExp(
+    def test_correct_pileup_function_called_obs_exp(
         self,
         mock_read_csv,
-        mock_Cooler,
+        mock_cooler,
         mock_get_expected,
         mock_pileup_obs_exp,
         mock_pileup_iccf,
@@ -585,7 +588,7 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
             {0: ["chr1", "chr1"], 1: [0, 1000], 2: [100000, 200000]}
         )
         mock_read_csv.return_value = test_df_interval
-        mock_Cooler.return_value = "mock_cooler"
+        mock_cooler.return_value = "mock_cooler"
         mock_get_expected.return_value = pd.DataFrame()
         # dispatch call
         _do_pileup_variable_size(self.cooler, 5, "testpath", self.arms, "Obs/Exp")
@@ -601,10 +604,10 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
     @patch("app.pipeline_worker_functions.HT.get_expected")
     @patch("app.pipeline_worker_functions.cooler.Cooler")
     @patch("app.pipeline_worker_functions.pd.read_csv")
-    def test_correct_pileup_function_called_ICCF(
+    def test_correct_pileup_function_called_iccf(
         self,
         mock_read_csv,
-        mock_Cooler,
+        mock_cooler,
         mock_get_expected,
         mock_pileup_obs_exp,
         mock_pileup_iccf,
@@ -615,7 +618,7 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
             {0: ["chr1", "chr1"], 1: [0, 1000], 2: [100000, 200000]}
         )
         mock_read_csv.return_value = test_df_interval
-        mock_Cooler.return_value = "mock_cooler"
+        mock_cooler.return_value = "mock_cooler"
         mock_get_expected.return_value = "expected"
         # dispatch call
         _do_pileup_variable_size(self.cooler, 5, "testpath", self.arms, "ICCF")
@@ -646,7 +649,7 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
     def test_bad_interpolation_regions_skipped(
         self,
         mock_read_csv,
-        mock_Cooler,
+        mock_cooler,
         mock_pileup_obs_exp,
         mock_pileup_iccf,
         mock_bin_numbers,
@@ -656,7 +659,7 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
             {0: ["chr1", "chr1"], 1: [0, 1000], 2: [100000, 200000]}
         )
         mock_read_csv.return_value = test_df_interval
-        mock_Cooler.return_value = "mock_cooler"
+        mock_cooler.return_value = "mock_cooler"
         mock_bin_numbers.return_value = 10
         mock_pileup_iccf.return_value = [np.ones((10, 10)), np.array([])]
         # dispatch call
@@ -760,8 +763,8 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
 
     @patch("app.pipeline_worker_functions.get_optimal_binsize")
     def test_calculated_obs_exp_cached(self, mock_binsize):
-        mock_binsize.return_value = 5000000
         """Tests whether cached obs/exp dataset is created if it does not exist already"""
+        mock_binsize.return_value = 5000000
         arms = pd.read_csv(self.app.config["CHROM_ARMS"])
         # create mock regions
         test_df_interval = pd.DataFrame(
@@ -778,12 +781,12 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
             self.cooler, 1, mock_path, arms, "Obs/Exp", collapse=False
         )
         self.assertEqual(1, len(ObsExp.query.all()))
-        ds = ObsExp.query.first()
-        self.assertEqual(ds.dataset_id, self.cooler.id)
-        self.assertEqual(ds.binsize, 5000000)
-        # load ds
+        dataset = ObsExp.query.first()
+        self.assertEqual(dataset.dataset_id, self.cooler.id)
+        self.assertEqual(dataset.binsize, 5000000)
+        # load dataset
         expected = pd.read_csv(os.path.join("./tests/testfiles", "expected.csv"))
-        calculated = pd.read_csv(ds.filepath)
+        calculated = pd.read_csv(dataset.filepath)
         assert_frame_equal(expected, calculated)
 
 

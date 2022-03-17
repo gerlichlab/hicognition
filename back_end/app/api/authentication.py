@@ -1,6 +1,7 @@
+""" Authenticating credentials of a request and dealing with the tokens. """
+from flask import g, request
 from flask.json import jsonify
 from flask_httpauth import HTTPBasicAuth
-from flask import g, request
 from . import api
 from . import errors
 from ..models import User, Session
@@ -11,6 +12,7 @@ auth = HTTPBasicAuth()
 
 @auth.verify_password
 def verify_password(username_or_token, password):
+    """Verifies the password of a user or if a valid token is used."""
     if username_or_token == "":
         return False
     if password == "":
@@ -28,6 +30,7 @@ def verify_password(username_or_token, password):
 @api.route("/tokens/", methods=["POST"])
 @auth.login_required
 def get_token():
+    """Returns a token for a logged-in user."""
     if g.current_user.is_anonymous or g.token_used:
         return errors.forbidden("Invalid credentials")
     return jsonify(
@@ -42,11 +45,13 @@ def get_token():
 
 @api.before_request
 def before_request():
+    "Gets and stores the session token."
     _verify_and_store_session_token(request)
 
 
 # helpers
 def _verify_and_store_session_token(request):
+    """Verifies and stores the session token, in the application context."""
     g.session_datasets = []
     g.session_collections = []
     g.session_id = None

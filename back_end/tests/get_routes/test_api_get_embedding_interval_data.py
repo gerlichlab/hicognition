@@ -1,3 +1,4 @@
+"""Tests for get route of embedding interval data."""
 import os
 import gzip
 import json
@@ -6,9 +7,8 @@ import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
-import sys
-
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import Dataset, Intervals, EmbeddingIntervalData
 
@@ -35,7 +35,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
             id=2, dataset_id=self.unowned_bedfile.id, windowsize=200000
         )
         # add embeddingIntervalData with unowned collection
-        self.embedData_cooler_unowned = EmbeddingIntervalData(
+        self.embed_data_cooler_unowned = EmbeddingIntervalData(
             id=1,
             binsize=10000,
             dataset_id=self.unowned_cooler.id,
@@ -43,7 +43,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
             value_type="2d-embedding",
         )
         # add averageIntervalData with unowned intervals
-        self.embedData_intervals_unowned = EmbeddingIntervalData(
+        self.embed_data_intervals_unowned = EmbeddingIntervalData(
             id=2,
             binsize=10000,
             dataset_id=self.owned_cooler.id,
@@ -78,7 +78,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         )
         np.save(distribution_path, self.distribution_data)
         # create data
-        self.embeddingData_owned = EmbeddingIntervalData(
+        self.embedding_data_owned = EmbeddingIntervalData(
             id=3,
             binsize=10000,
             file_path=data_path,
@@ -98,7 +98,7 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_embeddingIntervalData_does_not_exist(self):
+    def test_embedding_interval_data_does_not_exist(self):
         """Test 404 is returned if embeddingIntervalData does not exist."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -124,13 +124,13 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_bedfile,
                 self.unowned_cooler,
                 self.owned_intervals,
-                self.embedData_cooler_unowned,
+                self.embed_data_cooler_unowned,
             ]
         )
         db.session.commit()
         # make request for forbidden cooler
         response = self.client.get(
-            f"/api/embeddingIntervalData/{self.embedData_cooler_unowned.id}/",
+            f"/api/embeddingIntervalData/{self.embed_data_cooler_unowned.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -148,13 +148,13 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_cooler,
                 self.unowned_bedfile,
                 self.unowned_intervals,
-                self.embedData_intervals_unowned,
+                self.embed_data_intervals_unowned,
             ]
         )
         db.session.commit()
         # make request with forbidden intervall
         response = self.client.get(
-            f"/api/embeddingIntervalData/{self.embedData_intervals_unowned.id}/",
+            f"/api/embeddingIntervalData/{self.embed_data_intervals_unowned.id}/",
             headers=token_headers,
             content_type="application/json",
         )

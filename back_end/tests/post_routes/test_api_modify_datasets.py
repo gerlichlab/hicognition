@@ -1,13 +1,10 @@
-import sys
-import os
-import io
-import json
+"""Module with tests realted to managing and modifying datasets."""
 import unittest
-from unittest.mock import patch
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app.models import Dataset, Assembly
 from app import db
 
@@ -27,7 +24,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # create field form mapping
-        self.fieldFormMapping = {
+        self.field_form_mapping = {
             "datasetName": "dataset_name",
             "cellCycleStage": "cellCycleStage",
             "perturbation": "perturbation",
@@ -172,7 +169,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_badform_incorrect_Valuetype(self):
+    def test_badform_incorrect_valuetype(self):
         """Test 400 returned if no form is provided."""
         # add datasets
         db.session.add(self.owned_cooler_1)
@@ -274,11 +271,11 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         for field in data.keys():
             if field == "public":
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), False
+                    dataset.__getattribute__(self.field_form_mapping[field]), False
                 )
             else:
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+                    dataset.__getattribute__(self.field_form_mapping[field]), data[field]
                 )
         # check whether fields that should be undefined are undefined
         for field in ["protein", "directionality", "derivationType"]:
@@ -288,6 +285,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset.filetype, "cooler")
 
     def test_modification_goes_through_bedfile(self):
+        """Test whether correct combination of metadata causes database modifiction."""
         # add datasets
         db.session.add(self.bedfile_1)
         db.session.commit()
@@ -313,11 +311,11 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         for field in data.keys():
             if field == "public":
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), False
+                    dataset.__getattribute__(self.field_form_mapping[field]), False
                 )
             else:
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+                    dataset.__getattribute__(self.field_form_mapping[field]), data[field]
                 )
         # check whether fields that should be undefined are undefined
         for field in ["protein", "directionality"]:
@@ -327,6 +325,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset.filetype, "bedfile")
 
     def test_modification_goes_through_bedfile_genome_annotation(self):
+        """Test whether correct combination of metadata causes database modifiction."""
         # add datasets
         db.session.add(self.bedfile_2)
         db.session.commit()
@@ -352,17 +351,18 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         for field in data.keys():
             if field == "public":
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), False
+                    dataset.__getattribute__(self.field_form_mapping[field]), False
                 )
             else:
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+                    dataset.__getattribute__(self.field_form_mapping[field]), data[field]
                 )
         # check whether assembly and filetype are unchanged
         self.assertEqual(dataset.assembly, 1)
         self.assertEqual(dataset.filetype, "bedfile")
 
     def test_public_flag_set_correctly(self):
+        """Test if public flag is set correctly."""
         # add datasets
         db.session.add(self.bedfile_2)
         db.session.commit()
@@ -388,17 +388,18 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         for field in data.keys():
             if field == "public":
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), True
+                    dataset.__getattribute__(self.field_form_mapping[field]), True
                 )
             else:
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+                    dataset.__getattribute__(self.field_form_mapping[field]), data[field]
                 )
         # check whether assembly and filetype are unchanged
         self.assertEqual(dataset.assembly, 1)
         self.assertEqual(dataset.filetype, "bedfile")
 
     def test_modification_goes_through_bigwig(self):
+        """Test whether correct combination of metadata causes database modifiction."""
         # add datasets
         db.session.add(self.bigwig_1)
         db.session.commit()
@@ -426,11 +427,11 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         for field in data.keys():
             if field == "public":
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), False
+                    dataset.__getattribute__(self.field_form_mapping[field]), False
                 )
             else:
                 self.assertEqual(
-                    dataset.__getattribute__(self.fieldFormMapping[field]), data[field]
+                    dataset.__getattribute__(self.field_form_mapping[field]), data[field]
                 )
         # check whether fields that should be undefined are undefined
         for field in ["derivationType", "directionality"]:
