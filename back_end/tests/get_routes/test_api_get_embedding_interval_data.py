@@ -172,13 +172,13 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_cooler,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.embeddingData_owned,
+                self.embedding_data_owned,
             ]
         )
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/embeddingIntervalData/{self.embeddingData_owned.id}/",
+            f"/api/embeddingIntervalData/{self.embedding_data_owned.id}/",
             headers=token_headers,
             content_type="application/json",
         )
