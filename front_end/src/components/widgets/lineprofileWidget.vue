@@ -461,13 +461,13 @@ export default {
                 expectSelection: false,
                 minHeatmap: 0, // this value have no meaning, they are for compatibility with the valuescale mixin
                 maxHeatmap: 0, // this value have no meaning, they are for compatibility with the valuescale mixin
-                minHeatmapRange: widgetData["minHeatmapRange"],
-                maxHeatmapRange: widgetData["maxHeatmapRange"],
+                minHeatmapRange: (widgetData["minHeatmapRange"] !== undefined) ? widgetData["minHeatmapRange"]: undefined,
+                maxHeatmapRange: (widgetData["maxHeatmapRange"] !== undefined) ? widgetData["maxHeatmapRange"]: undefined,
                 valueScaleSelectionState: false,
-                valueScaleRecipient: widgetData["valueScaleRecipient"],
-                valueScaleRecipients: widgetData["valueScaleRecipients"],
-                valueScaleTargetID: widgetData["valueScaleTargetID"],
-                valueScaleColor: widgetData["valueScaleColor"],
+                valueScaleRecipient: (widgetData["valueScaleRecipient"] !== undefined) ? widgetData["valueScaleRecipient"]: false,
+                valueScaleRecipients: (widgetData["valueScaleRecipients"] !== undefined) ? widgetData["valueScaleRecipients"]: 0,
+                valueScaleTargetID: (widgetData["valueScaleTargetID"] !== undefined) ? widgetData["valueScaleTargetID"]: false,
+                valueScaleColor: (widgetData["valueScaleColor"] !== undefined) ? widgetData["valueScaleColor"]: undefined,
                 showSelection: false,
                 colormap: null // this value have no meaning, they are for compatibility with the valuescale mixin
             };
