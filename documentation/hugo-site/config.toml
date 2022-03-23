@@ -1,6 +1,8 @@
-baseURL = "http://localhost/docs/"
+baseURL = "/docs/"
 title = "HiCognition"
 theme = "learn"
+
+canonifyURLs = true
 
 # For search functionality
 [outputs]

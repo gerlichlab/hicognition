@@ -1,13 +1,12 @@
+"""Tests for deletion of datasets."""
 import os
 from pathlib import Path
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 import unittest
-from unittest.mock import patch
+from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
-import sys
-
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import (
     Dataset,
@@ -191,14 +190,14 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset_ids, {2, 3, 4, 5})
         intervals_ids = set(entry.id for entry in Intervals.query.all())
         self.assertEqual(intervals_ids, {1, 2})
-        averageIntervalData_ids = set(
+        average_interval_data_ids = set(
             entry.id for entry in AverageIntervalData.query.all()
         )
-        self.assertEqual(averageIntervalData_ids, {2, 3})
-        individualIntervalData_ids = set(
+        self.assertEqual(average_interval_data_ids, {2, 3})
+        individual_interval_data_ids = set(
             entry.id for entry in IndividualIntervalData.query.all()
         )
-        self.assertEqual(individualIntervalData_ids, {1})
+        self.assertEqual(individual_interval_data_ids, {1})
         # check temp_dir state
         files_tempdir = set(os.listdir(TempDirTestCase.TEMP_PATH))
         expected = set(self._get_expected_tempdir_state(self.datasets, deletion_id))
@@ -227,14 +226,14 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset_ids, {1, 2, 4, 5})
         intervals_ids = set(entry.id for entry in Intervals.query.all())
         self.assertEqual(intervals_ids, {2})
-        averageIntervalData_ids = set(
+        average_interval_data_ids = set(
             entry.id for entry in AverageIntervalData.query.all()
         )
-        self.assertEqual(averageIntervalData_ids, {2})
-        individualIntervalData_ids = set(
+        self.assertEqual(average_interval_data_ids, {2})
+        individual_interval_data_ids = set(
             entry.id for entry in IndividualIntervalData.query.all()
         )
-        self.assertEqual(individualIntervalData_ids, set())
+        self.assertEqual(individual_interval_data_ids, set())
         # check temp_idr state
         files_tempdir = set(os.listdir(TempDirTestCase.TEMP_PATH))
         expected = set(self._get_expected_tempdir_state(self.datasets, deletion_id))
@@ -263,14 +262,14 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset_ids, {1, 2, 3, 4})
         intervals_ids = set(entry.id for entry in Intervals.query.all())
         self.assertEqual(intervals_ids, {1, 2})
-        averageIntervalData_ids = set(
+        average_interval_data_ids = set(
             entry.id for entry in AverageIntervalData.query.all()
         )
-        self.assertEqual(averageIntervalData_ids, {1, 2})
-        individualIntervalData_ids = set(
+        self.assertEqual(average_interval_data_ids, {1, 2})
+        individual_interval_data_ids = set(
             entry.id for entry in IndividualIntervalData.query.all()
         )
-        self.assertEqual(individualIntervalData_ids, set())
+        self.assertEqual(individual_interval_data_ids, set())
         # check temp_idr state
         files_tempdir = set(os.listdir(TempDirTestCase.TEMP_PATH))
         expected = set(self._get_expected_tempdir_state(self.datasets, deletion_id))

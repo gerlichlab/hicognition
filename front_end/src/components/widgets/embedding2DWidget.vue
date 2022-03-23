@@ -703,7 +703,7 @@ export default {
                 isICCF: true,
                 isLog: true,
                 binsizes: {},
-                datasets: collectionData["availableData"]["embedding2d"],
+                datasets: collectionData["datasetsForIntervalSize"]["embedding2d"],
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
@@ -785,7 +785,7 @@ export default {
                 regionName: collectionConfig["regionName"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
-                datasets: collectionConfig["availableData"]["embedding2d"],
+                datasets: collectionConfig["datasetsForIntervalSize"]["embedding2d"],
                 isICCF: widgetData["isICCF"],
                 isLog: widgetData["isLog"],
                 showMenu: false,
@@ -907,7 +907,7 @@ export default {
                 // update availability object
                 this.datasets =
                     newValue[this.collectionID]["collectionConfig"][
-                        "availableData"
+                        "datasetsForIntervalSize"
                     ]["embedding2d"];
                 this.intervalSize =
                     newValue[this.collectionID]["collectionConfig"][
@@ -932,6 +932,12 @@ export default {
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
                 this.intervalSize
             ];
+            // check whether binsizes are defined
+            if (this.binsizes === undefined) {
+                // not data exists, blank widget DAta
+                this.widgetData = undefined
+                return
+            }
             this.selectedBinsize = this.getCenterOfArray(
                 Object.keys(this.binsizes)
             );
@@ -945,6 +951,12 @@ export default {
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
                 this.intervalSize
             ];
+            // check whether binsizes are defined
+            if (this.binsizes === undefined) {
+                // not data exists, blank widget DAta
+                this.widgetData = undefined
+                return
+            }
             this.selectedBinsize = this.getCenterOfArray(
                 Object.keys(this.binsizes)
             );
@@ -959,6 +971,12 @@ export default {
             this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
                 this.intervalSize
             ];
+            // check whether binsizes are defined
+            if (this.binsizes === undefined) {
+                // not data exists, blank widget DAta
+                this.widgetData = undefined
+                return
+            }
             if (!this.selectedBinsize) {
                 this.selectedBinsize = this.getCenterOfArray(
                     Object.keys(this.binsizes)

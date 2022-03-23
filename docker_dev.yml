@@ -64,7 +64,7 @@ services:
                 - redis-server
         build:
             context: "./back_end"
-        scale: 6
+        scale: 3
         image: hicognition:latest
         entrypoint: "/bin/bash"
         networks:

@@ -11,9 +11,9 @@
                 <!-- Field definitions -->
                 <md-card-content>
                     <div class="md-layout md-gutter">
-
-                        <div class="md-layout-item md-layout md-gutter md-alignment-center-left md-small-size-50">
-
+                        <div
+                            class="md-layout-item md-layout md-gutter md-alignment-center-left md-small-size-50"
+                        >
                             <div class="md-layout-item md-size-50">
                                 <md-button
                                     class="md-raised md-primary"
@@ -22,40 +22,86 @@
                                     >Select Region</md-button
                                 >
                             </div>
-                            <div class="md-layout-item md-size-50" >
-                                <span class="md-body-1"> {{ numberRegions }} {{ pluralizedRegions }} selected</span>
+                            <div class="md-layout-item md-size-50">
+                                <span class="md-body-1">
+                                    {{ numberRegions }}
+                                    {{ pluralizedRegions }} selected</span
+                                >
                             </div>
                             <div class="md-layout-item md-size-50">
                                 <span
                                     style="color: red; "
-                                    v-if="!$v.form.bedfileIDs.required && $v.form.bedfileIDs.$dirty"
+                                    v-if="
+                                        !$v.form.bedfileIDs.required &&
+                                            $v.form.bedfileIDs.$dirty
+                                    "
                                     >At least one region is required</span
                                 >
                             </div>
                         </div>
 
-                        <div class="md-layout-item md-layout md-gutter md-alignment-center-left md-small-size-50">
-
+                        <div
+                            class="md-layout-item md-layout md-gutter md-alignment-center-left md-small-size-50"
+                        >
                             <div class="md-layout-item md-size-50">
                                 <md-button
                                     class="md-raised md-primary"
                                     @click="startFeatureSelection"
-                                    :disabled="!datasetsAvailable || this.form.bedfileIDs.length === 0 || !this.preprocessingMapLoaded"
+                                    :disabled="
+                                        !datasetsAvailable ||
+                                            this.form.bedfileIDs.length === 0 ||
+                                            !this.preprocessingMapLoaded
+                                    "
                                     >Select Features</md-button
                                 >
                             </div>
                             <div class="md-layout-item md-size-50">
-                                <span class="md-body-1">{{ numberFeatures }} features selected</span>
+                                <span class="md-body-1"
+                                    >{{ numberFeatures }} features
+                                    selected</span
+                                >
                             </div>
                             <div class="md-layout-item md-size-50">
                                 <span
                                     style="color: red; "
-                                    v-if="!$v.form.bedfileIDs.required && $v.form.bedfileIDs.$dirty"
-                                    >At least one feature dataset is required</span
+                                    v-if="
+                                        !$v.form.bedfileIDs.required &&
+                                            $v.form.bedfileIDs.$dirty
+                                    "
+                                    >At least one feature dataset is
+                                    required</span
                                 >
                             </div>
                         </div>
-
+                    </div>
+                    <md-switch v-model="showAdvanced">Show Advanced</md-switch>
+                    <div class="md-layout md-gutter" v-if="showAdvanced">
+                        <md-divider></md-divider>
+                        <div class="md-layout-item md-size-25">
+                            <md-field>
+                                <label for="windowsizes">Windowsizes</label>
+                                <md-select
+                                    v-model="form.preprocessing_map"
+                                    name="windowsizes"
+                                    id="windowsizes"
+                                >
+                                    <md-option value="PREPROCESSING_MAP"
+                                        >Regular</md-option
+                                    >
+                                    <md-option
+                                        value="PREPROCESSING_MAP_SMALL_WINDOWSIZES"
+                                        >Small</md-option
+                                    >
+                                </md-select>
+                            </md-field>
+                            <div class="md-layout-item md-size-100">
+                                <span
+                                    style="color: red; "
+                                    v-if="showSmallWarning"
+                                    >This step can take up to 10 minutes!</span
+                                >
+                            </div>
+                        </div>
                     </div>
                 </md-card-content>
                 <!-- Progress bar -->
@@ -101,20 +147,28 @@ export default {
         form: {
             datasetIDs: [],
             bedfileIDs: [],
+            preprocessing_map: "PREPROCESSING_MAP"
         },
         datasetSaved: false,
         sending: false,
-        preprocessingMapLoaded: false
+        preprocessingMapLoaded: false,
+        showAdvanced: false
     }),
     computed: {
-        numberRegions: function(){
-            return this.form.bedfileIDs.length
+        showSmallWarning: function() {
+            if (this.form.preprocessing_map === "PREPROCESSING_MAP") {
+                return false;
+            }
+            return true;
         },
-        pluralizedRegions: function(){
-            return this.numberRegions == 0 ? "regions" : "region"
+        numberRegions: function() {
+            return this.form.bedfileIDs.length;
         },
-        numberFeatures: function(){
-            return this.form.datasetIDs.length
+        pluralizedRegions: function() {
+            return this.numberRegions == 0 ? "regions" : "region";
+        },
+        numberFeatures: function() {
+            return this.form.datasetIDs.length;
         },
         datasetsAvailable: function() {
             return this.availableDatasets.length != 0;
@@ -128,12 +182,14 @@ export default {
         bedFilesAvailable: function() {
             return this.availableBedFiles.length != 0;
         },
-        regionIDs: function(){
-            return this.availableBedFiles.map(el => el.id)
+        regionIDs: function() {
+            return this.availableBedFiles.map(el => el.id);
         },
-        selectedAssembly: function(){
-            if (this.form.bedfileIDs.length !== 0){
-                return this.availableBedFiles.filter(el => el.id === this.form.bedfileIDs[0])[0].assembly
+        selectedAssembly: function() {
+            if (this.form.bedfileIDs.length !== 0) {
+                return this.availableBedFiles.filter(
+                    el => el.id === this.form.bedfileIDs[0]
+                )[0].assembly;
             }
         }
     },
@@ -145,89 +201,117 @@ export default {
             },
             bedfileIDs: {
                 required
+            },
+            preprocessing_map: {
+                required
             }
         }
     },
     methods: {
-        startRegionSelection: function () {
+        startRegionSelection: function() {
             this.expectSelection = true;
-            let preselection = [...this.form.bedfileIDs]
-            EventBus.$emit("show-select-dialog", this.availableBedFiles, "bedfile", preselection, true);
+            let preselection = [...this.form.bedfileIDs];
+            EventBus.$emit(
+                "show-select-dialog",
+                this.availableBedFiles,
+                "bedfile",
+                preselection,
+                true
+            );
         },
-        startFeatureSelection: function () {
+        startFeatureSelection: function() {
             this.expectSelection = true;
-            let preselection = [...this.form.datasetIDs]
-            let datasets = this.availableBigwigs.concat(this.availableCoolers)
-            EventBus.$emit("show-select-dialog", datasets, "features", preselection, false, this.selectedAssembly, this.finishedDatasets, this.processingDatasets, this.failedDatasets);
+            let preselection = [...this.form.datasetIDs];
+            let datasets = this.availableBigwigs.concat(this.availableCoolers);
+            EventBus.$emit(
+                "show-select-dialog",
+                datasets,
+                "features",
+                preselection,
+                false,
+                this.selectedAssembly,
+                this.finishedDatasets,
+                this.processingDatasets,
+                this.failedDatasets
+            );
         },
-        registerSelectionEventHandlers: function(){
-            EventBus.$on("dataset-selected", this.handleDataSelection)
-            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion)
+        registerSelectionEventHandlers: function() {
+            EventBus.$on("dataset-selected", this.handleDataSelection);
+            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function(){
-            EventBus.$off("dataset-selected", this.handleDataSelection)
-            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion)
+        removeSelectionEventHandlers: function() {
+            EventBus.$off("dataset-selected", this.handleDataSelection);
+            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function(ids){
-            if (this.expectSelection){
-                if (this.isRegionSelection(ids)){
+        handleDataSelection: function(ids) {
+            if (this.expectSelection) {
+                if (this.isRegionSelection(ids)) {
                     // blank features
-                    this.form.datasetIDs = []
+                    this.form.datasetIDs = [];
                     // blanck preprocessing map
-                    this.preprocessingMapLoaded = false
-                    this.form.bedfileIDs = [ids]
+                    this.preprocessingMapLoaded = false;
+                    this.form.bedfileIDs = [ids];
                     // get preprocess dataset map
-                    this.fetchPreprocessData(ids).then((response) => {
-                        let bigwigIDs = Object.keys(response.data["lineprofile"]).map(el => Number(el))
-                        let coolerIDs = Object.keys(response.data['pileup']).map(el => Number(el))
-                        let collectiveIDs = bigwigIDs.concat(coolerIDs)
-                        this.finishedDatasets = this.finishedDatasets.concat(collectiveIDs)
-                        this.preprocessingMapLoaded = true
-                    })
+                    this.fetchPreprocessData(ids).then(response => {
+                        let bigwigIDs = Object.keys(
+                            response.data["lineprofile"]
+                        ).map(el => Number(el));
+                        let coolerIDs = Object.keys(
+                            response.data["pileup"]
+                        ).map(el => Number(el));
+                        let collectiveIDs = bigwigIDs.concat(coolerIDs);
+                        this.finishedDatasets = this.finishedDatasets.concat(
+                            collectiveIDs
+                        );
+                        this.preprocessingMapLoaded = true;
+                    });
                     // set processing datasets and failed datasets
-                    this.processingDatasets = this.getBedDataset(ids).processing_datasets
-                    this.failedDatasets = this.getBedDataset(ids).failed_datasets
+                    this.processingDatasets = this.getBedDataset(
+                        ids
+                    ).processing_datasets;
+                    this.failedDatasets = this.getBedDataset(
+                        ids
+                    ).failed_datasets;
                 } else {
-                    this.form.datasetIDs = ids
+                    this.form.datasetIDs = ids;
                 }
-                this.expectSelection = false
-                }
+                this.expectSelection = false;
+            }
         },
-        hanldeSelectionAbortion: function(){
-            this.expectSelection = false
+        hanldeSelectionAbortion: function() {
+            this.expectSelection = false;
         },
         isRegionSelection: function(ids) {
-            return this.regionIDs.includes(ids)
+            return this.regionIDs.includes(ids);
         },
-        getBedDataset: function(id){
-            return this.availableBedFiles.filter(el => el.id === id)[0]
+        getBedDataset: function(id) {
+            return this.availableBedFiles.filter(el => el.id === id)[0];
         },
         getDatasets: function() {
             // fetches available datasets (cooler and bedfiles) from server
             this.availableDatasets = this.$store.state.datasets.filter(
-                    element =>
-                        (element.filetype == "cooler" ||
-                            element.filetype == "bigwig") &&
-                        element.processing_state != "uploading"
-                );
-                this.availableCoolers = this.$store.state.datasets.filter(
-                    element =>
-                        element.filetype == "cooler" &&
-                        element.processing_state != "uploading"
-                );
-                this.availableBigwigs = this.$store.state.datasets.filter(
-                    element =>
-                        element.filetype == "bigwig" &&
-                        element.processing_state != "uploading"
-                );
-                this.availableBedFiles = this.$store.state.datasets.filter(
-                    element =>
-                        element.filetype == "bedfile"
+                element =>
+                    (element.filetype == "cooler" ||
+                        element.filetype == "bigwig") &&
+                    element.processing_state != "uploading"
+            );
+            this.availableCoolers = this.$store.state.datasets.filter(
+                element =>
+                    element.filetype == "cooler" &&
+                    element.processing_state != "uploading"
+            );
+            this.availableBigwigs = this.$store.state.datasets.filter(
+                element =>
+                    element.filetype == "bigwig" &&
+                    element.processing_state != "uploading"
+            );
+            this.availableBedFiles = this.$store.state.datasets.filter(
+                element => element.filetype == "bedfile"
             );
         },
-        fetchPreprocessData: function(regionID){
+        fetchPreprocessData: function(regionID) {
             // get availability object
-            return this.fetchData(`datasets/${regionID}/processedDataMap/`)
+            return this.fetchData(`datasets/${regionID}/processedDataMap/`);
         },
         getValidationClass(fieldName) {
             // matrial validation class for form field;
@@ -245,7 +329,7 @@ export default {
                 // vue introduces a watches into arrays that does not allow blanking
                 if (Array.isArray(this.form[key])) {
                     this.form[key] = [];
-                } else {
+                } else if (key != "preprocessing_map") {
                     this.form[key] = null;
                 }
             }
@@ -285,6 +369,7 @@ export default {
             var form_data = {};
             form_data["dataset_ids"] = JSON.stringify(this.form["datasetIDs"]);
             form_data["region_ids"] = JSON.stringify(this.form["bedfileIDs"]);
+            form_data["preprocessing_map"] = this.form["preprocessing_map"]
             return form_data;
         },
         validateDataset() {
@@ -296,10 +381,10 @@ export default {
     },
     created: function() {
         this.getDatasets();
-        this.registerSelectionEventHandlers()
+        this.registerSelectionEventHandlers();
     },
-    beforeDestroy: function(){
-        this.removeSelectionEventHandlers()
+    beforeDestroy: function() {
+        this.removeSelectionEventHandlers();
     }
 };
 </script>

@@ -8,8 +8,8 @@ pre = "<b>1. </b>"
 
 # Getting started
 
-{{% notice note %}}This section assumes that you have a HiCognition instance running and set up your user in the database. On how to do this, see the [installation guide](/docs/installation/).
+{{% notice note %}}This section assumes that you have a HiCognition instance running and set up your user in the database. On how to do this, see the [installation guide](/installation/).
 {{% /notice %}}
 ## Get started with example data
 
-Start creating your first [visualizations with our example data](/docs/getting_started/get_started_w_example_data/).
+Start creating your first [visualizations with our example data](/getting_started/get_started_w_example_data/).

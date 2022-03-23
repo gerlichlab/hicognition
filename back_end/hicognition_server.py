@@ -1,7 +1,8 @@
 """Start hicognition server."""
 import os
 import atexit
-#import json
+
+# import json
 from getpass import getpass
 from base64 import b64encode
 import click

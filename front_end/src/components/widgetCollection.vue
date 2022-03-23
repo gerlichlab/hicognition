@@ -165,6 +165,8 @@ import { apiMixin, formattingMixin } from "../mixins";
 import { max_array } from "../functions";
 import EventBus from "../eventBus";
 
+const DEFAULT_WINDOWSIZE = "400000"
+
 export default {
     name: "widgetCollection",
     mixins: [apiMixin, formattingMixin],
@@ -177,7 +179,6 @@ export default {
     data: function() {
         return {
             regions: [],
-            windowSizes: [],
             selectedRegionID: null,
             selectedWindowSize: null,
             marginSizeWidth: 4,
@@ -195,6 +196,39 @@ export default {
         };
     },
     computed: {
+        windowSizes: function() {
+            if (Object.keys(this.availableData).length === 0){
+                return []
+            }
+            // get windowsizes from availableData object
+            let windowsizes = new Set()
+            for (let [dataset_type, dataset_collection] of Object.entries(this.availableData)){
+                for (let [dastaset_id, dataset_object] of Object.entries(dataset_collection)){
+                    for (let windowsize of Object.keys(dataset_object["data_ids"])){
+                        if (windowsize !== "name"){
+                            windowsizes.add(windowsize)
+                        }
+                    }
+                }
+            }
+            // sort
+            return Array.from(windowsizes).sort((a, b) => a - b)
+        },
+        datasetsForIntervalSize: function() {
+            // subset available data for this region-set based on selected interval size
+            if (Object.keys(this.availableData).length === 0){
+                return {}
+            }
+            let output = JSON.parse(JSON.stringify(this.availableData))
+            for (let [dataset_type, dataset_collection] of Object.entries(output)){
+                for (let [dataset_id, dataset_id_object] of Object.entries(dataset_collection)){
+                    if (!(this.selectedWindowSize in dataset_id_object["data_ids"])){
+                        delete output[dataset_type][dataset_id]
+                    }
+                }
+            }
+            return output
+        },
         pointWindowSizes: function() {
             return this.windowSizes.filter(el => el != "variable");
         },
@@ -422,13 +456,6 @@ export default {
                 }
             });
         },
-        fetchResolutions: function() {
-            this.fetchData("resolutions/").then(response => {
-                // success, store resolutions
-                this.$store.commit("setResolutions", response.data);
-                this.windowSizes = Object.keys(response.data);
-            });
-        },
         handleZoomIn: function() {
             this.baseWidth += 50;
             this.baseHeight += 50;
@@ -446,6 +473,7 @@ export default {
                         el => el.id == this.selectedRegionID
                     )[0].dataset_name,
                     availableData: this.availableData,
+                    datasetsForIntervalSize: this.datasetsForIntervalSize,
                     intervalSize: this.selectedWindowSize
                 }
             };
@@ -560,9 +588,7 @@ export default {
             ) {
                 // set default -> middle of available windwosizes if point, otherwise variable
                 if (this.isPointFeature) {
-                    this.selectedWindowSize = this.pointWindowSizes[
-                        Math.floor(this.pointWindowSizes.length / 2)
-                    ];
+                    this.selectedWindowSize = DEFAULT_WINDOWSIZE
                 } else {
                     this.selectedWindowSize = "variable";
                 }
@@ -635,12 +661,6 @@ export default {
         this.getDatasets();
         // get collections
         this.fetchCollections();
-        // get resolutions
-        if (this.$store.state.resolutions) {
-            this.windowSizes = Object.keys(this.$store.getters.getResolutions);
-        } else {
-            this.fetchResolutions();
-        }
     },
     beforeDestroy: function() {
         this.removeSelectionEventHandlers();

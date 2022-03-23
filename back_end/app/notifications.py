@@ -1,6 +1,6 @@
 """Handling of notifications"""
-from pydantic import BaseModel, validate_arguments
 from datetime import datetime
+from pydantic import BaseModel, validate_arguments
 from . import sse
 
 
@@ -25,11 +25,13 @@ class ProcessingFinishedNotification(Notification):
 
 class NotificationHandler:
     """Class that manages sending notifications
-    throuth pydantic guarded notification data model"""
+    through pydantic guarded notification data model"""
 
     @validate_arguments
     def signal_processing_update(self, data: ProcessingFinishedNotification):
+        """Sends the update for the preprocessing status."""
         sse.publish(data.dict(), type="notification")
 
     def send_keep_alive(self):
+        """Stops Chrome from terminating the NotificationHandler"""
         sse.publish({"data": 42}, type="keepalive")

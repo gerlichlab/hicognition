@@ -1,14 +1,14 @@
+"""Test to check whether retrieving of individualIntervalData data works."""
 import os
-import pandas as pd
 import unittest
 import json
+import pandas as pd
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
-import sys
-
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import Dataset, Intervals, IndividualIntervalData, BedFileMetadata
 
@@ -47,14 +47,14 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
             id=3, dataset_id=self.unowned_public_bedfile.id, windowsize=200000
         )
         # add individualIntervalData from unowned bigwig
-        self.indData_unowned_bigwig = IndividualIntervalData(
+        self.ind_data_unowned_bigwig = IndividualIntervalData(
             id=1,
             binsize=10000,
             dataset_id=self.unowned_bigwig.id,
             intervals_id=self.owned_intervals.id,
         )
         # add individualIntervalData from unowned intervals
-        self.indData_unowned_intervals = IndividualIntervalData(
+        self.ind_data_unowned_intervals = IndividualIntervalData(
             id=1,
             binsize=10000,
             dataset_id=self.owned_bigwig.id,
@@ -64,7 +64,7 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
         self.ind_data = np.array([[1.66, 2.2, 3.8, 4.5]])
         data_path = os.path.join(TempDirTestCase.TEMP_PATH, "test.npy")
         np.save(data_path, self.ind_data)
-        self.indData_owned = IndividualIntervalData(
+        self.ind_data_owned = IndividualIntervalData(
             binsize=10000,
             file_path_small=data_path,
             dataset_id=self.owned_bigwig.id,
@@ -74,7 +74,7 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
         self.test_data_w_nans = np.array([[1.66, 2.2, 3.8, 4.5, np.nan]])
         data_path_w_nans = os.path.join(TempDirTestCase.TEMP_PATH, "test1.npy")
         np.save(data_path_w_nans, self.test_data_w_nans)
-        self.indData_owned_w_nans = IndividualIntervalData(
+        self.ind_data_owned_w_nans = IndividualIntervalData(
             binsize=10000,
             file_path_small=data_path_w_nans,
             dataset_id=self.owned_bigwig.id,
@@ -84,14 +84,14 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
         self.test_data_w_inf = np.array([[1.66, 2.2, 3.8, 4.5, np.inf]])
         data_path_w_inf = os.path.join(TempDirTestCase.TEMP_PATH, "test2.npy")
         np.save(data_path_w_inf, self.test_data_w_inf)
-        self.indData_owned_w_inf = IndividualIntervalData(
+        self.ind_data_owned_w_inf = IndividualIntervalData(
             binsize=10000,
             file_path_small=data_path_w_inf,
             dataset_id=self.owned_bigwig.id,
             intervals_id=self.owned_intervals.id,
         )
         # add public individualIntervalData
-        self.indData_unowned_public = IndividualIntervalData(
+        self.ind_data_unowned_public = IndividualIntervalData(
             binsize=10000,
             file_path_small=data_path,
             dataset_id=self.unowned_public_bigwig.id,
@@ -106,7 +106,7 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_individualIntervalData_does_not_exist(self):
+    def test_individual_interval_data_does_not_exist(self):
         """Test 404 is returned if individualIntervalData does not exist."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -132,13 +132,13 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
                 self.unowned_bigwig,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.indData_unowned_bigwig,
+                self.ind_data_unowned_bigwig,
             ]
         )
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/individualIntervalData/{self.indData_unowned_bigwig.id}/",
+            f"/api/individualIntervalData/{self.ind_data_unowned_bigwig.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -156,13 +156,13 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_bigwig,
                 self.unowned_bedfile,
                 self.unowned_intervals,
-                self.indData_unowned_intervals,
+                self.ind_data_unowned_intervals,
             ]
         )
         db.session.commit()
         # make request for bigwig with forbidden interval
         response = self.client.get(
-            f"/api/individualIntervalData/{self.indData_unowned_intervals.id}/",
+            f"/api/individualIntervalData/{self.ind_data_unowned_intervals.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -180,13 +180,13 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_bigwig,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.indData_owned,
+                self.ind_data_owned,
             ]
         )
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/individualIntervalData/{self.indData_owned.id}/",
+            f"/api/individualIntervalData/{self.ind_data_owned.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -209,13 +209,13 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_bigwig,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.indData_owned_w_nans,
+                self.ind_data_owned_w_nans,
             ]
         )
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/individualIntervalData/{self.indData_owned_w_nans.id}/",
+            f"/api/individualIntervalData/{self.ind_data_owned_w_nans.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -240,13 +240,13 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
                 self.owned_bigwig,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.indData_owned_w_inf,
+                self.ind_data_owned_w_inf,
             ]
         )
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/individualIntervalData/{self.indData_owned_w_inf.id}/",
+            f"/api/individualIntervalData/{self.ind_data_owned_w_inf.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -271,13 +271,13 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
                 self.unowned_public_bigwig,
                 self.unowned_public_bedfile,
                 self.unowned_public_intervals,
-                self.indData_unowned_public,
+                self.ind_data_unowned_public,
             ]
         )
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/individualIntervalData/{self.indData_unowned_public.id}/",
+            f"/api/individualIntervalData/{self.ind_data_unowned_public.id}/",
             headers=token_headers,
             content_type="application/json",
         )
@@ -317,21 +317,21 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
             id=2, dataset_id=self.unowned_bedfile.id, windowsize=200000
         )
         # add individualIntervalData from unowned bigwig
-        self.indData_unowned_bigwig = IndividualIntervalData(
+        self.ind_data_unowned_bigwig = IndividualIntervalData(
             id=1,
             binsize=10000,
             dataset_id=self.unowned_bigwig.id,
             intervals_id=self.owned_intervals.id,
         )
         # add individualIntervalData from unowned intervals
-        self.indData_unowned_intervals = IndividualIntervalData(
+        self.ind_data_unowned_intervals = IndividualIntervalData(
             id=1,
             binsize=10000,
             dataset_id=self.owned_bigwig.id,
             intervals_id=self.unowned_intervals.id,
         )
         # add owned individualIntervalData
-        self.indData_owned = IndividualIntervalData(
+        self.ind_data_owned = IndividualIntervalData(
             binsize=10000,
             dataset_id=self.owned_bigwig.id,
             intervals_id=self.owned_intervals.id,
@@ -372,7 +372,7 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_individualIntervalData_does_not_exist(self):
+    def test_individual_interval_data_does_not_exist(self):
         """Test 404 is returned if individualIntervalData does not exist."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -398,13 +398,13 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
                 self.unowned_bigwig,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.indData_unowned_bigwig,
+                self.ind_data_unowned_bigwig,
             ]
         )
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/individualIntervalData/{self.indData_unowned_bigwig.id}/metadatasmall",
+            f"/api/individualIntervalData/{self.ind_data_unowned_bigwig.id}/metadatasmall",
             headers=token_headers,
             content_type="application/json",
         )
@@ -422,13 +422,13 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
                 self.owned_bigwig,
                 self.unowned_bedfile,
                 self.unowned_intervals,
-                self.indData_unowned_intervals,
+                self.ind_data_unowned_intervals,
             ]
         )
         db.session.commit()
         # make request for bigwig with forbidden interval
         response = self.client.get(
-            f"/api/individualIntervalData/{self.indData_unowned_intervals.id}/metadatasmall",
+            f"/api/individualIntervalData/{self.ind_data_unowned_intervals.id}/metadatasmall",
             headers=token_headers,
             content_type="application/json",
         )
@@ -446,13 +446,13 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
                 self.owned_bigwig,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.indData_owned,
+                self.ind_data_owned,
             ]
         )
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/individualIntervalData/{self.indData_owned.id}/metadatasmall",
+            f"/api/individualIntervalData/{self.ind_data_owned.id}/metadatasmall",
             headers=token_headers,
             content_type="application/json",
         )
@@ -471,14 +471,14 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
                 self.owned_bigwig,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.indData_owned,
+                self.ind_data_owned,
                 self.metadata_wo_fields,
             ]
         )
         db.session.commit()
         # make request
         response = self.client.get(
-            f"/api/individualIntervalData/{self.indData_owned.id}/metadatasmall",
+            f"/api/individualIntervalData/{self.ind_data_owned.id}/metadatasmall",
             headers=token_headers,
             content_type="application/json",
         )
@@ -498,14 +498,14 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
                 self.owned_bigwig,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.indData_owned,
+                self.ind_data_owned,
                 self.metadata_1,
             ]
         )
         db.session.commit()
         # make apicall
         response = self.client.get(
-            f"/api/individualIntervalData/{self.indData_owned.id}/metadatasmall",
+            f"/api/individualIntervalData/{self.ind_data_owned.id}/metadatasmall",
             headers=token_headers,
             content_type="application/json",
         )
@@ -532,7 +532,7 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
                 self.owned_bigwig,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.indData_owned,
+                self.ind_data_owned,
                 self.metadata_1,
                 self.metadata_w_file_wo_fields,
             ]
@@ -540,7 +540,7 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make apicall
         response = self.client.get(
-            f"/api/individualIntervalData/{self.indData_owned.id}/metadatasmall",
+            f"/api/individualIntervalData/{self.ind_data_owned.id}/metadatasmall",
             headers=token_headers,
             content_type="application/json",
         )
@@ -567,7 +567,7 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
                 self.owned_bigwig,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.indData_owned,
+                self.ind_data_owned,
                 self.metadata_1,
                 self.metadata_2,
             ]
@@ -575,7 +575,7 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make apicall
         response = self.client.get(
-            f"/api/individualIntervalData/{self.indData_owned.id}/metadatasmall",
+            f"/api/individualIntervalData/{self.ind_data_owned.id}/metadatasmall",
             headers=token_headers,
             content_type="application/json",
         )

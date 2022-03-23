@@ -1,26 +1,25 @@
-"""Worker functions for pipeline steps that 
+"""Worker functions for pipeline steps that
 perform the actual calculations and database state
 changes"""
-import imp
 import os
 import logging
+import uuid
 import pandas as pd
 import numpy as np
 import umap
-import uuid
 from flask.globals import current_app
 from skimage.transform import resize
 from ngs import HiCTools as HT
 import cooler
 import bbi
-from hicognition import io_helpers, interval_operations, feature_extraction
 import bioframe as bf
 from sklearn.impute import SimpleImputer
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 import pylola
-from hicognition.utils import get_optimal_binsize
 import hicognition
+from hicognition import io_helpers, interval_operations, feature_extraction
+from hicognition.utils import get_optimal_binsize
 from . import db
 from .models import (
     Assembly,
@@ -29,7 +28,6 @@ from .models import (
     IndividualIntervalData,
     AssociationIntervalData,
     EmbeddingIntervalData,
-    Intervals,
     ObsExp,
 )
 

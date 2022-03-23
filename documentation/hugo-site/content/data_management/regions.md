@@ -4,7 +4,7 @@ date: 2022-02-16T10:09:52+01:00
 weight: 1
 ---
 
-Genomic regions are the central element of the [region-set focus approach](/docs/concept/region_set_focus/) and are represented in practice by `BED` files that the user uploads to the server.
+Genomic regions are the central element of the [region-set focus approach](/concept/region_set_focus/) and are represented in practice by `BED` files that the user uploads to the server.
 
 ## Data requirements
 
@@ -33,7 +33,7 @@ chr22 1000 5000 cloneA 960 + 1000 5000 0 2 567,488, 0,3512
 chr22 2000 6000 cloneB 900 - 2000 6000 0 2 433,399, 0,3601
 ```
 
-A requirement that you are responsible for yourself is that the BED-file conforms to the selected genome assembly (see the [genome assemblies section](/docs/data_management/genome_assemblies/) for more information). HiCognition won't crash when preprocessing using a BED-file with chromosomes, not in your selected genome assembly but will emit blank data for those regions. But we cannot check whether positions within the bounds of a given assembly are derived from that assembly!
+A requirement that you are responsible for yourself is that the BED-file conforms to the selected genome assembly (see the [genome assemblies section](/data_management/genome_assemblies/) for more information). HiCognition won't crash when preprocessing using a BED-file with chromosomes, not in your selected genome assembly but will emit blank data for those regions. But we cannot check whether positions within the bounds of a given assembly are derived from that assembly!
 
 {{% notice warning %}}
 Always check that your BED-file contains coordinates that fit the selected genome assembly!
@@ -43,7 +43,7 @@ Always check that your BED-file contains coordinates that fit the selected genom
 
 ## Types of genomic regions
 
-HiCognition supports two different types of genome regions that will be preprocessed and displayed differently. For a description of how the visualizations adapt to the different types of genomic regions, see the [widget section](/docs/widgets/).
+HiCognition supports two different types of genome regions that will be preprocessed and displayed differently. For a description of how the visualizations adapt to the different types of genomic regions, see the [widget section](/widgets/).
 
 ### Point regions
 
@@ -66,7 +66,7 @@ Windowsize
    Large       ----------------------------|----------------------------
 ```
 
-To reduce computational load, the binsizes at which features are aggregated get smaller when windowsizes get larger. The particular setting can be changed in the configuration files of HiCognition (see the [configuration section](/docs/installation/configuration/) for more details).
+To reduce computational load, the binsizes at which features are aggregated get smaller when windowsizes get larger. The particular setting can be changed in the configuration files of HiCognition (see the [configuration section](/installation/configuration/) for more details).
 
 ### Interval regions
 
@@ -85,20 +85,20 @@ Left Expansion                 Region             Right Expansion
 ---------------|---------------------------------|---------------
 ```
 
-See the [configuration section](/docs/installation/configuration/#variable_size_expansion_factor) for how to set the extent of the expansion.
+See the [configuration section](/installation/configuration/#variable_size_expansion_factor) for how to set the extent of the expansion.
 
 ## Description of genomic regions
 
 To allow efficient filtering and searching as well as an easier display of genomic regions, we defined a formal description of genomic region sets that is exposed to the user both when adding new regions and when viewing genomic regions. The structure of the description fields of a genomic region set can be seen in the following graph:
 
-![region graph](/docs/region_metadata.png)
+![region graph](/region_metadata.png)
 
 In this graph, all nodes representing a value that the user can select are red. If the user's selection can lead to different selections lower in the graph, these options are displayed as black nodes. The first children of `Region` are fields that need to be defined for all region sets and have no influence on the later selection hierarchy:
 
 - __Assembly__ | The genome assembly this region set belongs to
 - __Perturbation__ | The perturbation condition (or none) that was used in the experiment that led to this dataset
 - __CellCycleStage__ | The cell cycle stage the cells were in when the data was collected
-- __SizeType__ | Which sizetype (see [above](/docs/data_management/regions/#types-of-genomic-regions)) the genomic regions should be treated as
+- __SizeType__ | Which sizetype (see [above](/data_management/regions/#types-of-genomic-regions)) the genomic regions should be treated as
 
 Then, the `ValueType` needs to be selected. This describes what kind of genomic regions this dataset is. This can be one of the following:
 
@@ -118,15 +118,15 @@ Adding genomic regions can be done by uploading a BED-file and filling out the r
 
 To add a single genomic region set, open the side drawer and click on the add region button:
 
-![add single region start dialogue](/docs/add_single_region_menu.png)
+![add single region start dialogue](/add_single_region_menu.png)
 
 Then, a dialog will pop up where you can select a region file, specify its name and select a genome assembly.
 
-![add single region dialogue](/docs/add_single_region_unselected.png)
+![add single region dialogue](/add_single_region_unselected.png)
 
-When you added the BED-file, options will appear that encapsulate the hierarchical structure describe [above](/docs/data_management/regions/#description-of-genomic-regions)
+When you added the BED-file, options will appear that encapsulate the hierarchical structure describe [above](/data_management/regions/#description-of-genomic-regions)
 
-![additional options single addition](/docs/additional_options_single_addition.png)
+![additional options single addition](/additional_options_single_addition.png)
 
 Once you are happy with your selection, you can hit submit, and your dataset will be uploaded!
 
@@ -134,29 +134,29 @@ Once you are happy with your selection, you can hit submit, and your dataset wil
 
 If you want to add multiple genomic regions, you can use the bulk addition option:
 
-![bulk addition](/docs/bulk_addition.png)
+![bulk addition](/bulk_addition.png)
 
-Bulk addition is organized as a stepper, where you add the same information as in the [single addition](/docs/data_management/regions/#single-addition) at the different positions of the stepper.
+Bulk addition is organized as a stepper, where you add the same information as in the [single addition](/data_management/regions/#single-addition) at the different positions of the stepper.
 
 ## Managing genomic regions
 
 Managing genomic regions is done using a central table component that can be opened in the data management sidebar:
 
-![open dataset table](/docs/open_dataset_table.png)
+![open dataset table](/open_dataset_table.png)
 
 ### Viewing
 
 When you click on the `Show Regions` button, a table dialogue opens that shows you all available genomic region sets:
 
-![region dataset table](/docs/region_dataset_table.png)
+![region dataset table](/region_dataset_table.png)
 
-This top-row of this view allows you to select a specific genome assembly and contains a search field that allows for quick filtering of interesting datasets. For more fine-grained control over the filtering process, you can expand the filter box, which displays the description fields mentioned [above](/docs/data_management/regions/#description-of-genomic-regions).
+This top-row of this view allows you to select a specific genome assembly and contains a search field that allows for quick filtering of interesting datasets. For more fine-grained control over the filtering process, you can expand the filter box, which displays the description fields mentioned [above](/data_management/regions/#description-of-genomic-regions).
 
-![filter options dataset table](/docs/filter_options_dataset_table.png)
+![filter options dataset table](/filter_options_dataset_table.png)
 
 Per default, only a subset of fields are displayed, but you change this in the fields box:
 
-![field selection dataset table](/docs/field_selection_dataset_table.png)
+![field selection dataset table](/field_selection_dataset_table.png)
 
 All interfaces in HiCognition that need dataset selection are using this table component.
 
@@ -165,7 +165,7 @@ All interfaces in HiCognition that need dataset selection are using this table c
 You can edit the description fields and name of a dataset by selecting it in the table component and then hitting the `Edit` button. This will display the edit dialogue:
 
 
-![edit form](/docs/edit_form.png)
+![edit form](/edit_form.png)
 
 Here you can edit most description fields, and once you are finished, you can hit `Submit Dataset` to save your changes.
 
@@ -175,7 +175,7 @@ The only parameter you cannot edit is the `SizeType` field, which would invalida
 
 ### Deleting
 
-You can delete datasets by selecting them in the table component and then hitting the `Delete` button. Note that you can only delete a dataset when you are its owner, not when it has been shared (see the [dataset sharing section](/docs/sessions/) for more information) with you.
+You can delete datasets by selecting them in the table component and then hitting the `Delete` button. Note that you can only delete a dataset when you are its owner, not when it has been shared (see the [dataset sharing section](/sessions/) for more information) with you.
 
 {{% notice warning %}}
 Deleting a dataset will cause all preprocessing data to be lost. Be careful!

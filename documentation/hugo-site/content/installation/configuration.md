@@ -53,7 +53,7 @@ These environment variables can likely be taken from our example `.env` file and
 #### Development instance
 
 {{% notice tip%}}
-If you are thinking about setting up a development instance of HiCognition, be sure to check out the [development section](/docs/development).
+If you are thinking about setting up a development instance of HiCognition, be sure to check out the [development section](/development).
 {{% /notice %}}
 
 In the development instance, the entire HiCognition backend repository is mounted through into the flask server to facilitate hot-reload. You can specify the location of the repository using the following environment variable:
@@ -168,7 +168,7 @@ The `short` queues is reserved for small tasks that are not related to preproces
 
 #### `CLUSTER_NUMBER_LARGE` and `CLUSTER_NUMBER_SMALL`
 
-These variables refer to the number of clusters to use when grouping regions in the embedding widgets (the [1d-feature embedding widget](/docs/widgets/1d_feature_embedding/) and [2d-feature embedding widget](/docs/widgets/2d_feature_embedding/)). The variable `CLUSTER_NUMBER_LARGE` is used to define small neighborhoods, and the variable `CLUSTER_NUMBER_SMALL` is used to define large neighborhoods (a large number of clusters means that the neighborhood they represent is smaller).
+These variables refer to the number of clusters to use when grouping regions in the embedding widgets (the [1d-feature embedding widget](/widgets/1d_feature_embedding/) and [2d-feature embedding widget](/widgets/2d_feature_embedding/)). The variable `CLUSTER_NUMBER_LARGE` is used to define small neighborhoods, and the variable `CLUSTER_NUMBER_SMALL` is used to define large neighborhoods (a large number of clusters means that the neighborhood they represent is smaller).
 
 #### `DATASET_OPTION_MAPPING`
 
@@ -224,7 +224,7 @@ Here, each dataset type can define multiple value types that can have multiple c
 
 #### `STACKUP_THRESHOLD`
 
-This configuration variable defines the number of rows above which intervals are downsampled for displaying in the [stacked lineprofile widget](/docs/widgets/stackup/).
+This configuration variable defines the number of rows above which intervals are downsampled for displaying in the [stacked lineprofile widget](/widgets/stackup/).
 
 #### `OBS_EXP_PROCESSES` and `PILEUP_PROCESSES`
 
@@ -236,4 +236,4 @@ There are three different Docker compose files that allow starting HiCognition i
 
 - `docker-compose.yml` | This file is used to start HiCognition in "production mode"
 - `docker_dev.yml` | This file is used to start HiCognition in "development mode"
-- `docker_integration_tests.yml` | This file is used to run the integration tests (see the [testing section](/docs/development/tests/) for more details)
+- `docker_integration_tests.yml` | This file is used to run the integration tests (see the [testing section](/development/tests/) for more details)

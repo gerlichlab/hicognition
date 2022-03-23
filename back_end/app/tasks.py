@@ -2,8 +2,6 @@
 import os
 import logging
 from flask import current_app
-
-
 import pandas as pd
 from hicognition import io_helpers
 from . import create_app, db
@@ -79,9 +77,9 @@ def pipeline_pileup(dataset_id, intervals_id, binsize):
         )
         pipeline_steps.set_task_progress(100)
         pipeline_steps.set_dataset_finished(dataset_id, intervals_id)
-    except BaseException as e:
+    except BaseException as err:
         pipeline_steps.set_dataset_failed(dataset_id, intervals_id)
-        log.error(e, exc_info=True)
+        log.error(err, exc_info=True)
 
 
 def pipeline_stackup(dataset_id, intervals_id, binsize):
@@ -91,9 +89,9 @@ def pipeline_stackup(dataset_id, intervals_id, binsize):
         pipeline_steps.stackup_pipeline_step(dataset_id, intervals_id, binsize)
         pipeline_steps.set_task_progress(100)
         pipeline_steps.set_dataset_finished(dataset_id, intervals_id)
-    except BaseException as e:
+    except BaseException as err:
         pipeline_steps.set_dataset_failed(dataset_id, intervals_id)
-        log.error(e, exc_info=True)
+        log.error(err, exc_info=True)
 
 
 def pipeline_lola(collection_id, intervals_id, binsize):
@@ -103,9 +101,9 @@ def pipeline_lola(collection_id, intervals_id, binsize):
         pipeline_steps.enrichment_pipeline_step(collection_id, intervals_id, binsize)
         pipeline_steps.set_task_progress(100)
         pipeline_steps.set_collection_finished(collection_id, intervals_id)
-    except BaseException as e:
+    except BaseException as err:
         pipeline_steps.set_collection_failed(collection_id, intervals_id)
-        log.error(e, exc_info=True)
+        log.error(err, exc_info=True)
 
 
 def pipeline_embedding_1d(collection_id, intervals_id, binsize):
@@ -127,6 +125,6 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
         pipeline_steps.embedding_1d_pipeline_step(collection_id, intervals_id, binsize)
         pipeline_steps.set_task_progress(100)
         pipeline_steps.set_collection_finished(collection_id, intervals_id)
-    except BaseException as e:
+    except BaseException as err:
         pipeline_steps.set_collection_failed(collection_id, intervals_id)
-        log.error(e, exc_info=True)
+        log.error(err, exc_info=True)

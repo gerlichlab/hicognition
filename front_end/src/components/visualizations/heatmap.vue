@@ -31,7 +31,7 @@
             <div v-show="allNull">
                 <md-empty-state
                     md-icon="info"
-                    md-label="Not enough data for this condition"
+                    md-label="No data for this condition"
                     :style="emptyStyle"
                 >
             </md-empty-state>

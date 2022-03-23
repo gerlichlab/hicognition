@@ -7,7 +7,7 @@ weight: 2
 
 The 1D-average widget can be used to display the average magnitude of a 1D-genomic feature over a specific region set. It is a simple line-profile visualization that can load one or more genomic datasets and implements a simple tooltip that shows the magnitude of the specific data sets.
 
-![1d average](/docs/lineprofile_widget.png)
+![1d average](/lineprofile_widget.png)
 
 ## Suitable data
 
@@ -31,4 +31,4 @@ The 1D-average widget displays aggregated data sets as a line profile, which plo
 
 The 1D-average widget has a single widget control option - called __Scale__ - which allows users to normalize the displayed data to lie between `0` and `1`. This is helpful when comparing multiple features.
 
-![Widget controls](/docs/lineprofile_widget_widget_controls.png)
+![Widget controls](/lineprofile_widget_widget_controls.png)

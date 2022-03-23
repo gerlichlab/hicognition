@@ -15,7 +15,7 @@ Needed data:
 - `G2.fc_1_2_3_4.wOldG2.cis.1000.mcool` | Cis-sister contacts in G2 synchronized HeLa cells
 - `G2.fc_1_2_3_4.wOldG2.trans.1000.mcool` | Trans-sister contacts in G2 synchronized HeLa cells
 
-To upload the files, follow our [upload instructions for genomic regions](/docs/data_management/regions/#adding-genomic-regions) and [genomic features](/docs/data_management/features/#adding-genomic-features). The metadata settings are the following:
+To upload the files, follow our [upload instructions for genomic regions](/data_management/regions/#adding-genomic-regions) and [genomic features](/data_management/features/#adding-genomic-features). The metadata settings are the following:
 
 *TADs:*
 
@@ -39,31 +39,31 @@ To upload the files, follow our [upload instructions for genomic regions](/docs/
 The .mcool files are quite big, and you should expect them to take a few minutes to upload (depending on your internet connection).
 {{% /notice %}}
 
-Once the files are uploaded, start preprocessing the two 2D features at TAD-boundaries by following our [preprocessing guide](/docs/preprocessing/manage_preprocessing/). Once preprocessing is finished, you can create a widget collection by clicking on the <img src="/docs/plus_button.png" class="inline-picture"> at the bottom right of the HiCognition start page. This will create an empty widget collection:
+Once the files are uploaded, start preprocessing the two 2D features at TAD-boundaries by following our [preprocessing guide](/preprocessing/manage_preprocessing/). Once preprocessing is finished, you can create a widget collection by clicking on the <img src="/plus_button.png" class="inline-picture"> at the bottom right of the HiCognition start page. This will create an empty widget collection:
 
-<img src="/docs/Widget_collection.png" class="half-width">
+<img src="/Widget_collection.png" class="half-width">
 
 By clicking on the region-controls, you can select your TADs as a region. Once that is done, hover over the center +-icon to reveal the widget-type menu:
 
-<img src="/docs/Select_2d_average.png" class="quarter-width">
+<img src="/Select_2d_average.png" class="quarter-width">
 
 Once you select the 2D-average widget, you can select one of the two 2D features you added. For example, if you select the cis-sister contacts, your widget collection should look like this:
 
-<img src="/docs/2d-average-w-cis.png" class="quarter-width">
+<img src="/2d-average-w-cis.png" class="quarter-width">
 
 This picture represents the average behavior of cis-sister contacts around TADs. You can then resize your widget collection to add trans-sister contacts as a second widget. The resulting collection should look like this:
 
-<img src="/docs/2d-average-cis-and-trans.png" class="half-width">
+<img src="/2d-average-cis-and-trans.png" class="half-width">
 
 This view now represents the average behavior of cis-sister and trans-sister contacts around TAD-boundaries. If you want to look at the heterogeneity of, e.g., trans-sister contacts around TADs, you can expand the size of your widget collection to add a new slot and fill it with a 2D-embedding widget:
 
 
-<img src="/docs/Add_2d_embedding.png" class="half-width">
+<img src="/Add_2d_embedding.png" class="half-width">
 
 Once you have added the widget, you can select the trans-sister contacts as features to display. Your widget collection should now look like this:
 
-<img src="/docs/2d-embedding-tads.png" class="half-width">
+<img src="/2d-embedding-tads.png" class="half-width">
 
-The 2D-embedding widget now allows you to look at the heterogeneity of trans-sister contacts at TADs (see the [section about this widget](/docs/widgets/2d_feature_embedding) for more details).
+The 2D-embedding widget now allows you to look at the heterogeneity of trans-sister contacts at TADs (see the [section about this widget](/widgets/2d_feature_embedding) for more details).
 
 

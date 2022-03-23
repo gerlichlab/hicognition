@@ -1,15 +1,15 @@
+"""Module with tests realted to creating new regions from local neighborhoods in embeddings."""
 import os
 import unittest
+from unittest.mock import patch
 import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from unittest.mock import patch
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
-import sys
-
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import Collection, Dataset, Intervals, EmbeddingIntervalData
 
@@ -63,21 +63,21 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
             id=2, dataset_id=self.unowned_bedfile.id, windowsize=200000
         )
         # add embeddingIntervalData with unowned dataset
-        self.embeddingData_dataset_unowned = EmbeddingIntervalData(
+        self.embedding_data_dataset_unowned = EmbeddingIntervalData(
             id=1,
             binsize=10000,
             dataset_id=self.unowned_feature_dataset.id,
             intervals_id=self.owned_intervals.id,
         )
         # add embeddingIntervalData with unowned intervals
-        self.embeddingData_intervals_unowned = EmbeddingIntervalData(
+        self.embedding_data_intervals_unowned = EmbeddingIntervalData(
             id=2,
             binsize=10000,
             dataset_id=self.owned_feature_dataset.id,
             intervals_id=self.unowned_intervals.id,
         )
         # add owned embeddingIntervalData without thumbnails/feature_id and cluster_did
-        self.embeddingData_intervals_wo_thumbnail_data = EmbeddingIntervalData(
+        self.embedding_data_intervals_wo_thumbnail_data = EmbeddingIntervalData(
             id=4,
             binsize=10000,
             dataset_id=self.owned_feature_dataset.id,
@@ -101,7 +101,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         cluster_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_clusters.npy")
         np.save(cluster_path, self.cluster_data)
         # create data
-        self.embeddingData_owned = EmbeddingIntervalData(
+        self.embedding_data_owned = EmbeddingIntervalData(
             id=3,
             binsize=10000,
             file_path=data_path,
@@ -119,7 +119,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_embeddingIntervalData_does_not_exist(self):
+    def test_embedding_interval_data_does_not_exist(self):
         """Test 404 is returned if embeddingIntervalData does not exist."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -145,13 +145,13 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
                 self.owned_bedfile,
                 self.unowned_feature_dataset,
                 self.owned_intervals,
-                self.embeddingData_dataset_unowned,
+                self.embedding_data_dataset_unowned,
             ]
         )
         db.session.commit()
         # make request for forbidden collection
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embeddingData_dataset_unowned.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_dataset_unowned.id}/0/create/",
             headers=token_headers,
             content_type="multipart/form-data",
         )
@@ -169,13 +169,13 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
                 self.owned_feature_dataset,
                 self.unowned_bedfile,
                 self.unowned_intervals,
-                self.embeddingData_intervals_unowned,
+                self.embedding_data_intervals_unowned,
             ]
         )
         db.session.commit()
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embeddingData_intervals_unowned.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_unowned.id}/0/create/",
             headers=token_headers,
             content_type="multipart/form-data",
         )
@@ -193,13 +193,13 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
                 self.owned_feature_dataset,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.embeddingData_intervals_wo_thumbnail_data,
+                self.embedding_data_intervals_wo_thumbnail_data,
             ]
         )
         db.session.commit()
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embeddingData_intervals_wo_thumbnail_data.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/0/create/",
             headers=token_headers,
             content_type="multipart/form-data",
         )
@@ -217,7 +217,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
                 self.owned_feature_dataset,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.embeddingData_intervals_wo_thumbnail_data,
+                self.embedding_data_intervals_wo_thumbnail_data,
             ]
         )
         db.session.commit()
@@ -225,14 +225,14 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         data = {"datasetName": "asdf"}
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embeddingData_intervals_wo_thumbnail_data.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/0/create/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_clusterIDs_do_not_exist(self):
+    def test_cluster_ids_do_not_exist(self):
         """Test whether 404 is returned if clusterID field is None"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -244,7 +244,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
                 self.owned_feature_dataset,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.embeddingData_intervals_wo_thumbnail_data,
+                self.embedding_data_intervals_wo_thumbnail_data,
             ]
         )
         db.session.commit()
@@ -252,7 +252,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         data = {"name": "asdf"}
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embeddingData_intervals_wo_thumbnail_data.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/0/create/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
@@ -272,7 +272,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
                 self.owned_feature_dataset,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.embeddingData_owned,
+                self.embedding_data_owned,
             ]
         )
         db.session.commit()
@@ -280,7 +280,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         data = {"name": "asdf"}
         # make request with owned interval
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embeddingData_owned.id}/1/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_owned.id}/1/create/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
@@ -357,7 +357,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
             id=2, dataset_id=self.unowned_bedfile.id, windowsize=200000
         )
         # add embeddingIntervalData with unowned dataset
-        self.embeddingData_collection_unowned = EmbeddingIntervalData(
+        self.embedding_data_collection_unowned = EmbeddingIntervalData(
             id=1,
             binsize=10000,
             value_type="1d-embedding",
@@ -365,7 +365,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
             intervals_id=self.owned_intervals.id,
         )
         # add embeddingIntervalData with unowned intervals
-        self.embeddingData_intervals_unowned = EmbeddingIntervalData(
+        self.embedding_data_intervals_unowned = EmbeddingIntervalData(
             id=2,
             binsize=10000,
             value_type="1d-embedding",
@@ -373,7 +373,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
             intervals_id=self.unowned_intervals.id,
         )
         # add owned embeddingIntervalData without thumbnails/feature_id and cluster_did
-        self.embeddingData_intervals_wo_thumbnail_data = EmbeddingIntervalData(
+        self.embedding_data_intervals_wo_thumbnail_data = EmbeddingIntervalData(
             id=4,
             binsize=10000,
             value_type="1d-embedding",
@@ -398,7 +398,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
         cluster_path = os.path.join(TempDirTestCase.TEMP_PATH, "test_clusters.npy")
         np.save(cluster_path, self.cluster_data)
         # create data
-        self.embeddingData_owned = EmbeddingIntervalData(
+        self.embedding_data_owned = EmbeddingIntervalData(
             id=3,
             binsize=10000,
             file_path=data_path,
@@ -409,7 +409,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
             cluster_id_path=cluster_path,
         )
 
-    def test_embeddingIntervalData_does_not_exist(self):
+    def test_embedding_interval_data_does_not_exist(self):
         """Test 404 is returned if embeddingIntervalData does not exist."""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -435,13 +435,13 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
                 self.owned_bedfile,
                 self.unowned_feature_collection,
                 self.owned_intervals,
-                self.embeddingData_collection_unowned,
+                self.embedding_data_collection_unowned,
             ]
         )
         db.session.commit()
         # make request for forbidden collection
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embeddingData_collection_unowned.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_collection_unowned.id}/0/create/",
             headers=token_headers,
             content_type="multipart/form-data",
         )
@@ -459,13 +459,13 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
                 self.owned_feature_collection,
                 self.unowned_bedfile,
                 self.unowned_intervals,
-                self.embeddingData_intervals_unowned,
+                self.embedding_data_intervals_unowned,
             ]
         )
         db.session.commit()
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embeddingData_intervals_unowned.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_unowned.id}/0/create/",
             headers=token_headers,
             content_type="multipart/form-data",
         )
@@ -483,13 +483,13 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
                 self.owned_feature_collection,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.embeddingData_intervals_wo_thumbnail_data,
+                self.embedding_data_intervals_wo_thumbnail_data,
             ]
         )
         db.session.commit()
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embeddingData_intervals_wo_thumbnail_data.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/0/create/",
             headers=token_headers,
             content_type="multipart/form-data",
         )
@@ -507,7 +507,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
                 self.owned_feature_collection,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.embeddingData_intervals_wo_thumbnail_data,
+                self.embedding_data_intervals_wo_thumbnail_data,
             ]
         )
         db.session.commit()
@@ -515,14 +515,14 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
         data = {"datasetName": "asdf"}
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embeddingData_intervals_wo_thumbnail_data.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/0/create/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_clusterIDs_do_not_exist(self):
+    def test_cluster_ids_do_not_exist(self):
         """Test whether 404 is returned if clusterID field is None"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
@@ -534,7 +534,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
                 self.owned_feature_collection,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.embeddingData_intervals_wo_thumbnail_data,
+                self.embedding_data_intervals_wo_thumbnail_data,
             ]
         )
         db.session.commit()
@@ -542,7 +542,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
         data = {"name": "asdf"}
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embeddingData_intervals_wo_thumbnail_data.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/0/create/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
@@ -562,7 +562,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
                 self.owned_feature_collection,
                 self.owned_bedfile,
                 self.owned_intervals,
-                self.embeddingData_owned,
+                self.embedding_data_owned,
             ]
         )
         db.session.commit()
@@ -570,7 +570,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
         data = {"name": "asdf"}
         # make request with owned interval
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embeddingData_owned.id}/1/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_owned.id}/1/create/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",

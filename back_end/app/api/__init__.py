@@ -1,3 +1,4 @@
+"""Init script for HiCognition API"""
 from flask import Blueprint
 
 api = Blueprint("api", __name__)

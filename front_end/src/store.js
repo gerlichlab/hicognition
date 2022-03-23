@@ -409,6 +409,7 @@ const store = new Vuex.Store({
         token: null,
         sessionToken: null,
         user_id: null,
+        user_name: null,
         resolutions: null,
         datasetMetadataMapping: null,
         collections: null,
@@ -455,6 +456,9 @@ const store = new Vuex.Store({
         },
         getUserId: state => {
             return state.user_id;
+        },
+        userName: state => {
+            return state.user_name
         },
         getDataset: state => id => {
             return state.datasets.filter(el => el.id === id)[0];
@@ -536,6 +540,10 @@ const store = new Vuex.Store({
             state.user_id = id;
             localStorage.setItem("hicognition-User", id);
         },
+        setUserName(state, name) {
+            state.user_name = name;
+            localStorage.setItem("hicognition-UserName", name)
+        },
         clearSessionToken(state) {
             state.sessionToken = null;
         },
@@ -544,6 +552,7 @@ const store = new Vuex.Store({
             state.user_id = null;
             localStorage.removeItem("hicognition-token");
             localStorage.removeItem("hicognition-User");
+            localStorage.removeItem("hicognition-UserName")
         },
         setDatasets(state, datasets) {
             state.datasets = datasets;

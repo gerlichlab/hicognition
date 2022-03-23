@@ -1,6 +1,7 @@
 """Config class for hicognition server."""
 import os
-#import json
+
+# import json
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -34,7 +35,6 @@ class Config:
             "collections": {
                 "regions": [5000],
                 "1d-features": [2000, 5000, 10000],
-                "2d-features": [5000],
             },
         },
         400000: {
@@ -66,8 +66,42 @@ class Config:
             "bigwig": [1, 2, 5],
             "collections": {
                 "regions": [1, 2, 5],
+                "1d-features": [1, 2, 5]
+            },
+        },  # binsize for variable sizetype is in percent
+    }
+    # preprocessing maps for small genomic windowsizes
+    PREPROCESSING_MAP_SMALL_WINDOWSIZES = {
+        10000: {
+            "cooler": [],
+            "bigwig": [100, 500],
+            "collections": {
+                "regions": [1000],
+                "1d-features": [100, 500],
+            },
+        },
+        20000: {
+            "cooler": [],
+            "bigwig": [500, 1000],
+            "collections": {
+                "regions": [1000],
+                "1d-features": [2000, 5000, 10000],
+            },
+        },
+        50000: {
+            "cooler": [2000],
+            "bigwig": [1000, 2000],
+            "collections": {
+                "regions": [2000],
+                "1d-features": [1000, 5000],
+            },
+        },
+        "variable": {
+            "cooler": [1, 2, 5],
+            "bigwig": [1, 2, 5],
+            "collections": {
+                "regions": [1, 2, 5],
                 "1d-features": [1, 2, 5],
-                "2d-features": [1, 2, 5],
             },
         },  # binsize for variable sizetype is in percent
     }
@@ -146,12 +180,15 @@ class Config:
         }
     }
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled
-    OBS_EXP_PROCESSES = 5  # Number of processes to use per worker to calcualte obs/exp matrix of pileups
-    PILEUP_PROCESSES = 2  # Number of processes to use per worker to do pileups
+    OBS_EXP_PROCESSES = (
+        5  # Number of processes/worker to calculate obs/exp matrix of pileups
+    )
+    PILEUP_PROCESSES = 2  # Number of processes/worker to do pileups
 
 
 class DevelopmentConfig(Config):
     """Config class for development server."""
+
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL"
@@ -160,6 +197,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     """Config class for testing server."""
+
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     UPLOAD_DIR = "./tmp_test"
@@ -168,11 +206,13 @@ class TestingConfig(Config):
 
 class End2EndConfig(DevelopmentConfig):
     """Extension of the development config class."""
+
     END2END = True
 
 
 class ProductionConfig(Config):
     """Config class for production server."""
+
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL"
     ) or "sqlite:///" + os.path.join(basedir, "data.sqlite")

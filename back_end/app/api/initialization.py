@@ -1,4 +1,5 @@
 """Helpers to populate database"""
+from flask.globals import current_app
 from ..models import (
     User,
     Organism,
@@ -9,12 +10,11 @@ from ..models import (
     Task,
 )
 from . import api
-from flask.globals import current_app
 from .. import db
 
 
 def create_hg19():
-    """creates entry for standard hg19 assembly and
+    """Creates entry for standard hg19 assembly and
     associates it with all available datasets."""
     if Assembly.query.first() is None:
         org = Organism(name="Human")
@@ -35,7 +35,7 @@ def create_hg19():
 
 
 def drop_preprocessing_tables():
-    """deletes entries in preprocessing tables."""
+    """Deletes entries in preprocessing tables."""
     stmt = dataset_preprocessing_table.delete()
     db.session.execute(stmt)
     stmt = collections_preprocessing_table.delete()
@@ -44,7 +44,7 @@ def drop_preprocessing_tables():
 
 
 def drop_tasks():
-    """deletes entries in tasks table."""
+    """Deletes entries in tasks table."""
     tasks = Task.query.all()
     for task in tasks:
         db.session.delete(task)
@@ -52,6 +52,7 @@ def drop_tasks():
 
 
 def create_test_user(name, password):
+    """Creates a test user or gets the user if it exists."""
     # check if user with such a name exists
     if User.query.filter(User.username == name).first() is not None:
         # if user exists, get the user

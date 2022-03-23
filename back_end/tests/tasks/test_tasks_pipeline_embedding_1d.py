@@ -1,13 +1,13 @@
-import sys
+"""Module with the tests for the 1D-data embedding preprocessing realted tasks."""
 import os
 import unittest
-from unittest import mock
 from unittest.mock import patch
 import numpy as np
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
-sys.path.append("./")
+# import sys
+# sys.path.append("./")
 from app import db
 from app.models import (
     Dataset,
@@ -476,11 +476,11 @@ class TestEmbedding1DWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
     def test_correct_features_produced(self):
         """Tests whether produced features are correct"""
         # add smaller cluster sizes
-        d = self.app.config.copy()
-        d["CLUSTER_NUMBER_LARGE"] = 5
-        d["CLUSTER_NUMBER_SMALL"] = 2
+        app_config = self.app.config.copy()
+        app_config["CLUSTER_NUMBER_LARGE"] = 5
+        app_config["CLUSTER_NUMBER_SMALL"] = 2
         with patch("app.pipeline_worker_functions.current_app.config") as mock_config:
-            mock_config.__getitem__.side_effect = d.__getitem__
+            mock_config.__getitem__.side_effect = app_config.__getitem__
             # add data to database
             db.session.add_all(
                 [
@@ -583,11 +583,11 @@ class TestEmbedding1DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
     def test_correct_features_produced(self):
         """Tests whether produced features are correct"""
         # add smaller cluster sizes
-        d = self.app.config.copy()
-        d["CLUSTER_NUMBER_LARGE"] = 5
-        d["CLUSTER_NUMBER_SMALL"] = 2
+        app_config = self.app.config.copy()
+        app_config["CLUSTER_NUMBER_LARGE"] = 5
+        app_config["CLUSTER_NUMBER_SMALL"] = 2
         with patch("app.pipeline_worker_functions.current_app.config") as mock_config:
-            mock_config.__getitem__.side_effect = d.__getitem__
+            mock_config.__getitem__.side_effect = app_config.__getitem__
             # add data to database
             db.session.add_all(
                 [
