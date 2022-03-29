@@ -61,8 +61,8 @@ class DatasetPostModel(BaseModel):
 
     class Config:
         """Sets up the alias generator"""
-
         allow_population_by_field_name = True
+        extra = 'forbid'
 
     @validator("value_type")
     def value_type_supported_in_dataset_attribute_mapping(
@@ -82,7 +82,7 @@ class DatasetPostModel(BaseModel):
             raise ValueError(
                 f'Unsupported value_type! We do not support value_type: {value_type} for the filetype {values["filetype"]}. We support {value_types.keys()}.'
             )
-            # check value type members
+        # # check value type members
         # for key, possible_values in value_types[value_type].items():
         #     if key not in form_keys:
         #         raise ValueError(f'Unsupported possible value for value_type') #TODO what does this mean?
