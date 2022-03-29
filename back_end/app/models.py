@@ -174,18 +174,18 @@ class Dataset(db.Model):
         "public",
     ]
     ADD_REQUIRED_KEYS = ["assembly", "filetype"]
-    # DATASET_META_FIELDS = {
-    #     "assembly": "assembly",
-    #     "cellCycleStage": "cellCycleStage",
-    #     "perturbation": "perturbation",
-    #     "ValueType": "valueType",
-    #     "Method": "method",
-    #     "SizeType": "sizeType",
-    #     "Normalization": "normalization",
-    #     "DerivationType": "derivationType",
-    #     "Protein": "protein",
-    #     "Directionality": "directionality",
-    # }
+    DATASET_META_FIELDS = { #TODO: remove dependacy
+        "assembly": "assembly",
+        "cellCycleStage": "cellCycleStage",
+        "perturbation": "perturbation",
+        "ValueType": "valueType",
+        "Method": "method",
+        "SizeType": "sizeType",
+        "Normalization": "normalization",
+        "DerivationType": "derivationType",
+        "Protein": "protein",
+        "Directionality": "directionality",
+    }
     DATASET_META_FIELDS_NEW = {
         "assembly": "assembly",
         "cell_cycle_stage": "cellCycleStage",
