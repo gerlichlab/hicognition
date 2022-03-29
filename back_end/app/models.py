@@ -407,32 +407,6 @@ class Dataset(db.Model):
                 return False
         return True
 
-    @classmethod
-    def post_dataset_requirements_fullfilled(cls, form):
-        """checks whether form containing information to create dataset conforms
-        with the passed dataset_attribute_mapping."""
-        # check common things
-        form_keys = set(form.keys())
-        if any(key not in form_keys for key in cls.COMMON_REQUIRED_KEYS):
-            return False
-        if any(key not in form_keys for key in cls.ADD_REQUIRED_KEYS):
-            return False
-        # check metadata
-        dataset_type_mapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
-        value_types = dataset_type_mapping[form["filetype"]]["ValueType"]
-        if form["ValueType"] not in value_types.keys():
-            return False
-        # check value type members
-        for key, possible_values in value_types[form["ValueType"]].items():
-            if key not in form_keys:
-                return False
-            # check whether field is freetext
-            if possible_values == "freetext":
-                continue
-            # check that value in form corresponds to possible values
-            if form[key] not in possible_values:
-                return False
-        return True
 
     def delete_data_of_associated_entries(self):
         """deletes files of associated entries"""
