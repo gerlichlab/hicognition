@@ -22,16 +22,22 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         """adds test datasets to db"""
         super().setUp()
         # create mock csv
-        mock_df = pd.DataFrame({
-            "chrom": ["chr1"]*3,
-            "start": [1, 2, 3],
-            "end": [4,5,6]
-        })
-        mock_df.to_csv( current_app.config["UPLOAD_DIR"] + "/test.bed", index=False, sep="\t")
+        mock_df = pd.DataFrame(
+            {"chrom": ["chr1"] * 3, "start": [1, 2, 3], "end": [4, 5, 6]}
+        )
+        mock_df.to_csv(
+            current_app.config["UPLOAD_DIR"] + "/test.bed", index=False, sep="\t"
+        )
         # create datasets
         dataset1 = Dataset(id=1, filetype="bedfile", user_id=1)
         dataset2 = Dataset(id=2, filetype="bedfile", user_id=1)
-        dataset3 = Dataset(id=3, filetype="bedfile", user_id=1, file_path=current_app.config["UPLOAD_DIR"] + "/test.bed", dataset_name="test")
+        dataset3 = Dataset(
+            id=3,
+            filetype="bedfile",
+            user_id=1,
+            file_path=current_app.config["UPLOAD_DIR"] + "/test.bed",
+            dataset_name="test",
+        )
         dataset4 = Dataset(id=4, filetype="bedfile", user_id=2)
         dataset5 = Dataset(id=5, filetype="bigwig", user_id=1)
         dataset6 = Dataset(id=6, filetype="bigwig", user_id=1)
@@ -57,45 +63,45 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
             datasets=[dataset7, dataset8], user_id=1, id=4, kind="2d-features"
         )
         self.default_data = [
-                dataset1,
-                dataset2,
-                dataset3,
-                dataset4,
-                dataset5,
-                dataset6,
-                dataset7,
-                dataset8,
-                interval1,
-                interval2,
-                interval3,
-                interval4,
-                interval5,
-                interval6,
-                interval7,
-                collection,
-                collection2,
-                collection3,
-                collection4,
-            ]
+            dataset1,
+            dataset2,
+            dataset3,
+            dataset4,
+            dataset5,
+            dataset6,
+            dataset7,
+            dataset8,
+            interval1,
+            interval2,
+            interval3,
+            interval4,
+            interval5,
+            interval6,
+            interval7,
+            collection,
+            collection2,
+            collection3,
+            collection4,
+        ]
         self.incomplete_data = [
-                dataset1,
-                dataset2,
-                dataset3,
-                dataset4,
-                dataset5,
-                dataset6,
-                dataset7,
-                dataset8,
-                interval1,
-                interval2,
-                interval3,
-                interval4,
-                interval5,
-                collection,
-                collection2,
-                collection3,
-                collection4,
-            ]
+            dataset1,
+            dataset2,
+            dataset3,
+            dataset4,
+            dataset5,
+            dataset6,
+            dataset7,
+            dataset8,
+            interval1,
+            interval2,
+            interval3,
+            interval4,
+            interval5,
+            collection,
+            collection2,
+            collection3,
+            collection4,
+        ]
 
     @patch("app.models.User.launch_collection_task")
     def test_pipeline_lola_is_called_correctly(self, mock_launch):
@@ -107,7 +113,11 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # define call arguments
-        data = {"collection_ids": "[1]", "region_ids": "[3]", "preprocessing_map": "PREPROCESSING_MAP"}
+        data = {
+            "collection_ids": "[1]",
+            "region_ids": "[3]",
+            "preprocessing_map": "PREPROCESSING_MAP",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",
@@ -117,10 +127,12 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        intervals = [1,2,3,4,5]
+        intervals = [1, 2, 3, 4, 5]
         for interval_id in intervals:
             interval = Intervals.query.get(interval_id)
-            for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize]["collections"]["regions"]:
+            for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize][
+                "collections"
+            ]["regions"]:
                 mock_launch.assert_any_call(
                     self.app.queues["long"],
                     "pipeline_lola",
@@ -131,7 +143,9 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
                 )
 
     @patch("app.models.User.launch_collection_task")
-    def test_pipeline_lola_is_called_correctly_w_small_preprocessing_map(self, mock_launch):
+    def test_pipeline_lola_is_called_correctly_w_small_preprocessing_map(
+        self, mock_launch
+    ):
         """Tests whether enrichment analysis is called correctly"""
         # add data
         db.session.add_all(self.default_data)
@@ -140,7 +154,11 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # define call arguments
-        data = {"collection_ids": "[1]", "region_ids": "[3]", "preprocessing_map": "PREPROCESSING_MAP_SMALL_WINDOWSIZES"}
+        data = {
+            "collection_ids": "[1]",
+            "region_ids": "[3]",
+            "preprocessing_map": "PREPROCESSING_MAP_SMALL_WINDOWSIZES",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",
@@ -153,7 +171,9 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         intervals = [2, 6, 7]
         for interval_id in intervals:
             interval = Intervals.query.get(interval_id)
-            for binsize in current_app.config["PREPROCESSING_MAP_SMALL_WINDOWSIZES"][interval.windowsize]["collections"]["regions"]:
+            for binsize in current_app.config["PREPROCESSING_MAP_SMALL_WINDOWSIZES"][
+                interval.windowsize
+            ]["collections"]["regions"]:
                 mock_launch.assert_any_call(
                     self.app.queues["long"],
                     "pipeline_lola",
@@ -172,7 +192,11 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # define call arguments
-        data = {"collection_ids": "[1]", "region_ids": "[3]", "preprocessing_map": "PREPROCESSING_MAP_SMALL_WINDOWSIZES"}
+        data = {
+            "collection_ids": "[1]",
+            "region_ids": "[3]",
+            "preprocessing_map": "PREPROCESSING_MAP_SMALL_WINDOWSIZES",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",
@@ -196,7 +220,11 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # define call arguments
-        data = {"collection_ids": "[3]", "region_ids": "[3]", "preprocessing_map": "PREPROCESSING_MAP"}
+        data = {
+            "collection_ids": "[3]",
+            "region_ids": "[3]",
+            "preprocessing_map": "PREPROCESSING_MAP",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",
@@ -206,10 +234,12 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        intervals = [1,2,3,4,5]
+        intervals = [1, 2, 3, 4, 5]
         for interval_id in intervals:
             interval = Intervals.query.get(interval_id)
-            for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize]["collections"]["1d-features"]:
+            for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize][
+                "collections"
+            ]["1d-features"]:
                 mock_launch.assert_any_call(
                     self.app.queues["medium"],
                     "pipeline_embedding_1d",
@@ -229,7 +259,11 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {"collection_ids": "[2]", "region_ids": "[3]", "preprocessing_map": "PREPROCESSING_MAP"}
+        data = {
+            "collection_ids": "[2]",
+            "region_ids": "[3]",
+            "preprocessing_map": "PREPROCESSING_MAP",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",
@@ -249,7 +283,11 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {"collection_ids": "[100]", "region_ids": "[3]", "preprocessing_map": "PREPROCESSING_MAP"}
+        data = {
+            "collection_ids": "[100]",
+            "region_ids": "[3]",
+            "preprocessing_map": "PREPROCESSING_MAP",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",
@@ -305,7 +343,11 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         )
         db.session.add_all([task1, task2, task3])
         db.session.commit()
-        data = {"collection_ids": "[1]", "region_ids": "[3]", "preprocessing_map": "PREPROCESSING_MAP"}
+        data = {
+            "collection_ids": "[1]",
+            "region_ids": "[3]",
+            "preprocessing_map": "PREPROCESSING_MAP",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/collections/",

@@ -275,7 +275,8 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
                 )
             else:
                 self.assertEqual(
-                    dataset.__getattribute__(self.field_form_mapping[field]), data[field]
+                    dataset.__getattribute__(self.field_form_mapping[field]),
+                    data[field],
                 )
         # check whether fields that should be undefined are undefined
         for field in ["protein", "directionality", "derivationType"]:
@@ -315,7 +316,8 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
                 )
             else:
                 self.assertEqual(
-                    dataset.__getattribute__(self.field_form_mapping[field]), data[field]
+                    dataset.__getattribute__(self.field_form_mapping[field]),
+                    data[field],
                 )
         # check whether fields that should be undefined are undefined
         for field in ["protein", "directionality"]:
@@ -355,7 +357,8 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
                 )
             else:
                 self.assertEqual(
-                    dataset.__getattribute__(self.field_form_mapping[field]), data[field]
+                    dataset.__getattribute__(self.field_form_mapping[field]),
+                    data[field],
                 )
         # check whether assembly and filetype are unchanged
         self.assertEqual(dataset.assembly, 1)
@@ -392,7 +395,8 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
                 )
             else:
                 self.assertEqual(
-                    dataset.__getattribute__(self.field_form_mapping[field]), data[field]
+                    dataset.__getattribute__(self.field_form_mapping[field]),
+                    data[field],
                 )
         # check whether assembly and filetype are unchanged
         self.assertEqual(dataset.assembly, 1)
@@ -431,7 +435,8 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
                 )
             else:
                 self.assertEqual(
-                    dataset.__getattribute__(self.field_form_mapping[field]), data[field]
+                    dataset.__getattribute__(self.field_form_mapping[field]),
+                    data[field],
                 )
         # check whether fields that should be undefined are undefined
         for field in ["derivationType", "directionality"]:

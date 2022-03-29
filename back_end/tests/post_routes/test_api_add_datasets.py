@@ -10,6 +10,7 @@ from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 # import sys
 # sys.path.append("./")
 from app.models import Dataset, Assembly
+from app.api.post_routes import DatasetPostModel
 from app import db
 
 
@@ -18,6 +19,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
     pipelines after addition of datasets.
     Inherits both from LoginTest and TempDirTestCase
     to be able to login and make temporary directory"""
+
+    maxDiff = None
 
     def setUp(self):
         super().setUp()
@@ -252,6 +255,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             headers=self.token_headers,
             content_type="multipart/form-data",
         )
+        # import pdb; pdb.set_trace()
         self.assertEqual(response.status_code, 200)
         # check whether dataset has been added to database
         self.assertEqual(len(Dataset.query.all()), 1)
@@ -338,6 +342,23 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         expected_file = b"abcdef"
         with open(dataset.file_path, "rb") as actual_file:
             self.assertEqual(expected_file, actual_file.read())
+
+    # TODO: move to lib test
+    # def test_pydantic_model(self):
+    #     test_object = {'datasetName': 'test',
+    #      'description': 'test-description',
+    #      'assembly': '1',
+    #      'cellCycleStage': 'asynchronous',
+    #      'perturbation': 'No perturbation',
+    #      'public': 'false',
+    #      'ValueType': 'Interaction',
+    #      'Method': 'HiC',
+    #      'Normalization': 'ICCF',
+    #      'filetype': 'cooling',
+    #      'filename': 'test.mcool'}
+    #     data_ojb = DatasetPostModel(**test_object)
+    #     #import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
 
     @patch("app.models.User.launch_task")
     def test_incorrect_filetype_is_rejected(self, mock_launch):
