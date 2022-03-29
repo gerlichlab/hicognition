@@ -16,7 +16,7 @@ from app import db
 
 
 class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
-    """Tests the pydantic DatasetPostModel which validates the form for posting datasets. """
+    """Tests the pydantic DatasetPostModel which validates the form for posting datasets."""
 
     maxDiff = None
 
@@ -39,146 +39,159 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
         self.token_headers["Content-Type"] = "multipart/form-data"
 
     def test_pydantic_model_unsupported_filetype(self):
-        """Test of wrong 'cooling' filetype. """
-        test_object = {'datasetName': 'test',
-         'description': 'test-description',
-         'assembly': '1',
-         'cellCycleStage': 'asynchronous',
-         'perturbation': 'No perturbation',
-         'public': 'false',
-         'ValueType': 'Interaction',
-         'Method': 'HiC',
-         'Normalization': 'ICCF',
-         'filetype': 'cooling',
-         'filename': 'test.mcool'}
+        """Test of wrong 'cooling' filetype."""
+        test_object = {
+            "datasetName": "test",
+            "description": "test-description",
+            "assembly": "1",
+            "cellCycleStage": "asynchronous",
+            "perturbation": "No perturbation",
+            "public": "false",
+            "ValueType": "Interaction",
+            "Method": "HiC",
+            "Normalization": "ICCF",
+            "filetype": "cooling",
+            "filename": "test.mcool",
+        }
         with self.assertRaises(ValidationError) as exc:
             data_ojb = DatasetPostModel(**test_object)
         print(exc.exception)
-        assert 'Unsupported filetype!' in str(exc.exception)
+        assert "Unsupported filetype!" in str(exc.exception)
 
     def test_pydantic_model_working_cooler(self):
-        """Test of correct cooler POST form. """
-        test_object = {'datasetName': 'test',
-            'description': 'test-description',
-            'assembly': '1',
-            'cellCycleStage': 'asynchronous',
-            'perturbation': 'No perturbation',
-            'public': 'false',
-            'ValueType': 'Interaction',
-            'Method': 'HiC',
-            'Normalization': 'ICCF',
-            'filetype': 'cooler',
-            'filename': 'test.mcool'}
-        expected_object = {'dataset_name': 'test',
-            'description': 'test-description',
-            'assembly': 1,
-            'cell_cycle_stage': 'asynchronous',
-            'perturbation': 'No perturbation',
-            'public': False,
-            'value_type': 'Interaction',
-            'method': 'HiC',
-            'normalization': 'ICCF',
-            'filetype': 'cooler',
-            'filename': 'test.mcool',
-            'processing_state': None,
-            'protein': None,
-            'directionality': None,
-            'derivation_type': None,
-            'size_type': None,
-            'user_id': None,
-            }
+        """Test of correct cooler POST form."""
+        test_object = {
+            "datasetName": "test",
+            "description": "test-description",
+            "assembly": "1",
+            "cellCycleStage": "asynchronous",
+            "perturbation": "No perturbation",
+            "public": "false",
+            "ValueType": "Interaction",
+            "Method": "HiC",
+            "Normalization": "ICCF",
+            "filetype": "cooler",
+            "filename": "test.mcool",
+        }
+        expected_object = {
+            "dataset_name": "test",
+            "description": "test-description",
+            "assembly": 1,
+            "cell_cycle_stage": "asynchronous",
+            "perturbation": "No perturbation",
+            "public": False,
+            "value_type": "Interaction",
+            "method": "HiC",
+            "normalization": "ICCF",
+            "filetype": "cooler",
+            "filename": "test.mcool",
+            "processing_state": None,
+            "protein": None,
+            "directionality": None,
+            "derivation_type": None,
+            "size_type": None,
+            "user_id": None,
+        }
         data_ojb = DatasetPostModel(**test_object)
         self.assertEqual(expected_object, data_ojb.dict())
 
     def test_pydantic_model_working_cooler_wo_description(self):
-        """Test of correct cooler POST form. """
-        test_object = {'datasetName': 'test',
-            'description': 'null',
-            'assembly': '1',
-            'cellCycleStage': 'asynchronous',
-            'perturbation': 'No perturbation',
-            'public': 'false',
-            'ValueType': 'Interaction',
-            'Method': 'HiC',
-            'Normalization': 'ICCF',
-            'filetype': 'cooler',
-            'filename': 'test.mcool'}
-        expected_object = {'dataset_name': 'test',
-            'description': "No description provided",
-            'assembly': 1,
-            'cell_cycle_stage': 'asynchronous',
-            'perturbation': 'No perturbation',
-            'public': False,
-            'value_type': 'Interaction',
-            'method': 'HiC',
-            'normalization': 'ICCF',
-            'filetype': 'cooler',
-            'filename': 'test.mcool',
-            'processing_state': None,
-            'protein': None,
-            'directionality': None,
-            'derivation_type': None,
-            'size_type': None,
-            'user_id': None,
-            }
+        """Test of correct cooler POST form."""
+        test_object = {
+            "datasetName": "test",
+            "description": "null",
+            "assembly": "1",
+            "cellCycleStage": "asynchronous",
+            "perturbation": "No perturbation",
+            "public": "false",
+            "ValueType": "Interaction",
+            "Method": "HiC",
+            "Normalization": "ICCF",
+            "filetype": "cooler",
+            "filename": "test.mcool",
+        }
+        expected_object = {
+            "dataset_name": "test",
+            "description": "No description provided",
+            "assembly": 1,
+            "cell_cycle_stage": "asynchronous",
+            "perturbation": "No perturbation",
+            "public": False,
+            "value_type": "Interaction",
+            "method": "HiC",
+            "normalization": "ICCF",
+            "filetype": "cooler",
+            "filename": "test.mcool",
+            "processing_state": None,
+            "protein": None,
+            "directionality": None,
+            "derivation_type": None,
+            "size_type": None,
+            "user_id": None,
+        }
         data_ojb = DatasetPostModel(**test_object)
         self.assertEqual(expected_object, data_ojb.dict())
 
-
     def test_pydantic_model_unsupported_field(self):
-        """Test of if additional field was added to form. """
-        test_object = {'datasetName': 'test',
-         'description': 'test-description',
-         'assembly': '1',
-         'malicious': 'True',
-         'cellCycleStage': 'asynchronous',
-         'perturbation': 'No perturbation',
-         'public': 'false',
-         'ValueType': 'Interaction',
-         'Method': 'HiC',
-         'Normalization': 'ICCF',
-         'filetype': 'cooler',
-         'filename': 'test.mcool'}
+        """Test of if additional field was added to form."""
+        test_object = {
+            "datasetName": "test",
+            "description": "test-description",
+            "assembly": "1",
+            "malicious": "True",
+            "cellCycleStage": "asynchronous",
+            "perturbation": "No perturbation",
+            "public": "false",
+            "ValueType": "Interaction",
+            "Method": "HiC",
+            "Normalization": "ICCF",
+            "filetype": "cooler",
+            "filename": "test.mcool",
+        }
         with self.assertRaises(ValidationError) as exc:
             data_ojb = DatasetPostModel(**test_object)
         print(exc.exception)
-        assert 'extra fields not permitted' in str(exc.exception)
+        assert "extra fields not permitted" in str(exc.exception)
 
     def test_pydantic_model_wrong_fileending(self):
-        """Test wrong fileending for cooler. """
-        test_object = {'datasetName': 'test',
-         'description': 'test-description',
-         'assembly': '1',
-         'cellCycleStage': 'asynchronous',
-         'perturbation': 'No perturbation',
-         'public': 'false',
-         'ValueType': 'Interaction',
-         'Method': 'HiC',
-         'Normalization': 'ICCF',
-         'filetype': 'cooler',
-         'filename': 'test.bed'}
+        """Test wrong fileending for cooler."""
+        test_object = {
+            "datasetName": "test",
+            "description": "test-description",
+            "assembly": "1",
+            "cellCycleStage": "asynchronous",
+            "perturbation": "No perturbation",
+            "public": "false",
+            "ValueType": "Interaction",
+            "Method": "HiC",
+            "Normalization": "ICCF",
+            "filetype": "cooler",
+            "filename": "test.bed",
+        }
         with self.assertRaises(ValidationError) as exc:
             data_ojb = DatasetPostModel(**test_object)
         print(exc.exception)
-        assert 'Invalid filename!' in str(exc.exception)
+        assert "Invalid filename!" in str(exc.exception)
 
     def test_pydantic_model_wrong_value_type(self):
-        """Test wrong fileending for cooler. """
-        test_object = {'datasetName': 'test',
-         'description': 'test-description',
-         'assembly': '1',
-         'cellCycleStage': 'asynchronous',
-         'perturbation': 'No perturbation',
-         'public': 'false',
-         'ValueType': 'Peak',
-         'Method': 'HiC',
-         'Normalization': 'ICCF',
-         'filetype': 'cooler',
-         'filename': 'test.mcool'}
+        """Test wrong fileending for cooler."""
+        test_object = {
+            "datasetName": "test",
+            "description": "test-description",
+            "assembly": "1",
+            "cellCycleStage": "asynchronous",
+            "perturbation": "No perturbation",
+            "public": "false",
+            "ValueType": "Peak",
+            "Method": "HiC",
+            "Normalization": "ICCF",
+            "filetype": "cooler",
+            "filename": "test.mcool",
+        }
         with self.assertRaises(ValidationError) as exc:
             data_ojb = DatasetPostModel(**test_object)
         print(exc.exception)
-        assert 'Unsupported value_type!' in str(exc.exception)
+        assert "Unsupported value_type!" in str(exc.exception)
 
 
 if __name__ == "__main__":

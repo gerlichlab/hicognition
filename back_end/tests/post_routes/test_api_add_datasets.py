@@ -343,7 +343,6 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         with open(dataset.file_path, "rb") as actual_file:
             self.assertEqual(expected_file, actual_file.read())
 
-
     @patch("app.models.User.launch_task")
     def test_incorrect_filetype_is_rejected(self, mock_launch):
         """Tests whether incorrect filetype is rejected"""

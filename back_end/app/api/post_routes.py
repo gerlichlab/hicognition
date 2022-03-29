@@ -61,8 +61,9 @@ class DatasetPostModel(BaseModel):
 
     class Config:
         """Sets up the alias generator"""
+
         allow_population_by_field_name = True
-        extra = 'forbid'
+        extra = "forbid"
 
     @validator("value_type")
     def value_type_supported_in_dataset_attribute_mapping(
