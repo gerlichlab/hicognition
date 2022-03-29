@@ -64,10 +64,7 @@ class Config:
         "variable": {
             "cooler": [1, 2, 5],
             "bigwig": [1, 2, 5],
-            "collections": {
-                "regions": [1, 2, 5],
-                "1d-features": [1, 2, 5]
-            },
+            "collections": {"regions": [1, 2, 5], "1d-features": [1, 2, 5]},
         },  # binsize for variable sizetype is in percent
     }
     # preprocessing maps for small genomic windowsizes
