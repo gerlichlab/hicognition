@@ -7,6 +7,9 @@ import numpy as np
 from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from flask.json import jsonify
+from pydantic import ValidationError, BaseModel,Field, validator, constr
+import humps
+#from hicognition.utils import get_all_interval_ids, parse_binsizes
 from hicognition.utils import parse_description, get_all_interval_ids, parse_binsizes
 from hicognition.format_checkers import FORMAT_CHECKERS
 from . import api
@@ -25,6 +28,202 @@ from .authentication import auth
 from .errors import forbidden, invalid, not_found
 
 
+
+# def parse_description(pydantic_form_data):
+#     if (not (hasattr(pydantic_form_data, 'description'))) or (pydantic_form_data.description == "null"):
+#         description = "No description provided"
+#     else:
+#         description = pydantic_form_data.description
+#     return description
+
+
+
+
+class DatasetPostModel(BaseModel):
+    '''Is a model of the dataset upload form.'''
+
+    dataset_name: constr(min_length=3, max_length=81) = Field(..., alias='datasetName')
+    public: bool
+    assembly: int #TODO confirm name in upload tool
+    description: constr(max_length=81) = Field("No description provided")
+    value_type: constr(max_length=64) = Field(..., alias='ValueType')
+    normalization: constr(max_length=64) = Field(None, alias='Normalization') #
+    method: constr(max_length=64) = Field(..., alias='Method')
+    size_type: constr(max_length=64) = Field(None, alias='SizeType')
+    directionality: constr(max_length=64) = Field(None, alias='Directionality') #
+    derivation_type: constr(max_length=64) = Field(None, alias='DerivationType') #
+    protein: constr(max_length=64) = Field(None, alias='Protein') #
+    cell_cycle_stage: constr(max_length=64) = Field(..., alias='cellCycleStage')
+    perturbation: constr(max_length=64) 
+    user_id: int = None #
+    processing_state: constr(max_length=64) = None #
+    filetype: constr(max_length=64)
+    filename: constr(max_length=200)
+    # supported_file_endings = {
+    #         "bedfile": ["bed"],
+    #         "cooler": ["mcool"],
+    #         "bigwig": ["bw", "bigwig"],
+    #     }
+    class Config:
+        '''Sets up the alias generator'''
+        allow_population_by_field_name = True
+
+    # @validator('filetype', pre=True)
+    # def is_supported_filetype(cls, filetype):
+    #     '''Checks is we support the filetype.'''
+        
+    #     supported_file_endings = {
+    #         "bedfile": ["bed"],
+    #         "cooler": ["mcool"],
+    #         "bigwig": ["bw", "bigwig"],
+    #     }
+    #     # print(filetype)
+    #     if filetype not in supported_file_endings:
+    #         raise ValueError(f'Unsupported filetype! We do not support following filetype: {filetype}. Supported filestypes and endings are: {supported_file_endings}.')
+    #     return filetype
+
+    @validator('filename')
+    def file_has_correct_ending_and_supported_filetype(cls,filename, values, **kwargs): #TODO: Does this work?
+        '''Checks is the file has the appropriate file ending.'''
+        supported_file_endings = {
+            "bedfile": ["bed"],
+            "cooler": ["mcool"],
+            "bigwig": ["bw", "bigwig"],
+        }
+        file_ending = filename.split(".")[-1]
+        if values["filetype"] not in supported_file_endings:
+            raise ValueError(f'Unsupported filetype! We do not support following filetype: {values["filetype"]}. Supported filestypes and endings are: {supported_file_endings}.')
+        if file_ending.lower() not in supported_file_endings[values['filetype']]:
+            raise ValueError(f'Invalid filename! For the filetype: {values["filetype"]} we found the file ending: {file_ending}. Supported for this filetype are: {supported_file_endings[values["filetype"]]}.')
+        return filename
+    @validator('description')
+    def parse_description(cls, description):
+        if (description == "null"):
+            description = "No description provided"
+        return description
+    def __getitem__(self, item):
+        return getattr(self, item)
+    def __contains__(self, item):
+        return hasattr(self, item)
+
+
+
+
+
+#TODO Fix from here on:
+
+
+    # COMMON_REQUIRED_KEYS = [
+    #     "cellCycleStage",
+    #     "datasetName",
+    #     "perturbation",
+    #     "ValueType",
+    #     "public",
+    # ]
+    # ADD_REQUIRED_KEYS = ["assembly", "filetype"]
+    # DATASET_META_FIELDS = {
+    #     "assembly": "assembly",
+    #     "cellCycleStage": "cellCycleStage",
+    #     "perturbation": "perturbation",
+    #     "ValueType": "valueType",
+    #     "Method": "method",
+    #     "SizeType": "sizeType",
+    #     "Normalization": "normalization",
+    #     "DerivationType": "derivationType",
+    #     "Protein": "protein",
+    #     "Directionality": "directionality",
+    # }
+    # DATASET_META_FIELDS_MODIFY = {
+    #     "datasetName": "dataset_name",
+    #     "cellCycleStage": "cellCycleStage",
+    #     "perturbation": "perturbation",
+    #     "ValueType": "valueType",
+    #     "Method": "method",
+    #     "Normalization": "normalization",
+    #     "DerivationType": "derivationType",
+    #     "Protein": "protein",
+    #     "Directionality": "directionality",
+    #     "public": "public",
+    # }
+
+
+
+    # @classmethod
+    # def post_dataset_requirements_fullfilled(cls, form):
+    #     """checks whether form containing information to create dataset conforms
+    #     with the passed dataset_attribute_mapping."""
+    #     # check common things
+    #     form_keys = set(form.keys())
+    #     if any(key not in form_keys for key in cls.COMMON_REQUIRED_KEYS):
+    #         return False
+    #     if any(key not in form_keys for key in cls.ADD_REQUIRED_KEYS):
+    #         return False
+    #     # check metadata
+    #     dataset_type_mapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
+    #     value_types = dataset_type_mapping[form["filetype"]]["ValueType"]
+    #     if form["ValueType"] not in value_types.keys():
+    #         return False
+    #     # check value type members
+    #     for key, possible_values in value_types[form["ValueType"]].items():
+    #         if key not in form_keys:
+    #             return False
+    #         # check whether field is freetext
+    #         if possible_values == "freetext":
+    #             continue
+    #         # check that value in form corresponds to possible values
+    #         if form[key] not in possible_values:
+    #             return False
+    #     return True
+
+    # models.py line 398
+    # @classmethod
+    # def post_dataset_requirements_fullfilled(cls, form):
+    #     """checks whether form containing information to create dataset conforms
+    #     with the passed dataset_attribute_mapping."""
+    #     # check common things
+    #     form_keys = set(form.keys())
+    #     if any(key not in form_keys for key in cls.COMMON_REQUIRED_KEYS):
+    #         return False
+    #     if any(key not in form_keys for key in cls.ADD_REQUIRED_KEYS):
+    #         return False
+    #     # check metadata
+    #     dataset_type_mapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
+    #     value_types = dataset_type_mapping[form["filetype"]]["ValueType"]
+    #     if form["ValueType"] not in value_types.keys():
+    #         return False
+    #     # check value type members
+    #     for key, possible_values in value_types[form["ValueType"]].items():
+    #         if key not in form_keys:
+    #             return False
+    #         # check whether field is freetext
+    #         if possible_values == "freetext":
+    #             continue
+    #         # check that value in form corresponds to possible values
+    #         if form[key] not in possible_values:
+    #             return False
+    #     return True
+
+
+    # id = db.Column(db.Integer, primary_key=True)
+    # dataset_name = db.Column(db.String(512), index=True)
+    # description = db.Column(db.String(81), default="undefined")
+    # perturbation = db.Column(db.String(64), default="undefined")
+    # assembly = db.Column(db.Integer, db.ForeignKey("assembly.id"))
+    # cellCycleStage = db.Column(db.String(64), default="undefined")
+    # valueType = db.Column(db.String(64), default="undefined")
+    # method = db.Column(db.String(64), default="undefined")
+    # normalization = db.Column(db.String(64), default="undefined")
+    # derivationType = db.Column(db.String(64), default="undefined")
+    # sizeType = db.Column(db.String(64), default="undefined")
+    # file_path = db.Column(db.String(512), index=True)
+    # public = db.Column(db.Boolean, default=False)
+    # protein = db.Column(db.String(64), default="undefined")
+    # directionality = db.Column(db.String(64), default="undefined")
+    # filetype = db.Column(db.String(64), index=True)
+    # user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    # available_binsizes = db.Column(db.String(500), default="undefined")
+    # processing_state = db.Column(db.String(64))
+
 @api.route("/datasets/", methods=["POST"])
 @auth.login_required
 def add_dataset():
@@ -36,19 +235,8 @@ def add_dataset():
         # check whether fileObject is there
         if len(request.files) == 0:
             return True
-        # check filename
-        file_ending = request.files["file"].filename.split(".")[-1]
-        correct_file_endings = {
-            "bedfile": ["bed"],
-            "cooler": ["mcool"],
-            "bigwig": ["bw", "bigwig"],
-        }
-        if request.form["filetype"] not in correct_file_endings:
-            return True
-        if file_ending.lower() not in correct_file_endings[request.form["filetype"]]:
-            return True
         # check attributes
-        if not Dataset.post_dataset_requirements_fullfilled(request.form):
+        if not Dataset.post_dataset_requirements_fullfilled(request.form): #TODO fix
             return True
         return False
 
@@ -57,29 +245,43 @@ def add_dataset():
     if is_form_invalid():
         return invalid("Form is not valid!")
     # get data from form
-    data = request.form
+    #formdata = request.form.to_dict()
+    #formdata["filename"]=request.files["file"].filename
+    #data = DatasetPostModel(**formdata)
+    try: data = DatasetPostModel(**request.form, filename=request.files["file"].filename)
+    except ValueError as err:
+        return invalid(f'"Form is not valid: {str(err)}')
+    # import pdb; pdb.set_trace()
+    # except ValidationError as err:
+    #     return invalid(f'"Form is not valid: {str(err)}') 
+    # TODO think how to handle this
+
     file_object = request.files["file"]
     # check whether description is there
     description = parse_description(data)
+    # import pdb; pdb.set_trace()
     # check whether dataset should be public
-    set_public = "public" in data and data["public"].lower() == "true"
+    set_public = "public" in data and data["public"] == True
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
-        dataset_name=data["datasetName"],
+        dataset_name=data.dataset_name,
         description=description,
         public=set_public,
         processing_state="uploading",
-        filetype=data["filetype"],
+        filetype=data.filetype,
         user_id=current_user.id,
     )
+    # import pdb; pdb.set_trace()
     new_entry.add_fields_from_form(data)
+    # import pdb; pdb.set_trace()
     db.session.add(new_entry)
     db.session.commit()
     # save file in upload directory with database_id as prefix
     filename = f"{new_entry.id}_{secure_filename(file_object.filename)}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     file_object.save(file_path)
-    assembly = Assembly.query.get(data["assembly"])
+    assembly = Assembly.query.get(data.assembly)
+    #import pdb; pdb.set_trace()
     # check format -> this cannot be done in form checker since file needs to be available
     chromosome_names = set(pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0])
     needed_resolutions = parse_binsizes(
@@ -97,7 +299,7 @@ def add_dataset():
     new_entry.processing_state = "uploaded"
     db.session.add(new_entry)
     # start preprocessing of bedfile, the other filetypes do not need preprocessing
-    if data["filetype"] == "bedfile":
+    if data.filetype == "bedfile":
         current_user.launch_task(
             current_app.queues["short"],
             "pipeline_bed",
@@ -106,7 +308,7 @@ def add_dataset():
         )
         new_entry.processing_state = "processing"
     # if filetype is cooler, store available binsizes
-    if data["filetype"] == "cooler":
+    if data.filetype == "cooler":
         binsizes = [
             resolution.split("/")[2]
             for resolution in cooler.fileops.list_coolers(file_path)

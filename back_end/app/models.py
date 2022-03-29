@@ -174,17 +174,29 @@ class Dataset(db.Model):
         "public",
     ]
     ADD_REQUIRED_KEYS = ["assembly", "filetype"]
-    DATASET_META_FIELDS = {
+    # DATASET_META_FIELDS = {
+    #     "assembly": "assembly",
+    #     "cellCycleStage": "cellCycleStage",
+    #     "perturbation": "perturbation",
+    #     "ValueType": "valueType",
+    #     "Method": "method",
+    #     "SizeType": "sizeType",
+    #     "Normalization": "normalization",
+    #     "DerivationType": "derivationType",
+    #     "Protein": "protein",
+    #     "Directionality": "directionality",
+    # }
+    DATASET_META_FIELDS_NEW = {
         "assembly": "assembly",
-        "cellCycleStage": "cellCycleStage",
+        "cell_cycle_stage": "cellCycleStage",
         "perturbation": "perturbation",
-        "ValueType": "valueType",
-        "Method": "method",
-        "SizeType": "sizeType",
-        "Normalization": "normalization",
-        "DerivationType": "derivationType",
-        "Protein": "protein",
-        "Directionality": "directionality",
+        "value_type": "valueType",
+        "method": "method",
+        "size_type": "sizeType",
+        "normalization": "normalization",
+        "derivation_type": "derivationType",
+        "protein": "protein",
+        "directionality": "directionality",
     }
     DATASET_META_FIELDS_MODIFY = {
         "datasetName": "dataset_name",
@@ -335,7 +347,7 @@ class Dataset(db.Model):
     def add_fields_from_form(self, form, requirement_spec=None):
         """Adds values for fields from form"""
         if requirement_spec is None:
-            requirement_spec = self.DATASET_META_FIELDS
+            requirement_spec = self.DATASET_META_FIELDS_NEW
         for form_key, dataset_field in requirement_spec.items():
             if form_key in form:
                 if form_key == "public":
