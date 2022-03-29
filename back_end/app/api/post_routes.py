@@ -25,6 +25,7 @@ from ..models import (
     EmbeddingIntervalData,
 )
 from .authentication import auth
+from .. import pipeline_steps
 from .errors import forbidden, invalid, not_found
 
 
@@ -311,7 +312,7 @@ def preprocess_dataset():
     def is_form_invalid():
         if not hasattr(request, "form"):
             return True
-        if sorted(list(request.form.keys())) != sorted(["dataset_ids", "region_ids"]):
+        if sorted(list(request.form.keys())) != sorted(["dataset_ids", "region_ids", "preprocessing_map"]):
             return True
         return False
 
@@ -323,6 +324,12 @@ def preprocess_dataset():
     data = request.form
     dataset_ids = json.loads(data["dataset_ids"])
     region_datasets_ids = json.loads(data["region_ids"])
+    preprocessing_map_type = data["preprocessing_map"]
+    # check whether preprocessing map exists
+    if preprocessing_map_type not in current_app.config:
+        return invalid("Preprocessing map does not exist!")
+    # assign preprocessing map
+    preprocessing_map = current_app.config[preprocessing_map_type]
     # check whether datasets exist
     feature_datasets = [Dataset.query.get(feature_id) for feature_id in dataset_ids]
     if any(entry is None for entry in feature_datasets):
@@ -347,6 +354,11 @@ def preprocess_dataset():
             ]
             # remove associated tasks
             dataset.remove_failed_tasks_for_region(db, region_ds)
+    # check whether all intervals exist and create missing ones
+    for region_dataset in region_datasets:
+        missing_windowsizes = region_dataset.get_missing_windowsizes(preprocessing_map)
+        for missing_windowsize in missing_windowsizes:
+            pipeline_steps.bed_preprocess_pipeline_step(region_dataset.id, missing_windowsize)
     # get interval ids of selected regions
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
@@ -354,7 +366,10 @@ def preprocess_dataset():
         windowsize = Intervals.query.get(interval_id).windowsize
         if windowsize is None:
             windowsize = "variable"
-        for binsize in current_app.config["PREPROCESSING_MAP"][windowsize][
+        # check whether windowsize is in preprocessing map
+        if windowsize not in preprocessing_map:
+            continue
+        for binsize in preprocessing_map[windowsize][
             dataset.filetype
         ]:
             for dataset in feature_datasets:
@@ -367,10 +382,10 @@ def preprocess_dataset():
                     intervals_id=interval_id,
                     binsize=binsize,
                 )
-                # add parent id # TODO: guard against duplicate processing
-                dataset.processing_regions.append(
-                    Intervals.query.get(interval_id).source_dataset
-                )
+                if Intervals.query.get(interval_id).source_dataset not in dataset.processing_regions:
+                    dataset.processing_regions.append(
+                        Intervals.query.get(interval_id).source_dataset
+                    )
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 
@@ -385,7 +400,7 @@ def preprocess_collections():
         if not hasattr(request, "form"):
             return True
         if sorted(list(request.form.keys())) != sorted(
-            ["collection_ids", "region_ids"]
+            ["collection_ids", "region_ids", "preprocessing_map"]
         ):
             return True
         return False
@@ -398,6 +413,12 @@ def preprocess_collections():
     data = request.form
     collection_ids = json.loads(data["collection_ids"])
     region_datasets_ids = json.loads(data["region_ids"])
+    preprocessing_map_type = data["preprocessing_map"]
+    # check whether preprocessing map exists
+    if preprocessing_map_type not in current_app.config:
+        return invalid("Preprocessing map does not exist!")
+    # assign preprocessing map
+    preprocessing_map = current_app.config[preprocessing_map_type]
     # check whether collection exists
     collections = [
         Collection.query.get(collection_id) for collection_id in collection_ids
@@ -425,6 +446,11 @@ def preprocess_collections():
                 if candidate != collection
             ]
             collection.remove_failed_tasks_for_region(db, region_ds)
+    # check whether all intervals exist and create missing ones
+    for region_dataset in region_datasets:
+        missing_windowsizes = region_dataset.get_missing_windowsizes(preprocessing_map)
+        for missing_windowsize in missing_windowsizes:
+            pipeline_steps.bed_preprocess_pipeline_step(region_dataset.id, missing_windowsize)
     # get interval ids of selected regions
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
@@ -432,7 +458,10 @@ def preprocess_collections():
         windowsize = Intervals.query.get(interval_id).windowsize
         if windowsize is None:
             windowsize = "variable"
-        for binsize in current_app.config["PREPROCESSING_MAP"][windowsize][
+        # check whether windowsize is in preprocessing map
+        if windowsize not in preprocessing_map:
+            continue
+        for binsize in preprocessing_map[windowsize][
             "collections"
         ][collection.kind]:
             for collection in collections:
@@ -449,9 +478,10 @@ def preprocess_collections():
                     intervals_id=interval_id,
                     binsize=binsize,
                 )
-                collection.processing_for_datasets.append(
-                    Intervals.query.get(interval_id).source_dataset
-                )
+                if Intervals.query.get(interval_id).source_dataset not in collection.processing_for_datasets:
+                    collection.processing_for_datasets.append(
+                        Intervals.query.get(interval_id).source_dataset
+                    )
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 

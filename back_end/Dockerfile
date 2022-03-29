@@ -17,11 +17,11 @@ RUN conda install mamba -n base -c conda-forge &&\
     mamba env update -n base --f /temp/install/conda_env.yml &&\
     mamba list > software_versions_conda.txt &&\
     # install version 0.3 of ngs
-    pip install git+git://github.com/gerlichlab/ngs@v0.3b &&\
+    pip install git+https://github.com/gerlichlab/ngs@v0.3b &&\
     # install pylola
-    pip install git+git://github.com/Mittmich/pylola &&\
+    pip install git+https://github.com/Mittmich/pylola &&\
     # install hicognition package 
-    pip install git+git://github.com/gerlichlab/hicognition_lib
+    pip install git+https://github.com/gerlichlab/hicognition_lib
 
 # clean up install
 

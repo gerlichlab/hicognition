@@ -49,9 +49,9 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
                 for interval in dataset.intervals:
                     expected_files.append(Path(interval.file_path).name)
                 # get average interval data
-                for avg_data in dataset.average_interval_data:
+                for avg_data in dataset.averageIntervalData:
                     expected_files.append(Path(avg_data.file_path).name)
-                for ind_data in dataset.individual_interval_data:
+                for ind_data in dataset.individualIntervalData:
                     expected_files.append(Path(ind_data.file_path).name)
                     expected_files.append(Path(ind_data.file_path_small).name)
         return expected_files
@@ -262,7 +262,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset_ids, {1, 2, 3, 4})
         intervals_ids = set(entry.id for entry in Intervals.query.all())
         self.assertEqual(intervals_ids, {1, 2})
-        averag_interval_data_ids = set(
+        average_interval_data_ids = set(
             entry.id for entry in AverageIntervalData.query.all()
         )
         self.assertEqual(average_interval_data_ids, {1, 2})

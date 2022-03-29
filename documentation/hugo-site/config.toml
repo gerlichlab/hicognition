@@ -1,4 +1,4 @@
-baseURL = "http://localhost/docs/"
+baseURL = "/docs/"
 title = "HiCognition"
 theme = "learn"
 

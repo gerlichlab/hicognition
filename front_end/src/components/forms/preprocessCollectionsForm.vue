@@ -81,6 +81,35 @@
                             </div>
                         </div>
                     </div>
+                    <md-switch v-model="showAdvanced">Show Advanced</md-switch>
+                    <div class="md-layout md-gutter" v-if="showAdvanced">
+                        <md-divider></md-divider>
+                        <div class="md-layout-item md-size-25">
+                            <md-field>
+                                <label for="windowsizes">Windowsizes</label>
+                                <md-select
+                                    v-model="form.preprocessing_map"
+                                    name="windowsizes"
+                                    id="windowsizes"
+                                >
+                                    <md-option value="PREPROCESSING_MAP"
+                                        >Regular</md-option
+                                    >
+                                    <md-option
+                                        value="PREPROCESSING_MAP_SMALL_WINDOWSIZES"
+                                        >Small</md-option
+                                    >
+                                </md-select>
+                            </md-field>
+                            <div class="md-layout-item md-size-100">
+                                <span
+                                    style="color: red; "
+                                    v-if="showSmallWarning"
+                                    >This step can take up to 10 minutes!</span
+                                >
+                            </div>
+                        </div>
+                    </div>
                 </md-card-content>
                 <!-- Progress bar -->
                 <md-progress-bar md-mode="indeterminate" v-if="sending" />
@@ -122,13 +151,21 @@ export default {
         failedCollections: [],
         form: {
             collectionIDs: [],
-            bedfileIDs: []
+            bedfileIDs: [],
+            preprocessing_map: "PREPROCESSING_MAP"
         },
         datasetSaved: false,
         sending: false,
-        preprocessingMapLoaded: false
+        preprocessingMapLoaded: false,
+        showAdvanced: false
     }),
     computed: {
+        showSmallWarning: function() {
+            if (this.form.preprocessing_map === "PREPROCESSING_MAP") {
+                return false;
+            }
+            return true;
+        },
         numberCollections: function(){
             return this.form.collectionIDs.length
         },
@@ -154,6 +191,9 @@ export default {
                 required
             },
             bedfileIDs: {
+                required
+            },
+            preprocessing_map: {
                 required
             }
         }
@@ -308,6 +348,7 @@ export default {
             var form_data = {};
             form_data["collection_ids"] = JSON.stringify(this.form["collectionIDs"]);
             form_data["region_ids"] = JSON.stringify(this.form["bedfileIDs"]);
+            form_data["preprocessing_map"] = this.form["preprocessing_map"]
             return form_data;
         },
         validateDataset() {
