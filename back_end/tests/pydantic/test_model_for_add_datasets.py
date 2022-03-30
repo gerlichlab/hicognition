@@ -74,6 +74,17 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "filename": "test.mcool",
         }
         expected_object = {
+            "alias_table": {
+                "datasetName": "dataset_name",
+                "Normalization": "normalization",
+                "Method": "method",
+                "SizeType": "size_type",
+                "Directionality": "directionality",
+                "DerivationType": "derivation_type",
+                "Protein": "protein",
+                "cellCycleStage": "cell_cycle_stage",
+                "ValueType": "value_type",
+            },
             "dataset_name": "test",
             "description": "test-description",
             "assembly": 1,
@@ -86,10 +97,10 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "filetype": "cooler",
             "filename": "test.mcool",
             "processing_state": None,
-            "protein": None,
-            "directionality": None,
-            "derivation_type": None,
-            "size_type": None,
+            "protein": "undefined",
+            "directionality": "undefined",
+            "derivation_type": "undefined",
+            "size_type": "undefined",
             "user_id": None,
         }
         data_ojb = DatasetPostModel(**test_object)
@@ -111,6 +122,17 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "filename": "test.mcool",
         }
         expected_object = {
+            "alias_table": {
+                "datasetName": "dataset_name",
+                "Normalization": "normalization",
+                "Method": "method",
+                "SizeType": "size_type",
+                "Directionality": "directionality",
+                "DerivationType": "derivation_type",
+                "Protein": "protein",
+                "cellCycleStage": "cell_cycle_stage",
+                "ValueType": "value_type",
+            },
             "dataset_name": "test",
             "description": "No description provided",
             "assembly": 1,
@@ -123,10 +145,10 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "filetype": "cooler",
             "filename": "test.mcool",
             "processing_state": None,
-            "protein": None,
-            "directionality": None,
-            "derivation_type": None,
-            "size_type": None,
+            "protein": "undefined",
+            "directionality": "undefined",
+            "derivation_type": "undefined",
+            "size_type": "undefined",
             "user_id": None,
         }
         data_ojb = DatasetPostModel(**test_object)
@@ -192,6 +214,44 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             data_ojb = DatasetPostModel(**test_object)
         print(exc.exception)
         assert "Unsupported value_type!" in str(exc.exception)
+
+    def test_pydantic_model_wrong_value_for_meta_data(self):
+        """Test wrong fileending for cooler."""
+        test_object = {
+            "datasetName": "test",
+            "description": "test-description",
+            "assembly": "1",
+            "cellCycleStage": "asynchronous",
+            "perturbation": "No perturbation",
+            "public": "false",
+            "ValueType": "Interaction",
+            "Method": "microC",  # This should not be possible
+            "Normalization": "ICCF",
+            "filetype": "cooler",
+            "filename": "test.mcool",
+        }
+        with self.assertRaises(ValidationError) as exc:
+            data_ojb = DatasetPostModel(**test_object)
+        print(exc.exception)
+        assert "Unsupported possible value" in str(exc.exception)
+
+    def test_reverse_alias(self):
+        test_object = {
+            "datasetName": "test",
+            "description": "null",
+            "assembly": "1",
+            "cellCycleStage": "asynchronous",
+            "perturbation": "No perturbation",
+            "public": "false",
+            "ValueType": "Interaction",
+            "Method": "HiC",
+            "Normalization": "ICCF",
+            "filetype": "cooler",
+            "filename": "test.mcool",
+        }
+        data_ojb = DatasetPostModel(**test_object)
+        assert data_ojb["Normalization"] == data_ojb["normalization"]
+        assert data_ojb["Normalization"] == "ICCF"
 
 
 if __name__ == "__main__":
