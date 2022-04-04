@@ -31,14 +31,6 @@ from .. import pipeline_steps
 from .errors import forbidden, invalid, not_found
 
 
-# def parse_description(pydantic_form_data):
-#     if (not (hasattr(pydantic_form_data, 'description'))) or (pydantic_form_data.description == "null"):
-#         description = "No description provided"
-#     else:
-#         description = pydantic_form_data.description
-#     return description
-
-
 @api.route("/datasets/", methods=["POST"])
 @auth.login_required
 def add_dataset():
@@ -50,9 +42,6 @@ def add_dataset():
         # check whether fileObject is there
         if len(request.files) == 0:
             return True
-        # check attributes
-        # if not Dataset.post_dataset_requirements_fullfilled(request.form): #TODO fix
-        #     return True
         return False
 
     current_user = g.current_user
@@ -60,23 +49,14 @@ def add_dataset():
     if is_form_invalid():
         return invalid("Form is not valid!")
     # get data from form
-    # formdata = request.form.to_dict()
-    # formdata["filename"]=request.files["file"].filename
-    # data = DatasetPostModel(**formdata)
     try:
         data = DatasetPostModel(**request.form, filename=request.files["file"].filename)
     except ValueError as err:
-        # import pdb; pdb.set_trace()
         return invalid(f'"Form is not valid: {str(err)}')
-
-    # except ValidationError as err:
-    #     return invalid(f'"Form is not valid: {str(err)}')
-    # TODO think how to handle this
 
     file_object = request.files["file"]
     # check whether description is there
     description = parse_description(data)
-    # import pdb; pdb.set_trace()
     # check whether dataset should be public
     set_public = "public" in data and data["public"] == True
     # add data to Database -> in order to get id for filename
@@ -88,9 +68,7 @@ def add_dataset():
         filetype=data.filetype,
         user_id=current_user.id,
     )
-    # import pdb; pdb.set_trace()
     new_entry.add_fields_from_form(data)
-    # import pdb; pdb.set_trace()
     db.session.add(new_entry)
     db.session.commit()
     # save file in upload directory with database_id as prefix
@@ -98,7 +76,6 @@ def add_dataset():
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     file_object.save(file_path)
     assembly = Assembly.query.get(data.assembly)
-    # import pdb; pdb.set_trace()
     # check format -> this cannot be done in form checker since file needs to be available
     chromosome_names = set(pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0])
     needed_resolutions = parse_binsizes(

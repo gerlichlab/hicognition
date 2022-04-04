@@ -74,17 +74,6 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "filename": "test.mcool",
         }
         expected_object = {
-            "alias_table": {
-                "datasetName": "dataset_name",
-                "Normalization": "normalization",
-                "Method": "method",
-                "SizeType": "size_type",
-                "Directionality": "directionality",
-                "DerivationType": "derivation_type",
-                "Protein": "protein",
-                "cellCycleStage": "cell_cycle_stage",
-                "ValueType": "value_type",
-            },
             "dataset_name": "test",
             "description": "test-description",
             "assembly": 1,
@@ -122,17 +111,6 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "filename": "test.mcool",
         }
         expected_object = {
-            "alias_table": {
-                "datasetName": "dataset_name",
-                "Normalization": "normalization",
-                "Method": "method",
-                "SizeType": "size_type",
-                "Directionality": "directionality",
-                "DerivationType": "derivation_type",
-                "Protein": "protein",
-                "cellCycleStage": "cell_cycle_stage",
-                "ValueType": "value_type",
-            },
             "dataset_name": "test",
             "description": "No description provided",
             "assembly": 1,
