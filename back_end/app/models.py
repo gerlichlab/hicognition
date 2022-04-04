@@ -174,7 +174,7 @@ class Dataset(db.Model):
         "public",
     ]
     ADD_REQUIRED_KEYS = ["assembly", "filetype"]
-    DATASET_META_FIELDS = {  # TODO: remove dependacy
+    DATASET_META_FIELDS = {  # TODO: remove dependancy
         "assembly": "assembly",
         "cellCycleStage": "cellCycleStage",
         "perturbation": "perturbation",

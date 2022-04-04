@@ -343,23 +343,6 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         with open(dataset.file_path, "rb") as actual_file:
             self.assertEqual(expected_file, actual_file.read())
 
-    # TODO: move to lib test
-    # def test_pydantic_model(self):
-    #     test_object = {'datasetName': 'test',
-    #      'description': 'test-description',
-    #      'assembly': '1',
-    #      'cellCycleStage': 'asynchronous',
-    #      'perturbation': 'No perturbation',
-    #      'public': 'false',
-    #      'ValueType': 'Interaction',
-    #      'Method': 'HiC',
-    #      'Normalization': 'ICCF',
-    #      'filetype': 'cooling',
-    #      'filename': 'test.mcool'}
-    #     data_ojb = DatasetPostModel(**test_object)
-    #     #import pdb; pdb.set_trace()
-    # import pdb; pdb.set_trace()
-
     @patch("app.models.User.launch_task")
     def test_incorrect_filetype_is_rejected(self, mock_launch):
         """Tests whether incorrect filetype is rejected"""
