@@ -127,6 +127,43 @@
                                     </md-list-item>
                                 </md-list>
                             </md-list-item>
+                            <md-list-item
+                                md-expand
+                                v-if="allowBinsizeSelection && !valueScaleRecipient"
+                            >
+                                <span class="md-body-1">Value range</span>
+                                <md-list slot="md-expand">
+                                    <div class="padding">
+                                        <md-field>
+                                            <label>Max</label>
+                                            <md-input
+                                                v-model="maxTarget"
+                                                type="number"
+                                            ></md-input>
+                                        </md-field>
+                                        <md-field>
+                                            <label>Min</label>
+                                            <md-input
+                                                v-model="minTarget"
+                                                type="number"
+                                            ></md-input>
+                                        </md-field>
+                                        <div class="float-left">
+                                            <md-button class="md-raised" @click="handleValueScaleTargetReset"
+                                                :disabled="ignoreTarget"
+                                                >Reset</md-button
+                                            >
+                                        </div>
+                                        <div class="float-right">
+                                            <md-button
+                                                class="md-raised md-primary"
+                                                @click="handleValueScaleTargetSet"
+                                                >Set</md-button
+                                            >
+                                        </div>
+                                    </div>
+                                </md-list>
+                            </md-list-item>
                         </md-menu-content>
                     </md-menu>
                 </div>
@@ -152,8 +189,8 @@
                 :showInterval="isVariableSize"
                 :valueScaleColor="valueScaleColor"
                 :valueScaleBorder="valueScaleBorder"
-                :minValueRange="minHeatmapRange"
-                :maxValueRange="maxHeatmapRange"
+                :minValueRange="minHeatmapRange === undefined ? minHeatmapRange:Number(minHeatmapRange)"
+                :maxValueRange="maxHeatmapRange === undefined ? maxHeatmapRange:Number(maxHeatmapRange)"
                 @value-scale-change="handleValueScaleChange"
             >
             </lineprofile>
@@ -216,8 +253,35 @@ export default {
         }
     },
     methods: {
+        handleValueScaleTargetSet() {
+            this.ignoreTarget = false
+            this.minHeatmapRange = this.minTarget
+            this.maxHeatmapRange = this.maxTarget
+        },
+        handleValueScaleTargetReset() {
+            this.ignoreTarget = true
+            this.minHeatmapRange = this.minTarget = undefined;
+            this.maxHeatmapRange = this.maxTarget = undefined;
+        },
+        setColorScale: function(data) {
+            /* 
+                sets colorScale based on data array
+                containing minPos, maxPos, minRange, maxRange
+            */
+           if (this.ignoreTarget){
+                this.minHeatmap = data[0];
+                this.maxHeatmap = data[1];
+                this.minHeatmapRange = data[2];
+                this.maxHeatmapRange = data[3];
+                this.minTarget = Math.round((data[2] * 10**5))/10**5;
+                this.maxTarget = Math.round((data[3] * 10**5))/10**5;
+           } else {
+               this.minHeatmapRange = this.minTarget
+               this.maxHeatmapRange = this.maxTarget
+           }
+        },
         handleValueScaleChange: function(data) {
-            if (!this.valueScaleRecipient){
+            if (!this.valueScaleRecipient) {
                 this.setColorScale(data);
                 this.broadcastValueScaleUpdate();
             }
@@ -245,16 +309,12 @@ export default {
             this.showSelection = false;
         },
         handleMouseEnter: function() {
-            if (
-                this.allowValueScaleTargetSelection
-            ) {
+            if (this.allowValueScaleTargetSelection) {
                 this.showSelection = true;
             }
         },
         handleMouseLeave: function() {
-            if (
-                this.allowValueScaleTargetSelection
-            ) {
+            if (this.allowValueScaleTargetSelection) {
                 this.showSelection = false;
             }
         },
@@ -372,7 +432,10 @@ export default {
                 valueScaleTargetID: this.valueScaleTargetID,
                 valueScaleColor: this.valueScaleColor,
                 widgetType: "Lineprofile",
-                normalized: this.normalized
+                normalized: this.normalized,
+                minTarget: this.minTarget,
+                maxTarget: this.maxTarget,
+                ignoreTarget: this.ignoreTarget
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -405,7 +468,10 @@ export default {
                 minHeatmapRange: undefined,
                 maxHeatmapRange: undefined,
                 showSelection: false,
-                colormap: null // this value have no meaning, they are for compatibility with the valuescale mixin
+                colormap: null, // this value have no meaning, they are for compatibility with the valuescale mixin
+                minTarget: undefined,
+                maxTarget: undefined,
+                ignoreTarget: true
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -461,15 +527,45 @@ export default {
                 expectSelection: false,
                 minHeatmap: 0, // this value have no meaning, they are for compatibility with the valuescale mixin
                 maxHeatmap: 0, // this value have no meaning, they are for compatibility with the valuescale mixin
-                minHeatmapRange: (widgetData["minHeatmapRange"] !== undefined) ? widgetData["minHeatmapRange"]: undefined,
-                maxHeatmapRange: (widgetData["maxHeatmapRange"] !== undefined) ? widgetData["maxHeatmapRange"]: undefined,
+                minHeatmapRange:
+                    widgetData["minHeatmapRange"] !== undefined
+                        ? widgetData["minHeatmapRange"]
+                        : undefined,
+                maxHeatmapRange:
+                    widgetData["maxHeatmapRange"] !== undefined
+                        ? widgetData["maxHeatmapRange"]
+                        : undefined,
                 valueScaleSelectionState: false,
-                valueScaleRecipient: (widgetData["valueScaleRecipient"] !== undefined) ? widgetData["valueScaleRecipient"]: false,
-                valueScaleRecipients: (widgetData["valueScaleRecipients"] !== undefined) ? widgetData["valueScaleRecipients"]: 0,
-                valueScaleTargetID: (widgetData["valueScaleTargetID"] !== undefined) ? widgetData["valueScaleTargetID"]: false,
-                valueScaleColor: (widgetData["valueScaleColor"] !== undefined) ? widgetData["valueScaleColor"]: undefined,
+                valueScaleRecipient:
+                    widgetData["valueScaleRecipient"] !== undefined
+                        ? widgetData["valueScaleRecipient"]
+                        : false,
+                valueScaleRecipients:
+                    widgetData["valueScaleRecipients"] !== undefined
+                        ? widgetData["valueScaleRecipients"]
+                        : 0,
+                valueScaleTargetID:
+                    widgetData["valueScaleTargetID"] !== undefined
+                        ? widgetData["valueScaleTargetID"]
+                        : false,
+                valueScaleColor:
+                    widgetData["valueScaleColor"] !== undefined
+                        ? widgetData["valueScaleColor"]
+                        : undefined,
                 showSelection: false,
-                colormap: null // this value have no meaning, they are for compatibility with the valuescale mixin
+                colormap: null, // this value have no meaning, they are for compatibility with the valuescale mixin
+                minTarget:
+                    widgetData["minTarget"] !== undefined
+                        ? widgetData["minTarget"]
+                        : true,
+                maxTarget:
+                    widgetData["maxTarget"] !== undefined
+                        ? widgetData["maxTarget"]
+                        : true,
+                ignoreTarget:
+                    widgetData["ignoreTarget"] !== undefined
+                        ? widgetData["ignoreTarget"]
+                        : true
             };
         },
         getlineprofileData: async function(id) {
@@ -681,6 +777,18 @@ export default {
 
 .padding-top {
     padding-top: 12px;
+}
+
+.padding {
+    padding: 10px;
+}
+
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
 }
 
 .no-padding-top {
