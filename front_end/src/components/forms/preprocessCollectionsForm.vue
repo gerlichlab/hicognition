@@ -318,7 +318,7 @@ export default {
                 // vue introduces a watches into arrays that does not allow blanking
                 if (Array.isArray(this.form[key])) {
                     this.form[key] = [];
-                } else {
+                } else if (key != "preprocessing_map") {
                     this.form[key] = null;
                 }
             }
