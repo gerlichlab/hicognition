@@ -10,6 +10,7 @@ from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 # import sys
 # sys.path.append("./")
 from app.models import Dataset, Assembly
+from app.api.post_routes import DatasetPostModel
 from app import db
 
 
@@ -18,6 +19,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
     pipelines after addition of datasets.
     Inherits both from LoginTest and TempDirTestCase
     to be able to login and make temporary directory"""
+
+    maxDiff = None
 
     def setUp(self):
         super().setUp()
@@ -252,6 +255,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             headers=self.token_headers,
             content_type="multipart/form-data",
         )
+        # import pdb; pdb.set_trace()
         self.assertEqual(response.status_code, 200)
         # check whether dataset has been added to database
         self.assertEqual(len(Dataset.query.all()), 1)

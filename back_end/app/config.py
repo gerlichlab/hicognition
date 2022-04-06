@@ -64,10 +64,7 @@ class Config:
         "variable": {
             "cooler": [1, 2, 5],
             "bigwig": [1, 2, 5],
-            "collections": {
-                "regions": [1, 2, 5],
-                "1d-features": [1, 2, 5]
-            },
+            "collections": {"regions": [1, 2, 5], "1d-features": [1, 2, 5]},
         },  # binsize for variable sizetype is in percent
     }
     # preprocessing maps for small genomic windowsizes
@@ -130,6 +127,11 @@ class Config:
     CLUSTER_NUMBER_SMALL = 10
     # dataset-option mapping -> puts different optionvalues for dataset into relation
     DATASET_OPTION_MAPPING = {
+        "supported_file_endings": {
+            "bedfile": ["bed"],
+            "cooler": ["mcool"],
+            "bigwig": ["bw", "bigwig"],
+        },
         "DatasetType": {
             "bedfile": {
                 "ValueType": {
@@ -177,7 +179,7 @@ class Config:
                     "Interaction": {"Method": ["HiC"], "Normalization": ["ICCF"]}
                 }
             },
-        }
+        },
     }
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled
     OBS_EXP_PROCESSES = (

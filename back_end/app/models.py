@@ -174,7 +174,7 @@ class Dataset(db.Model):
         "public",
     ]
     ADD_REQUIRED_KEYS = ["assembly", "filetype"]
-    DATASET_META_FIELDS = {
+    DATASET_META_FIELDS = {  # TODO: remove dependancy
         "assembly": "assembly",
         "cellCycleStage": "cellCycleStage",
         "perturbation": "perturbation",
@@ -185,6 +185,18 @@ class Dataset(db.Model):
         "DerivationType": "derivationType",
         "Protein": "protein",
         "Directionality": "directionality",
+    }
+    DATASET_META_FIELDS_NEW = {
+        "assembly": "assembly",
+        "cell_cycle_stage": "cellCycleStage",
+        "perturbation": "perturbation",
+        "value_type": "valueType",
+        "method": "method",
+        "size_type": "sizeType",
+        "normalization": "normalization",
+        "derivation_type": "derivationType",
+        "protein": "protein",
+        "directionality": "directionality",
     }
     DATASET_META_FIELDS_MODIFY = {
         "datasetName": "dataset_name",
@@ -335,7 +347,7 @@ class Dataset(db.Model):
     def add_fields_from_form(self, form, requirement_spec=None):
         """Adds values for fields from form"""
         if requirement_spec is None:
-            requirement_spec = self.DATASET_META_FIELDS
+            requirement_spec = self.DATASET_META_FIELDS_NEW
         for form_key, dataset_field in requirement_spec.items():
             if form_key in form:
                 if form_key == "public":
@@ -372,7 +384,9 @@ class Dataset(db.Model):
         if any(key not in form_keys for key in cls.COMMON_REQUIRED_KEYS):
             return False
         # check metadata
-        dataset_type_mapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
+        dataset_type_mapping = current_app.config["DATASET_OPTION_MAPPING"][
+            "DatasetType"
+        ]
         value_types = dataset_type_mapping[filetype]["ValueType"]
         if form["ValueType"] not in value_types.keys():
             return False
@@ -392,33 +406,6 @@ class Dataset(db.Model):
         # check whether there is a field that is unsuitable
         for key in cls.ADD_REQUIRED_KEYS + ["SizeType"]:
             if key in form_keys:
-                return False
-        return True
-
-    @classmethod
-    def post_dataset_requirements_fullfilled(cls, form):
-        """checks whether form containing information to create dataset conforms
-        with the passed dataset_attribute_mapping."""
-        # check common things
-        form_keys = set(form.keys())
-        if any(key not in form_keys for key in cls.COMMON_REQUIRED_KEYS):
-            return False
-        if any(key not in form_keys for key in cls.ADD_REQUIRED_KEYS):
-            return False
-        # check metadata
-        dataset_type_mapping = current_app.config["DATASET_OPTION_MAPPING"]["DatasetType"]
-        value_types = dataset_type_mapping[form["filetype"]]["ValueType"]
-        if form["ValueType"] not in value_types.keys():
-            return False
-        # check value type members
-        for key, possible_values in value_types[form["ValueType"]].items():
-            if key not in form_keys:
-                return False
-            # check whether field is freetext
-            if possible_values == "freetext":
-                continue
-            # check that value in form corresponds to possible values
-            if form[key] not in possible_values:
                 return False
         return True
 
@@ -510,8 +497,14 @@ class Dataset(db.Model):
         do not exist for dataset"""
         if self.sizeType == "Interval":
             return []
-        windowsizes = [windowsize for windowsize in preprocessing_map.keys() if windowsize != "variable"]
-        existing_windowsizes = set([intervals.windowsize for intervals in self.intervals])
+        windowsizes = [
+            windowsize
+            for windowsize in preprocessing_map.keys()
+            if windowsize != "variable"
+        ]
+        existing_windowsizes = set(
+            [intervals.windowsize for intervals in self.intervals]
+        )
         missing_windowsizes = []
         for target_windowsize in windowsizes:
             if target_windowsize not in existing_windowsizes:
@@ -671,6 +664,7 @@ class Collection(db.Model):
 
 class ObsExp(db.Model):
     """Cache table for obs/exp dataframes"""
+
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     binsize = db.Column(db.Integer, index=True)
@@ -679,6 +673,7 @@ class ObsExp(db.Model):
 
 class Organism(db.Model):
     """Organism table for genome assembly"""
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512))
     assemblies = db.relationship(
@@ -695,6 +690,7 @@ class Organism(db.Model):
 
 class Assembly(db.Model):
     """Genome assembly database model"""
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512))
     chrom_sizes = db.Column(db.String(512), index=True)
@@ -710,6 +706,7 @@ class Assembly(db.Model):
 
 class Intervals(db.Model):
     """Genomic IntervalData database model"""
+
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
     name = db.Column(db.String(512), index=True)
@@ -770,6 +767,7 @@ class Intervals(db.Model):
 class AverageIntervalData(db.Model):
     """Table to hold information and pointers to data for
     average values of a dataset at the linked intervals dataset."""
+
     id = db.Column(db.Integer, primary_key=True)
     binsize = db.Column(db.Integer)
     name = db.Column(db.String(512), index=True)
@@ -995,6 +993,7 @@ class EmbeddingIntervalData(db.Model):
 
 class Task(db.Model):
     """Models the tasks dispatched to the redis queue."""
+
     id = db.Column(db.String(36), primary_key=True)
     name = db.Column(db.String(512), index=True)
     description = db.Column(db.String(512))
@@ -1032,6 +1031,7 @@ class Task(db.Model):
 
 class BedFileMetadata(db.Model):
     """Models the associated with a bedfile"""
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512))
     file_path = db.Column(db.String(512))

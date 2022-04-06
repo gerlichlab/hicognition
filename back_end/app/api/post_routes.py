@@ -7,6 +7,8 @@ import numpy as np
 from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from flask.json import jsonify
+
+# from hicognition.utils import get_all_interval_ids, parse_binsizes
 from hicognition.utils import parse_description, get_all_interval_ids, parse_binsizes
 from hicognition.format_checkers import FORMAT_CHECKERS
 from . import api
@@ -20,6 +22,9 @@ from ..models import (
     Intervals,
     Collection,
     EmbeddingIntervalData,
+)
+from ..form_models import (
+    DatasetPostModel,
 )
 from .authentication import auth
 from .. import pipeline_steps
@@ -37,20 +42,6 @@ def add_dataset():
         # check whether fileObject is there
         if len(request.files) == 0:
             return True
-        # check filename
-        file_ending = request.files["file"].filename.split(".")[-1]
-        correct_file_endings = {
-            "bedfile": ["bed"],
-            "cooler": ["mcool"],
-            "bigwig": ["bw", "bigwig"],
-        }
-        if request.form["filetype"] not in correct_file_endings:
-            return True
-        if file_ending.lower() not in correct_file_endings[request.form["filetype"]]:
-            return True
-        # check attributes
-        if not Dataset.post_dataset_requirements_fullfilled(request.form):
-            return True
         return False
 
     current_user = g.current_user
@@ -58,19 +49,23 @@ def add_dataset():
     if is_form_invalid():
         return invalid("Form is not valid!")
     # get data from form
-    data = request.form
+    try:
+        data = DatasetPostModel(**request.form, filename=request.files["file"].filename)
+    except ValueError as err:
+        return invalid(f'"Form is not valid: {str(err)}')
+
     file_object = request.files["file"]
     # check whether description is there
     description = parse_description(data)
     # check whether dataset should be public
-    set_public = "public" in data and data["public"].lower() == "true"
+    set_public = "public" in data and data["public"] == True
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
-        dataset_name=data["datasetName"],
+        dataset_name=data.dataset_name,
         description=description,
         public=set_public,
         processing_state="uploading",
-        filetype=data["filetype"],
+        filetype=data.filetype,
         user_id=current_user.id,
     )
     new_entry.add_fields_from_form(data)
@@ -80,7 +75,7 @@ def add_dataset():
     filename = f"{new_entry.id}_{secure_filename(file_object.filename)}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     file_object.save(file_path)
-    assembly = Assembly.query.get(data["assembly"])
+    assembly = Assembly.query.get(data.assembly)
     # check format -> this cannot be done in form checker since file needs to be available
     chromosome_names = set(pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0])
     needed_resolutions = parse_binsizes(
@@ -98,7 +93,7 @@ def add_dataset():
     new_entry.processing_state = "uploaded"
     db.session.add(new_entry)
     # start preprocessing of bedfile, the other filetypes do not need preprocessing
-    if data["filetype"] == "bedfile":
+    if data.filetype == "bedfile":
         current_user.launch_task(
             current_app.queues["short"],
             "pipeline_bed",
@@ -107,7 +102,7 @@ def add_dataset():
         )
         new_entry.processing_state = "processing"
     # if filetype is cooler, store available binsizes
-    if data["filetype"] == "cooler":
+    if data.filetype == "cooler":
         binsizes = [
             resolution.split("/")[2]
             for resolution in cooler.fileops.list_coolers(file_path)
@@ -126,7 +121,9 @@ def preprocess_dataset():
     def is_form_invalid():
         if not hasattr(request, "form"):
             return True
-        if sorted(list(request.form.keys())) != sorted(["dataset_ids", "region_ids", "preprocessing_map"]):
+        if sorted(list(request.form.keys())) != sorted(
+            ["dataset_ids", "region_ids", "preprocessing_map"]
+        ):
             return True
         return False
 
@@ -172,7 +169,9 @@ def preprocess_dataset():
     for region_dataset in region_datasets:
         missing_windowsizes = region_dataset.get_missing_windowsizes(preprocessing_map)
         for missing_windowsize in missing_windowsizes:
-            pipeline_steps.bed_preprocess_pipeline_step(region_dataset.id, missing_windowsize)
+            pipeline_steps.bed_preprocess_pipeline_step(
+                region_dataset.id, missing_windowsize
+            )
     # get interval ids of selected regions
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
@@ -183,9 +182,7 @@ def preprocess_dataset():
         # check whether windowsize is in preprocessing map
         if windowsize not in preprocessing_map:
             continue
-        for binsize in preprocessing_map[windowsize][
-            dataset.filetype
-        ]:
+        for binsize in preprocessing_map[windowsize][dataset.filetype]:
             for dataset in feature_datasets:
                 current_user.launch_task(
                     current_app.queues[
@@ -196,7 +193,10 @@ def preprocess_dataset():
                     intervals_id=interval_id,
                     binsize=binsize,
                 )
-                if Intervals.query.get(interval_id).source_dataset not in dataset.processing_regions:
+                if (
+                    Intervals.query.get(interval_id).source_dataset
+                    not in dataset.processing_regions
+                ):
                     dataset.processing_regions.append(
                         Intervals.query.get(interval_id).source_dataset
                     )
@@ -264,7 +264,9 @@ def preprocess_collections():
     for region_dataset in region_datasets:
         missing_windowsizes = region_dataset.get_missing_windowsizes(preprocessing_map)
         for missing_windowsize in missing_windowsizes:
-            pipeline_steps.bed_preprocess_pipeline_step(region_dataset.id, missing_windowsize)
+            pipeline_steps.bed_preprocess_pipeline_step(
+                region_dataset.id, missing_windowsize
+            )
     # get interval ids of selected regions
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
@@ -275,9 +277,7 @@ def preprocess_collections():
         # check whether windowsize is in preprocessing map
         if windowsize not in preprocessing_map:
             continue
-        for binsize in preprocessing_map[windowsize][
-            "collections"
-        ][collection.kind]:
+        for binsize in preprocessing_map[windowsize]["collections"][collection.kind]:
             for collection in collections:
                 current_user.launch_collection_task(
                     current_app.queues[
@@ -292,7 +292,10 @@ def preprocess_collections():
                     intervals_id=interval_id,
                     binsize=binsize,
                 )
-                if Intervals.query.get(interval_id).source_dataset not in collection.processing_for_datasets:
+                if (
+                    Intervals.query.get(interval_id).source_dataset
+                    not in collection.processing_for_datasets
+                ):
                     collection.processing_for_datasets.append(
                         Intervals.query.get(interval_id).source_dataset
                     )

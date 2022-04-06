@@ -22,12 +22,12 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         """adds test datasets to db"""
         super().setUp()
         # create mock csv
-        mock_df = pd.DataFrame({
-            "chrom": ["chr1"]*3,
-            "start": [1, 2, 3],
-            "end": [4,5,6]
-        })
-        mock_df.to_csv( current_app.config["UPLOAD_DIR"] + "/test.bed", index=False, sep="\t")
+        mock_df = pd.DataFrame(
+            {"chrom": ["chr1"] * 3, "start": [1, 2, 3], "end": [4, 5, 6]}
+        )
+        mock_df.to_csv(
+            current_app.config["UPLOAD_DIR"] + "/test.bed", index=False, sep="\t"
+        )
         # create datasets
         dataset1 = Dataset(
             id=1,
@@ -87,34 +87,34 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         interval6 = Intervals(id=6, name="interval6", windowsize=10000, dataset_id=4)
         interval7 = Intervals(id=7, name="interval7", windowsize=20000, dataset_id=4)
         self.default_data = [
-                dataset1,
-                dataset2,
-                dataset3,
-                dataset4,
-                dataset5,
-                dataset6,
-                dataset7,
-                interval1,
-                interval2,
-                interval3,
-                interval4,
-                interval5,
-                interval6,
-                interval7,
-            ]
+            dataset1,
+            dataset2,
+            dataset3,
+            dataset4,
+            dataset5,
+            dataset6,
+            dataset7,
+            interval1,
+            interval2,
+            interval3,
+            interval4,
+            interval5,
+            interval6,
+            interval7,
+        ]
         self.incomplete_data = [
-                dataset1,
-                dataset2,
-                dataset3,
-                dataset4,
-                dataset5,
-                dataset6,
-                dataset7,
-                interval1,
-                interval2,
-                interval3,
-                interval4,
-                interval5
+            dataset1,
+            dataset2,
+            dataset3,
+            dataset4,
+            dataset5,
+            dataset6,
+            dataset7,
+            interval1,
+            interval2,
+            interval3,
+            interval4,
+            interval5,
         ]
 
     @patch("app.models.User.launch_task")
@@ -127,7 +127,11 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # define call arguments
-        data = {"dataset_ids": "[1]", "region_ids": "[4]", "preprocessing_map": "PREPROCESSING_MAP"}
+        data = {
+            "dataset_ids": "[1]",
+            "region_ids": "[4]",
+            "preprocessing_map": "PREPROCESSING_MAP",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -137,10 +141,12 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        intervals = [1, 2,3, 4, 5]
+        intervals = [1, 2, 3, 4, 5]
         for interval_id in intervals:
             interval = Intervals.query.get(interval_id)
-            for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize]["cooler"]:
+            for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize][
+                "cooler"
+            ]:
                 mock_launch.assert_any_call(
                     self.app.queues["long"],
                     "pipeline_pileup",
@@ -151,7 +157,9 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                 )
 
     @patch("app.models.User.launch_task")
-    def test_pipeline_pileup_is_called_correctly_w_small_preprocessing_map(self, mock_launch):
+    def test_pipeline_pileup_is_called_correctly_w_small_preprocessing_map(
+        self, mock_launch
+    ):
         """Tests whether cooler pipeline to do pileups is called correctly."""
         # add data
         db.session.add_all(self.default_data)
@@ -160,7 +168,11 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # define call arguments
-        data = {"dataset_ids": "[1]", "region_ids": "[4]", "preprocessing_map": "PREPROCESSING_MAP_SMALL_WINDOWSIZES"}
+        data = {
+            "dataset_ids": "[1]",
+            "region_ids": "[4]",
+            "preprocessing_map": "PREPROCESSING_MAP_SMALL_WINDOWSIZES",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -173,7 +185,9 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         intervals = [2, 6, 7]
         for interval_id in intervals:
             interval = Intervals.query.get(interval_id)
-            for binsize in current_app.config["PREPROCESSING_MAP_SMALL_WINDOWSIZES"][interval.windowsize]["cooler"]:
+            for binsize in current_app.config["PREPROCESSING_MAP_SMALL_WINDOWSIZES"][
+                interval.windowsize
+            ]["cooler"]:
                 mock_launch.assert_any_call(
                     self.app.queues["long"],
                     "pipeline_pileup",
@@ -193,7 +207,11 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {"dataset_ids": "[3]", "region_ids": "[4]", "preprocessing_map": "PREPROCESSING_MAP_SMALL_WINDOWSIZES"}
+        data = {
+            "dataset_ids": "[3]",
+            "region_ids": "[4]",
+            "preprocessing_map": "PREPROCESSING_MAP_SMALL_WINDOWSIZES",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -213,7 +231,11 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {"dataset_ids": "[100]", "region_ids": "[4]", "preprocessing_map": "PREPROCESSING_MAP_SMALL_WINDOWSIZES"}
+        data = {
+            "dataset_ids": "[100]",
+            "region_ids": "[4]",
+            "preprocessing_map": "PREPROCESSING_MAP_SMALL_WINDOWSIZES",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -256,7 +278,11 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token_headers = self.get_token_header(token)
         # construct post data
         # call args
-        data = {"dataset_ids": "[5]", "region_ids": "[4]", "preprocessing_map": "PREPROCESSING_MAP"}
+        data = {
+            "dataset_ids": "[5]",
+            "region_ids": "[4]",
+            "preprocessing_map": "PREPROCESSING_MAP",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -266,10 +292,12 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        intervals = [1, 2,3, 4, 5]
+        intervals = [1, 2, 3, 4, 5]
         for interval_id in intervals:
             interval = Intervals.query.get(interval_id)
-            for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize]["cooler"]:
+            for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize][
+                "cooler"
+            ]:
                 mock_launch.assert_any_call(
                     self.app.queues["long"],
                     "pipeline_pileup",
@@ -289,7 +317,11 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {"dataset_ids": "[6]", "region_ids": "[4]", "preprocessing_map": "PREPROCESSING_MAP"}
+        data = {
+            "dataset_ids": "[6]",
+            "region_ids": "[4]",
+            "preprocessing_map": "PREPROCESSING_MAP",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -299,10 +331,12 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether pipeline has been called with right parameters
-        intervals = [1, 2,3, 4, 5]
+        intervals = [1, 2, 3, 4, 5]
         for interval_id in intervals:
             interval = Intervals.query.get(interval_id)
-            for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize]["bigwig"]:
+            for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize][
+                "bigwig"
+            ]:
                 mock_launch.assert_any_call(
                     self.app.queues["medium"],
                     "pipeline_stackup",
@@ -335,7 +369,11 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         task4 = Task(id="test4", name="test2", user_id=1, dataset_id=2, intervals_id=1)
         db.session.add_all([task1, task2, task3, task4])
         db.session.commit()
-        data = {"dataset_ids": "[1]", "region_ids": "[4]", "preprocessing_map": "PREPROCESSING_MAP"}
+        data = {
+            "dataset_ids": "[1]",
+            "region_ids": "[4]",
+            "preprocessing_map": "PREPROCESSING_MAP",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -359,7 +397,11 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {"dataset_ids": "[2, 6]", "region_ids": "[4]", "preprocessing_map": "PREPROCESSING_MAP"}
+        data = {
+            "dataset_ids": "[2, 6]",
+            "region_ids": "[4]",
+            "preprocessing_map": "PREPROCESSING_MAP",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -375,16 +417,14 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
             interval = Intervals.query.get(interval_id)
             for dataset_id in datasets:
                 dataset = Dataset.query.get(dataset_id)
-                for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize][dataset.filetype]:
+                for binsize in current_app.config["PREPROCESSING_MAP"][
+                    interval.windowsize
+                ][dataset.filetype]:
                     mock_launch.assert_any_call(
                         current_app.queues[
-                            current_app.config["PIPELINE_QUEUES"][
-                                dataset.filetype
-                            ]
+                            current_app.config["PIPELINE_QUEUES"][dataset.filetype]
                         ],
-                        *current_app.config["PIPELINE_NAMES"][
-                            dataset.filetype
-                        ],
+                        *current_app.config["PIPELINE_NAMES"][dataset.filetype],
                         dataset_id,
                         intervals_id=interval.id,
                         binsize=binsize,
@@ -406,7 +446,11 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         token = self.add_and_authenticate("test", "asdf")
         token_headers = self.get_token_header(token)
         # construct post data
-        data = {"dataset_ids": "[6, 7]", "region_ids": "[4]", "preprocessing_map": "PREPROCESSING_MAP"}
+        data = {
+            "dataset_ids": "[6, 7]",
+            "region_ids": "[4]",
+            "preprocessing_map": "PREPROCESSING_MAP",
+        }
         # dispatch post request
         response = self.client.post(
             "/api/preprocess/datasets/",
@@ -422,7 +466,9 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
             interval = Intervals.query.get(interval_id)
             for dataset_id in datasets:
                 dataset = Dataset.query.get(dataset_id)
-                for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize][dataset.filetype]:
+                for binsize in current_app.config["PREPROCESSING_MAP"][
+                    interval.windowsize
+                ][dataset.filetype]:
                     mock_launch.assert_any_call(
                         self.app.queues["medium"],
                         "pipeline_stackup",
