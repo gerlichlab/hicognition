@@ -1,0 +1,35 @@
+id,dataset_id,name,file_path_sub_sample_index,windowsize
+1448,469,pc_genes_forward_tss_50000,/code/temp/469_protein_coding_genes_forward_tss_cleaned.bed_indices.npy,50000
+1449,469,pc_genes_forward_tss_100000,/code/temp/469_protein_coding_genes_forward_tss_cleaned.bed_indices.npy,100000
+1450,469,pc_genes_forward_tss_400000,/code/temp/469_protein_coding_genes_forward_tss_cleaned.bed_indices.npy,400000
+1451,469,pc_genes_forward_tss_1000000,/code/temp/469_protein_coding_genes_forward_tss_cleaned.bed_indices.npy,1000000
+1452,469,pc_genes_forward_tss_2000000,/code/temp/469_protein_coding_genes_forward_tss_cleaned.bed_indices.npy,2000000
+1637,469,pc_genes_forward_tss_10000,/code/temp/469_protein_coding_genes_forward_tss_cleaned.bed_indices.npy,10000
+1638,469,pc_genes_forward_tss_20000,/code/temp/469_protein_coding_genes_forward_tss_cleaned.bed_indices.npy,20000
+1562,546,pc_genes_f_tss_by_hPTM_c3_50000,/code/temp/546_subset_pc_genes_forward_tss_cleaned.bed_indices.npy,50000
+1563,546,pc_genes_f_tss_by_hPTM_c3_100000,/code/temp/546_subset_pc_genes_forward_tss_cleaned.bed_indices.npy,100000
+1564,546,pc_genes_f_tss_by_hPTM_c3_400000,/code/temp/546_subset_pc_genes_forward_tss_cleaned.bed_indices.npy,400000
+1565,546,pc_genes_f_tss_by_hPTM_c3_1000000,/code/temp/546_subset_pc_genes_forward_tss_cleaned.bed_indices.npy,1000000
+1566,546,pc_genes_f_tss_by_hPTM_c3_2000000,/code/temp/546_subset_pc_genes_forward_tss_cleaned.bed_indices.npy,2000000
+1567,547,pc_genes_f_tss_by_hPTM_c6_50000,/code/temp/547_subset_pc_genes_forward_tss_cleaned.bed_indices.npy,50000
+1568,547,pc_genes_f_tss_by_hPTM_c6_100000,/code/temp/547_subset_pc_genes_forward_tss_cleaned.bed_indices.npy,100000
+1569,547,pc_genes_f_tss_by_hPTM_c6_400000,/code/temp/547_subset_pc_genes_forward_tss_cleaned.bed_indices.npy,400000
+1570,547,pc_genes_f_tss_by_hPTM_c6_1000000,/code/temp/547_subset_pc_genes_forward_tss_cleaned.bed_indices.npy,1000000
+1571,547,pc_genes_f_tss_by_hPTM_c6_2000000,/code/temp/547_subset_pc_genes_forward_tss_cleaned.bed_indices.npy,2000000
+1654,570,SMC3_ladurner_new_50000,/code/temp/570_SMC3-G2_2reps_p10_cleaned.bed_indices.npy,50000
+1655,570,SMC3_ladurner_new_100000,/code/temp/570_SMC3-G2_2reps_p10_cleaned.bed_indices.npy,100000
+1656,570,SMC3_ladurner_new_400000,/code/temp/570_SMC3-G2_2reps_p10_cleaned.bed_indices.npy,400000
+1657,570,SMC3_ladurner_new_1000000,/code/temp/570_SMC3-G2_2reps_p10_cleaned.bed_indices.npy,1000000
+1658,570,SMC3_ladurner_new_2000000,/code/temp/570_SMC3-G2_2reps_p10_cleaned.bed_indices.npy,2000000
+1659,574,"SMC3-Stag2 only_50000",/code/temp/574_subset_SMC3_ladurner_new_cleaned.bed_indices.npy,50000
+1660,574,"SMC3-Stag2 only_100000",/code/temp/574_subset_SMC3_ladurner_new_cleaned.bed_indices.npy,100000
+1661,574,"SMC3-Stag2 only_400000",/code/temp/574_subset_SMC3_ladurner_new_cleaned.bed_indices.npy,400000
+1662,574,"SMC3-Stag2 only_1000000",/code/temp/574_subset_SMC3_ladurner_new_cleaned.bed_indices.npy,1000000
+1663,574,"SMC3-Stag2 only_2000000",/code/temp/574_subset_SMC3_ladurner_new_cleaned.bed_indices.npy,2000000
+1664,575,"SMC3 Stag1 only_50000",/code/temp/575_subset_SMC3_ladurner_new_cleaned.bed_indices.npy,50000
+1665,575,"SMC3 Stag1 only_100000",/code/temp/575_subset_SMC3_ladurner_new_cleaned.bed_indices.npy,100000
+1666,575,"SMC3 Stag1 only_400000",/code/temp/575_subset_SMC3_ladurner_new_cleaned.bed_indices.npy,400000
+1667,575,"SMC3 Stag1 only_1000000",/code/temp/575_subset_SMC3_ladurner_new_cleaned.bed_indices.npy,1000000
+1668,575,"SMC3 Stag1 only_2000000",/code/temp/575_subset_SMC3_ladurner_new_cleaned.bed_indices.npy,2000000
+1674,575,"SMC3 Stag1 only_10000",/code/temp/575_subset_SMC3_ladurner_new_cleaned.bed_indices.npy,10000
+1675,575,"SMC3 Stag1 only_20000",/code/temp/575_subset_SMC3_ladurner_new_cleaned.bed_indices.npy,20000

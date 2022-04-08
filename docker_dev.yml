@@ -18,6 +18,7 @@ services:
         container_name: flask-server
         volumes:  
             - ${HICOGNITION_DIR}:/code
+            - ${SHOWCASE_DIR}:/showcase_data/
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py

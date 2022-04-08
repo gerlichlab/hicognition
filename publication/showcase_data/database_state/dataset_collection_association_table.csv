@@ -1,0 +1,36 @@
+collection_id,dataset_id,id,name,user_id,kind,public,processing_state
+78,319,78,STAG1-STAG2,7,1d-features,0,NULL
+78,320,78,STAG1-STAG2,7,1d-features,0,NULL
+81,10,81,"histone-ptms extended",7,1d-features,0,NULL
+81,11,81,"histone-ptms extended",7,1d-features,0,NULL
+81,18,81,"histone-ptms extended",7,1d-features,0,NULL
+81,163,81,"histone-ptms extended",7,1d-features,0,NULL
+81,165,81,"histone-ptms extended",7,1d-features,0,NULL
+81,460,81,"histone-ptms extended",7,1d-features,0,NULL
+81,461,81,"histone-ptms extended",7,1d-features,0,NULL
+81,462,81,"histone-ptms extended",7,1d-features,0,NULL
+81,466,81,"histone-ptms extended",7,1d-features,0,NULL
+81,467,81,"histone-ptms extended",7,1d-features,0,NULL
+85,454,85,"chromatin-features DG 03",7,regions,0,NULL
+85,465,85,"chromatin-features DG 03",7,regions,0,NULL
+85,456,85,"chromatin-features DG 03",7,regions,0,NULL
+85,458,85,"chromatin-features DG 03",7,regions,0,NULL
+85,457,85,"chromatin-features DG 03",7,regions,0,NULL
+85,464,85,"chromatin-features DG 03",7,regions,0,NULL
+85,453,85,"chromatin-features DG 03",7,regions,0,NULL
+85,17,85,"chromatin-features DG 03",7,regions,0,NULL
+85,16,85,"chromatin-features DG 03",7,regions,0,NULL
+85,455,85,"chromatin-features DG 03",7,regions,0,NULL
+85,25,85,"chromatin-features DG 03",7,regions,0,NULL
+86,16,86,"chromatin-features DG 04",7,regions,0,NULL
+86,17,86,"chromatin-features DG 04",7,regions,0,NULL
+86,1,86,"chromatin-features DG 04",7,regions,0,NULL
+86,25,86,"chromatin-features DG 04",7,regions,0,NULL
+86,453,86,"chromatin-features DG 04",7,regions,0,NULL
+86,454,86,"chromatin-features DG 04",7,regions,0,NULL
+86,455,86,"chromatin-features DG 04",7,regions,0,NULL
+86,456,86,"chromatin-features DG 04",7,regions,0,NULL
+86,457,86,"chromatin-features DG 04",7,regions,0,NULL
+86,458,86,"chromatin-features DG 04",7,regions,0,NULL
+86,464,86,"chromatin-features DG 04",7,regions,0,NULL
+86,465,86,"chromatin-features DG 04",7,regions,0,NULL

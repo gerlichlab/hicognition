@@ -1,5 +1,6 @@
 """Tests for /api/collections/ route to list collections."""
 import unittest
+from unittest.mock import patch
 from hicognition.test_helpers import LoginTestCase
 
 # add path to import app
@@ -48,6 +49,26 @@ class TestGetCollections(LoginTestCase):
         # protected route
         response = self.client.get("/api/collections/", content_type="application/json")
         self.assertEqual(response.status_code, 401)
+
+    def test_no_auth_required_showcase(self):
+        """Test that there is no authentication required when server is in showcase mode"""
+        app_config = self.app.config.copy()
+        app_config["SHOWCASE"] = True
+        with patch("app.api.authentication.current_app.config") as mock_config:
+            mock_config.__getitem__.side_effect = app_config.__getitem__
+            # add session data
+            db.session.add(self.collection_user_1)
+            db.session.commit()
+            # dispatch call
+            response = self.client.get(
+                "/api/collections/", content_type="application/json"
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.json,
+                [self.collection_user_1.to_json()],
+            )
+
 
     def test_no_collections_returns_empty(self):
         """No collections exist, return value is empty"""

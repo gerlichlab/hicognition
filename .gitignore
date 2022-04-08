@@ -25,6 +25,8 @@ documentation/hugo-site/public*
 
 *.egg-info
 
+publication/showcase_data/raw_data/*
+
 keys/*
 
 db_backups/*

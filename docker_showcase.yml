@@ -8,7 +8,7 @@ services:
             - ${HICOGNITION_DIR}:/code
             - ${SHOWCASE_DIR}:/showcase_data/
         environment:
-            - FLASK_DEBUG=0
+            - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
@@ -23,7 +23,7 @@ services:
             context: "./back_end"
         image: hicognition:latest
         entrypoint: "/bin/bash"
-        command: -c "cd /code && ./boot_prod.sh"
+        command: -c "cd /code && ./boot_dev.sh"
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.3
@@ -43,6 +43,7 @@ services:
             - ${DIR_FRONT_END}:/front_end
             - ${DIR_STATIC}:/static
             - ${KEY_DIR}:/keys
+            - ${DOC_PATH}:/docs
         networks:
             - hicognition-net
 

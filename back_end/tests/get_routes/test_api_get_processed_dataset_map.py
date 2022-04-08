@@ -1,5 +1,6 @@
 """Tests for /api/datasets/<dataset_id>/processedDatasetMap/ route to list and query sessions."""
 import unittest
+from unittest.mock import patch
 from hicognition.test_helpers import LoginTestCase
 
 # add path to import app
@@ -235,6 +236,18 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "/api/datasets/1/processedDataMap/", content_type="application/json"
         )
         self.assertEqual(response.status_code, 401)
+
+    def test_no_auth_required_showcase(self):
+        """No authentication required for showcase user"""
+        app_config = self.app.config.copy()
+        app_config["SHOWCASE"] = True
+        with patch("app.api.authentication.current_app.config") as mock_config:
+            mock_config.__getitem__.side_effect = app_config.__getitem__
+            # protected route
+            response = self.client.get(
+                "/api/datasets/500/processedDataMap/", content_type="application/json"
+            )
+            self.assertEqual(response.status_code, 404)
 
     def test_404_when_dataset_does_not_exist(self):
         """Test whether route returns 404 if dataset does not exist."""
@@ -814,6 +827,92 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             },
         }
         self.assertEqual(response.json, expected)
+
+    def test_structure_of_mapping_w_intervals_w_all_datatypes_showcase(self):
+        """Test whether the structure of the returned object is correct when
+        user is showcase user"""
+        app_config = self.app.config.copy()
+        app_config["SHOWCASE"] = True
+        with patch("app.api.authentication.current_app.config") as mock_config:
+            mock_config.__getitem__.side_effect = app_config.__getitem__
+            # add datasets
+            db.session.add_all(self.owned_datasets)
+            db.session.add_all(self.not_owned_datasets)
+            db.session.add(self.owned_collection)
+            db.session.add_all(self.intervals_owned_bedfile)
+            db.session.add_all(self.pileups)
+            db.session.add_all(self.lineprofiles)
+            db.session.add_all(self.stackups)
+            db.session.add_all(self.association_data)
+            db.session.add_all(self.embedding_data)
+            db.session.commit()
+            # protected route
+            response = self.client.get(
+                "/api/datasets/1/processedDataMap/",
+                content_type="application/json",
+            )
+            self.assertEqual(response.status_code, 200)
+            # check whether response is correct
+            expected = {
+                "pileup": {
+                    "3": {
+                        "name": "testfile3",
+                        "data_ids": {
+                            "10000": {"1000": {"ICCF": "2", "Obs/Exp": "1"}},
+                            "20000": {"2000": {"ICCF": "4", "Obs/Exp": "3"}},
+                        },
+                    },
+                    "6": {
+                        "name": "testfile6",
+                        "data_ids": {"20000": {"2000": {"ICCF": "5"}}},
+                    },
+                },
+                "stackup": {
+                    "4": {
+                        "name": "testfile4",
+                        "data_ids": {"10000": {"1000": "1"}, "20000": {"2000": "2"}},
+                    },
+                    "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "3"}}},
+                },
+                "lineprofile": {
+                    "4": {
+                        "name": "testfile4",
+                        "data_ids": {"10000": {"1000": "6"}, "20000": {"2000": "7"}},
+                    },
+                    "5": {"name": "testfile5", "data_ids": {"20000": {"2000": "8"}}},
+                },
+                "lola": {
+                    "1": {
+                        "name": "test_collection",
+                        "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                        "data_ids": {
+                            "10000": {"10000": "1", "20000": "2"},
+                            "20000": {"20000": "3"},
+                        },
+                    }
+                },
+                "embedding1d": {
+                    "1": {
+                        "name": "test_collection",
+                        "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                        "data_ids": {
+                            "10000": {"10000": {"small": "1"}, "20000": {"small": "2"}},
+                            "20000": {"20000": {"small": "3"}},
+                        },
+                    }
+                },
+                "embedding2d": {
+                    "3": {
+                        "name": "testfile3",
+                        "data_ids": {
+                            "10000": {
+                                "10000": {"ICCF": {"small": "5"}, "Obs/Exp": {"small": "6"}}
+                            },
+                        },
+                    }
+                },
+            }
+            self.assertEqual(response.json, expected)
 
     def test_bigwig_dataset_not_sent_when_not_finished(self):
         """Tests whehter only datasets are included in preprocessed dataset map
