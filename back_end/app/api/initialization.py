@@ -1,4 +1,5 @@
 """Helpers to populate database"""
+import json
 from pathlib import Path
 from flask.globals import current_app
 import pandas as pd
@@ -60,6 +61,19 @@ def add_showcase_data():
     collection_assoc_table = pd.read_csv(
         "/showcase_data/database_state/dataset_collection_association_table.csv"
     )[["collection_id", "dataset_id"]]
+    sessions = pd.read_csv("/showcase_data/database_state/sessions.csv")
+    sessions.loc[:, "user_id"] = pd.NA
+    # load session data
+    with open("/showcase_data/database_state/session_data.json", "r") as f:
+        text = f.read()
+    session_objects = [str(i["session_object"]) for i in json.loads(text)]
+    session_frame = sessions.assign(session_object=session_objects)
+    session_coll = pd.read_csv(
+        "/showcase_data/database_state/session_collection_association.csv"
+    )
+    session_data = pd.read_csv(
+        "/showcase_data/database_state/session_dataset_association.csv"
+    )
     avg = pd.read_csv("/showcase_data/database_state/average_interval_data.csv")
     emb = pd.read_csv("/showcase_data/database_state/embedding_interval_data.csv")
     ind = pd.read_csv("/showcase_data/database_state/individual_interval_data.csv")
@@ -73,6 +87,16 @@ def add_showcase_data():
         db.get_engine(),
         if_exists="append",
         index=False,
+    )
+    session_frame.to_sql("session", db.get_engine(), if_exists="append", index=False)
+    session_coll.to_sql(
+        "session_collection_assoc_table",
+        db.get_engine(),
+        if_exists="append",
+        index=False,
+    )
+    session_data.to_sql(
+        "session_dataset_assoc_table", db.get_engine(), if_exists="append", index=False
     )
     change_file_paths_to_showcase(avg).to_sql(
         "average_interval_data", db.get_engine(), if_exists="append", index=False
