@@ -26,6 +26,7 @@ documentation/hugo-site/public*
 *.egg-info
 
 publication/showcase_data/raw_data/*
+publication/showcase_data/raw_data.tar.gz
 
 keys/*
 
