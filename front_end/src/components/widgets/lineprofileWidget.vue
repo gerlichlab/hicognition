@@ -454,6 +454,7 @@ export default {
                 lineProfileNames: [],
                 showMenu: false,
                 normalized: false,
+                reactToUpdate: true, // whether to react to updates in binsize/dataset
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
                 expectSelection: false,
@@ -525,6 +526,7 @@ export default {
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
                 expectSelection: false,
+                reactToUpdate: false,
                 minHeatmap: 0, // this value have no meaning, they are for compatibility with the valuescale mixin
                 maxHeatmap: 0, // this value have no meaning, they are for compatibility with the valuescale mixin
                 minHeatmapRange:
@@ -655,8 +657,11 @@ export default {
                 !newVal ||
                 !oldVal ||
                 !this.selectedDataset ||
-                this.selectedDataset.length == 0
+                this.selectedDataset.length == 0 ||
+                !this.reactToUpdate
             ) {
+                // switch on react to update
+                this.reactToUpdate = true;
                 return;
             }
             // check whether there is data available
