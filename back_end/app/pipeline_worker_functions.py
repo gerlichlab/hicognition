@@ -4,6 +4,7 @@ changes"""
 import os
 import logging
 import uuid
+from isort import file
 import pandas as pd
 import numpy as np
 import umap
@@ -638,30 +639,37 @@ def _add_embedding_2d_to_db(
 ):
     """Adds association data set to db"""
     # check if old association interval data exists and delete them
-    test_query = EmbeddingIntervalData.query.filter(
+    entry = EmbeddingIntervalData.query.filter(
         (EmbeddingIntervalData.binsize == int(binsize))
         & (EmbeddingIntervalData.intervals_id == intervals_id)
         & (EmbeddingIntervalData.dataset_id == dataset_id)
         & (EmbeddingIntervalData.normalization == interaction_type)
         & (EmbeddingIntervalData.cluster_number == cluster_number)
-    ).all()
-    for entry in test_query:
+    ).first()
+    if entry is not None:
         hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
-        db.session.delete(entry)
-    # add new entry
-    new_entry = EmbeddingIntervalData(
-        binsize=int(binsize),
-        name=os.path.basename(filepaths["embedding"]),
-        file_path=filepaths["embedding"],
-        thumbnail_path=filepaths["thumbnails"],
-        cluster_id_path=filepaths["cluster_ids"],
-        intervals_id=intervals_id,
-        dataset_id=dataset_id,
-        value_type="2d-embedding",
-        normalization=interaction_type,
-        cluster_number=cluster_number,
-    )
-    db.session.add(new_entry)
+        hicognition.io_helpers.remove_safely(entry.thumbnail_path, current_app.logger)
+        hicognition.io_helpers.remove_safely(entry.cluster_id_path, current_app.logger)
+        # update entry
+        entry.name = os.path.basename(filepaths["embedding"])
+        entry.file_path = filepaths["embedding"]
+        entry.thumbnail_path = filepaths["thumbnails"]
+        entry.cluster_id_path = filepaths["cluster_ids"]
+    else:
+        # add new entry
+        entry = EmbeddingIntervalData(
+            binsize=int(binsize),
+            name=os.path.basename(filepaths["embedding"]),
+            file_path=filepaths["embedding"],
+            thumbnail_path=filepaths["thumbnails"],
+            cluster_id_path=filepaths["cluster_ids"],
+            intervals_id=intervals_id,
+            dataset_id=dataset_id,
+            value_type="2d-embedding",
+            normalization=interaction_type,
+            cluster_number=cluster_number,
+        )
+        db.session.add(entry)
     db.session.commit()
 
 
@@ -670,52 +678,61 @@ def _add_embedding_1d_to_db(
 ):
     """Adds association data set to db"""
     # check if old association interval data exists and delete them
-    test_query = EmbeddingIntervalData.query.filter(
+    entry = EmbeddingIntervalData.query.filter(
         (EmbeddingIntervalData.binsize == int(binsize))
         & (EmbeddingIntervalData.intervals_id == intervals_id)
         & (EmbeddingIntervalData.collection_id == collection_id)
         & (EmbeddingIntervalData.cluster_number == cluster_number)
-    ).all()
-    for entry in test_query:
+    ).first()
+    if entry is not None:
         hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
-        db.session.delete(entry)
-    # add new entry
-    new_entry = EmbeddingIntervalData(
-        binsize=int(binsize),
-        name=os.path.basename(filepaths["embedding"]),
-        file_path=filepaths["embedding"],
-        file_path_feature_values=filepaths["features"],
-        cluster_id_path=filepaths["cluster_ids"],
-        thumbnail_path=filepaths["average_values"],
-        intervals_id=intervals_id,
-        collection_id=collection_id,
-        value_type="1d-embedding",
-        cluster_number=cluster_number,
-    )
-    db.session.add(new_entry)
+        hicognition.io_helpers.remove_safely(entry.file_path_feature_values, current_app.logger)
+        hicognition.io_helpers.remove_safely(entry.cluster_id_path, current_app.logger)
+        hicognition.io_helpers.remove_safely(entry.thumbnail_path, current_app.logger)
+        entry.name = os.path.basename(filepaths["embedding"])
+        entry.file_path = filepaths["embedding"]
+        entry.file_path_feature_values = filepaths["features"]
+        entry.cluster_id_path = filepaths["cluster_ids"]
+        entry.thumbnail_path = filepaths["average_values"]
+    else:
+        # add new entry
+        entry = EmbeddingIntervalData(
+            binsize=int(binsize),
+            name=os.path.basename(filepaths["embedding"]),
+            file_path=filepaths["embedding"],
+            file_path_feature_values=filepaths["features"],
+            cluster_id_path=filepaths["cluster_ids"],
+            thumbnail_path=filepaths["average_values"],
+            intervals_id=intervals_id,
+            collection_id=collection_id,
+            value_type="1d-embedding",
+            cluster_number=cluster_number,
+        )
+        db.session.add(entry)
     db.session.commit()
 
 
 def _add_association_data_to_db(file_path, binsize, intervals_id, collection_id):
     """Adds association data set to db"""
     # check if old association interval data exists and delete them
-    test_query = AssociationIntervalData.query.filter(
+    entry = AssociationIntervalData.query.filter(
         (AssociationIntervalData.binsize == int(binsize))
         & (AssociationIntervalData.intervals_id == intervals_id)
         & (AssociationIntervalData.collection_id == collection_id)
-    ).all()
-    for entry in test_query:
+    ).first()
+    if entry is not None:
         hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
-        db.session.delete(entry)
-    # add new entry
-    new_entry = AssociationIntervalData(
-        binsize=int(binsize),
-        name=os.path.basename(file_path),
-        file_path=file_path,
-        intervals_id=intervals_id,
-        collection_id=collection_id,
-    )
-    db.session.add(new_entry)
+        entry.file_path = file_path
+    else:
+        # add new entry
+        entry = AssociationIntervalData(
+            binsize=int(binsize),
+            name=os.path.basename(file_path),
+            file_path=file_path,
+            intervals_id=intervals_id,
+            collection_id=collection_id,
+        )
+        db.session.add(entry)
     db.session.commit()
 
 
@@ -724,49 +741,52 @@ def _add_stackup_db(
 ):
     """Adds stackup to database"""
     # check if old individual interval data exists and delete them
-    test_query = IndividualIntervalData.query.filter(
+    entry = IndividualIntervalData.query.filter(
         (IndividualIntervalData.binsize == int(binsize))
         & (IndividualIntervalData.intervals_id == intervals_id)
         & (IndividualIntervalData.dataset_id == bigwig_dataset_id)
-    ).all()
-    for entry in test_query:
+    ).first()
+    if entry is not None:
         hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
         hicognition.io_helpers.remove_safely(entry.file_path_small, current_app.logger)
-        db.session.delete(entry)
-    # add new entry
-    new_entry = IndividualIntervalData(
-        binsize=int(binsize),
-        name=os.path.basename(file_path),
-        file_path=file_path,
-        file_path_small=file_path_small,
-        intervals_id=intervals_id,
-        dataset_id=bigwig_dataset_id,
-    )
-    db.session.add(new_entry)
+        entry.file_path = file_path
+        entry.file_path_small = file_path_small
+    else:
+        # add new entry
+        entry = IndividualIntervalData(
+            binsize=int(binsize),
+            name=os.path.basename(file_path),
+            file_path=file_path,
+            file_path_small=file_path_small,
+            intervals_id=intervals_id,
+            dataset_id=bigwig_dataset_id,
+        )
+        db.session.add(entry)
     db.session.commit()
 
 
 def _add_line_db(file_path, binsize, intervals_id, bigwig_dataset_id):
     """Adds pileup region to database"""
     # check if old average interval data exists and delete them
-    test_query = AverageIntervalData.query.filter(
+    entry = AverageIntervalData.query.filter(
         (AverageIntervalData.binsize == int(binsize))
         & (AverageIntervalData.intervals_id == intervals_id)
         & (AverageIntervalData.dataset_id == bigwig_dataset_id)
-    ).all()
-    for entry in test_query:
+    ).first()
+    if entry is not None:
         hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
-        db.session.delete(entry)
-    # add new entry
-    new_entry = AverageIntervalData(
-        binsize=int(binsize),
-        name=os.path.basename(file_path),
-        file_path=file_path,
-        intervals_id=intervals_id,
-        dataset_id=bigwig_dataset_id,
-        value_type="line",
-    )
-    db.session.add(new_entry)
+        entry.file_path = file_path
+    else:
+        # add new entry
+        entry = AverageIntervalData(
+            binsize=int(binsize),
+            name=os.path.basename(file_path),
+            file_path=file_path,
+            intervals_id=intervals_id,
+            dataset_id=bigwig_dataset_id,
+            value_type="line",
+        )
+        db.session.add(entry)
     db.session.commit()
 
 
@@ -774,23 +794,24 @@ def _add_pileup_db(file_path, binsize, intervals_id, cooler_dataset_id, pileup_t
     """Adds pileup region to database and deletes any old pileups with the
     same parameter combination."""
     # check if old average interval data exists and delete them
-    test_query = AverageIntervalData.query.filter(
+    entry = AverageIntervalData.query.filter(
         (AverageIntervalData.binsize == int(binsize))
         & (AverageIntervalData.intervals_id == intervals_id)
         & (AverageIntervalData.dataset_id == cooler_dataset_id)
         & (AverageIntervalData.value_type == pileup_type)
-    ).all()
-    for entry in test_query:
+    ).first()
+    if entry is not None:
         hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
-        db.session.delete(entry)
-    # add new entry
-    new_entry = AverageIntervalData(
-        binsize=int(binsize),
-        name=os.path.basename(file_path),
-        file_path=file_path,
-        intervals_id=intervals_id,
-        dataset_id=cooler_dataset_id,
-        value_type=pileup_type,
-    )
-    db.session.add(new_entry)
+        entry.file_path = file_path
+    else:
+        # add new entry
+        entry = AverageIntervalData(
+            binsize=int(binsize),
+            name=os.path.basename(file_path),
+            file_path=file_path,
+            intervals_id=intervals_id,
+            dataset_id=cooler_dataset_id,
+            value_type=pileup_type,
+        )
+        db.session.add(entry)
     db.session.commit()
