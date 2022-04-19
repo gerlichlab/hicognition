@@ -10,10 +10,6 @@ services:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
-            - REDIS_URL=${REDIS_URL}
-            - UPLOAD_DIR=${UPLOAD_DIR}
-            - CHROM_SIZES=${CHROM_SIZES}
-            - CHROM_ARMS=${CHROM_ARMS}
             - SHOWCASE=1
         ports:
             # only map localhost-port
@@ -40,8 +36,6 @@ services:
             - hicognition
         volumes:
             - ${DIR_FRONT_END}:/front_end
-            - ${DIR_STATIC}:/static
-            - ${KEY_DIR}:/keys
             - ${DOC_PATH}:/docs
         networks:
             - hicognition-net
