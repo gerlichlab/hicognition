@@ -37,5 +37,6 @@ def create_app(config_name):
 
     app.register_blueprint(api_blueprint, url_prefix="/api/")
     # register sse blueprint
-    app.register_blueprint(sse, url_prefix="/stream")
+    if not app.config["SHOWCASE"]:
+        app.register_blueprint(sse, url_prefix="/stream")
     return app

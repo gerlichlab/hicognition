@@ -39,7 +39,9 @@ migrate = Migrate(app, db, compare_type=True)
 sched = BackgroundScheduler(daemon=True)
 sched.add_job(add_app_context(app)(cleanup_empty_tasks), "interval", seconds=360)
 sched.add_job(add_app_context(app)(cleanup_failed_tasks), "interval", seconds=520)
-sched.add_job(add_app_context(app)(send_keep_alive_message), "interval", seconds=30)
+
+if not app.config["SHOWCASE"]:
+    sched.add_job(add_app_context(app)(send_keep_alive_message), "interval", seconds=30)
 sched.start()
 
 atexit.register(lambda: sched.shutdown(wait=False))
