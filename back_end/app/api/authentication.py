@@ -1,5 +1,5 @@
 """ Authenticating credentials of a request and dealing with the tokens. """
-from flask import g, request
+from flask import g, request, current_app
 from flask.json import jsonify
 from flask_httpauth import HTTPBasicAuth
 from . import api
@@ -10,9 +10,21 @@ from ..models import User, Session
 auth = HTTPBasicAuth()
 
 
+class ShowCaseUser():
+    def __init__(self):
+        self.id = None
+        self.is_anonymous = False
+    
+    def generate_auth_token(self, expiration):
+        return "ASDF"
+
 @auth.verify_password
 def verify_password(username_or_token, password):
     """Verifies the password of a user or if a valid token is used."""
+    if current_app.config["SHOWCASE"]:
+        g.current_user = ShowCaseUser()
+        g.token_used = False
+        return True
     if username_or_token == "":
         return False
     if password == "":
@@ -33,12 +45,16 @@ def get_token():
     """Returns a token for a logged-in user."""
     if g.current_user.is_anonymous or g.token_used:
         return errors.forbidden("Invalid credentials")
+    if User.query.get(g.current_user.id) is None:
+        user_name = "Anonymous"
+    else:
+        user_name = User.query.get(g.current_user.id).username
     return jsonify(
         {
             "token": g.current_user.generate_auth_token(expiration=3600 * 24),
             "expiration": 3600 * 24,
             "user_id": g.current_user.id,
-            "user_name": User.query.get(g.current_user.id).username,
+            "user_name": user_name,
         }
     )
 

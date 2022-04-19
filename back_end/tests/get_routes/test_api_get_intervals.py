@@ -1,5 +1,6 @@
 """Tests for /api/intervals route to list intervals."""
 import unittest
+from unittest.mock import patch
 import os
 import json
 import pandas as pd
@@ -78,6 +79,21 @@ class TestGetIntervals(LoginTestCase):
         # protected route
         response = self.client.get("/api/intervals/", content_type="application/json")
         self.assertEqual(response.status_code, 401)
+
+    def test_no_auth_required_showcase(self):
+        """Showcase user does not need to authenticate"""
+        app_config = self.app.config.copy()
+        app_config["SHOWCASE"] = True
+        with patch("app.api.authentication.current_app.config") as mock_config:
+            mock_config.__getitem__.side_effect = app_config.__getitem__
+            # add data
+            db.session.add_all(self.owned_dataset_intervals)
+            db.session.commit()
+            # protected route
+            response = self.client.get("/api/intervals/", content_type="application/json")
+            self.assertEqual(response.status_code, 200)
+            expected = [self.owned_intervals_1.to_json(), self.owned_intervals_2.to_json()]
+            self.assertEqual(response.json, expected)
 
     def test_correct_intervals_single_dataset(self):
         """Correct intervals are returned for single dataset."""

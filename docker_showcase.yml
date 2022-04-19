@@ -1,0 +1,83 @@
+version: "3"
+
+services:
+    # flask-api server
+    hicognition:
+        container_name: flask-server
+        volumes:
+            - ${SHOWCASE_DIR}:/showcase_data/
+        environment:
+            - FLASK_DEBUG=1
+            - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=${DATABASE_URL}
+            - SHOWCASE=1
+        ports:
+            # only map localhost-port
+            - "5000:5000"
+        build:
+            context: "./back_end"
+        image: hicognition:latest
+        entrypoint: "/bin/bash"
+        command: -c "cd /code && ./boot_showcase.sh"
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.3
+
+    # nginx server to serve front-end and redirect requests to flask-api
+    nginx:
+        container_name: hicognition-nginx
+        build:
+            context: "./nginx"
+        ports:
+            - "80:80"
+        # map front-end files
+        depends_on:
+            - node
+            - hicognition
+        volumes:
+            - ${DIR_FRONT_END}:/front_end
+            - ${DOC_PATH}:/docs
+        networks:
+            - hicognition-net
+
+    # container to build front-end
+    node:
+        container_name: node-builder
+        image: node:14-buster
+        volumes:
+            - ${DIR_FRONT_END}:/front_end
+        entrypoint: 
+            - "/bin/bash"
+        command: -c "cd /front_end && npm install && npm run build"
+
+    hugo-builder:
+        container_name: hugo-builder
+        image: klakegg/hugo
+        volumes:
+            - ${DOC_PATH}:/doc
+        entrypoint: "/bin/sh"
+        command: -c "[ ! -d /doc/public ] || rm -r /doc/public && cd /doc && hugo"
+
+    mysql:
+        container_name: mysql
+        ports:
+            # map port out for diagnostics
+            - "3306:3306"
+        environment:
+            - MYSQL_RANDOM_ROOT_PASSWORD=yes
+            - MYSQL_DATABASE=hicognition
+            - MYSQL_USER=hicognition
+            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        image: mysql/mysql-server:8.0
+        volumes:
+            - ./mysql/mysql.cnf:/etc/my.cnf
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.9
+
+networks:
+    hicognition-net:
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.18.0.0/16

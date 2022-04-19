@@ -20,7 +20,7 @@ To get started using HiCognition, check out the [quickstart section](https://ger
 
 ## Installation
 
-If you want to set-up a HiCognition instance yourself, check out the [installation section](https://gerlichlab.github.io/hicognition/docs/installation/) of our documentation.
+If you want to set-up a HiCognition instance yourself, check out the [installation section](https://gerlichlab.github.io/hicognition/docs/installation/) of our documentation. An optional CLI tool to interface with the web API can be found in the [HiCognition library](https://github.com/gerlichlab/hicognition_lib) repository.
 
 ## Development
 

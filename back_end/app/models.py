@@ -331,6 +331,8 @@ class Dataset(db.Model):
     def is_access_denied(self, app_context):
         """Determine whether context
         allows access to dataset."""
+        if current_app.config["SHOWCASE"]:
+            return False
         if self.public:
             return False
         if (self.user_id != app_context.current_user.id) and (
@@ -579,6 +581,8 @@ class Collection(db.Model):
     def is_access_denied(self, app_context):
         """Determine whether context
         allows access to collection."""
+        if current_app.config["SHOWCASE"]:
+            return False
         if self.public:
             return False
         if (self.user_id != app_context.current_user.id) and (

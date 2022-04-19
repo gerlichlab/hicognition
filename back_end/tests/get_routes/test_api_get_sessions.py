@@ -1,6 +1,7 @@
 """Tests for /api/sessions route to list and query sessions."""
 import datetime
 import unittest
+from unittest.mock import patch
 from hicognition.test_helpers import LoginTestCase
 
 # add path to import app
@@ -32,6 +33,20 @@ class TestGetSessions(LoginTestCase):
         # protected route
         response = self.client.get("/api/sessions/", content_type="application/json")
         self.assertEqual(response.status_code, 401)
+
+    def test_no_auth_required_showcase_user(self):
+        """No authentication provided, response should be 401"""
+        app_config = self.app.config.copy()
+        app_config["SHOWCASE"] = True
+        with patch("app.api.authentication.current_app.config") as mock_config:
+            mock_config.__getitem__.side_effect = app_config.__getitem__
+            # add session data
+            db.session.add(self.session_user_1)
+            db.session.commit()
+            # protected route
+            response = self.client.get("/api/sessions/", content_type="application/json")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json, [self.session_user_1.to_json()])
 
     def test_no_sessions_returns_empty(self):
         """No sessions exist, return value is empty"""

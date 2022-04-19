@@ -11,7 +11,7 @@ from pydantic import ValidationError
 # import sys
 # sys.path.append("./")
 from app.models import Dataset, Assembly
-from app.api.post_routes import DatasetPostModel
+from app.form_models import DatasetPostModel
 from app import db
 
 

@@ -89,6 +89,7 @@ def get_all_datasets():
         (Dataset.user_id == g.current_user.id)
         | (Dataset.public)
         | (Dataset.id.in_(g.session_datasets))
+        | current_app.config["SHOWCASE"]
     ).all()
     return jsonify([dfile.to_json() for dfile in all_available_datasets])
 
@@ -229,6 +230,7 @@ def get_intervals():
             (Dataset.user_id == g.current_user.id)
             | (Dataset.public)
             | (Dataset.id.in_(g.session_datasets))
+            | current_app.config["SHOWCASE"]
         )
         .all()
     )
@@ -528,6 +530,7 @@ def get_all_sessions():
     """Gets all available sessions for a given user."""
     all_available_sessions = Session.query.filter(
         (Session.user_id == g.current_user.id)
+        | current_app.config["SHOWCASE"]
     ).all()
     return jsonify([dfile.to_json() for dfile in all_available_sessions])
 
@@ -573,6 +576,7 @@ def get_all_collections():
         (Collection.user_id == g.current_user.id)
         | Collection.public
         | (Collection.id.in_(g.session_collections))
+        | current_app.config["SHOWCASE"]
     ).all()
     update_processing_state(all_available_collections, db)
     return jsonify([dfile.to_json() for dfile in all_available_collections])

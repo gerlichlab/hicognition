@@ -4,12 +4,13 @@ services:
     # flask-api server
     hicognition:
         container_name: flask-server
-        volumes:  # TODO: mount only upload directory for production config to persist it
+        volumes:
             - ${DATA_DIR}:/code/temp/
         environment:
             - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
+            - SECRET_KEY=${SECRET_KEY}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -73,6 +74,7 @@ services:
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
+            - SECRET_KEY=${SECRET_KEY}
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
@@ -96,6 +98,7 @@ services:
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
+            - SECRET_KEY=${SECRET_KEY}
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
@@ -119,6 +122,7 @@ services:
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
+            - SECRET_KEY=${SECRET_KEY}
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
@@ -161,7 +165,7 @@ services:
         volumes:
             - ${DOC_PATH}:/doc
         entrypoint: "/bin/sh"
-        command: -c "rm -r /doc/public && cd /doc && hugo"
+        command: -c "[ ! -d /doc/public ] || rm -r /doc/public && cd /doc && hugo"
 
 networks:
     hicognition-net:

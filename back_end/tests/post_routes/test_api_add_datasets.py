@@ -10,7 +10,6 @@ from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 # import sys
 # sys.path.append("./")
 from app.models import Dataset, Assembly
-from app.api.post_routes import DatasetPostModel
 from app import db
 
 

@@ -19,6 +19,7 @@ class Config:
     REDIS_URL = os.environ.get("REDIS_URL") or "redis://"
     TESTING = False
     END2END = False
+    SHOWCASE = bool(os.environ.get("SHOWCASE")) or False # if there is anything in showcase this is true
     # allowed binsizes for given windowsizes of regions
     PREPROCESSING_MAP = {
         50000: {
