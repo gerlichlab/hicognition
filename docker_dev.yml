@@ -10,6 +10,9 @@ services:
             - "8080:8080"
         volumes:
             - ${DIR_FRONT_END}:/front_end
+        environment:
+            #TODO: switch back to false
+            - showcase=false
         entrypoint: 
             - "/bin/bash"
         command: -c "cd /front_end && npm install && npm run dev"

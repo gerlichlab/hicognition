@@ -21,8 +21,14 @@
                     >Close</md-button
                 >
                 <md-button
+                    v-if=(!showcase_bool)
                     @click="showDialog = true"
                     >Create Region</md-button
+                >
+                <md-button
+                    v-if=(showcase_bool)
+                    >Create Region <md-tooltip md-direction="top">Deactivated in showcase mode</md-tooltip>
+                    </md-button
                 >
             </md-card-actions>
         <md-dialog-prompt
@@ -77,7 +83,8 @@ export default {
             },
             showDialog: false,
             newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterID}`,
-            datasetSaved: false
+            datasetSaved: false,
+            showcase_bool: process.env.SHOWCASE
         };
     },
     computed: {

@@ -3,7 +3,7 @@
         <!-- span window horizontal is needed to position logout on the right -->
         <div class="md-toolbar-row span-window-horizontal">
             <div class="md-toolbar-section-start">
-                <span class="md-title">HiCognition {{ appversion }}</span>
+                <span class="md-title">HiCognition {{ process.env.VERSION }}</span>
             </div>
         </div>
     </div>

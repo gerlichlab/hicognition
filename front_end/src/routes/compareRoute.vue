@@ -6,6 +6,12 @@
             :key="item.id"
             :id="item.id"
         />
+        <div v-if="!collections[0]">
+            <md-empty-state>
+                <empty-state-basic>
+                </empty-state-basic>
+            </md-empty-state>
+        </div>
         <div class="bottom-right">
             <md-button class="md-fab md-primary" @click="addCollection">
                 <md-icon>add</md-icon>
@@ -18,12 +24,14 @@
 import widgetCollection from "../components/widgetCollection.vue";
 import { apiMixin } from "../mixins";
 import EventBus from "../eventBus";
+import EmptyStateBasic from "../components/ui/emptyState.vue"
 
 export default {
     name: "CompareRoute",
     mixins: [apiMixin],
     components: {
-        widgetCollection
+        widgetCollection,
+        EmptyStateBasic,
     },
     data: function() {
         return {

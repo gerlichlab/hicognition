@@ -49,6 +49,8 @@ services:
     node:
         container_name: node-builder
         image: node:14-buster
+        environment:
+            - showcase=false
         volumes:
             - ${DIR_FRONT_END}:/front_end
         entrypoint: 
