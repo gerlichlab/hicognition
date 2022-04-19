@@ -27,6 +27,7 @@ services:
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
+            - SHOWCASE=False
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
@@ -140,6 +141,14 @@ services:
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.9
+    
+    hugo-builder:
+        container_name: hugo-builder
+        image: klakegg/hugo
+        volumes:
+            - ${DOC_PATH}:/doc
+        entrypoint: "/bin/sh"
+        command: -c "[ ! -d /doc/public ] || rm -r /doc/public && cd /doc && hugo"
 
 networks:
     hicognition-net:
