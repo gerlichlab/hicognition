@@ -35,16 +35,13 @@ app = create_app(os.getenv("FLASK_CONFIG") or "default")
 migrate = Migrate(app, db, compare_type=True)
 
 # start background tasks
-
-sched = BackgroundScheduler(daemon=True)
-sched.add_job(add_app_context(app)(cleanup_empty_tasks), "interval", seconds=360)
-sched.add_job(add_app_context(app)(cleanup_failed_tasks), "interval", seconds=520)
-
 if not app.config["SHOWCASE"]:
+    sched = BackgroundScheduler(daemon=True)
+    sched.add_job(add_app_context(app)(cleanup_empty_tasks), "interval", seconds=360)
+    sched.add_job(add_app_context(app)(cleanup_failed_tasks), "interval", seconds=520)
     sched.add_job(add_app_context(app)(send_keep_alive_message), "interval", seconds=30)
-sched.start()
-
-atexit.register(lambda: sched.shutdown(wait=False))
+    sched.start()
+    atexit.register(lambda: sched.shutdown(wait=False))
 
 # add command line arguments for user creation
 
