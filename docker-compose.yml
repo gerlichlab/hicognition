@@ -4,7 +4,7 @@ services:
     # flask-api server
     hicognition:
         container_name: flask-server
-        volumes:  # TODO: mount only upload directory for production config to persist it
+        volumes:
             - ${DATA_DIR}:/code/temp/
         environment:
             - FLASK_DEBUG=0

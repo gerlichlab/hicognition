@@ -4,8 +4,7 @@ services:
     # flask-api server
     hicognition:
         container_name: flask-server
-        volumes:  
-            - ${HICOGNITION_DIR}:/code
+        volumes:
             - ${SHOWCASE_DIR}:/showcase_data/
         environment:
             - FLASK_DEBUG=1
