@@ -56,10 +56,10 @@ new Vue({
     },
     created: function(){
         // create event source for notifications -> doing it once limits the number of open connections to server
-        store.commit("createNotificationSource")
+            store.commit("createNotificationSource")
     },
     beforeDestroy: function(){
-        store.commit("releaseNotificationSource")
+            store.commit("releaseNotificationSource")
     },
     template: "<App/>"
 });

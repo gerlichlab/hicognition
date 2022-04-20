@@ -62,7 +62,7 @@ export var apiMixin = {
             */
             // Check whether token exists
             var token = this.$store.state.token;
-            if (!token) {
+            if (!token && !process.env.SHOWCASE) {
                 // redirect to login page if token does not exist
                 this.$router.push("/login");
             }

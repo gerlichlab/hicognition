@@ -13,10 +13,18 @@
                 <md-list slot="md-expand">
                     <md-list-item class="md-inset">
                         <md-button
+                            v-if=(!showcase_bool)
                             class="md-icon-button"
                             @click="$emit('add-region-click')"
                         >
                             <md-icon>add</md-icon>
+                        </md-button>
+                        <md-button
+                            v-if=(showcase_bool)
+                            class="md-icon-button"
+                        >
+                            <md-icon>add</md-icon>
+                            <md-tooltip md-direction="top">Deactivated in showcase mode</md-tooltip>
                         </md-button>
                         <span class="md-list-item-text"
                             >Add Genomic Regions</span
@@ -25,20 +33,36 @@
 
                     <md-list-item class="md-inset">
                         <md-button
+                            v-if=(!showcase_bool)
                             class="md-icon-button"
                             @click="$emit('add-metadata-click')"
                         >
                             <md-icon>highlight_alt</md-icon>
+                        </md-button>
+                        <md-button
+                            v-if=(showcase_bool)
+                            class="md-icon-button"
+                        >
+                            <md-icon>highlight_alt</md-icon>
+                            <md-tooltip md-direction="top">Deactivated in showcase mode</md-tooltip>
                         </md-button>
                         <span class="md-list-item-text">Add Metadata</span>
                     </md-list-item>
 
                     <md-list-item class="md-inset">
                         <md-button
+                            v-if=(!showcase_bool)
                             class="md-icon-button"
                             @click="$emit('preprocess-dataset-click')"
                         >
                             <md-icon>launch</md-icon>
+                        </md-button>
+                        <md-button
+                            v-if=(showcase_bool)
+                            class="md-icon-button"
+                        >
+                            <md-icon>launch</md-icon>
+                            <md-tooltip md-direction="top">Deactivated in showcase mode</md-tooltip>
                         </md-button>
                         <span class="md-list-item-text"
                             >Preprocess Features</span
@@ -46,10 +70,18 @@
                     </md-list-item>
                     <md-list-item class="md-inset">
                         <md-button
+                            v-if=(!showcase_bool)
                             class="md-icon-button"
                             @click="$emit('preprocess-collections-click')"
                         >
                             <md-icon>launch</md-icon>
+                        </md-button>
+                        <md-button
+                            v-if=(showcase_bool)
+                            class="md-icon-button"
+                        >
+                            <md-icon>launch</md-icon>
+                            <md-tooltip md-direction="top">Deactivated in showcase mode</md-tooltip>
                         </md-button>
                         <span class="md-list-item-text"
                             >Preprocess Collections</span
@@ -73,10 +105,18 @@
                 <md-list slot="md-expand">
                     <md-list-item class="md-inset">
                         <md-button
+                            v-if=(!showcase_bool)
                             class="md-icon-button"
                             @click="$emit('add-feature-click')"
                         >
                             <md-icon>add</md-icon>
+                        </md-button>
+                        <md-button
+                            v-if=(showcase_bool)
+                            class="md-icon-button"
+                        >
+                            <md-icon>add</md-icon>
+                            <md-tooltip md-direction="top">Deactivated in showcase mode</md-tooltip>
                         </md-button>
                         <span class="md-list-item-text"
                             >Add Genomic Features</span
@@ -100,10 +140,18 @@
                 <md-list slot="md-expand">
                     <md-list-item class="md-inset">
                         <md-button
+                            v-if=(!showcase_bool)
                             class="md-icon-button"
                             @click="$emit('add-collection-click')"
                         >
                             <md-icon>add</md-icon>
+                        </md-button>
+                        <md-button
+                            v-if=(showcase_bool)
+                            class="md-icon-button"
+                        >
+                            <md-icon>add</md-icon>
+                            <md-tooltip md-direction="top">Deactivated in showcase mode</md-tooltip>
                         </md-button>
                         <span class="md-list-item-text"
                             >Create Dataset Collection</span
@@ -128,10 +176,18 @@
                 <md-list slot="md-expand">
                     <md-list-item class="md-inset">
                         <md-button
+                            v-if=(!showcase_bool)
                             class="md-icon-button"
                             @click="$emit('add-assembly-click')"
                         >
                             <md-icon>add</md-icon>
+                        </md-button>
+                        <md-button
+                            v-if=(showcase_bool)
+                            class="md-icon-button"
+                        >
+                            <md-icon>add</md-icon>
+                            <md-tooltip md-direction="top">Deactivated in showcase mode</md-tooltip>
                         </md-button>
                         <span class="md-list-item-text"
                             >Add Genome Assembly</span
@@ -154,6 +210,11 @@
 
 <script>
 export default {
-    name: "drawer"
+    name: "drawer",
+    data: function() {
+        return {
+            showcase_bool: process.env.SHOWCASE
+        };
+    },
 };
 </script>
