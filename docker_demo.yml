@@ -8,7 +8,7 @@ services:
         volumes:
             - ${DIR_FRONT_END}:/front_end
         environment:
-            - showcase=false
+            - showcase=true
         entrypoint: 
             - "/bin/bash"
         command: -c "cd /front_end && npm install && npm run build"
@@ -39,7 +39,7 @@ services:
     nginx:
         container_name: hicognition-nginx
         build:
-            context: "./nginx"
+            context: "./nginx_demo"
         ports:
             - "80:80"
         # map front-end files
@@ -48,7 +48,7 @@ services:
             - hicognition
         volumes:
             - ${DIR_FRONT_END}:/front_end
-            # - ${DIR_STATIC}:/static
+            - ${HOMEPAGE_DIR}:/homepage
             - ${DOC_PATH}:/docs
         networks:
             - hicognition-net
