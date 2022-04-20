@@ -2,8 +2,9 @@
 // see https://docs.vbc.ac.at/books/it-department/page/docker-image-builds
 
 def towerJobs = [
-  // tags:    [jobName:"App Hicognition Prod", jobTags: "reload", extraVars: "app_generic_container_tag: latest"],
-  // master: [jobName:"App Hicognition Dev", jobTags: "reload", extraVars: "app_generic_container_tag: master"],
+  tags:    [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: latest"],
+  master: [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: master"],
+  'jenkins-test': [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: jenkins-test"],
 ]
 
 def extraImages = [

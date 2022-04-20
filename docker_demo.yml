@@ -31,6 +31,8 @@ services:
             dockerfile: "./nginx_demo/Dockerfile"
         ports:
             - "80:80"
+        environment:
+            - HICOGNITION_UPSTREAM: flask-server:5000
         # map front-end files
         depends_on:
             - hicognition
