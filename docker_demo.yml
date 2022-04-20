@@ -1,6 +1,18 @@
-version: "3"
+version: "3.9"
 
 services:
+    # container to build front-end
+    node:
+        container_name: node-builder
+        image: node:14-buster
+        volumes:
+            - ${DIR_FRONT_END}:/front_end
+        environment:
+            - showcase=false
+        entrypoint: 
+            - "/bin/bash"
+        command: -c "cd /front_end && npm install && npm run build"
+
     # flask-api server
     hicognition:
         container_name: flask-server
@@ -40,18 +52,6 @@ services:
             - ${DOC_PATH}:/docs
         networks:
             - hicognition-net
-
-    # container to build front-end
-    node:
-        container_name: node-builder
-        image: node:14-buster
-        volumes:
-            - ${DIR_FRONT_END}:/front_end
-        environment:
-            - showcase=false
-        entrypoint: 
-            - "/bin/bash"
-        command: -c "cd /front_end && npm install && npm run build"
 
     hugo-builder:
         container_name: hugo-builder

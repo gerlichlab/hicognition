@@ -9,7 +9,7 @@
                 >
                     <md-icon>menu</md-icon>
                 </md-button>
-                <span v-if=(showcase_bool) class="md-title">Showcase &nbsp</span>
+                <span v-if=(showcase_bool) class="md-title">Demo &nbsp</span>
                 <span v-if=(!showcase_bool) class="md-title">{{userName}} @ &nbsp</span>
                 <span class="md-headline">HiCognition {{ appversion }}</span>
             </div>

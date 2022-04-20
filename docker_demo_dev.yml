@@ -1,0 +1,71 @@
+version: "3.9"
+# attention this is the docker-compose version
+
+services:
+    node:
+        container_name: node
+        image: node:14-buster
+        ports:
+            # only map localhost-port
+            - "8080:8080"
+        volumes:
+            - ${DIR_FRONT_END}:/front_end
+        environment:
+            - showcase=true
+        entrypoint: 
+            - "/bin/bash"
+        command: -c "cd /front_end && npm install && npm run dev"
+
+    hicognition:
+        container_name: flask-server
+        volumes:  
+            - ${HICOGNITION_DIR}:/code
+            - ${SHOWCASE_DIR}:/showcase_data/
+        environment:
+            - FLASK_DEBUG=1
+            - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=${DATABASE_URL}
+            - SHOWCASE=True
+        ports:
+            # only map localhost-port
+            - "5000:5000"
+        build:
+            context: "./back_end"
+        image: hicognition:latest
+        entrypoint: "/bin/bash"
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.3
+        command: -c "cd /code && ./boot_showcase.sh"
+
+    mysql:
+        container_name: mysql
+        ports:
+            # map port out for diagnostics
+            - "3306:3306"
+        environment:
+            - MYSQL_RANDOM_ROOT_PASSWORD=yes
+            - MYSQL_DATABASE=hicognition
+            - MYSQL_USER=hicognition
+            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        image: mysql/mysql-server:8.0
+        volumes:
+            - ./mysql/mysql.cnf:/etc/my.cnf
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.9
+    
+    hugo-builder:
+        container_name: hugo-builder
+        image: klakegg/hugo
+        volumes:
+            - ${DOC_PATH}:/doc
+        entrypoint: "/bin/sh"
+        command: -c "[ ! -d /doc/public ] || rm -r /doc/public && cd /doc && hugo"
+
+networks:
+    hicognition-net:
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.18.0.0/16
