@@ -7,14 +7,13 @@ def towerJobs = [
 ]
 
 def extraImages = [
-  [imageName: "hicognition-nginx", dockerContext: "nginx_demo", dockerFile: "nginx_demo/Dockerfile", buildExtraArgs: "--no-cache"]
+  [imageName: "hicognition-nginx", dockerContext: ".", dockerFile: "nginx_demo/Dockerfile"]
 ]
 
 buildDockerImage([
     imageName: "hicognition",
-    dockerContext: "back_end",
-    dockerFile: "back_end/Dockerfile",
-    buildExtraArgs: "--no-cache",
+    dockerContext: ".",
+    dockerFile: "back_end/Dockerfile_showcase",
     pushRegistryNamespace: "gerlich",
     testCmd: null,
     containerImages: extraImages,
