@@ -54,9 +54,15 @@
         <md-drawer class="md-right notification-drawer" :md-active.sync="notificationDrawerVisible">
             <notification-drawer />
         </md-drawer>
+        
+
 
         <md-content>
             <router-view></router-view>
+            <!-- <md-empty-state>
+                <empty-state-basic>
+                </empty-state-basic>
+            </md-empty-state> -->
             <addDatasetDialog
                 :dialog="showAddRegionDialog"
                 @close-dialog="showAddRegionDialog = false"
@@ -165,12 +171,14 @@ import assemblyDialog from "../components/dialogs/assemblyDialog.vue";
 import modifyDatasetDialog from "../components/dialogs/modifyDatasetDialog.vue";
 import selectDatasetDialog from "../components/dialogs/selectDatasetDialog.vue";
 import selectCollectionDialog from "../components/dialogs/selectCollectionDialog.vue";
+// import EmptyStateBasic from "../components/ui/emptyState.vue"
 
 import EventBus from "../eventBus";
 
 export default {
     name: "mainRoute",
     components: {
+        // EmptyStateBasic,
         toolbar,
         drawer,
         notificationDrawer,
