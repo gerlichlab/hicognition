@@ -39,8 +39,13 @@
                         <md-button
                             class="md-secondary md-raised md-accent"
                             @click="handleSessionDeletion"
-                            v-if="showRestore"
+                            v-if="showRestore && !isDemo"
                             >Delete</md-button
+                        >
+                        <md-button
+                            class="md-secondary md-raised md-accent"
+                            v-if="showRestore && isDemo"
+                            >Delete <md-tooltip md-direction="top">Deactivated in demo mode</md-tooltip></md-button
                         >
                     </div>
                     <div class="float-right">
@@ -100,7 +105,8 @@ export default {
             selected_session_object: null,
             selected_session_id: null,
             shareableUrl: null,
-            copySuccesful: false
+            copySuccesful: false,
+            isDemo: process.env.SHOWCASE
         };
     },
     components: {

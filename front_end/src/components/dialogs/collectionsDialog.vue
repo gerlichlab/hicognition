@@ -16,9 +16,16 @@
                         <md-button
                             class="md-secondary md-raised md-accent"
                             @click="showDelete = true"
-                            v-if="showControls && !showDelete"
+                            v-if="showControls && !showDelete && !isDemo"
                             :disabled="!notProcessing"
                             >Delete
+                            </md-button
+                        >
+                        <md-button
+                            class="md-secondary md-raised md-accent"
+                            v-if="showControls && !showDelete && isDemo"
+                            :disabled="!notProcessing"
+                            >Delete <md-tooltip md-direction="top">Deactivated in demo mode</md-tooltip>
                             </md-button
                         >
                         <md-tooltip md-direction="top" v-if="!notProcessing">Datasets cannot be delete when one of them is processing</md-tooltip>
@@ -79,6 +86,7 @@ export default {
             selection: [],
             clickedDelete: false,
             datasetsDeleted: false,
+            isDemo: process.env.SHOWCASE
         };
     },
     components: {

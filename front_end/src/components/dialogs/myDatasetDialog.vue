@@ -17,9 +17,16 @@
                         <md-button
                             class="md-secondary md-raised md-accent"
                             @click="showDelete = true"
-                            v-if="showControls && !showDelete"
+                            v-if="showControls && !showDelete && !isDemo"
                             :disabled="!notProcessing"
                             >Delete
+                            </md-button
+                        >
+                        <md-button
+                            class="md-secondary md-raised md-accent"
+                            v-if="showControls && !showDelete && isDemo"
+                            :disabled="!notProcessing"
+                            >Delete <md-tooltip md-direction="top">Deactivated in demo mode</md-tooltip>
                             </md-button
                         >
                         <md-tooltip md-direction="top" v-if="!notProcessing">Datasets cannot be delete when one of them is processing</md-tooltip>
@@ -51,8 +58,13 @@
                         <md-button
                             class="md-primary"
                             @click="handleEditClick"
-                            v-if="showControls && !showDelete && singleDatasetSelected"
+                            v-if="showControls && !showDelete && singleDatasetSelected && !isDemo"
                             >Edit</md-button
+                        >
+                        <md-button
+                            class="md-primary"
+                            v-if="showControls && !showDelete && singleDatasetSelected && isDemo"
+                            >Edit<md-tooltip md-direction="top">Deactivated in demo mode</md-tooltip></md-button
                         >
                     </div>
                     <div class="float-right">
@@ -93,6 +105,7 @@ export default {
             clickedDelete: false,
             datasetsDeleted: false,
             selection: [],
+            isDemo: process.env.SHOWCASE
         };
     },
     props: {

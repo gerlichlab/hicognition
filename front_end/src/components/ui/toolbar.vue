@@ -9,8 +9,8 @@
                 >
                     <md-icon>menu</md-icon>
                 </md-button>
-                <span v-if=(showcase_bool) class="md-title">Demo &nbsp</span>
-                <span v-if=(!showcase_bool) class="md-title">{{userName}} @ &nbsp</span>
+                <span v-if=(isDemo) class="md-title">Demo &nbsp</span>
+                <span v-if=(!isDemo) class="md-title">{{userName}} @ &nbsp</span>
                 <span class="md-headline">HiCognition {{ appversion }}</span>
             </div>
 
@@ -52,7 +52,8 @@
                         <md-menu-item @click="$emit('my-sessions-click')"
                             >My Sessions</md-menu-item
                         >
-                        <md-menu-item @click="logout">Logout</md-menu-item>
+                        <md-menu-item v-if=(!isDemo) @click="logout">Logout</md-menu-item>
+                        <md-menu-item v-if=(isDemo)><md-tooltip md-direction="top">No users in demo mode</md-tooltip>Logout</md-menu-item>
                     </md-menu-content>
                 </md-menu>
             </div>
@@ -70,7 +71,7 @@ export default {
         return {
             appversion: process.env.VERSION,
             showDocumentationText: false,
-            showcase_bool: process.env.SHOWCASE   
+            isDemo: process.env.SHOWCASE   
         };
     },
     computed: {
