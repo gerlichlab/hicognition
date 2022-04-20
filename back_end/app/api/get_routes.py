@@ -545,7 +545,7 @@ def get_session_data_with_id(session_id):
     if session is None:
         return not_found(f"Session with id '{session_id}' does not exist!")
     # check if session is owned
-    if (session.user_id != g.current_user.id) and (session.id != g.session_id):
+    if (session.user_id != g.current_user.id) and (session.id != g.session_id) and not current_app.config["SHOWCASE"]:
         return forbidden(f"Session with id '{session_id}' is not owned!")
     return jsonify(session.to_json())
 
@@ -560,7 +560,7 @@ def get_session_token(session_id):
     if session is None:
         return not_found(f"Session with id '{session_id}' does not exist!")
     # check if session is owned
-    if session.user_id != g.current_user.id:
+    if (session.user_id != g.current_user.id) and not current_app.config["SHOWCASE"]:
         return forbidden(f"Session with id '{session_id}' is not owned!")
     # create session token
     return jsonify(
