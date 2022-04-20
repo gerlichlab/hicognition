@@ -220,7 +220,7 @@
                 </md-table>
                 <div
                     v-else-if="
-                        (collections.length == 0 || assemblies === undefined) &&
+                        (collections === undefined || assemblies === undefined) &&
                             !this.showEmpty
                     "
                     class="wait-spinner-container"
