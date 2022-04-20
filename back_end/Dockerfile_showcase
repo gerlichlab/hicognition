@@ -1,0 +1,46 @@
+FROM continuumio/miniconda3:4.9.2
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG C.UTF-8  
+ENV LC_ALL C.UTF-8
+
+# Update and create base image
+RUN apt-get --allow-releaseinfo-change update &&\
+    apt-get update -y &&\
+    apt-get install -y gcc g++ make libz-dev curl &&\
+    apt-get clean
+
+# add showcase directory
+
+ADD ./publication/showcase_data /showcase_data
+
+# download showcase data
+
+RUN cd /showcase_data &&\
+    curl -L --silent -o raw_data.tar.gz https://www.dropbox.com/s/6mmmqrwwy1x2dlt/raw_data.tar.gz?dl=0 &&\
+    tar -xf raw_data.tar.gz
+
+# Add yml file for conda environment
+ADD ./back_end/conda_env.yml /temp/install/
+
+# install packages
+RUN conda install mamba -n base -c conda-forge &&\
+    mamba env update -n base --f /temp/install/conda_env.yml &&\
+    mamba list > software_versions_conda.txt &&\
+    # install version 0.3 of ngs
+    pip install git+https://github.com/gerlichlab/ngs@v0.3b &&\
+    # install pylola
+    pip install git+https://github.com/Mittmich/pylola &&\
+    # install hicognition package 
+    pip install git+https://github.com/gerlichlab/hicognition_lib
+
+# clean up install
+
+RUN rm -rf /temp/install
+
+# add code directory so production code is packaged
+
+COPY ./back_end/ /code
+
+WORKDIR /home
+
+CMD ["/bin/bash"]
