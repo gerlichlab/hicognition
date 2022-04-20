@@ -1,11 +1,28 @@
+# Resolve learn submodule
+FROM ubuntu:20.04 as theme-resolver
+
+# Install git
+
+RUN apt-get update -y &&\
+    apt-get install -y git
+
+ADD . /code
+
+# resolve learn submodule
+
+RUN cd /code && git submodule update --init --recursive
+
 # build documentation
 FROM klakegg/hugo as hugo-builder
 
 # copy files into container
 
-ADD ./documentation/hugo-site/ /tmp/docs
+COPY --from=theme-resolver /code/documentation/hugo-site/ /docs/
 
-RUN cd /tmp/docs && hugo
+
+# build hugo
+
+RUN cd /docs/ && hugo
 
 # build frontend
 FROM node:14-buster as frontend-builder
@@ -21,7 +38,7 @@ FROM nginx
 
 # copy hugo files
 
-COPY --from=hugo-builder /tmp/docs/public/ /docs/public/
+COPY --from=hugo-builder /docs/public/ /docs/public/
 
 # copy frontend assets
 

@@ -15,7 +15,7 @@ services:
         build:
             context: "."
             dockerfile: "./back_end/Dockerfile_showcase"
-        image: hicognition:latest
+        image: hicognition:demo
         entrypoint: "/bin/bash"
         command: -c "cd /code && ./boot_prod.sh"
         networks:
@@ -25,6 +25,7 @@ services:
     # nginx server to serve front-end and redirect requests to flask-api
     nginx:
         container_name: hicognition-nginx
+        image: hicognition-nginx:demo
         build:
             context: "./"
             dockerfile: "./nginx_demo/Dockerfile"
