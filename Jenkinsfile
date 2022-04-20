@@ -7,8 +7,7 @@ def towerJobs = [
 ]
 
 def extraImages = [
-  [imageName: "hicognition-nginx", dockerContext: "nginx", dockerFile: "nginx/Dockerfile"],
-  [imageName: "hicognition-redis", dockerContext: "redis", dockerFile: "redis/Dockerfile"],
+  [imageName: "hicognition-nginx", dockerContext: "nginx", dockerFile: "nginx_demo/Dockerfile"]
 ]
 
 buildDockerImage([
