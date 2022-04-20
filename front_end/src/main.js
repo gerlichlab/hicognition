@@ -3,7 +3,7 @@ import VueRouter from "vue-router";
 import App from "./App";
 
 Vue.config.productionTip = false;
-Vue.config.errorHandler = function(err, vm, info) {
+Vue.config.errorHandler = function (err, vm, info) {
     /*
     This eats the select error from vue-matrial input select dropdowns
   */
@@ -33,18 +33,17 @@ Vue.use(VueRouter);
 
 // check whether token is available and set it if so
 
-if (localStorage.getItem("hicognition-token")){
-    store.commit("setToken", localStorage.getItem("hicognition-token"))
-    store.commit("setUserId", localStorage.getItem("hicognition-User"))
-    store.commit("setUserName", localStorage.getItem("hicognition-UserName"))
+if (localStorage.getItem("hicognition-token")) {
+    store.commit("setToken", localStorage.getItem("hicognition-token"));
+    store.commit("setUserId", localStorage.getItem("hicognition-User"));
+    store.commit("setUserName", localStorage.getItem("hicognition-UserName"));
 }
-
 
 // define global flags
 
 Vue.prototype.$globalFlags = {
     serializeCompare: true, // whether compare view should be serialized to store before it is destroeyd -> needs to happen upon front-end routing, but not upon logout
-}
+};
 
 // instantiate vue app
 
@@ -52,14 +51,14 @@ new Vue({
     el: "#app",
     store,
     components: {
-        App
+        App,
     },
-    created: function(){
+    created: function () {
         // create event source for notifications -> doing it once limits the number of open connections to server
-            store.commit("createNotificationSource")
+        store.commit("createNotificationSource");
     },
-    beforeDestroy: function(){
-            store.commit("releaseNotificationSource")
+    beforeDestroy: function () {
+        store.commit("releaseNotificationSource");
     },
-    template: "<App/>"
+    template: "<App/>",
 });

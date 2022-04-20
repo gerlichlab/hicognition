@@ -1,5 +1,8 @@
 <template>
-    <md-card :style="tooltipStyle" v-show="showTooltip && clusterID !== undefined">
+    <md-card
+        :style="tooltipStyle"
+        v-show="showTooltip && clusterID !== undefined"
+    >
         <div class="md-layout-item md-size-100 blue-background">
             <span class="md-caption padding-left">{{ dataInfo }}</span>
         </div>
@@ -12,25 +15,20 @@
                 :datasetNames="datasetNames"
                 :minValue="minValue"
                 :maxValue="maxValue"
-
             />
         </md-card-content>
-            <md-card-actions v-if="showControls">
-                <md-button
-                    @click="$emit('close-controls')"
-                    >Close</md-button
+        <md-card-actions v-if="showControls">
+            <md-button @click="$emit('close-controls')">Close</md-button>
+            <md-button v-if="!showcase_bool" @click="showDialog = true"
+                >Create Region</md-button
+            >
+            <md-button v-if="showcase_bool"
+                >Create Region
+                <md-tooltip md-direction="top"
+                    >Deactivated in showcase mode</md-tooltip
                 >
-                <md-button
-                    v-if=(!showcase_bool)
-                    @click="showDialog = true"
-                    >Create Region</md-button
-                >
-                <md-button
-                    v-if=(showcase_bool)
-                    >Create Region <md-tooltip md-direction="top">Deactivated in showcase mode</md-tooltip>
-                    </md-button
-                >
-            </md-card-actions>
+            </md-button>
+        </md-card-actions>
         <md-dialog-prompt
             :md-active.sync="showDialog"
             v-model="newRegionName"
@@ -48,7 +46,7 @@
 <script>
 import { apiMixin } from "../../mixins";
 import { select_row } from "../../functions";
-import embeddingDistribution from "../visualizations/embeddingDistribution.vue"
+import embeddingDistribution from "../visualizations/embeddingDistribution.vue";
 
 export default {
     name: "BarplotTooltip",
@@ -68,7 +66,7 @@ export default {
         collectionName: String,
         regionName: String,
         datasetNames: Array,
-        clusterCounts: Map
+        clusterCounts: Map,
     },
     data: function () {
         return {
@@ -84,22 +82,27 @@ export default {
             showDialog: false,
             newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterID}`,
             datasetSaved: false,
-            showcase_bool: process.env.SHOWCASE
+            showcase_bool: process.env.SHOWCASE,
         };
     },
     computed: {
-        totalRegions: function(){
-            let sum = 0
-            for (let [key, value] of this.clusterCounts){
-                sum += value
+        totalRegions: function () {
+            let sum = 0;
+            for (let [key, value] of this.clusterCounts) {
+                sum += value;
             }
-            return sum
+            return sum;
         },
-        dataInfo: function() {
-            if (this.clusterCounts !== undefined && this.clusterCounts.get(this.clusterID) !== undefined){
-                return `Cluster: ${this.clusterID} | ${this.clusterCounts.get(this.clusterID)}/${this.totalRegions} Regions`
+        dataInfo: function () {
+            if (
+                this.clusterCounts !== undefined &&
+                this.clusterCounts.get(this.clusterID) !== undefined
+            ) {
+                return `Cluster: ${this.clusterID} | ${this.clusterCounts.get(
+                    this.clusterID
+                )}/${this.totalRegions} Regions`;
             }
-            return  `Cluster: ${this.clusterID}`
+            return `Cluster: ${this.clusterID}`;
         },
         plotSize: function () {
             return this.width * 0.8;
@@ -113,7 +116,7 @@ export default {
                 );
             }
         },
-        minValue: function() {
+        minValue: function () {
             // computes minimum value of data passed
             let minVal = Infinity;
             for (let elem of this.averageValues.data) {
@@ -123,7 +126,7 @@ export default {
             }
             return minVal;
         },
-        maxValue: function() {
+        maxValue: function () {
             // computes maximum value of data passed
             let maxVal = -Infinity;
             for (let elem of this.averageValues.data) {
@@ -132,7 +135,7 @@ export default {
                 }
             }
             return maxVal;
-        }
+        },
     },
     methods: {
         handleSubmission: function () {
@@ -153,7 +156,7 @@ export default {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
                     // fetch datasets so that they are available in table
-                    this.fetchAndStoreDatasets()
+                    this.fetchAndStoreDatasets();
                 }
             });
         },
@@ -176,7 +179,7 @@ export default {
             if (!val) {
                 this.tooltipStyle["height"] = `${this.height}px`;
             }
-        }
+        },
     },
 };
 </script>
@@ -197,5 +200,4 @@ export default {
 .padding-left {
     padding-left: 10px;
 }
-
 </style>

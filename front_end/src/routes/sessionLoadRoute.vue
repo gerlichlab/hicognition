@@ -165,7 +165,7 @@ export default {
             };
             this.$store.commit("compare/setWidgetDataLola", mutationObject);
         },
-        fetchEmbeddingPoints: async function(id){
+        fetchEmbeddingPoints: async function (id) {
             var queryObject = {
                 id: id,
             };
@@ -200,7 +200,7 @@ export default {
                 }
             }
         },
-        fetchEmbeddingOverlays: async function(id, overlayIndex){
+        fetchEmbeddingOverlays: async function (id, overlayIndex) {
             if (overlayIndex != "density") {
                 var queryObject = {
                     id: id,
@@ -243,8 +243,8 @@ export default {
             }
         },
         fetchEmbeddingData: async function (id, overlayIndex) {
-            await this.fetchEmbeddingPoints(id)
-            await this.fetchEmbeddingOverlays(id, overlayIndex)
+            await this.fetchEmbeddingPoints(id);
+            await this.fetchEmbeddingOverlays(id, overlayIndex);
         },
         fetchPileupData: async function (dataRef) {
             for (let [pileupType, id] of Object.entries(dataRef)) {

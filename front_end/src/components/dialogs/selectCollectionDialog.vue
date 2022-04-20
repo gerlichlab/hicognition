@@ -1,5 +1,5 @@
 <template>
-    <div style="z-index: 500;">
+    <div style="z-index: 500">
         <md-dialog :md-active.sync="showDialog">
             <md-dialog-title>{{ this.title }}</md-dialog-title>
             <md-content class="content">
@@ -46,11 +46,11 @@ import EventBus from "../../eventBus";
 export default {
     name: "selectCollectionDialog",
     components: {
-        collectionTable
+        collectionTable,
     },
-    data: function() {
+    data: function () {
         return {
-            selection: []
+            selection: [],
         };
     },
     props: {
@@ -59,35 +59,35 @@ export default {
         datasetType: String,
         reactToSelection: {
             type: Boolean,
-            default: true
+            default: true,
         },
         singleSelection: {
             type: Boolean,
-            default: true
+            default: true,
         },
         preselection: Array,
         assembly: {
             type: Number,
-            default: undefined
+            default: undefined,
         },
         finishedCollections: {
             type: Array,
-            default: undefined
+            default: undefined,
         },
         processingCollections: {
             type: Array,
-            default: undefined
+            default: undefined,
         },
         failedCollections: {
             type: Array,
-            default: undefined
-        }
+            default: undefined,
+        },
     },
     methods: {
-        handleSelectionChange: function(selection) {
+        handleSelectionChange: function (selection) {
             this.selection = selection;
         },
-        handleSelect: function() {
+        handleSelect: function () {
             if (this.singleSelection) {
                 EventBus.$emit("collection-selected", this.selection[0]);
             } else {
@@ -95,31 +95,31 @@ export default {
             }
             this.$emit("close-dialog");
         },
-        handleClose: function() {
+        handleClose: function () {
             this.$emit("close-dialog");
             EventBus.$emit("selection-aborted");
             this.selection = [];
-        }
+        },
     },
     computed: {
-        title: function() {
+        title: function () {
             if (this.reactToSelection) {
                 return "Collections";
             }
             return "Available Collections";
         },
-        showEmpty: function() {
+        showEmpty: function () {
             if (!this.collections) {
                 return undefined;
             }
             return this.collections.length == 0;
         },
-        showControls: function() {
+        showControls: function () {
             return this.selection.length !== 0;
         },
-        showDialog: function() {
+        showDialog: function () {
             return this.dialog;
-        }
+        },
     },
 };
 </script>

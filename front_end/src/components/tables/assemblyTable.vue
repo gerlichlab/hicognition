@@ -9,9 +9,9 @@
             @md-selected="onSelect"
         >
             <!-- Table toolbar has the update button and the search field -->
-            <md-table-toolbar >
+            <md-table-toolbar>
                 <!-- Update button -->
-                <div >
+                <div>
                     <div>
                         <md-button
                             class="md-dense md-raised button-margin md-primary md-icon-button"
@@ -26,9 +26,7 @@
             <!-- Empty state for table -->
             <md-table-empty-state
                 md-label="No assemblies found"
-                :md-description="
-                    `No sessions assemblies found.`
-                "
+                :md-description="`No sessions assemblies found.`"
             >
             </md-table-empty-state>
             <!-- Definition of how table should look -->
@@ -46,9 +44,11 @@
                 <md-table-cell md-label="name" md-sort-by="name">{{
                     item.name
                 }}</md-table-cell>
-                <md-table-cell md-label="Dependent datasets" md-sort-by="dependent_datasets">{{
-                    item.dependent_datasets
-                }}</md-table-cell>
+                <md-table-cell
+                    md-label="Dependent datasets"
+                    md-sort-by="dependent_datasets"
+                    >{{ item.dependent_datasets }}</md-table-cell
+                >
             </md-table-row>
         </md-table>
         <md-snackbar :md-active.sync="datasetsDeleted"
@@ -59,7 +59,7 @@
 
 <script>
 import { apiMixin } from "../../mixins";
-import EventBus from "../../eventBus"
+import EventBus from "../../eventBus";
 
 export default {
     name: "assemblyTable",
@@ -68,58 +68,58 @@ export default {
         selected: undefined,
         assemblies: [],
         clickedDelete: false,
-        datasetsDeleted: false
+        datasetsDeleted: false,
     }),
     methods: {
-        isSelectionDisabled: function(item) {
+        isSelectionDisabled: function (item) {
             // check if assembly is owned
             var user_id = this.$store.getters.getUserId;
             if (user_id != item.user_id) {
                 return true;
             }
-            if (item.dependent_datasets != 0){
-                return true
+            if (item.dependent_datasets != 0) {
+                return true;
             }
             return false;
         },
-        deleteClicked: function() {
+        deleteClicked: function () {
             this.clickedDelete = true;
         },
         onSelect(item) {
             this.selected = item;
         },
         fetchAssemblies() {
-            this.fetchData("assemblies/").then(response => {
+            this.fetchData("assemblies/").then((response) => {
                 if (response) {
                     // update displayed assemblies
-                    let assemblies = []
-                    for (let org of Object.keys(response.data)){
-                        for (let assembly of response.data[org]){
-                            assembly["organism"] = org
-                            assemblies.push(assembly)
+                    let assemblies = [];
+                    for (let org of Object.keys(response.data)) {
+                        for (let assembly of response.data[org]) {
+                            assembly["organism"] = org;
+                            assemblies.push(assembly);
                         }
                     }
                     this.assemblies = assemblies;
                 }
             });
-        }
+        },
     },
     watch: {
-        selected: function(val){
-            if (val != undefined){
-                this.$emit("selection-available", this.selected.id)
-            }else{
-                this.$emit("selection-unavailable")
+        selected: function (val) {
+            if (val != undefined) {
+                this.$emit("selection-available", this.selected.id);
+            } else {
+                this.$emit("selection-unavailable");
             }
-        }
+        },
     },
-    created: function() {
-        EventBus.$on("fetch-assemblies", this.fetchAssemblies)
-        this.fetchAssemblies()
+    created: function () {
+        EventBus.$on("fetch-assemblies", this.fetchAssemblies);
+        this.fetchAssemblies();
     },
-    beforeDestroy: function(){
-        EventBus.$off("fetch-assemblies")
-    }
+    beforeDestroy: function () {
+        EventBus.$off("fetch-assemblies");
+    },
 };
 </script>
 

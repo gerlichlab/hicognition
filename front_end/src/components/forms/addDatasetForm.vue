@@ -237,7 +237,10 @@
                                                 v-model="form[field]"
                                                 required
                                                 :disabled="sending"
-                                                v-if="fieldOptions[field] != 'freetext'"
+                                                v-if="
+                                                    fieldOptions[field] !=
+                                                    'freetext'
+                                                "
                                             >
                                                 <md-option
                                                     v-for="option in fieldOptions[
@@ -418,16 +421,16 @@ export default {
         },
         valueTypes: function () {
             if (this.selectedFileType) {
-                let valueTypes= Object.keys(
+                let valueTypes = Object.keys(
                     this.datasetMetadataMapping[this.selectedFileType][
                         "ValueType"
                     ]
                 );
                 // if there is only one value type, select it
-                if (valueTypes.length == 1){
-                    this.$set(this.form, "ValueType", valueTypes[0])
+                if (valueTypes.length == 1) {
+                    this.$set(this.form, "ValueType", valueTypes[0]);
                 }
-                return valueTypes
+                return valueTypes;
             }
             return undefined;
         },
@@ -440,11 +443,11 @@ export default {
         },
         selectedFileType: function () {
             if (this.fileEnding) {
-                if (this.fileEnding.toLowerCase() in this.fileTypeMapping){
+                if (this.fileEnding.toLowerCase() in this.fileTypeMapping) {
                     return this.fileTypeMapping[this.fileEnding.toLowerCase()];
                 }
                 // show rerror
-                this.$v.form.file.$touch()
+                this.$v.form.file.$touch();
             }
             return undefined;
         },
@@ -484,10 +487,10 @@ export default {
                 }
             }
         },
-        fetchDatasets(){
-            this.fetchData("datasets/").then(response => {
+        fetchDatasets() {
+            this.fetchData("datasets/").then((response) => {
                 // success, store datasets
-                if (response){
+                if (response) {
                     this.$store.commit("setDatasets", response.data);
                 }
             });
@@ -520,7 +523,7 @@ export default {
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
-                    this.fetchDatasets()
+                    this.fetchDatasets();
                 }
             });
         },
@@ -556,5 +559,4 @@ export default {
 .top-margin {
     margin-top: 24px;
 }
-
 </style>

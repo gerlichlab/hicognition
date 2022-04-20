@@ -11,7 +11,6 @@
                 ></datasetTable>
             </md-content>
             <md-dialog-actions>
-
                 <div class="full-width">
                     <div class="float-left">
                         <md-button
@@ -20,21 +19,23 @@
                             v-if="showControls && !showDelete && !isDemo"
                             :disabled="!notProcessing"
                             >Delete
-                            </md-button
-                        >
+                        </md-button>
                         <md-button
                             class="md-secondary md-raised md-accent"
                             v-if="showControls && !showDelete && isDemo"
                             :disabled="!notProcessing"
-                            >Delete <md-tooltip md-direction="top">Deactivated in demo mode</md-tooltip>
-                            </md-button
+                            >Delete
+                            <md-tooltip md-direction="top"
+                                >Deactivated in demo mode</md-tooltip
+                            >
+                        </md-button>
+                        <md-tooltip md-direction="top" v-if="!notProcessing"
+                            >Datasets cannot be delete when one of them is
+                            processing</md-tooltip
                         >
-                        <md-tooltip md-direction="top" v-if="!notProcessing">Datasets cannot be delete when one of them is processing</md-tooltip>
                     </div>
                     <div class="float-left">
-                        <md-button
-                            class="md-raised"
-                            v-if="showDelete"
+                        <md-button class="md-raised" v-if="showDelete"
                             >Are you sure?</md-button
                         >
                     </div>
@@ -58,13 +59,25 @@
                         <md-button
                             class="md-primary"
                             @click="handleEditClick"
-                            v-if="showControls && !showDelete && singleDatasetSelected && !isDemo"
+                            v-if="
+                                showControls &&
+                                !showDelete &&
+                                singleDatasetSelected &&
+                                !isDemo
+                            "
                             >Edit</md-button
                         >
                         <md-button
                             class="md-primary"
-                            v-if="showControls && !showDelete && singleDatasetSelected && isDemo"
-                            >Edit<md-tooltip md-direction="top">Deactivated in demo mode</md-tooltip></md-button
+                            v-if="
+                                showControls &&
+                                !showDelete &&
+                                singleDatasetSelected &&
+                                isDemo
+                            "
+                            >Edit<md-tooltip md-direction="top"
+                                >Deactivated in demo mode</md-tooltip
+                            ></md-button
                         >
                     </div>
                     <div class="float-right">
@@ -72,7 +85,7 @@
                             class="md-secondary"
                             @click="
                                 $emit('close-dialog');
-                                selection = []
+                                selection = [];
                             "
                             >Close</md-button
                         >
@@ -90,7 +103,7 @@
 import datasetTable from "../tables/datasetTable";
 import { apiMixin } from "../../mixins";
 
-import EventBus from "../../eventBus"
+import EventBus from "../../eventBus";
 
 export default {
     name: "MyDatasetDialog",
@@ -105,24 +118,24 @@ export default {
             clickedDelete: false,
             datasetsDeleted: false,
             selection: [],
-            isDemo: process.env.SHOWCASE
+            isDemo: process.env.SHOWCASE,
         };
     },
     props: {
         dialog: Boolean,
         datasetType: {
             type: String,
-            default: "bedfile"
-        }
+            default: "bedfile",
+        },
     },
     methods: {
         handleSelectionChange: function (selection) {
             this.selection = selection;
         },
-        handleEditClick: function(){
-            EventBus.$emit("show-modify-dialog", this.selection[0])
+        handleEditClick: function () {
+            EventBus.$emit("show-modify-dialog", this.selection[0]);
         },
-        handleDelete: async function() {
+        handleDelete: async function () {
             this.showDelete = false;
             for (let id of this.selection) {
                 await this.deleteData(`datasets/${id}/`);
@@ -132,9 +145,9 @@ export default {
             this.fetchDatasets();
         },
         getDatasets: function () {
-            this.datasets = this.$store.state.datasets
+            this.datasets = this.$store.state.datasets;
         },
-        fetchDatasets: function() {
+        fetchDatasets: function () {
             this.datasets = [];
             this.fetchData("datasets/").then((response) => {
                 if (response) {
@@ -149,10 +162,14 @@ export default {
         },
     },
     computed: {
-        notProcessing: function(){
-            return this.datasets.every(el => el.processing_datasets.length === 0 && el.processing_collections.length === 0)
+        notProcessing: function () {
+            return this.datasets.every(
+                (el) =>
+                    el.processing_datasets.length === 0 &&
+                    el.processing_collections.length === 0
+            );
         },
-        singleDatasetSelected: function(){
+        singleDatasetSelected: function () {
             return this.selection.length === 1;
         },
         showControls: function () {
@@ -181,24 +198,19 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
-    .md-dialog /deep/.md-dialog-container {
-        max-width: 90vw;
-        min-width: 90vw;
-        min-height: 90vh;
-    }
-
+.md-dialog /deep/.md-dialog-container {
+    max-width: 90vw;
+    min-width: 90vw;
+    min-height: 90vh;
+}
 
 @media only screen and (min-width: 2400px) {
-
     .md-dialog /deep/.md-dialog-container {
         max-width: 90vw;
         min-width: 50vw;
         min-height: 50vh;
     }
-
 }
-
 
 .full-width {
     width: 100%;
@@ -213,7 +225,6 @@ export default {
     float: right;
     margin: 5px;
 }
-
 
 .content {
     margin: 10px;

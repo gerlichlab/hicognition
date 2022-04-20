@@ -1,5 +1,5 @@
 <template>
-    <div style="z-index: 500;">
+    <div style="z-index: 500">
         <md-dialog :md-active.sync="showDialog">
             <md-dialog-title>{{ this.title }}</md-dialog-title>
             <md-content class="content">
@@ -46,11 +46,11 @@ import EventBus from "../../eventBus";
 export default {
     name: "selectDatasetDialog",
     components: {
-        datasetTable
+        datasetTable,
     },
-    data: function() {
+    data: function () {
         return {
-            selection: []
+            selection: [],
         };
     },
     props: {
@@ -59,35 +59,35 @@ export default {
         datasetType: String,
         reactToSelection: {
             type: Boolean,
-            default: true
+            default: true,
         },
         singleSelection: {
             type: Boolean,
-            default: true
+            default: true,
         },
         preselection: Array,
         assembly: {
             type: Number,
-            default: undefined
+            default: undefined,
         },
         finishedDatasets: {
             type: Array,
-            default: undefined
+            default: undefined,
         },
         processingDatasets: {
             type: Array,
-            default: undefined
+            default: undefined,
         },
         failedDatasets: {
             type: Array,
-            default: undefined
-        }
+            default: undefined,
+        },
     },
     methods: {
-        handleSelectionChange: function(selection) {
+        handleSelectionChange: function (selection) {
             this.selection = selection;
         },
-        handleSelect: function() {
+        handleSelect: function () {
             if (this.singleSelection) {
                 EventBus.$emit("dataset-selected", this.selection[0]);
             } else {
@@ -95,32 +95,32 @@ export default {
             }
             this.$emit("close-dialog");
         },
-        handleClose: function() {
+        handleClose: function () {
             this.$emit("close-dialog");
             EventBus.$emit("selection-aborted");
             this.selection = [];
-        }
+        },
     },
     computed: {
-        title: function() {
+        title: function () {
             if (this.reactToSelection) {
                 return "Datasets";
             }
             return "Available Features";
         },
-        showEmpty: function() {
+        showEmpty: function () {
             if (!this.datasets) {
                 return undefined;
             }
             return this.datasets.length == 0;
         },
-        showControls: function() {
+        showControls: function () {
             return this.selection.length !== 0;
         },
-        showDialog: function() {
+        showDialog: function () {
             return this.dialog;
-        }
-    }
+        },
+    },
 };
 </script>
 

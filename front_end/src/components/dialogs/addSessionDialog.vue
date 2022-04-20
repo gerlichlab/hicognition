@@ -15,7 +15,10 @@
                 </md-tooltip>
             </md-dialog-title>
             <addSessionForm
-                @close-dialog="$emit('close-dialog'); serializing = true"
+                @close-dialog="
+                    $emit('close-dialog');
+                    serializing = true;
+                "
                 :serializing="serializing"
             ></addSessionForm>
         </md-dialog>
@@ -28,37 +31,37 @@ import EventBus from "../../eventBus";
 
 export default {
     name: "AddSessionDialog",
-    data: function() {
+    data: function () {
         return {
-            infoText: " \nHere you can save your sessions".split(
-                "\n"
-            ),
-            serializing: true
+            infoText: " \nHere you can save your sessions".split("\n"),
+            serializing: true,
         };
     },
     components: {
-        addSessionForm
+        addSessionForm,
     },
     props: {
-        dialog: Boolean
+        dialog: Boolean,
     },
     computed: {
-        showDialog: function() {
+        showDialog: function () {
             return this.dialog;
-        }
+        },
     },
     watch: {
-        dialog: function(val){
-            if (val){
+        dialog: function (val) {
+            if (val) {
                 // serialize widgets when dialog is shown
-                EventBus.$emit('serialize-widgets');
+                EventBus.$emit("serialize-widgets");
                 // wait for serialization
-                setTimeout(() => {this.serializing = false}, 1000)
-            }else{
-                this.serializing = true
+                setTimeout(() => {
+                    this.serializing = false;
+                }, 1000);
+            } else {
+                this.serializing = true;
             }
-        }
-    }
+        },
+    },
 };
 </script>
 

@@ -50,14 +50,16 @@
                                 class="md-layout-item md-size-50"
                                 v-if="form.used_datasets.length !== 0"
                             >
-                                <span class="md-body-1">{{ datasetNumber }} datasets selected</span>
+                                <span class="md-body-1"
+                                    >{{ datasetNumber }} datasets selected</span
+                                >
                             </div>
                             <div class="md-layout-item md-size-50" v-else>
                                 <span
-                                    style="color: red; "
+                                    style="color: red"
                                     v-if="
                                         !$v.form.used_datasets.required &&
-                                            $v.form.used_datasets.$dirty
+                                        $v.form.used_datasets.$dirty
                                     "
                                     >At least one dataset is required!</span
                                 >
@@ -99,66 +101,72 @@ export default {
     name: "AddCollectionForm",
     mixins: [validationMixin, apiMixin],
     props: {
-        fileType: String
+        fileType: String,
     },
     data: () => ({
         form: {
             name: null,
-            used_datasets: []
+            used_datasets: [],
         },
         datasetSaved: false,
         sending: false,
-        availableDatasets: []
+        availableDatasets: [],
     }),
     validations: {
         // validators for the form
         form: {
             name: {
-                required
+                required,
             },
             used_datasets: {
-                required
-            }
-        }
+                required,
+            },
+        },
     },
     computed: {
-        datasetNumber: function(){
-                return this.form.used_datasets.length
-        }
+        datasetNumber: function () {
+            return this.form.used_datasets.length;
+        },
     },
     methods: {
         startDatasetSelection: function () {
             this.expectSelection = true;
-            let preselection = [...this.form.used_datasets]
+            let preselection = [...this.form.used_datasets];
             let fileType;
             switch (this.fileType) {
                 case "regions":
-                    fileType = "bedfile"
-                    break
+                    fileType = "bedfile";
+                    break;
                 case "1d-features":
-                    fileType = "bigwig"
-                    break
+                    fileType = "bigwig";
+                    break;
                 default:
-                    fileType = "cooler"
+                    fileType = "cooler";
             }
-            EventBus.$emit("show-select-dialog", this.availableDatasets, fileType, preselection, false);
+            EventBus.$emit(
+                "show-select-dialog",
+                this.availableDatasets,
+                fileType,
+                preselection,
+                false
+            );
         },
-        registerSelectionEventHandlers: function(){
-            EventBus.$on("dataset-selected", this.handleDataSelection)
-            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion)
+        registerSelectionEventHandlers: function () {
+            EventBus.$on("dataset-selected", this.handleDataSelection);
+            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function(){
-            EventBus.$off("dataset-selected", this.handleDataSelection)
-            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion)
+        removeSelectionEventHandlers: function () {
+            EventBus.$off("dataset-selected", this.handleDataSelection);
+            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function(ids){
-            if (this.expectSelection){
-                    this.form.used_datasets = ids
-                    this.expectSelection = false
+        handleDataSelection: function (ids) {
+            if (this.expectSelection) {
+                this.form.used_datasets = ids;
+                this.expectSelection = false;
             }
         },
-        hanldeSelectionAbortion: function(){
-            this.expectSelection = false
+        hanldeSelectionAbortion: function () {
+            this.expectSelection = false;
         },
         getValidationClass(fieldName) {
             // matrial validation class for form field;
@@ -166,13 +174,14 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty
+                    "md-invalid": field.$invalid && field.$dirty,
                 };
             }
         },
-        getDatasets: function() {
+        getDatasets: function () {
             // fetches available datasets (cooler and bedfiles) from store
-            this.availableDatasets = this.$store.state.datasets.filter(element => {
+            this.availableDatasets = this.$store.state.datasets.filter(
+                (element) => {
                     if (this.fileType == "regions") {
                         return element.filetype == "bedfile";
                     } else if (this.fileType == "1d-features") {
@@ -180,7 +189,8 @@ export default {
                     } else {
                         return element.filetype == "cooler";
                     }
-                });
+                }
+            );
         },
         clearForm() {
             this.$v.$reset();
@@ -198,7 +208,7 @@ export default {
             );
             formData.append("name", this.form.name);
             // // API call including upload is made in the background
-            this.postData("collections/", formData).then(response => {
+            this.postData("collections/", formData).then((response) => {
                 this.sending = false;
                 this.clearForm();
                 if (response) {
@@ -215,15 +225,15 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        }
+        },
     },
-    mounted: function() {
+    mounted: function () {
         this.getDatasets();
-        this.registerSelectionEventHandlers()
+        this.registerSelectionEventHandlers();
     },
-    beforeDestroy: function(){
-        this.removeSelectionEventHandlers()
-    }
+    beforeDestroy: function () {
+        this.removeSelectionEventHandlers();
+    },
 };
 </script>
 

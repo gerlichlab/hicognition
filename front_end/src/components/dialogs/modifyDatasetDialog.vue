@@ -32,32 +32,32 @@ export default {
     mixins: [apiMixin],
     props: {
         dialog: Boolean,
-        datasetID: Number
+        datasetID: Number,
     },
-    data: function() {
+    data: function () {
         return {
-            dataset: undefined
-        }
+            dataset: undefined,
+        };
     },
     computed: {
-        showDialog: function() {
+        showDialog: function () {
             return this.dialog;
         },
-        isBedFile: function(){
-            if (!this.dataset){
-                return false
+        isBedFile: function () {
+            if (!this.dataset) {
+                return false;
             }
-            return this.dataset.filetype == "bedfile"
-        }
+            return this.dataset.filetype == "bedfile";
+        },
     },
     methods: {
-        getDatasetFromStore: function() {
-            this.dataset = this.$store.getters["getDataset"](this.datasetID)
+        getDatasetFromStore: function () {
+            this.dataset = this.$store.getters["getDataset"](this.datasetID);
         },
-        downloadData: async function() {
+        downloadData: async function () {
             let csv = "";
-            const blarray = await this.fetchBed()
-            blarray.forEach(row => {
+            const blarray = await this.fetchBed();
+            blarray.forEach((row) => {
                 const colarray = Object.values(row);
                 csv += colarray.join("\t");
                 csv += "\n";
@@ -69,26 +69,28 @@ export default {
                 "href",
                 "data:text/csv;charset=utf-8,%EF%BB%BF" + encodeURI(csv)
             );
-            let datasetName = await this.fetchName()
+            let datasetName = await this.fetchName();
             link.setAttribute("download", `${datasetName}.bed`);
             document.body.appendChild(link);
             link.click();
         },
-        fetchName: async function() {
-            let name =  await this.fetchData(`datasets/${this.datasetID}/name/`)
-            return name.data
+        fetchName: async function () {
+            let name = await this.fetchData(`datasets/${this.datasetID}/name/`);
+            return name.data;
         },
-        fetchBed: async function() {
-            let response = await this.fetchData(`datasets/${this.datasetID}/bedFile/`);
-            return Object.values(response.data)
-        }
+        fetchBed: async function () {
+            let response = await this.fetchData(
+                `datasets/${this.datasetID}/bedFile/`
+            );
+            return Object.values(response.data);
+        },
     },
     watch: {
-        dialog: function(val) {
-            if (val){
-                this.getDatasetFromStore()
+        dialog: function (val) {
+            if (val) {
+                this.getDatasetFromStore();
             }
-        }
+        },
     },
 };
 </script>

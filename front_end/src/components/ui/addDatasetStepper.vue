@@ -27,7 +27,9 @@
                 <step2BulkDatasetForm
                     :fileTypeMapping="fileTypeMapping"
                     :files="selectedFiles"
-                    @step-completion="handleStepCompletion($event, 'second', 'third')"
+                    @step-completion="
+                        handleStepCompletion($event, 'second', 'third')
+                    "
                 />
                 <md-button
                     class="md-raised md-primary"
@@ -44,7 +46,9 @@
                 <step-3-bulk-dataset-form
                     :fileInformation="elements"
                     :fileTypeMapping="fileTypeMapping"
-                    @step-completion="handleStepCompletion($event, 'third', 'fourth')"
+                    @step-completion="
+                        handleStepCompletion($event, 'third', 'fourth')
+                    "
                 />
                 <md-button
                     class="md-raised md-primary"
@@ -77,7 +81,7 @@
 import selectBulkDatasetForm from "../forms/selectBulkDatasetForm.vue";
 import step2BulkDatasetForm from "../forms/step2BulkDatasetForm.vue";
 import step3BulkDatasetForm from "../forms/step3BulkDatasetForm.vue";
-import step4BulkDatasetForm from "../forms/step4BulkDatasetForm.vue"
+import step4BulkDatasetForm from "../forms/step4BulkDatasetForm.vue";
 
 export default {
     name: "dataset-stepper",
@@ -85,10 +89,10 @@ export default {
         selectBulkDatasetForm,
         step2BulkDatasetForm,
         step3BulkDatasetForm,
-        step4BulkDatasetForm
+        step4BulkDatasetForm,
     },
     props: {
-        fileTypeMapping: Object
+        fileTypeMapping: Object,
     },
     data: () => ({
         active: "first",
@@ -100,20 +104,20 @@ export default {
         elements: undefined,
     }),
     methods: {
-        handleFileSelectionSuccessful: function(files) {
+        handleFileSelectionSuccessful: function (files) {
             this.selectedFiles = files;
             this.first = true;
             this.setDone("first", "second");
         },
-        handleStepCompletion: function(elements, currentStep, nextStep) {
+        handleStepCompletion: function (elements, currentStep, nextStep) {
             if (!this.elements) {
                 this.elements = elements;
-            }else{
-                for (let [id, value] of Object.entries(elements)){
-                    this.elements[id] = value
+            } else {
+                for (let [id, value] of Object.entries(elements)) {
+                    this.elements[id] = value;
                 }
             }
-            this.setDone(currentStep, nextStep)
+            this.setDone(currentStep, nextStep);
         },
         setDone(id, index) {
             this[id] = true;
@@ -121,8 +125,8 @@ export default {
             if (index) {
                 this.active = index;
             }
-        }
-    }
+        },
+    },
 };
 </script>
 

@@ -14,9 +14,7 @@
                     <div class="md-layout md-gutter">
                         <!-- dataset name -->
                         <div class="md-layout-item md-small-size-100">
-                            <md-field
-                                :class="getValidationClass('name')"
-                            >
+                            <md-field :class="getValidationClass('name')">
                                 <label for="name">Name</label>
                                 <md-input
                                     name="name"
@@ -135,36 +133,36 @@ export default {
             name: null,
             organism: null,
             chromSizes: null,
-            chromArms: null
+            chromArms: null,
         },
         organisms: [],
         datasetSaved: false,
         sending: false,
         selectedFiles: {
             chromSizes: null,
-            chromArms: null
-        }
+            chromArms: null,
+        },
     }),
     validations: {
         // validators for the form
         form: {
             name: {
-                required
+                required,
             },
             organism: {
-                required
+                required,
             },
             chromArms: {
-                required
+                required,
             },
             chromSizes: {
-                required
-            }
-        }
+                required,
+            },
+        },
     },
     methods: {
-        fetchOrganisms: function() {
-            this.fetchData("organisms/").then(response => {
+        fetchOrganisms: function () {
+            this.fetchData("organisms/").then((response) => {
                 this.organisms = response.data;
             });
         },
@@ -174,7 +172,7 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty
+                    "md-invalid": field.$invalid && field.$dirty,
                 };
             }
         },
@@ -210,7 +208,7 @@ export default {
                 }
             }
             // API call including upload is made in the background
-            this.postData("assemblies/", formData).then(response => {
+            this.postData("assemblies/", formData).then((response) => {
                 this.sending = false;
                 this.clearForm();
                 if (response) {
@@ -224,11 +222,11 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        }
+        },
     },
-    mounted: function() {
+    mounted: function () {
         this.fetchOrganisms();
-    }
+    },
 };
 </script>
 

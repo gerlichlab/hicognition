@@ -34,7 +34,7 @@
 <script>
 import assemblyTable from "../tables/assemblyTable";
 import { apiMixin } from "../../mixins";
-import EventBus from "../../eventBus"
+import EventBus from "../../eventBus";
 
 export default {
     name: "assemblyDialog",

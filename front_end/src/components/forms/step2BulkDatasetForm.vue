@@ -15,7 +15,7 @@
                         :key="element.id"
                     >
                         <div class="md-layout-item md-size-30">
-                            <md-field style="overflow-x: auto;">
+                            <md-field style="overflow-x: auto">
                                 {{ element.filename }}
                             </md-field>
                         </div>
@@ -24,7 +24,8 @@
                             <md-field
                                 :class="{
                                     'md-invalid':
-                                        v.assembly.$invalid && v.assembly.$dirty
+                                        v.assembly.$invalid &&
+                                        v.assembly.$dirty,
                                 }"
                             >
                                 <label :for="`assembly-${element.id}`"
@@ -64,7 +65,7 @@
                                 :class="{
                                     'md-invalid':
                                         v.datasetName.$invalid &&
-                                        v.datasetName.$dirty
+                                        v.datasetName.$dirty,
                                 }"
                             >
                                 <label :for="`name-${element.id}`">Name</label>
@@ -121,14 +122,14 @@ export default {
     mixins: [validationMixin, apiMixin],
     props: {
         files: FileList,
-        fileTypeMapping: Object
+        fileTypeMapping: Object,
     },
     data: () => ({
         datasetSaved: false,
         sending: false,
         assemblies: {},
         elements: [],
-        datasetMetadataMapping: undefined
+        datasetMetadataMapping: undefined,
     }),
     computed: {},
     validations: {
@@ -136,22 +137,22 @@ export default {
             $each: {
                 datasetName: {
                     required,
-                    maxLength: maxLength(30)
-                 },
+                    maxLength: maxLength(30),
+                },
                 assembly: { required },
-                public: {}
-            }
-        }
+                public: {},
+            },
+        },
     },
     methods: {
         fetchAssemblies() {
-            this.fetchData("assemblies/").then(response => {
+            this.fetchData("assemblies/").then((response) => {
                 if (response) {
                     this.assemblies = response.data;
                 }
             });
         },
-        getFileType: function(filename) {
+        getFileType: function (filename) {
             let fileEnding = filename.split(".").pop();
             return this.fileTypeMapping[fileEnding];
         },
@@ -165,12 +166,12 @@ export default {
                     assembly: null,
                     filename: this.files[i].name,
                     file: this.files[i],
-                    public: true
+                    public: true,
                 };
                 this.elements.push(tempObject);
             }
         },
-        saveDataset: async function() {
+        saveDataset: async function () {
             this.sending = true; // show progress bar
             // emit data
             let information = {};
@@ -186,16 +187,15 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        }
+        },
     },
-    mounted: function() {
+    mounted: function () {
         this.assemblies = this.fetchAssemblies();
-        this.datasetMetadataMapping = this.$store.getters[
-            "getDatasetMetadataMapping"
-        ]["DatasetType"];
+        this.datasetMetadataMapping =
+            this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
     },
     watch: {
-        files: function(val) {
+        files: function (val) {
             if (val) {
                 for (let i = 0; i < this.files.length; i++) {
                     var tempObject = {
@@ -208,8 +208,8 @@ export default {
                     this.elements.push(tempObject);
                 }
             }
-        }
-    }
+        },
+    },
 };
 </script>
 

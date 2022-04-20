@@ -31,13 +31,13 @@ export default {
     name: "AddGenomeAssembly",
     components: { addAssemblyForm },
     props: {
-        dialog: Boolean
+        dialog: Boolean,
     },
     computed: {
-        showDialog: function() {
+        showDialog: function () {
             return this.dialog;
-        }
-    }
+        },
+    },
 };
 </script>
 

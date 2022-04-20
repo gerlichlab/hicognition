@@ -51,11 +51,12 @@
             ></drawer>
         </md-drawer>
 
-        <md-drawer class="md-right notification-drawer" :md-active.sync="notificationDrawerVisible">
+        <md-drawer
+            class="md-right notification-drawer"
+            :md-active.sync="notificationDrawerVisible"
+        >
             <notification-drawer />
         </md-drawer>
-        
-
 
         <md-content>
             <router-view></router-view>
@@ -195,7 +196,7 @@ export default {
         assemblyDialog,
         modifyDatasetDialog,
         selectDatasetDialog,
-        selectCollectionDialog
+        selectCollectionDialog,
     },
     data: () => ({
         menuVisible: false,
@@ -234,26 +235,26 @@ export default {
         finishedCollections: undefined,
         processingCollections: undefined,
         failedCollections: undefined,
-        reactToSelectionCollections: undefined
+        reactToSelectionCollections: undefined,
     }),
     methods: {
-        handleShowMyDatasetDialog: function(datasetType) {
+        handleShowMyDatasetDialog: function (datasetType) {
             this.showMyDatasetDialog = true;
             this.menuVisible = false;
             this.myDatasetDialogDatasetType = datasetType;
         },
-        registerDatasetSelectionHandlers: function() {
+        registerDatasetSelectionHandlers: function () {
             // modification listener
             EventBus.$on("show-modify-dialog", this.handleShowModifyDialog);
             // selection listener
             EventBus.$on("show-select-dialog", this.handleShowSelectDialog);
         },
-        handleShowModifyDialog: function(id) {
+        handleShowModifyDialog: function (id) {
             this.modifyId = id;
             this.showModifyDialog = true;
             this.showMyDatasetDialog = false;
         },
-        handleShowSelectDialog: function(
+        handleShowSelectDialog: function (
             datasets,
             datasetType,
             preselection,
@@ -275,26 +276,26 @@ export default {
             this.selectDatasetType = datasetType;
             this.showSelectDialog = true;
         },
-        removeDatasetSelectionEventHandlers: function() {
+        removeDatasetSelectionEventHandlers: function () {
             // modification listener
             EventBus.$off("show-modify-dialog", this.handleShowModifyDialog);
             // selection listener
             EventBus.$off("show-select-dialog", this.handleShowSelectDialog);
         },
-        registerCollectionSelectionHandlers: function() {
+        registerCollectionSelectionHandlers: function () {
             // selection listener
             EventBus.$on(
                 "show-select-collection-dialog",
                 this.handleShowSelectCollectionDialog
             );
         },
-        removeCollectionSelectionHandlers: function() {
+        removeCollectionSelectionHandlers: function () {
             EventBus.$off(
                 "show-select-collection-dialog",
                 this.handleShowSelectCollectionDialog
             );
         },
-        handleShowSelectCollectionDialog: function(
+        handleShowSelectCollectionDialog: function (
             collections,
             datasetType,
             preselection,
@@ -315,16 +316,16 @@ export default {
             this.selectCollections = collections;
             this.selectDatasetTypeCollections = datasetType;
             this.showSelectCollectionDialog = true;
-        }
+        },
     },
-    mounted: function() {
+    mounted: function () {
         this.registerDatasetSelectionHandlers();
         this.registerCollectionSelectionHandlers();
     },
-    beforeDestroy: function() {
+    beforeDestroy: function () {
         this.removeDatasetSelectionEventHandlers();
         this.removeCollectionSelectionHandlers();
-    }
+    },
 };
 </script>
 

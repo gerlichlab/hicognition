@@ -82,16 +82,15 @@ export function max_array_along_rows(array, shape) {
         }
     }
     // clean -Infinity
-    return output.map(elem => (elem == -Infinity ? undefined : elem));
+    return output.map((elem) => (elem == -Infinity ? undefined : elem));
 }
-
 
 export function select_3d_along_first_axis(array, shape, index) {
     /*
         selects entries from 3d array along first axis
     */
-       // check array
-       if (
+    // check array
+    if (
         array.length == 0 ||
         shape.length != 3 ||
         array.length != shape[0] * shape[1] * shape[2]
@@ -104,10 +103,9 @@ export function select_3d_along_first_axis(array, shape, index) {
         return undefined;
     }
     // select
-    let example_size = row_number * col_number
-    return array.slice(example_size * index, example_size * (index + 1))
+    let example_size = row_number * col_number;
+    return array.slice(example_size * index, example_size * (index + 1));
 }
-
 
 export function select_column(array, shape, col_index) {
     /*
@@ -140,31 +138,30 @@ export function select_columns(array, shape, col_indices) {
         together with the resulting shape
     */
     // extract columns
-    let result = []
-    for (let index of col_indices){
-        let temp = select_column(array, shape, index)
-        if (temp === undefined){
-            return undefined
+    let result = [];
+    for (let index of col_indices) {
+        let temp = select_column(array, shape, index);
+        if (temp === undefined) {
+            return undefined;
         }
-        result.push(temp)
+        result.push(temp);
     }
     // flatten results
-    let output = []
+    let output = [];
     for (let row_index of [...Array(shape[0]).keys()]) {
-        for (let column of result){
-            output.push(column[row_index])
+        for (let column of result) {
+            output.push(column[row_index]);
         }
     }
-    return { result: output, shape: [shape[0], col_indices.length]}
+    return { result: output, shape: [shape[0], col_indices.length] };
 }
-
 
 export function select_row(array, shape, row_index) {
     /*
             returns all values in row row_index for a flattened array of a given shape
     */
     // check array
-       if (
+    if (
         array.length == 0 ||
         shape.length != 2 ||
         array.length != shape[0] * shape[1]
@@ -177,15 +174,15 @@ export function select_row(array, shape, row_index) {
         return undefined;
     }
     // select row
-    return array.slice(col_number * row_index, col_number * (row_index + 1))
+    return array.slice(col_number * row_index, col_number * (row_index + 1));
 }
 
-export function mean_along_columns(array, shape){
+export function mean_along_columns(array, shape) {
     /*
         Takes a flattened array with shape and calculates mean along columns
     */
     // check array
-       if (
+    if (
         array.length == 0 ||
         shape.length != 2 ||
         array.length != shape[0] * shape[1]
@@ -194,17 +191,16 @@ export function mean_along_columns(array, shape){
     }
     let [row_number, col_number] = shape;
     // calculate mean
-    let output = []
-    for (let row_index = 0; row_index < row_number; row_index ++){
-        let sum = 0
-        for (let col_index = 0; col_index < col_number; col_index ++){
-            sum += array[row_index * col_number + col_index]
+    let output = [];
+    for (let row_index = 0; row_index < row_number; row_index++) {
+        let sum = 0;
+        for (let col_index = 0; col_index < col_number; col_index++) {
+            sum += array[row_index * col_number + col_index];
         }
-        output.push(sum/col_number)
+        output.push(sum / col_number);
     }
-    return output
+    return output;
 }
-
 
 export function min_array(array) {
     /*
@@ -262,14 +258,14 @@ export function normalizeLineProfile(lineProfile) {
     let max_value = max_array(lineProfile);
     let min_value = min_array(lineProfile);
     if (max_value - min_value < FLOATDIFFERENCE) {
-        return lineProfile.map(val => {
+        return lineProfile.map((val) => {
             if (val && isFinite(val)) {
                 return 1;
             }
             return undefined;
         });
     }
-    return lineProfile.map(val => {
+    return lineProfile.map((val) => {
         if (val && isFinite(val)) {
             return (val - min_value) / (max_value - min_value);
         }
@@ -284,7 +280,7 @@ export function getPercentile(array, p) {
     if (p < 0 || p > 100) {
         return undefined;
     }
-    let cleaned_array = array.filter(val => {
+    let cleaned_array = array.filter((val) => {
         return isFinite(val) && val != null;
     });
     let sorted_array = cleaned_array.sort((a, b) => a - b);
@@ -299,7 +295,7 @@ export function getPerMilRank(array, p) {
     if (p < 0 || p > 1000) {
         return undefined;
     }
-    let cleaned_array = array.filter(val => {
+    let cleaned_array = array.filter((val) => {
         return isFinite(val) && val != null;
     });
     let sorted_array = cleaned_array.sort((a, b) => a - b);
@@ -307,16 +303,16 @@ export function getPerMilRank(array, p) {
     return sorted_array[index];
 }
 
-export function getBoundaries(x_vals, y_vals){
+export function getBoundaries(x_vals, y_vals) {
     let minX = Infinity;
     let maxX = -Infinity;
     let minY = Infinity;
     let maxY = -Infinity;
     for (let j = 0; j < x_vals.length; j++) {
-        let x = x_vals[j]
-        let y = y_vals[j]
-        if (x == undefined || y == undefined){
-            continue
+        let x = x_vals[j];
+        let y = y_vals[j];
+        if (x == undefined || y == undefined) {
+            continue;
         }
         if (x < minX) {
             minX = x;
@@ -335,26 +331,21 @@ export function getBoundaries(x_vals, y_vals){
         minX: minX,
         maxX: maxX,
         minY: minY,
-        maxY: maxY
+        maxY: maxY,
     };
 }
 
-
 // from https://stackoverflow.com/questions/3895478/does-javascript-have-a-method-like-range-to-generate-a-range-within-the-supp
 export function range(start, stop, step) {
-    var a = [start], b = start;
+    var a = [start],
+        b = start;
     while (b < stop) {
-        a.push(b += step || 1);
+        a.push((b += step || 1));
     }
     return a;
 }
 
-export function rectBin(
-    size,
-    points,
-    overlay_values,
-    aggregation = "sum"
-) {
+export function rectBin(size, points, overlay_values, aggregation = "sum") {
     /*
         Bins data points into a square of size x size.
         Points should be a flattened array with shape
@@ -381,14 +372,14 @@ export function rectBin(
             count[i] = tempArray;
         }
     }
-    if (aggregation == "mode"){
+    if (aggregation == "mode") {
         // create maps for counting
         // create count array
         var histArray = Array(size);
         for (let i = 0; i < size; i++) {
             let tempArray = Array(size);
-            for (let j = 0; j < size; j++){
-                tempArray[j] = new Map()
+            for (let j = 0; j < size; j++) {
+                tempArray[j] = new Map();
             }
             histArray[i] = tempArray;
         }
@@ -404,7 +395,7 @@ export function rectBin(
         }
     }
     // get value boundaries
-    let value_boundaries = getBoundaries(x_vals, y_vals)
+    let value_boundaries = getBoundaries(x_vals, y_vals);
     let x_stepsize = (value_boundaries.maxX - value_boundaries.minX) / size;
     let y_stepsize = (value_boundaries.maxY - value_boundaries.minY) / size;
     // iterate over points and add them
@@ -413,10 +404,10 @@ export function rectBin(
         let x_bin, y_bin;
         let x_val = x_vals[i];
         let y_val = y_vals[i];
-        if (x_val == undefined || y_val == undefined){
-            continue
+        if (x_val == undefined || y_val == undefined) {
+            continue;
         }
-        let value = overlay_values ? overlay_values[i] : 1
+        let value = overlay_values ? overlay_values[i] : 1;
         if (x_val == value_boundaries.maxX) {
             x_bin =
                 Math.floor((x_val - value_boundaries.minX) / x_stepsize) - 1;
@@ -440,11 +431,14 @@ export function rectBin(
             if (aggregation == "mean") {
                 count[size - 1 - y_bin][x_bin] += 1;
             }
-        }else{
-            if (histArray[size - 1 - y_bin][x_bin].has(value)){
-                histArray[size - 1 - y_bin][x_bin].set(value, histArray[size - 1 - y_bin][x_bin].get(value) + 1)
-            }else{
-                histArray[size - 1 - y_bin][x_bin].set(value, 1)
+        } else {
+            if (histArray[size - 1 - y_bin][x_bin].has(value)) {
+                histArray[size - 1 - y_bin][x_bin].set(
+                    value,
+                    histArray[size - 1 - y_bin][x_bin].get(value) + 1
+                );
+            } else {
+                histArray[size - 1 - y_bin][x_bin].set(value, 1);
             }
         }
     }
@@ -459,19 +453,19 @@ export function rectBin(
         }
     }
     // calculate mode if needed
-    if (aggregation == "mode"){
+    if (aggregation == "mode") {
         for (let i = 0; i < size; i++) {
             for (let j = 0; j < size; j++) {
                 if (histArray[i][j].size != 0) {
                     let maxVal = 0;
                     let maxKey = undefined;
-                    for (let [key, value] of histArray[i][j].entries()){
-                        if (value > maxVal){
-                            maxVal = value
-                            maxKey = key
+                    for (let [key, value] of histArray[i][j].entries()) {
+                        if (value > maxVal) {
+                            maxVal = value;
+                            maxKey = key;
                         }
                     }
-                    output[i][j] = maxKey
+                    output[i][j] = maxKey;
                 }
             }
         }
@@ -503,7 +497,7 @@ export function searchByName(items, term) {
   helper to search table fields by name for datasetTable
   */
     if (term) {
-        var filtered_items = items.filter(item => {
+        var filtered_items = items.filter((item) => {
             return toLower(item.dataset_name).includes(toLower(term));
         });
         return filtered_items;

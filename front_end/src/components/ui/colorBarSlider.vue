@@ -17,9 +17,9 @@ export default {
         colormap: String,
         borderColor: String,
         borderStyle: String,
-        allowValueScaleChange: Boolean
+        allowValueScaleChange: Boolean,
     },
-    data: function() {
+    data: function () {
         return {
             svg: undefined,
             id: Math.round(Math.random() * 100000),
@@ -28,53 +28,53 @@ export default {
         };
     },
     computed: {
-        margin: function(){
+        margin: function () {
             return {
                 top: this.height * 0.05,
                 right: this.width * 0.15,
                 bottom: this.height * 0.05,
-                left: this.width * 0.65
-            }
+                left: this.width * 0.65,
+            };
         },
-        colorBarDivID: function() {
+        colorBarDivID: function () {
             return `colorBar${this.id}`;
         },
-        colorBarDivStyle: function(){
-            let borderStyle = this.borderStyle ? this.borderStyle : "solid"
+        colorBarDivStyle: function () {
+            let borderStyle = this.borderStyle ? this.borderStyle : "solid";
             return {
                 width: "100%",
                 height: "100%",
                 "box-sizing": "border-box",
                 "border-style": `none none none ${borderStyle}`,
                 "border-width": "3px",
-                "border-color": this.borderColor
-                    ? this.borderColor
-                    : "white"
-            }
+                "border-color": this.borderColor ? this.borderColor : "white",
+            };
         },
-        plotWidth: function(){
-            return this.width - this.margin.left - this.margin.right
+        plotWidth: function () {
+            return this.width - this.margin.left - this.margin.right;
         },
-        plotHeight: function(){
-            return this.height - this.margin.top - this.margin.bottom
+        plotHeight: function () {
+            return this.height - this.margin.top - this.margin.bottom;
         },
-        colorScale: function(){
-            return getScale(this.sliderPositionMin, this.sliderPositionMax, this.colormap);
-        }
+        colorScale: function () {
+            return getScale(
+                this.sliderPositionMin,
+                this.sliderPositionMax,
+                this.colormap
+            );
+        },
     },
     methods: {
-        getParentWidth: function() {
+        getParentWidth: function () {
             return document.getElementById(this.colorBarDivID).parentNode
                 .offsetWidth;
         },
-        getParentHeight: function() {
+        getParentHeight: function () {
             return document.getElementById(this.colorBarDivID).parentNode
                 .offsetHeight;
         },
-        dragStopEventHandler: function(event){
-
-        },
-        createChart: function() {
+        dragStopEventHandler: function (event) {},
+        createChart: function () {
             d3.select(`#${this.colorBarDivID}Svg`).remove();
             this.svg = d3
                 .select(`#${this.colorBarDivID}`)
@@ -98,13 +98,12 @@ export default {
                         ")"
                 );
             // attach colorbar
-            this.attachColorbar()
-                
+            this.attachColorbar();
         },
-        colorbar: function(scale, width, height, scale_start, scale_end) {
-            let scale_domain = scale.domain()
-            let initialMin = scale_domain[0]
-            let initialMax = scale_domain[scale_domain.length - 1]
+        colorbar: function (scale, width, height, scale_start, scale_end) {
+            let scale_domain = scale.domain();
+            let initialMin = scale_domain[0];
+            let initialMax = scale_domain[scale_domain.length - 1];
             var linearScale = d3
                 .scaleLinear()
                 .domain([scale_start, scale_end])
@@ -134,61 +133,68 @@ export default {
                     .append("rect")
                     .attr("x", 0)
                     .attr("y", (d) => d)
-                    .attr(
-                        "width",
-                        barThickness
-                    )
-                    .attr(
-                        "height",
-                        trueDL
-                    )
+                    .attr("width", barThickness)
+                    .attr("height", trueDL)
                     .style("stroke-width", "0px")
-                    .style("fill", function(d) {
-                        if ((interScale(d) < initialMin) || (interScale(d) > initialMax)){
-                            return "rgba(120,120,120, 0.1)"
+                    .style("fill", function (d) {
+                        if (
+                            interScale(d) < initialMin ||
+                            interScale(d) > initialMax
+                        ) {
+                            return "rgba(120,120,120, 0.1)";
                         }
                         return scale(interScale(d));
                     });
 
-                if (this.allowValueScaleChange){
+                if (this.allowValueScaleChange) {
                     // needs to be defined here because if it is a vue methods this gets everridden; store
-                    let dragEventHandler = function(event){
+                    let dragEventHandler = function (event) {
                         // check whether y position is allowed
-                        if ((event.y > 0) && (event.y < barRange)){
+                        if (event.y > 0 && event.y < barRange) {
                             // adjust y position
-                            d3.select(this)
-                                .attr("y", event.y)
+                            d3.select(this).attr("y", event.y);
                         }
-                    }
-                    let component = this
-                    let dragStopEventHandler = function(event){
+                    };
+                    let component = this;
+                    let dragStopEventHandler = function (event) {
                         // add boundaries for trying to drag further
-                        let y_value = event.y
-                        if (y_value < 0){
-                            y_value = 0
+                        let y_value = event.y;
+                        if (y_value < 0) {
+                            y_value = 0;
                         }
-                        if (y_value > barRange){
-                            y_value = barRange
+                        if (y_value > barRange) {
+                            y_value = barRange;
                         }
-                        let event_value = interScale(y_value)
-                        if (this.id == "upper"){
-                            if (event_value < component.sliderPositionMin){
-                                component.$emit("slider-change", [event_value, component.sliderPositionMin]);
-                            }else{
-                                component.$emit("slider-change", [component.sliderPositionMin, event_value]);
+                        let event_value = interScale(y_value);
+                        if (this.id == "upper") {
+                            if (event_value < component.sliderPositionMin) {
+                                component.$emit("slider-change", [
+                                    event_value,
+                                    component.sliderPositionMin,
+                                ]);
+                            } else {
+                                component.$emit("slider-change", [
+                                    component.sliderPositionMin,
+                                    event_value,
+                                ]);
                             }
-                        }else{
-                            if (event_value > component.sliderPositionMax){
-                                component.$emit("slider-change", [component.sliderPositionMax, event_value, ]);
-                            }else{
-                                component.$emit("slider-change", [event_value, component.sliderPositionMax]);
+                        } else {
+                            if (event_value > component.sliderPositionMax) {
+                                component.$emit("slider-change", [
+                                    component.sliderPositionMax,
+                                    event_value,
+                                ]);
+                            } else {
+                                component.$emit("slider-change", [
+                                    event_value,
+                                    component.sliderPositionMax,
+                                ]);
                             }
                         }
-                    }
+                    };
                     let drag = d3.drag();
                     drag.on("drag", dragEventHandler);
-                    drag.on("end", dragStopEventHandler)
-                                        
+                    drag.on("end", dragStopEventHandler);
 
                     // attach colorbar slider rectangles
                     context
@@ -202,8 +208,8 @@ export default {
                         .attr("width", barThickness + this.width * 0.1)
                         .attr("height", this.width * 0.1)
                         .style("fill", "black")
-                        .call(drag)
-                    
+                        .call(drag);
+
                     context
                         .selectAll("colorSlider")
                         .data([initialMax])
@@ -215,58 +221,59 @@ export default {
                         .attr("width", barThickness + this.width * 0.1)
                         .attr("height", this.width * 0.1)
                         .style("fill", "black")
-                        .call(drag)
+                        .call(drag);
                 }
                 var myAxis = d3.axisLeft(linearScale).ticks(5);
                 context
                     .append("g")
                     .attr("class", "colorbar axis")
-                    .attr(
-                        "transform",
-                        "translate(" +
-                            0 + "," + 0 + 
-                            ")"
-                    )
-                    .call(myAxis)
-            }
+                    .attr("transform", "translate(" + 0 + "," + 0 + ")")
+                    .call(myAxis);
+            };
 
             return colorbar;
         },
-        attachColorbar: function(){
-            var cb = this.colorbar(this.colorScale, this.plotWidth, this.plotHeight, this.sliderMin, this.sliderMax);
+        attachColorbar: function () {
+            var cb = this.colorbar(
+                this.colorScale,
+                this.plotWidth,
+                this.plotHeight,
+                this.sliderMin,
+                this.sliderMax
+            );
             this.svg.call(cb);
-        }
+        },
     },
-    mounted: function() {
+    mounted: function () {
         this.height = this.getParentHeight();
         this.width = this.getParentWidth();
         this.createChart();
     },
     watch: {
-        allowValueScaleChange: function(){
-            this.createChart()
+        allowValueScaleChange: function () {
+            this.createChart();
         },
-        colormap: function(){
-            this.createChart()
+        colormap: function () {
+            this.createChart();
         },
-        sliderMax: function(){
-            this.createChart()
+        sliderMax: function () {
+            this.createChart();
         },
-        sliderMin: function(){
-            this.createChart()
+        sliderMin: function () {
+            this.createChart();
         },
-        sliderPositionMin: function(){
-            this.createChart()
+        sliderPositionMin: function () {
+            this.createChart();
         },
-        sliderPositionMax: function(){
-            this.createChart()
+        sliderPositionMax: function () {
+            this.createChart();
         },
-        heatMapWidth: function(){
+        heatMapWidth: function () {
             this.height = this.getParentHeight();
             this.width = this.getParentWidth();
-            this.createChart()
-        }
-    }
+            this.createChart();
+        },
+    },
 };
 </script>
 

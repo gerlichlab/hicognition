@@ -19,21 +19,23 @@
                             v-if="showControls && !showDelete && !isDemo"
                             :disabled="!notProcessing"
                             >Delete
-                            </md-button
-                        >
+                        </md-button>
                         <md-button
                             class="md-secondary md-raised md-accent"
                             v-if="showControls && !showDelete && isDemo"
                             :disabled="!notProcessing"
-                            >Delete <md-tooltip md-direction="top">Deactivated in demo mode</md-tooltip>
-                            </md-button
+                            >Delete
+                            <md-tooltip md-direction="top"
+                                >Deactivated in demo mode</md-tooltip
+                            >
+                        </md-button>
+                        <md-tooltip md-direction="top" v-if="!notProcessing"
+                            >Datasets cannot be delete when one of them is
+                            processing</md-tooltip
                         >
-                        <md-tooltip md-direction="top" v-if="!notProcessing">Datasets cannot be delete when one of them is processing</md-tooltip>
                     </div>
                     <div class="float-left">
-                        <md-button
-                            class="md-raised"
-                            v-if="showDelete"
+                        <md-button class="md-raised" v-if="showDelete"
                             >Are you sure?</md-button
                         >
                     </div>
@@ -56,9 +58,7 @@
                     <div class="float-right">
                         <md-button
                             class="md-secondary"
-                            @click="
-                                $emit('close-dialog');
-                            "
+                            @click="$emit('close-dialog')"
                             >Close</md-button
                         >
                     </div>
@@ -79,31 +79,33 @@ import EventBus from "../../eventBus";
 export default {
     name: "collectionsDialog",
     mixins: [apiMixin],
-    data: function() {
+    data: function () {
         return {
             showDelete: false,
             collections: [],
             selection: [],
             clickedDelete: false,
             datasetsDeleted: false,
-            isDemo: process.env.SHOWCASE
+            isDemo: process.env.SHOWCASE,
         };
     },
     components: {
-        collectionTable
+        collectionTable,
     },
     props: {
-        dialog: Boolean
+        dialog: Boolean,
     },
     computed: {
-        showDialog: function() {
+        showDialog: function () {
             return this.dialog;
         },
         showControls: function () {
             return this.selection.length !== 0;
         },
-        notProcessing: function(){
-            return this.collections.every(el => el.processing_for_regions.length === 0)
+        notProcessing: function () {
+            return this.collections.every(
+                (el) => el.processing_for_regions.length === 0
+            );
         },
     },
     methods: {
@@ -111,26 +113,26 @@ export default {
             this.selection = selection;
         },
         fetchCollections() {
-            this.fetchData("collections/").then(response => {
+            this.fetchData("collections/").then((response) => {
                 if (response) {
                     // update displayed datasets
-                    this.collections = response.data
-                    this.$store.commit("setCollections", response.data)
+                    this.collections = response.data;
+                    this.$store.commit("setCollections", response.data);
                 }
             });
         },
-        handleDelete: function() {
+        handleDelete: function () {
             this.deleteData(`collections/${this.selection[0]}/`).then(
-                response => {
-                    this.fetchCollections()
+                (response) => {
+                    this.fetchCollections();
                 }
             );
-        }
+        },
     },
     watch: {
         showDialog: function (val) {
             if (val) {
-                this.fetchCollections()
+                this.fetchCollections();
             }
         },
     },
@@ -138,25 +140,19 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
-
 .md-dialog /deep/.md-dialog-container {
-        max-width: 90vw;
-        min-width: 90vw;
-        min-height: 90vh;
-    }
-
+    max-width: 90vw;
+    min-width: 90vw;
+    min-height: 90vh;
+}
 
 @media only screen and (min-width: 2400px) {
-
     .md-dialog /deep/.md-dialog-container {
         max-width: 90vw;
         min-width: 50vw;
         min-height: 50vh;
     }
-
 }
-
 
 .full-width {
     width: 100%;
@@ -172,10 +168,8 @@ export default {
     margin: 5px;
 }
 
-
 .content {
     margin: 10px;
     flex: 1 1;
 }
-
 </style>

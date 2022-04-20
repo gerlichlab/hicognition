@@ -14,19 +14,21 @@
                     <div class="md-layout md-gutter">
                         <!-- Regions -->
                         <div class="md-layout-item md-small-size-100">
-                            <md-field :class="getValidationClass('sessionName')">
+                            <md-field
+                                :class="getValidationClass('sessionName')"
+                            >
                                 <label for="sessionName">Session Name</label>
-                                    <md-input
-                                        name="sessionName"
-                                        id="sessionName"
-                                        v-model="form.sessionName"
-                                        :disabled="sending"
-                                    />
-                                    <span
-                                        class="md-error"
-                                        v-if="!$v.form.sessionName.required"
-                                        >Name is required</span
-                                    >
+                                <md-input
+                                    name="sessionName"
+                                    id="sessionName"
+                                    v-model="form.sessionName"
+                                    :disabled="sending"
+                                />
+                                <span
+                                    class="md-error"
+                                    v-if="!$v.form.sessionName.required"
+                                    >Name is required</span
+                                >
                             </md-field>
                         </div>
                     </div>
@@ -63,22 +65,22 @@ export default {
     name: "AddSessionForm",
     mixins: [validationMixin, apiMixin],
     props: {
-        serializing: Boolean
+        serializing: Boolean,
     },
     data: () => ({
         form: {
-            sessionName: null
+            sessionName: null,
         },
         datasetSaved: false,
-        sending: false
+        sending: false,
     }),
     validations: {
         // validators for the form
         form: {
             sessionName: {
-                required
-            }
-        }
+                required,
+            },
+        },
     },
     methods: {
         getValidationClass(fieldName) {
@@ -87,7 +89,7 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty
+                    "md-invalid": field.$invalid && field.$dirty,
                 };
             }
         },
@@ -100,36 +102,46 @@ export default {
             // construct form data
             var formData = new FormData();
             // add name
-            formData.append("name", this.form["sessionName"])
+            formData.append("name", this.form["sessionName"]);
             // get session data
-            var session_object = Object.assign({}, this.$store.getters["compare/getWidgetCollections"])
+            var session_object = Object.assign(
+                {},
+                this.$store.getters["compare/getWidgetCollections"]
+            );
             // construct array from used dataset map
-            var used_datasets = this.$store.getters["compare/getUsedDatasets"]
+            var used_datasets = this.$store.getters["compare/getUsedDatasets"];
             var used_dataset_array;
-            if (used_datasets.size == 0){
-                used_dataset_array = []
-            }else{
-                used_dataset_array = Array.from(used_datasets.keys())
+            if (used_datasets.size == 0) {
+                used_dataset_array = [];
+            } else {
+                used_dataset_array = Array.from(used_datasets.keys());
             }
             // construct array from used collections map
-            var used_collections = this.$store.getters["compare/getUsedCollections"]
+            var used_collections =
+                this.$store.getters["compare/getUsedCollections"];
             var used_collections_array;
-            if (used_collections.size == 0){
-                used_collections_array = []
-            }else{
-                used_collections_array = Array.from(used_collections.keys())
+            if (used_collections.size == 0) {
+                used_collections_array = [];
+            } else {
+                used_collections_array = Array.from(used_collections.keys());
             }
-            formData.append("session_object", JSON.stringify(session_object))
-            formData.append("session_type", "compare")
-            formData.append("used_datasets", JSON.stringify(used_dataset_array))
-            formData.append("used_collections", JSON.stringify(used_collections_array))
+            formData.append("session_object", JSON.stringify(session_object));
+            formData.append("session_type", "compare");
+            formData.append(
+                "used_datasets",
+                JSON.stringify(used_dataset_array)
+            );
+            formData.append(
+                "used_collections",
+                JSON.stringify(used_collections_array)
+            );
             // API call including upload is made in the background
-            this.postData("sessions/", formData).then(response => {
-                if (response){
+            this.postData("sessions/", formData).then((response) => {
+                if (response) {
                     this.datasetSaved = true;
                     this.sending = false;
                     this.clearForm();
-                }else{
+                } else {
                     // no response means apiMixin caught an error, do not show success
                     this.sending = false;
                     this.clearForm();
@@ -141,8 +153,8 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        }
-    }
+        },
+    },
 };
 </script>
 

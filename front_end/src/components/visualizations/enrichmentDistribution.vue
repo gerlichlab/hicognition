@@ -6,7 +6,7 @@
 import * as d3 from "d3";
 import { formattingMixin } from "../../mixins";
 
-const EXPANSION_FACTOR = 0.2
+const EXPANSION_FACTOR = 0.2;
 
 export default {
     name: "enrichmentDistribution",
@@ -17,7 +17,7 @@ export default {
         height: Number,
         intervalSize: Number,
         currentColumn: Number,
-        binsize: Number
+        binsize: Number,
     },
     data: function () {
         return {
@@ -31,14 +31,14 @@ export default {
         divName: function () {
             return `enrichmentDistribution${this.id}`;
         },
-        plotData: function(){
+        plotData: function () {
             // encode index in data
             return this.rawData.map((elem, i) => {
                 return {
-                    "value": elem,
-                    "index": i
-                }
-            })
+                    value: elem,
+                    index: i,
+                };
+            });
         },
         margin: function () {
             return {
@@ -69,19 +69,25 @@ export default {
             // height of the plotting area without margins
             return this.height - this.margin.top - this.margin.bottom;
         },
-        intervalStartBin: function(){
+        intervalStartBin: function () {
             if (this.rawData) {
-                let intervalSize = Math.round(this.rawData.length/ (1 + 2*EXPANSION_FACTOR))
-                return Math.round(intervalSize * EXPANSION_FACTOR)
+                let intervalSize = Math.round(
+                    this.rawData.length / (1 + 2 * EXPANSION_FACTOR)
+                );
+                return Math.round(intervalSize * EXPANSION_FACTOR);
             }
-            return undefined
+            return undefined;
         },
-        intervalEndBin: function(){
+        intervalEndBin: function () {
             if (this.rawData) {
-                let intervalSize = Math.round(this.rawData.length/ (1 + 2*EXPANSION_FACTOR))
-                return intervalSize + Math.round(intervalSize * EXPANSION_FACTOR)
+                let intervalSize = Math.round(
+                    this.rawData.length / (1 + 2 * EXPANSION_FACTOR)
+                );
+                return (
+                    intervalSize + Math.round(intervalSize * EXPANSION_FACTOR)
+                );
             }
-            return undefined
+            return undefined;
         },
     },
     methods: {
@@ -103,7 +109,7 @@ export default {
         },
         xAxisGenerator: function (args) {
             // x-axis generator function
-            if (!isNaN(this.intervalSize)){
+            if (!isNaN(this.intervalSize)) {
                 return d3
                     .axisBottom(this.xScale)
                     .tickFormat(this.xAxisFormatter)
@@ -128,19 +134,17 @@ export default {
                 return Math.floor((this.maxVal - val) * 10) / 10;
             }
         },
-        xAxisFormatterInterval: function(val){
-            if (val == this.intervalStartBin){
-                return "Start"
+        xAxisFormatterInterval: function (val) {
+            if (val == this.intervalStartBin) {
+                return "Start";
             }
-            if (val == this.intervalEndBin){
-                return "End"
+            if (val == this.intervalEndBin) {
+                return "End";
             }
-            return undefined
+            return undefined;
         },
         xAxisFormatter: function (val, index) {
-            if (
-                index % Math.floor(this.plotData.length / 5) == 0
-            ) {
+            if (index % Math.floor(this.plotData.length / 5) == 0) {
                 return (
                     Math.floor(
                         (-this.intervalSize +
@@ -180,7 +184,10 @@ export default {
                 .attr("height", 0)
                 .transition()
                 .delay((d) => {
-                    return (this.xScale(d.index) / 150 / this.plotData.length) * 1000;
+                    return (
+                        (this.xScale(d.index) / 150 / this.plotData.length) *
+                        1000
+                    );
                 })
                 .duration(500)
                 .attr("y", (d) => {
@@ -190,12 +197,10 @@ export default {
                     return this.yScale(d.value);
                 });
             // add event listener
-            this.svg
-                .selectAll("rect")
-                .on("click", this.handleBarClick)
+            this.svg.selectAll("rect").on("click", this.handleBarClick);
         },
-        handleBarClick: function(e, d){
-            this.$emit("barclick", d.index)
+        handleBarClick: function (e, d) {
+            this.$emit("barclick", d.index);
         },
         updateBarChart: function () {
             /*
@@ -231,7 +236,10 @@ export default {
                 .attr("height", 0)
                 .transition()
                 .delay((d) => {
-                    return (this.xScale(d.index) / 150 / this.plotData.length) * 1000;
+                    return (
+                        (this.xScale(d.index) / 150 / this.plotData.length) *
+                        1000
+                    );
                 })
                 .duration(500)
                 .attr("y", (d) => {
@@ -260,9 +268,7 @@ export default {
                     return this.yScale(d.value);
                 });
             // add event listener
-            this.svg
-                .selectAll("rect")
-                .on("click", this.handleBarClick)
+            this.svg.selectAll("rect").on("click", this.handleBarClick);
         },
         updateAxes: function () {
             /*
@@ -350,11 +356,11 @@ export default {
             this.updateAxes();
             this.updateBarChart();
         },
-        currentColumn: function(){
+        currentColumn: function () {
             this.createScales();
             this.updateAxes();
             this.updateBarChart();
-        }
+        },
     },
 };
 </script>

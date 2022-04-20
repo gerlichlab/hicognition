@@ -62,7 +62,11 @@
                 <md-tabs class="md-primary">
                     <md-tab id="tab-single" md-label="Single">
                         <div
-                            style="overflow: auto; max-height:600px; padding: 10px;"
+                            style="
+                                overflow: auto;
+                                max-height: 600px;
+                                padding: 10px;
+                            "
                         >
                             <addDatasetForm
                                 @close-dialog="$emit('close-dialog')"
@@ -71,11 +75,11 @@
                         </div>
                     </md-tab>
                     <md-tab id="tab-bulk" md-label="Bulk">
-                            <addDatasetStepper
-                                @close-dialog="$emit('close-dialog')"
-                                :fileTypeMapping="fileTypeMapping"
-                            >
-                            </addDatasetStepper>
+                        <addDatasetStepper
+                            @close-dialog="$emit('close-dialog')"
+                            :fileTypeMapping="fileTypeMapping"
+                        >
+                        </addDatasetStepper>
                     </md-tab>
                 </md-tabs>
             </md-dialog-content>
@@ -91,14 +95,14 @@ export default {
     name: "AddDatasetDialog",
     components: {
         addDatasetForm,
-        addDatasetStepper
+        addDatasetStepper,
     },
     props: {
         dialog: Boolean,
-        datatype: String
+        datatype: String,
     },
     computed: {
-        welcomeMessage: function() {
+        welcomeMessage: function () {
             if (this.datatype == "feature") {
                 return "Add genomic feature";
             } else if (this.datatype == "region") {
@@ -107,17 +111,17 @@ export default {
                 return "Add dataset";
             }
         },
-        fileTypeMapping: function() {
+        fileTypeMapping: function () {
             if (this.datatype == "feature") {
                 return {
                     mcool: "cooler",
                     bw: "bigwig",
                     bigwig: "bigwig",
-                    bigWig: "bigwig"
+                    bigWig: "bigwig",
                 };
             } else if (this.datatype == "region") {
                 return {
-                    bed: "bedfile"
+                    bed: "bedfile",
                 };
             } else {
                 return {
@@ -125,14 +129,14 @@ export default {
                     mcool: "cooler",
                     bw: "bigwig",
                     bigwig: "bigwig",
-                    bigWig: "bigwig"
+                    bigWig: "bigwig",
                 };
             }
         },
-        showDialog: function() {
+        showDialog: function () {
             return this.dialog;
-        }
-    }
+        },
+    },
 };
 </script>
 

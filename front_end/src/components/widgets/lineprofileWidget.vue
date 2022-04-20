@@ -111,7 +111,7 @@
                                         @click="handleStartValueScaleShare"
                                         :disabled="
                                             valueScaleRecipient ||
-                                                this.valueScaleRecipients > 0
+                                            this.valueScaleRecipients > 0
                                         "
                                         ><span class="md-body-1"
                                             >Take value scale from</span
@@ -129,7 +129,10 @@
                             </md-list-item>
                             <md-list-item
                                 md-expand
-                                v-if="allowBinsizeSelection && !valueScaleRecipient"
+                                v-if="
+                                    allowBinsizeSelection &&
+                                    !valueScaleRecipient
+                                "
                             >
                                 <span class="md-body-1">Value range</span>
                                 <md-list slot="md-expand">
@@ -149,7 +152,11 @@
                                             ></md-input>
                                         </md-field>
                                         <div class="float-left">
-                                            <md-button class="md-raised" @click="handleValueScaleTargetReset"
+                                            <md-button
+                                                class="md-raised"
+                                                @click="
+                                                    handleValueScaleTargetReset
+                                                "
                                                 :disabled="ignoreTarget"
                                                 >Reset</md-button
                                             >
@@ -157,7 +164,9 @@
                                         <div class="float-right">
                                             <md-button
                                                 class="md-raised md-primary"
-                                                @click="handleValueScaleTargetSet"
+                                                @click="
+                                                    handleValueScaleTargetSet
+                                                "
                                                 >Set</md-button
                                             >
                                         </div>
@@ -189,15 +198,23 @@
                 :showInterval="isVariableSize"
                 :valueScaleColor="valueScaleColor"
                 :valueScaleBorder="valueScaleBorder"
-                :minValueRange="minHeatmapRange === undefined ? minHeatmapRange:Number(minHeatmapRange)"
-                :maxValueRange="maxHeatmapRange === undefined ? maxHeatmapRange:Number(maxHeatmapRange)"
+                :minValueRange="
+                    minHeatmapRange === undefined
+                        ? minHeatmapRange
+                        : Number(minHeatmapRange)
+                "
+                :maxValueRange="
+                    maxHeatmapRange === undefined
+                        ? maxHeatmapRange
+                        : Number(maxHeatmapRange)
+                "
                 @value-scale-change="handleValueScaleChange"
             >
             </lineprofile>
             <div
                 v-if="!showData"
                 class="md-layout md-alignment-center-center"
-                style="height: 89%;"
+                style="height: 89%"
             >
                 <md-icon class="md-layout-item md-size-50 md-size-5x"
                     >input</md-icon
@@ -218,7 +235,7 @@ import {
     apiMixin,
     formattingMixin,
     widgetMixin,
-    valueScaleSharingMixin
+    valueScaleSharingMixin,
 } from "../../mixins";
 import EventBus from "../../eventBus";
 
@@ -226,17 +243,17 @@ export default {
     name: "lineprofileWidget",
     mixins: [apiMixin, formattingMixin, widgetMixin, valueScaleSharingMixin],
     components: {
-        lineprofile
+        lineprofile,
     },
     computed: {
-        visualizationWidth: function() {
+        visualizationWidth: function () {
             return this.width;
         },
-        lineprofileHeight: function() {
+        lineprofileHeight: function () {
             // needs to be adjusted because is not square like heatmap using widgets
             return this.visualizationHeight - 10;
         },
-        message: function() {
+        message: function () {
             let datasetSummary = "";
             for (let selected of this.selectedDataset) {
                 let name = this.datasets[selected]["name"];
@@ -250,48 +267,48 @@ export default {
                 "binsize " +
                 this.getBinSizeFormat(this.selectedBinsize)
             );
-        }
+        },
     },
     methods: {
         handleValueScaleTargetSet() {
-            this.ignoreTarget = false
-            this.minHeatmapRange = this.minTarget
-            this.maxHeatmapRange = this.maxTarget
+            this.ignoreTarget = false;
+            this.minHeatmapRange = this.minTarget;
+            this.maxHeatmapRange = this.maxTarget;
         },
         handleValueScaleTargetReset() {
-            this.ignoreTarget = true
+            this.ignoreTarget = true;
             this.minHeatmapRange = this.minTarget = undefined;
             this.maxHeatmapRange = this.maxTarget = undefined;
         },
-        setColorScale: function(data) {
+        setColorScale: function (data) {
             /* 
                 sets colorScale based on data array
                 containing minPos, maxPos, minRange, maxRange
             */
-           if (this.ignoreTarget){
+            if (this.ignoreTarget) {
                 this.minHeatmap = data[0];
                 this.maxHeatmap = data[1];
                 this.minHeatmapRange = data[2];
                 this.maxHeatmapRange = data[3];
-                this.minTarget = Math.round((data[2] * 10**5))/10**5;
-                this.maxTarget = Math.round((data[3] * 10**5))/10**5;
-           } else {
-               this.minHeatmapRange = this.minTarget
-               this.maxHeatmapRange = this.maxTarget
-           }
+                this.minTarget = Math.round(data[2] * 10 ** 5) / 10 ** 5;
+                this.maxTarget = Math.round(data[3] * 10 ** 5) / 10 ** 5;
+            } else {
+                this.minHeatmapRange = this.minTarget;
+                this.maxHeatmapRange = this.maxTarget;
+            }
         },
-        handleValueScaleChange: function(data) {
+        handleValueScaleChange: function (data) {
             if (!this.valueScaleRecipient) {
                 this.setColorScale(data);
                 this.broadcastValueScaleUpdate();
             }
         },
-        handleWidgetSelection: function() {
+        handleWidgetSelection: function () {
             if (this.allowValueScaleTargetSelection) {
                 this.handleWidgetValueScaleSelection();
             }
         },
-        handleWidgetValueScaleSelection: function() {
+        handleWidgetValueScaleSelection: function () {
             if (this.valueScaleRecipients == 0) {
                 this.manageValueScaleColorUpdate();
             }
@@ -308,27 +325,27 @@ export default {
             this.valueScaleRecipients += 1;
             this.showSelection = false;
         },
-        handleMouseEnter: function() {
+        handleMouseEnter: function () {
             if (this.allowValueScaleTargetSelection) {
                 this.showSelection = true;
             }
         },
-        handleMouseLeave: function() {
+        handleMouseLeave: function () {
             if (this.allowValueScaleTargetSelection) {
                 this.showSelection = false;
             }
         },
-        blankWidget: function() {
+        blankWidget: function () {
             // removes all information that the user can set in case a certain region/dataset combination is not available
             this.widgetData = undefined;
             this.selectedDataset = [];
             this.selectedBinsize = undefined;
             this.widgetDataRef = undefined;
         },
-        startDatasetSelection: function() {
+        startDatasetSelection: function () {
             this.expectSelection = true;
             // get datasets from store
-            let datasets = this.$store.state.datasets.filter(el =>
+            let datasets = this.$store.state.datasets.filter((el) =>
                 Object.keys(this.datasets).includes(String(el.id))
             );
             let preselection = this.selectedDataset
@@ -342,27 +359,27 @@ export default {
                 false
             );
         },
-        registerSelectionEventHandlers: function() {
+        registerSelectionEventHandlers: function () {
             EventBus.$on("dataset-selected", this.handleDataSelection);
             EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function() {
+        removeSelectionEventHandlers: function () {
             EventBus.$off("dataset-selected", this.handleDataSelection);
             EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function(ids) {
+        handleDataSelection: function (ids) {
             if (this.expectSelection) {
                 this.selectedDataset = ids;
                 this.expectSelection = false;
             }
         },
-        hanldeSelectionAbortion: function() {
+        hanldeSelectionAbortion: function () {
             this.expectSelection = false;
         },
-        handleBinsizeSelection: function(binsize) {
+        handleBinsizeSelection: function (binsize) {
             this.selectedBinsize = binsize;
         },
-        prepareDeletionValueScale: function() {
+        prepareDeletionValueScale: function () {
             if (this.valueScaleRecipient) {
                 // client handling
                 this.handleStopValueScaleShare();
@@ -375,13 +392,13 @@ export default {
                 );
             }
         },
-        handleWidgetDeletion: function() {
+        handleWidgetDeletion: function () {
             // needs to be separate to distinguish it from moving
             // emit events for sort-order update
             this.prepareDeletionValueScale();
             this.deleteWidget();
         },
-        deleteWidget: function() {
+        deleteWidget: function () {
             // release color
             if (this.sortOrderRecipients > 0) {
                 this.$store.commit("releaseColorUsage", this.sortOrderColor);
@@ -395,7 +412,7 @@ export default {
             // delete widget from store
             var payload = {
                 parentID: this.collectionID,
-                id: this.id
+                id: this.id,
             };
             // delete widget from store
             this.$store.commit("compare/deleteWidget", payload);
@@ -405,7 +422,7 @@ export default {
                 this.selectedDataset
             );
         },
-        toStoreObject: function() {
+        toStoreObject: function () {
             // serialize object for storing its state in the store
             return {
                 // collection Data is needed if widget is dropped on new collection
@@ -435,10 +452,10 @@ export default {
                 normalized: this.normalized,
                 minTarget: this.minTarget,
                 maxTarget: this.maxTarget,
-                ignoreTarget: this.ignoreTarget
+                ignoreTarget: this.ignoreTarget,
             };
         },
-        initializeForFirstTime: function(widgetData, collectionData) {
+        initializeForFirstTime: function (widgetData, collectionData) {
             var data = {
                 widgetDataRef: undefined,
                 dragImage: undefined,
@@ -472,14 +489,14 @@ export default {
                 colormap: null, // this value have no meaning, they are for compatibility with the valuescale mixin
                 minTarget: undefined,
                 maxTarget: undefined,
-                ignoreTarget: true
+                ignoreTarget: true,
             };
             // write properties to store
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
             return data;
         },
-        initializeFromStore: function(widgetData, collectionConfig) {
+        initializeFromStore: function (widgetData, collectionConfig) {
             var widgetDataValues;
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
@@ -488,12 +505,13 @@ export default {
                 for (var widget_data_id of widgetDataRef) {
                     // deinfe store queries
                     var payload = {
-                        id: widget_data_id
+                        id: widget_data_id,
                     };
                     // get widget data from store
-                    var new_widgetDataValues = this.$store.getters[
-                        "compare/getWidgetDataLineprofile"
-                    ](payload);
+                    var new_widgetDataValues =
+                        this.$store.getters["compare/getWidgetDataLineprofile"](
+                            payload
+                        );
                     widgetDataValues.push(new_widgetDataValues);
                 }
             } else {
@@ -567,10 +585,10 @@ export default {
                 ignoreTarget:
                     widgetData["ignoreTarget"] !== undefined
                         ? widgetData["ignoreTarget"]
-                        : true
+                        : true,
             };
         },
-        getlineprofileData: async function(id) {
+        getlineprofileData: async function (id) {
             // checks whether lineprofile data is in store and fetches it if it is not
             if (this.$store.getters["compare/lineprofileExists"](id)) {
                 return this.$store.getters["compare/getWidgetDataLineprofile"](
@@ -583,7 +601,7 @@ export default {
             // save it in store
             var mutationObject = {
                 id: id,
-                data: parsed
+                data: parsed,
             };
             this.$store.commit(
                 "compare/setWidgetDataLineprofile",
@@ -592,7 +610,7 @@ export default {
             // return it
             return parsed;
         },
-        updateData: async function() {
+        updateData: async function () {
             // construct data ids to be fecthed
             // reset min and max colormap values if not value scale recipient
             if (!this.valueScaleRecipient) {
@@ -607,20 +625,21 @@ export default {
                 selected_data.push(await this.getlineprofileData(selected_id));
             }
             // get lineprofile names
-            this.lineProfileNames = this.selectedDataset.map(elem => {
+            this.lineProfileNames = this.selectedDataset.map((elem) => {
                 return this.datasets[elem]["name"];
             });
             this.widgetData = selected_data;
             // broadcast value scale update
             this.broadcastValueScaleUpdate();
         },
-        getIdsOfBinsizes: function() {
+        getIdsOfBinsizes: function () {
             // takes selected dataset array and constructs an object with binsizes and arrays of data ids
             let binsizes = {};
             for (let selectedDataset of this.selectedDataset) {
-                let temp_binsizes = this.datasets[selectedDataset]["data_ids"][
-                    this.intervalSize
-                ];
+                let temp_binsizes =
+                    this.datasets[selectedDataset]["data_ids"][
+                        this.intervalSize
+                    ];
                 // if temp binsizes is undefined, there is no data for these binsizes -> return undefined to blank widget
                 if (temp_binsizes === undefined) {
                     return undefined;
@@ -634,13 +653,13 @@ export default {
                 }
             }
             return binsizes;
-        }
+        },
     },
     watch: {
         // watch for changes in store to be able to update intervals
         "$store.state.compare.widgetCollections": {
             deep: true,
-            handler: function(newValue) {
+            handler: function (newValue) {
                 // update availability object
                 this.datasets =
                     newValue[this.collectionID]["collectionConfig"][
@@ -650,9 +669,9 @@ export default {
                     newValue[this.collectionID]["collectionConfig"][
                         "intervalSize"
                     ];
-            }
+            },
         },
-        datasets: function(newVal, oldVal) {
+        datasets: function (newVal, oldVal) {
             if (
                 !newVal ||
                 !oldVal ||
@@ -683,7 +702,7 @@ export default {
             );
             this.updateData();
         },
-        intervalSize: function(newVal, oldVal) {
+        intervalSize: function (newVal, oldVal) {
             // if interval size changes, reload data
             if (!newVal || !oldVal || this.selectedDataset.length == 0) {
                 return;
@@ -700,7 +719,7 @@ export default {
             );
             this.updateData();
         },
-        selectedDataset: async function(newVal, oldVal) {
+        selectedDataset: async function (newVal, oldVal) {
             if (!this.selectedDataset || this.selectedDataset.length == 0) {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
@@ -736,20 +755,20 @@ export default {
                 this.updateData();
             }
         },
-        selectedBinsize: async function() {
+        selectedBinsize: async function () {
             if (!this.selectedBinsize) {
                 return;
             }
             this.updateData();
-        }
+        },
     },
-    mounted: function() {
+    mounted: function () {
         this.registerSelectionEventHandlers();
         this.registerValueScaleEventHandlers();
     },
-    beforeDestroy: function() {
+    beforeDestroy: function () {
         this.removeSelectionEventHandlers();
-    }
+    },
 };
 </script>
 

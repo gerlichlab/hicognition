@@ -13,7 +13,7 @@ import {
     select_3d_along_first_axis,
     mean_along_columns,
     rectBin,
-    flatten
+    flatten,
 } from "../functions.js";
 import { toBeDeepCloseTo } from "jest-matcher-deep-close-to";
 
@@ -42,10 +42,7 @@ describe("Argsort testing suite", function () {
 describe("Sort matrix by index testing suite", function () {
     it("Test sort matrix ascending square", () => {
         expect(sort_matrix_by_index([1, 2, 3, 4], [2, 2], [10, 1])).toEqual([
-            3,
-            4,
-            1,
-            2
+            3, 4, 1, 2,
         ]);
     });
 
@@ -95,7 +92,6 @@ describe("Test sort matrix by center testing suite", function () {
         ).toEqual([1, 5, 3, 4, 2, 6]);
     });
 });
-
 
 // test max array
 
@@ -237,18 +233,12 @@ describe("When get percentile is called", function () {
 describe("When normalize lineProfile is called", function () {
     it("Should return a normalized array when called on integers", () => {
         expect(normalizeLineProfile([1, 2, 3, 4])).toBeDeepCloseTo([
-            0,
-            0.333333333333,
-            0.6666666666666,
-            1
+            0, 0.333333333333, 0.6666666666666, 1,
         ]);
     });
     it("Should return a normalized array when called on floats", () => {
         expect(normalizeLineProfile([1, 2, 3, 4])).toBeDeepCloseTo([
-            0,
-            0.333333333333,
-            0.6666666666666,
-            1
+            0, 0.333333333333, 0.6666666666666, 1,
         ]);
     });
     it("Should return a normalized array when called with an array containing undefined", () => {
@@ -269,10 +259,7 @@ describe("When normalize lineProfile is called", function () {
     });
     it("Should return a normalized array when all elements in the array are the same", () => {
         expect(normalizeLineProfile([2, 2, 2, 2])).toBeDeepCloseTo([
-            1,
-            1,
-            1,
-            1
+            1, 1, 1, 1,
         ]);
     });
 });
@@ -291,9 +278,7 @@ describe("When max_array_along_rows is called, it", function () {
     });
     it("Should return correct maximum along rows of rectangular array", () => {
         expect(max_array_along_rows([1, 5, 3, 4, 2, 6], [2, 3])).toEqual([
-            4,
-            5,
-            6
+            4, 5, 6,
         ]);
     });
     it("Should return correct maximum along rows of rectangular array with undefined values", () => {
@@ -363,10 +348,9 @@ describe("When select_row is called, it", function () {
     });
 });
 
-
 // test select columns
 
-describe("When select_columns is called", function() {
+describe("When select_columns is called", function () {
     it("Should return undefined if array is length 0", () => {
         expect(select_column([], [1, 2], [2])).toEqual(undefined);
     });
@@ -386,69 +370,87 @@ describe("When select_columns is called", function() {
         expect(select_column([1, 2, 3, 4], [2, 2], [3])).toEqual(undefined);
     });
     it("Should return correct single column", () => {
-        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [0])).toEqual({result: [1, 4], shape: [2, 1]});
-        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [1])).toEqual({result: [2, 5], shape: [2, 1]});
-        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [2])).toEqual({result: [3, 6], shape: [2, 1]});
+        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [0])).toEqual({
+            result: [1, 4],
+            shape: [2, 1],
+        });
+        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [1])).toEqual({
+            result: [2, 5],
+            shape: [2, 1],
+        });
+        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [2])).toEqual({
+            result: [3, 6],
+            shape: [2, 1],
+        });
     });
     it("Should return correct multiple columns", () => {
-        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [0, 1])).toEqual(  {result: [1, 2, 4, 5], shape: [2, 2]});
-        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [1 ,2])).toEqual( {result: [2, 3, 5, 6], shape: [2, 2]}  );
-        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [0, 1, 2])).toEqual( {result: [1, 2, 3, 4, 5, 6], shape: [2, 3]});
+        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [0, 1])).toEqual({
+            result: [1, 2, 4, 5],
+            shape: [2, 2],
+        });
+        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [1, 2])).toEqual({
+            result: [2, 3, 5, 6],
+            shape: [2, 2],
+        });
+        expect(select_columns([1, 2, 3, 4, 5, 6], [2, 3], [0, 1, 2])).toEqual({
+            result: [1, 2, 3, 4, 5, 6],
+            shape: [2, 3],
+        });
     });
-})
+});
 
 // test mean along columns
 
-
-describe("When mean_along_columns is called", function() {
+describe("When mean_along_columns is called", function () {
     it("Should return undefined if array is length 0", () => {
         expect(mean_along_columns([], [1, 2])).toEqual(undefined);
     });
     it("Should return undefined if shape is length 0", () => {
-        expect(mean_along_columns([1, 2], [], )).toEqual(undefined);
+        expect(mean_along_columns([1, 2], [])).toEqual(undefined);
     });
     it("Should return undefined if array and shape do not match", () => {
-        expect(mean_along_columns([1, 2], [3, 4], )).toEqual(undefined);
+        expect(mean_along_columns([1, 2], [3, 4])).toEqual(undefined);
     });
     it("Should return correct mean", () => {
-        expect(mean_along_columns([1, 2, 3, 4, 5, 6], [2, 3])).toEqual([2., 5.]);
-        expect(mean_along_columns([2, 3, 5, 6], [2, 2])).toEqual([2.5, 5.5])
-    })
-})
+        expect(mean_along_columns([1, 2, 3, 4, 5, 6], [2, 3])).toEqual([2, 5]);
+        expect(mean_along_columns([2, 3, 5, 6], [2, 2])).toEqual([2.5, 5.5]);
+    });
+});
 
 // test rectBin
 
 describe("When rectBin is called, it", function () {
     it("Should return undefined if size is negatvie", () => {
-        expect(rectBin(-100, flatten([[1, 1]]), undefined)).toEqual(
-            undefined
-        );
+        expect(rectBin(-100, flatten([[1, 1]]), undefined)).toEqual(undefined);
     });
     it("Should return empty array of size size if no points are passed", () => {
         expect(rectBin(2, [], undefined)).toEqual([
             [undefined, undefined],
-            [undefined, undefined]
+            [undefined, undefined],
         ]);
     });
     it("Should return empty array of size size if values are undefined", () => {
-        expect(rectBin(2, [null, null, null, null, null, null], undefined)).toEqual([
+        expect(
+            rectBin(2, [null, null, null, null, null, null], undefined)
+        ).toEqual([
             [undefined, undefined],
-            [undefined, undefined]
+            [undefined, undefined],
         ]);
-    })
+    });
     it("Should bin values correctly if integers are passed", () => {
         expect(
             rectBin(
                 2,
 
-                flatten([[60, 100],
-                [80, 50],
-                [50, 50]]),
-
+                flatten([
+                    [60, 100],
+                    [80, 50],
+                    [50, 50],
+                ])
             )
         ).toEqual([
             [1, undefined],
-            [1, 1]
+            [1, 1],
         ]);
     });
     it("Should behave correctly if a null point is passt", () => {
@@ -456,15 +458,16 @@ describe("When rectBin is called, it", function () {
             rectBin(
                 2,
 
-                flatten([[60, 100],
-                [80, 50],
-                [50, 50],
-                [null, null]]),
-
+                flatten([
+                    [60, 100],
+                    [80, 50],
+                    [50, 50],
+                    [null, null],
+                ])
             )
         ).toEqual([
             [1, undefined],
-            [1, 1]
+            [1, 1],
         ]);
     });
     it("Should bin values correctly if floats are passed", () => {
@@ -475,12 +478,12 @@ describe("When rectBin is called, it", function () {
                     [0.4, 1.8],
                     [0.5, 1.55],
                     [1.1, 2.1],
-                    [0.1, 1.1]
+                    [0.1, 1.1],
                 ])
             )
         ).toEqual([
             [1, 1],
-            [2, undefined]
+            [2, undefined],
         ]);
     });
     it("Should bin values correctly if floats are passed in mean mode", () => {
@@ -492,14 +495,14 @@ describe("When rectBin is called, it", function () {
                     [0.4, 1.8],
                     [0.5, 1.55],
                     [1.1, 2.1],
-                    [0.1, 1.1]
+                    [0.1, 1.1],
                 ]),
                 [1, 1, 1, 0],
                 "mean"
             )
         ).toEqual([
             [1, 1],
-            [0.5, undefined]
+            [0.5, undefined],
         ]);
     });
     it("Should handle mode mode correctly", () => {
@@ -511,16 +514,16 @@ describe("When rectBin is called, it", function () {
                     [0.5, 1.55],
                     [1.1, 2.1],
                     [0.1, 1.1],
-                    [0.1, 1.1]
+                    [0.1, 1.1],
                 ]),
                 [1, 1, 3, 0, 0],
                 "mode"
             )
         ).toEqual([
             [1, 3],
-            [0, undefined]
+            [0, undefined],
         ]);
-    })
+    });
 });
 
 describe("When select 3d along first axis is called, it", function () {
@@ -531,29 +534,50 @@ describe("When select 3d along first axis is called, it", function () {
         expect(select_3d_along_first_axis([1, 2], [], 2)).toEqual(undefined);
     });
     it("Should return undefined if array and shape do not match", () => {
-        expect(select_3d_along_first_axis([1, 2], [3, 4, 5], 2)).toEqual(undefined);
+        expect(select_3d_along_first_axis([1, 2], [3, 4, 5], 2)).toEqual(
+            undefined
+        );
     });
     it("Should return undefined if index is not defined", () => {
-        expect(select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2])).toEqual(undefined);
+        expect(
+            select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2])
+        ).toEqual(undefined);
     });
     it("Should return undefined if index is < 0", () => {
-        expect(select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], -2)).toEqual(undefined);
+        expect(
+            select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], -2)
+        ).toEqual(undefined);
     });
     it("Should return undefined if index is > example_number", () => {
-        expect(select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], 3)).toEqual(undefined);
+        expect(
+            select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], 3)
+        ).toEqual(undefined);
     });
     it("Should return correct column", () => {
-        expect(select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], 0)).toEqual([1, 2, 3, 4]);
-        expect(select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], 1)).toEqual([5, 6, 7, 8]);
+        expect(
+            select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], 0)
+        ).toEqual([1, 2, 3, 4]);
+        expect(
+            select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], 1)
+        ).toEqual([5, 6, 7, 8]);
     });
-})
-
+});
 
 describe("When flatten is called, it", function () {
     it("should handle a square matrix correctly", () => {
-        expect(flatten([[1, 2], [3, 4]])).toEqual([1, 2, 3, 4])
+        expect(
+            flatten([
+                [1, 2],
+                [3, 4],
+            ])
+        ).toEqual([1, 2, 3, 4]);
     });
     it("should handle a rectangular matrix correctly", () => {
-        expect(flatten([[1, 2, 3, 4], [5, 6, 7, 8]])).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
-    })
-})
+        expect(
+            flatten([
+                [1, 2, 3, 4],
+                [5, 6, 7, 8],
+            ])
+        ).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    });
+});

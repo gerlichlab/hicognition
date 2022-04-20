@@ -1,9 +1,12 @@
 @import "~vue-material/dist/theme/engine"; // Import the theme engine
 
-@include md-register-theme("default", (
-    primary: #87b4d4, // The primary color of your brand
-    accent: #264D69 // The secondary color of your brand
-));
+@include md-register-theme(
+    "default",
+    (
+        primary: #87b4d4, // The primary color of your brand
+        accent: #264d69 // The secondary color of your brand,
+    )
+);
 
 @import "~vue-material/dist/theme/all"; // Apply the theme
 
@@ -17,5 +20,5 @@
 }
 
 .md-table table {
-    overflow: visible
+    overflow: visible;
 }

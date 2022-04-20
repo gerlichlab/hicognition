@@ -37,7 +37,7 @@
                     </div>
                 </md-card-content>
                 <md-progress-bar md-mode="indeterminate" v-if="sending" />
-                                <md-card-actions>
+                <md-card-actions>
                     <md-button
                         type="submit"
                         class="md-primary"
@@ -50,38 +50,37 @@
     </div>
 </template>
 
-
 <script>
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
 
-const correctFileType = function(value) {
+const correctFileType = function (value) {
     /* 
         validator for correct fileype. Note that this is the vue component in this example
     */
-   // string check is needed because event is first passed into the validator, followed by filename string, which is checked
-    if (typeof value === 'string' || value instanceof String){
-        for (let fileName of value.split(",")){
-            let splitFileName = fileName.split(".")
+    // string check is needed because event is first passed into the validator, followed by filename string, which is checked
+    if (typeof value === "string" || value instanceof String) {
+        for (let fileName of value.split(",")) {
+            let splitFileName = fileName.split(".");
             let fileEnding = splitFileName[splitFileName.length - 1];
-            if (!(fileEnding in this.fileTypeMapping)){
-                return false
+            if (!(fileEnding in this.fileTypeMapping)) {
+                return false;
             }
         }
-        return true
+        return true;
     }
-    return false
-}
+    return false;
+};
 
 export default {
     name: "selectBulkDatasetForm",
     mixins: [validationMixin],
     props: {
-        fileTypeMapping: Object
+        fileTypeMapping: Object,
     },
     data: () => ({
         form: {
-            files: null
+            files: null,
         },
         datasetSaved: false,
         sending: false,
@@ -91,9 +90,9 @@ export default {
         form: {
             files: {
                 required,
-                correctFiletype: correctFileType
+                correctFiletype: correctFileType,
             },
-        }
+        },
     },
     methods: {
         getValidationClass(fieldName) {
@@ -102,7 +101,7 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty
+                    "md-invalid": field.$invalid && field.$dirty,
                 };
             }
         },
@@ -117,19 +116,19 @@ export default {
         saveDataset() {
             this.sending = true; // show progress bar
             // emit files
-            this.$emit("files-selected", this.selectedFiles)
-            setTimeout(() => {this.sending = false}, 500)
+            this.$emit("files-selected", this.selectedFiles);
+            setTimeout(() => {
+                this.sending = false;
+            }, 500);
         },
         validateDataset() {
             this.$v.$touch();
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        }
-    }
-
+        },
+    },
 };
-
 </script>
 
 <style lang="scss" scoped>

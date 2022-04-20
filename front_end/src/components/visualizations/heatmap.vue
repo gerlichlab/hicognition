@@ -23,9 +23,20 @@
                     </color-bar-slider>
                 </div>
                 <!-- Pileup display -->
-                <md-content class="center-horizontal md-elevation-4" ref="contentDiv">
-                        <div :class="heatmapClass"  ref="canvasDiv" @mouseleave="handleMouseLeaveContainer"/>
-                        <div v-if="showXaxis" class="small-margin-left-right" :id="xAxisdivID"/>
+                <md-content
+                    class="center-horizontal md-elevation-4"
+                    ref="contentDiv"
+                >
+                    <div
+                        :class="heatmapClass"
+                        ref="canvasDiv"
+                        @mouseleave="handleMouseLeaveContainer"
+                    />
+                    <div
+                        v-if="showXaxis"
+                        class="small-margin-left-right"
+                        :id="xAxisdivID"
+                    />
                 </md-content>
             </md-list-item>
             <div v-show="allNull">
@@ -34,8 +45,8 @@
                     md-label="No data for this condition"
                     :style="emptyStyle"
                 >
-            </md-empty-state>
-        </div>
+                </md-empty-state>
+            </div>
         </md-list>
     </div>
 </template>
@@ -45,8 +56,7 @@ import * as d3 from "d3";
 import { getScale } from "../../colorScales.js";
 import colorBarSlider from "../ui/colorBarSlider.vue";
 import { getPercentile, getPerMilRank } from "../../functions";
-import {formattingMixin} from "../../mixins"
-
+import { formattingMixin } from "../../mixins";
 
 // set pixi scale mode
 
@@ -54,16 +64,16 @@ PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
 function hexToRgb(hex) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result.slice(1, 4).map(el => parseInt(el, 16));
+    return result.slice(1, 4).map((el) => parseInt(el, 16));
 }
 
-const EXPANSION_FACTOR = 0.2
-const COLORBAR_FRACTION = 0.17
+const EXPANSION_FACTOR = 0.2;
+const COLORBAR_FRACTION = 0.17;
 
 export default {
     name: "heatmap",
     components: {
-        colorBarSlider
+        colorBarSlider,
     },
     mixins: [formattingMixin],
     props: {
@@ -84,96 +94,110 @@ export default {
         log: Boolean,
         showXaxis: {
             type: Boolean,
-            default: false
+            default: false,
         },
-        isInterval: { //  whehter to show interval start and end on x axis
+        isInterval: {
+            //  whehter to show interval start and end on x axis
             type: Boolean,
-            default: false
-        }
-
+            default: false,
+        },
     },
     computed: {
-        heatmapClass: function(){
-            if (this.isInterval){
-                return "small-margin-left-right-top"
+        heatmapClass: function () {
+            if (this.isInterval) {
+                return "small-margin-left-right-top";
             }
-            return "small-margin"
+            return "small-margin";
         },
-        emptyStyle: function(){
+        emptyStyle: function () {
             return {
-                "padding": "0px",
-                "width": this.width + "px",
-                "height": this.height + "px",
-            }
+                padding: "0px",
+                width: this.width + "px",
+                height: this.height + "px",
+            };
         },
-        xAxismargin: function() {
+        xAxismargin: function () {
             return {
                 top: 0,
                 bottom: 0,
                 left: 0,
-                right: 0
-            }
+                right: 0,
+            };
         },
-        xAxisHeight: function(){
-            return (this.height * 0.07) - this.xAxismargin.bottom - this.xAxismargin.top
+        xAxisHeight: function () {
+            return (
+                this.height * 0.07 -
+                this.xAxismargin.bottom -
+                this.xAxismargin.top
+            );
         },
-        xAxisWidth: function(){
-            return this.visualizationSize - this.xAxismargin.left - this.xAxismargin.right
+        xAxisWidth: function () {
+            return (
+                this.visualizationSize -
+                this.xAxismargin.left -
+                this.xAxismargin.right
+            );
         },
-        heatMapHeight: function(){
-            return (this.height * 0.93) - 7
+        heatMapHeight: function () {
+            return this.height * 0.93 - 7;
         },
-        xAxisdivID: function() {
+        xAxisdivID: function () {
             // ID for the div containing the lineprofile
             return "xAxis_" + this.id;
         },
-        xAxisFontSize: function(){
-            let fontSize = 10 + Math.round(this.width/50) - 2
-            return `${fontSize}px`
+        xAxisFontSize: function () {
+            let fontSize = 10 + Math.round(this.width / 50) - 2;
+            return `${fontSize}px`;
         },
-        intervalStartBin: function(){
+        intervalStartBin: function () {
             if (this.stackupData) {
-                let intervalSize = Math.round(this.stackupData.shape[1]/ (1 + 2*EXPANSION_FACTOR))
-                return Math.round(intervalSize * EXPANSION_FACTOR)
+                let intervalSize = Math.round(
+                    this.stackupData.shape[1] / (1 + 2 * EXPANSION_FACTOR)
+                );
+                return Math.round(intervalSize * EXPANSION_FACTOR);
             }
-            return undefined
+            return undefined;
         },
-        intervalEndBin: function(){
+        intervalEndBin: function () {
             if (this.stackupData) {
-                let intervalSize = Math.round(this.stackupData.shape[1]/ (1 + 2*EXPANSION_FACTOR))
-                return intervalSize + Math.round(intervalSize * EXPANSION_FACTOR)
+                let intervalSize = Math.round(
+                    this.stackupData.shape[1] / (1 + 2 * EXPANSION_FACTOR)
+                );
+                return (
+                    intervalSize + Math.round(intervalSize * EXPANSION_FACTOR)
+                );
             }
-            return undefined
+            return undefined;
         },
-        nan_color: function(){
-            return [255, 255, 255]
+        nan_color: function () {
+            return [255, 255, 255];
         },
-        visualizationSize: function() {
+        visualizationSize: function () {
             return Math.floor(Math.min(this.width, this.heatMapHeight));
         },
-        colorBarContainerStyle: function() {
+        colorBarContainerStyle: function () {
             return {
                 width: `${COLORBAR_FRACTION * 100}%`,
                 height: this.height + "px",
-                display: "inline"
+                display: "inline",
             };
         },
-        sliderContainerStyle: function() {
+        sliderContainerStyle: function () {
             return {
                 width: "100%",
                 margin: "0 auto",
                 height: this.sliderHeight + "px",
                 display: "flex",
                 "justify-content": "center",
-                "align-content": "center"
+                "align-content": "center",
             };
         },
-        stackupValues: function() {
+        stackupValues: function () {
             /*
                 applies log if defined
             */
             if (this.log) {
-                return this.stackupData["data"].map(val => {
+                return this.stackupData["data"].map((val) => {
                     if (val && val > 0) {
                         return Math.log2(val);
                     }
@@ -182,25 +206,25 @@ export default {
             }
             return this.stackupData["data"];
         },
-        stackupDimensions: function() {
+        stackupDimensions: function () {
             return this.stackupData["shape"];
         },
-        stackupDtype: function() {
+        stackupDtype: function () {
             return this.stackupData["dtype"];
         },
-        minValueRobust: function() {
+        minValueRobust: function () {
             if (this.minHeatmapValue) {
                 return this.minHeatmapValue;
             }
             return getPercentile(this.stackupValues, 1);
         },
-        maxValueRobust: function() {
+        maxValueRobust: function () {
             if (this.maxHeatmapValue) {
                 return this.maxHeatmapValue;
             }
             return getPercentile(this.stackupValues, 99);
         },
-        minValue: function() {
+        minValue: function () {
             // find minimum by hand because Math.min cannot handle more than
             // a few k elements...
             if (this.minHeatmapRange) {
@@ -208,7 +232,7 @@ export default {
             }
             return getPerMilRank(this.stackupValues, 1);
         },
-        maxValue: function() {
+        maxValue: function () {
             // maximum value for heatmap lookuptable = maximum value in data
             // filter out nans and extract values into array
             if (this.maxHeatmapRange) {
@@ -216,7 +240,7 @@ export default {
             }
             return getPerMilRank(this.stackupValues, 999);
         },
-        rgbArray: function() {
+        rgbArray: function () {
             // array with rgba values for pixi Texture.fromBuffer
             var bufferArray = [];
             let allNull = true;
@@ -225,14 +249,14 @@ export default {
                 var colorValues;
                 if (element) {
                     // indicate that not all values are nan
-                    allNull = false
+                    allNull = false;
                     if (this.colorScale(element)[0] == "#") {
                         colorValues = hexToRgb(this.colorScale(element));
                     } else {
                         colorValues = this.colorScale(element)
                             .split(/[\,,(,)]/)
                             .slice(1, 4)
-                            .map(element => Number(element));
+                            .map((element) => Number(element));
                     }
                 } else {
                     colorValues = this.nan_color;
@@ -244,11 +268,11 @@ export default {
                 // add full saturation
                 bufferArray.push(255);
             }
-            this.allNull = allNull
+            this.allNull = allNull;
             return new Uint8ClampedArray(bufferArray);
-        }
+        },
     },
-    data: function() {
+    data: function () {
         return {
             renderer: undefined,
             stage: undefined,
@@ -261,30 +285,24 @@ export default {
             pseudoCanvas: undefined,
             allNull: false,
             trackMouse: false,
-            xScale: undefined
+            xScale: undefined,
         };
     },
     methods: {
-        createXaxisScales: function() {
+        createXaxisScales: function () {
             this.xScale = d3
                 .scaleLinear()
                 .domain([0, this.stackupData.shape[1]])
                 .range([0, this.xAxisWidth]);
         },
-        createXaxisSvg: function() {
+        createXaxisSvg: function () {
             d3.select(`#${this.xAxisdivID}Svg`).remove();
             this.svg = d3
                 .select(`#${this.xAxisdivID}`)
                 .append("svg")
                 .attr("id", `${this.xAxisdivID}Svg`)
-                .attr(
-                    "width",
-                    this.xAxisWidth
-                )
-                .attr(
-                    "height",
-                    this.xAxisHeight
-                )
+                .attr("width", this.xAxisWidth)
+                .attr("height", this.xAxisHeight)
                 .append("g")
                 .attr(
                     "transform",
@@ -295,75 +313,88 @@ export default {
                         ")"
                 );
         },
-        xAxisGenerator: function(args){
+        xAxisGenerator: function (args) {
             if (this.isInterval) {
                 return d3
                     .axisBottom(this.xScale)
-                    .tickFormat(val => this.getXaxisFormatInterval(val))
+                    .tickFormat((val) => this.getXaxisFormatInterval(val))
                     .tickSizeOuter(0)
-                    .tickValues([this.intervalStartBin, this.intervalEndBin])(args); 
+                    .tickValues([this.intervalStartBin, this.intervalEndBin])(
+                    args
+                );
             } else {
                 // get start and end bin
-                let startOffsetBp = Math.round(this.windowsize * EXPANSION_FACTOR)
-                let binsize = Math.round(2 * this.windowsize / this.stackupDimensions[1])
-                let startBin = Math.round(startOffsetBp/binsize)
-                let endBin = this.stackupDimensions[1] - startBin
+                let startOffsetBp = Math.round(
+                    this.windowsize * EXPANSION_FACTOR
+                );
+                let binsize = Math.round(
+                    (2 * this.windowsize) / this.stackupDimensions[1]
+                );
+                let startBin = Math.round(startOffsetBp / binsize);
+                let endBin = this.stackupDimensions[1] - startBin;
                 return d3
                     .axisBottom(this.xScale)
-                    .tickFormat(val => this.getXaxisFormatPoint(val))
+                    .tickFormat((val) => this.getXaxisFormatPoint(val))
                     .tickSizeOuter(0)
-                    .tickValues([startBin, Math.round(this.stackupDimensions[1]/2), endBin])(args);    
+                    .tickValues([
+                        startBin,
+                        Math.round(this.stackupDimensions[1] / 2),
+                        endBin,
+                    ])(args);
             }
         },
-        getXaxisFormatInterval: function(val){
-            if (val == this.intervalStartBin){
-                return "Start"
+        getXaxisFormatInterval: function (val) {
+            if (val == this.intervalStartBin) {
+                return "Start";
             }
-            if (val == this.intervalEndBin){
-                return "End"
+            if (val == this.intervalEndBin) {
+                return "End";
             }
-            return undefined
+            return undefined;
         },
-        getXaxisFormatPoint: function(val){
+        getXaxisFormatPoint: function (val) {
             // get start and end bin
-            let startOffsetBp = Math.round(this.windowsize * EXPANSION_FACTOR)
-            let binsize = Math.round( 2*this.windowsize / this.stackupDimensions[1])
-            let startBin = Math.round(startOffsetBp/binsize)
-            let endBin = this.stackupDimensions[1] - startBin
-            let tickIndicator = Number(this.windowsize) - (Math.round(Number(this.windowsize)) * EXPANSION_FACTOR)
-            if (val == startBin){
-                return `-${this.convertBasePairsToReadable(tickIndicator)}`
+            let startOffsetBp = Math.round(this.windowsize * EXPANSION_FACTOR);
+            let binsize = Math.round(
+                (2 * this.windowsize) / this.stackupDimensions[1]
+            );
+            let startBin = Math.round(startOffsetBp / binsize);
+            let endBin = this.stackupDimensions[1] - startBin;
+            let tickIndicator =
+                Number(this.windowsize) -
+                Math.round(Number(this.windowsize)) * EXPANSION_FACTOR;
+            if (val == startBin) {
+                return `-${this.convertBasePairsToReadable(tickIndicator)}`;
             }
-            if (val == Math.round(this.stackupDimensions[1]/2)){
-                return "0"
+            if (val == Math.round(this.stackupDimensions[1] / 2)) {
+                return "0";
             }
-            if (val == endBin){
-                return `+${this.convertBasePairsToReadable(tickIndicator)}`
+            if (val == endBin) {
+                return `+${this.convertBasePairsToReadable(tickIndicator)}`;
             }
-            return undefined
+            return undefined;
         },
-        createAxes: function() {
+        createAxes: function () {
             this.svg
-            .append("g")
-            .attr("class", "x axis")
-            .call(this.xAxisGenerator);
+                .append("g")
+                .attr("class", "x axis")
+                .call(this.xAxisGenerator);
             this.svg.selectAll("text").style("font-size", this.xAxisFontSize);
-            this.svg.selectAll('.tick')
-                      .style('stroke-width','3px');
-            this.svg.selectAll(".domain").style("opacity", 0)
+            this.svg.selectAll(".tick").style("stroke-width", "3px");
+            this.svg.selectAll(".domain").style("opacity", 0);
         },
-        createRenderer: function() {
+        createRenderer: function () {
             this.renderer = new PIXI.CanvasRenderer({
                 width: this.visualizationSize,
-                height: this.visualizationSize
+                height: this.visualizationSize,
             });
         },
-        destroyPseudoCanvas: function() {
+        destroyPseudoCanvas: function () {
             if (this.pseudoCanvas) {
                 this.pseudoCanvas.remove();
             }
         },
-        createPseudoCanvas: function() {
+        createPseudoCanvas: function () {
             let canvas = document.createElement("canvas");
             canvas.id = `pseudoCanvas${this.id}`;
             canvas.width = this.stackupDimensions[1];
@@ -377,73 +408,91 @@ export default {
             // get canvas2d context
             this.pseudoCanvasContext = canvas.getContext("2d");
         },
-        handleColorChange: function(data) {
+        handleColorChange: function (data) {
             let concatenatedValues = data.concat([
                 this.minValue,
-                this.maxValue
+                this.maxValue,
             ]);
             this.$emit("slider-change", concatenatedValues); // propagate up to store in store
             this.createColorMap(...data);
             this.drawHeatmap();
         },
-        createColorMap: function(minVal, maxVal) {
+        createColorMap: function (minVal, maxVal) {
             this.colorScale = getScale(minVal, maxVal, this.colormap);
         },
-        resizeCanvas: function(width, height) {
+        resizeCanvas: function (width, height) {
             this.renderer.resize(width, height);
         },
-        getMouseCoordinates: function(mousedata) {
-            let contentDiv =  this.$refs["contentDiv"].$el
-            let style = window.getComputedStyle(contentDiv)
-            let marginLeft = Number(style.marginLeft.split("px")[0])
-            let marginTop = Number(style.marginTop.split("px")[0])
-            let adjustedX = this.width * COLORBAR_FRACTION + mousedata.data.global.x + marginLeft // 16 is padding
-            let adjustedY = 14.5 + mousedata.data.global.y + marginTop // 14.5 is accumulated top margins
-            return [mousedata.data.global.x, mousedata.data.global.y, adjustedX, adjustedY]
+        getMouseCoordinates: function (mousedata) {
+            let contentDiv = this.$refs["contentDiv"].$el;
+            let style = window.getComputedStyle(contentDiv);
+            let marginLeft = Number(style.marginLeft.split("px")[0]);
+            let marginTop = Number(style.marginTop.split("px")[0]);
+            let adjustedX =
+                this.width * COLORBAR_FRACTION +
+                mousedata.data.global.x +
+                marginLeft; // 16 is padding
+            let adjustedY = 14.5 + mousedata.data.global.y + marginTop; // 14.5 is accumulated top margins
+            return [
+                mousedata.data.global.x,
+                mousedata.data.global.y,
+                adjustedX,
+                adjustedY,
+            ];
         },
-        hanldeMouseClick: function(mousedata) {
+        hanldeMouseClick: function (mousedata) {
             // get margin of content -> this is dynamic
-            let [x, y, adjustedX, adjustedY] = this.getMouseCoordinates(mousedata)
-            this.$emit("heatmap-clicked", x, y, adjustedX, adjustedY)
+            let [x, y, adjustedX, adjustedY] =
+                this.getMouseCoordinates(mousedata);
+            this.$emit("heatmap-clicked", x, y, adjustedX, adjustedY);
         },
-        handleMouseMove: function(mousedata) {
+        handleMouseMove: function (mousedata) {
             if (this.trackMouse) {
                 // get margin of content -> this is dynamic
-                let [x, y, adjustedX, adjustedY] = this.getMouseCoordinates(mousedata)
-                this.$emit("mouse-move",  x, y, adjustedX, adjustedY, this.visualizationSize)
+                let [x, y, adjustedX, adjustedY] =
+                    this.getMouseCoordinates(mousedata);
+                this.$emit(
+                    "mouse-move",
+                    x,
+                    y,
+                    adjustedX,
+                    adjustedY,
+                    this.visualizationSize
+                );
             }
         },
         throttleFunction: function (func, delay) {
             let timerId;
-            return function(mousedata) {
+            return function (mousedata) {
                 if (timerId) {
-                    return
+                    return;
                 }
                 // Schedule a setTimeout after delay seconds
-                timerId  =  setTimeout(function () {
-                    func(mousedata)
-                    
+                timerId = setTimeout(function () {
+                    func(mousedata);
+
                     // Once setTimeout function execution is finished, timerId = undefined so that in <br>
                     // the next scroll event function execution can be scheduled by the setTimeout
-                    timerId  =  undefined;
-                }, delay)
-            }
+                    timerId = undefined;
+                }, delay);
+            };
         },
-        handleMouseOver: function(mousedata){
-            this.trackMouse = true
-            let [x, y, adjustedX, adjustedY] = this.getMouseCoordinates(mousedata)
-            this.$emit("mouse-enter", x, y, adjustedX, adjustedY)
+        handleMouseOver: function (mousedata) {
+            this.trackMouse = true;
+            let [x, y, adjustedX, adjustedY] =
+                this.getMouseCoordinates(mousedata);
+            this.$emit("mouse-enter", x, y, adjustedX, adjustedY);
         },
-        handleMouseOut: function(mousedata){
-            this.trackMouse = false
-            this.$emit("mouse-leave")
+        handleMouseOut: function (mousedata) {
+            this.trackMouse = false;
+            this.$emit("mouse-leave");
         },
-        handleMouseLeaveContainer: function() {
+        handleMouseLeaveContainer: function () {
             // triggers when mouse leaves the heatmap container
-            this.trackMouse = false
-            this.$emit("mouse-leave-container")
+            this.trackMouse = false;
+            this.$emit("mouse-leave-container");
         },
-        drawHeatmap: function() {
+        drawHeatmap: function () {
             // destroy old pseudocanvas if existing
             this.destroyPseudoCanvas();
             this.createPseudoCanvas();
@@ -458,13 +507,22 @@ export default {
             this.texture = PIXI.Texture.from(this.pseudoCanvas);
             this.sprite = PIXI.Sprite.from(this.texture);
             //  attach event handlers
-            let scalingFactor = this.stackupDimensions[0]/this.stackupDimensions[1]
-            this.sprite.hitArea = new PIXI.Rectangle(0, 0 , this.visualizationSize, this.visualizationSize * scalingFactor )
-            this.sprite.click = this.hanldeMouseClick
-            this.sprite.pointermove = this.throttleFunction(this.handleMouseMove, 50)
-            this.sprite.mouseover = this.handleMouseOver
-            this.sprite.mouseout = this.handleMouseOut
-            this.sprite.interactive = true
+            let scalingFactor =
+                this.stackupDimensions[0] / this.stackupDimensions[1];
+            this.sprite.hitArea = new PIXI.Rectangle(
+                0,
+                0,
+                this.visualizationSize,
+                this.visualizationSize * scalingFactor
+            );
+            this.sprite.click = this.hanldeMouseClick;
+            this.sprite.pointermove = this.throttleFunction(
+                this.handleMouseMove,
+                50
+            );
+            this.sprite.mouseover = this.handleMouseOver;
+            this.sprite.mouseout = this.handleMouseOut;
+            this.sprite.interactive = true;
             // position sprite at top left and make it stretch the canvas
             this.sprite.x = 0;
             this.sprite.y = 0;
@@ -475,23 +533,23 @@ export default {
             this.renderer.render(this.stage);
             // add hit area
 
-            this.renderer.render(this.stage)
+            this.renderer.render(this.stage);
             // add x Axis if necessary
-            if (this.showXaxis){
-                this.createXaxisScales()
-                this.createXaxisSvg()
-                this.createAxes()
+            if (this.showXaxis) {
+                this.createXaxisScales();
+                this.createXaxisSvg();
+                this.createAxes();
             }
         },
-        initializeCanvas: function() {
+        initializeCanvas: function () {
             // add the renderer view object into the canvas div
             this.$refs["canvasDiv"].appendChild(this.renderer.view);
             // create stage
             this.stage = new PIXI.Container();
-        }
+        },
     },
     watch: {
-        stackupData: function() {
+        stackupData: function () {
             // rerender if stackupdata changes -> important for sorting
             if (this.minHeatmapValue && this.maxHeatmapValue) {
                 this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue);
@@ -502,45 +560,45 @@ export default {
                     this.minValueRobust,
                     this.maxValueRobust,
                     this.minValue,
-                    this.maxValue
+                    this.maxValue,
                 ]);
             }
             this.drawHeatmap();
         },
-        isInterval: function(oldVal, newVal) {
+        isInterval: function (oldVal, newVal) {
             if (oldVal != newVal) {
                 this.$refs["canvasDiv"].removeChild(this.renderer.view);
                 this.renderer.destroy();
                 this.renderer = null;
-                this.createRenderer()
-                this.initializeCanvas()
+                this.createRenderer();
+                this.initializeCanvas();
             }
         },
-        valueScaleBorder: function(val) {
-            if (val === undefined){
+        valueScaleBorder: function (val) {
+            if (val === undefined) {
                 // if no border defined and watcher fired -> emit slider change event
                 this.$emit("slider-change", [
                     this.minValueRobust,
                     this.maxValueRobust,
                     this.minValue,
-                    this.maxValue
+                    this.maxValue,
                 ]);
             }
         },
-        colormap: function() {
+        colormap: function () {
             // if colormap changes -> reset min and max
             this.createColorMap(this.minValueRobust, this.maxValueRobust);
             this.drawHeatmap();
         },
-        height: function() {
+        height: function () {
             this.resizeCanvas(this.visualizationSize, this.visualizationSize);
             this.drawHeatmap();
         },
-        width: function() {
+        width: function () {
             this.resizeCanvas(this.visualizationSize, this.visualizationSize);
             this.drawHeatmap();
         },
-        minHeatmapValue: function() {
+        minHeatmapValue: function () {
             if (this.minHeatmapValue && this.maxHeatmapValue) {
                 this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue);
             } else {
@@ -548,16 +606,16 @@ export default {
             }
             this.drawHeatmap();
         },
-        maxHeatmapValue: function() {
+        maxHeatmapValue: function () {
             if (this.minHeatmapValue && this.maxHeatmapValue) {
                 this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue);
             } else {
                 this.createColorMap(this.minValueRobust, this.maxValueRobust);
             }
             this.drawHeatmap();
-        }
+        },
     },
-    mounted: function() {
+    mounted: function () {
         // initialize min from prop if defined
         if (this.minHeatmapValue && this.maxHeatmapValue) {
             this.createColorMap(this.minHeatmapValue, this.maxHeatmapValue);
@@ -572,10 +630,10 @@ export default {
             this.minValueRobust,
             this.maxValueRobust,
             this.minValue,
-            this.maxValue
+            this.maxValue,
         ]);
     },
-    beforeDestroy: function() {
+    beforeDestroy: function () {
         /*
             destroy everything and release all webgl contexts
             All things that reference any webgl components need to be nulled
@@ -587,14 +645,14 @@ export default {
         this.stage.destroy();
         this.stage = null;
         // remove renderer view
-        if (this.$refs["canvasDiv"]){
+        if (this.$refs["canvasDiv"]) {
             this.$refs["canvasDiv"].removeChild(this.renderer.view);
         }
         this.renderer.destroy();
         this.renderer = null;
         this.texture = null;
         this.sprite = null;
-    }
+    },
 };
 </script>
 
@@ -618,6 +676,6 @@ export default {
     margin-left: 5px;
     margin-right: 5px;
     margin-top: 5px;
-    margin-bottom: 0px
+    margin-bottom: 0px;
 }
 </style>

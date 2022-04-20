@@ -10,12 +10,12 @@ import {
     mean_along_columns,
     select_column,
     select_columns,
-    range
+    range,
 } from "./functions";
 
 export var apiMixin = {
     methods: {
-        fetchAndStoreDatasets: function() {
+        fetchAndStoreDatasets: function () {
             // convenience method for fetching datasets and storing them in vuex store
             this.fetchData("datasets/").then((response) => {
                 if (response) {
@@ -24,12 +24,12 @@ export var apiMixin = {
                 }
             });
         },
-        fetchAndStoreCollections: function() {
+        fetchAndStoreCollections: function () {
             // convenience method for fetching collections and storing them in vuex store
-            this.fetchData("collections/").then(response => {
+            this.fetchData("collections/").then((response) => {
                 if (response) {
                     // update displayed datasets
-                    this.$store.commit("setCollections", response.data)
+                    this.$store.commit("setCollections", response.data);
                 }
             });
         },
@@ -44,15 +44,15 @@ export var apiMixin = {
                     {
                         auth: {
                             username: username,
-                            password: password
-                        }
+                            password: password,
+                        },
                     }
                 )
-                .then(response => {
+                .then((response) => {
                     // success, store token in vuex store
                     this.$store.commit("setToken", response.data.token);
                     this.$store.commit("setUserId", response.data.user_id);
-                    this.$store.commit("setUserName", response.data.user_name)
+                    this.$store.commit("setUserName", response.data.user_name);
                 });
         },
         fetchData: function (url) {
@@ -69,22 +69,22 @@ export var apiMixin = {
             // base64 encoding of token
             var encodedToken = btoa(token + ":");
             // check whether session token exists
-            var sessionToken = this.$store.getters.sessionToken
+            var sessionToken = this.$store.getters.sessionToken;
             if (sessionToken) {
                 if (url.includes("?")) {
-                    url = url + `&sessionToken=${sessionToken}`
+                    url = url + `&sessionToken=${sessionToken}`;
                 } else {
-                    url = url + `?sessionToken=${sessionToken}`
+                    url = url + `?sessionToken=${sessionToken}`;
                 }
             }
             // fetch url
             return this.$http
                 .get(process.env.API_URL + url, {
                     headers: {
-                        Authorization: `Basic ${encodedToken}`
-                    }
+                        Authorization: `Basic ${encodedToken}`,
+                    },
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (!error.response) {
                         alert(`HTTP error: ${error}`);
                     } else if (
@@ -115,22 +115,22 @@ export var apiMixin = {
             // base64 encoding of token
             var encodedToken = btoa(token + ":");
             // check whether session token exists
-            var sessionToken = this.$store.getters.sessionToken
+            var sessionToken = this.$store.getters.sessionToken;
             if (sessionToken) {
                 if (url.includes("?")) {
-                    url = url + `&sessionToken=${sessionToken}`
+                    url = url + `&sessionToken=${sessionToken}`;
                 } else {
-                    url = url + `?sessionToken=${sessionToken}`
+                    url = url + `?sessionToken=${sessionToken}`;
                 }
             }
             return this.$http
                 .post(process.env.API_URL + url, formData, {
                     headers: {
                         Authorization: `Basic ${encodedToken}`,
-                        "Content-Type": "multipart/form-data"
-                    }
+                        "Content-Type": "multipart/form-data",
+                    },
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (!error.response) {
                         alert(`HTTP error: ${error}`);
                     } else if (
@@ -160,22 +160,22 @@ export var apiMixin = {
             // base64 encoding of token
             var encodedToken = btoa(token + ":");
             // check whether session token exists
-            var sessionToken = this.$store.getters.sessionToken
+            var sessionToken = this.$store.getters.sessionToken;
             if (sessionToken) {
                 if (url.includes("?")) {
-                    url = url + `&sessionToken=${sessionToken}`
+                    url = url + `&sessionToken=${sessionToken}`;
                 } else {
-                    url = url + `?sessionToken=${sessionToken}`
+                    url = url + `?sessionToken=${sessionToken}`;
                 }
             }
             return this.$http
                 .put(process.env.API_URL + url, formData, {
                     headers: {
                         Authorization: `Basic ${encodedToken}`,
-                        "Content-Type": "multipart/form-data"
-                    }
+                        "Content-Type": "multipart/form-data",
+                    },
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (!error.response) {
                         alert(`HTTP error: ${error}`);
                     } else if (
@@ -207,10 +207,10 @@ export var apiMixin = {
             return this.$http
                 .delete(process.env.API_URL + url, {
                     headers: {
-                        Authorization: `Basic ${encodedToken}`
-                    }
+                        Authorization: `Basic ${encodedToken}`,
+                    },
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (!error.response) {
                         alert(`HTTP error: ${error}`);
                     } else if (
@@ -225,8 +225,8 @@ export var apiMixin = {
                         );
                     }
                 });
-        }
-    }
+        },
+    },
 };
 
 export var formattingMixin = {
@@ -234,11 +234,11 @@ export var formattingMixin = {
         getBinSizeFormat: function (binsize) {
             let output;
             if (this.isVariableSize) {
-                output = `${binsize} %`
+                output = `${binsize} %`;
             } else {
-                output = this.convertBasePairsToReadable(binsize)
+                output = this.convertBasePairsToReadable(binsize);
             }
-            return output
+            return output;
         },
         convertBasePairsToReadable: function (baseString) {
             var basePairs = Number(baseString);
@@ -248,14 +248,13 @@ export var formattingMixin = {
             if (Math.abs(basePairs) < 1000000) {
                 return Math.round(basePairs / 1000) + " kb";
             }
-            return Math.round(basePairs / 100000)/10 + " Mb";
-        }
-    }
+            return Math.round(basePairs / 100000) / 10 + " Mb";
+        },
+    },
 };
 
 const TOOLBARHEIGHT = 40;
 const MESSAGEHEIGHT = 50;
-
 
 export var widgetMixin = {
     props: {
@@ -265,7 +264,7 @@ export var widgetMixin = {
         id: Number,
         collectionID: Number,
         rowIndex: Number,
-        colIndex: Number
+        colIndex: Number,
     },
     data: function () {
         // get widget data from store for initialization
@@ -274,13 +273,23 @@ export var widgetMixin = {
     computed: {
         genomicFeatureSelectionClasses: function () {
             if (this.allowBinsizeSelection) {
-                return ["md-layout-item", "md-size-30", "padding-left", "padding-right"]
+                return [
+                    "md-layout-item",
+                    "md-size-30",
+                    "padding-left",
+                    "padding-right",
+                ];
             } else {
-                return ["md-layout-item", "md-size-30", "padding-left", "padding-right"]
+                return [
+                    "md-layout-item",
+                    "md-size-30",
+                    "padding-left",
+                    "padding-right",
+                ];
             }
         },
         visualizationHeight: function () {
-            return Math.round((this.height - TOOLBARHEIGHT - MESSAGEHEIGHT));
+            return Math.round(this.height - TOOLBARHEIGHT - MESSAGEHEIGHT);
         },
         visualizationWidth: function () {
             return Math.round(this.width * 0.7);
@@ -298,20 +307,20 @@ export var widgetMixin = {
             return false;
         },
         allowBinsizeSelection: function () {
-            if (this.binsizes){
+            if (this.binsizes) {
                 return Object.keys(this.binsizes).length != 0;
             }
-            return false
+            return false;
         },
         cssStyle: function () {
             return {
                 height: `${this.height}px`,
-                width: `${this.width}px`
+                width: `${this.width}px`,
             };
         },
         isVariableSize: function () {
-            return this.intervalSize == "variable"
-        }
+            return this.intervalSize == "variable";
+        },
     },
     methods: {
         blankWidget: function () {
@@ -329,7 +338,7 @@ export var widgetMixin = {
             // registers event handlers that react to life cycle event such as deletion and serialization
             EventBus.$on("serialize-widgets", this.serializeWidget);
             // widget deletion can be trigered via event bus from widget collection
-            EventBus.$on("delete-widget", id => {
+            EventBus.$on("delete-widget", (id) => {
                 if (id == this.id) {
                     this.deleteWidget();
                 }
@@ -344,10 +353,10 @@ export var widgetMixin = {
                 return false;
             }
             if (
-                (newCollectionData["regionID"] !=
-                    oldCollectionData["regionID"]) ||
-                (newCollectionData["intervalSize"] !=
-                    oldCollectionData["intervalSize"])
+                newCollectionData["regionID"] !=
+                    oldCollectionData["regionID"] ||
+                newCollectionData["intervalSize"] !=
+                    oldCollectionData["intervalSize"]
             ) {
                 return false;
             }
@@ -385,12 +394,15 @@ export var widgetMixin = {
             // delete widget from store
             var payload = {
                 parentID: this.collectionID,
-                id: this.id
+                id: this.id,
             };
             // delete widget from store
             this.$store.commit("compare/deleteWidget", payload);
             // decrement dataset from used dataset in store
-            this.$store.commit("compare/decrement_usage_dataset", this.selectedDataset)
+            this.$store.commit(
+                "compare/decrement_usage_dataset",
+                this.selectedDataset
+            );
         },
         serializeWidget: function () {
             var newObject = this.toStoreObject();
@@ -400,55 +412,63 @@ export var widgetMixin = {
             // initialize widget from store
             var queryObject = {
                 parentID: this.collectionID,
-                id: this.id
+                id: this.id,
             };
-            var widgetData = this.$store.getters["compare/getWidgetProperties"](
-                queryObject
-            );
+            var widgetData =
+                this.$store.getters["compare/getWidgetProperties"](queryObject);
             // the collection config at the current collection
             var collectionConfig = this.$store.getters[
                 "compare/getCollectionConfig"
             ](this.collectionID);
             // the collection config the widget comes from
             var oldCollectionConfig = widgetData["collectionConfig"];
-            if (!oldCollectionConfig || !this.sameCollectionConfig(collectionConfig, oldCollectionConfig)) {
+            if (
+                !oldCollectionConfig ||
+                !this.sameCollectionConfig(
+                    collectionConfig,
+                    oldCollectionConfig
+                )
+            ) {
                 return this.initializeForFirstTime(
                     widgetData,
                     collectionConfig
                 );
             } else {
-                return this.initializeFromStore(
-                    widgetData,
-                    collectionConfig
-                );
+                return this.initializeFromStore(widgetData, collectionConfig);
             }
         },
     },
     mounted: function () {
-        this.registerLifeCycleEventHandlers()
+        this.registerLifeCycleEventHandlers();
     },
     beforeDestroy: function () {
-        this.removeEventHandlers()
-    }
-}
+        this.removeEventHandlers();
+    },
+};
 
-const EXPANSION_FACTOR = 0.2
+const EXPANSION_FACTOR = 0.2;
 
 export var sortOrderMixin = {
     computed: {
         intervalStartBin: function () {
             if (this.widgetData) {
-                let intervalSize = Math.round(this.widgetData["shape"][1] / (1 + 2 * EXPANSION_FACTOR))
-                return Math.round(intervalSize * EXPANSION_FACTOR)
+                let intervalSize = Math.round(
+                    this.widgetData["shape"][1] / (1 + 2 * EXPANSION_FACTOR)
+                );
+                return Math.round(intervalSize * EXPANSION_FACTOR);
             }
-            return undefined
+            return undefined;
         },
         intervalEndBin: function () {
             if (this.widgetData) {
-                let intervalSize = Math.round(this.widgetData["shape"][1] / (1 + 2 * EXPANSION_FACTOR))
-                return intervalSize + Math.round(intervalSize * EXPANSION_FACTOR)
+                let intervalSize = Math.round(
+                    this.widgetData["shape"][1] / (1 + 2 * EXPANSION_FACTOR)
+                );
+                return (
+                    intervalSize + Math.round(intervalSize * EXPANSION_FACTOR)
+                );
             }
-            return undefined
+            return undefined;
         },
         sortedMatrix: function () {
             if (!this.widgetData) {
@@ -463,13 +483,18 @@ export var sortOrderMixin = {
                 return {
                     data: sorted_matrix,
                     shape: this.widgetData["shape"],
-                    dtype: this.widgetData["dtype"]
+                    dtype: this.widgetData["dtype"],
                 };
             } else if (this.selectedSortOrder == "region") {
-                let selected = select_columns(this.widgetData["data"],
+                let selected = select_columns(
+                    this.widgetData["data"],
                     this.widgetData["shape"],
-                    range(this.intervalStartBin, this.intervalEndBin, 1))
-                let sort_index = mean_along_columns(selected["result"], selected["shape"])
+                    range(this.intervalStartBin, this.intervalEndBin, 1)
+                );
+                let sort_index = mean_along_columns(
+                    selected["result"],
+                    selected["shape"]
+                );
                 var sorted_matrix = sort_matrix_by_index(
                     this.widgetData["data"],
                     this.widgetData["shape"],
@@ -479,13 +504,14 @@ export var sortOrderMixin = {
                 return {
                     data: sorted_matrix,
                     shape: this.widgetData["shape"],
-                    dtype: this.widgetData["dtype"]
-                }
-
-            } else if (this.selectedSortOrder == "left boundary"){
-                let sort_index = select_column(this.widgetData["data"],
+                    dtype: this.widgetData["dtype"],
+                };
+            } else if (this.selectedSortOrder == "left boundary") {
+                let sort_index = select_column(
+                    this.widgetData["data"],
                     this.widgetData["shape"],
-                   this.intervalStartBin)
+                    this.intervalStartBin
+                );
                 var sorted_matrix = sort_matrix_by_index(
                     this.widgetData["data"],
                     this.widgetData["shape"],
@@ -495,12 +521,14 @@ export var sortOrderMixin = {
                 return {
                     data: sorted_matrix,
                     shape: this.widgetData["shape"],
-                    dtype: this.widgetData["dtype"]
-                }
-            } else if (this.selectedSortOrder == "right boundary"){
-                let sort_index = select_column(this.widgetData["data"],
+                    dtype: this.widgetData["dtype"],
+                };
+            } else if (this.selectedSortOrder == "right boundary") {
+                let sort_index = select_column(
+                    this.widgetData["data"],
                     this.widgetData["shape"],
-                   this.intervalEndBin)
+                    this.intervalEndBin
+                );
                 var sorted_matrix = sort_matrix_by_index(
                     this.widgetData["data"],
                     this.widgetData["shape"],
@@ -510,9 +538,9 @@ export var sortOrderMixin = {
                 return {
                     data: sorted_matrix,
                     shape: this.widgetData["shape"],
-                    dtype: this.widgetData["dtype"]
-                }
-            }else {
+                    dtype: this.widgetData["dtype"],
+                };
+            } else {
                 var sorted_matrix = sort_matrix_by_index(
                     this.widgetData["data"],
                     this.widgetData["shape"],
@@ -522,7 +550,7 @@ export var sortOrderMixin = {
                 return {
                     data: sorted_matrix,
                     shape: this.widgetData["shape"],
-                    dtype: this.widgetData["dtype"]
+                    dtype: this.widgetData["dtype"],
                 };
             }
         },
@@ -553,7 +581,7 @@ export var sortOrderMixin = {
                 "border-style": `none none ${borderStyle} none`,
                 "border-color": this.sortOrderColor
                     ? this.sortOrderColor
-                    : "none"
+                    : "none",
             };
         },
         sortDirection: function () {
@@ -574,7 +602,7 @@ export var sortOrderMixin = {
                 this.showData &&
                 !this.sortOrderRecipient
             );
-        }
+        },
     },
     methods: {
         broadcastSortOrderUpdate: function () {
@@ -595,19 +623,27 @@ export var sortOrderMixin = {
                     this.widgetData["shape"]
                 );
             } else if (this.selectedSortOrder == "region") {
-                let selected = select_columns(this.widgetData["data"],
+                let selected = select_columns(
+                    this.widgetData["data"],
                     this.widgetData["shape"],
-                    range(this.intervalStartBin, this.intervalEndBin, 1))
-                values = mean_along_columns(selected["result"], selected["shape"])
-
-            }else if (this.selectedSortOrder == "left boundary"){
-                values = select_column(this.widgetData["data"],
-                        this.widgetData["shape"],
-                       this.intervalStartBin)
-            } else if (this.selectedSortOrder == "right boundary"){
-                values = select_column(this.widgetData["data"],
-                        this.widgetData["shape"],
-                       this.intervalEndBin)
+                    range(this.intervalStartBin, this.intervalEndBin, 1)
+                );
+                values = mean_along_columns(
+                    selected["result"],
+                    selected["shape"]
+                );
+            } else if (this.selectedSortOrder == "left boundary") {
+                values = select_column(
+                    this.widgetData["data"],
+                    this.widgetData["shape"],
+                    this.intervalStartBin
+                );
+            } else if (this.selectedSortOrder == "right boundary") {
+                values = select_column(
+                    this.widgetData["data"],
+                    this.widgetData["shape"],
+                    this.intervalEndBin
+                );
             } else {
                 values = this.sortorders[this.selectedSortOrder];
             }
@@ -642,15 +678,15 @@ export var sortOrderMixin = {
             );
             // add event listener to window to catch next click event
             window.addEventListener("click", this.emitEmptySortOrderEnd, {
-                once: true
+                once: true,
             });
             this.expectingSortOrder = true; // this needs to be closed after receiving again -> otherwise everything updates
         },
         handleStopSortOrderShare: function () {
             // put in default
-            if (this.isVariableSize){
+            if (this.isVariableSize) {
                 this.selectedSortOrder = "region";
-            }else{
+            } else {
                 this.selectedSortOrder = "center column";
             }
             EventBus.$emit("stop-sort-order-sharing", this.sortOrderTargetID);
@@ -670,10 +706,10 @@ export var sortOrderMixin = {
             // checks whether passed event arguments are valid and widget is in right state
             return (
                 this.expectingSortOrder &&
-                (target_id != undefined) &&
-                (sortorder != undefined) &&
-                (direction != undefined) &&
-                (color != undefined)
+                target_id != undefined &&
+                sortorder != undefined &&
+                direction != undefined &&
+                color != undefined
             );
         },
         registerSortOrderClientHandlers: function () {
@@ -722,7 +758,7 @@ export var sortOrderMixin = {
                     this.sortOrderTargetID = new_id;
                 }
             });
-            EventBus.$on("sort-order-source-deletion", source_id => {
+            EventBus.$on("sort-order-source-deletion", (source_id) => {
                 if (this.sortOrderTargetID == source_id) {
                     this.handleStopSortOrderShare();
                 }
@@ -735,7 +771,7 @@ export var sortOrderMixin = {
                     this.sortOrderSelectionState = true;
                 }
             });
-            EventBus.$on("stop-sort-order-sharing", target_id => {
+            EventBus.$on("stop-sort-order-sharing", (target_id) => {
                 if (target_id == this.id) {
                     this.sortOrderRecipients -= 1;
                     if (this.sortOrderRecipients == 0) {
@@ -751,17 +787,17 @@ export var sortOrderMixin = {
             // event bus listeners for sort order sharing
             this.registerSortOrderClientHandlers();
             this.registerSortOrderSourceHandlers();
-        }
-    }
-}
+        },
+    },
+};
 
 export var valueScaleSharingMixin = {
     computed: {
         allowValueScaleChange: function () {
             if (this.valueScaleTargetID) {
-                return false
+                return false;
             }
-            return true
+            return true;
         },
         allowValueScaleTargetSelection: function () {
             return (
@@ -772,11 +808,11 @@ export var valueScaleSharingMixin = {
         },
         valueScaleBorder: function () {
             if (this.valueScaleRecipients > 0) {
-                return "solid"
+                return "solid";
             } else if (this.valueScaleTargetID) {
-                return "dashed"
+                return "dashed";
             }
-            return undefined
+            return undefined;
         },
         cssStyle: function () {
             let opacity = this.showSelection ? "0.6" : "1";
@@ -804,8 +840,8 @@ export var valueScaleSharingMixin = {
             */
             this.minHeatmap = data[0];
             this.maxHeatmap = data[1];
-            this.minHeatmapRange = data[2]
-            this.maxHeatmapRange = data[3]
+            this.minHeatmapRange = data[2];
+            this.maxHeatmapRange = data[3];
         },
         broadcastValueScaleUpdate: function () {
             // tell client widgets that value scale has changed
@@ -827,7 +863,7 @@ export var valueScaleSharingMixin = {
             if (!returnedColor) {
                 return this.colorExhaustionErrorHandler("value scale shares");
             } else {
-                this.valueScaleColor = returnedColor
+                this.valueScaleColor = returnedColor;
                 this.$store.commit("setValueScaleColorUsage", returnedColor);
             }
         },
@@ -839,7 +875,7 @@ export var valueScaleSharingMixin = {
             );
             // add event listener to window to catch next click event
             window.addEventListener("click", this.emitEmptyValueScaleEnd, {
-                once: true
+                once: true,
             });
             this.expectingValueScale = true; // this needs to be closed after receiving again -> otherwise everything updates
         },
@@ -867,12 +903,12 @@ export var valueScaleSharingMixin = {
             // checks whether passed event arguments are valid and widget is in right state
             return (
                 this.expectingValueScale &&
-                (target_id != undefined) &&
-                (min != undefined) &&
-                (max != undefined) &&
-                (color != undefined) &&
-                (minRange != undefined) &&
-                (maxRange != undefined)
+                target_id != undefined &&
+                min != undefined &&
+                max != undefined &&
+                color != undefined &&
+                minRange != undefined &&
+                maxRange != undefined
             );
         },
         registerValueScaleClientHandlers: function () {
@@ -895,12 +931,12 @@ export var valueScaleSharingMixin = {
                         this.valueScaleColor = color;
                         this.valueScaleRecipient = true;
                         if (this.colormap != colormap) {
-                            this.handleColormapMissmatch(colormap)
+                            this.handleColormapMissmatch(colormap);
                         }
-                        this.minHeatmap = min
-                        this.maxHeatmap = max
-                        this.minHeatmapRange = minRange
-                        this.maxHeatmapRange = maxRange
+                        this.minHeatmap = min;
+                        this.maxHeatmap = max;
+                        this.minHeatmapRange = minRange;
+                        this.maxHeatmapRange = maxRange;
                     }
                     this.expectingValueScale = false; // switches off expecting recipient
                     this.valueScaleSelectionState = false; // switches off donors
@@ -914,7 +950,7 @@ export var valueScaleSharingMixin = {
                         target_id == this.valueScaleTargetID
                     ) {
                         if (this.colormap != colormap) {
-                            this.handleColormapMissmatch(colormap)
+                            this.handleColormapMissmatch(colormap);
                         }
                         this.minHeatmap = min;
                         this.maxHeatmap = max;
@@ -931,7 +967,7 @@ export var valueScaleSharingMixin = {
                     this.valueScaleTargetID = new_id;
                 }
             });
-            EventBus.$on("value-scale-source-deletion", source_id => {
+            EventBus.$on("value-scale-source-deletion", (source_id) => {
                 if (this.valueScaleTargetID == source_id) {
                     this.handleStopValueScaleShare();
                 }
@@ -943,7 +979,7 @@ export var valueScaleSharingMixin = {
                     this.valueScaleSelectionState = true;
                 }
             });
-            EventBus.$on("stop-value-scale-sharing", target_id => {
+            EventBus.$on("stop-value-scale-sharing", (target_id) => {
                 if (target_id == this.id) {
                     this.valueScaleRecipients -= 1;
                     if (this.valueScaleRecipients == 0) {
@@ -956,19 +992,18 @@ export var valueScaleSharingMixin = {
                 }
             });
         },
-        registerValueScaleWidgetCollectionHandlers: function(){
-            EventBus.$on('widget-collection-deletion', collection_id => {
+        registerValueScaleWidgetCollectionHandlers: function () {
+            EventBus.$on("widget-collection-deletion", (collection_id) => {
                 if (collection_id == this.collectionID) {
-                    this.handleWidgetDeletion()
+                    this.handleWidgetDeletion();
                 }
-            })
+            });
         },
         registerValueScaleEventHandlers: function () {
             // event bus listeners for sort order sharing
             this.registerValueScaleClientHandlers();
             this.registerValueScaleSourceHandlers();
-            this.registerValueScaleWidgetCollectionHandlers()
-        }
-    }
-
-}
+            this.registerValueScaleWidgetCollectionHandlers();
+        },
+    },
+};
