@@ -27,7 +27,7 @@ server {
     }
 
     location /favicon.ico {
-        alias /docs/static/images/favicon.png;
+        alias /docs/public/images/favicon.png;
     }
 
     # serve docs
