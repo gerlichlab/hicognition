@@ -41,6 +41,6 @@ RUN rm -rf /temp/install
 
 COPY ./back_end/ /code
 
-WORKDIR /home
+WORKDIR /code
 
-CMD ["/bin/bash"]
+ENTRYPOINT /code/boot_showcase.sh

@@ -7,8 +7,9 @@ services:
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
-            - DATABASE_URL=${DATABASE_URL}
+            - DATABASE_URL=mysql+pymysql://hicognition:${MYSQL_PASSWORD}@mysql/hicognition
             - SHOWCASE=1
+        # might not work on my machine, but also not strictly required?
         ports:
             # only map localhost-port
             - "5000:5000"
@@ -16,11 +17,9 @@ services:
             context: "."
             dockerfile: "./back_end/Dockerfile_showcase"
         image: hicognition:demo
-        entrypoint: "/bin/bash"
-        command: -c "cd /code && ./boot_prod.sh"
-        networks:
-            hicognition-net:
-                ipv4_address: 172.18.0.3
+        
+        depends_on:
+            - mysql
 
     # nginx server to serve front-end and redirect requests to flask-api
     nginx:
@@ -36,8 +35,6 @@ services:
         # map front-end files
         depends_on:
             - hicognition
-        networks:
-            - hicognition-net
 
     mysql:
         container_name: mysql
@@ -50,15 +47,3 @@ services:
             - MYSQL_USER=hicognition
             - MYSQL_PASSWORD=${MYSQL_PASSWORD}
         image: mysql/mysql-server:8.0
-        volumes:
-            - ./mysql/mysql.cnf:/etc/my.cnf
-        networks:
-            hicognition-net:
-                ipv4_address: 172.18.0.9
-
-networks:
-    hicognition-net:
-        ipam:
-            driver: default
-            config:
-                - subnet: 172.18.0.0/16
