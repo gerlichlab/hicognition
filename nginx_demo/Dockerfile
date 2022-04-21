@@ -37,16 +37,14 @@ RUN cd /front_end && npm install && npm run build
 FROM nginx
 
 # copy hugo files
-
 COPY --from=hugo-builder /docs/public/ /docs/public/
 
 # copy frontend assets
-
 COPY --from=frontend-builder /front_end/dist /front_end/dist
 
-# copy configuration file
-COPY ./nginx_demo/nginx_demo.conf /etc/nginx/conf.d/default.conf
-
 # copy main apge
-
 COPY ./homepage /homepage
+
+# copy configuration file
+COPY ./nginx_demo/nginx_demo.conf.template /etc/nginx/templates/default.conf.template
+

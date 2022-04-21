@@ -32,7 +32,7 @@ services:
         ports:
             - "80:80"
         environment:
-            - HICOGNITION_UPSTREAM: flask-server:5000
+            - "HICOGNITION_UPSTREAM=flask-server:5000"
         # map front-end files
         depends_on:
             - hicognition
