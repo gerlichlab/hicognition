@@ -181,7 +181,10 @@
                                                 v-model="form[field]"
                                                 required
                                                 :disabled="sending"
-                                                v-if="fieldOptions[field] != 'freetext'"
+                                                v-if="
+                                                    fieldOptions[field] !=
+                                                    'freetext'
+                                                "
                                             >
                                                 <md-option
                                                     v-for="option in fieldOptions[
@@ -238,12 +241,11 @@ import { validationMixin } from "vuelidate";
 import { required, minLength } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
-
 export default {
     name: "AddDatasetForm",
     mixins: [validationMixin, apiMixin],
     props: {
-        datasetID: Number
+        datasetID: Number,
     },
     data: () => ({
         form: {
@@ -298,11 +300,11 @@ export default {
         return outputObject;
     },
     computed: {
-        selectedFileType: function(){
-            if (!this.dataset){
-                return undefined
+        selectedFileType: function () {
+            if (!this.dataset) {
+                return undefined;
             }
-            return this.dataset.filetype
+            return this.dataset.filetype;
         },
         valueTypeFields: function () {
             if (this.valueTypeSelected && this.selectedFileType) {
@@ -330,16 +332,16 @@ export default {
         },
         valueTypes: function () {
             if (this.selectedFileType) {
-                let valueTypes= Object.keys(
+                let valueTypes = Object.keys(
                     this.datasetMetadataMapping[this.selectedFileType][
                         "ValueType"
                     ]
                 );
                 // if there is only one value type, select it
-                if (valueTypes.length == 1){
-                    this.$set(this.form, "ValueType", valueTypes[0])
+                if (valueTypes.length == 1) {
+                    this.$set(this.form, "ValueType", valueTypes[0]);
                 }
-                return valueTypes
+                return valueTypes;
             }
             return undefined;
         },
@@ -352,8 +354,8 @@ export default {
         },
     },
     methods: {
-        getDatasetFromStore: function() {
-            this.dataset = this.$store.getters["getDataset"](this.datasetID)
+        getDatasetFromStore: function () {
+            this.dataset = this.$store.getters["getDataset"](this.datasetID);
         },
         getValidationClass(fieldName) {
             // matrial validation class for form field;
@@ -365,51 +367,53 @@ export default {
                 };
             }
         },
-        fetchDatasets(){
-            this.fetchData("datasets/").then(response => {
+        fetchDatasets() {
+            this.fetchData("datasets/").then((response) => {
                 // success, store datasets
-                if (response){
+                if (response) {
                     this.$store.commit("setDatasets", response.data);
                 }
             });
         },
-        saveDataset: function() {
+        saveDataset: function () {
             this.sending = true; // show progress bar
             // construct form data
             var formData = new FormData();
             for (var key in this.form) {
                 // only include fields if they are not null
                 if (this.form[key] !== null) {
-                        formData.append(key, this.form[key]);
+                    formData.append(key, this.form[key]);
                 }
             }
             // API call including upload is made in the background
-            this.putData(`datasets/${this.dataset.id}/`, formData).then( async (response) => {
-                this.sending = false;
-                if (response) {
-                    // if error happend, global error handler will eat the response
-                    this.datasetSaved = true;
-                    await this.fetchDatasets()
-                    this.$emit("close-dialog")
+            this.putData(`datasets/${this.dataset.id}/`, formData).then(
+                async (response) => {
+                    this.sending = false;
+                    if (response) {
+                        // if error happend, global error handler will eat the response
+                        this.datasetSaved = true;
+                        await this.fetchDatasets();
+                        this.$emit("close-dialog");
+                    }
                 }
-            });
+            );
         },
-        populateFormWithData: function(){
+        populateFormWithData: function () {
             const fieldMapping = {
-                "dataset_name": "datasetName",
-                "valueType": "ValueType",
-                "cellCycleStage": "cellCycleStage",
-                "perturbation": "perturbation",
-                "method": "Method",
-                "directionality": "Directionality",
-                "protein": "Protein",
-                "derivationType": "DerivationType",
-                "normalization": "Normalization",
-                "public": "public"
-            }
-            for (let [key, value] of Object.entries(fieldMapping)){
-                if (value in this.form && this.dataset[key] !== undefined){
-                    this.form[value] = this.dataset[key]
+                dataset_name: "datasetName",
+                valueType: "ValueType",
+                cellCycleStage: "cellCycleStage",
+                perturbation: "perturbation",
+                method: "Method",
+                directionality: "Directionality",
+                protein: "Protein",
+                derivationType: "DerivationType",
+                normalization: "Normalization",
+                public: "public",
+            };
+            for (let [key, value] of Object.entries(fieldMapping)) {
+                if (value in this.form && this.dataset[key] !== undefined) {
+                    this.form[value] = this.dataset[key];
                 }
             }
         },
@@ -420,13 +424,13 @@ export default {
             }
         },
     },
-    mounted: function(){
+    mounted: function () {
         this.datasetMetadataMapping =
             this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
-        this.getDatasetFromStore()
+        this.getDatasetFromStore();
         // populate form with data
-        this.populateFormWithData()
-    }
+        this.populateFormWithData();
+    },
 };
 </script>
 
@@ -440,5 +444,4 @@ export default {
 .top-margin {
     margin-top: 24px;
 }
-
 </style>

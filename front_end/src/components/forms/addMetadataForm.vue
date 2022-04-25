@@ -13,8 +13,9 @@
                     <!-- Intervals for which annotations are added; first row -->
                     <div class="md-layout md-gutter">
                         <!-- Regions -->
-                        <div class="md-layout-item md-layout md-gutter md-alignment-center-center md-small-size-100">
-
+                        <div
+                            class="md-layout-item md-layout md-gutter md-alignment-center-center md-small-size-100"
+                        >
                             <div class="md-layout-item md-size-50">
                                 <md-button
                                     class="md-raised md-primary"
@@ -23,13 +24,19 @@
                                     >Select Region</md-button
                                 >
                             </div>
-                            <div class="md-layout-item md-size-50" v-if="form.datasetID" >
+                            <div
+                                class="md-layout-item md-size-50"
+                                v-if="form.datasetID"
+                            >
                                 <span class="md-body-1">{{ regionName }}</span>
                             </div>
                             <div class="md-layout-item md-size-50" v-else>
                                 <span
-                                    style="color: red; "
-                                    v-if="!$v.form.datasetID.required && $v.form.datasetID.$dirty"
+                                    style="color: red"
+                                    v-if="
+                                        !$v.form.datasetID.required &&
+                                        $v.form.datasetID.$dirty
+                                    "
                                     >Regions are required</span
                                 >
                             </div>
@@ -107,7 +114,6 @@ import { required } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 import EventBus from "../../eventBus";
 
-
 export default {
     name: "AddMetadataForm",
     mixins: [validationMixin, apiMixin],
@@ -115,73 +121,79 @@ export default {
         form: {
             datasetID: null,
             file: null,
-            separator: null
+            separator: null,
         },
         availableBedFiles: [],
         separators: [
             { name: "Comma", value: "," },
             { name: "Semicolon", value: ";" },
-            { name: "Tab", value: "tab" }
+            { name: "Tab", value: "tab" },
         ],
         datasetSaved: false,
         sending: false,
         selectedFile: null,
-        expectSelection: false
+        expectSelection: false,
     }),
     validations: {
         // validators for the form
         form: {
             datasetID: {
-                required
+                required,
             },
             file: {
-                required
+                required,
             },
             separator: {
-                required
-            }
-        }
+                required,
+            },
+        },
     },
     computed: {
-        regionName: function() {
+        regionName: function () {
             if (this.form.datasetID) {
-                return this.availableBedFiles.filter(el => el.id === this.form.datasetID)[0].dataset_name
+                return this.availableBedFiles.filter(
+                    (el) => el.id === this.form.datasetID
+                )[0].dataset_name;
             }
-            return undefined
+            return undefined;
         },
-        bedFilesAvailable: function() {
+        bedFilesAvailable: function () {
             return this.availableBedFiles.length != 0;
-        }
+        },
     },
     methods: {
         startDatasetSelection: function () {
             this.expectSelection = true;
-            let preselection = this.form.datasetID ? [this.form.datasetID] : []
-            EventBus.$emit("show-select-dialog", this.availableBedFiles, "bedfile", preselection);
+            let preselection = this.form.datasetID ? [this.form.datasetID] : [];
+            EventBus.$emit(
+                "show-select-dialog",
+                this.availableBedFiles,
+                "bedfile",
+                preselection
+            );
         },
-        registerSelectionEventHandlers: function(){
-            EventBus.$on("dataset-selected", this.handleDataSelection)
-            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion)
+        registerSelectionEventHandlers: function () {
+            EventBus.$on("dataset-selected", this.handleDataSelection);
+            EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function(){
-            EventBus.$off("dataset-selected", this.handleDataSelection)
-            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion)
+        removeSelectionEventHandlers: function () {
+            EventBus.$off("dataset-selected", this.handleDataSelection);
+            EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function(id){
-            console.log("IE")
-            if (this.expectSelection){
-                    this.form.datasetID = id
-                    this.expectSelection = false
+        handleDataSelection: function (id) {
+            console.log("IE");
+            if (this.expectSelection) {
+                this.form.datasetID = id;
+                this.expectSelection = false;
             }
         },
-        hanldeSelectionAbortion: function(){
-            this.expectSelection = false
+        hanldeSelectionAbortion: function () {
+            this.expectSelection = false;
         },
-        getDatasets: function() {
+        getDatasets: function () {
             // fetches available datasets (cooler and bedfiles) from server
             this.availableBedFiles = this.$store.state.datasets.filter(
-                    element =>
-                        element.filetype == "bedfile"
+                (element) => element.filetype == "bedfile"
             );
         },
         getValidationClass(fieldName) {
@@ -190,7 +202,7 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty
+                    "md-invalid": field.$invalid && field.$dirty,
                 };
             }
         },
@@ -221,7 +233,7 @@ export default {
                 }
             }
             // API call including upload is made in the background
-            this.postData("bedFileMetadata/", formData).then(response => {
+            this.postData("bedFileMetadata/", formData).then((response) => {
                 if ("ValidationError" in response.data) {
                     this.$emit("form-error", "Rownumber is not compatible!");
                     this.sending = false;
@@ -246,15 +258,15 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        }
+        },
     },
-    created: function() {
+    created: function () {
         this.getDatasets();
-        this.registerSelectionEventHandlers()
+        this.registerSelectionEventHandlers();
     },
-    beforeDestroy: function(){
-        this.removeSelectionEventHandlers()
-    }
+    beforeDestroy: function () {
+        this.removeSelectionEventHandlers();
+    },
 };
 </script>
 

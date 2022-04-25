@@ -34,34 +34,34 @@ import { apiMixin } from "../../mixins";
 export default {
     name: "LoginForm",
     mixins: [apiMixin],
-    data: function() {
+    data: function () {
         return {
             username: "",
             password: "",
-            showError: false
+            showError: false,
         };
     },
     methods: {
-        handleSubmit: function() {
+        handleSubmit: function () {
             if (this.password.length > 0) {
                 this.fetchAndStoreToken(this.username, this.password)
                     .then(() => {
                         //fetching and storing in store worked, redirect either to main/compare or to next url
-                        this.$globalFlags["serializeCompare"] = true
-                        if (this.$route.query && this.$route.query.redirect){
-                            this.$router.push(this.$route.query.redirect)
-                        }else{
+                        this.$globalFlags["serializeCompare"] = true;
+                        if (this.$route.query && this.$route.query.redirect) {
+                            this.$router.push(this.$route.query.redirect);
+                        } else {
                             this.$router.push("/main/compare");
                         }
                     })
-                    .catch(error => {
+                    .catch((error) => {
                         // something went wrong
                         console.log(error);
                         this.showError = true;
                     });
             }
-        }
-    }
+        },
+    },
 };
 </script>
 

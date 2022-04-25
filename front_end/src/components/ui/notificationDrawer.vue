@@ -2,7 +2,7 @@
     <div>
         <md-toolbar class="md-accent" md-elevation="3"
             ><span class="md-title">Notifications</span>
-            <div style="margin-left: auto;">
+            <div style="margin-left: auto">
                 <md-button
                     class="md-icon-button"
                     @click="clearNotifications"
@@ -34,33 +34,32 @@
 
 <script>
 import { mapGetters } from "vuex";
-import processingFinishedNotification from "../notifications/processingFinishedNotification.vue"
-import processingFailedNotification from "../notifications/processingFailedNotification.vue"
+import processingFinishedNotification from "../notifications/processingFinishedNotification.vue";
+import processingFailedNotification from "../notifications/processingFailedNotification.vue";
 
 export default {
     name: "notificationDrawer",
     components: {
         processingFinishedNotification,
-        processingFailedNotification
+        processingFailedNotification,
     },
     computed: {
-        ...mapGetters(["notifications"])
+        ...mapGetters(["notifications"]),
     },
     methods: {
-        clearNotifications: function() {
+        clearNotifications: function () {
             this.$store.commit("clearNewNotifications");
         },
-        getNotificationComponent: function(notificationType){
-            switch (notificationType){
+        getNotificationComponent: function (notificationType) {
+            switch (notificationType) {
                 case "processing_finished":
-                    return "processingFinishedNotification"
+                    return "processingFinishedNotification";
                 case "processing_failed":
-                    return "processingFailedNotification"
+                    return "processingFailedNotification";
                 default:
-                    return "processingFinishedNotification"
+                    return "processingFinishedNotification";
             }
-
-        }
-    }
+        },
+    },
 };
 </script>

@@ -109,36 +109,35 @@ export default {
                 .style("color", "white")
                 .style("font-size", "10px");
         },
-        makeSelectCircleStandOut: function(selectedData){
-            this.svg.selectAll("circle")
+        makeSelectCircleStandOut: function (selectedData) {
+            this.svg
+                .selectAll("circle")
                 .filter((d) => {
-                    return d == selectedData
-
+                    return d == selectedData;
                 })
-                .attr("fill", "red")
+                .attr("fill", "red");
         },
-        restoreCircleStyle: function(){
-            this.svg.selectAll("circle")
-                    .attr("fill", "black")
+        restoreCircleStyle: function () {
+            this.svg.selectAll("circle").attr("fill", "black");
         },
         showTooltip: function (event, d) {
-            this.makeSelectCircleStandOut(d)
+            this.makeSelectCircleStandOut(d);
             // switch to left or right
-            let centerX = this.plotWidth/2
-            let centerY = this.plotHeight/2
+            let centerX = this.plotWidth / 2;
+            let centerY = this.plotHeight / 2;
             let xCoord;
             let yCoord;
             // get x coord
-            if (event.offsetX > centerX){
-                xCoord = event.offsetX - 6 * d.name.length
-            }else{
-                xCoord = event.offsetX + 4 * d.name.length
+            if (event.offsetX > centerX) {
+                xCoord = event.offsetX - 6 * d.name.length;
+            } else {
+                xCoord = event.offsetX + 4 * d.name.length;
             }
             // get ycoord
-            if (event.offsetY > centerY){
-                yCoord = event.offsetY - 40
-            }else{
-                yCoord = event.offsetY + 20
+            if (event.offsetY > centerY) {
+                yCoord = event.offsetY - 40;
+            } else {
+                yCoord = event.offsetY + 20;
             }
             this.tooltip
                 .style("opacity", 1)
@@ -147,21 +146,21 @@ export default {
                 .style("top", yCoord + "px");
         },
         moveTooltip: function (event, d) {
-            let centerX = this.plotWidth/2
-            let centerY = this.plotHeight/2
+            let centerX = this.plotWidth / 2;
+            let centerY = this.plotHeight / 2;
             let xCoord;
             let yCoord;
             // get x coord
-            if (event.offsetX > centerX){
-                xCoord = event.offsetX - 6 * d.name.length
-            }else{
-                xCoord = event.offsetX + 4 * d.name.length
+            if (event.offsetX > centerX) {
+                xCoord = event.offsetX - 6 * d.name.length;
+            } else {
+                xCoord = event.offsetX + 4 * d.name.length;
             }
             // get ycoord
-            if (event.offsetY > centerY){
-                yCoord = event.offsetY - 40
-            }else{
-                yCoord = event.offsetY + 20
+            if (event.offsetY > centerY) {
+                yCoord = event.offsetY - 40;
+            } else {
+                yCoord = event.offsetY + 20;
             }
             this.tooltip
                 .style("opacity", 1)
@@ -196,12 +195,12 @@ export default {
                 if (index % 2 == 0) {
                     return `Rank ${this.plotData.length - index}`;
                 }
-                return
+                return;
             }
-            if (index % Math.floor(this.plotData.length/5) == 0) {
+            if (index % Math.floor(this.plotData.length / 5) == 0) {
                 return `Rank ${this.plotData.length - index}`;
             }
-            return
+            return;
         },
         createCircles: function () {
             /*

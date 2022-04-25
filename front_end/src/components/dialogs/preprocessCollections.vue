@@ -33,30 +33,30 @@ import preprocessCollectionsForm from "../forms/preprocessCollectionsForm";
 export default {
     name: "PreprocessCollectionsDialog",
     components: {
-        preprocessCollectionsForm
+        preprocessCollectionsForm,
     },
     props: {
-        dialog: Boolean
+        dialog: Boolean,
     },
     computed: {
-        dialogName: function(){
-            if (this.datatype == "regions"){
-                return "Calculate Associations"
-            }else{
-                return "Calculate Embeddings"
+        dialogName: function () {
+            if (this.datatype == "regions") {
+                return "Calculate Associations";
+            } else {
+                return "Calculate Embeddings";
             }
         },
         showDialog: {
-            set: function(value) {
+            set: function (value) {
                 if (!value) {
                     this.$emit("close-dialog");
                 }
             },
-            get: function() {
+            get: function () {
                 return this.dialog;
-            }
-        }
-    }
+            },
+        },
+    },
 };
 </script>
 

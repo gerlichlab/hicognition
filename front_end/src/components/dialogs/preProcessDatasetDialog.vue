@@ -35,30 +35,30 @@ export default {
     name: "PreprocessDatasetDialog",
     mixins: [apiMixin],
     components: {
-        preprocessDatasetForm
+        preprocessDatasetForm,
     },
     props: {
-        dialog: Boolean
+        dialog: Boolean,
     },
     computed: {
         showDialog: {
-            set: function(value) {
+            set: function (value) {
                 if (!value) {
                     this.$emit("close-dialog");
                 }
             },
-            get: function() {
+            get: function () {
                 return this.dialog;
-            }
-        }
+            },
+        },
     },
     watch: {
-        dialog: function(val){
-            if (val){
-                this.fetchAndStoreDatasets()
+        dialog: function (val) {
+            if (val) {
+                this.fetchAndStoreDatasets();
             }
-        }
-    }
+        },
+    },
 };
 </script>
 

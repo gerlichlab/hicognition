@@ -13,13 +13,7 @@
                     <div class="md-layout md-gutter">
                         <!-- bedfiles -->
                         <div
-                            class="
-                                md-layout-item
-                                md-layout
-                                md-gutter
-                                md-alignment-center-center
-                                md-small-size-100
-                            "
+                            class="md-layout-item md-layout md-gutter md-alignment-center-center md-small-size-100"
                         >
                             <div class="md-layout-item md-size-50">
                                 <md-button
@@ -42,7 +36,7 @@
                                     style="color: red"
                                     v-if="
                                         !$v.form.bedfileIDs.required &&
-                                            $v.form.bedfileIDs.$dirty
+                                        $v.form.bedfileIDs.$dirty
                                     "
                                     >At least one dataset is required!</span
                                 >
@@ -58,7 +52,8 @@
                                     @click="startCollectionSelection"
                                     :disabled="
                                         !collectionsAvailable ||
-                                            this.form.bedfileIDs.length === 0 || !this.preprocessingMapLoaded
+                                        this.form.bedfileIDs.length === 0 ||
+                                        !this.preprocessingMapLoaded
                                     "
                                     >Select Collections</md-button
                                 >
@@ -71,10 +66,10 @@
                             </div>
                             <div class="md-layout-item md-size-50">
                                 <span
-                                    style="color: red; "
+                                    style="color: red"
                                     v-if="
                                         !$v.form.collectionIDs.required &&
-                                            $v.form.collectionIDs.$dirty
+                                        $v.form.collectionIDs.$dirty
                                     "
                                     >At least one collection is required</span
                                 >
@@ -102,9 +97,7 @@
                                 </md-select>
                             </md-field>
                             <div class="md-layout-item md-size-100">
-                                <span
-                                    style="color: red; "
-                                    v-if="showSmallWarning"
+                                <span style="color: red" v-if="showSmallWarning"
                                     >This step can take up to 10 minutes!</span
                                 >
                             </div>
@@ -152,62 +145,64 @@ export default {
         form: {
             collectionIDs: [],
             bedfileIDs: [],
-            preprocessing_map: "PREPROCESSING_MAP"
+            preprocessing_map: "PREPROCESSING_MAP",
         },
         datasetSaved: false,
         sending: false,
         preprocessingMapLoaded: false,
-        showAdvanced: false
+        showAdvanced: false,
     }),
     computed: {
-        showSmallWarning: function() {
+        showSmallWarning: function () {
             if (this.form.preprocessing_map === "PREPROCESSING_MAP") {
                 return false;
             }
             return true;
         },
-        numberCollections: function(){
-            return this.form.collectionIDs.length
+        numberCollections: function () {
+            return this.form.collectionIDs.length;
         },
-        collectionsAvailable: function() {
+        collectionsAvailable: function () {
             return this.availableCollections.length != 0;
         },
-        bedFilesAvailable: function() {
+        bedFilesAvailable: function () {
             return this.availableBedFiles.length != 0;
         },
-        regionIDs: function() {
-            return this.availableBedFiles.map(el => el.id);
+        regionIDs: function () {
+            return this.availableBedFiles.map((el) => el.id);
         },
-        selectedAssembly: function(){
-            if (this.form.bedfileIDs.length !== 0){
-                return this.availableBedFiles.filter(el => el.id === this.form.bedfileIDs[0])[0].assembly
+        selectedAssembly: function () {
+            if (this.form.bedfileIDs.length !== 0) {
+                return this.availableBedFiles.filter(
+                    (el) => el.id === this.form.bedfileIDs[0]
+                )[0].assembly;
             }
-        }
+        },
     },
     validations: {
         // validators for the form
         form: {
             collectionIDs: {
-                required
+                required,
             },
             bedfileIDs: {
-                required
+                required,
             },
             preprocessing_map: {
-                required
-            }
-        }
+                required,
+            },
+        },
     },
     methods: {
-        fetchPreprocessData: function(regionID){
+        fetchPreprocessData: function (regionID) {
             // get availability object
-            return this.fetchData(`datasets/${regionID}/processedDataMap/`)
+            return this.fetchData(`datasets/${regionID}/processedDataMap/`);
         },
-        getBedFileName: function(id) {
-            return this.availableBedFiles.filter(el => el.id === id)[0]
+        getBedFileName: function (id) {
+            return this.availableBedFiles.filter((el) => el.id === id)[0]
                 .dataset_name;
         },
-        startRegionSelection: function() {
+        startRegionSelection: function () {
             this.expectSelection = true;
             let preselection = [...this.form.bedfileIDs];
             EventBus.$emit(
@@ -218,7 +213,7 @@ export default {
                 true
             );
         },
-        startCollectionSelection: function() {
+        startCollectionSelection: function () {
             this.expectSelection = true;
             let preselection = [...this.form.collectionIDs];
             EventBus.$emit(
@@ -233,71 +228,70 @@ export default {
                 this.failedCollections
             );
         },
-        registerSelectionEventHandlers: function() {
+        registerSelectionEventHandlers: function () {
             EventBus.$on("dataset-selected", this.handleRegionSelection);
             EventBus.$on("collection-selected", this.handleCollectionSelection);
             EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function() {
+        removeSelectionEventHandlers: function () {
             EventBus.$off("dataset-selected", this.handleRegionSelection);
             EventBus.$on("collection-selected", this.handleCollectionSelection);
             EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleCollectionSelection: function(ids){
-            if (this.expectSelection){
-                this.form.collectionIDs = ids
-                this.expectSelection = false
+        handleCollectionSelection: function (ids) {
+            if (this.expectSelection) {
+                this.form.collectionIDs = ids;
+                this.expectSelection = false;
             }
         },
-        handleRegionSelection: function(ids) {
+        handleRegionSelection: function (ids) {
             if (this.expectSelection) {
                 // blank features
                 this.form.collectionIDs = [];
                 // blank preprocessing map loaded
-                this.preprocessingMapLoaded = false
+                this.preprocessingMapLoaded = false;
                 this.form.bedfileIDs = [ids];
                 // get preprocess dataset map
-                this.fetchPreprocessData(ids).then(response => {
-                    let lolaIDs = Object.keys(
-                        response.data["lola"]
-                    ).map(el => Number(el));
+                this.fetchPreprocessData(ids).then((response) => {
+                    let lolaIDs = Object.keys(response.data["lola"]).map((el) =>
+                        Number(el)
+                    );
                     let embedding1dIDs = Object.keys(
                         response.data["embedding1d"]
-                    ).map(el => Number(el));
+                    ).map((el) => Number(el));
                     let embedding2dIDs = Object.keys(
                         response.data["embedding2d"]
-                    ).map(el => Number(el));
-                    let collectiveIDs = lolaIDs.concat(embedding1dIDs, embedding2dIDs);
-                    this.finishedCollections = this.finishedCollections.concat(
-                        collectiveIDs
+                    ).map((el) => Number(el));
+                    let collectiveIDs = lolaIDs.concat(
+                        embedding1dIDs,
+                        embedding2dIDs
                     );
-                    this.preprocessingMapLoaded = true
+                    this.finishedCollections =
+                        this.finishedCollections.concat(collectiveIDs);
+                    this.preprocessingMapLoaded = true;
                 });
                 // set processing datasets and failed datasets
-                this.processingCollections = this.getBedDataset(
-                    ids
-                ).processing_collections;
-                this.failedCollections = this.getBedDataset(
-                    ids
-                ).failed_collections;
+                this.processingCollections =
+                    this.getBedDataset(ids).processing_collections;
+                this.failedCollections =
+                    this.getBedDataset(ids).failed_collections;
                 this.expectSelection = false;
             }
         },
-        hanldeSelectionAbortion: function() {
+        hanldeSelectionAbortion: function () {
             this.expectSelection = false;
         },
-        getBedDataset: function(id) {
-            return this.availableBedFiles.filter(el => el.id === id)[0];
+        getBedDataset: function (id) {
+            return this.availableBedFiles.filter((el) => el.id === id)[0];
         },
-        getDatasets: function() {
+        getDatasets: function () {
             // fetches available datasets (cooler and bedfiles) from server
             this.availableBedFiles = this.$store.state.datasets.filter(
-                    element =>
-                        element.filetype == "bedfile"
+                (element) => element.filetype == "bedfile"
             );
         },
-        fetchCollections: function() {
-            this.fetchData("collections/").then(response => {
+        fetchCollections: function () {
+            this.fetchData("collections/").then((response) => {
                 // update bedfiles
                 this.availableCollections = response.data;
             });
@@ -308,7 +302,7 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty
+                    "md-invalid": field.$invalid && field.$dirty,
                 };
             }
         },
@@ -334,7 +328,7 @@ export default {
             }
             // API call
             this.postData("preprocess/collections/", formData).then(
-                response => {
+                (response) => {
                     if (response) {
                         this.datasetSaved = true;
                     }
@@ -346,9 +340,11 @@ export default {
         prepare_form_data() {
             // put data into form
             var form_data = {};
-            form_data["collection_ids"] = JSON.stringify(this.form["collectionIDs"]);
+            form_data["collection_ids"] = JSON.stringify(
+                this.form["collectionIDs"]
+            );
             form_data["region_ids"] = JSON.stringify(this.form["bedfileIDs"]);
-            form_data["preprocessing_map"] = this.form["preprocessing_map"]
+            form_data["preprocessing_map"] = this.form["preprocessing_map"];
             return form_data;
         },
         validateDataset() {
@@ -356,16 +352,16 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        }
+        },
     },
-    created: function() {
+    created: function () {
         this.getDatasets();
         this.fetchCollections();
         this.registerSelectionEventHandlers();
     },
-    beforeDestroy: function() {
+    beforeDestroy: function () {
         this.removeSelectionEventHandlers();
-    }
+    },
 };
 </script>
 

@@ -72,27 +72,27 @@ export default {
     mixins: [validationMixin, apiMixin],
     props: {
         availableFields: Array,
-        metadataID: Number
+        metadataID: Number,
     },
     data: () => ({
         form: {
-            fields: null
+            fields: null,
         },
         datasetSaved: false,
-        sending: false
+        sending: false,
     }),
     validations: {
         // validators for the form
         form: {
             fields: {
-                required
-            }
-        }
+                required,
+            },
+        },
     },
     computed: {
-        fieldsAvailable: function() {
+        fieldsAvailable: function () {
             return this.availableFields.length != 0;
-        }
+        },
     },
     methods: {
         getValidationClass(fieldName) {
@@ -101,7 +101,7 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty
+                    "md-invalid": field.$invalid && field.$dirty,
                 };
             }
         },
@@ -118,7 +118,7 @@ export default {
             this.postData(
                 `bedFileMetadata/${this.metadataID}/setFields`,
                 formData
-            ).then(response => {
+            ).then((response) => {
                 if (!response) {
                     // error was caught and detected
                     this.sending = false;
@@ -135,8 +135,8 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        }
-    }
+        },
+    },
 };
 </script>
 

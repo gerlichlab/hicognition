@@ -9,19 +9,31 @@
                 >
                     <md-icon>menu</md-icon>
                 </md-button>
-                <span v-if=(showcase_bool) class="md-title">Demo &nbsp</span>
-                <span v-if=(!showcase_bool) class="md-title">{{userName}} @ &nbsp</span>
+                <span v-if="isDemo" class="md-title">Demo &nbsp</span>
+                <span v-if="!isDemo" class="md-title"
+                    >{{ userName }} @ &nbsp</span
+                >
                 <span class="md-headline">HiCognition {{ appversion }}</span>
             </div>
 
             <div class="md-toolbar-section-end">
                 <div class="md-badge-content">
                     <transition name="slide-fade">
-                        <span class="md-title" style="padding: 8px; color:#264D69;" v-if="showDocumentationText">Documentation</span>
+                        <span
+                            class="md-title"
+                            style="padding: 8px; color: #264d69"
+                            v-if="showDocumentationText"
+                            >Documentation</span
+                        >
                     </transition>
                 </div>
                 <div class="md-badge-content">
-                    <md-button class="md-icon-button no-margin" @mouseenter="showDocumentationText = true" @mouseleave="showDocumentationText=false" href="/docs">
+                    <md-button
+                        class="md-icon-button no-margin"
+                        @mouseenter="showDocumentationText = true"
+                        @mouseleave="showDocumentationText = false"
+                        href="/docs"
+                    >
                         <md-icon>article</md-icon>
                     </md-button>
                 </div>
@@ -36,7 +48,9 @@
                         class="md-badge position-top-right md-dense red"
                         v-show="numberNotifications > 0"
                     >
-                        <span class="md-body-2">{{ this.numberNotifications }}</span>
+                        <span class="md-body-2">{{
+                            this.numberNotifications
+                        }}</span>
                     </div>
                 </div>
 
@@ -52,7 +66,14 @@
                         <md-menu-item @click="$emit('my-sessions-click')"
                             >My Sessions</md-menu-item
                         >
-                        <md-menu-item @click="logout">Logout</md-menu-item>
+                        <md-menu-item v-if="!isDemo" @click="logout"
+                            >Logout</md-menu-item
+                        >
+                        <md-menu-item v-if="isDemo"
+                            ><md-tooltip md-direction="top"
+                                >No users in demo mode</md-tooltip
+                            >Logout</md-menu-item
+                        >
                     </md-menu-content>
                 </md-menu>
             </div>
@@ -61,56 +82,52 @@
 </template>
 
 <script>
-
-import { mapGetters } from 'vuex'
+import { mapGetters } from "vuex";
 
 export default {
     name: "toolbar",
-    data: function() {
+    data: function () {
         return {
             appversion: process.env.VERSION,
             showDocumentationText: false,
-            showcase_bool: process.env.SHOWCASE   
+            isDemo: process.env.SHOWCASE,
         };
     },
     computed: {
-        numberNotifications: function() {
+        numberNotifications: function () {
             return this.notifications.length;
         },
-        ...mapGetters([
-            'notifications',
-            'userName'
-        ])
+        ...mapGetters(["notifications", "userName"]),
     },
     methods: {
-        logout: function() {
+        logout: function () {
             this.$store.commit("clearToken");
             this.$store.commit("clearSessionToken");
             this.$globalFlags["serializeCompare"] = false;
             this.$store.commit("compare/clearAll");
             this.$router.push("/login");
         },
-        handleNewNotification: function(event) {
+        handleNewNotification: function (event) {
             // check whether you are the issuing user
-            let data = JSON.parse(event.data)
-            if (data.owner == this.$store.getters.getUserId){
+            let data = JSON.parse(event.data);
+            if (data.owner == this.$store.getters.getUserId) {
                 this.$store.commit("addNewNotification", data);
             }
         },
     },
-    mounted: function() {
+    mounted: function () {
         // attach event listener
         this.$store.state.notificationSource.addEventListener(
             "notification",
             this.handleNewNotification
         );
     },
-    beforeDestroy: function() {
+    beforeDestroy: function () {
         this.$store.state.notificationSource.removeEventListener(
             "notification",
             this.handleNewNotification
         );
-    }
+    },
 };
 </script>
 
@@ -120,7 +137,7 @@ export default {
 }
 
 .red {
-    background-color: #E34234;
+    background-color: #e34234;
 }
 
 .position-top-right {
@@ -137,18 +154,16 @@ export default {
   durations and timing functions.
 */
 .slide-fade-enter-active {
-  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+    transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
 }
 
 .slide-fade-leave-active {
-  transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
+    transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
 }
 
 .slide-fade-enter-from,
 .slide-fade-leave-to {
-  transform: translateX(20px);
-  opacity: 0;
+    transform: translateX(20px);
+    opacity: 0;
 }
-
-
 </style>

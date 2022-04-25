@@ -186,7 +186,7 @@
                     </div>
                 </div>
             </div>
-            <div style="position: relative;">
+            <div style="position: relative">
                 <heatmap
                     v-if="showData && !loading"
                     :stackupID="id"
@@ -266,7 +266,7 @@ import {
     flatten,
     select_3d_along_first_axis,
     getPercentile,
-    getPerMilRank
+    getPerMilRank,
 } from "../../functions";
 import heatmap from "../visualizations/heatmap.vue";
 import tooltip from "../visualizations/heatmapTooltip.vue";
@@ -277,44 +277,44 @@ export default {
     name: "Embedding2D",
     mixins: [apiMixin, formattingMixin, widgetMixin],
     computed: {
-        waitSpinnerContainer: function() {
+        waitSpinnerContainer: function () {
             return {
                 height: this.visualizationHeight + "px",
                 width: this.width + "px",
                 display: "flex",
                 "justify-content": "center",
-                "align-items": "center"
+                "align-items": "center",
             };
         },
-        thumbnailColormap: function() {
+        thumbnailColormap: function () {
             if (this.valueType == "ICCF") {
                 return "fall";
             }
             return "blueWhiteRed";
         },
-        tooltipHeight: function() {
+        tooltipHeight: function () {
             if (this.showTooltipControls) {
                 return this.height + 30;
             }
             return this.height - 10;
         },
-        colormap: function() {
+        colormap: function () {
             return "viridis";
         },
-        valueType: function() {
+        valueType: function () {
             if (this.isICCF) {
                 return "ICCF";
             } else {
                 return "ObsExp";
             }
         },
-        showData: function() {
+        showData: function () {
             if (this.widgetData && this.widgetData[this.valueType]) {
                 return true;
             }
             return false;
         },
-        widgetDataID: function() {
+        widgetDataID: function () {
             if (this.binsizes && this.selectedBinsize) {
                 let valueType;
                 if (this.isICCF) {
@@ -329,17 +329,17 @@ export default {
                 );
             }
         },
-        datasetName: function() {
+        datasetName: function () {
             if (this.selectedBinsize) {
                 return this.datasets[this.selectedDataset]["name"];
             }
         },
-        distributionData: function() {
+        distributionData: function () {
             if (this.widgetData && this.widgetData[this.valueType]) {
                 return this.widgetData[this.valueType]["distributions"];
             }
         },
-        message: function() {
+        message: function () {
             let overlayMessage = "point density";
             return (
                 this.datasets[this.selectedDataset]["name"] +
@@ -349,7 +349,7 @@ export default {
                 this.getBinSizeFormat(this.selectedBinsize)
             );
         },
-        size: function() {
+        size: function () {
             if (!this.widgetData || !this.widgetData[this.valueType]) {
                 return;
             }
@@ -370,10 +370,10 @@ export default {
             }
             return 25;
         },
-        aggregationType: function() {
+        aggregationType: function () {
             return "sum";
         },
-        clusterMap: function() {
+        clusterMap: function () {
             return rectBin(
                 this.size,
                 this.widgetData[this.valueType]["embedding"].data,
@@ -381,11 +381,8 @@ export default {
                 "mode"
             );
         },
-        minValueRobust: function() {
-            if (
-                !this.shareValueScale ||
-                !this.widgetData[this.valueType]
-            ) {
+        minValueRobust: function () {
+            if (!this.shareValueScale || !this.widgetData[this.valueType]) {
                 return undefined;
             }
             if (this.isLog) {
@@ -401,11 +398,8 @@ export default {
                 1
             );
         },
-        maxValueRobust: function() {
-            if (
-                !this.shareValueScale ||
-                !this.widgetData[this.valueType]
-            ) {
+        maxValueRobust: function () {
+            if (!this.shareValueScale || !this.widgetData[this.valueType]) {
                 return undefined;
             }
             if (this.isLog) {
@@ -421,11 +415,8 @@ export default {
                 99
             );
         },
-        minValue: function() {
-            if (
-                !this.shareValueScale ||
-                !this.widgetData[this.valueType]
-            ) {
+        minValue: function () {
+            if (!this.shareValueScale || !this.widgetData[this.valueType]) {
                 return undefined;
             }
             if (this.isLog) {
@@ -441,11 +432,8 @@ export default {
                 1
             );
         },
-        maxValue: function() {
-            if (
-                !this.shareValueScale ||
-                !this.widgetData[this.valueType]
-            ) {
+        maxValue: function () {
+            if (!this.shareValueScale || !this.widgetData[this.valueType]) {
                 return undefined;
             }
             if (this.isLog) {
@@ -461,7 +449,7 @@ export default {
                 999
             );
         },
-        thumbnail: function() {
+        thumbnail: function () {
             if (!this.widgetData || !this.widgetData[this.valueType]) {
                 return;
             }
@@ -475,26 +463,31 @@ export default {
                     shape: this.widgetData[this.valueType][
                         "thumbnails"
                     ].shape.slice(1),
-                    dtype: "float32"
+                    dtype: "float32",
                 };
             }
         },
-        clusterCounts: function() {
+        clusterCounts: function () {
             if (!this.widgetData || !this.widgetData[this.valueType]) {
                 return;
             }
             // count how many of which cluster are there
-            let clusterCounts = new Map()
-            for (let cluster_id of this.widgetData[this.valueType]["cluster_ids"]["data"]) {
-                if (clusterCounts.has(cluster_id)){
-                    clusterCounts.set(cluster_id, clusterCounts.get(cluster_id) + 1)
-                }else{
-                    clusterCounts.set(cluster_id, 1)
+            let clusterCounts = new Map();
+            for (let cluster_id of this.widgetData[this.valueType][
+                "cluster_ids"
+            ]["data"]) {
+                if (clusterCounts.has(cluster_id)) {
+                    clusterCounts.set(
+                        cluster_id,
+                        clusterCounts.get(cluster_id) + 1
+                    );
+                } else {
+                    clusterCounts.set(cluster_id, 1);
                 }
             }
-            return clusterCounts
+            return clusterCounts;
         },
-        embeddingData: function() {
+        embeddingData: function () {
             if (!this.widgetData || !this.widgetData[this.valueType]) {
                 return;
             }
@@ -509,12 +502,12 @@ export default {
                         )
                     ),
                     shape: [this.size, this.size],
-                    dtype: "float32"
+                    dtype: "float32",
                 };
             }
             let overlayClusters = this.widgetData[this.valueType][
                 "cluster_ids"
-            ]["data"].map(el => {
+            ]["data"].map((el) => {
                 if (el === this.selectedCluster) {
                     return 99999999;
                 }
@@ -530,9 +523,9 @@ export default {
                     )
                 ),
                 shape: [this.size, this.size],
-                dtype: "float32"
+                dtype: "float32",
             };
-        }
+        },
     },
     methods: {
         handleDragStart: function (e) {
@@ -540,7 +533,7 @@ export default {
                 Needs to be overriden to remove thumbnail
             */
             // remove thumbnail
-            this.showTooltip = false
+            this.showTooltip = false;
             // commit to store once drag starts
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
@@ -562,22 +555,31 @@ export default {
                 this.width / 2
             );
         },
-        startDatasetSelection: function() {
+        startDatasetSelection: function () {
             this.expectSelection = true;
             // get datasets from store
-            let datasets = this.$store.state.datasets.filter( (el) => Object.keys(this.datasets).includes(String(el.id)) )
-            let preselection = this.selectedDataset ? [this.selectedDataset] : []
-            EventBus.$emit("show-select-dialog", datasets, "cooler", preselection);
+            let datasets = this.$store.state.datasets.filter((el) =>
+                Object.keys(this.datasets).includes(String(el.id))
+            );
+            let preselection = this.selectedDataset
+                ? [this.selectedDataset]
+                : [];
+            EventBus.$emit(
+                "show-select-dialog",
+                datasets,
+                "cooler",
+                preselection
+            );
         },
-        registerSelectionEventHandlers: function() {
+        registerSelectionEventHandlers: function () {
             EventBus.$on("dataset-selected", this.handleDataSelection);
             EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function() {
+        removeSelectionEventHandlers: function () {
             EventBus.$off("dataset-selected", this.handleDataSelection);
             EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function(id) {
+        handleDataSelection: function (id) {
             if (this.expectSelection) {
                 this.selectedDataset = id;
                 this.expectSelection = false;
@@ -585,51 +587,51 @@ export default {
         },
         areBinsOutsideClusterMapBounds(x_bin, y_bin) {
             // checks whether x_bin, y_bin is within clustermap bounds
-            if (x_bin < 0 || y_bin < 0){
-                return true
+            if (x_bin < 0 || y_bin < 0) {
+                return true;
             }
-            if (x_bin > this.size - 1 || y_bin > this.size - 1){
-                return true
+            if (x_bin > this.size - 1 || y_bin > this.size - 1) {
+                return true;
             }
-            return false
+            return false;
         },
-        selectCluster: function(x, y, visualizationSize) {
+        selectCluster: function (x, y, visualizationSize) {
             let bin_width = visualizationSize / this.size;
             let x_bin = Math.round(x / bin_width);
             let y_bin = Math.round(y / bin_width);
             if (this.clusterMap) {
                 // guard against weird artefacts
-                if (this.areBinsOutsideClusterMapBounds(x_bin, y_bin)){
-                    this.selectedCluster = undefined
-                    return
+                if (this.areBinsOutsideClusterMapBounds(x_bin, y_bin)) {
+                    this.selectedCluster = undefined;
+                    return;
                 }
                 this.selectedCluster = this.clusterMap[y_bin][x_bin];
             }
         },
-        hanldeSelectionAbortion: function() {
+        hanldeSelectionAbortion: function () {
             this.expectSelection = false;
         },
-        blankWidget: function() {
+        blankWidget: function () {
             // removes all information that the user can set in case a certain region/dataset combination is not available
             this.widgetData = undefined;
             this.selectedDataset = [];
             this.selectedBinsize = undefined;
             this.widgetDataRef = undefined;
         },
-        handleDatasetSelection: function(id) {
+        handleDatasetSelection: function (id) {
             this.selectedDataset = id;
         },
-        handleBinsizeSelection: function(binsize) {
+        handleBinsizeSelection: function (binsize) {
             this.selectedBinsize = binsize;
         },
-        handleHeatmapClick: function(x, y, adjustedX, adjustedY) {
+        handleHeatmapClick: function (x, y, adjustedX, adjustedY) {
             if (this.showTooltipControls) {
                 this.showTooltipControls = false;
             } else if (this.thumbnail) {
                 this.showTooltipControls = true;
             }
         },
-        handleMouseMove: function(x, y, adjustedX, adjustedY, size) {
+        handleMouseMove: function (x, y, adjustedX, adjustedY, size) {
             if (!this.showTooltipControls) {
                 this.showTooltip = true;
                 this.tooltipOffsetLeft = adjustedX + 60;
@@ -637,32 +639,32 @@ export default {
                 this.selectCluster(x, y, size);
             }
         },
-        handleMouseEnter: function(x, y, adjustedX, adjustedY) {
+        handleMouseEnter: function (x, y, adjustedX, adjustedY) {
             if (!this.showTooltipControls) {
                 this.showTooltip = true;
                 this.tooltipOffsetLeft = adjustedX + 60;
                 this.tooltipOffsetTop = adjustedY;
             }
         },
-        handleMouseLeftTooltip: function() {
+        handleMouseLeftTooltip: function () {
             if (!this.showTooltipControls) {
                 this.showTooltip = false;
             }
         },
-        handleMouseLeftContainer: function() {
-            if (!this.showTooltipControls){
-                this.selectedCluster = undefined
+        handleMouseLeftContainer: function () {
+            if (!this.showTooltipControls) {
+                this.selectedCluster = undefined;
             }
         },
-        closeControls: function() {
+        closeControls: function () {
             this.selectedCluster = undefined;
             this.showTooltipControls = false;
             this.showTooltip = false;
         },
-        resetThumbnail: function() {
+        resetThumbnail: function () {
             this.selectedCluster = undefined;
         },
-        toStoreObject: function() {
+        toStoreObject: function () {
             // serialize object for storing its state in the store
             return {
                 // collection Data is needed if widget is dropped on new collection
@@ -687,10 +689,10 @@ export default {
                 maxHeatmapRange: this.maxHeatmapRange,
                 selectedCluster: this.selectedCluster,
                 clusterNumber: this.clusterNumber,
-                shareValueScale: this.shareValueScale
+                shareValueScale: this.shareValueScale,
             };
         },
-        initializeForFirstTime: function(widgetData, collectionData) {
+        initializeForFirstTime: function (widgetData, collectionData) {
             var data = {
                 widgetDataRef: undefined,
                 dragImage: undefined,
@@ -703,7 +705,8 @@ export default {
                 isICCF: true,
                 isLog: true,
                 binsizes: {},
-                datasets: collectionData["datasetsForIntervalSize"]["embedding2d"],
+                datasets:
+                    collectionData["datasetsForIntervalSize"]["embedding2d"],
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
@@ -718,21 +721,21 @@ export default {
                 showTooltipControls: false,
                 tooltipOffsetTop: 0,
                 tooltipOffsetLeft: 0,
-                shareValueScale: false
+                shareValueScale: false,
             };
             // write properties to store
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
             return data;
         },
-        deleteWidget: function() {
+        deleteWidget: function () {
             /*
                 Needs to be overriden because decrement mutation is different from mixin
             */
             // delete widget from store
             var payload = {
                 parentID: this.collectionID,
-                id: this.id
+                id: this.id,
             };
             // delete widget from store
             this.$store.commit("compare/deleteWidget", payload);
@@ -742,18 +745,18 @@ export default {
                 this.selectedDataset
             );
         },
-        initializeFromStore: function(widgetData, collectionConfig) {
+        initializeFromStore: function (widgetData, collectionConfig) {
             var widgetDataValues;
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
                 // deinfe store queries
                 var queryICCF = {
                     id: widgetData["widgetDataRef"]["ICCF"],
-                    valueType: "ICCF"
+                    valueType: "ICCF",
                 };
                 var queryObsExp = {
                     id: widgetData["widgetDataRef"]["ObsExp"],
-                    valueType: "ObsExp"
+                    valueType: "ObsExp",
                 };
                 // get widget data from store
                 widgetDataValues = {
@@ -762,7 +765,7 @@ export default {
                     ](queryICCF),
                     ObsExp: this.$store.getters[
                         "compare/getWidgetDataEmbedding2d"
-                    ](queryObsExp)
+                    ](queryObsExp),
                 };
             } else {
                 widgetDataValues = undefined;
@@ -785,7 +788,8 @@ export default {
                 regionName: collectionConfig["regionName"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: widgetData["binsizes"],
-                datasets: collectionConfig["datasetsForIntervalSize"]["embedding2d"],
+                datasets:
+                    collectionConfig["datasetsForIntervalSize"]["embedding2d"],
                 isICCF: widgetData["isICCF"],
                 isLog: widgetData["isLog"],
                 showMenu: false,
@@ -802,13 +806,13 @@ export default {
                 showTooltipControls: false,
                 tooltipOffsetTop: 0,
                 tooltipOffsetLeft: 0,
-                shareValueScale: widgetData["shareValueScale"]
+                shareValueScale: widgetData["shareValueScale"],
             };
         },
-        handleSliderChange: function(data) {
+        handleSliderChange: function (data) {
             this.setColorScale(data);
         },
-        setColorScale: function(data) {
+        setColorScale: function (data) {
             /* 
                 sets colorScale based on data array
                 containing minPos, maxPos, minRange, maxRange
@@ -818,7 +822,7 @@ export default {
             this.minHeatmapRange = data[2];
             this.maxHeatmapRange = data[3];
         },
-        resetColorScale: function() {
+        resetColorScale: function () {
             /*
                 resets colorscale to undefined
             */
@@ -827,11 +831,11 @@ export default {
             this.minHeatmapRange = undefined;
             this.maxHeatmapRange = undefined;
         },
-        getEmbeddingData: async function(valueType, id) {
+        getEmbeddingData: async function (valueType, id) {
             // checks whether association data is in store and fetches it if it is not
             var queryObject = {
                 id: id,
-                valueType: valueType
+                valueType: valueType,
             };
             if (
                 this.$store.getters["compare/embedding2dDataExists"](
@@ -852,14 +856,14 @@ export default {
                 // request has not been dispatched => put it in store
                 this.$store.commit("compare/setRequest", {
                     url: url,
-                    data: this.fetchData(url)
+                    data: this.fetchData(url),
                 });
                 response = await this.$store.getters["compare/getRequest"](url);
                 // save it in store -> only first request needs to persist it
                 var mutationObject = {
                     id: id,
                     data: response.data,
-                    valueType: valueType
+                    valueType: valueType,
                 };
                 this.$store.commit(
                     "compare/setWidgetDataEmbedding2d",
@@ -869,19 +873,19 @@ export default {
             // return it
             return response.data;
         },
-        updateData: async function() {
+        updateData: async function () {
             this.loading = true;
             // construct data ids to be fecthed
-            var iccf_id = this.binsizes[this.selectedBinsize]["ICCF"][
-                this.clusterNumber
-            ];
-            var obs_exp_id = this.binsizes[this.selectedBinsize]["Obs/Exp"][
-                this.clusterNumber
-            ];
+            var iccf_id =
+                this.binsizes[this.selectedBinsize]["ICCF"][this.clusterNumber];
+            var obs_exp_id =
+                this.binsizes[this.selectedBinsize]["Obs/Exp"][
+                    this.clusterNumber
+                ];
             // store widget data ref
             this.widgetDataRef = {
                 ICCF: iccf_id,
-                ObsExp: obs_exp_id
+                ObsExp: obs_exp_id,
             };
             // fetch data
             let iccf_data = await this.getEmbeddingData("ICCF", iccf_id);
@@ -891,19 +895,19 @@ export default {
             );
             this.widgetData = {
                 ICCF: iccf_data,
-                ObsExp: obs_exp_data
+                ObsExp: obs_exp_data,
             };
             // reset color scale
             this.resetColorScale();
             this.resetThumbnail();
             this.loading = false;
-        }
+        },
     },
     watch: {
         // watch for changes in store to be able to update intervals
         "$store.state.compare.widgetCollections": {
             deep: true,
-            handler: function(newValue) {
+            handler: function (newValue) {
                 // update availability object
                 this.datasets =
                     newValue[this.collectionID]["collectionConfig"][
@@ -913,9 +917,9 @@ export default {
                     newValue[this.collectionID]["collectionConfig"][
                         "intervalSize"
                     ];
-            }
+            },
         },
-        datasets: function(newVal, oldVal) {
+        datasets: function (newVal, oldVal) {
             if (
                 !newVal ||
                 !oldVal ||
@@ -929,53 +933,56 @@ export default {
                 this.blankWidget();
                 return;
             }
-            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
-                this.intervalSize
-            ];
+            this.binsizes =
+                this.datasets[this.selectedDataset]["data_ids"][
+                    this.intervalSize
+                ];
             // check whether binsizes are defined
             if (this.binsizes === undefined) {
                 // not data exists, blank widget DAta
-                this.widgetData = undefined
-                return
+                this.widgetData = undefined;
+                return;
             }
             this.selectedBinsize = this.getCenterOfArray(
                 Object.keys(this.binsizes)
             );
             this.updateData();
         },
-        intervalSize: function(newVal, oldVal) {
+        intervalSize: function (newVal, oldVal) {
             // if interval size changes, reload data
             if (!newVal || !oldVal || this.selectedDataset.length == 0) {
                 return;
             }
-            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
-                this.intervalSize
-            ];
+            this.binsizes =
+                this.datasets[this.selectedDataset]["data_ids"][
+                    this.intervalSize
+                ];
             // check whether binsizes are defined
             if (this.binsizes === undefined) {
                 // not data exists, blank widget DAta
-                this.widgetData = undefined
-                return
+                this.widgetData = undefined;
+                return;
             }
             this.selectedBinsize = this.getCenterOfArray(
                 Object.keys(this.binsizes)
             );
             this.updateData();
         },
-        selectedDataset: async function(newVal, oldVal) {
+        selectedDataset: async function (newVal, oldVal) {
             if (!this.selectedDataset || this.selectedDataset.length == 0) {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
             }
             // set binsizes and add default
-            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
-                this.intervalSize
-            ];
+            this.binsizes =
+                this.datasets[this.selectedDataset]["data_ids"][
+                    this.intervalSize
+                ];
             // check whether binsizes are defined
             if (this.binsizes === undefined) {
                 // not data exists, blank widget DAta
-                this.widgetData = undefined
-                return
+                this.widgetData = undefined;
+                return;
             }
             if (!this.selectedBinsize) {
                 this.selectedBinsize = this.getCenterOfArray(
@@ -988,24 +995,24 @@ export default {
             this.$store.commit("compare/decrement_usage_dataset", oldVal);
             this.$store.commit("compare/increment_usage_dataset", newVal);
         },
-        selectedBinsize: async function() {
+        selectedBinsize: async function () {
             if (!this.selectedBinsize) {
                 return;
             }
             this.updateData();
         },
-        clusterNumber: function() {
+        clusterNumber: function () {
             if (!this.selectedBinszie) {
                 this.updateData();
             }
-        }
+        },
     },
-    mounted: function() {
+    mounted: function () {
         this.registerSelectionEventHandlers();
     },
-    beforeDestroy: function() {
+    beforeDestroy: function () {
         this.removeSelectionEventHandlers();
-    }
+    },
 };
 </script>
 

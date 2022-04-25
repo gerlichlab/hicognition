@@ -9,9 +9,9 @@
             @md-selected="onSelect"
         >
             <!-- Table toolbar has the update button and the search field -->
-            <md-table-toolbar >
+            <md-table-toolbar>
                 <!-- Update button -->
-                <div >
+                <div>
                     <div>
                         <md-button
                             class="md-dense md-raised button-margin md-primary md-icon-button"
@@ -26,9 +26,7 @@
             <!-- Empty state for table -->
             <md-table-empty-state
                 md-label="No sessions found"
-                :md-description="
-                    `No sessions found for this query. Try a different search term or create a new session.`
-                "
+                :md-description="`No sessions found for this query. Try a different search term or create a new session.`"
             >
             </md-table-empty-state>
             <!-- Definition of how table should look -->
@@ -55,7 +53,7 @@
 
 <script>
 import { apiMixin } from "../../mixins";
-import EventBus from "../../eventBus"
+import EventBus from "../../eventBus";
 
 export default {
     name: "sessionTable",
@@ -64,44 +62,48 @@ export default {
         selected: undefined,
         sessions: [],
         clickedDelete: false,
-        datasetsDeleted: false
+        datasetsDeleted: false,
     }),
     methods: {
-        deleteClicked: function() {
+        deleteClicked: function () {
             this.clickedDelete = true;
         },
-        handleDelete: async function() {
+        handleDelete: async function () {
             // TODO: implement!
-            return
+            return;
         },
         onSelect(item) {
             this.selected = item;
         },
         fetchSessions() {
-            this.fetchData("sessions/").then(response => {
+            this.fetchData("sessions/").then((response) => {
                 if (response) {
                     // update displayed datasets
                     this.sessions = response.data;
                 }
             });
-        }
+        },
     },
     watch: {
-        selected: function(val){
-            if (val != undefined){
-                this.$emit("selection-available", this.selected.session_object, this.selected.id)
-            }else{
-                this.$emit("selection-unavailable")
+        selected: function (val) {
+            if (val != undefined) {
+                this.$emit(
+                    "selection-available",
+                    this.selected.session_object,
+                    this.selected.id
+                );
+            } else {
+                this.$emit("selection-unavailable");
             }
-        }
+        },
     },
-    created: function() {
-        EventBus.$on("fetch-sessions", this.fetchSessions)
-        this.fetchSessions()
+    created: function () {
+        EventBus.$on("fetch-sessions", this.fetchSessions);
+        this.fetchSessions();
     },
-    beforeDestroy: function(){
-        EventBus.$off("fetch-sessions")
-    }
+    beforeDestroy: function () {
+        EventBus.$off("fetch-sessions");
+    },
 };
 </script>
 

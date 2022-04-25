@@ -10,9 +10,7 @@
                 ><span class="md-title">Regions </span
                 >{{ item.region_name }}</span
             >
-            <p>
-                Processing finished!
-            </p>
+            <p>Processing finished!</p>
         </div>
 
         <md-button
@@ -28,12 +26,12 @@
 export default {
     name: "processingFinishedNotification",
     props: {
-        item: Object
+        item: Object,
     },
     methods: {
-        handleSetNotificatonRead: function(id) {
+        handleSetNotificatonRead: function (id) {
             this.$store.commit("setNotificationRead", id);
-        }
-    }
+        },
+    },
 };
 </script>

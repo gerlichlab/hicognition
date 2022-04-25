@@ -15,7 +15,7 @@ import router_showcase from "./routerShowcase";
 
 export default {
     name: "mainApp",
-    router: !process.env.SHOWCASE ? router_default : router_showcase
+    router: !process.env.SHOWCASE ? router_default : router_showcase,
 };
 </script>
 
@@ -24,5 +24,4 @@ export default {
     height: 100vh;
     border: 1px solid rgba(#000, 0.12);
 }
-
 </style>

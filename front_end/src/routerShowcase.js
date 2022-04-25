@@ -17,7 +17,7 @@ const routes = [
         component: mainRoute,
         redirect: "/main/compare",
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
         },
         children: [
             {
@@ -33,8 +33,8 @@ const routes = [
                 // meta: {
                 //     requiresAuth: true
                 // }
-            }
-        ]
+            },
+        ],
     },
     // { path: "/login", component: loginRoute }
 ];

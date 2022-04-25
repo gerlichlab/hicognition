@@ -25,8 +25,14 @@
         </md-card-content>
         <md-card-actions v-if="showControls">
             <md-button @click="$emit('close-controls')">Close</md-button>
-            <md-button v-if=(!showcase_bool) @click="showDialog = true">Create Region</md-button>
-            <md-button v-if=(showcase_bool) >Create Region<md-tooltip md-direction="top">Deactivated in showcase mode</md-tooltip></md-button>
+            <md-button v-if="!showcase_bool" @click="showDialog = true"
+                >Create Region</md-button
+            >
+            <md-button v-if="showcase_bool"
+                >Create Region<md-tooltip md-direction="top"
+                    >Deactivated in showcase mode</md-tooltip
+                ></md-button
+            >
         </md-card-actions>
         <md-dialog-prompt
             :md-active.sync="showDialog"
@@ -75,9 +81,9 @@ export default {
         minHeatmapAllRange: Number,
         isVariableSize: Boolean,
         clusterCounts: Map,
-        intervalSize: String
+        intervalSize: String,
     },
-    data: function() {
+    data: function () {
         return {
             tooltipStyle: {
                 position: "absolute",
@@ -86,7 +92,7 @@ export default {
                 left: "0px",
                 "z-index": "10",
                 width: `${this.width}px`,
-                height: `${this.height}px`
+                height: `${this.height}px`,
             },
             showDialog: false,
             newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterID}`,
@@ -99,50 +105,55 @@ export default {
         };
     },
     computed: {
-        totalRegions: function(){
-            let sum = 0
-            for (let [key, value] of this.clusterCounts){
-                sum += value
+        totalRegions: function () {
+            let sum = 0;
+            for (let [key, value] of this.clusterCounts) {
+                sum += value;
             }
-            return sum
+            return sum;
         },
-        dataInfo: function() {
-            if (this.clusterCounts !== undefined && this.clusterCounts.get(this.clusterID) !== undefined){
-                return `Cluster: ${this.clusterID} | ${this.clusterCounts.get(this.clusterID)}/${this.totalRegions} Regions`
+        dataInfo: function () {
+            if (
+                this.clusterCounts !== undefined &&
+                this.clusterCounts.get(this.clusterID) !== undefined
+            ) {
+                return `Cluster: ${this.clusterID} | ${this.clusterCounts.get(
+                    this.clusterID
+                )}/${this.totalRegions} Regions`;
             }
-            return  `Cluster: ${this.clusterID}`
+            return `Cluster: ${this.clusterID}`;
         },
-        distributionSize: function() {
+        distributionSize: function () {
             return 100;
         },
-        minHeatmap: function() {
+        minHeatmap: function () {
             if (this.minHeatmapTarget) {
                 return this.minHeatmapTarget;
             }
             return this.minHeatmapAll;
         },
-        maxHeatmap: function() {
+        maxHeatmap: function () {
             if (this.maxHeatmapTarget) {
                 return this.maxHeatmapTarget;
             }
             return this.maxHeatmapAll;
         },
-        minHeatmapRange: function() {
+        minHeatmapRange: function () {
             if (this.minHeatmapAllRange) {
                 return this.minHeatmapAllRange;
             }
             return this.minHeatmapRangeTarget;
         },
-        maxHeatmapRange: function() {
+        maxHeatmapRange: function () {
             if (this.maxHeatmapRangeTarget) {
                 return this.maxHeatmapRangeTarget;
             }
             return this.maxHeatmapAllRange;
         },
-        heatmapSize: function() {
+        heatmapSize: function () {
             return this.width * 0.8;
         },
-        selectedDistribution: function() {
+        selectedDistribution: function () {
             if (this.clusterID !== undefined) {
                 return select_row(
                     this.distributionData.data,
@@ -150,13 +161,13 @@ export default {
                     this.clusterID
                 );
             }
-        }
+        },
     },
     methods: {
-        handleSliderChange: function(data) {
+        handleSliderChange: function (data) {
             this.setColorScale(data);
         },
-        setColorScale: function(data) {
+        setColorScale: function (data) {
             /* 
                 sets colorScale based on data array
                 containing minPos, maxPos, minRange, maxRange
@@ -166,7 +177,7 @@ export default {
             this.minHeatmapRangeTarget = data[2];
             this.maxHeatmapRangeTarget = data[3];
         },
-        resetColorScale: function() {
+        resetColorScale: function () {
             /*
                 resets colorscale to undefined
             */
@@ -175,7 +186,7 @@ export default {
             this.minHeatmapRangeTarget = undefined;
             this.maxHeatmapRangeTarget = undefined;
         },
-        handleSubmission: function() {
+        handleSubmission: function () {
             // check whether there is a name
             if (this.newRegionName.length === 0) {
                 console.log("no region name provided");
@@ -188,7 +199,7 @@ export default {
             this.postData(
                 `embeddingIntervalData/${this.embeddingID}/${this.clusterID}/create/`,
                 formData
-            ).then(response => {
+            ).then((response) => {
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
@@ -196,31 +207,31 @@ export default {
                     this.fetchAndStoreDatasets();
                 }
             });
-        }
+        },
     },
     watch: {
-        tooltipOffsetLeft: function(val) {
+        tooltipOffsetLeft: function (val) {
             this.tooltipStyle["left"] = `${val}px`;
         },
-        tooltipOffsetTop: function(val) {
+        tooltipOffsetTop: function (val) {
             this.tooltipStyle["top"] = `${val}px`;
         },
-        height: function(val) {
+        height: function (val) {
             this.tooltipStyle["height"] = `${val}px`;
         },
-        width: function(val) {
+        width: function (val) {
             this.tooltipStyle["width"] = `${val}px`;
         },
-        showControls: function(val) {
+        showControls: function (val) {
             this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterID}`;
             if (!val) {
                 this.tooltipStyle["height"] = `${this.height}px`;
             }
         },
-        thumbnail: function() {
+        thumbnail: function () {
             this.resetColorScale();
-        }
-    }
+        },
+    },
 };
 </script>
 
