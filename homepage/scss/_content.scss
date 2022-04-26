@@ -33,7 +33,7 @@ body {
 .banner {
   background-color: var(--primary-light);
   text-align: center;
-  padding-bottom: 10px;
+  padding-bottom: 24px;
 }
 
 .content-wrapper {
@@ -43,7 +43,7 @@ body {
 // SECTION-2
 .features-overview {
   .content-header {
-    padding: 78px 0px 48px 0px;
+    padding: 48px 0px 48px 0px;
     text-align: center;
     @media (max-width: 992px) {
       padding: 60px 0px;
@@ -132,6 +132,7 @@ body {
 
 // SECTION-5
 .customer-feedback {
+  margin-top: 40px;
   .customer-cards {
     background: #f3f7fb;
     font-size: 18px;
@@ -142,7 +143,7 @@ body {
       transition: all 0.7s ease-in-out; 
     }
     &:hover {
-      background: var(--primary);
+      background: var(--primary-light);
       transform: scale(1.02);
       .img-customer {
         transform: scale(1.05);  
@@ -183,17 +184,13 @@ body {
     }
   }
   a {
-    color: $text-muted;
     transition: all 0.6s ease-in-out;
-    &:hover {
-      color: #ff0000;
-    } 
   }
 }
 
 footer {
   a {
-    color: #ff0000;
+    color: black;
     &:hover {
       color: black;
     }
@@ -278,7 +275,7 @@ footer {
   }
   &:nth-child(even) {
     .content-divider {
-      background-color: red;
+      background-color: var(--primary);
     }
   }
 }
