@@ -1,5 +1,5 @@
 .navbar {
-  background-color: #f7f8fa;
+  background-color: var(--primary-light);
   padding: 49px 0px 63px 0px;
   .navbar-toggler {
     line-height: inherit;
@@ -23,13 +23,13 @@
         font-size: 0.9375rem;
         padding: 0px 17px;
         font-weight: 500;
-        color: #111111;
+        color: var(--secondary);
         &:hover {
-          color: #ff0000;
+          color: var(--primary);
           transition: all 0.3s ease;
         }
         &.active {
-          color: #ff0000; 
+          color: var(--primary); 
         }
       }
     }

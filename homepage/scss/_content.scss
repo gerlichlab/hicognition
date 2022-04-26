@@ -1,7 +1,7 @@
 body {
   font-family: 'Poppins', sans-serif;
   margin: 0px;
-  color: #000000;
+  color: var(--secondary);
   &.body-top-padding {
     padding-top: 167px;
   }
@@ -31,8 +31,9 @@ body {
 }
 
 .banner {
-  background-color: #f7f8fa;
+  background-color: var(--primary-light);
   text-align: center;
+  padding-bottom: 10px;
 }
 
 .content-wrapper {
@@ -54,7 +55,7 @@ body {
     font-weight: 500;
     transition: color 0.5s ease-in-out;
     &:hover {
-      color: #ff0000;
+      color: var(--primary);
     }
   }
   .features-width {
@@ -141,7 +142,7 @@ body {
       transition: all 0.7s ease-in-out; 
     }
     &:hover {
-      background: #e4e7ea;
+      background: var(--primary);
       transform: scale(1.02);
       .img-customer {
         transform: scale(1.05);  
