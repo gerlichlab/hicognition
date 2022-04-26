@@ -60,7 +60,12 @@
                     </md-button>
 
                     <md-menu-content>
-                        <md-menu-item @click="$emit('add-session-click')"
+                        <md-menu-item v-if="isDemo"
+                            ><md-tooltip md-direction="top"
+                                >Deactivated in demo mode</md-tooltip
+                            >Save Session</md-menu-item
+                        >
+                        <md-menu-item v-if="!isDemo" @click="$emit('add-session-click')"
                             >Save Session</md-menu-item
                         >
                         <md-menu-item @click="$emit('my-sessions-click')"

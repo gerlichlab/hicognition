@@ -161,9 +161,18 @@ export default {
                 `sessions/${this.selected_session_id}/sessionToken/`
             ).then((response) => {
                 let sessionToken = response.data["session_token"];
-                var shareableUrl =
-                    window.location.host +
-                    `/#/main/session?sessionToken=${sessionToken}&sessionID=${this.selected_session_id}`;
+                let isDemo = process.env.SHOWCASE;
+                if (isDemo){
+                    var shareableUrl =
+                        window.location.host +
+                        `/app/#/main/session?sessionToken=${sessionToken}&sessionID=${this.selected_session_id}`;
+                }
+                if (!isDemo){
+                    shareableUrl =
+                        window.location.host +
+                        `/#/main/session?sessionToken=${sessionToken}&sessionID=${this.selected_session_id}`;
+                }
+
                 this.shareableUrl = shareableUrl;
             });
         },
