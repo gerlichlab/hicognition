@@ -24,4 +24,8 @@ If you want to set-up a HiCognition instance yourself, check out the [installati
 
 ## Development
 
-If you want to contribute to HiCognition, be sure to read the [development section](https://gerlichlab.github.io/hicognition//docs/development/) or our documentation.
+If you want to contribute to HiCognition, be sure to read the [development section](https://gerlichlab.github.io/hicognition/docs/development/) or our documentation.
+
+## Showcase version
+
+A demo version with disabled preprocessing but all of the sessions used for the figures of the manuscript can be found on our [homepage](https://hicognition.com/app/).
