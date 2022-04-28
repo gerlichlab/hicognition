@@ -10102,6 +10102,10 @@ body.sidebar-open::before {
   background-color: rgba(0, 0, 0, 0.8);
 }
 
+#main-title {
+  color: var(--primary);
+}
+
 .banner {
   background-color: var(--primary-light);
   text-align: center;
