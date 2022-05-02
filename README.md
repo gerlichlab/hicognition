@@ -25,3 +25,22 @@ If you want to set-up a HiCognition instance yourself, check out the [installati
 ## Development
 
 If you want to contribute to HiCognition, be sure to read the [development section](https://gerlichlab.github.io/hicognition//docs/development/) or our documentation.
+
+## Citing
+
+Langer, C. C. H.<sup>\*</sup>, Mitter, M.<sup>\*</sup>, Stocsits, R. R. & Gerlich, D. W. (2022) HiCognition: a visual exploration and hypothesis testing tool for 3D genomics. _bioRxiv_ doi:[10.1101/2022.04.30.490134](https://www.biorxiv.org/content/early/2022/05/01/2022.04.30.490134)
+
+<sup>\*</sup> equal contribution
+
+```bibtex
+@article {HiCognition2022,
+	author = {Langer, Christoph C. H. and Mitter, Michael and Stocsits, Roman R. and Gerlich, Daniel W},
+	title = {HiCognition: a visual exploration and hypothesis testing tool for 3D genomics},
+	year = {2022},
+	doi = {10.1101/2022.04.30.490134},
+	URL = {https://www.biorxiv.org/content/early/2022/05/01/2022.04.30.490134},
+	journal = {bioRxiv}
+}
+```
+
+
