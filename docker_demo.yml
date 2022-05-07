@@ -1,65 +1,40 @@
 version: "3.9"
 
 services:
-    # container to build front-end
-    node:
-        container_name: node-builder
-        image: node:14-buster
-        volumes:
-            - ${DIR_FRONT_END}:/front_end
-        environment:
-            - showcase=true
-        entrypoint: 
-            - "/bin/bash"
-        command: -c "cd /front_end && npm install && npm run build"
-
     # flask-api server
     hicognition:
         container_name: flask-server
-        volumes:
-            - ${SHOWCASE_DIR}:/showcase_data/
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
-            - DATABASE_URL=${DATABASE_URL}
+            - DATABASE_URL=mysql+pymysql://hicognition:${MYSQL_PASSWORD}@mysql/hicognition
             - SHOWCASE=1
+        # might not work on my machine, but also not strictly required?
         ports:
             # only map localhost-port
             - "5000:5000"
         build:
-            context: "./back_end"
-        image: hicognition:latest
-        entrypoint: "/bin/bash"
-        command: -c "cd /code && ./boot_showcase.sh"
-        networks:
-            hicognition-net:
-                ipv4_address: 172.18.0.3
+            context: "."
+            dockerfile: "./back_end/Dockerfile_showcase"
+        image: hicognition:demo
+        
+        depends_on:
+            - mysql
 
     # nginx server to serve front-end and redirect requests to flask-api
     nginx:
         container_name: hicognition-nginx
+        image: hicognition-nginx:demo
         build:
-            context: "./nginx_demo"
+            context: "./"
+            dockerfile: "./nginx_demo/Dockerfile"
         ports:
             - "80:80"
+        environment:
+            - "HICOGNITION_UPSTREAM=flask-server:5000"
         # map front-end files
         depends_on:
-            - node
             - hicognition
-        volumes:
-            - ${DIR_FRONT_END}:/front_end
-            - ${HOMEPAGE_DIR}:/homepage
-            - ${DOC_PATH}:/docs
-        networks:
-            - hicognition-net
-
-    hugo-builder:
-        container_name: hugo-builder
-        image: klakegg/hugo
-        volumes:
-            - ${DOC_PATH}:/doc
-        entrypoint: "/bin/sh"
-        command: -c "[ ! -d /doc/public ] || rm -r /doc/public && cd /doc && hugo"
 
     mysql:
         container_name: mysql
@@ -72,15 +47,3 @@ services:
             - MYSQL_USER=hicognition
             - MYSQL_PASSWORD=${MYSQL_PASSWORD}
         image: mysql/mysql-server:8.0
-        volumes:
-            - ./mysql/mysql.cnf:/etc/my.cnf
-        networks:
-            hicognition-net:
-                ipv4_address: 172.18.0.9
-
-networks:
-    hicognition-net:
-        ipam:
-            driver: default
-            config:
-                - subnet: 172.18.0.0/16

@@ -95,6 +95,44 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
         data_ojb = DatasetPostModel(**test_object)
         self.assertEqual(expected_object, data_ojb.dict())
 
+    def test_pydantic_model_working_bed(self):
+        """Test of correct bed POST form."""
+        test_object = {
+            "datasetName": "test",
+            "description": "test-description",
+            "assembly": "1",
+            "cellCycleStage": "asynchronous",
+            "perturbation": "No perturbation",
+            "public": "false",
+            "ValueType": "GenomeAnnotation",
+            "SizeType": "Point",
+            "filetype": "bedfile",
+            "filename": "test.bed",
+            "Directionality": "+"
+        }
+        expected_object = {
+            "dataset_name": "test",
+            "description": "test-description",
+            "assembly": 1,
+            "cell_cycle_stage": "asynchronous",
+            "perturbation": "No perturbation",
+            "public": False,
+            "value_type": "GenomeAnnotation",
+            "method": "undefined",
+            "normalization": "undefined",
+            "filetype": "bedfile",
+            "filename": "test.bed",
+            "processing_state": None,
+            "protein": "undefined",
+            "directionality": "+",
+            "derivation_type": "undefined",
+            "size_type": "Point",
+            "user_id": None,
+        }
+        data_ojb = DatasetPostModel(**test_object)
+        self.assertEqual(expected_object, data_ojb.dict())
+
+
     def test_pydantic_model_working_cooler_wo_description(self):
         """Test of correct cooler POST form."""
         test_object = {
@@ -174,7 +212,7 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
         assert "Invalid filename!" in str(exc.exception)
 
     def test_pydantic_model_wrong_value_type(self):
-        """Test wrong fileending for cooler."""
+        """Test wrong value_type for cooler."""
         test_object = {
             "datasetName": "test",
             "description": "test-description",
@@ -192,6 +230,25 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             data_ojb = DatasetPostModel(**test_object)
         print(exc.exception)
         assert "Unsupported value_type!" in str(exc.exception)
+
+    def test_pydantic_method_not_defined(self):
+        """Only GenomeAnnotation should allow an undefined method."""
+        test_object = {
+            "datasetName": "test",
+            "description": "test-description",
+            "assembly": "1",
+            "cellCycleStage": "asynchronous",
+            "perturbation": "No perturbation",
+            "public": "false",
+            "ValueType": "Interaction",
+            "Normalization": "ICCF",
+            "filetype": "cooler",
+            "filename": "test.mcool",
+        }
+        with self.assertRaises(ValidationError) as exc:
+            data_ojb = DatasetPostModel(**test_object)
+        print(exc.exception)
+        assert "Unsupported possible value" in str(exc.exception)
 
     def test_pydantic_model_wrong_value_for_meta_data(self):
         """Test wrong fileending for cooler."""
@@ -214,6 +271,7 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
         assert "Unsupported possible value" in str(exc.exception)
 
     def test_reverse_alias(self):
+        """Test if the reverse alias is working."""
         test_object = {
             "datasetName": "test",
             "description": "null",

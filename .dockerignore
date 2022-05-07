@@ -1,0 +1,4 @@
+# a server may have a lot of data in temp and node_modules, that is send as buildcontext to the docker dameon if not excluded
+back_end/temp/*
+front_end/node_modules*
+workdir/mysql/*

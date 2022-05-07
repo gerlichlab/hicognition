@@ -44,3 +44,8 @@ Langer, C. C. H.<sup>\*</sup>, Mitter, M.<sup>\*</sup>, Stocsits, R. R. & Gerlic
 ```
 
 
+If you want to contribute to HiCognition, be sure to read the [development section](https://gerlichlab.github.io/hicognition/docs/development/) or our documentation.
+
+## Showcase version
+
+A demo version with disabled preprocessing but all of the sessions used for the figures of the manuscript can be found on our [homepage](https://hicognition.com/app/).
