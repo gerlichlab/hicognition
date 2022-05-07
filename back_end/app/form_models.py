@@ -11,7 +11,7 @@ class DatasetPostModel(BaseModel):
     assembly: int
     description: constr(max_length=81) = Field("No description provided")
     normalization: constr(max_length=64) = Field("undefined", alias="Normalization")
-    method: constr(max_length=64) = Field(..., alias="Method")
+    method: constr(max_length=64) = Field("undefined", alias="Method")
     size_type: constr(max_length=64) = Field("undefined", alias="SizeType")
     directionality: constr(max_length=64) = Field("undefined", alias="Directionality")
     derivation_type: constr(max_length=64) = Field("undefined", alias="DerivationType")
@@ -73,7 +73,7 @@ class DatasetPostModel(BaseModel):
             # this will also check if all mandatory keys are provided since "undefined" is not in possible_values
             if values[cls.get_reverse_alias(key)] not in possible_values:
                 raise ValueError(
-                    f"Unsupported possible value for value_type: {value_type}. Supported values {possible_values}."
+                    f"Unsupported possible value '{values[cls.get_reverse_alias(key)]}' for value_type: {value_type}. Supported values {possible_values}."
                 )
         return value_type
 
