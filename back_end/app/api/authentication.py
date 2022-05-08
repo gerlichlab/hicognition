@@ -10,13 +10,14 @@ from ..models import User, Session
 auth = HTTPBasicAuth()
 
 
-class ShowCaseUser():
+class ShowCaseUser:
     def __init__(self):
         self.id = None
         self.is_anonymous = False
-    
+
     def generate_auth_token(self, expiration):
         return "ASDF"
+
 
 @auth.verify_password
 def verify_password(username_or_token, password):

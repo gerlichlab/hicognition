@@ -529,8 +529,7 @@ def get_stackup_metadata_small(entry_id):
 def get_all_sessions():
     """Gets all available sessions for a given user."""
     all_available_sessions = Session.query.filter(
-        (Session.user_id == g.current_user.id)
-        | current_app.config["SHOWCASE"]
+        (Session.user_id == g.current_user.id) | current_app.config["SHOWCASE"]
     ).all()
     return jsonify([dfile.to_json() for dfile in all_available_sessions])
 
@@ -545,7 +544,11 @@ def get_session_data_with_id(session_id):
     if session is None:
         return not_found(f"Session with id '{session_id}' does not exist!")
     # check if session is owned
-    if (session.user_id != g.current_user.id) and (session.id != g.session_id) and not current_app.config["SHOWCASE"]:
+    if (
+        (session.user_id != g.current_user.id)
+        and (session.id != g.session_id)
+        and not current_app.config["SHOWCASE"]
+    ):
         return forbidden(f"Session with id '{session_id}' is not owned!")
     return jsonify(session.to_json())
 

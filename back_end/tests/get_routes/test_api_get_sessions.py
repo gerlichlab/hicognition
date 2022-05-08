@@ -44,7 +44,9 @@ class TestGetSessions(LoginTestCase):
             db.session.add(self.session_user_1)
             db.session.commit()
             # protected route
-            response = self.client.get("/api/sessions/", content_type="application/json")
+            response = self.client.get(
+                "/api/sessions/", content_type="application/json"
+            )
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json, [self.session_user_1.to_json()])
 
@@ -146,7 +148,9 @@ class TestGetSessionWithID(LoginTestCase):
             db.session.add(self.session_user_1)
             db.session.commit()
             # protected route
-            response = self.client.get("/api/sessions/1/", content_type="application/json")
+            response = self.client.get(
+                "/api/sessions/1/", content_type="application/json"
+            )
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json, self.session_user_1.to_json())
 
@@ -253,7 +257,9 @@ class TestGetSessionToken(LoginTestCase):
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
         # protected route
-        response = self.client.get("/api/sessions/1/sessionToken/", content_type="application/json")
+        response = self.client.get(
+            "/api/sessions/1/sessionToken/", content_type="application/json"
+        )
         self.assertEqual(response.status_code, 401)
 
     def test_session_does_not_exist(self):
@@ -262,7 +268,11 @@ class TestGetSessionToken(LoginTestCase):
         token = self.add_and_authenticate("test", "asdf")
         # create token header
         token_headers = self.get_token_header(token)
-        response = self.client.get("/api/sessions/1/sessionToken/", content_type="application/json", headers=token_headers)
+        response = self.client.get(
+            "/api/sessions/1/sessionToken/",
+            content_type="application/json",
+            headers=token_headers,
+        )
         self.assertEqual(response.status_code, 404)
 
     def test_no_auth_required_showcase_user(self):
@@ -275,7 +285,9 @@ class TestGetSessionToken(LoginTestCase):
             db.session.add(self.session_user_1)
             db.session.commit()
             # protected route
-            response = self.client.get("/api/sessions/1/sessionToken/", content_type="application/json")
+            response = self.client.get(
+                "/api/sessions/1/sessionToken/", content_type="application/json"
+            )
             self.assertEqual(response.status_code, 200)
             expected = Session.query.get(1).generate_session_token()
             self.assertEqual(expected, response.json["session_token"])
@@ -288,7 +300,11 @@ class TestGetSessionToken(LoginTestCase):
         token = self.add_and_authenticate("test", "asdf")
         # create token header
         token_headers = self.get_token_header(token)
-        response = self.client.get("/api/sessions/1/sessionToken/", content_type="application/json", headers=token_headers)
+        response = self.client.get(
+            "/api/sessions/1/sessionToken/",
+            content_type="application/json",
+            headers=token_headers,
+        )
         # get session token
         expected = Session.query.get(1).generate_session_token()
         self.assertEqual(expected, response.json["session_token"])

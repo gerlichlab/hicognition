@@ -69,7 +69,6 @@ class TestGetCollections(LoginTestCase):
                 [self.collection_user_1.to_json()],
             )
 
-
     def test_no_collections_returns_empty(self):
         """No collections exist, return value is empty"""
         # authenticate

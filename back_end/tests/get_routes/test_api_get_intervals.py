@@ -90,9 +90,14 @@ class TestGetIntervals(LoginTestCase):
             db.session.add_all(self.owned_dataset_intervals)
             db.session.commit()
             # protected route
-            response = self.client.get("/api/intervals/", content_type="application/json")
+            response = self.client.get(
+                "/api/intervals/", content_type="application/json"
+            )
             self.assertEqual(response.status_code, 200)
-            expected = [self.owned_intervals_1.to_json(), self.owned_intervals_2.to_json()]
+            expected = [
+                self.owned_intervals_1.to_json(),
+                self.owned_intervals_2.to_json(),
+            ]
             self.assertEqual(response.json, expected)
 
     def test_correct_intervals_single_dataset(self):

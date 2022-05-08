@@ -884,7 +884,11 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 "lola": {
                     "1": {
                         "name": "test_collection",
-                        "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                        "collection_dataset_names": [
+                            "testfile",
+                            "testfile7",
+                            "testfile8",
+                        ],
                         "data_ids": {
                             "10000": {"10000": "1", "20000": "2"},
                             "20000": {"20000": "3"},
@@ -894,7 +898,11 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 "embedding1d": {
                     "1": {
                         "name": "test_collection",
-                        "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                        "collection_dataset_names": [
+                            "testfile",
+                            "testfile7",
+                            "testfile8",
+                        ],
                         "data_ids": {
                             "10000": {"10000": {"small": "1"}, "20000": {"small": "2"}},
                             "20000": {"20000": {"small": "3"}},
@@ -906,7 +914,10 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                         "name": "testfile3",
                         "data_ids": {
                             "10000": {
-                                "10000": {"ICCF": {"small": "5"}, "Obs/Exp": {"small": "6"}}
+                                "10000": {
+                                    "ICCF": {"small": "5"},
+                                    "Obs/Exp": {"small": "6"},
+                                }
                             },
                         },
                     }

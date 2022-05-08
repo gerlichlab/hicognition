@@ -80,7 +80,9 @@ class TestGetEmbeddingIntervalDataFeatures(LoginTestCase, TempDirTestCase):
         with patch("app.api.authentication.current_app.config") as mock_config:
             mock_config.__getitem__.side_effect = app_config.__getitem__
             # dispatch call
-            response = self.client.get("/api/embeddingIntervalData/500/0/", content_type="application/json")
+            response = self.client.get(
+                "/api/embeddingIntervalData/500/0/", content_type="application/json"
+            )
             self.assertEqual(response.status_code, 404)
 
     def test_embedding_interval_data_does_not_exist(self):

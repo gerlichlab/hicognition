@@ -98,7 +98,9 @@ class TestGetDatasets(LoginTestCase):
             # add datasets
             db.session.add_all(self.owned_coolers)
             db.session.commit()
-            response = self.client.get("/api/datasets/", content_type="application/json")
+            response = self.client.get(
+                "/api/datasets/", content_type="application/json"
+            )
             self.assertEqual(response.status_code, 200)
             expected = [dataset.to_json() for dataset in self.owned_coolers]
             self.assertEqual(response.json, expected)
@@ -216,10 +218,15 @@ class TestGetDatasets(LoginTestCase):
             # add datasets
             db.session.add_all(self.all_datasets)
             db.session.commit()
-            response = self.client.get("/api/datasets/", content_type="application/json")
+            response = self.client.get(
+                "/api/datasets/", content_type="application/json"
+            )
             self.assertEqual(response.status_code, 200)
             expected = [dataset.to_json() for dataset in self.all_datasets]
-            self.assertEqual(sorted(response.json, key=lambda x: x["id"]), sorted(expected, key=lambda x: x["id"]))
+            self.assertEqual(
+                sorted(response.json, key=lambda x: x["id"]),
+                sorted(expected, key=lambda x: x["id"]),
+            )
 
     def test_user_can_get_datasets_w_session_token(self):
         """Authenticated user can get datasets that they

@@ -686,7 +686,9 @@ def _add_embedding_1d_to_db(
     ).first()
     if entry is not None:
         hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
-        hicognition.io_helpers.remove_safely(entry.file_path_feature_values, current_app.logger)
+        hicognition.io_helpers.remove_safely(
+            entry.file_path_feature_values, current_app.logger
+        )
         hicognition.io_helpers.remove_safely(entry.cluster_id_path, current_app.logger)
         hicognition.io_helpers.remove_safely(entry.thumbnail_path, current_app.logger)
         entry.name = os.path.basename(filepaths["embedding"])

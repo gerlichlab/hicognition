@@ -108,7 +108,7 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "SizeType": "Point",
             "filetype": "bedfile",
             "filename": "test.bed",
-            "Directionality": "+"
+            "Directionality": "+",
         }
         expected_object = {
             "dataset_name": "test",
@@ -131,7 +131,6 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
         }
         data_ojb = DatasetPostModel(**test_object)
         self.assertEqual(expected_object, data_ojb.dict())
-
 
     def test_pydantic_model_working_cooler_wo_description(self):
         """Test of correct cooler POST form."""

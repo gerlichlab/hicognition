@@ -7,9 +7,14 @@ from app.pipeline_worker_functions import (
     _add_association_data_to_db,
     _add_stackup_db,
     _add_line_db,
-    _add_pileup_db
+    _add_pileup_db,
 )
-from app.models import EmbeddingIntervalData, AssociationIntervalData, IndividualIntervalData, AverageIntervalData
+from app.models import (
+    EmbeddingIntervalData,
+    AssociationIntervalData,
+    IndividualIntervalData,
+    AverageIntervalData,
+)
 
 
 class TestAddEmbedding2DToDB(LoginTestCase):
@@ -202,13 +207,7 @@ class TestAddStackupToDB(LoginTestCase):
     def test_add_new_entry_if_no_conflict(self):
         """Tests whether a new entry is added if there is
         no entry in db that satisfies the parameter constraints."""
-        _add_stackup_db(
-            "test/path",
-            "test/pathSmall",
-            10000,
-            1,
-            1
-        )
+        _add_stackup_db("test/path", "test/pathSmall", 10000, 1, 1)
         self.assertEqual(len(IndividualIntervalData.query.all()), 1)
         entry = IndividualIntervalData.query.first()
         self.assertEqual(entry.binsize, 10000)
@@ -241,12 +240,7 @@ class TestAddLineToDB(LoginTestCase):
     def test_add_new_entry_if_no_conflict(self):
         """Tests whether a new entry is added if there is
         no entry in db that satisfies the parameter constraints."""
-        _add_line_db(
-            "test/path",
-            10000,
-            1,
-            1
-        )
+        _add_line_db("test/path", 10000, 1, 1)
         self.assertEqual(len(AverageIntervalData.query.all()), 1)
         entry = AverageIntervalData.query.first()
         self.assertEqual(entry.binsize, 10000)
@@ -279,13 +273,7 @@ class TestAddPileupToDB(LoginTestCase):
     def test_add_new_entry_if_no_conflict(self):
         """Tests whether a new entry is added if there is
         no entry in db that satisfies the parameter constraints."""
-        _add_pileup_db(
-            "test/path",
-            10000,
-            1,
-            1,
-            "ICCF"
-        )
+        _add_pileup_db("test/path", 10000, 1, 1, "ICCF")
         self.assertEqual(len(AverageIntervalData.query.all()), 1)
         entry = AverageIntervalData.query.first()
         self.assertEqual(entry.binsize, 10000)
@@ -310,6 +298,7 @@ class TestAddPileupToDB(LoginTestCase):
         self.assertEqual(entry.intervals_id, 1)
         self.assertEqual(entry.dataset_id, 1)
         self.assertEqual(entry.value_type, "ICCF")
+
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

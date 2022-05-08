@@ -174,9 +174,10 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
         with patch("app.api.authentication.current_app.config") as mock_config:
             mock_config.__getitem__.side_effect = app_config.__getitem__
             # dispatch call
-            response = self.client.get("/api/averageIntervalData/1/", content_type="application/json")
+            response = self.client.get(
+                "/api/averageIntervalData/1/", content_type="application/json"
+            )
             self.assertEqual(response.status_code, 404)
-
 
     def test_average_interval_data_does_not_exist(self):
         """Test 404 is returned if averageIntervalData does not exist."""
