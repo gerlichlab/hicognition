@@ -294,7 +294,7 @@
                 </md-table>
                 <div
                     v-else-if="
-                        (datasets.length == 0 || assemblies === undefined) &&
+                        (datasets === undefined || assemblies === undefined) &&
                         !this.showEmpty
                     "
                     class="wait-spinner-container"
