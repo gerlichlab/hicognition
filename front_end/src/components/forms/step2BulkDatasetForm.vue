@@ -93,6 +93,8 @@
                         <div class="md-layout-item md-size-10">
                             <md-checkbox
                                 v-model="element.public"
+                                true-value="true"
+                                false-value="false"
                                 class="top-margin"
                                 >Public</md-checkbox
                             >
@@ -204,6 +206,7 @@ export default {
                         assembly: null,
                         filename: this.files[i].name,
                         file: this.files[i],
+                        public: false,
                     };
                     this.elements.push(tempObject);
                 }

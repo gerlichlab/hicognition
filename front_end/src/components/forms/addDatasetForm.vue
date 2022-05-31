@@ -75,6 +75,8 @@
                         <div class="md-layout-item md-small-size-100">
                             <md-checkbox
                                 v-model="form.public"
+                                true-value="true"
+                                false-value="false"
                                 class="top-margin"
                                 >Public</md-checkbox
                             >
