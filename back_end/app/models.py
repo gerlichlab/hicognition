@@ -81,6 +81,9 @@ class User(db.Model, UserMixin):
     tasks = db.relationship(
         "Task", backref="user", lazy="dynamic", cascade="all, delete-orphan"
     )
+    external_sources = db.relationship(
+        "ExternalSource", backref="user", lazy="dynamic", cascade="all, delete-orphan"
+    )
 
     def set_password(self, password):
         """set password helper."""
@@ -160,6 +163,18 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         """Format print output."""
         return f"<User {self.username}>"
+
+
+class ExternalSource(db.Model): # uliii
+    """External source database model for User"""
+    
+    # fields
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    name = db.Column(db.String(64), nullable=False)
+    url = db.Column(db.String(512), nullable=False)
+    key = db.Column(db.String(256), nullable=True)
+    secret = db.Column(db.String(256), nullable=True)
 
 
 class Dataset(db.Model):
