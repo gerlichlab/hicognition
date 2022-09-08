@@ -172,9 +172,10 @@ class ExternalSource(db.Model): # uliii
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     name = db.Column(db.String(64), nullable=False)
+    description = db.Column(db.String(512))
     url = db.Column(db.String(512), nullable=False)
-    key = db.Column(db.String(256), nullable=True)
-    secret = db.Column(db.String(256), nullable=True)
+    key = db.Column(db.String(256))
+    secret = db.Column(db.String(256))
 
 
 class Dataset(db.Model):
@@ -245,6 +246,7 @@ class Dataset(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     available_binsizes = db.Column(db.String(500), default="undefined")
     processing_state = db.Column(db.String(64))
+    data_source = db.Column(db.String(512))
     # self relationships
     processing_features = db.relationship(
         "Dataset",
