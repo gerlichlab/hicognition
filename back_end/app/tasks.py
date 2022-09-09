@@ -128,3 +128,5 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
     except BaseException as err:
         pipeline_steps.set_collection_failed(collection_id, intervals_id)
         log.error(err, exc_info=True)
+
+

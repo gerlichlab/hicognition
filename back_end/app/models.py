@@ -81,8 +81,8 @@ class User(db.Model, UserMixin):
     tasks = db.relationship(
         "Task", backref="user", lazy="dynamic", cascade="all, delete-orphan"
     )
-    external_sources = db.relationship(
-        "ExternalSource", backref="user", lazy="dynamic", cascade="all, delete-orphan"
+    credentials = db.relationship(
+        "User_DataRepository_Credentials", backref="user", lazy="dynamic", cascade="all, delete-orphan"
     )
 
     def set_password(self, password):
@@ -164,18 +164,39 @@ class User(db.Model, UserMixin):
         """Format print output."""
         return f"<User {self.username}>"
 
+#class User_ExternSource mtm
 
-class ExternalSource(db.Model): # uliii
-    """External source database model for User"""
+class DataRepository(db.Model):
+    """Model for external data repositories.
+    URL should contain a {id} that can be replaced for the data id."""
     
     # fields
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     name = db.Column(db.String(64), nullable=False)
-    description = db.Column(db.String(512))
-    url = db.Column(db.String(512), nullable=False)
-    key = db.Column(db.String(256))
-    secret = db.Column(db.String(256))
+    url = db.Column(db.String(512))
+    auth_required = db.Column(db.Boolean, default=False)
+
+    def build_url(self, data_id: str):
+        return self.url.format(id = data_id)
+
+    credentials = db.relationship(
+        "User_DataRepository_Credentials", back_populates="repository", lazy="dynamic", cascade="all, delete-orphan")
+
+
+class User_DataRepository_Credentials(db.Model):
+    """Optional many-to-many object to store user keys for external repos"""
+
+    # fields
+    user_id = db.Column(db.ForeignKey("user.id"), primary_key=True)
+    repository_id = db.Column(db.ForeignKey("data_repository.id"), primary_key=True)
+    key = db.Column(db.String(512), nullable=False)
+    secret = db.Column(db.String(512), nullable=False)
+
+
+    # assoc
+    #user = db.relationship("User", back_populates='credentials')
+    repository = db.relationship("DataRepository", back_populates='credentials')
+
 
 
 class Dataset(db.Model):
@@ -246,7 +267,8 @@ class Dataset(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     available_binsizes = db.Column(db.String(500), default="undefined")
     processing_state = db.Column(db.String(64))
-    data_source = db.Column(db.String(512))
+    source_url = db.Column(db.String(512), nullable=True) #  TODO add those to the META_FIELDS
+    source_repo = db.Column(db.ForeignKey("data_repository.id"), nullable=True)
     # self relationships
     processing_features = db.relationship(
         "Dataset",

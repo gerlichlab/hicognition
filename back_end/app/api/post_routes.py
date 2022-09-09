@@ -39,8 +39,8 @@ def add_dataset():
     def is_form_invalid():
         if not hasattr(request, "form"):
             return True
-        # check whether fileObject is there
-        if len(request.files) == 0:
+        # check whether user provided file xor a repository and a ref_id to the data
+        if len(request.files) == 0 ^ (not (hasattr(request, "repository_ref") and hasattr(reqeust, "repository_id"))): # xor
             return True
         return False
 
@@ -54,7 +54,6 @@ def add_dataset():
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
 
-    file_object = request.files["file"]
     # check whether description is there
     description = parse_description(data)
     # check whether dataset should be public
@@ -71,12 +70,24 @@ def add_dataset():
     new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
     db.session.commit()
-    # save file in upload directory with database_id as prefix
+    
+    # download file either from user or external repo
     filename = f"{new_entry.id}_{secure_filename(file_object.filename)}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
-    file_object.save(file_path)
-    assembly = Assembly.query.get(data.assembly)
+    if len(request.files) > 0:
+        # save file in upload directory with database_id as prefix
+        file_object = request.files["file"]
+        file_object.save(file_path)
+    elif hasattr(request, "repository_ref"):
+        current_user.launch_task(
+            current_app.queues["short"], # TODO which queue to take
+            "download_dataset",
+            "run dataset download from repo",
+            new_entry.id
+        )
+
     # check format -> this cannot be done in form checker since file needs to be available
+    assembly = Assembly.query.get(data.assembly)
     chromosome_names = set(pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0])
     needed_resolutions = parse_binsizes(
         current_app.config["PREPROCESSING_MAP"], "cooler"
