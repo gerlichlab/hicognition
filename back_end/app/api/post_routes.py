@@ -78,13 +78,20 @@ def add_dataset():
         # save file in upload directory with database_id as prefix
         file_object = request.files["file"]
         file_object.save(file_path)
+        # TODO  validation of dataset file
+        # new_entry.validate_dataset()
+        
     elif hasattr(request, "repository_ref"):
         current_user.launch_task(
             current_app.queues["short"], # TODO which queue to take
-            "download_dataset",
+            "download_dataset_file",
             "run dataset download from repo",
             new_entry.id
         )
+        
+
+    ###
+    # def validate_dataset():
 
     # check format -> this cannot be done in form checker since file needs to be available
     assembly = Assembly.query.get(data.assembly)
@@ -92,7 +99,7 @@ def add_dataset():
     needed_resolutions = parse_binsizes(
         current_app.config["PREPROCESSING_MAP"], "cooler"
     )
-    if not FORMAT_CHECKERS[request.form["filetype"]](
+    if not FORMAT_CHECKERS[request.form["filetype"]]( #  u: external code?
         file_path, chromosome_names, needed_resolutions
     ):
         db.session.delete(new_entry)

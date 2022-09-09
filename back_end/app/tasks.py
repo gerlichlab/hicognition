@@ -130,3 +130,9 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
         log.error(err, exc_info=True)
 
 
+def download_dataset_file(dataset_id):
+    with Dataset.query.get(dataset_id) as ds, open(ds.filepath, 'wb') as f_out:
+        
+        response = requests.get(ds.url, auth=(key, secret), stream=True)
+        f_out.write(response.content)
+

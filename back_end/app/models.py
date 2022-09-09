@@ -267,7 +267,8 @@ class Dataset(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     available_binsizes = db.Column(db.String(500), default="undefined")
     processing_state = db.Column(db.String(64))
-    source_url = db.Column(db.String(512), nullable=True) #  TODO add those to the META_FIELDS
+    asdf = db.Column(db.Boolean)
+    source_url = db.Column(db.String(512)) #  TODO add those to the META_FIELDS
     source_repo = db.Column(db.ForeignKey("data_repository.id"), nullable=True)
     # self relationships
     processing_features = db.relationship(
