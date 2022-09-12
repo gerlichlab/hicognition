@@ -1,9 +1,18 @@
 """Database models for HiCognition."""
+# TODO refactor to allow database to not know about flask-server or similar
+# TODO task launcher: why put it into the user class? 
+
 import datetime
 from flask.globals import current_app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import inspect
+import pandas as pd
+import cooler
+import json
+import os
+from hicognition.utils import parse_binsizes
+from hicognition.format_checkers import FORMAT_CHECKERS
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import JSONWebSignatureSerializer
 import rq
@@ -267,9 +276,9 @@ class Dataset(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     available_binsizes = db.Column(db.String(500), default="undefined")
     processing_state = db.Column(db.String(64))
-    asdf = db.Column(db.Boolean)
-    source_url = db.Column(db.String(512)) #  TODO add those to the META_FIELDS
-    source_repo = db.Column(db.ForeignKey("data_repository.id"), nullable=True)
+    repo_id = db.Column(db.ForeignKey("data_repository.id"), nullable=True)
+    repo_file_id = db.Column(db.String(128)) #  TODO add those to the META_FIELDS
+    source_url = db.Column(db.String(512))
     # self relationships
     processing_features = db.relationship(
         "Dataset",
@@ -340,6 +349,8 @@ class Dataset(db.Model):
         cascade="all, delete-orphan",
     )
     tasks = db.relationship("Task", backref="dataset", lazy="dynamic")
+    repository = db.relationship("DataRepository")
+    user = db.relationship("User")
 
     def get_tasks_in_progress(self):
         """Gets the tasks in progress for the dataset."""
@@ -552,6 +563,52 @@ class Dataset(db.Model):
             if target_windowsize not in existing_windowsizes:
                 missing_windowsizes.append(target_windowsize)
         return missing_windowsizes
+
+    def validate_dataset(self, delete=False):
+        # uli: i have put this in models.py, as a dataset should validate itself
+        # TODO add file_type column to dataset
+        # TODO remove app config somehow?
+
+        # check format -> this cannot be done in form checker since file needs to be available
+        assembly = Assembly.query.get(self.assembly)
+        chromosome_names = set(pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0])
+        needed_resolutions = parse_binsizes(
+            current_app.config["PREPROCESSING_MAP"], "cooler"
+        )
+        valid = FORMAT_CHECKERS[self.filetype](
+            self.file_path, chromosome_names, needed_resolutions
+        )
+
+        if not valid and delete:
+            db.session.delete(self)
+            db.session.commit()
+            os.remove(self.file_path)
+
+        return valid
+            
+
+    def preprocess_dataset(self):
+        # datasets should preprocess themselves
+
+        # start preprocessing of bedfile, the other filetypes do not need preprocessing
+        if self.filetype == "bedfile":
+            self.user.launch_task( #  TODO current user or dataset owner user?
+                current_app.queues["short"],
+                "pipeline_bed",
+                "run bed preprocessing",
+                self.id,
+            )
+            self.processing_state = "processing"
+
+        # if filetype is cooler, store available binsizes
+        if self.filetype == "cooler":
+            binsizes = [
+                resolution.split("/")[2]
+                for resolution in cooler.fileops.list_coolers(self.file_path)
+            ]
+            self.available_binsizes = json.dumps(binsizes)
+
+        db.session.commit()
 
     def to_json(self):
         """Generates a JSON from the model"""

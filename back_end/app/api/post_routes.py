@@ -39,9 +39,16 @@ def add_dataset():
     def is_form_invalid():
         if not hasattr(request, "form"):
             return True
-        # check whether user provided file xor a repository and a ref_id to the data
-        if len(request.files) == 0 ^ (not (hasattr(request, "repository_ref") and hasattr(reqeust, "repository_id"))): # xor
+        # check whether user provided file xor a repository and a ref_id to the data, both not valid.
+        # TODO put this into format checker?
+        # TODO would write as 'is_form_valid'
+        has_no_files = request.files == []
+        has_no_repo_id = request.form.get('repo_id') is not None
+        has_no_data_id = request.form.get('repo_ref') is not None
+
+        if has_no_files ^ (has_no_repo_id & has_no_data_id): # xor
             return True
+
         return False
 
     current_user = g.current_user
@@ -72,62 +79,38 @@ def add_dataset():
     db.session.commit()
     
     # download file either from user or external repo
-    filename = f"{new_entry.id}_{secure_filename(file_object.filename)}"
-    file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
+    # TODO this doesnt work yet
     if len(request.files) > 0:
         # save file in upload directory with database_id as prefix
         file_object = request.files["file"]
+        filename = f"{new_entry.id}_{secure_filename(file_object.filename)}"
+        file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
         file_object.save(file_path)
-        # TODO  validation of dataset file
-        # new_entry.validate_dataset()
+        new_entry.file_path = file_path
+        new_entry.processing_state = "uploaded" #  TODO status only used for tests?
+
+        # validate dataset and delete if not valid
+        if not new_entry.validate_dataset(delete=True):
+            return invalid("Wrong dataformat or wrong chromosome names!")
+
+        new_entry.preprocess_dataset()
+        db.session.commit()
         
-    elif hasattr(request, "repository_ref"):
+        return jsonify({"message": "success! Preprocessing triggered."})
+
+    elif hasattr(request, "repo_id"):
         current_user.launch_task(
             current_app.queues["short"], # TODO which queue to take
-            "download_dataset_file",
+            "download_dataset",
             "run dataset download from repo",
             new_entry.id
         )
-        
-
-    ###
-    # def validate_dataset():
-
-    # check format -> this cannot be done in form checker since file needs to be available
-    assembly = Assembly.query.get(data.assembly)
-    chromosome_names = set(pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0])
-    needed_resolutions = parse_binsizes(
-        current_app.config["PREPROCESSING_MAP"], "cooler"
-    )
-    if not FORMAT_CHECKERS[request.form["filetype"]]( #  u: external code?
-        file_path, chromosome_names, needed_resolutions
-    ):
-        db.session.delete(new_entry)
         db.session.commit()
-        os.remove(file_path)
-        return invalid("Wrong dataformat or wrong chromosome names!")
-    # add file_path to database entry
-    new_entry.file_path = file_path
-    new_entry.processing_state = "uploaded"
-    db.session.add(new_entry)
-    # start preprocessing of bedfile, the other filetypes do not need preprocessing
-    if data.filetype == "bedfile":
-        current_user.launch_task(
-            current_app.queues["short"],
-            "pipeline_bed",
-            "run bed preprocessing",
-            new_entry.id,
-        )
-        new_entry.processing_state = "processing"
-    # if filetype is cooler, store available binsizes
-    if data.filetype == "cooler":
-        binsizes = [
-            resolution.split("/")[2]
-            for resolution in cooler.fileops.list_coolers(file_path)
-        ]
-        new_entry.available_binsizes = json.dumps(binsizes)
-    db.session.commit()
-    return jsonify({"message": "success! Preprocessing triggered."})
+        return jsonify({"message": "success! File is being downloaded."})
+    else:
+        return jsonify({"message": "failed! Form is not valid?"}) # TODO is this sane?
+
+    
 
 
 @api.route("/preprocess/datasets/", methods=["POST"])
