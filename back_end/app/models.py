@@ -93,6 +93,11 @@ class User(db.Model, UserMixin):
     credentials = db.relationship(
         "User_DataRepository_Credentials", backref="user", lazy="dynamic", cascade="all, delete-orphan"
     )
+    
+    def add_repository_credentials(self, repository_id: int, key: str, secret: str): # TODO needed?
+        credentials = User_DataRepository_Credentials(self.id, repository_id, key, secret)
+        db.session.add(credentials)
+        return credentials
 
     def set_password(self, password):
         """set password helper."""
@@ -191,6 +196,12 @@ class DataRepository(db.Model):
     credentials = db.relationship(
         "User_DataRepository_Credentials", back_populates="repository", lazy="dynamic", cascade="all, delete-orphan")
 
+    def to_json(self):
+        """makes dict from model object"""
+        d = dict()
+        for c in self.__table__.columns:
+            d[c.name] = str(getattr(self, c.name))
+        return d
 
 class User_DataRepository_Credentials(db.Model):
     """Optional many-to-many object to store user keys for external repos"""
@@ -608,7 +619,7 @@ class Dataset(db.Model):
             ]
             self.available_binsizes = json.dumps(binsizes)
 
-        db.session.commit()
+        #db.session.commit()
 
     def to_json(self):
         """Generates a JSON from the model"""

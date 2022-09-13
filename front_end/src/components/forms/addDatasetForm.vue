@@ -80,8 +80,30 @@
                                 >Public</md-checkbox
                             >
                         </div>
-                        <!-- file field -->
+                        <!-- select file source -->
                         <div class="md-layout-item md-small-size-100">
+                            <md-field> <!-- TODO sprint9 :class=validationClass -->
+                                <label for="fileSource">File Source</label>
+                                <md-select
+                                    id="fileSource"
+                                    name="fileSource"
+                                    v-model="form.fileSource"
+                                    selected="none"
+                                    @md-selected="clearFileFields"
+                                >
+                                    <md-option value="none"> <!-- no repository chosen -->
+                                        Upload file yourself
+                                    </md-option>
+                                    <md-option v-for="repo in repositories"
+                                        :key="repo.id"
+                                        :value="repo.name">
+                                        {{repo.name}}
+                                    </md-option>
+                                </md-select>
+                            </md-field>
+                        </div>
+                        <!-- file field -->
+                        <div v-if="form.fileSource=='none'" class="md-layout-item md-small-size-100">
                             <md-field :class="getValidationClass('file')">
                                 <label for="file">File</label>
                                 <md-file
@@ -90,6 +112,7 @@
                                     v-model="form.file"
                                     :disabled="sending"
                                     @change="handleFileChange"
+                                    :accept="acceptedFileTypes"
                                     required
                                 />
                                 <span
@@ -105,6 +128,44 @@
                                 </span>
                             </md-field>
                         </div>
+                    <!-- URL or ID -->
+                        <template v-else>
+                            <div class="md-layout-item md-small-size-100"> 
+                                <md-field>
+                                    <!--:class="getValidationClass('datasetName')"
+                                >-->
+                                    <label for="repoDataId">Dataset ID or URL</label>
+                                    <md-input
+                                        name="repoDataId"
+                                        id="repoDataId"
+                                        v-model="form.repoDataId"
+                                        :disabled="sending"
+                                        required
+                                    />
+                                    <span
+                                        class="md-error"
+                                        v-if="!$v.form.repoDataId.required"
+                                        >An URL or ID is required</span
+                                    >
+                                </md-field>
+                            </div>
+                            <div class="md-layout-item md-small-size-100">
+                                <md-field>
+                                    <label for="fileType">File type</label>
+                                    <md-select
+                                        id="fileType"
+                                        name="fileType"
+                                        v-model="form.fileType"
+                                    >
+                                        <md-option v-for="fileType in fileTypes"
+                                            :key="fileType"
+                                            :value="fileType">
+                                            {{fileType}}
+                                        </md-option>
+                                    </md-select>
+                                </md-field>
+                            </div>
+                        </template>
                     </div>
                     <!-- metadata -->
                     <div v-if="showMetadata">
@@ -347,12 +408,18 @@ export default {
             Protein: null,
             cellCycleStage: null,
             perturbation: null,
+            fileSource: 'none', // TODO sprint9,
+            repoDataId: null,
+            fileType: null,
         },
         datasetMetadataMapping: null,
         datasetSaved: false,
         sending: false,
         selectedFile: null,
         assemblies: {},
+        repositories: {}, // TODO sprint9
+        
+
     }),
     validations() {
         // validators for the form
@@ -375,13 +442,16 @@ export default {
                 perturbation: {
                     required,
                 },
-                file: {
-                    required,
+                file: { // TODO sprint9
+                   // required,
                     correctFiletype: correctFileType,
                 },
                 description: {
                     maxLength: maxLength(80),
                 },
+                repoDataId: {
+                    required
+                }
             },
         };
         if (this.valueTypeSelected) {
@@ -396,6 +466,16 @@ export default {
         return outputObject;
     },
     computed: {
+        fileTypes: function() { // TODO sprint9 naming is really bad for this one
+            // list of filetypes to choose from
+            // only allow unique values
+            let fileTypesLC = Object.keys(this.fileTypeMapping).map((type) => type.toLowerCase())
+            return [...new Set(fileTypesLC)]
+        },
+        acceptedFileTypes: function() { // TODO sprint9
+            // build accept parameter for file chooser, e.g. ".bed,.mcool,.bw"
+            return "." + Object.keys(this.fileTypeMapping).join(',.')
+        },
         valueTypeFields: function () {
             if (this.valueTypeSelected && this.selectedFileType) {
                 return Object.keys(
@@ -443,22 +523,26 @@ export default {
             return false;
         },
         selectedFileType: function () {
-            if (this.fileEnding) {
-                if (this.fileEnding.toLowerCase() in this.fileTypeMapping) {
-                    return this.fileTypeMapping[this.fileEnding.toLowerCase()];
+                if (this.fileEnding) {
+                    if (this.fileEnding.toLowerCase() in this.fileTypeMapping) {
+                        return this.fileTypeMapping[this.fileEnding.toLowerCase()];
+                    }
+                    // show rerror
+                    this.$v.form.file.$touch();
                 }
-                // show rerror
-                this.$v.form.file.$touch();
-            }
             return undefined;
         },
-        fileEnding: function () {
-            if (
-                typeof this.form.file === "string" ||
-                this.form.file instanceof String
-            ) {
-                var splitFileName = this.form.file.split(".");
-                return splitFileName[splitFileName.length - 1];
+        fileEnding: function () { // TODO sprint9
+            if (this.form.fileSource == 'none') {
+                if (
+                    typeof this.form.file === "string" ||
+                    this.form.file instanceof String
+                ) {
+                    var splitFileName = this.form.file.split(".");
+                    return splitFileName[splitFileName.length - 1];
+                }
+            } else if (this.form.repoDataId) {
+                return this.form.fileType;
             }
             return undefined;
         },
@@ -474,7 +558,7 @@ export default {
                 };
             }
         },
-        handleFileChange(event) {
+        handleFileChange(event) {  // TODO sprint9
             // get file IO-stream
             this.selectedFile = event.target.files[0];
         },
@@ -537,15 +621,30 @@ export default {
         fetchAssemblies() {
             this.fetchData("assemblies/").then((response) => {
                 if (response) {
-                    this.assemblies = response.data;
+                    this.assemblies = response.data; // TODO ask => shouldn't return?
                 }
             });
         },
+        fetchRepositories() { // TODO sprint9 get repos list
+            this.fetchData("repositories/").then((response) => {
+                if (response) {
+                    this.repositories = response.data;
+                }
+            });
+        },
+        clearFileFields(event) { // TODO sprint9
+            this.form.fileType = null;
+            this.form.file = null;
+            this.form.repoDataId = null;
+        }
     },
     mounted: function () {
         this.datasetMetadataMapping =
             this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
         this.assemblies = this.fetchAssemblies();
+        
+        // TODO sprint9 add repo list
+        this.repositories = this.fetchRepositories();
     },
 };
 </script>
