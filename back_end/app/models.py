@@ -94,8 +94,8 @@ class User(db.Model, UserMixin):
         "User_DataRepository_Credentials", backref="user", lazy="dynamic", cascade="all, delete-orphan"
     )
     
-    def add_repository_credentials(self, repository_id: int, key: str, secret: str): # TODO needed?
-        credentials = User_DataRepository_Credentials(self.id, repository_id, key, secret)
+    def add_repository_credentials(self, repository_name: str, key: str, secret: str): # TODO needed?
+        credentials = User_DataRepository_Credentials(self.id, repository_name, key, secret)
         db.session.add(credentials)
         return credentials
 
@@ -179,14 +179,15 @@ class User(db.Model, UserMixin):
         return f"<User {self.username}>"
 
 #class User_ExternSource mtm
-
+# TODO replace with better name?
 class DataRepository(db.Model):
     """Model for external data repositories.
-    URL should contain a {id} that can be replaced for the data id."""
+    URL should contain a {id} that can be replaced for the data id.
+    Name is primary key, as this table will hold only a few rows and it makes
+    handling gets/posts easier."""
     
     # fields
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), nullable=False)
+    name = db.Column(db.String(64), nullable=False, primary_key=True)
     url = db.Column(db.String(512))
     auth_required = db.Column(db.Boolean, default=False)
 
@@ -208,7 +209,7 @@ class User_DataRepository_Credentials(db.Model):
 
     # fields
     user_id = db.Column(db.ForeignKey("user.id"), primary_key=True)
-    repository_id = db.Column(db.ForeignKey("data_repository.id"), primary_key=True)
+    repository_name = db.Column(db.ForeignKey("data_repository.name"), primary_key=True)
     key = db.Column(db.String(512), nullable=False)
     secret = db.Column(db.String(512), nullable=False)
 
@@ -287,9 +288,9 @@ class Dataset(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     available_binsizes = db.Column(db.String(500), default="undefined")
     processing_state = db.Column(db.String(64))
-    repo_id = db.Column(db.ForeignKey("data_repository.id"), nullable=True)
-    repo_file_id = db.Column(db.String(128)) #  TODO add those to the META_FIELDS
-    source_url = db.Column(db.String(512))
+    repository_name = db.Column(db.ForeignKey("data_repository.name"), nullable=True)
+    sample_id = db.Column(db.String(128), nullable=True) #  TODO add those to the META_FIELDS
+    source_url = db.Column(db.String(512), nullable=True)
     # self relationships
     processing_features = db.relationship(
         "Dataset",

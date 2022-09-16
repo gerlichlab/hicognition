@@ -67,7 +67,6 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         # make datasets for these test cases:
         self.dataset = Dataset(
             dataset_name="ds",
-            file_path=os.path.join(TempDirTestCase.TEMP_PATH, "/test_bed.bed"),
             filetype="bedfile",
             processing_state='uploading',
             user_id=1,
@@ -78,7 +77,6 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         )
         self.dataset_no_auth = Dataset(
             dataset_name="ds",
-            file_path='',
             filetype="bedfile",
             processing_state='uploading',
             user_id=1,
@@ -88,7 +86,6 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         )
         self.dataset_missing_auth = Dataset(
             dataset_name="ds",
-            file_path='',
             filetype="bedfile",
             processing_state='uploading',
             user_id=1,
@@ -98,7 +95,6 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         )
         self.dataset_bed_gz = Dataset(
             dataset_name="ds",
-            file_path='',
             filetype="bedfile",
             processing_state='uploading',
             user_id=1,
@@ -108,7 +104,7 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         )
         self.dataset_bad_url = Dataset(
             dataset_name="ds",
-            file_path='',
+            file_path=os.path.join(TempDirTestCase.TEMP_PATH, 'testfile.bed'),
             filetype="bedfile",
             processing_state='uploading',
             user_id=1,
@@ -118,7 +114,6 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         )        
         self.dataset_bad_id_4dn = Dataset(
             dataset_name="ds",
-            file_path='',
             filetype="bedfile",
             processing_state='uploading',
             user_id=1,
@@ -154,20 +149,20 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
 
 
     def test_download_wo_authentication(self):
-        http_status = download_dataset_file(self.dataset_no_auth.id, TempDirTestCase.TEMP_PATH, 'bed.gz')
+        http_status = download_dataset_file(self.dataset_no_auth.id, TempDirTestCase.TEMP_PATH)
         
-        self.assertEqual(200, http_status)
+        self.assertEqual(True, http_status)
         # TODO check file content
 
     def test_download_missing_authentication(self):
-        http_status = download_dataset_file(self.dataset_missing_auth.id, TempDirTestCase.TEMP_PATH, 'bed.gz')
+        http_status = download_dataset_file(self.dataset_missing_auth.id, TempDirTestCase.TEMP_PATH)
         
         self.assertEqual(403, http_status)
 
     def test_download_w_authentication(self):
-        http_status = download_dataset_file(self.dataset.id, TempDirTestCase.TEMP_PATH, 'bed.gz')
+        http_status = download_dataset_file(self.dataset.id, TempDirTestCase.TEMP_PATH)
         
-        self.assertEqual(200, http_status)
+        self.assertTrue(http_status) # TODO change
         # TODO check file content
 
     
@@ -175,12 +170,11 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         with self.assertRaises(requests.exceptions.ConnectionError):
             download_dataset_file(
                 self.dataset_bad_url.id,
-                TempDirTestCase.TEMP_PATH,
-                'bed.gz'
+                TempDirTestCase.TEMP_PATH
             )
 
     def test_download_id_not_valid(self):
-        http_status = download_dataset_file(self.dataset_bad_id_4dn.id, TempDirTestCase.TEMP_PATH, 'bed.gz')
+        http_status = download_dataset_file(self.dataset_bad_id_4dn.id, TempDirTestCase.TEMP_PATH)
         self.assertEqual(404, http_status) # TODO bad
 
 

@@ -2,6 +2,7 @@
 from pydantic import BaseModel, Field, validator, constr
 from flask import current_app
 
+
 # pylint: disable=no-self-argument,no-self-use
 class DatasetPostModel(BaseModel):
     """Is a model of the dataset upload form."""
@@ -23,6 +24,10 @@ class DatasetPostModel(BaseModel):
     filetype: constr(max_length=64)
     filename: constr(max_length=200)
     value_type: constr(max_length=64) = Field(..., alias="ValueType")
+    source_url: constr(max_length=512) = Field(alias="SourceURL")
+    sample_id: constr(max_length=128) = Field(alias="sampleID")
+    repository_name: constr(max_length=64) = Field(alias="RepositoryName")
+    file_type: str # TODO
 
     @classmethod
     def get_reverse_alias(cls, key):
@@ -37,6 +42,9 @@ class DatasetPostModel(BaseModel):
             "Protein": "protein",
             "cellCycleStage": "cell_cycle_stage",
             "ValueType": "value_type",
+            "SampleID": "sample_id",
+            "RepositoryName": "repository_name",
+            "SourceURL": "source_url"
         }
         return alias_table[key]
 
@@ -77,6 +85,25 @@ class DatasetPostModel(BaseModel):
                 )
         return value_type
 
+
+    @validator("description")
+    def parse_description(cls, description):
+        """Checks if description was provided provided in frontend, if not rewrites it."""
+        if description == "null":
+            description = "No description provided"
+        return description
+
+    def __getitem__(self, item):
+        if hasattr(self, item):
+            return getattr(self, item)
+        return getattr(self, self.get_reverse_alias(item))
+
+    def __contains__(self, item):
+        return hasattr(self, item)
+
+class FileDatasetPostModel(DatasetPostModel):
+    """model of dataset with file"""
+    
     @validator("filename")
     def file_has_correct_ending_and_supported_filetype(cls, filename, values, **kwargs):
         """Checks is the file has the appropriate file ending."""
@@ -93,18 +120,3 @@ class DatasetPostModel(BaseModel):
                 f'Invalid filename! For the filetype: {values["filetype"]} we found the file ending: {file_ending}. Supported for this filetype are: {supported_file_endings[values["filetype"]]}.'
             )
         return filename
-
-    @validator("description")
-    def parse_description(cls, description):
-        """Checks if description was provided provided in frontend, if not rewrites it."""
-        if description == "null":
-            description = "No description provided"
-        return description
-
-    def __getitem__(self, item):
-        if hasattr(self, item):
-            return getattr(self, item)
-        return getattr(self, self.get_reverse_alias(item))
-
-    def __contains__(self, item):
-        return hasattr(self, item)

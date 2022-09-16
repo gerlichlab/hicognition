@@ -12,6 +12,7 @@ from . import create_app, db
 from .models import Assembly, Dataset, IndividualIntervalData, Collection, User, DataRepository, User_DataRepository_Credentials
 from . import pipeline_steps
 from .notifications import NotificationHandler
+from . import file_handler
 
 # get logger
 log = logging.getLogger("rq.worker")
@@ -27,7 +28,7 @@ notifcation_handler = NotificationHandler()
 
 # set basedir
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.abspath(os.path.dirname(__file__)) # TODO unused
 
 
 def pipeline_bed(dataset_id):
@@ -133,8 +134,7 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
         pipeline_steps.set_collection_failed(collection_id, intervals_id)
         log.error(err, exc_info=True)
 
-
-def download_dataset_file(dataset_id, file_dir, file_ext, delete_if_invalid=False):
+def download_dataset_file(dataset_id, file_dir, delete_if_invalid=False): # TODO file_path should not be here. You should define a temp file path for stuff that might get deleted or gunzipped
     """
     Downloads dataset file from web and validates + 'preprocesses' it.
     ua
@@ -143,10 +143,8 @@ def download_dataset_file(dataset_id, file_dir, file_ext, delete_if_invalid=Fals
     - this fnct is not using the REST API provided by 4dn
         as it is meant for submission
     """
-    log.info(f'Starting download routine for dataset {dataset_id}')
-
     ds = db.session.query(Dataset).get(dataset_id)
-
+    log.info(f'Starting download routine for dataset {ds.id}')
     # if download is from known repository, build URL
     if ds.repo_id and ds.repo_file_id:
         # build source url
@@ -161,34 +159,23 @@ def download_dataset_file(dataset_id, file_dir, file_ext, delete_if_invalid=Fals
             auth_tuple = (cred.key, cred.secret)
 
     # download file and put into variable content
-    content = None
-    try:
-        log.info(f'      Downloading from {ds.source_url}')
-        response = requests.get(ds.source_url, auth=auth_tuple, stream=True)
-        content = response.content
-
-        log.info(f'      Response status: {response.status_code}')
-        if response.status_code != 200:
-            # TODO delete dataset or set status to indicate fail
-            return response.status_code
-    except Exception as e:
-        log.error(e, exc_info=True)
-        # TODO delete dataset or set status to indicate fail
-        raise e
+    file_name, content = file_handler.download_file(ds.source_url, auth_tuple)
+    if not file_name:
+        file_name = secure_filename(f'{ds.user.id}_{ds.id}') # TODO fileext!!!
 
     # check if compressed and decompress
-    if file_ext.lower().endswith('.gz'):
+    if file_name.lower().endswith('.gz'):
         content = gzip.decompress(content)
-        file_ext = file_ext[:-3]
+        file_name = file_name[:-3] # strip the gz
+
+    ds.file_path = os.path.join(file_dir, secure_filename(f'{ds.id}_{file_name}'))
 
     # save file
-    ds.file_path = os.path.join(file_dir, secure_filename(f'{ds.user_id}_{ds.dataset_name}.{file_ext}'))
-    with open(ds.file_path, 'wb') as f_out:
-        f_out.write(content)
-
+    file_handler.save_file(ds.file_path, content, overwrite=False)
     ds.processing_state = "uploaded"
     db.session.commit()
 
+    # TODO notification management > what it fails, success or similar?
     valid = ds.validate_dataset() #  TODO can't delete file/object, bc user would not get info about it then
     if not valid:
         log.info(f'      Dataset file was invalid.')
@@ -196,7 +183,9 @@ def download_dataset_file(dataset_id, file_dir, file_ext, delete_if_invalid=Fals
 
     ds.preprocess_dataset() #  TODO can't delete file/object, bc user would not get info about it then
     db.session.commit()
-    
+    pipeline_steps.set_task_progress(100)
     log.info("      Success.")
-    return 200
+    return True
 
+def handle_new_file():
+    pass

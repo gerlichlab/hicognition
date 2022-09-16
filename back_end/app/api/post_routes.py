@@ -24,12 +24,85 @@ from ..models import (
     EmbeddingIntervalData,
 )
 from ..form_models import (
-    DatasetPostModel,
+    DatasetPostModel, FileDatasetPostModel
 )
 from .authentication import auth
 from .. import pipeline_steps
 from .errors import forbidden, invalid, not_found
 
+@api.route("/datasets/encode", methods=["POST"])
+@auth.login_required
+def add_dataset_from_ENCODE():
+    """ """ # TODO docs
+    user = g.current_user
+    def is_form_valid():
+        valid = True
+        valid = valid and hasattr(request, "form")
+        valid = valid and request.files == []
+        valid = valid and request.form.get('repository_name') is not None
+        valid = valid and request.form.get('sample_id') is not None
+        return valid
+    
+    if not is_form_valid():
+        return invalid("Form is not valid!")
+    
+    # get data from form
+    try:
+        data = DatasetPostModel(**request.form)
+    except ValueError as err:
+        return invalid(f'"Form is not valid: {str(err)}')
+
+    # check whether description is there
+    description = parse_description(data)
+    # check whether dataset should be public
+    set_public = "public" in data and data["public"] == True
+    # add data to Database -> in order to get id for filename
+    new_entry = Dataset(
+        dataset_name=data.dataset_name,
+        description=description,
+        public=set_public,
+        processing_state="uploading",
+        filetype=data.filetype,
+        user_id=current_user.id,
+    )
+    new_entry.add_fields_from_form(data)
+    db.session.add(new_entry)
+    db.session.commit()
+    
+    # download file either from user or external repo
+    # TODO this doesnt work yet
+    if len(request.files) > 0:  # TODO  add functionality for gzip compressed files
+        # save file in upload directory with database_id as prefix
+        file_object = request.files["file"]
+        filename = f"{new_entry.id}_{secure_filename(file_object.filename)}"
+        file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
+        file_object.save(file_path)
+        new_entry.file_path = file_path
+        new_entry.processing_state = "uploaded" #  TODO status only used for tests?
+
+        # validate dataset and delete if not valid
+        if not new_entry.validate_dataset(delete=True):
+            return invalid("Wrong dataformat or wrong chromosome names!")
+
+        new_entry.preprocess_dataset()
+        db.session.commit()
+        
+        return jsonify({"message": "success! Preprocessing triggered."})
+
+    elif hasattr(request, "repo_id"):
+        filename = secure_filename(f"{new_entry.id}_{new_entry.repo_file_id}") #### TODO TODO TODO
+        file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
+        current_user.launch_task(
+            current_app.queues["short"], # TODO which queue to take
+            "download_dataset_file",
+            "run dataset download from repo",
+            new_entry.id
+        )
+        db.session.commit()
+        return jsonify({"message": "success! File is being downloaded."})
+    else:
+        return jsonify({"message": "failed! Form is not valid?"}) # TODO is this sane?
+    
 
 @api.route("/datasets/", methods=["POST"])
 @auth.login_required
@@ -57,7 +130,7 @@ def add_dataset():
         return invalid("Form is not valid!")
     # get data from form
     try:
-        data = DatasetPostModel(**request.form, filename=request.files["file"].filename)
+        data = FileDatasetPostModel(**request.form, filename=request.files["file"].filename)
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
 
@@ -80,7 +153,7 @@ def add_dataset():
     
     # download file either from user or external repo
     # TODO this doesnt work yet
-    if len(request.files) > 0:
+    if len(request.files) > 0:  # TODO  add functionality for gzip compressed files
         # save file in upload directory with database_id as prefix
         file_object = request.files["file"]
         filename = f"{new_entry.id}_{secure_filename(file_object.filename)}"
@@ -99,9 +172,11 @@ def add_dataset():
         return jsonify({"message": "success! Preprocessing triggered."})
 
     elif hasattr(request, "repo_id"):
+        filename = secure_filename(f"{new_entry.id}_{new_entry.repo_file_id}") #### TODO TODO TODO
+        file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
         current_user.launch_task(
             current_app.queues["short"], # TODO which queue to take
-            "download_dataset",
+            "download_dataset_file",
             "run dataset download from repo",
             new_entry.id
         )
@@ -656,3 +731,4 @@ def create_region_from_cluster_id(entry_id, cluster_id):
     db.session.commit()
     # return success
     return jsonify({"message": "success! Region subset"})
+

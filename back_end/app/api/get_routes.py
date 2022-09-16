@@ -2,6 +2,7 @@
 import json
 import gzip
 import pandas as pd
+import requests
 import numpy as np
 from flask import g, make_response
 from flask.json import jsonify
@@ -15,6 +16,7 @@ from . import api
 from .. import db
 from ..models import (
     BedFileMetadata,
+    DataRepository,
     Intervals,
     Dataset,
     AverageIntervalData,
@@ -125,6 +127,8 @@ def get_datasets(dtype):
 @api.route("/datasets/<dataset_id>/name/", methods=["GET"])
 @auth.login_required
 def get_name_of_dataset(dataset_id):
+    g.current_user.available_datasets[dataset_id]
+    
     """Returns the name for a given dataset, if the user owns the requested dataset."""
     dataset = Dataset.query.get(dataset_id)
     # check whether dataset exists
@@ -583,3 +587,46 @@ def get_all_collections():
     ).all()
     update_processing_state(all_available_collections, db)
     return jsonify([dfile.to_json() for dfile in all_available_collections])
+
+
+# TODO sprint9 make get route repositories
+@api.route("/repositories/", methods=["GET"])
+@auth.login_required
+def get_all_repositories(): 
+    """Gets all repos in the db for file downloads"""
+    repositories = db.session.query(DataRepository).all()
+    return jsonify({repo.name: repo.to_json() for repo in repositories}) # TODO this is not so good i think?
+
+
+# ULRICH wanted to do this in js, but got CORS errors all the time (obviously)
+# TODO add tests
+@api.route("/ENCODE/<repo_name>/<sample_id>/", methods=["GET"])
+@auth.login_required
+def get_ENCODE_metadata(repo_name: str, sample_id: str):
+    """fetches metadata from an ENCODE repository about a file
+    to auto-fill form when user wants import from it
+    """
+    import time
+    
+    repository = db.session.query(DataRepository).filter_by(name=repo_name).first()
+    if repository is None:
+        return invalid(f'ENCODE repository {repo_name} currently not available.')
+    
+    url = repository.build_url(sample_id)
+    metadata = requests.get(url, headers={'Accept': 'application/json'}, stream=True) 
+    
+    if metadata.status_code == 404:
+        # TODO this should be a 404, but vue throws alert notification then. 
+        # however, this should be handled in every call on its own.
+        # 
+        # return not_found(f'Sample {sample_id} not found.')
+        response = make_response()
+        response.headers['mimetype'] = 'application/json'
+        return make_response()
+    elif metadata.status_code != 200:
+        metadata.raise_for_status() # FIXME this is bad
+        
+    response = make_response(metadata.content)
+    response.headers['mimetype'] = 'application/json'
+    return response
+
