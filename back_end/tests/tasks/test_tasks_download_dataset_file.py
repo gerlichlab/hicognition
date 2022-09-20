@@ -39,7 +39,6 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         # make repos
         # repo1: empty repo (takes urls)
         self.repo1 = DataRepository( # do we even need that? if no repo specified use none
-            id = 1,
             name = "4DN",
             url = "https://data.4dnucleome.org/files-processed/{id}/@@download", # TODO bed gz evil
             auth_required = True
@@ -49,40 +48,40 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         # make repo_user_credentials
         # user1_4dn
         self.user1_4dn_cred = User_DataRepository_Credentials(
-            user_id = 1,
+            user_id = "4DN",
             repository_id = 1,
             key='23MPZ4TF',
             secret='exa7hrtx53tjmusq' # TODO remove before upload?!
         )
         
         # make datasets for these test cases:
-        self.dataset = Dataset(
+        self.dataset_repo = Dataset(
             dataset_name="ds",
             filetype="bedfile",
             processing_state='uploading',
             user_id=1,
             assembly=1,
             sizeType="Point",
-            repo_id = 1,
-            repo_file_id = '4DNFIRCHWS8M'
+            repository_name = '4DN',
+            sample_id = '4DNFIRCHWS8M'
         )
-        self.dataset_no_auth = Dataset(
+        self.dataset_url = Dataset(
             dataset_name="ds",
             filetype="bedfile",
             processing_state='uploading',
             user_id=1,
             assembly=1,
             sizeType="Point",
-            source_url='https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE202471&format=file&file=GSE202471_MergeRetina2_Domain_Call_TADs_10kb%2Ebed%2Egz'
+            source_url='valid_url.at/bed.bed.gz'
         )
-        self.dataset_missing_auth = Dataset(
+        self.dataset_bad_url = Dataset(
             dataset_name="ds",
             filetype="bedfile",
             processing_state='uploading',
             user_id=1,
             assembly=1,
             sizeType="Point",
-            source_url='https://data.4dnucleome.org/files-processed/4DNFIRCHWS8M/@@download'
+            source_url='thisisnotaurl'
         )
         self.dataset_bed_gz = Dataset(
             dataset_name="ds",
@@ -91,18 +90,8 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
             user_id=1,
             assembly=1,
             sizeType="Point",
-            source_url='https://data.4dnucleome.org/files-processed/4DNFIRCHWS8M/@@download'
+            source_url=''
         )
-        self.dataset_bad_url = Dataset(
-            dataset_name="ds",
-            file_path=os.path.join(TempDirTestCase.TEMP_PATH, 'testfile.bed'),
-            filetype="bedfile",
-            processing_state='uploading',
-            user_id=1,
-            assembly=1,
-            sizeType="Point",
-            source_url='https://this.is.a.bad.url'
-        )        
         self.dataset_bad_id_4dn = Dataset(
             dataset_name="ds",
             filetype="bedfile",
@@ -116,30 +105,31 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
 
         db.session.add(self.user)
         db.session.add(self.dataset)
-        db.session.add(self.dataset_no_auth)
         db.session.add(self.dataset_bad_id_4dn)
         db.session.add(self.dataset_bed_gz)
         db.session.add(self.dataset_bad_url)
-        db.session.add(self.dataset_missing_auth)
+        db.session.add(self.dataset_url)
         db.session.add(self.user1_4dn_cred)
         db.session.add(self.repo1)
         db.session.commit()
         
-        # dataset w/o authentication needed 
-        # dataset w/ authentication needed from 4dn
-        # dataset w/ authentication needed from 4dn, auth fail
-        # dataset w/ malformed bed file
-        # dataset w/ malformed mcooler file
-        # dataset w/ malformed cooler file
-        # dataset w/ malformed bigwig file
-        # dataset w/ wrong url/id
-        # dataset w/ no internet connection (e.g. if server is in intranet)
         
-    # TODO learn when to use patch @ decorator
-    # TODO test_helpers.py should remove tmp_test if exists
-
-
-    def test_download_wo_authentication(self):
+    @patch('app.api.get_routes.get_ENCODE_metadata')
+    @patch('app.file_handler.download_file')
+    def test_download_wo_authentication(self, mock_encode_metadata, mock_json_content):
+        mock_encode_metadata = str({
+            'status': 'ok',
+            'json': {
+                'open_data_url': 'thisisurl',
+                'href': 'thisisurl',
+                'md5sum': '0934773585cd8b75960444d97cc3d41e',
+                'display_title': '4DNFIRCHWS8M.bed.gz'
+            }
+        })
+        file_name = '4DNFIRCHWS8M.bed.gz'
+        with open('4DNFIRCHWS8M.bed.gz', 'rb') as bedgz_file:
+            content = bedgz_file.read()
+        mock_json_content = (file_name, content)
         http_status = download_dataset_file(self.dataset_no_auth.id, TempDirTestCase.TEMP_PATH)
         
         self.assertEqual(True, http_status)

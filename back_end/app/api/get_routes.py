@@ -8,6 +8,7 @@ import numpy as np
 from flask import g, make_response
 from flask.json import jsonify
 from flask.globals import current_app
+from ..download_functions import download_ENCODE_metadata
 from hicognition import data_structures
 from hicognition.utils import (
     update_processing_state,
@@ -612,30 +613,5 @@ def get_ENCODE_metadata(repo_name: str, sample_id: str):
     if repository is None:
         return invalid(f'ENCODE repository {repo_name} currently not available.')
     
-    #repository.get_metadata(sample_id)
-    
-    # auth = None
-    # if repository.auth_required:
-    #     credentials = g.current_user.credentials.filter(User_DataRepository_Credentials.repository_name == repository.name).first()
-    #     if not credentials:
-    #         return invalid(
-    #         f'Repository requires you to have an API key. Check the API keys you are using'
-    #     )
-    #     auth = HTTPBasicAuth(credentials.key, credentials.secret)
-    
-    url = repository.build_url(sample_id)
-    metadata = requests.get(url, headers={'Accept': 'application/json'})#, auth=auth) 
-    
-    if metadata.status_code == 404:
-        return jsonify({"status": "sample_not_found"})
-    elif metadata.status_code == 403:
-        return jsonify({"status": "api_credentials_wrong"})
-    elif metadata.status_code != 200:
-        metadata.raise_for_status() # FIXME this is bad
-    # else    
-    
-    metadata_json = json.loads(metadata.content)
-    response_json = {'status': 'ok'}
-    response_json['json'] = metadata_json
-    return jsonify(response_json)
+    return jsonify(download_ENCODE_metadata(repository.build_url(sample_id)))
 

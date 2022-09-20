@@ -1,4 +1,5 @@
 """Tasks for the redis-queue"""
+import hashlib
 import os
 import logging
 from flask import current_app
@@ -13,9 +14,7 @@ from . import create_app, db
 from .models import Assembly, Dataset, IndividualIntervalData, Collection, User, DataRepository, User_DataRepository_Credentials
 from . import pipeline_steps
 from .notifications import NotificationHandler
-from . import file_handler
-#from api import get_routes
-from api.get_routes import get_ENCODE_metadata
+from .download_functions import download_ENCODE_metadata, download_file
 
 # get logger
 log = logging.getLogger("rq.worker")
@@ -149,7 +148,7 @@ def download_dataset_file(dataset_id, delete_if_invalid=False): # TODO file_path
     ds = db.session.query(Dataset).get(dataset_id)
     log.info(f'Starting download routine for dataset {ds.id}')
     # if download is from known repository, build URL
-    metadata = get_ENCODE_metadata(ds.repository.name, ds.sample_id)
+    metadata = download_ENCODE_metadata(ds.repository.name, ds.sample_id)
     metadata = json.loads(metadata)
     
     if metadata['status'] == 'sample_not_found':
@@ -161,17 +160,26 @@ def download_dataset_file(dataset_id, delete_if_invalid=False): # TODO file_path
     
     if metadata['json'].get('open_data_url'):
         ds.source_url = metadata['json']['open_data_url']
-    else:
+    elif metadata['json'].get('href'):
         ds.source_url = metadata['json']['href']
-        
-    md5 = metadata['json']['md5sum']
+    else:
+        log.info(f'      Could not find URL in json.')
+        return # TODO notification, task process status
 
     # download file and put into variable content
     try:
-        file_name, content = file_handler.download_file(ds.source_url)
+        file_name, content = download_file(ds.source_url)
     except requests.HTTPError as err:
         log.info(f"       HTTP Error: {err}")
         ds.processing_status = "file not found"
+        ds.file_path = ""
+        db.session.commit()
+        return
+    
+    md5 = metadata['json']['md5sum']
+    if hashlib.md5(content) != md5:
+        log.info(f'      md5 checksum and md5(file content) not equal')
+        ds.processing_status = "checksum failed"
         ds.file_path = ""
         db.session.commit()
         return
@@ -187,7 +195,13 @@ def download_dataset_file(dataset_id, delete_if_invalid=False): # TODO file_path
     ds.file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
 
     # save file
-    file_handler.save_file(ds.file_path, content, overwrite=False)
+    if os.path.exists(ds.file_path):
+        log.info(f'      File at {ds.file_path} already exists')
+        return # TODO notification, task process status
+    
+    with open(ds.file_path, 'wb') as f_out:
+        f_out.write(content)
+        
     ds.processing_state = "uploaded"
     db.session.commit()
 
@@ -201,6 +215,3 @@ def download_dataset_file(dataset_id, delete_if_invalid=False): # TODO file_path
     db.session.commit()
     pipeline_steps.set_task_progress(100)
     log.info("      Success.")
-
-def handle_new_file():
-    pass

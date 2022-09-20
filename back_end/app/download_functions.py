@@ -2,34 +2,23 @@
 TODO docstring
 """
 
-from http.client import HTTPException
 import os
 import logging
-from flask import current_app
-from matplotlib.pyplot import switch_backend
+from itsdangerous import json
 from werkzeug.utils import secure_filename
 import pandas as pd
 import requests
 import re
+import hashlib
 import gzip
-from hicognition import io_helpers
-from . import create_app, db
-from .models import Assembly, Dataset, IndividualIntervalData, Collection, User, DataRepository, User_DataRepository_Credentials
-from . import pipeline_steps, file_handler
-from .notifications import NotificationHandler
+from . import db
+from .models import (
+    DataRepository
+)
 
 
 # get logger
 log = logging.getLogger("rq.worker")
-
-# setup app context
-
-app = create_app(os.getenv("FLASK_CONFIG") or "default")
-app.app_context().push()
-
-# set up notification handler
-
-notifcation_handler = NotificationHandler()
 
 # set basedir
 
@@ -62,11 +51,19 @@ def download_file(url: str, auth: tuple = None):
     log.info(f'      Response status: {response.status_code}')
     return filename, response.content
 
+
+def download_ENCODE_metadata(url, auth: tuple = None):
+    metadata = requests.get(url, headers={'Accept': 'application/json'}, auth=auth)
     
-def save_file(file_path: str, content, overwrite=False):
-    """saves a file to file_path"""
-    if not overwrite and os.path.exists(file_path):
-        raise FileExistsError(f'File at {file_path} already exists and overwrite is {overwrite}')
+    if metadata.status_code == 404:
+        return {"status": "error", "http_status_code": 404, "message": "sample_not_found"}
+    elif metadata.status_code == 403:
+        return {"status": "error", "http_status_code": 403, "message": "api_credentials_wrong"}
+    elif metadata.status_code > 200:
+        return {"status": "error", "http_status_code": metadata.status_code,  "message": f"HTTP Error code: {metadata.status_code}"}
+        #metadata.raise_for_status() # FIXME this is bad
     
-    with open(file_path, 'wb') as f_out:
-        f_out.write(content)
+    metadata_json = json.loads(metadata.content)
+    response_json = {'status': "ok", "http_status_code": 200}
+    response_json['json'] = metadata_json
+    return response_json

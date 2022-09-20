@@ -34,13 +34,10 @@ from .errors import forbidden, invalid, not_found
 @auth.login_required
 def add_dataset_from_ENCODE():
     """ """ # TODO docs
-    user = g.current_user
     def is_form_valid():
         valid = True
         valid = valid and hasattr(request, "form")
         valid = valid and not hasattr(request, "files")
-        valid = valid and request.form.get('repository_name') is not None
-        valid = valid and request.form.get('sample_id') is not None
         return valid
     
     if not is_form_valid():
@@ -63,45 +60,20 @@ def add_dataset_from_ENCODE():
         public=set_public,
         processing_state="uploading",
         filetype=data.filetype,
-        user_id=current_user.id,
+        user_id=g.current_user.id,
     )
     new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
     db.session.commit()
-    
-    # download file either from user or external repo
-    # TODO this doesnt work yet
-    if len(request.files) > 0:  # TODO  add functionality for gzip compressed files
-        # save file in upload directory with database_id as prefix
-        file_object = request.files["file"]
-        filename = f"{new_entry.id}_{secure_filename(file_object.filename)}"
-        file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
-        file_object.save(file_path)
-        new_entry.file_path = file_path
-        new_entry.processing_state = "uploaded" #  TODO status only used for tests?
 
-        # validate dataset and delete if not valid
-        if not new_entry.validate_dataset(delete=True):
-            return invalid("Wrong dataformat or wrong chromosome names!")
-
-        new_entry.preprocess_dataset()
-        db.session.commit()
-        
-        return jsonify({"message": "success! Preprocessing triggered."})
-
-    elif hasattr(request, "repo_id"):
-        filename = secure_filename(f"{new_entry.id}_{new_entry.repo_file_id}") #### TODO TODO TODO
-        file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
-        g.current_user.launch_task(
-            current_app.queues["short"], # TODO which queue to take
-            "download_dataset_file",
-            "run dataset download from repo",
-            new_entry.id
-        )
-        db.session.commit()
-        return jsonify({"message": "success! File is being downloaded."})
-    else:
-        return jsonify({"message": "failed! Form is not valid?"}) # TODO is this sane?
+    g.current_user.launch_task(
+        current_app.queues["short"], # TODO which queue to take
+        "download_dataset_file",
+        "run dataset download from repo",
+        new_entry.id
+    )
+    db.session.commit()
+    return jsonify({"message": "success! File is being downloaded."})
     
 
 @api.route("/datasets/", methods=["POST"])
@@ -110,19 +82,10 @@ def add_dataset():
     """endpoint to add a new dataset"""
 
     def is_form_invalid():
-        if not hasattr(request, "form"):
-            return True
-        # check whether user provided file xor a repository and a ref_id to the data, both not valid.
-        # TODO put this into format checker?
-        # TODO would write as 'is_form_valid'
-        has_no_files = len(request.files) == 0
-        has_no_repo_id = request.form.get('repo_id') is not None
-        has_no_data_id = request.form.get('repo_ref') is not None
-
-        if has_no_files ^ (has_no_repo_id & has_no_data_id): # xor
-            return True
-
-        return False
+        invalid = False
+        invalid = invalid or not hasattr(request, "form")
+        invalid = invalid or len(request.files) == 0
+        return invalid
 
     current_user = g.current_user
     # check form
@@ -151,39 +114,21 @@ def add_dataset():
     db.session.add(new_entry)
     db.session.commit()
     
-    # download file either from user or external repo
     # TODO this doesnt work yet
-    if len(request.files) > 0:  # TODO  add functionality for gzip compressed files
-        # save file in upload directory with database_id as prefix
-        file_object = request.files["file"]
-        filename = f"{new_entry.id}_{secure_filename(file_object.filename)}"
-        file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
-        file_object.save(file_path)
-        new_entry.file_path = file_path
-        new_entry.processing_state = "uploaded" #  TODO status only used for tests?
+    # save file in upload directory with database_id as prefix
+    file_object = request.files["file"]
+    filename = f"{new_entry.id}_{secure_filename(file_object.filename)}"
+    file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
+    file_object.save(file_path)
+    new_entry.file_path = file_path
+    new_entry.processing_state = "uploaded" #  TODO status only used for tests?
 
-        # validate dataset and delete if not valid
-        if not new_entry.validate_dataset(delete=True):
-            return invalid("Wrong dataformat or wrong chromosome names!")
+    # validate dataset and delete if not valid
+    if not new_entry.validate_dataset(delete=True):
+        return invalid("Wrong dataformat or wrong chromosome names!")
 
-        new_entry.preprocess_dataset()
-        db.session.commit()
-        
-        return jsonify({"message": "success! Preprocessing triggered."})
-
-    elif hasattr(request, "repo_id"):
-        filename = secure_filename(f"{new_entry.id}_{new_entry.repo_file_id}") #### TODO TODO TODO
-        file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
-        current_user.launch_task(
-            current_app.queues["short"], # TODO which queue to take
-            "download_dataset_file",
-            "run dataset download from repo",
-            new_entry.id
-        )
-        db.session.commit()
-        return jsonify({"message": "success! File is being downloaded."})
-    else:
-        return jsonify({"message": "failed! Form is not valid?"}) # TODO is this sane?
+    new_entry.preprocess_dataset()
+    db.session.commit()
 
     
 
