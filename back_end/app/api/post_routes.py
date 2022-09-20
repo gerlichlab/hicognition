@@ -24,7 +24,7 @@ from ..models import (
     EmbeddingIntervalData,
 )
 from ..form_models import (
-    DatasetPostModel, FileDatasetPostModel
+    DatasetPostModel, FileDatasetPostModel, URLDatasetPostModel, ENCODEDatasetPostModel
 )
 from .authentication import auth
 from .. import pipeline_steps
@@ -38,7 +38,7 @@ def add_dataset_from_ENCODE():
     def is_form_valid():
         valid = True
         valid = valid and hasattr(request, "form")
-        valid = valid and request.files == []
+        valid = valid and not hasattr(request, "files")
         valid = valid and request.form.get('repository_name') is not None
         valid = valid and request.form.get('sample_id') is not None
         return valid
@@ -48,10 +48,10 @@ def add_dataset_from_ENCODE():
     
     # get data from form
     try:
-        data = DatasetPostModel(**request.form)
+        data = ENCODEDatasetPostModel(**request.form)
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
-
+    
     # check whether description is there
     description = parse_description(data)
     # check whether dataset should be public
@@ -92,7 +92,7 @@ def add_dataset_from_ENCODE():
     elif hasattr(request, "repo_id"):
         filename = secure_filename(f"{new_entry.id}_{new_entry.repo_file_id}") #### TODO TODO TODO
         file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
-        current_user.launch_task(
+        g.current_user.launch_task(
             current_app.queues["short"], # TODO which queue to take
             "download_dataset_file",
             "run dataset download from repo",
@@ -115,7 +115,7 @@ def add_dataset():
         # check whether user provided file xor a repository and a ref_id to the data, both not valid.
         # TODO put this into format checker?
         # TODO would write as 'is_form_valid'
-        has_no_files = request.files == []
+        has_no_files = len(request.files) == 0
         has_no_repo_id = request.form.get('repo_id') is not None
         has_no_data_id = request.form.get('repo_ref') is not None
 

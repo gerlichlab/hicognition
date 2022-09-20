@@ -1,5 +1,6 @@
 """Pydantic models to validate integrity of Forms for the HiCognition API."""
-from pydantic import BaseModel, Field, validator, constr
+from pydantic import BaseModel, Field, validator, constr, AnyUrl
+
 from flask import current_app
 
 
@@ -22,12 +23,8 @@ class DatasetPostModel(BaseModel):
     user_id: int = None
     processing_state: constr(max_length=64) = None
     filetype: constr(max_length=64)
-    filename: constr(max_length=200)
     value_type: constr(max_length=64) = Field(..., alias="ValueType")
-    source_url: constr(max_length=512) = Field(alias="SourceURL")
-    sample_id: constr(max_length=128) = Field(alias="sampleID")
-    repository_name: constr(max_length=64) = Field(alias="RepositoryName")
-    file_type: str # TODO
+        
 
     @classmethod
     def get_reverse_alias(cls, key):
@@ -42,9 +39,9 @@ class DatasetPostModel(BaseModel):
             "Protein": "protein",
             "cellCycleStage": "cell_cycle_stage",
             "ValueType": "value_type",
-            "SampleID": "sample_id",
-            "RepositoryName": "repository_name",
-            "SourceURL": "source_url"
+            "sampleID": "sample_id",
+            "repositoryID": "repository_id",
+            "sourceURL": "source_url"
         }
         return alias_table[key]
 
@@ -92,7 +89,9 @@ class DatasetPostModel(BaseModel):
         if description == "null":
             description = "No description provided"
         return description
-
+    
+    # TODO maybe add another for file type?
+    
     def __getitem__(self, item):
         if hasattr(self, item):
             return getattr(self, item)
@@ -103,6 +102,7 @@ class DatasetPostModel(BaseModel):
 
 class FileDatasetPostModel(DatasetPostModel):
     """model of dataset with file"""
+    filename: constr(max_length=200)
     
     @validator("filename")
     def file_has_correct_ending_and_supported_filetype(cls, filename, values, **kwargs):
@@ -120,3 +120,28 @@ class FileDatasetPostModel(DatasetPostModel):
                 f'Invalid filename! For the filetype: {values["filetype"]} we found the file ending: {file_ending}. Supported for this filetype are: {supported_file_endings[values["filetype"]]}.'
             )
         return filename
+    
+class URLDatasetPostModel(DatasetPostModel):
+    """model of dataset with an URL"""
+    source_url: AnyUrl = Field(alias="sourceURL")
+    
+    @validator("source_url")
+    def source_url_is_valid(cls, source_url, values, **kwargs):
+        """Checks is the file has the appropriate file ending."""
+        return source_url
+    
+        
+class ENCODEDatasetPostModel(DatasetPostModel):
+    """model of dataset with an URL"""
+    sample_id: constr(max_length=128) = Field(alias="sampleID")
+    repository_id: constr(max_length=64) = Field(alias="repositoryID")
+    
+    # @validator("sample_id")
+    # def sample_id_exists(cls, sample_id):
+    #     return sample_id # TODO
+    
+    # @validator("repository_id")
+    # def repository_id_exists(cls, repository_id):
+    #     return repository_id # TODO
+    
+    

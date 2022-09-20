@@ -7,12 +7,15 @@ from werkzeug.utils import secure_filename
 import pandas as pd
 import requests
 import gzip
+import json
 from hicognition import io_helpers
 from . import create_app, db
 from .models import Assembly, Dataset, IndividualIntervalData, Collection, User, DataRepository, User_DataRepository_Credentials
 from . import pipeline_steps
 from .notifications import NotificationHandler
 from . import file_handler
+#from api import get_routes
+from api.get_routes import get_ENCODE_metadata
 
 # get logger
 log = logging.getLogger("rq.worker")
@@ -134,7 +137,7 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
         pipeline_steps.set_collection_failed(collection_id, intervals_id)
         log.error(err, exc_info=True)
 
-def download_dataset_file(dataset_id, file_dir, delete_if_invalid=False): # TODO file_path should not be here. You should define a temp file path for stuff that might get deleted or gunzipped
+def download_dataset_file(dataset_id, delete_if_invalid=False): # TODO file_path should not be here. You should define a temp file path for stuff that might get deleted or gunzipped
     """
     Downloads dataset file from web and validates + 'preprocesses' it.
     ua
@@ -146,29 +149,42 @@ def download_dataset_file(dataset_id, file_dir, delete_if_invalid=False): # TODO
     ds = db.session.query(Dataset).get(dataset_id)
     log.info(f'Starting download routine for dataset {ds.id}')
     # if download is from known repository, build URL
-    if ds.repo_id and ds.repo_file_id:
-        # build source url
-        ds.source_url = ds.repository.build_url(ds.repo_file_id)
+    metadata = get_ENCODE_metadata(ds.repository.name, ds.sample_id)
+    metadata = json.loads(metadata)
     
-    # check credentials
-    auth_tuple = None
-    if ds.repository and ds.repository.auth_required:
-        cred = db.session.query(User_DataRepository_Credentials).get(
-            {"user_id": ds.user_id, "repository_id": ds.repo_id})
-        if cred:
-            auth_tuple = (cred.key, cred.secret)
+    if metadata['status'] == 'sample_not_found':
+        log.info(f'      Sample does not exist.')
+        return
+    if metadata['status'] == 'api_credentials_wrong':
+        log.info(f'      API credentials invalid.')
+        return
+    
+    if metadata['json'].get('open_data_url'):
+        ds.source_url = metadata['json']['open_data_url']
+    else:
+        ds.source_url = metadata['json']['href']
+        
+    md5 = metadata['json']['md5sum']
 
     # download file and put into variable content
-    file_name, content = file_handler.download_file(ds.source_url, auth_tuple)
+    try:
+        file_name, content = file_handler.download_file(ds.source_url)
+    except requests.HTTPError as err:
+        log.info(f"       HTTP Error: {err}")
+        ds.processing_status = "file not found"
+        ds.file_path = ""
+        db.session.commit()
+        return
+
     if not file_name:
-        file_name = secure_filename(f'{ds.user.id}_{ds.id}') # TODO fileext!!!
+        file_name = secure_filename(f"{ds.user.id}_{metadata['json']['display_title']}") # contains file_name with ext
 
     # check if compressed and decompress
     if file_name.lower().endswith('.gz'):
         content = gzip.decompress(content)
         file_name = file_name[:-3] # strip the gz
 
-    ds.file_path = os.path.join(file_dir, secure_filename(f'{ds.id}_{file_name}'))
+    ds.file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
 
     # save file
     file_handler.save_file(ds.file_path, content, overwrite=False)
@@ -185,7 +201,6 @@ def download_dataset_file(dataset_id, file_dir, delete_if_invalid=False): # TODO
     db.session.commit()
     pipeline_steps.set_task_progress(100)
     log.info("      Success.")
-    return True
 
 def handle_new_file():
     pass

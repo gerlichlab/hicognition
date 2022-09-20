@@ -3,6 +3,7 @@ import json
 import gzip
 import pandas as pd
 import requests
+from requests.auth import HTTPBasicAuth
 import numpy as np
 from flask import g, make_response
 from flask.json import jsonify
@@ -26,6 +27,7 @@ from ..models import (
     Session,
     Collection,
     Organism,
+    User_DataRepository_Credentials
 )
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
@@ -606,27 +608,34 @@ def get_ENCODE_metadata(repo_name: str, sample_id: str):
     """fetches metadata from an ENCODE repository about a file
     to auto-fill form when user wants import from it
     """
-    import time
-    
-    repository = db.session.query(DataRepository).filter_by(name=repo_name).first()
+    repository = db.session.query(DataRepository).get(repo_name)
     if repository is None:
         return invalid(f'ENCODE repository {repo_name} currently not available.')
     
+    #repository.get_metadata(sample_id)
+    
+    # auth = None
+    # if repository.auth_required:
+    #     credentials = g.current_user.credentials.filter(User_DataRepository_Credentials.repository_name == repository.name).first()
+    #     if not credentials:
+    #         return invalid(
+    #         f'Repository requires you to have an API key. Check the API keys you are using'
+    #     )
+    #     auth = HTTPBasicAuth(credentials.key, credentials.secret)
+    
     url = repository.build_url(sample_id)
-    metadata = requests.get(url, headers={'Accept': 'application/json'}, stream=True) 
+    metadata = requests.get(url, headers={'Accept': 'application/json'})#, auth=auth) 
     
     if metadata.status_code == 404:
-        # TODO this should be a 404, but vue throws alert notification then. 
-        # however, this should be handled in every call on its own.
-        # 
-        # return not_found(f'Sample {sample_id} not found.')
-        response = make_response()
-        response.headers['mimetype'] = 'application/json'
-        return make_response()
+        return jsonify({"status": "sample_not_found"})
+    elif metadata.status_code == 403:
+        return jsonify({"status": "api_credentials_wrong"})
     elif metadata.status_code != 200:
         metadata.raise_for_status() # FIXME this is bad
-        
-    response = make_response(metadata.content)
-    response.headers['mimetype'] = 'application/json'
-    return response
+    # else    
+    
+    metadata_json = json.loads(metadata.content)
+    response_json = {'status': 'ok'}
+    response_json['json'] = metadata_json
+    return jsonify(response_json)
 

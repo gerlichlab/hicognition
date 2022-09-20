@@ -204,7 +204,7 @@ class DataRepository(db.Model):
             d[c.name] = str(getattr(self, c.name))
         return d
 
-class User_DataRepository_Credentials(db.Model):
+class User_DataRepository_Credentials(db.Model): # TODO change name
     """Optional many-to-many object to store user keys for external repos"""
 
     # fields

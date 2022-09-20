@@ -33,7 +33,7 @@ notifcation_handler = NotificationHandler()
 
 # set basedir
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.abspath(os.path.dirname(__file__)) # TODO test me
 
 def download_file(url: str, auth: tuple = None):
     """
@@ -45,10 +45,17 @@ def download_file(url: str, auth: tuple = None):
     # Raise error if one occurred
     response.raise_for_status()
 
+    if response.content is None or response.content == '':
+        raise requests.HTTPError("200: File was empty")
+
     if 'Content-Disposition' in response.headers.keys():
-        filename = re.findall("filename=(.+)", 
-            response.headers['Content-Disposition'])[0].split(';')[0]
-        filename = secure_filename(filename)
+        try:
+            filename = re.findall("filename=(.+)", 
+                response.headers['Content-Disposition'])[0].split(';')[0]
+            filename = secure_filename(filename)
+        except IndexError as err:
+            log.info('      File name in content-disposition header was not found.')
+            filename = None
     else:
         filename = None
 
