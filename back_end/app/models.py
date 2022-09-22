@@ -114,9 +114,18 @@ class User(db.Model, UserMixin):
 
     def launch_task(self, queue, name, description, dataset_id, *args, **kwargs):
         """adds task to queue"""
-        rq_job = queue.enqueue(
-            "app.tasks." + name, dataset_id, job_timeout="10h", *args, **kwargs
-        )
+        if isinstance(name, str):
+            rq_job = queue.enqueue(
+                "app.tasks." + name, dataset_id, job_timeout="10h", *args, **kwargs
+            )
+        elif callable(name):
+            rq_job = queue.enqueue(
+                name, dataset_id, job_timeout="10h", *args, **kwargs
+            )
+            name = name.__name__ # TODO hahaha this is bs
+        # rq_job = queue.enqueue(
+        #     "app.tasks." + name, dataset_id, job_timeout="10h", *args, **kwargs
+        # )
         # check whether intervals_id is in kwargs
         if "intervals_id" in kwargs:
             intervals_id = kwargs["intervals_id"]
@@ -132,7 +141,7 @@ class User(db.Model, UserMixin):
         )
         db.session.add(task)
         return task
-
+    
     def launch_collection_task(
         self, queue, name, description, collection_id, *args, **kwargs
     ):
@@ -576,7 +585,7 @@ class Dataset(db.Model):
                 missing_windowsizes.append(target_windowsize)
         return missing_windowsizes
 
-    def validate_dataset(self, delete=False):
+    def validate_dataset(self, delete=False): # FIXME -> delete should be outside
         # uli: i have put this in models.py, as a dataset should validate itself
         # TODO add file_type column to dataset
         # TODO remove app config somehow?
@@ -599,18 +608,19 @@ class Dataset(db.Model):
         return valid
             
 
-    def preprocess_dataset(self):
+    def preprocess_dataset(self, invoke_redis_task = False):
         # datasets should preprocess themselves
 
         # start preprocessing of bedfile, the other filetypes do not need preprocessing
         if self.filetype == "bedfile":
-            self.user.launch_task( #  TODO current user or dataset owner user?
-                current_app.queues["short"],
-                "pipeline_bed",
-                "run bed preprocessing",
-                self.id,
-            )
-            self.processing_state = "processing"
+            if invoke_redis_task:
+                self.user.launch_task( #  TODO current user or dataset owner user?
+                    current_app.queues["short"],
+                    "pipeline_bed",
+                    "run bed preprocessing",
+                    self.id,
+                )
+                self.processing_state = "processing"
 
         # if filetype is cooler, store available binsizes
         if self.filetype == "cooler":

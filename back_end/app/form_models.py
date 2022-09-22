@@ -40,7 +40,7 @@ class DatasetPostModel(BaseModel):
             "cellCycleStage": "cell_cycle_stage",
             "ValueType": "value_type",
             "sampleID": "sample_id",
-            "repositoryID": "repository_id",
+            "repositoryName": "repository_name",
             "sourceURL": "source_url"
         }
         return alias_table[key]
@@ -134,7 +134,7 @@ class URLDatasetPostModel(DatasetPostModel):
 class ENCODEDatasetPostModel(DatasetPostModel):
     """model of dataset with an URL"""
     sample_id: constr(max_length=128) = Field(alias="sampleID")
-    repository_id: constr(max_length=64) = Field(alias="repositoryID")
+    repository_name: constr(max_length=64) = Field(alias="repositoryName")
     
     # @validator("sample_id")
     # def sample_id_exists(cls, sample_id):

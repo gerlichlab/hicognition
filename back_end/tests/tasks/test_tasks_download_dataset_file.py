@@ -47,12 +47,12 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         
         # make repo_user_credentials
         # user1_4dn
-        self.user1_4dn_cred = User_DataRepository_Credentials(
-            user_id = "4DN",
-            repository_id = 1,
-            key='23MPZ4TF',
-            secret='exa7hrtx53tjmusq' # TODO remove before upload?!
-        )
+        # self.user1_4dn_cred = User_DataRepository_Credentials(
+        #     user_id = "4DN",
+        #     repository_id = 1,
+        #     key='23MPZ4TF',
+        #     secret='exa7hrtx53tjmusq' # TODO remove before upload?!
+        # )
         
         # make datasets for these test cases:
         self.dataset_repo = Dataset(
@@ -99,8 +99,8 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
             user_id=1,
             assembly=1,
             sizeType="Point",
-            repo_id=1,
-            repo_file_id="THISISNOTANID"
+            repository_name=1,
+            sample_id="THISISNOTANID"
         )
 
         db.session.add(self.user)

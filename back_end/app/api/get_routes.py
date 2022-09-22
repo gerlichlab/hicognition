@@ -1,6 +1,7 @@
 """GET API endpoints for hicognition"""
 import json
 import gzip
+from urllib.error import HTTPError
 import pandas as pd
 import requests
 from requests.auth import HTTPBasicAuth
@@ -8,7 +9,7 @@ import numpy as np
 from flask import g, make_response
 from flask.json import jsonify
 from flask.globals import current_app
-from ..download_functions import download_ENCODE_metadata
+from .. import download_utils
 from hicognition import data_structures
 from hicognition.utils import (
     update_processing_state,
@@ -611,7 +612,29 @@ def get_ENCODE_metadata(repo_name: str, sample_id: str):
     """
     repository = db.session.query(DataRepository).get(repo_name)
     if repository is None:
-        return invalid(f'ENCODE repository {repo_name} currently not available.')
+        return jsonify({'status': 'error',
+                        'http_status_code': 404,
+                        'message': f'ENCODE repository {repo_name} not in our database.'})
     
-    return jsonify(download_ENCODE_metadata(repository.build_url(sample_id)))
+    # TODO EXCEPTION HANDLING
+    try:
+        data = download_utils.download_ENCODE_metadata(repository.build_url(sample_id))
+    except requests.HTTPError as err:
+        return jsonify({
+            'status': 'error',
+            'http_status_code': err.response.status_code,
+            'message': err.response.text
+        })
+    except requests.RequestException as err:
+        return jsonify({
+            'status': 'error',
+            'http_status_code': 400,
+            'message': str(err)
+        })
+        
+    return jsonify({
+        'status': 'ok',
+        'http_status_code': 200,
+        'json': data
+    })
 

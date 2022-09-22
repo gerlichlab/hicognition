@@ -5,6 +5,8 @@ import json
 import unittest
 import time
 from unittest.mock import patch
+
+import requests
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
@@ -26,32 +28,10 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
             chrom_sizes=self.app.config["CHROM_SIZES"],
             chrom_arms=self.app.config["CHROM_ARMS"],
         )
-        self.data_repo_4dn = DataRepository(name='4dn', url='https://data.4dnucleome.org/files-processed/{id}', auth_required=False)
-        self.data_repo_4dn_auth = DataRepository(name='4dn_auth', url='https://data.4dnucleome.org/files-processed/{id}', auth_required=True)
-        self.data_repo_4dn_incorrect_auth = DataRepository(name='4dn_auth_2', url='https://data.4dnucleome.org/files-processed/{id}', auth_required=True)
-        self.credentials = User_DataRepository_Credentials(
-            user_id = 1, 
-            repository_name = '4dn_auth',
-            key = '2SLNQIYV',
-            secret = 'pwani4r7dpezvl4d' # TODO DO NOT COMMIT
-        )
-        self.credentials_fail = User_DataRepository_Credentials(
-            user_id = 1, 
-            repository_name = '4dn_auth_2', 
-            key = 'key',
-            secret = 'secret'
-        )
-        
-        self.sample_valid_bedgz = '4DNFIRCHWS8M'
-        # self.sample_valid_mcool
-        # self.sample_valid_bigwig
-        
+        self.data_repo = DataRepository(name='repo', url='https://{id}', auth_required=False)
+                
         db.session.add(self.hg19)
-        db.session.add(self.data_repo_4dn)
-        db.session.add(self.data_repo_4dn_auth)
-        db.session.add(self.data_repo_4dn_incorrect_auth)
-        db.session.add(self.credentials)
-        db.session.add(self.credentials_fail)
+        db.session.add(self.data_repo)
         db.session.commit()
         
         self.token_headers = self.get_token_header(self.add_and_authenticate("test", "asdf"))
@@ -69,26 +49,56 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
             "filetype": "bedfile",
             "Directionality": "+",
             "public": "false",
-            "sampleID": self.sample_valid_bedgz,
-            "repositoryID": "4dn"
-            #"file": (open("tests/testfiles/test.mcool", "rb"), "test.mcool"),
+            "sampleID": "4DNFIRCHWS8M",
+            "repositoryName": "repo"
         }
-        
+    def mock_http_request(*args, **kwargs):
+        class MockResponse:
+            def __init__(self, content, status_code, headers = {}):
+                self.content = content
+                self.status_code = status_code
+                self.headers = headers
 
-    def test_bed_file_load_from_4dn(self):
-        valid_data = self.default_data
+            def raise_for_status(self):
+                if self.status_code >= 400:
+                    raise requests.HTTPError(f'Mock HTTPError {self.status_code}')
+                return
+
+        if args[0] == 'https://4DNFIRCHWS8M.bed.gz':
+            with open('tests/testfiles/4DNFIRCHWS8M.bed.gz', 'rb') as file:
+                return MockResponse(file.read(), 200, headers={'Content-Disposition':'filename=filename.json'})        
+        if args[0] == 'https://4DNFIRCHWS8M' and args[1] == {'Accept': 'application/json'}:
+            with open('tests/testfiles/4DNFIRCHWS8M.json', 'r') as file:
+                return MockResponse(file.read(), 200, headers={'Application': 'application/json'})
+        return MockResponse('', 404)
+
+    def test_repo_not_found(self):
+        data = self.default_data
+        data['repositoryName'] = 'not_there'
+        
         response = self.client.post(
             "/api/datasets/encode/",
-            data=valid_data,
+            data=data,
+            headers=self.token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 400)
+        #self.assertTrue(f'Repository {data["repositoryName"]} not found.' in response.)
+
+    @patch('requests.get', side_effect = mock_http_request)
+    def test_bed_file_load_from_repo(self, mock_http_request):
+        data = self.default_data
+        response = self.client.post(
+            "/api/datasets/encode/",
+            data=data,
             headers=self.token_headers,
             content_type="multipart/form-data",
         )
         self.assertEqual(response.status_code, 200)
         # check whether dataset has been added to database
         self.assertEqual(len(Dataset.query.all()), 1)
+        
         dataset = Dataset.query.first()
-        self.assertEqual(dataset.filename, '1_4DNFIRCHWS8M.bed')
-        self.assertEqual(response.data.decode(), "")
         self.assertTrue(os.path.exists(dataset.file_path))
         # test whether uploaded file is equal to expected file
         expected_file = open("tests/testfiles/4DNFIRCHWS8M.bed", "rb").read()

@@ -179,9 +179,7 @@
                             </div>
                         </div>
                         <div v-else class="md-layout-item md-small-size-100"> 
-                            <md-field>
-                                <!--:class="getValidationClass('datasetName')"
-                            >-->
+                            <md-field :class="getValidationClass('sampleID')">
                                 <label for="sampleID">Sample ID</label>
                                 <md-input
                                     name="sampleID"
@@ -484,7 +482,7 @@ export default {
                     required,
                 },
                 file: { // TODO sprint9
-                //     correctFiletype: correctFileType, // TODO check required
+                    correctFiletype: correctFileType, // TODO check required
                 },
                 sourceURL: {
                 //     url, // TODO check required
@@ -729,14 +727,10 @@ export default {
                 .catch((error) => this.fetchSampleMetadataError(error))
         },
         fetchSampleMetadataResponse: function (sampleMetadata) {
-            if (sampleMetadata['status'] == 'sample_not_found') {
+            if (sampleMetadata['status'] == 'error') {
                 this.sampleMetadata = '';
-                this.sampleNotFound;
                 return;
                 // TODO update gui
-            } else if (sampleMetadata['status'] == 'api_credentials_wrong') {
-                // TODO update gui
-                return;
             } else if (sampleMetadata['status'] == 'ok') {
                 this.form.datasetName = sampleMetadata['json']['track_and_facet_info']['dataset'];
                 this.form.description = sampleMetadata['json']['description'];

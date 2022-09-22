@@ -13,8 +13,10 @@ from hicognition.utils import parse_description, get_all_interval_ids, parse_bin
 from hicognition.format_checkers import FORMAT_CHECKERS
 from . import api
 from .. import db
+# from ..tasks import download_dataset_file # FIXME One can never include this
 from ..models import (
     Assembly,
+    DataRepository,
     Dataset,
     BedFileMetadata,
     Organism,
@@ -30,14 +32,14 @@ from .authentication import auth
 from .. import pipeline_steps
 from .errors import forbidden, invalid, not_found
 
-@api.route("/datasets/encode", methods=["POST"])
+@api.route("/datasets/encode/", methods=["POST"])
 @auth.login_required
 def add_dataset_from_ENCODE():
     """ """ # TODO docs
     def is_form_valid():
         valid = True
         valid = valid and hasattr(request, "form")
-        valid = valid and not hasattr(request, "files")
+        valid = valid and len(request.files) == 0
         return valid
     
     if not is_form_valid():
@@ -48,6 +50,9 @@ def add_dataset_from_ENCODE():
         data = ENCODEDatasetPostModel(**request.form)
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
+    
+    if db.session.query(DataRepository).get(data.repository_name) is None:
+        return invalid(f'Repository {data.repository_name} not found.')
     
     # check whether description is there
     description = parse_description(data)
@@ -61,9 +66,13 @@ def add_dataset_from_ENCODE():
         processing_state="uploading",
         filetype=data.filetype,
         user_id=g.current_user.id,
+        repository_name=data.repository_name,
     )
     new_entry.add_fields_from_form(data)
-    db.session.add(new_entry)
+    try:
+        db.session.add(new_entry)
+    except Exception as err:
+        return invalid('') # TODO
     db.session.commit()
 
     g.current_user.launch_task(
@@ -72,6 +81,7 @@ def add_dataset_from_ENCODE():
         "run dataset download from repo",
         new_entry.id
     )
+
     db.session.commit()
     return jsonify({"message": "success! File is being downloaded."})
     
@@ -80,7 +90,7 @@ def add_dataset_from_ENCODE():
 @auth.login_required
 def add_dataset():
     """endpoint to add a new dataset"""
-
+    
     def is_form_invalid():
         invalid = False
         invalid = invalid or not hasattr(request, "form")
@@ -129,8 +139,7 @@ def add_dataset():
 
     new_entry.preprocess_dataset()
     db.session.commit()
-
-    
+    return jsonify({"message": "success! File is handed in for preprocessing."})
 
 
 @api.route("/preprocess/datasets/", methods=["POST"])

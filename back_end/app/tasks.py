@@ -14,13 +14,19 @@ from . import create_app, db
 from .models import Assembly, Dataset, IndividualIntervalData, Collection, User, DataRepository, User_DataRepository_Credentials
 from . import pipeline_steps
 from .notifications import NotificationHandler
-from .download_functions import download_ENCODE_metadata, download_file
+# from .file_utils import download_ENCODE_metadata, download_file
+from . import download_utils
 
 # get logger
 log = logging.getLogger("rq.worker")
 
+app = None
 # setup app context
-
+# def task_context(func):
+#     def create_context():
+#         app = create_app(os.getenv("FLASK_CONFIG") or "default")
+#         app.app_context().push()
+#     return create_context
 app = create_app(os.getenv("FLASK_CONFIG") or "default")
 app.app_context().push()
 
@@ -32,7 +38,7 @@ notifcation_handler = NotificationHandler()
 
 basedir = os.path.abspath(os.path.dirname(__file__)) # TODO unused
 
-
+# # @task_context
 def pipeline_bed(dataset_id):
     """Starts the pipeline for
     bed-files. Pipeline:
@@ -69,6 +75,7 @@ def pipeline_bed(dataset_id):
     pipeline_steps.set_task_progress(100)
 
 
+# @task_context
 def pipeline_pileup(dataset_id, intervals_id, binsize):
     """Start pileup pipeline for specified combination of
     dataset_id (cooler_file), binsize and intervals_id"""
@@ -89,6 +96,7 @@ def pipeline_pileup(dataset_id, intervals_id, binsize):
         log.error(err, exc_info=True)
 
 
+# @task_context
 def pipeline_stackup(dataset_id, intervals_id, binsize):
     """Start stackup pipeline for specified combination of
     dataset_id (bigwig file), binsize and intervals_id"""
@@ -101,6 +109,7 @@ def pipeline_stackup(dataset_id, intervals_id, binsize):
         log.error(err, exc_info=True)
 
 
+# @task_context
 def pipeline_lola(collection_id, intervals_id, binsize):
     """Starts lola enrichment calculation pipeline step for a specific
     collection_id, binsize and intervals_id"""
@@ -113,6 +122,7 @@ def pipeline_lola(collection_id, intervals_id, binsize):
         log.error(err, exc_info=True)
 
 
+# @task_context
 def pipeline_embedding_1d(collection_id, intervals_id, binsize):
     """Starts embedding pipeline steps for feature collections refering to
     1-dimensional features per regions (e.g. bigwig tracks)"""
@@ -136,7 +146,8 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
         pipeline_steps.set_collection_failed(collection_id, intervals_id)
         log.error(err, exc_info=True)
 
-def download_dataset_file(dataset_id, delete_if_invalid=False): # TODO file_path should not be here. You should define a temp file path for stuff that might get deleted or gunzipped
+# @task_context
+def download_dataset_file(dataset_id: int, delete_if_invalid: bool = False):
     """
     Downloads dataset file from web and validates + 'preprocesses' it.
     ua
@@ -145,73 +156,111 @@ def download_dataset_file(dataset_id, delete_if_invalid=False): # TODO file_path
     - this fnct is not using the REST API provided by 4dn
         as it is meant for submission
     """
-    ds = db.session.query(Dataset).get(dataset_id)
-    log.info(f'Starting download routine for dataset {ds.id}')
-    # if download is from known repository, build URL
-    metadata = download_ENCODE_metadata(ds.repository.name, ds.sample_id)
-    metadata = json.loads(metadata)
+    ds = Dataset.query.get(dataset_id)
+    if not (ds.sample_id and ds.repository) and not ds.source_url:
+        log.info(f'No sample_id, repo_name or source_url provided for {ds.id}')
+        return True
     
-    if metadata['status'] == 'sample_not_found':
-        log.info(f'      Sample does not exist.')
-        return
-    if metadata['status'] == 'api_credentials_wrong':
-        log.info(f'      API credentials invalid.')
-        return
+    is_repository = ds.sample_id and ds.repository
+    download_func = download_utils.download_encode if is_repository else download_utils.download_url
     
-    if metadata['json'].get('open_data_url'):
-        ds.source_url = metadata['json']['open_data_url']
-    elif metadata['json'].get('href'):
-        ds.source_url = metadata['json']['href']
-    else:
-        log.info(f'      Could not find URL in json.')
-        return # TODO notification, task process status
-
-    # download file and put into variable content
     try:
-        file_name, content = download_file(ds.source_url)
-    except requests.HTTPError as err:
+        if is_repository:
+            download_utils.download_encode(ds, current_app.config["UPLOAD_DIR"])
+        else:
+            download_utils.download_url(ds, current_app.config["UPLOAD_DIR"], current_app.config["DATASET_OPTION_MAPPING"][ds.file_type])
+    except requests.HTTPError as err: # TODO notifactions
         log.info(f"       HTTP Error: {err}")
-        ds.processing_status = "file not found"
+        ds.processing_state = "file not found"
         ds.file_path = ""
         db.session.commit()
         return
-    
-    md5 = metadata['json']['md5sum']
-    if hashlib.md5(content) != md5:
-        log.info(f'      md5 checksum and md5(file content) not equal')
-        ds.processing_status = "checksum failed"
-        ds.file_path = ""
+    finally:
         db.session.commit()
-        return
-
-    if not file_name:
-        file_name = secure_filename(f"{ds.user.id}_{metadata['json']['display_title']}") # contains file_name with ext
-
-    # check if compressed and decompress
-    if file_name.lower().endswith('.gz'):
-        content = gzip.decompress(content)
-        file_name = file_name[:-3] # strip the gz
-
-    ds.file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
-
-    # save file
-    if os.path.exists(ds.file_path):
-        log.info(f'      File at {ds.file_path} already exists')
-        return # TODO notification, task process status
     
-    with open(ds.file_path, 'wb') as f_out:
-        f_out.write(content)
-        
-    ds.processing_state = "uploaded"
-    db.session.commit()
-
-    # TODO notification management > what it fails, success or similar?
     valid = ds.validate_dataset() #  TODO can't delete file/object, bc user would not get info about it then
     if not valid:
         log.info(f'      Dataset file was invalid.')
-        return -1 #  dont' have to return anything
+        ds.processing_state = "file not found"
+        return
 
-    ds.preprocess_dataset() #  TODO can't delete file/object, bc user would not get info about it then
+    ds.preprocess_dataset()
     db.session.commit()
     pipeline_steps.set_task_progress(100)
     log.info("      Success.")
+    
+    # log.info(f'Starting download routine for dataset {ds.id}')
+    # # if sample_id and repository_name is specified, get data from repo
+    # if is_repository:
+    #     log.info(f'Getting metadata for {ds.id} from {ds.repository.name}')
+        
+    #     metadata = file_utils.download_ENCODE_metadata(ds.repository.name, ds.sample_id)
+    #     metadata = json.loads(metadata)
+        
+    #     if metadata['status'] == 'sample_not_found':
+    #         log.info(f'      Sample does not exist.')
+    #         return
+    #     if metadata['status'] == 'api_credentials_wrong':
+    #         log.info(f'      API credentials invalid.')
+    #         return
+        
+    #     ds.source_url = metadata['json'].get('open_data_url')
+    #     # elif metadata['json'].get('href'):
+    #     #     ds.source_url = metadata['json']['href'] # TODO make way to attach href to the repo url
+    #     if ds.source_url is None:
+    #         log.info(f'      Could not find URL in json.')
+    #         return # TODO notification, task process status
+        
+    #     md5 = metadata['json'].get('md5sum')
+    #     file_name = metadata['json'].get('display_title')
+    # else:
+    #     file_name = f'{ds.name}.{current_app.config["DATASET_OPTION_MAPPING"][ds.file_type]}'
+
+    # # download file and put into variable content
+    # try:
+    #     http_file_name, http_content = download_utils.download_file(ds.source_url)
+    #     file_name = http_file_name if http_file_name is not None else file_name
+    # except requests.HTTPError as err:
+    #     log.info(f"       HTTP Error: {err}")
+    #     ds.processing_state = "file not found"
+    #     ds.file_path = ""
+    # finally:
+    #     db.session.commit()
+    
+    # if md5 is not None and hashlib.md5(http_content) != md5:
+    #     log.info(f'      md5 checksum and md5(file content) not equal')
+    #     ds.processing_state = "checksum failed"
+    #     ds.file_path = ""
+    #     db.session.commit()
+    #     return
+
+    # file_name = secure_filename(f"{ds.user.id}_{file_name}") # contains file_name with ext
+    # file_name = file_name[:-3] if file_name.lower().endswith('.gz') else file_name
+    
+    # # check if compressed and decompress
+    # if file_utils.is_gzipped(http_content):
+    #     http_content = gzip.decompress(http_content)
+    
+    # ds.file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
+
+    # # save file
+    # if os.path.exists(ds.file_path):
+    #     log.error(f'      File at {ds.file_path} already exists')
+    #     return # TODO notification, task process status
+    
+    # with open(ds.file_path, 'wb') as f_out:
+    #     f_out.write(http_content)
+        
+    # ds.processing_state = "uploaded"
+    # db.session.commit()
+
+    # # TODO notification management > what it fails, success or similar?
+    # valid = ds.validate_dataset() #  TODO can't delete file/object, bc user would not get info about it then
+    # if not valid:
+    #     log.info(f'      Dataset file was invalid.')
+    #     return -1 #  dont' have to return anything
+
+    # ds.preprocess_dataset() #  TODO can't delete file/object, bc user would not get info about it then
+    # db.session.commit()
+    # pipeline_steps.set_task_progress(100)
+    # log.info("      Success.")
