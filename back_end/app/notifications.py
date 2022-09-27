@@ -32,6 +32,10 @@ class NotificationHandler:
         """Sends the update for the preprocessing status."""
         sse.publish(data.dict(), type="notification")
 
+    def send_notification_general(self, data: dict):
+        """Sends the update for status of ."""
+        sse.publish(data, type="notification")
+
     def send_keep_alive(self):
         """Stops Chrome from terminating the NotificationHandler"""
         sse.publish({"data": 42}, type="keepalive")

@@ -81,8 +81,6 @@ def add_dataset_from_ENCODE():
         "run dataset download from repo",
         new_entry.id
     )
-
-    db.session.commit()
     return jsonify({"message": "success! File is being downloaded."})
     
 

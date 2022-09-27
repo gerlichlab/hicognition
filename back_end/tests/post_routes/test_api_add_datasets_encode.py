@@ -7,14 +7,14 @@ import time
 from unittest.mock import patch
 
 import requests
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app.models import Dataset, Assembly, DataRepository, User_DataRepository_Credentials
-from app import db
-
+from app import db, create_app
+from app.hicognition_lib.hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
     """TODO"""
@@ -85,8 +85,9 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 400)
         #self.assertTrue(f'Repository {data["repositoryName"]} not found.' in response.)
 
+    @patch("app.models.User.launch_task")
     @patch('requests.get', side_effect = mock_http_request)
-    def test_bed_file_load_from_repo(self, mock_http_request):
+    def test_load_bed_file_from_repo(self, mock_http_request, mock_launch):
         data = self.default_data
         response = self.client.post(
             "/api/datasets/encode/",
@@ -99,11 +100,28 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
         self.assertEqual(len(Dataset.query.all()), 1)
         
         dataset = Dataset.query.first()
-        self.assertTrue(os.path.exists(dataset.file_path))
-        # test whether uploaded file is equal to expected file
-        expected_file = open("tests/testfiles/4DNFIRCHWS8M.bed", "rb").read()
-        actual_file = open(dataset.file_path, "r").read()
-        self.assertEqual(expected_file, actual_file)
+        self.assertEqual(dataset.repository_name, self.default_data['repositoryName'])
+        self.assertEqual(dataset.repository, self.data_repo)
+        self.assertEqual(dataset.processing_state, 'uploading')
+        
+    @patch('requests.get', side_effect = mock_http_request)
+    def test_unknown_user_cant_add(self, mock_http_request, mock_launch):
+        data = self.default_data
+        data['user'] = 22
+        response = self.client.post(
+            "/api/datasets/encode/",
+            data=data,
+            headers=self.token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 400)
+        # check whether dataset has been added to database
+        self.assertEqual(len(Dataset.query.all()), 1)
+        
+        dataset = Dataset.query.first()
+        self.assertEqual(dataset.repository_name, self.default_data['repositoryName'])
+        self.assertEqual(dataset.repository, self.data_repo)
+        self.assertEqual(dataset.processing_state, 'uploading')
 
 #     @patch("app.models.User.launch_task")
 #     def test_dataset_added_correctly_bigwig_bw_ending(self, mock_launch):

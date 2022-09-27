@@ -9,9 +9,11 @@ import pandas as pd
 import requests
 import gzip
 import json
+import datetime
 from hicognition import io_helpers
+from rq import get_current_job
 from . import create_app, db
-from .models import Assembly, Dataset, IndividualIntervalData, Collection, User, DataRepository, User_DataRepository_Credentials
+from .models import Assembly, Dataset, IndividualIntervalData, Collection, Task, User, DataRepository, User_DataRepository_Credentials
 from . import pipeline_steps
 from .notifications import NotificationHandler
 # from .file_utils import download_ENCODE_metadata, download_file
@@ -32,7 +34,7 @@ app.app_context().push()
 
 # set up notification handler
 
-notifcation_handler = NotificationHandler()
+notification_handler = NotificationHandler()
 
 # set basedir
 
@@ -156,10 +158,29 @@ def download_dataset_file(dataset_id: int, delete_if_invalid: bool = False):
     - this fnct is not using the REST API provided by 4dn
         as it is meant for submission
     """
+    def handle_error(ds: Dataset, msg: str):
+        send_notification(ds, msg)
+        ds.session.delete(ds)
+        ds.session.commit()
+        return
+    
+    def send_notification(ds: Dataset, msg: str):
+        notification_handler.send_notification_general({
+            "id": get_current_job().get_id(),
+            "dataset_name": ds.dataset_name,
+            "repository_name": ds.repository_name,
+            "sample_id": ds.sample_id,
+            "time": datetime.now(),
+            "notification_type": "upload_notification",
+            "owner": ds.user.id,
+            "message": msg
+        })
+        
     ds = Dataset.query.get(dataset_id)
-    if not (ds.sample_id and ds.repository) and not ds.source_url:
+    if not (ds.sample_id and ds.repository_name) and not ds.source_url:
         log.info(f'No sample_id, repo_name or source_url provided for {ds.id}')
-        return True
+        handle_error(ds, f'Neither sample id + repository, nor file URL have been provided.')
+        return
     
     is_repository = ds.sample_id and ds.repository
     download_func = download_utils.download_encode if is_repository else download_utils.download_url
@@ -169,98 +190,22 @@ def download_dataset_file(dataset_id: int, delete_if_invalid: bool = False):
             download_utils.download_encode(ds, current_app.config["UPLOAD_DIR"])
         else:
             download_utils.download_url(ds, current_app.config["UPLOAD_DIR"], current_app.config["DATASET_OPTION_MAPPING"][ds.file_type])
-    except requests.HTTPError as err: # TODO notifactions
-        log.info(f"       HTTP Error: {err}")
-        ds.processing_state = "file not found"
-        ds.file_path = ""
-        db.session.commit()
-        return
-    finally:
-        db.session.commit()
+    except Exception as err:
+        log.info(str(err))
+        handle_error(ds, str(err))
+        return 
+    
+    db.session.commit()
     
     valid = ds.validate_dataset() #  TODO can't delete file/object, bc user would not get info about it then
     if not valid:
-        log.info(f'      Dataset file was invalid.')
-        ds.processing_state = "file not found"
+        log.info(f'Dataset {ds.id} file was invalid.')
+        handle_error(ds, 'File was invalid. Formatting of it was faulty.')
         return
 
     ds.preprocess_dataset()
     db.session.commit()
-    pipeline_steps.set_task_progress(100)
+    send_notification(ds, 'File has been downloaded. Preprocessing now...') # TODO preprocessing ambiguous
     log.info("      Success.")
     
-    # log.info(f'Starting download routine for dataset {ds.id}')
-    # # if sample_id and repository_name is specified, get data from repo
-    # if is_repository:
-    #     log.info(f'Getting metadata for {ds.id} from {ds.repository.name}')
-        
-    #     metadata = file_utils.download_ENCODE_metadata(ds.repository.name, ds.sample_id)
-    #     metadata = json.loads(metadata)
-        
-    #     if metadata['status'] == 'sample_not_found':
-    #         log.info(f'      Sample does not exist.')
-    #         return
-    #     if metadata['status'] == 'api_credentials_wrong':
-    #         log.info(f'      API credentials invalid.')
-    #         return
-        
-    #     ds.source_url = metadata['json'].get('open_data_url')
-    #     # elif metadata['json'].get('href'):
-    #     #     ds.source_url = metadata['json']['href'] # TODO make way to attach href to the repo url
-    #     if ds.source_url is None:
-    #         log.info(f'      Could not find URL in json.')
-    #         return # TODO notification, task process status
-        
-    #     md5 = metadata['json'].get('md5sum')
-    #     file_name = metadata['json'].get('display_title')
-    # else:
-    #     file_name = f'{ds.name}.{current_app.config["DATASET_OPTION_MAPPING"][ds.file_type]}'
-
-    # # download file and put into variable content
-    # try:
-    #     http_file_name, http_content = download_utils.download_file(ds.source_url)
-    #     file_name = http_file_name if http_file_name is not None else file_name
-    # except requests.HTTPError as err:
-    #     log.info(f"       HTTP Error: {err}")
-    #     ds.processing_state = "file not found"
-    #     ds.file_path = ""
-    # finally:
-    #     db.session.commit()
     
-    # if md5 is not None and hashlib.md5(http_content) != md5:
-    #     log.info(f'      md5 checksum and md5(file content) not equal')
-    #     ds.processing_state = "checksum failed"
-    #     ds.file_path = ""
-    #     db.session.commit()
-    #     return
-
-    # file_name = secure_filename(f"{ds.user.id}_{file_name}") # contains file_name with ext
-    # file_name = file_name[:-3] if file_name.lower().endswith('.gz') else file_name
-    
-    # # check if compressed and decompress
-    # if file_utils.is_gzipped(http_content):
-    #     http_content = gzip.decompress(http_content)
-    
-    # ds.file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
-
-    # # save file
-    # if os.path.exists(ds.file_path):
-    #     log.error(f'      File at {ds.file_path} already exists')
-    #     return # TODO notification, task process status
-    
-    # with open(ds.file_path, 'wb') as f_out:
-    #     f_out.write(http_content)
-        
-    # ds.processing_state = "uploaded"
-    # db.session.commit()
-
-    # # TODO notification management > what it fails, success or similar?
-    # valid = ds.validate_dataset() #  TODO can't delete file/object, bc user would not get info about it then
-    # if not valid:
-    #     log.info(f'      Dataset file was invalid.')
-    #     return -1 #  dont' have to return anything
-
-    # ds.preprocess_dataset() #  TODO can't delete file/object, bc user would not get info about it then
-    # db.session.commit()
-    # pipeline_steps.set_task_progress(100)
-    # log.info("      Success.")

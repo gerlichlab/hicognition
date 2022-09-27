@@ -36,12 +36,14 @@
 import { mapGetters } from "vuex";
 import processingFinishedNotification from "../notifications/processingFinishedNotification.vue";
 import processingFailedNotification from "../notifications/processingFailedNotification.vue";
+import uploadNotification from "../notifications/uploadNotification.vue";
 
 export default {
     name: "notificationDrawer",
     components: {
         processingFinishedNotification,
         processingFailedNotification,
+        uploadNotification
     },
     computed: {
         ...mapGetters(["notifications"]),
@@ -56,6 +58,8 @@ export default {
                     return "processingFinishedNotification";
                 case "processing_failed":
                     return "processingFailedNotification";
+                case "upload_notification":
+                    return "uploadNotification";
                 default:
                     return "processingFinishedNotification";
             }

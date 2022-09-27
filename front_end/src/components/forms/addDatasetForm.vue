@@ -110,96 +110,23 @@
                         </div>
                         <!-- choose upload type based on file source -->
                         <!-- file field -->
-                        <div v-if="form.fileSource==='httpUpload'" class="md-layout-item md-small-size-100">
-                            <md-field :class="getValidationClass('file')">
-                                <label for="file">File</label>
-                                <md-file
-                                    id="file"
-                                    name="file"
-                                    v-model="form.file"
-                                    :disabled="sending"
-                                    @change="handleFileChange"
-                                    :accept="acceptedFileTypes"
-                                />
-                                    <!-- required -->
-                                <span
-                                    class="md-error"
-                                    v-if="!$v.form.file.required"
-                                    >A file is required</span
-                                >
-                                <span
-                                    class="md-error"
-                                    v-else-if="!$v.form.file.correctFileType"
-                                >
-                                    Wrong filetype! 
-                                </span>
-                            </md-field>
-                        </div>
-                        <!-- URL -->
-                        <div v-else-if="form.fileSource==='url'" class="md-layout-item md-layout md-gutter">
-                            <div class="md-layout-item md-small-size-100"> 
-                                <md-field :class="getValidationClass('sourceURL')">
-                                    <label for="sourceURL">URL</label>
-                                    <md-input
-                                        name="sourceURL"
-                                        id="sourceURL"
-                                        v-model="form.sourceURL"
-                                        :disabled="sending"
-                                        
-                                    /><!-- url -->
-                                        <!-- required -->
-                                    <span
-                                        class="md-error"
-                                        v-if="!$v.form.sourceURL.url"
-                                        >Please check if URL is valid</span
-                                    >
-                                    <!-- <span
-                                        class="md-error"
-                                        v-if="!$v.form.sourceURL.required"
-                                        >URL required</span
-                                    > -->
-                                </md-field>
-                            </div>
-                            <div class="md-layout-item md-small-size-100">
-                                <md-field :class="getValidationClass('fileType')">
-                                    <label for="fileType">File type</label>
-                                    <md-select
-                                        id="fileType"
-                                        name="fileType"
-                                        v-model="form.fileType"
-                                    >
-                                        <!-- required -->
-                                        <md-option v-for="fileType in fileTypes"
-                                            :key="fileType"
-                                            :value="fileType">
-                                            {{fileType}}
-                                        </md-option>
-                                    </md-select>
-                                </md-field>
-                            </div>
-                        </div>
-                        <div v-else class="md-layout-item md-small-size-100"> 
-                            <md-field :class="getValidationClass('sampleID')">
-                                <label for="sampleID">Sample ID</label>
-                                <md-input
-                                    name="sampleID"
-                                    id="sampleID"
-                                    v-model="form.sampleID"
-                                    :disabled="sending"
-                                    @change="fetchSampleMetadata"
-                                />
-                                    <!-- required -->
-                                <span
-                                    class="md-error"
-                                    v-if="!$v.form.sampleID.required"
-                                    >Sample ID required</span
-                                >
-                                <span
-                                    class="md-error"
-                                    v-if="!$v.form.sampleID.notFound"
-                                    >Sample not found</span
-                                >
-                            </md-field>
+                        <div class="md-layout-item md-small-size-100">
+                            <formFileInput 
+                                v-if="form.fileSource==='httpUpload'"
+                                :fileTypeMapping="fileTypeMapping"
+                                @input-changed="fileInputChanged"
+                            />
+                            <formURLInput 
+                                v-else-if="form.fileSource==='url'"
+                                :fileTypeMapping="fileTypeMapping"
+                                @input-changed="urlInputChanged"
+                            />
+                            <formRepositoryInput 
+                                v-else
+                                :fileTypeMapping="fileTypeMapping"
+                                :repository="repositories[form.fileSource].name"
+                                @input-changed="repositoryInputChanged"
+                            />
                         </div>
                     </div>
                     <!-- metadata -->
@@ -409,6 +336,10 @@ import { validationMixin } from "vuelidate";
 import { required, minLength, maxLength, requiredIf, url } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
+import formFileInput from "./formFileInput";
+import formURLInput from "./formURLInput";
+import formRepositoryInput from "./formRepositoryInput";
+
 const correctFileType = function (value) {
     /* 
         validator for correct fileype. Note that this is the vue component in this example
@@ -428,6 +359,11 @@ export default {
     props: {
         fileTypeMapping: Object,
     },
+    components: {
+        formFileInput,
+        formRepositoryInput,
+        formURLInput
+    },
     data: () => ({
         form: {
             datasetName: null,
@@ -444,20 +380,19 @@ export default {
             Protein: null,
             cellCycleStage: null,
             perturbation: null,
-            fileSource: 'httpUpload', // TODO sprint9,
-            sampleID: null,
-            sourceURL: null,
-            fileType: null,
+            fileSource: 'httpUpload'
         },
         datasetMetadataMapping: null,
         datasetSaved: false,
         sending: false,
         selectedFile: null,
+        sourceURL: null,
+        fileType: null,
         assemblies: {},
         repositories: {}, // TODO sprint9
         sample_not_foun: false,
-        sampleMetadata: ''
-        
+        sampleMetadata: undefined,
+        showMetadata: false
 
     }),
     validations() {
@@ -481,15 +416,6 @@ export default {
                 perturbation: {
                     required,
                 },
-                file: { // TODO sprint9
-                    correctFiletype: correctFileType, // TODO check required
-                },
-                sourceURL: {
-                //     url, // TODO check required
-                },
-                sampleID: {
-                //     // TODO check required
-                },
                 description: {
                     maxLength: maxLength(80),
                 },
@@ -507,17 +433,6 @@ export default {
         return outputObject;
     },
     computed: {
-        fileTypes: function() { // TODO sprint9 naming is really bad for this one
-            // list of filetypes to choose from
-            // only allow unique values
-            let fileTypesLC = Object.keys(this.fileTypeMapping).map((type) => type.toLowerCase())
-            let fileTypes = [...new Set(fileTypesLC)]
-            return fileTypes
-        },
-        acceptedFileTypes: function() { // TODO sprint9
-            // build accept parameter for file chooser, e.g. ".bed,.mcool,.bw"
-            return "." + Object.keys(this.fileTypeMapping).join(',.')
-        },
         valueTypeFields: function () {
             if (this.valueTypeSelected && this.selectedFileType) {
                 return Object.keys(
@@ -556,59 +471,48 @@ export default {
                 return valueTypes;
             }
             return undefined;
-        },
-        showMetadata: function () { // REFACTOR showMetadata
-            // checks if all prerequisites are fulfilled to continue filling form
-            // depends on chosen file source: 
-            //  user upload: is file of correct type
-            //  encode repo: is id correct (have we received metadata)
-            //  URL upload: is chosen fileEnding correct, URLs may end with no filetype
-            // show = true;
-            // if (this.form.fileSource == 'httpUpload') {
-
-            // } else if (this.form.fileSource == 'url') {
-
-            // } else if (this.form.fileSource != '') {
-            //     show = sampleMetadata.length() > 0
-            //     show = show && (sampleMetadata['accession'] == this.form.sampleID)
-            // }
-
-            if (this.selectedFileType) {
-                return true;
-            }
-            return false;
-        },
-        selectedFileType: function () {
-                if (this.fileEnding) {
-                    if (this.fileEnding.toLowerCase() in this.fileTypeMapping) {
-                        return this.fileTypeMapping[this.fileEnding.toLowerCase()];
-                    }
-                    // show rerror
-                    this.$v.form.file.$touch();
-                }
-            return undefined;
-        },
-        // REFACTOR currently validating the script with fileEnding, selectedFileType and showMetadata
-        fileEnding: function () { // TODO sprint9
-            if (this.form.fileSource == 'httpUpload') {
-                if (
-                    typeof this.form.file === "string" ||
-                    this.form.file instanceof String
-                ) {
-                    var splitFileName = this.form.file.split(".");
-                    return splitFileName[splitFileName.length - 1];
-                }
-            } else if (this.form.fileSource == 'url') {
-                return this.form.fileType;
-            } else if (this.form.fileSource != '') {
-                if (this.sampleMetadata != '' && this.sampleMetadata['accession'] == this.form.sampleID) {
-                    return this.sampleMetadata['file_format']['file_format']
-                }
-            }
-            return undefined;
-        },
+        }
     },
     methods: {
+        fileInputChanged: function(file, fileType) {
+            if (!file) {
+                this.showMetadata = false;
+            }
+            this.selectedFile = file;
+            this.fileType = fileType;
+        },
+        urlInputChanged: function(url, fileType) {
+            if (!url) {
+                this.showMetadata = false;
+            }
+            this.sourceURL = url;
+            this.fileType = fileType;
+        },
+        repositoryInputChanged: function(sampleID, fileType, metadata) {
+            if (!sampleID) {
+                this.showMetadata = false;
+            }
+            this.sampleID = sampleID;
+            this.fileType = fileType;
+            this.metadata = metadata;
+
+            // fillFields
+        },
+
+        fillFields: function() {
+            // ... TODO fill fields with metadata
+        },
+        checkFileEnding: function() {
+            if (this.fileExt && this.fileExt.toLowerCase() in this.fileTypeMapping) {
+                this.selectedFileType = this.fileTypeMapping[this.fileExt.toLowerCase()];
+                // this.$v.form.$touch(); // show rerror
+            } else {
+                this.selectedFileType = undefined;
+            }
+
+            this.showMetadata = !(this.selectedFileType === undefined);
+            return !(this.selectedFileType === undefined);
+        },
         getValidationClass(fieldName) {
             // matrial validation class for form field;
             const field = this.$v.form[fieldName];
@@ -618,10 +522,6 @@ export default {
                     "md-invalid": field.$invalid && field.$dirty,
                 };
             }
-        },
-        handleFileChange(event) {  // TODO sprint9
-            // get file IO-stream
-            this.selectedFile = event.target.files[0];
         },
         clearForm() {
             this.$v.$reset();
@@ -679,17 +579,18 @@ export default {
             formData.append("filetype", this.selectedFileType);
             // API call including upload is made in the background
             this.postData(postRoute, formData).then((response) => {
-                // this.sending = false;
-                // this.clearForm();
-                // if (response) {
-                //     // if error happend, global error handler will eat the response
-                //     this.datasetSaved = true;
-                //     this.fetchDatasets();
-                // }
+                this.sending = false;
+               // this.clearForm();
+                if (response) {
+                    // if error happend, global error handler will eat the response
+                    this.datasetSaved = true;
+                    this.fetchDatasets();
+                }
             });
         },
         validateDataset() {
-            this.$v.$touch();
+            this.$v.$touch(); // u: difference?!
+            this.$v.form.$touch();
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
@@ -709,40 +610,27 @@ export default {
             });
         },
         clearFileFields(event) { // TODO sprint9
+            // clear fields
             this.form.fileType = null;
-            this.form.file = null;
+            this.form.selectedFile = null;
             this.form.sampleID = null;
             this.form.sourceURL = null;
         },
-        fetchSampleMetadata: function (event) {
-            // 4DNFIRCHWS8M 
-            if (this.form.sampleID.length <= 3) {
-                return;
-            }
-
-            var repo_name = this.repositories[this.form.fileSource].name;
-
-            this.fetchData(`ENCODE/${repo_name}/${this.form.sampleID}/`)
-                .then((response) => this.fetchSampleMetadataResponse(response.data))
-                .catch((error) => this.fetchSampleMetadataError(error))
+        checkFileTypeURL: function (event) {
+            this.fileExt = this.form.fileType;
+            this.checkFileEnding(this.form.fileType);
         },
-        fetchSampleMetadataResponse: function (sampleMetadata) {
-            if (sampleMetadata['status'] == 'error') {
-                this.sampleMetadata = '';
-                return;
-                // TODO update gui
-            } else if (sampleMetadata['status'] == 'ok') {
-                this.form.datasetName = sampleMetadata['json']['track_and_facet_info']['dataset'];
-                this.form.description = sampleMetadata['json']['description'];
-                this.form.fileEnding = sampleMetadata['json']['file_format']['file_format'].toLowerCase();
-            }
-            
-            // TODO how to assign metadata
-        },
-        fetchSampleMetadataError: function (error) {
-            this.sampleMetadata = '';
-            // TODO error handling
-        }
+        
+        // checkFileEnding: function(file_ext) {
+        //     if (file_ext && file_ext.toLowerCase() in this.fileTypeMapping) {
+        //         this.selectedFileType = this.fileTypeMapping[file_ext.toLowerCase()];
+        //         // this.$v.form.$touch(); // show rerror
+        //     } else {
+        //         this.selectedFileType = undefined;
+        //     }
+
+        //     this.unfoldMetadata = !(this.selectedFileType === undefined);
+        // },
     },
     mounted: function () {
         this.datasetMetadataMapping =
