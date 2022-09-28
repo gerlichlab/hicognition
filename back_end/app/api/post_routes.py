@@ -67,6 +67,53 @@ def add_dataset_from_ENCODE():
         filetype=data.filetype,
         user_id=g.current_user.id,
         repository_name=data.repository_name,
+        sample_id=data.sample_id
+    )
+    new_entry.add_fields_from_form(data)
+    try:
+        db.session.add(new_entry)
+    except Exception as err:
+        return invalid('') # TODO
+    db.session.commit()
+
+    g.current_user.launch_task(
+        current_app.queues["short"], # TODO which queue to take
+        "download_dataset_file",
+        "run dataset download from repo",
+        new_entry.id
+    )
+    return jsonify({"message": "success! File is being downloaded."})
+
+@api.route("/datasets/URL/", methods=["POST"])
+@auth.login_required
+def add_dataset_from_URL():
+    """ """ # TODO docs
+    def is_form_valid():
+        valid = True
+        valid = valid and hasattr(request, "form")
+        valid = valid and len(request.files) == 0
+        return valid
+    
+    if not is_form_valid():
+        return invalid("Form is not valid!")
+    
+    # get data from form
+    try:
+        data = URLDatasetPostModel(**request.form)
+    except ValueError as err:
+        return invalid(f'"Form is not valid: {str(err)}')
+    
+    # check whether description is there
+    description = parse_description(data)
+    # add data to Database -> in order to get id for filename
+    new_entry = Dataset(
+        dataset_name=data.dataset_name,
+        description=description,
+        public=data.public,
+        processing_state="uploading",
+        filetype=data.filetype,
+        user_id=g.current_user.id,
+        source_url=data.source_url
     )
     new_entry.add_fields_from_form(data)
     try:

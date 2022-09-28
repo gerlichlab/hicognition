@@ -90,7 +90,7 @@
                                         id="fileSource"
                                         name="fileSource"
                                         v-model="form.fileSource"
-                                        @md-selected="clearFileFields"
+                                        @md-selected="clearInputFields"
                                         required
                                     >
                                         <md-option value="httpUpload"> 
@@ -115,22 +115,25 @@
                                 v-if="form.fileSource==='httpUpload'"
                                 :fileTypeMapping="fileTypeMapping"
                                 @input-changed="fileInputChanged"
+                                @update-component-validity="updateComponentValidity"
                             />
                             <formURLInput 
                                 v-else-if="form.fileSource==='url'"
                                 :fileTypeMapping="fileTypeMapping"
                                 @input-changed="urlInputChanged"
+                                @update-component-validity="updateComponentValidity"
                             />
                             <formRepositoryInput 
                                 v-else
                                 :fileTypeMapping="fileTypeMapping"
                                 :repository="repositories[form.fileSource].name"
                                 @input-changed="repositoryInputChanged"
+                                @update-component-validity="updateComponentValidity"
                             />
                         </div>
                     </div>
                     <!-- metadata -->
-                    <div v-if="showMetadata">
+                    <div v-if="componentValid">
                         <md-divider />
                         <md-list>
                             <md-subheader>Dataset descriptions</md-subheader>
@@ -323,9 +326,7 @@
                 </md-card-actions>
             </md-card>
             <!-- Submission notification -->
-            <md-snackbar :md-active.sync="datasetSaved"
-                >The Dataset was added successfully and is ready for
-                preprocessing!</md-snackbar
+            <md-snackbar :md-active.sync="datasetSaved">{{ snackbarMessage }}</md-snackbar
             >
         </form>
     </div>
@@ -339,19 +340,6 @@ import { apiMixin } from "../../mixins";
 import formFileInput from "./formFileInput";
 import formURLInput from "./formURLInput";
 import formRepositoryInput from "./formRepositoryInput";
-
-const correctFileType = function (value) {
-    /* 
-        validator for correct fileype. Note that this is the vue component in this example
-    */
-    // string check is needed because event is first passed into the validator, followed by filename string, which is checked
-    if (typeof value === "string" || value instanceof String) {
-        let splitFileName = value.split(".");
-        let fileEnding = splitFileName[splitFileName.length - 1];
-        return fileEnding in this.fileTypeMapping;
-    }
-    return false;
-};
 
 export default {
     name: "AddDatasetForm",
@@ -390,10 +378,13 @@ export default {
         fileType: null,
         assemblies: {},
         repositories: {}, // TODO sprint9
-        sample_not_foun: false,
-        sampleMetadata: undefined,
-        showMetadata: false
-
+        metadata: null,
+        sampleID: null,
+        sourceURL: null,
+        fileType: null,
+        selectedFile: null,
+        componentValid: false,
+        snackbarMessage: null,
     }),
     validations() {
         // validators for the form
@@ -433,6 +424,15 @@ export default {
         return outputObject;
     },
     computed: {
+        selectedFileType: function() {
+            if (this.fileType && 
+                this.fileType.toLowerCase() in this.fileTypeMapping
+            ){
+                return this.fileTypeMapping[this.fileType.toLowerCase()];
+            } else {
+                return undefined;
+            }
+        },
         valueTypeFields: function () {
             if (this.valueTypeSelected && this.selectedFileType) {
                 return Object.keys(
@@ -474,44 +474,26 @@ export default {
         }
     },
     methods: {
+        updateComponentValidity: function(validity) {
+            this.componentValid = validity;
+        },
         fileInputChanged: function(file, fileType) {
-            if (!file) {
-                this.showMetadata = false;
-            }
             this.selectedFile = file;
             this.fileType = fileType;
         },
         urlInputChanged: function(url, fileType) {
-            if (!url) {
-                this.showMetadata = false;
-            }
             this.sourceURL = url;
             this.fileType = fileType;
         },
         repositoryInputChanged: function(sampleID, fileType, metadata) {
-            if (!sampleID) {
-                this.showMetadata = false;
-            }
             this.sampleID = sampleID;
             this.fileType = fileType;
             this.metadata = metadata;
 
             // fillFields
         },
-
         fillFields: function() {
             // ... TODO fill fields with metadata
-        },
-        checkFileEnding: function() {
-            if (this.fileExt && this.fileExt.toLowerCase() in this.fileTypeMapping) {
-                this.selectedFileType = this.fileTypeMapping[this.fileExt.toLowerCase()];
-                // this.$v.form.$touch(); // show rerror
-            } else {
-                this.selectedFileType = undefined;
-            }
-
-            this.showMetadata = !(this.selectedFileType === undefined);
-            return !(this.selectedFileType === undefined);
         },
         getValidationClass(fieldName) {
             // matrial validation class for form field;
@@ -533,6 +515,15 @@ export default {
                 }
             }
         },
+        clearInputFields(event) { // TODO sprint9
+            // clear fields
+            this.componentValid = false;
+            this.fileType = null;
+            this.selectedFile = null;
+            this.sampleID = null;
+            this.sourceURL = null;
+            this.selectedFile = null;
+        },
         fetchDatasets() {
             this.fetchData("datasets/").then((response) => {
                 // success, store datasets
@@ -542,16 +533,7 @@ export default {
             });
         },
         saveDataset() {
-            //this.sending = true; // show progress bar
-
-            var postRoute = '';
-            if (this.form.fileSource == 'httpUpload') {
-                postRoute = 'datasets/';
-            } else if (this.form.fileSource == 'url') {
-                postRoute = 'datasets/URL';
-            } else {
-                postRoute = 'datasets/encode';
-            }
+            this.sending = true; // show progress bar
 
             // construct form data
             var formData = new FormData();
@@ -577,6 +559,23 @@ export default {
             }
             // add filetype
             formData.append("filetype", this.selectedFileType);
+            
+            var postRoute = '';
+            if (this.form.fileSource == 'httpUpload') {
+                formData.append('file', this.selectedFile, this.selectedFile.name);
+                postRoute = 'datasets/';
+                this.snackbarMessage = 'The Dataset was added successfully and is ready for preprocessing!';
+            } else if (this.form.fileSource == 'url') {
+                formData.append('sourceURL', this.sourceURL);
+                this.snackbarMessage = 'The Dataset has been queued for download!';
+                postRoute = 'datasets/URL/';
+            } else {
+                formData.append('repositoryName', this.form.fileSource);
+                formData.append('sampleID', this.sampleID);
+                this.snackbarMessage = 'The Dataset has been queued for download!';
+                postRoute = 'datasets/encode/';
+            }
+
             // API call including upload is made in the background
             this.postData(postRoute, formData).then((response) => {
                 this.sending = false;
@@ -589,48 +588,25 @@ export default {
             });
         },
         validateDataset() {
-            this.$v.$touch(); // u: difference?!
-            this.$v.form.$touch();
-            if (!this.$v.$invalid) {
+            this.$v.$touch();
+            if (!this.$v.$invalid && this.componentValid) {
                 this.saveDataset();
             }
         },
         fetchAssemblies() {
             this.fetchData("assemblies/").then((response) => {
                 if (response) {
-                    this.assemblies = response.data; // TODO ask => shouldn't return?
+                    this.assemblies = response.data;
                 }
             });
         },
-        fetchRepositories() { // TODO sprint9 get repos list
+        fetchRepositories() {
             this.fetchData("repositories/").then((response) => {
                 if (response) {
                     this.repositories = response.data;
                 }
             });
-        },
-        clearFileFields(event) { // TODO sprint9
-            // clear fields
-            this.form.fileType = null;
-            this.form.selectedFile = null;
-            this.form.sampleID = null;
-            this.form.sourceURL = null;
-        },
-        checkFileTypeURL: function (event) {
-            this.fileExt = this.form.fileType;
-            this.checkFileEnding(this.form.fileType);
-        },
-        
-        // checkFileEnding: function(file_ext) {
-        //     if (file_ext && file_ext.toLowerCase() in this.fileTypeMapping) {
-        //         this.selectedFileType = this.fileTypeMapping[file_ext.toLowerCase()];
-        //         // this.$v.form.$touch(); // show rerror
-        //     } else {
-        //         this.selectedFileType = undefined;
-        //     }
-
-        //     this.unfoldMetadata = !(this.selectedFileType === undefined);
-        // },
+        }
     },
     mounted: function () {
         this.datasetMetadataMapping =

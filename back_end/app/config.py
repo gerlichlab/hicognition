@@ -29,10 +29,6 @@ class Config:
             'name': '4dn',
             'url': 'https://data.4dnucleome.org/files-processed/{id}/@@download',
             'auth_required': True
-        },{
-            'name': 'any URL',
-            'url': '',
-            'auth_required': False
         }
     ]
     

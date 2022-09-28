@@ -8,7 +8,7 @@
                 id="sourceURL"
                 v-model="form.sourceURL"
                 required
-                @change="checkURLValid"
+                @change="inputURLChanged"
             />
             <span
                 class="md-error"
@@ -30,7 +30,7 @@
                 name="fileType"
                 v-model="form.fileType"
                 required
-                @md-selected="checkFileTypeValid"
+                @md-selected="inputFileTypeChanged"
             >
                 <md-option v-for="fileType in fileTypes"
                     :key="fileType"
@@ -55,18 +55,19 @@ import { required, url } from "vuelidate/lib/validators";
 export default {
     name: "formURLInput",
     props: ['fileTypeMapping'],
-    emits: ['input-changed'],
+    emits: ['input-changed', 'update-component-validity'],
     mixins: [validationMixin],
     data: () => ({
         form: {
             sourceURL: null,
             fileType: null
-        }
+        },
+        componentValid: false
     }),
     validations() {
         let outputObject = {
             form: {
-                sourceURL: {
+                sourceURL: { // TODO validate URL properly
                     required,
                    // url
                 },
@@ -78,7 +79,7 @@ export default {
         return outputObject; 
     },
     methods: {
-        checkFileTypeValid: function(event) {
+        inputFileTypeChanged: function(event) {
             this.$v.form.fileType.$touch();
             if (this.$v.form.fileType.$dirty && this.$v.form.fileType.$invalid) {
                 console.log('filetype invalid');
@@ -88,7 +89,7 @@ export default {
             this.checkFormValid();
             return;
         },
-        checkURLValid: function(event) {
+        inputURLChanged: function(event) {
             this.$v.form.sourceURL.$touch();
             if (this.$v.form.sourceURL.$dirty && this.$v.form.sourceURL.$invalid) {
                 console.log('sourceurl invalid');
@@ -99,9 +100,19 @@ export default {
             return;
         },
         checkFormValid: function() {
-            if (this.$v.form.$invalid) {
-                this.$emit('input-changed', null);
-                console.log('form invalid');
+            if (!this.$v.form.sourceURL.$dirty || !this.$v.form.fileType.$dirty) { 
+                return;
+            }
+            this.$v.$touch();
+
+            // emit validity value
+            if (this.componentValid != this.$v.$dirty && !this.$v.$invalid) {
+                this.componentValid = this.$v.$dirty && !this.$v.$invalid;
+                this.$emit('update-component-validity', this.componentValid);
+                console.log('update-component-validity, ' + this.componentValid);
+            }
+
+            if (!this.componentValid) {
                 return;
             }
 

@@ -1,7 +1,7 @@
 <template>
     <div class="md-layout-item md-layout md-gutter">
         <div class="md-layout-item md-small-size-100">
-        <md-field :class="validationSampleID">
+        <md-field :class="validationSampleID()">
             <label for="sampleID">Sample-ID</label>
             <md-input
                 name="sampleID"
@@ -22,18 +22,19 @@
             >
             <span
                 class="md-error"
-                v-else-if="!$v.form.sampleID.validSampleFound"
+                v-else-if="!$v.form.sampleID.sampleFound"
                 >No entry found for this sample ID</span 
             > <!-- TODO this triggers when file type is not right?! -->
             <span
                 class="md-error"
-                v-else-if="!$v.form.sampleID.validAccessAllowed"
+                v-else-if="!$v.form.sampleID.accessAllowed"
                 >Repository declined request (auth required)</span
             >
             <span
                 class="md-error"
-                v-else-if="!$v.form.sampleID.validFileType"
-                >File type of entry is not allowed</span
+                v-else-if="!$v.form.sampleID.fileTypeValid"
+                >Sample file type ({{ fileExt }}) is not allowed.
+                Allowed: {{ acceptedFileTypes }}</span
             >
         </md-field>
         </div>
@@ -47,13 +48,14 @@ import { apiMixin } from "../../mixins";
 export default {
     name: "formRepositoryInput",
     props: ['repository', 'fileTypeMapping'],
-    emits: ['input-changed'],
+    emits: ['input-changed', 'update-component-validity'],
     mixins: [validationMixin, apiMixin],
     data: () => ({
         form: {
             sampleID: null
         },
-        metadata: null
+        metadata: null,
+        componentValid: false
     }),
     validations() {
         return {
@@ -62,10 +64,11 @@ export default {
                     minLength: minLength(4),
                     required,
                     sampleFound: this.validSampleFound,
-                    validAccessAllowed: this.validAccessAllowed,
-                    validFileType: this.validFileType
+                    accessAllowed: this.validAccessAllowed,
+                    fileTypeValid: this.validFileType
                 }
-            }
+            },
+            fileExt: '',
         };
     },
     methods: {
@@ -88,29 +91,43 @@ export default {
                 && this.metadata['json'] 
                 && this.metadata['json']['file_format']
                 && this.metadata['json']['file_format']['file_format']) {
-                var fileExt = this.metadata['json']['file_format']['file_format'];
-                return (fileExt in this.fileTypeMapping);
+                this.fileExt = this.metadata['json']['file_format']['file_format'];
+                return (this.fileExt in this.fileTypeMapping);
             } else {
                 return true;
             }
         },
         fetchSampleMetadata(event) {
-            // 4DNFIRCHWS8M
-            this.$v.form.sampleID.$touch();
-            if (!(this.$v.form.sampleID.required && this.$v.form.sampleID.minLength)) {
-                this.$emit('input-changed', null);
+            // check validity of form
+            this.$v.$touch();
+            if (!this.$v.$dirty) { 
                 return;
             }
 
+            if (!(this.$v.form.sampleID.required && this.$v.form.sampleID.minLength)) {
+                if (this.componentValid != false) {
+                    this.componentValid = false;
+                    this.$emit('update-component-validity', this.componentValid);
+                    console.log('update-component-validity, ' + this.componentValid);
+                }
+                return;
+            }
             this.fetchData(`ENCODE/${this.repository}/${this.form.sampleID}/`)
                 .then((response) => this.fetchSampleMetadataResponse(response.data))
                 .catch((error) => this.fetchSampleMetadataError(error))
         },
         fetchSampleMetadataResponse: function (metadata) {
             this.metadata = metadata;
-            this.$v.form.sampleID.$touch();
-            if (this.$v.form.sampleID.$invalid) {
-                this.$emit('input-changed', null);
+            // check validity of form
+            this.$v.$touch();
+            if (!this.$v.$dirty) { // should not be dirty, as this method called on change anyway
+                return;
+            }
+            // emit validity value
+            this.componentValid = this.$v.$dirty && !this.$v.$invalid;
+            this.$emit('update-component-validity', this.componentValid);
+            console.log('update-component-validity, ' + this.componentValid);
+            if (!this.componentValid) {
                 return;
             }
             // send to parent
@@ -118,14 +135,23 @@ export default {
                 this.form.sampleID,
                 this.metadata['json']['file_format']['file_format'],
                 this.metadata);
+            console.log('input-changed' + ', ' +
+                this.form.sampleID + ', ' +
+                this.metadata['json']['file_format']['file_format'] + ', ' +
+                '{metadata}');
         },
         fetchSampleMetadataError: function (error) {
-            this.metadata = undefined;
+            this.componentValid = false;
+            this.$emit('update-component-validity', this.componentValid);
+            console.log('update-component-validity, ' + this.componentValid);
         },
-    },
-    computed: {
         validationSampleID: function() {
             return {'md-invalid': (this.$v.form.sampleID.$dirty && this.$v.form.sampleID.$invalid)}
+        }
+    },
+    computed: {
+        acceptedFileTypes: function() {
+            return '' + Object.keys(this.fileTypeMapping).join(', ');
         }
     }
 }

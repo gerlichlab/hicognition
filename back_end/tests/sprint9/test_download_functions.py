@@ -56,7 +56,7 @@ class TestDownloadFile(TempDirTestCase):
     def test_download_existing_file(self, mock_http_request):
         content, name = download_utils.download_file(
             "https://mockurl.mock/200",
-            md5checksum='0934773585cd8b75960444d97cc3d41e',
+            md5sum='0934773585cd8b75960444d97cc3d41e',
             gunzip_if_compressed=False
         )
         self.assertEqual(name, 'filename.bed.gz')
@@ -65,7 +65,7 @@ class TestDownloadFile(TempDirTestCase):
         with self.assertRaises(download_utils.MD5Error):
             content, name = download_utils.download_file(
                 "https://mockurl.mock/200",
-                md5checksum='00000000000000000000000000000000'
+                md5sum='00000000000000000000000000000000'
             )
     
     @patch('requests.get', side_effect=mock_http_request)

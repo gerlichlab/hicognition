@@ -9,7 +9,7 @@ import pandas as pd
 import requests
 import gzip
 import json
-import datetime
+from datetime import datetime
 from hicognition import io_helpers
 from rq import get_current_job
 from . import create_app, db
@@ -160,8 +160,8 @@ def download_dataset_file(dataset_id: int, delete_if_invalid: bool = False):
     """
     def handle_error(ds: Dataset, msg: str):
         send_notification(ds, msg)
-        ds.session.delete(ds)
-        ds.session.commit()
+        db.session.delete(ds)
+        db.session.commit()
         return
     
     def send_notification(ds: Dataset, msg: str):
@@ -177,6 +177,10 @@ def download_dataset_file(dataset_id: int, delete_if_invalid: bool = False):
         })
         
     ds = Dataset.query.get(dataset_id)
+    log.error(ds.sample_id)
+    log.error(ds.repository_name)
+    log.error(ds.source_url)
+    log.error((ds.sample_id and ds.repository_name))
     if not (ds.sample_id and ds.repository_name) and not ds.source_url:
         log.info(f'No sample_id, repo_name or source_url provided for {ds.id}')
         handle_error(ds, f'Neither sample id + repository, nor file URL have been provided.')
@@ -189,7 +193,13 @@ def download_dataset_file(dataset_id: int, delete_if_invalid: bool = False):
         if is_repository:
             download_utils.download_encode(ds, current_app.config["UPLOAD_DIR"])
         else:
-            download_utils.download_url(ds, current_app.config["UPLOAD_DIR"], current_app.config["DATASET_OPTION_MAPPING"][ds.file_type])
+            download_utils.download_url(
+                ds,
+                current_app.config["UPLOAD_DIR"],
+                current_app.config[
+                    "DATASET_OPTION_MAPPING"
+                    ]["supported_file_endings"
+                    ][ds.filetype][0])
     except Exception as err:
         log.info(str(err))
         handle_error(ds, str(err))

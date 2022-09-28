@@ -32,7 +32,7 @@ class FileEmptyError(FileImportError): pass
 class MetadataFetchError(FileImportError): pass
 class MetadataError(FileImportError): pass
 
-def download_file(url: str, md5checksum: str = None, gunzip_if_compressed: bool = True):
+def download_file(url: str, md5sum: str = None, gunzip_if_compressed: bool = True):
     """
     """
     response = requests.get(url, stream=True)
@@ -50,8 +50,8 @@ def download_file(url: str, md5checksum: str = None, gunzip_if_compressed: bool 
         filename = None
 
     # check md5sum
-    if md5checksum is not None and hashlib.md5(content).hexdigest() != md5checksum:
-        raise MD5Error(f'md5 hashes not equal: [{hashlib.md5(content).hexdigest()} != {md5checksum}]') 
+    if md5sum is not None and hashlib.md5(content).hexdigest() != md5sum:
+        raise MD5Error(f'md5 hashes not equal: [{hashlib.md5(content).hexdigest()} != {md5sum}]') 
 
     # check if compressed and decompress
     if gunzip_if_compressed and _is_gzipped(content):
@@ -80,7 +80,7 @@ def download_encode(ds: Dataset, upload_dir: str, _: str = None):
     """ """
     log.info(f'Getting metadata for {ds.id} from {ds.repository_name}')
     try:
-        metadata = download_ENCODE_metadata(ds.repository_name, ds.sample_id)
+        metadata = download_ENCODE_metadata(ds.repository.build_url(ds.sample_id))
     except RequestException as err:
         log.info(f'Dataset {ds.id}: metadata could not be retrieved')
         raise MetadataFetchError('Metadata Fetch error: %s' % str(err))
@@ -95,7 +95,7 @@ def download_encode(ds: Dataset, upload_dir: str, _: str = None):
     # download file
     http_content, http_file_name = download_file(
         url=ds.source_url,
-        md5=metadata.get('md5sum', None),
+        md5sum=metadata.get('md5sum', None),
         gunzip_if_compressed=True
     )
     file_name = secure_filename(f"{ds.id}_{metadata.get('display_title', http_file_name)}") # contains file_name with ext

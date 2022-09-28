@@ -33,13 +33,13 @@ import { required, minLength, maxLength, requiredIf, url } from "vuelidate/lib/v
 export default {
     name: "formFileInput",
     props: ['fileTypeMapping'],
-    emits: ['input-changed'],
+    emits: ['input-changed', 'update-component-validity'],
     mixins: [validationMixin],
     data: () => ({
         form: {
             file: null
         },
-        selectedFile: null
+        componentValid: false
     }),
     validations() {
         let outputObject = {
@@ -67,18 +67,26 @@ export default {
             return (fileEnding in this.fileTypeMapping);
         },
         handleFileChange(event) {
-            // get file IO-stream
+            // check validity of form
             this.$v.$touch();
-            if (this.$v.$dirty && this.$v.$invalid) {
-                console.log('input-changed');
-                this.$emit('input-changed', null);
+            if (!this.$v.$dirty) { // should not be dirty, as this method called on change anyway
                 return;
             }
 
-            this.selectedFile = event[0];
+            // emit validity value
+            this.componentValid = this.$v.$dirty && !this.$v.$invalid;
+            this.$emit('update-component-validity', this.componentValid);
+            console.log('update-component-validity, ' + this.componentValid);
+            
+            if (!this.componentValid) {
+                return;
+            }
+
+            // emit file + extension
             var nameSplit = event[0]['name'].split(".");
             this.fileExt = nameSplit[nameSplit.length - 1];
-            this.$emit('input-changed', this.selectedFile);
+            this.$emit('input-changed', event[0], this.fileExt);
+            console.log('input-changed, ' + event[0] + ', ' + this.fileExt);
         },
     },
     computed: {

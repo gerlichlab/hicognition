@@ -1,6 +1,7 @@
 """GET API endpoints for hicognition"""
 import json
 import gzip
+import logging
 from urllib.error import HTTPError
 import pandas as pd
 import requests
@@ -33,7 +34,8 @@ from ..models import (
 )
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
-
+# get logger
+log = logging.getLogger("rq.worker")
 
 @api.route("/test", methods=["GET"])
 def test():
@@ -131,8 +133,6 @@ def get_datasets(dtype):
 @api.route("/datasets/<dataset_id>/name/", methods=["GET"])
 @auth.login_required
 def get_name_of_dataset(dataset_id):
-    g.current_user.available_datasets[dataset_id]
-    
     """Returns the name for a given dataset, if the user owns the requested dataset."""
     dataset = Dataset.query.get(dataset_id)
     # check whether dataset exists
