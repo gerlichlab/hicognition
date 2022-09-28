@@ -33,7 +33,7 @@ class NotificationHandler:
         sse.publish(data.dict(), type="notification")
 
     def send_notification_general(self, data: dict):
-        """Sends the update for status of ."""
+        """Sends a general message"""
         sse.publish(data, type="notification")
 
     def send_keep_alive(self):

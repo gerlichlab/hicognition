@@ -182,9 +182,9 @@ def add_dataset():
     if not new_entry.validate_dataset(delete=True):
         return invalid("Wrong dataformat or wrong chromosome names!")
 
-    new_entry.preprocess_dataset()
+    new_entry.preprocess_dataset(invoke_redis_task=True)
     db.session.commit()
-    return jsonify({"message": "success! File is handed in for preprocessing."})
+    return jsonify({"message": "success! File is handed in for preprocessing."}) # TODO preprocessing ambiguous
 
 
 @api.route("/preprocess/datasets/", methods=["POST"])

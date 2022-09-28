@@ -59,7 +59,6 @@ class TestGetMetadata(LoginTestCase):
     @patch('app.download_utils.download_ENCODE_metadata')
     def test_all_went_well(self, mock_download_metadata):
         mock_download_metadata.return_value = {}
-        import pdb; pdb.set_trace()
         response = self.client.get(
             f"/api/ENCODE/{self.data_repo_4dn.name}/sampleid/", 
             content_type="application/json",

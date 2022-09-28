@@ -154,33 +154,37 @@ def download_dataset_file(dataset_id: int, delete_if_invalid: bool = False):
     Downloads dataset file from web and validates + 'preprocesses' it.
     ua
     - ua: have put this in tasks, as this made most sense.
-    - ua: I would actually put this into the dataset class if possible.
-    - this fnct is not using the REST API provided by 4dn
-        as it is meant for submission
-    """
-    def handle_error(ds: Dataset, msg: str):
-        send_notification(ds, msg)
-        db.session.delete(ds)
-        db.session.commit()
-        return
+    - ua: I would actually put this into download_functions.py if possible.
     
-    def send_notification(ds: Dataset, msg: str):
+    TODO Important: may throw an error if dataset id not found
+    """
+    
+    def handle_error(ds: Dataset, msg: str):
+        send_notification(
+            ds,
+            f'Dataset creation failed:<br>{msg}',
+            'failed'
+        )
+        if delete_if_invalid:
+            db.session.delete(ds)
+            db.session.commit()
+    
+    def send_notification(ds: Dataset, msg: str, status: str = 'success'):
+        job_id = -1
+        if get_current_job() is not None:
+            job_id = get_current_job().get_id()
+            
         notification_handler.send_notification_general({
             "id": get_current_job().get_id(),
             "dataset_name": ds.dataset_name,
-            "repository_name": ds.repository_name,
-            "sample_id": ds.sample_id,
             "time": datetime.now(),
             "notification_type": "upload_notification",
             "owner": ds.user.id,
-            "message": msg
+            "message": msg,
+            "status": status
         })
         
     ds = Dataset.query.get(dataset_id)
-    log.error(ds.sample_id)
-    log.error(ds.repository_name)
-    log.error(ds.source_url)
-    log.error((ds.sample_id and ds.repository_name))
     if not (ds.sample_id and ds.repository_name) and not ds.source_url:
         log.info(f'No sample_id, repo_name or source_url provided for {ds.id}')
         handle_error(ds, f'Neither sample id + repository, nor file URL have been provided.')
@@ -210,12 +214,12 @@ def download_dataset_file(dataset_id: int, delete_if_invalid: bool = False):
     valid = ds.validate_dataset() #  TODO can't delete file/object, bc user would not get info about it then
     if not valid:
         log.info(f'Dataset {ds.id} file was invalid.')
-        handle_error(ds, 'File was invalid. Formatting of it was faulty.')
+        handle_error(ds, 'File formatting was invalid.')
         return
 
     ds.preprocess_dataset()
     db.session.commit()
-    send_notification(ds, 'File has been downloaded. Preprocessing now...') # TODO preprocessing ambiguous
-    log.info("      Success.")
+    send_notification(ds, 'Dataset file download was successful!<br>Ready for preprocessing.') # TODO preprocessing ambiguous
+    log.info("Success.")
     
     

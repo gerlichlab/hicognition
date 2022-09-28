@@ -83,7 +83,7 @@ def download_encode(ds: Dataset, upload_dir: str, _: str = None):
         metadata = download_ENCODE_metadata(ds.repository.build_url(ds.sample_id))
     except RequestException as err:
         log.info(f'Dataset {ds.id}: metadata could not be retrieved')
-        raise MetadataFetchError('Metadata Fetch error: %s' % str(err))
+        raise MetadataFetchError('Metadata Fetch error:%s' % str(err))
  
     # elif metadata.get('href'):
     #     ds.source_url = metadata['href'] # TODO make way to attach href to the repo url
@@ -106,7 +106,7 @@ def download_encode(ds: Dataset, upload_dir: str, _: str = None):
     ds.file_path = os.path.join(upload_dir, secure_filename(file_name))
     if os.path.exists(ds.file_path):
         log.info(f'Datset {ds.id}: File at {ds.file_path} already exists')
-        raise IOError(f'File at {ds.file_path} already exists')
+        raise IOError(f'File already exists')
     with open(ds.file_path, 'w') as f_out:
         f_out.write(http_content.decode())
         
@@ -122,7 +122,7 @@ def download_url(ds: Dataset, upload_dir: str, file_ext: str, md5sum: str = None
         ds (Dataset): Dataset containing a valid source_url
         upload_dir (str): where to place file after gunzipping
         file_ext (str): extension of the file that will be saved
-        
+
     Exceptions:
         HTTPError 404, 403, 400 or similar if URL is wrong
         IOException if file already exists

@@ -491,6 +491,9 @@ export default {
             this.metadata = metadata;
 
             // fillFields
+            this.form.datasetName = metadata['json']['track_and_facet_info']['dataset']
+            this.form.description = metadata['json']['track_and_facet_info']['condition']
+            // if (metadata['json']['genome_assembly'] in 
         },
         fillFields: function() {
             // ... TODO fill fields with metadata

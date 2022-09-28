@@ -13,12 +13,12 @@
             <span
                 class="md-error"
                 v-if="!$v.form.sourceURL.url"
-                >Please check if URL is valid</span
+                >URL invalid! {{urlErrorMsg}}</span
             >
             <span
                 class="md-error"
                 v-if="!$v.form.sourceURL.required"
-                >URL is required</span
+                >URL required!</span
             >
         </md-field>
         </div>
@@ -69,7 +69,7 @@ export default {
             form: {
                 sourceURL: { // TODO validate URL properly
                     required,
-                   // url
+                    url
                 },
                 fileType: {
                     required
@@ -130,6 +130,13 @@ export default {
         },
         validationFileType: function() {
             return {'md-invalid': (this.$v.form.fileType.$dirty && this.$v.form.fileType.$invalid)}
+        },
+        urlErrorMsg: function() {
+            let url = this.form.sourceURL.toLowerCase()
+            if (!url.startsWith('https://') && !url.startsWith('http://')) {
+                return 'Add protocol in front (e.g. https://)';
+            }
+            return '';
         }
     }
 }

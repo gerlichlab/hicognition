@@ -28,10 +28,9 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
             chrom_sizes=self.app.config["CHROM_SIZES"],
             chrom_arms=self.app.config["CHROM_ARMS"],
         )
-        self.data_repo = DataRepository(name='repo', url='https://{id}', auth_required=False)
                 
         db.session.add(self.hg19)
-        db.session.add(self.data_repo)
+        self.data_repo = DataRepository(name='testrepo', url='https://{id}', auth_required=False)
         db.session.commit()
         
         self.token_headers = self.get_token_header(self.add_and_authenticate("test", "asdf"))
@@ -50,7 +49,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
             "Directionality": "+",
             "public": "false",
             "sampleID": "4DNFIRCHWS8M",
-            "repositoryName": "repo"
+            "repositoryName": "testrepo"
         }
     def mock_http_request(*args, **kwargs):
         class MockResponse:
@@ -105,7 +104,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset.processing_state, 'uploading')
         
     @patch('requests.get', side_effect = mock_http_request)
-    def test_unknown_user_cant_add(self, mock_http_request, mock_launch):
+    def test_unknown_user_cant_add(self, mock_http_request):
         data = self.default_data
         data['user'] = 22
         response = self.client.post(

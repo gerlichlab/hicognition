@@ -345,22 +345,5 @@ class TestSortBed(TempDirTestCase):
         # compare
         assert_frame_equal(expected, result)
 
-class TestDownloadFromWeb(TempDirTestCase):
-    """Tests downloads of external files."""
-
-    def test_download_wo_auth(self):
-        """tests whether a usual download works"""
-        url="http://hgdownload.cse.ucsc.edu/goldenpath/hg19/bigZips/hg19.chrom.sizes"
-        path=os.path.join(TempDirTestCase.TEMP_PATH, "hg19.arms.sizes.web")
-        
-        io_helpers.download_from_web(url, path)
-
-        expected = pd.read_csv("tests/testfiles/hg19.chrom.sizes.ucsc.edu")
-        result = pd.read_csv(path)
-        
-        assert_frame_equal(expected, result)
-
-
-
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

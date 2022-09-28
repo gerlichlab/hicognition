@@ -162,6 +162,8 @@ class TestDownloadENCODE(TempDirTestCase): # DEFINE how i want to get info from 
             repository_name = 'testrepo',
             sample_id = 'test_sample'
         )
+        self.data_repo = DataRepository(name='testrepo', url='https://{id}', auth_required=False)
+        self.ds.repository = self.data_repo
     
     @patch('app.download_utils.download_ENCODE_metadata')
     def test_raises_exception_metadatafetch(self, mock_download_ENCODE_metadata):
@@ -239,6 +241,8 @@ class TestDownloadURL(TempDirTestCase): # DEFINE how i want to get info from thi
             repository_name = 'testrepo',
             sample_id = 'test_sample'
         )
+        self.data_repo = DataRepository(name='testrepo', url='https://{id}', auth_required=False)
+        self.ds.repository = self.data_repo
     
     @patch('app.download_utils.download_file')
     def test_legit_file_gunzip(self, mock_download_file):
@@ -273,7 +277,7 @@ class TestDownloadURL(TempDirTestCase): # DEFINE how i want to get info from thi
             download_utils.download_url(self.ds, TempDirTestCase.TEMP_PATH, 'bed')
 
 
-class TestIsGzipped():
+class TestIsGzipped(unittest.TestCase):
     def test_gzipped(self):
         self.assertTrue(download_utils._is_gzipped(gzip.compress(str('Hello World').encode())))
         self.assertFalse(download_utils._is_gzipped(str('Hello World').encode()))

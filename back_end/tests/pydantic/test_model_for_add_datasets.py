@@ -11,12 +11,12 @@ from pydantic import ValidationError
 # import sys
 # sys.path.append("./")
 from app.models import Dataset, Assembly
-from app.form_models import DatasetPostModel
+from app.form_models import FileDatasetPostModel
 from app import db
 
-
-class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
-    """Tests the pydantic DatasetPostModel which validates the form for posting datasets."""
+# TODO do tests for encode + url
+class TestFileDatasetPostModel(LoginTestCase, TempDirTestCase):
+    """Tests the pydantic FileDatasetPostModel which validates the form for posting datasets."""
 
     maxDiff = None
 
@@ -54,7 +54,7 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "filename": "test.mcool",
         }
         with self.assertRaises(ValidationError) as exc:
-            data_ojb = DatasetPostModel(**test_object)
+            data_ojb = FileDatasetPostModel(**test_object)
         print(exc.exception)
         assert "Unsupported filetype!" in str(exc.exception)
 
@@ -92,7 +92,7 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "size_type": "undefined",
             "user_id": None,
         }
-        data_ojb = DatasetPostModel(**test_object)
+        data_ojb = FileDatasetPostModel(**test_object)
         self.assertEqual(expected_object, data_ojb.dict())
 
     def test_pydantic_model_working_bed(self):
@@ -129,7 +129,7 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "size_type": "Point",
             "user_id": None,
         }
-        data_ojb = DatasetPostModel(**test_object)
+        data_ojb = FileDatasetPostModel(**test_object)
         self.assertEqual(expected_object, data_ojb.dict())
 
     def test_pydantic_model_working_cooler_wo_description(self):
@@ -166,7 +166,7 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "size_type": "undefined",
             "user_id": None,
         }
-        data_ojb = DatasetPostModel(**test_object)
+        data_ojb = FileDatasetPostModel(**test_object)
         self.assertEqual(expected_object, data_ojb.dict())
 
     def test_pydantic_model_unsupported_field(self):
@@ -186,7 +186,7 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "filename": "test.mcool",
         }
         with self.assertRaises(ValidationError) as exc:
-            data_ojb = DatasetPostModel(**test_object)
+            data_ojb = FileDatasetPostModel(**test_object)
         print(exc.exception)
         assert "extra fields not permitted" in str(exc.exception)
 
@@ -206,7 +206,7 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "filename": "test.bed",
         }
         with self.assertRaises(ValidationError) as exc:
-            data_ojb = DatasetPostModel(**test_object)
+            data_ojb = FileDatasetPostModel(**test_object)
         print(exc.exception)
         assert "Invalid filename!" in str(exc.exception)
 
@@ -226,7 +226,7 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "filename": "test.mcool",
         }
         with self.assertRaises(ValidationError) as exc:
-            data_ojb = DatasetPostModel(**test_object)
+            data_ojb = FileDatasetPostModel(**test_object)
         print(exc.exception)
         assert "Unsupported value_type!" in str(exc.exception)
 
@@ -245,7 +245,7 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "filename": "test.mcool",
         }
         with self.assertRaises(ValidationError) as exc:
-            data_ojb = DatasetPostModel(**test_object)
+            data_ojb = FileDatasetPostModel(**test_object)
         print(exc.exception)
         assert "Unsupported possible value" in str(exc.exception)
 
@@ -265,7 +265,7 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "filename": "test.mcool",
         }
         with self.assertRaises(ValidationError) as exc:
-            data_ojb = DatasetPostModel(**test_object)
+            data_ojb = FileDatasetPostModel(**test_object)
         print(exc.exception)
         assert "Unsupported possible value" in str(exc.exception)
 
@@ -284,7 +284,7 @@ class TestDatasetPostModel(LoginTestCase, TempDirTestCase):
             "filetype": "cooler",
             "filename": "test.mcool",
         }
-        data_ojb = DatasetPostModel(**test_object)
+        data_ojb = FileDatasetPostModel(**test_object)
         assert data_ojb["Normalization"] == data_ojb["normalization"]
         assert data_ojb["Normalization"] == "ICCF"
 
