@@ -30,12 +30,14 @@ from ..models import (
     Session,
     Collection,
     Organism,
-    User_DataRepository_Credentials
+    User_DataRepository_Credentials,
 )
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
+
 # get logger
 log = logging.getLogger("rq.worker")
+
 
 @api.route("/test", methods=["GET"])
 def test():
@@ -596,10 +598,12 @@ def get_all_collections():
 # TODO sprint9 make get route repositories
 @api.route("/repositories/", methods=["GET"])
 @auth.login_required
-def get_all_repositories(): 
+def get_all_repositories():
     """Gets all repos in the db for file downloads"""
     repositories = db.session.query(DataRepository).all()
-    return jsonify({repo.name: repo.to_json() for repo in repositories}) # TODO this is not so good i think?
+    return jsonify(
+        {repo.name: repo.to_json() for repo in repositories}
+    )  # TODO this is not so good i think?
 
 
 # ULRICH wanted to do this in js, but got CORS errors all the time (obviously)
@@ -612,29 +616,28 @@ def get_ENCODE_metadata(repo_name: str, sample_id: str):
     """
     repository = db.session.query(DataRepository).get(repo_name)
     if repository is None:
-        return jsonify({'status': 'error',
-                        'http_status_code': 404,
-                        'message': f'ENCODE repository {repo_name} not in our database.'})
-    
+        return jsonify(
+            {
+                "status": "error",
+                "http_status_code": 404,
+                "message": f"ENCODE repository {repo_name} not in our database.",
+            }
+        )
+
     # TODO EXCEPTION HANDLING
     try:
         data = download_utils.download_ENCODE_metadata(repository.build_url(sample_id))
     except requests.HTTPError as err:
-        return jsonify({
-            'status': 'error',
-            'http_status_code': err.response.status_code,
-            'message': err.response.text
-        })
+        return jsonify(
+            {
+                "status": "error",
+                "http_status_code": err.response.status_code,
+                "message": err.response.text,
+            }
+        )
     except requests.RequestException as err:
-        return jsonify({
-            'status': 'error',
-            'http_status_code': 400,
-            'message': str(err)
-        })
-        
-    return jsonify({
-        'status': 'ok',
-        'http_status_code': 200,
-        'json': data
-    })
+        return jsonify(
+            {"status": "error", "http_status_code": 400, "message": str(err)}
+        )
 
+    return jsonify({"status": "ok", "http_status_code": 200, "json": data})

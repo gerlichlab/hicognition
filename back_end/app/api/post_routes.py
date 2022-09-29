@@ -13,6 +13,7 @@ from hicognition.utils import parse_description, get_all_interval_ids, parse_bin
 from hicognition.format_checkers import FORMAT_CHECKERS
 from . import api
 from .. import db
+
 # from ..tasks import download_dataset_file # FIXME One can never include this
 from ..models import (
     Assembly,
@@ -26,34 +27,39 @@ from ..models import (
     EmbeddingIntervalData,
 )
 from ..form_models import (
-    DatasetPostModel, FileDatasetPostModel, URLDatasetPostModel, ENCODEDatasetPostModel
+    DatasetPostModel,
+    FileDatasetPostModel,
+    URLDatasetPostModel,
+    ENCODEDatasetPostModel,
 )
 from .authentication import auth
 from .. import pipeline_steps
 from .errors import forbidden, invalid, not_found
 
+
 @api.route("/datasets/encode/", methods=["POST"])
 @auth.login_required
 def add_dataset_from_ENCODE():
-    """ """ # TODO docs
+    """ """  # TODO docs
+
     def is_form_valid():
         valid = True
         valid = valid and hasattr(request, "form")
         valid = valid and len(request.files) == 0
         return valid
-    
+
     if not is_form_valid():
         return invalid("Form is not valid!")
-    
+
     # get data from form
     try:
         data = ENCODEDatasetPostModel(**request.form)
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
-    
+
     if db.session.query(DataRepository).get(data.repository_name) is None:
-        return invalid(f'Repository {data.repository_name} not found.')
-    
+        return invalid(f"Repository {data.repository_name} not found.")
+
     # check whether description is there
     description = parse_description(data)
     # check whether dataset should be public
@@ -67,42 +73,44 @@ def add_dataset_from_ENCODE():
         filetype=data.filetype,
         user_id=g.current_user.id,
         repository_name=data.repository_name,
-        sample_id=data.sample_id
+        sample_id=data.sample_id,
     )
     new_entry.add_fields_from_form(data)
     try:
         db.session.add(new_entry)
     except Exception as err:
-        return invalid('') # TODO
+        return invalid("")  # TODO
     db.session.commit()
 
     g.current_user.launch_task(
-        current_app.queues["short"], # TODO which queue to take
+        current_app.queues["short"],  # TODO which queue to take
         "download_dataset_file",
         "run dataset download from repo",
-        new_entry.id
+        new_entry.id,
     )
     return jsonify({"message": "success! File is being downloaded."})
+
 
 @api.route("/datasets/URL/", methods=["POST"])
 @auth.login_required
 def add_dataset_from_URL():
-    """ """ # TODO docs
+    """ """  # TODO docs
+
     def is_form_valid():
         valid = True
         valid = valid and hasattr(request, "form")
         valid = valid and len(request.files) == 0
         return valid
-    
+
     if not is_form_valid():
         return invalid("Form is not valid!")
-    
+
     # get data from form
     try:
         data = URLDatasetPostModel(**request.form)
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
-    
+
     # check whether description is there
     description = parse_description(data)
     # add data to Database -> in order to get id for filename
@@ -113,29 +121,29 @@ def add_dataset_from_URL():
         processing_state="uploading",
         filetype=data.filetype,
         user_id=g.current_user.id,
-        source_url=data.source_url
+        source_url=data.source_url,
     )
     new_entry.add_fields_from_form(data)
     try:
         db.session.add(new_entry)
     except Exception as err:
-        return invalid('') # TODO
+        return invalid("")  # TODO
     db.session.commit()
 
     g.current_user.launch_task(
-        current_app.queues["short"], # TODO which queue to take
+        current_app.queues["short"],  # TODO which queue to take
         "download_dataset_file",
         "run dataset download from repo",
-        new_entry.id
+        new_entry.id,
     )
     return jsonify({"message": "success! File is being downloaded."})
-    
+
 
 @api.route("/datasets/", methods=["POST"])
 @auth.login_required
 def add_dataset():
     """endpoint to add a new dataset"""
-    
+
     def is_form_invalid():
         invalid = False
         invalid = invalid or not hasattr(request, "form")
@@ -148,7 +156,9 @@ def add_dataset():
         return invalid("Form is not valid!")
     # get data from form
     try:
-        data = FileDatasetPostModel(**request.form, filename=request.files["file"].filename)
+        data = FileDatasetPostModel(
+            **request.form, filename=request.files["file"].filename
+        )
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
 
@@ -168,7 +178,7 @@ def add_dataset():
     new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
     db.session.commit()
-    
+
     # TODO this doesnt work yet
     # save file in upload directory with database_id as prefix
     file_object = request.files["file"]
@@ -176,7 +186,7 @@ def add_dataset():
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     file_object.save(file_path)
     new_entry.file_path = file_path
-    new_entry.processing_state = "uploaded" #  TODO status only used for tests?
+    new_entry.processing_state = "uploaded"  #  TODO status only used for tests?
 
     # validate dataset and delete if not valid
     if not new_entry.validate_dataset(delete=True):
@@ -184,7 +194,9 @@ def add_dataset():
 
     new_entry.preprocess_dataset(invoke_redis_task=True)
     db.session.commit()
-    return jsonify({"message": "success! File is handed in for preprocessing."}) # TODO preprocessing ambiguous
+    return jsonify(
+        {"message": "success! File is handed in for preprocessing."}
+    )  # TODO preprocessing ambiguous
 
 
 @api.route("/preprocess/datasets/", methods=["POST"])
@@ -730,4 +742,3 @@ def create_region_from_cluster_id(entry_id, cluster_id):
     db.session.commit()
     # return success
     return jsonify({"message": "success! Region subset"})
-

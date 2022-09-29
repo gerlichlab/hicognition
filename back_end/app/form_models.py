@@ -24,7 +24,6 @@ class DatasetPostModel(BaseModel):
     processing_state: constr(max_length=64) = None
     filetype: constr(max_length=64)
     value_type: constr(max_length=64) = Field(..., alias="ValueType")
-        
 
     @classmethod
     def get_reverse_alias(cls, key):
@@ -41,7 +40,7 @@ class DatasetPostModel(BaseModel):
             "ValueType": "value_type",
             "sampleID": "sample_id",
             "repositoryName": "repository_name",
-            "sourceURL": "source_url"
+            "sourceURL": "source_url",
         }
         return alias_table[key]
 
@@ -82,16 +81,15 @@ class DatasetPostModel(BaseModel):
                 )
         return value_type
 
-
     @validator("description")
     def parse_description(cls, description):
         """Checks if description was provided provided in frontend, if not rewrites it."""
         if description == "null":
             description = "No description provided"
         return description
-    
+
     # TODO maybe add another for file type?
-    
+
     def __getitem__(self, item):
         if hasattr(self, item):
             return getattr(self, item)
@@ -100,10 +98,12 @@ class DatasetPostModel(BaseModel):
     def __contains__(self, item):
         return hasattr(self, item)
 
+
 class FileDatasetPostModel(DatasetPostModel):
     """model of dataset with file"""
+
     filename: constr(max_length=200)
-    
+
     @validator("filename")
     def file_has_correct_ending_and_supported_filetype(cls, filename, values, **kwargs):
         """Checks is the file has the appropriate file ending."""
@@ -120,28 +120,29 @@ class FileDatasetPostModel(DatasetPostModel):
                 f'Invalid filename! For the filetype: {values["filetype"]} we found the file ending: {file_ending}. Supported for this filetype are: {supported_file_endings[values["filetype"]]}.'
             )
         return filename
-    
+
+
 class URLDatasetPostModel(DatasetPostModel):
     """model of dataset with an URL"""
+
     source_url: AnyUrl = Field(alias="sourceURL")
-    
+
     @validator("source_url")
     def source_url_is_valid(cls, source_url, values, **kwargs):
         """Checks is the file has the appropriate file ending."""
         return source_url
-    
-        
+
+
 class ENCODEDatasetPostModel(DatasetPostModel):
     """model of dataset with an URL"""
+
     sample_id: constr(max_length=128) = Field(alias="sampleID")
     repository_name: constr(max_length=64) = Field(alias="repositoryName")
-    
+
     # @validator("sample_id")
     # def sample_id_exists(cls, sample_id):
     #     return sample_id # TODO
-    
+
     # @validator("repository_id")
     # def repository_id_exists(cls, repository_id):
     #     return repository_id # TODO
-    
-    
