@@ -33,7 +33,7 @@
                                     style="color: red"
                                     v-if="
                                         !$v.form.bedfileIDs.required &&
-                                        $v.form.bedfileIDs.$dirty
+                                            $v.form.bedfileIDs.$dirty
                                     "
                                     >At least one region is required</span
                                 >
@@ -49,8 +49,8 @@
                                     @click="startFeatureSelection"
                                     :disabled="
                                         !datasetsAvailable ||
-                                        this.form.bedfileIDs.length === 0 ||
-                                        !this.preprocessingMapLoaded
+                                            this.form.bedfileIDs.length === 0 ||
+                                            !this.preprocessingMapLoaded
                                     "
                                     >Select Features</md-button
                                 >
@@ -66,7 +66,7 @@
                                     style="color: red"
                                     v-if="
                                         !$v.form.bedfileIDs.required &&
-                                        $v.form.bedfileIDs.$dirty
+                                            $v.form.bedfileIDs.$dirty
                                     "
                                     >At least one feature dataset is
                                     required</span
@@ -145,68 +145,68 @@ export default {
         form: {
             datasetIDs: [],
             bedfileIDs: [],
-            preprocessing_map: "PREPROCESSING_MAP",
+            preprocessing_map: "PREPROCESSING_MAP"
         },
         datasetSaved: false,
         sending: false,
         preprocessingMapLoaded: false,
-        showAdvanced: false,
+        showAdvanced: false
     }),
     computed: {
-        showSmallWarning: function () {
+        showSmallWarning: function() {
             if (this.form.preprocessing_map === "PREPROCESSING_MAP") {
                 return false;
             }
             return true;
         },
-        numberRegions: function () {
+        numberRegions: function() {
             return this.form.bedfileIDs.length;
         },
-        pluralizedRegions: function () {
+        pluralizedRegions: function() {
             return this.numberRegions == 0 ? "regions" : "region";
         },
-        numberFeatures: function () {
+        numberFeatures: function() {
             return this.form.datasetIDs.length;
         },
-        datasetsAvailable: function () {
+        datasetsAvailable: function() {
             return this.availableDatasets.length != 0;
         },
-        coolersAvailable: function () {
+        coolersAvailable: function() {
             return this.availableCoolers.length != 0;
         },
-        bigwigsAvailable: function () {
+        bigwigsAvailable: function() {
             return this.availableBigwigs.length != 0;
         },
-        bedFilesAvailable: function () {
+        bedFilesAvailable: function() {
             return this.availableBedFiles.length != 0;
         },
-        regionIDs: function () {
-            return this.availableBedFiles.map((el) => el.id);
+        regionIDs: function() {
+            return this.availableBedFiles.map(el => el.id);
         },
-        selectedAssembly: function () {
+        selectedAssembly: function() {
             if (this.form.bedfileIDs.length !== 0) {
                 return this.availableBedFiles.filter(
-                    (el) => el.id === this.form.bedfileIDs[0]
+                    el => el.id === this.form.bedfileIDs[0]
                 )[0].assembly;
             }
-        },
+        }
     },
     validations: {
         // validators for the form
         form: {
             datasetIDs: {
-                required,
+                required
             },
             bedfileIDs: {
-                required,
+                required
             },
             preprocessing_map: {
-                required,
-            },
-        },
+                required
+            }
+        }
     },
     methods: {
-        startRegionSelection: function () {
+        startRegionSelection: function() {
             this.expectSelection = true;
             let preselection = [...this.form.bedfileIDs];
             EventBus.$emit(
@@ -217,7 +217,7 @@ export default {
                 true
             );
         },
-        startFeatureSelection: function () {
+        startFeatureSelection: function() {
             this.expectSelection = true;
             let preselection = [...this.form.datasetIDs];
             let datasets = this.availableBigwigs.concat(this.availableCoolers);
@@ -233,15 +233,15 @@ export default {
                 this.failedDatasets
             );
         },
-        registerSelectionEventHandlers: function () {
+        registerSelectionEventHandlers: function() {
             EventBus.$on("dataset-selected", this.handleDataSelection);
             EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function () {
+        removeSelectionEventHandlers: function() {
             EventBus.$off("dataset-selected", this.handleDataSelection);
             EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function (ids) {
+        handleDataSelection: function(ids) {
             if (this.expectSelection) {
                 if (this.isRegionSelection(ids)) {
                     // blank features
@@ -250,61 +250,64 @@ export default {
                     this.preprocessingMapLoaded = false;
                     this.form.bedfileIDs = [ids];
                     // get preprocess dataset map
-                    this.fetchPreprocessData(ids).then((response) => {
+                    this.fetchPreprocessData(ids).then(response => {
                         let bigwigIDs = Object.keys(
                             response.data["lineprofile"]
-                        ).map((el) => Number(el));
+                        ).map(el => Number(el));
                         let coolerIDs = Object.keys(
                             response.data["pileup"]
-                        ).map((el) => Number(el));
+                        ).map(el => Number(el));
                         let collectiveIDs = bigwigIDs.concat(coolerIDs);
-                        this.finishedDatasets =
-                            this.finishedDatasets.concat(collectiveIDs);
+                        this.finishedDatasets = this.finishedDatasets.concat(
+                            collectiveIDs
+                        );
                         this.preprocessingMapLoaded = true;
                     });
                     // set processing datasets and failed datasets
-                    this.processingDatasets =
-                        this.getBedDataset(ids).processing_datasets;
-                    this.failedDatasets =
-                        this.getBedDataset(ids).failed_datasets;
+                    this.processingDatasets = this.getBedDataset(
+                        ids
+                    ).processing_datasets;
+                    this.failedDatasets = this.getBedDataset(
+                        ids
+                    ).failed_datasets;
                 } else {
                     this.form.datasetIDs = ids;
                 }
                 this.expectSelection = false;
             }
         },
-        hanldeSelectionAbortion: function () {
+        hanldeSelectionAbortion: function() {
             this.expectSelection = false;
         },
-        isRegionSelection: function (ids) {
+        isRegionSelection: function(ids) {
             return this.regionIDs.includes(ids);
         },
-        getBedDataset: function (id) {
-            return this.availableBedFiles.filter((el) => el.id === id)[0];
+        getBedDataset: function(id) {
+            return this.availableBedFiles.filter(el => el.id === id)[0];
         },
-        getDatasets: function () {
+        getDatasets: function() {
             // fetches available datasets (cooler and bedfiles) from server
             this.availableDatasets = this.$store.state.datasets.filter(
-                (element) =>
+                element =>
                     (element.filetype == "cooler" ||
                         element.filetype == "bigwig") &&
                     element.processing_state != "uploading"
             );
             this.availableCoolers = this.$store.state.datasets.filter(
-                (element) =>
+                element =>
                     element.filetype == "cooler" &&
                     element.processing_state != "uploading"
             );
             this.availableBigwigs = this.$store.state.datasets.filter(
-                (element) =>
+                element =>
                     element.filetype == "bigwig" &&
                     element.processing_state != "uploading"
             );
             this.availableBedFiles = this.$store.state.datasets.filter(
-                (element) => element.filetype == "bedfile"
+                element => element.filetype == "bedfile"
             );
         },
-        fetchPreprocessData: function (regionID) {
+        fetchPreprocessData: function(regionID) {
             // get availability object
             return this.fetchData(`datasets/${regionID}/processedDataMap/`);
         },
@@ -314,7 +317,7 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty,
+                    "md-invalid": field.$invalid && field.$dirty
                 };
             }
         },
@@ -339,7 +342,7 @@ export default {
                 formData.append(key, prepared_data[key]);
             }
             // API call
-            this.postData("preprocess/datasets/", formData).then((response) => {
+            this.postData("preprocess/datasets/", formData).then(response => {
                 if (response) {
                     this.datasetSaved = true;
                 }
@@ -372,15 +375,15 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        },
+        }
     },
-    created: function () {
+    created: function() {
         this.getDatasets();
         this.registerSelectionEventHandlers();
     },
-    beforeDestroy: function () {
+    beforeDestroy: function() {
         this.removeSelectionEventHandlers();
-    },
+    }
 };
 </script>
 

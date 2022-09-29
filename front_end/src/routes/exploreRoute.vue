@@ -17,7 +17,7 @@
 
 <script>
 export default {
-    name: "EmptyStateRounded",
+    name: "EmptyStateRounded"
 };
 </script>
 

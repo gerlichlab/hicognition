@@ -1,6 +1,7 @@
 <template>
     <div class="md-layout-item md-small-size-100">
-        <md-field :class='validationClass'>  <!--:class="getValidationClass('file')">-->
+        <md-field :class="validationClass">
+            <!--:class="getValidationClass('file')">-->
             <label for="file">File</label>
             <md-file
                 id="file"
@@ -10,30 +11,30 @@
                 :accept="acceptedFileTypes"
                 required
             />
-            <span
-                class="md-error"
-                v-if="!$v.form.file.required"
+            <span class="md-error" v-if="!$v.form.file.required"
                 >A file is required</span
             >
-            <span
-                class="md-error"
-                v-else-if="!$v.form.file.validateFiletype"
-            >
-                Wrong filetype! 
+            <span class="md-error" v-else-if="!$v.form.file.validateFiletype">
+                Wrong filetype!
             </span>
         </md-field>
     </div>
 </template>
 
-
 <script>
 import { validationMixin } from "vuelidate";
-import { required, minLength, maxLength, requiredIf, url } from "vuelidate/lib/validators";
+import {
+    required,
+    minLength,
+    maxLength,
+    requiredIf,
+    url
+} from "vuelidate/lib/validators";
 
 export default {
     name: "formFileInput",
-    props: ['fileTypeMapping'],
-    emits: ['input-changed', 'update-component-validity'],
+    props: ["fileTypeMapping"],
+    emits: ["input-changed", "update-component-validity"],
     mixins: [validationMixin],
     data: () => ({
         form: {
@@ -50,7 +51,7 @@ export default {
                 }
             }
         };
-        return outputObject; 
+        return outputObject;
     },
     methods: {
         validFiletype(event) {
@@ -64,39 +65,41 @@ export default {
 
             var namearray = event.split(".");
             let fileEnding = namearray[namearray.length - 1];
-            return (fileEnding in this.fileTypeMapping);
+            return fileEnding in this.fileTypeMapping;
         },
         handleFileChange(event) {
             // check validity of form
             this.$v.$touch();
-            if (!this.$v.$dirty) { // should not be dirty, as this method called on change anyway
+            if (!this.$v.$dirty) {
+                // should not be dirty, as this method called on change anyway
                 return;
             }
 
             // emit validity value
             this.componentValid = this.$v.$dirty && !this.$v.$invalid;
-            this.$emit('update-component-validity', this.componentValid);
-            console.log('update-component-validity, ' + this.componentValid);
-            
+            this.$emit("update-component-validity", this.componentValid);
+            console.log("update-component-validity, " + this.componentValid);
+
             if (!this.componentValid) {
                 return;
             }
 
             // emit file + extension
-            var nameSplit = event[0]['name'].split(".");
+            var nameSplit = event[0]["name"].split(".");
             this.fileExt = nameSplit[nameSplit.length - 1];
-            this.$emit('input-changed', event[0], this.fileExt);
-            console.log('input-changed, ' + event[0] + ', ' + this.fileExt);
-        },
+            this.$emit("input-changed", event[0], this.fileExt);
+            console.log("input-changed, " + event[0] + ", " + this.fileExt);
+        }
     },
     computed: {
-        acceptedFileTypes: function() { // TODO sprint9
+        acceptedFileTypes: function() {
+            // TODO sprint9
             // build accept parameter for file chooser, e.g. ".bed,.mcool,.bw"
-            return "." + Object.keys(this.fileTypeMapping).join(',.')
+            return "." + Object.keys(this.fileTypeMapping).join(",.");
         },
         validationClass: function() {
-            return {'md-invalid': (this.$v.$dirty && this.$v.$invalid)}
+            return { "md-invalid": this.$v.$dirty && this.$v.$invalid };
         }
     }
-}
+};
 </script>

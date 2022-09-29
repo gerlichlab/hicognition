@@ -1,6 +1,10 @@
 <template>
     <md-list-item class="md-expand">
-        <md-icon v-if="!item.status || item.status=='success'" class="md-primary">check_circle_outline</md-icon>
+        <md-icon
+            v-if="!item.status || item.status == 'success'"
+            class="md-primary"
+            >check_circle_outline</md-icon
+        >
         <md-icon v-else class="md-primary">error_outline</md-icon>
 
         <div class="md-list-item-text">

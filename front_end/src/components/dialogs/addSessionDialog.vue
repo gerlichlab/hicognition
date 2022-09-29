@@ -31,25 +31,25 @@ import EventBus from "../../eventBus";
 
 export default {
     name: "AddSessionDialog",
-    data: function () {
+    data: function() {
         return {
             infoText: " \nHere you can save your sessions".split("\n"),
-            serializing: true,
+            serializing: true
         };
     },
     components: {
-        addSessionForm,
+        addSessionForm
     },
     props: {
-        dialog: Boolean,
+        dialog: Boolean
     },
     computed: {
-        showDialog: function () {
+        showDialog: function() {
             return this.dialog;
-        },
+        }
     },
     watch: {
-        dialog: function (val) {
+        dialog: function(val) {
             if (val) {
                 // serialize widgets when dialog is shown
                 EventBus.$emit("serialize-widgets");
@@ -60,8 +60,8 @@ export default {
             } else {
                 this.serializing = true;
             }
-        },
-    },
+        }
+    }
 };
 </script>
 

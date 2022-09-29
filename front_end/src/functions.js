@@ -82,7 +82,7 @@ export function max_array_along_rows(array, shape) {
         }
     }
     // clean -Infinity
-    return output.map((elem) => (elem == -Infinity ? undefined : elem));
+    return output.map(elem => (elem == -Infinity ? undefined : elem));
 }
 
 export function select_3d_along_first_axis(array, shape, index) {
@@ -258,14 +258,14 @@ export function normalizeLineProfile(lineProfile) {
     let max_value = max_array(lineProfile);
     let min_value = min_array(lineProfile);
     if (max_value - min_value < FLOATDIFFERENCE) {
-        return lineProfile.map((val) => {
+        return lineProfile.map(val => {
             if (val && isFinite(val)) {
                 return 1;
             }
             return undefined;
         });
     }
-    return lineProfile.map((val) => {
+    return lineProfile.map(val => {
         if (val && isFinite(val)) {
             return (val - min_value) / (max_value - min_value);
         }
@@ -280,7 +280,7 @@ export function getPercentile(array, p) {
     if (p < 0 || p > 100) {
         return undefined;
     }
-    let cleaned_array = array.filter((val) => {
+    let cleaned_array = array.filter(val => {
         return isFinite(val) && val != null;
     });
     let sorted_array = cleaned_array.sort((a, b) => a - b);
@@ -295,7 +295,7 @@ export function getPerMilRank(array, p) {
     if (p < 0 || p > 1000) {
         return undefined;
     }
-    let cleaned_array = array.filter((val) => {
+    let cleaned_array = array.filter(val => {
         return isFinite(val) && val != null;
     });
     let sorted_array = cleaned_array.sort((a, b) => a - b);
@@ -331,7 +331,7 @@ export function getBoundaries(x_vals, y_vals) {
         minX: minX,
         maxX: maxX,
         minY: minY,
-        maxY: maxY,
+        maxY: maxY
     };
 }
 
@@ -497,7 +497,7 @@ export function searchByName(items, term) {
   helper to search table fields by name for datasetTable
   */
     if (term) {
-        var filtered_items = items.filter((item) => {
+        var filtered_items = items.filter(item => {
             return toLower(item.dataset_name).includes(toLower(term));
         });
         return filtered_items;

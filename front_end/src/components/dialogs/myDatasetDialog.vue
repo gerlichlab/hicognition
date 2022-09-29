@@ -61,9 +61,9 @@
                             @click="handleEditClick"
                             v-if="
                                 showControls &&
-                                !showDelete &&
-                                singleDatasetSelected &&
-                                !isDemo
+                                    !showDelete &&
+                                    singleDatasetSelected &&
+                                    !isDemo
                             "
                             >Edit</md-button
                         >
@@ -71,9 +71,9 @@
                             class="md-primary"
                             v-if="
                                 showControls &&
-                                !showDelete &&
-                                singleDatasetSelected &&
-                                isDemo
+                                    !showDelete &&
+                                    singleDatasetSelected &&
+                                    isDemo
                             "
                             >Edit<md-tooltip md-direction="top"
                                 >Deactivated in demo mode</md-tooltip
@@ -109,33 +109,33 @@ export default {
     name: "MyDatasetDialog",
     mixins: [apiMixin],
     components: {
-        datasetTable,
+        datasetTable
     },
-    data: function () {
+    data: function() {
         return {
             datasets: [],
             showDelete: false,
             clickedDelete: false,
             datasetsDeleted: false,
             selection: [],
-            isDemo: process.env.SHOWCASE,
+            isDemo: process.env.SHOWCASE
         };
     },
     props: {
         dialog: Boolean,
         datasetType: {
             type: String,
-            default: "bedfile",
-        },
+            default: "bedfile"
+        }
     },
     methods: {
-        handleSelectionChange: function (selection) {
+        handleSelectionChange: function(selection) {
             this.selection = selection;
         },
-        handleEditClick: function () {
+        handleEditClick: function() {
             EventBus.$emit("show-modify-dialog", this.selection[0]);
         },
-        handleDelete: async function () {
+        handleDelete: async function() {
             this.showDelete = false;
             for (let id of this.selection) {
                 await this.deleteData(`datasets/${id}/`);
@@ -144,12 +144,12 @@ export default {
             this.selection = [];
             this.fetchDatasets();
         },
-        getDatasets: function () {
+        getDatasets: function() {
             this.datasets = this.$store.state.datasets;
         },
-        fetchDatasets: function () {
+        fetchDatasets: function() {
             this.datasets = [];
-            this.fetchData("datasets/").then((response) => {
+            this.fetchData("datasets/").then(response => {
                 if (response) {
                     // success, store datasets
                     this.$store.commit("setDatasets", response.data);
@@ -159,41 +159,41 @@ export default {
                     }, 100);
                 }
             });
-        },
+        }
     },
     computed: {
-        notProcessing: function () {
+        notProcessing: function() {
             return this.datasets.every(
-                (el) =>
+                el =>
                     el.processing_datasets.length === 0 &&
                     el.processing_collections.length === 0
             );
         },
-        singleDatasetSelected: function () {
+        singleDatasetSelected: function() {
             return this.selection.length === 1;
         },
-        showControls: function () {
+        showControls: function() {
             return this.selection.length !== 0;
         },
-        showDialog: function () {
+        showDialog: function() {
             return this.dialog;
-        },
+        }
     },
     watch: {
-        showDialog: function (val) {
+        showDialog: function(val) {
             if (val) {
                 // switched on
                 this.$emit("get-datasets");
             }
-        },
+        }
     },
     watch: {
-        showDialog: function (val) {
+        showDialog: function(val) {
             if (val) {
                 this.getDatasets();
             }
-        },
-    },
+        }
+    }
 };
 </script>
 

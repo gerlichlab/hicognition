@@ -33,7 +33,7 @@
                                 :class="{
                                     'md-invalid':
                                         v.ValueType.$invalid &&
-                                        v.ValueType.$dirty,
+                                        v.ValueType.$dirty
                                 }"
                             >
                                 <label :for="`valueType-${element.id}`"
@@ -68,7 +68,7 @@
                                 :class="{
                                     'md-invalid':
                                         v.perturbation.$invalid &&
-                                        v.perturbation.$dirty,
+                                        v.perturbation.$dirty
                                 }"
                             >
                                 <label :for="`perturbation-${element.id}`"
@@ -94,7 +94,7 @@
                                 :class="{
                                     'md-invalid':
                                         v.cellCycleStage.$invalid &&
-                                        v.cellCycleStage.$dirty,
+                                        v.cellCycleStage.$dirty
                                 }"
                             >
                                 <label :for="`cellCycleStage-${element.id}`"
@@ -139,13 +139,13 @@ export default {
     mixins: [validationMixin, apiMixin],
     props: {
         fileInformation: Object,
-        fileTypeMapping: Object,
+        fileTypeMapping: Object
     },
     data: () => ({
         datasetSaved: false,
         sending: false,
         elements: [],
-        datasetMetadataMapping: undefined,
+        datasetMetadataMapping: undefined
     }),
     computed: {},
     validations: {
@@ -153,12 +153,12 @@ export default {
             $each: {
                 perturbation: { required },
                 ValueType: { required },
-                cellCycleStage: { required },
-            },
-        },
+                cellCycleStage: { required }
+            }
+        }
     },
     methods: {
-        getValueTypes: function (id) {
+        getValueTypes: function(id) {
             const filename = this.fileInformation[id].filename;
             return Object.keys(
                 this.datasetMetadataMapping[this.getFileType(filename)][
@@ -166,7 +166,7 @@ export default {
                 ]
             );
         },
-        getFileType: function (filename) {
+        getFileType: function(filename) {
             let fileEnding = filename.split(".").pop();
             return this.fileTypeMapping[fileEnding];
         },
@@ -180,12 +180,12 @@ export default {
                     id: i,
                     perturbation: null,
                     cellCycleStage: null,
-                    ValueType: null,
+                    ValueType: null
                 };
                 this.elements.push(tempObject);
             }
         },
-        saveDataset: async function () {
+        saveDataset: async function() {
             this.sending = true; // show progress bar
             // emit data
             let information = {};
@@ -204,14 +204,15 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        },
+        }
     },
-    mounted: function () {
-        this.datasetMetadataMapping =
-            this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
+    mounted: function() {
+        this.datasetMetadataMapping = this.$store.getters[
+            "getDatasetMetadataMapping"
+        ]["DatasetType"];
     },
     watch: {
-        fileInformation: function (val) {
+        fileInformation: function(val) {
             if (val) {
                 for (let id of Object.keys(this.fileInformation)) {
                     var tempObject = {
@@ -219,13 +220,13 @@ export default {
                         datasetName: this.fileInformation[id].datasetName,
                         ValueType: null,
                         perturbation: null,
-                        cellCycleStage: null,
+                        cellCycleStage: null
                     };
                     this.elements.push(tempObject);
                 }
             }
-        },
-    },
+        }
+    }
 };
 </script>
 

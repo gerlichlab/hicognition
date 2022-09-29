@@ -34,15 +34,15 @@ import { apiMixin } from "../../mixins";
 export default {
     name: "LoginForm",
     mixins: [apiMixin],
-    data: function () {
+    data: function() {
         return {
             username: "",
             password: "",
-            showError: false,
+            showError: false
         };
     },
     methods: {
-        handleSubmit: function () {
+        handleSubmit: function() {
             if (this.password.length > 0) {
                 this.fetchAndStoreToken(this.username, this.password)
                     .then(() => {
@@ -54,14 +54,14 @@ export default {
                             this.$router.push("/main/compare");
                         }
                     })
-                    .catch((error) => {
+                    .catch(error => {
                         // something went wrong
                         console.log(error);
                         this.showError = true;
                     });
             }
-        },
-    },
+        }
+    }
 };
 </script>
 

@@ -14,11 +14,11 @@
 <script>
 export default {
     name: "loginToolbar",
-    data: function () {
+    data: function() {
         return {
-            appversion: process.env.VERSION,
+            appversion: process.env.VERSION
         };
-    },
+    }
 };
 </script>
 

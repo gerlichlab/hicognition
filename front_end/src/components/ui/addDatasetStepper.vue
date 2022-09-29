@@ -89,10 +89,10 @@ export default {
         selectBulkDatasetForm,
         step2BulkDatasetForm,
         step3BulkDatasetForm,
-        step4BulkDatasetForm,
+        step4BulkDatasetForm
     },
     props: {
-        fileTypeMapping: Object,
+        fileTypeMapping: Object
     },
     data: () => ({
         active: "first",
@@ -101,15 +101,15 @@ export default {
         third: false,
         fourth: false,
         selectedFiles: null,
-        elements: undefined,
+        elements: undefined
     }),
     methods: {
-        handleFileSelectionSuccessful: function (files) {
+        handleFileSelectionSuccessful: function(files) {
             this.selectedFiles = files;
             this.first = true;
             this.setDone("first", "second");
         },
-        handleStepCompletion: function (elements, currentStep, nextStep) {
+        handleStepCompletion: function(elements, currentStep, nextStep) {
             if (!this.elements) {
                 this.elements = elements;
             } else {
@@ -125,8 +125,8 @@ export default {
             if (index) {
                 this.active = index;
             }
-        },
-    },
+        }
+    }
 };
 </script>
 

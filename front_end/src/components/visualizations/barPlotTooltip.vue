@@ -66,9 +66,9 @@ export default {
         collectionName: String,
         regionName: String,
         datasetNames: Array,
-        clusterCounts: Map,
+        clusterCounts: Map
     },
-    data: function () {
+    data: function() {
         return {
             tooltipStyle: {
                 position: "absolute",
@@ -77,23 +77,23 @@ export default {
                 left: "0px",
                 "z-index": "10",
                 width: `${this.width}px`,
-                height: `${this.height}px`,
+                height: `${this.height}px`
             },
             showDialog: false,
             newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterID}`,
             datasetSaved: false,
-            showcase_bool: process.env.SHOWCASE,
+            showcase_bool: process.env.SHOWCASE
         };
     },
     computed: {
-        totalRegions: function () {
+        totalRegions: function() {
             let sum = 0;
             for (let [key, value] of this.clusterCounts) {
                 sum += value;
             }
             return sum;
         },
-        dataInfo: function () {
+        dataInfo: function() {
             if (
                 this.clusterCounts !== undefined &&
                 this.clusterCounts.get(this.clusterID) !== undefined
@@ -104,10 +104,10 @@ export default {
             }
             return `Cluster: ${this.clusterID}`;
         },
-        plotSize: function () {
+        plotSize: function() {
             return this.width * 0.8;
         },
-        selectedDistribution: function () {
+        selectedDistribution: function() {
             if (this.clusterID !== undefined) {
                 return select_row(
                     this.averageValues.data,
@@ -116,7 +116,7 @@ export default {
                 );
             }
         },
-        minValue: function () {
+        minValue: function() {
             // computes minimum value of data passed
             let minVal = Infinity;
             for (let elem of this.averageValues.data) {
@@ -126,7 +126,7 @@ export default {
             }
             return minVal;
         },
-        maxValue: function () {
+        maxValue: function() {
             // computes maximum value of data passed
             let maxVal = -Infinity;
             for (let elem of this.averageValues.data) {
@@ -135,10 +135,10 @@ export default {
                 }
             }
             return maxVal;
-        },
+        }
     },
     methods: {
-        handleSubmission: function () {
+        handleSubmission: function() {
             // check whether there is a name
             if (this.newRegionName.length === 0) {
                 console.log("no region name provided");
@@ -151,7 +151,7 @@ export default {
             this.postData(
                 `embeddingIntervalData/${this.embeddingID}/${this.clusterID}/create/`,
                 formData
-            ).then((response) => {
+            ).then(response => {
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
@@ -159,28 +159,28 @@ export default {
                     this.fetchAndStoreDatasets();
                 }
             });
-        },
+        }
     },
     watch: {
-        tooltipOffsetLeft: function (val) {
+        tooltipOffsetLeft: function(val) {
             this.tooltipStyle["left"] = `${val}px`;
         },
-        tooltipOffsetTop: function (val) {
+        tooltipOffsetTop: function(val) {
             this.tooltipStyle["top"] = `${val}px`;
         },
-        height: function (val) {
+        height: function(val) {
             this.tooltipStyle["height"] = `${val}px`;
         },
-        width: function (val) {
+        width: function(val) {
             this.tooltipStyle["width"] = `${val}px`;
         },
-        showControls: function (val) {
+        showControls: function(val) {
             this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterID}`;
             if (!val) {
                 this.tooltipStyle["height"] = `${this.height}px`;
             }
-        },
-    },
+        }
+    }
 };
 </script>
 

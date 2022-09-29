@@ -177,18 +177,19 @@ export default {
         lineprofileWidget,
         lolaWidget,
         embedding1dWidget,
-        embedding2dWidget,
+        embedding2dWidget
     },
-    data: function () {
+    data: function() {
         // get widget type from store
         var widgetType;
         if (!this.empty) {
             var queryObject = {
                 parentID: this.collectionID,
-                id: this.id,
+                id: this.id
             };
-            widgetType =
-                this.$store.getters["compare/getWidgetType"](queryObject);
+            widgetType = this.$store.getters["compare/getWidgetType"](
+                queryObject
+            );
         } else {
             widgetType = undefined;
         }
@@ -196,7 +197,7 @@ export default {
             widgetType: widgetType,
             selectedType: undefined,
             containerClasses: ["md-elevation-0", "small-margin"],
-            hideSelection: true,
+            hideSelection: true
         };
     },
     props: {
@@ -207,27 +208,27 @@ export default {
         collectionID: Number,
         rowIndex: Number,
         colIndex: Number,
-        selectionOptions: Object,
+        selectionOptions: Object
     },
     methods: {
-        handleExpandClick: function (event, key) {
+        handleExpandClick: function(event, key) {
             console.log(event);
             if (!selectionOptions[key]) {
             }
         },
-        handleMouseOverSelectionButton: function () {
+        handleMouseOverSelectionButton: function() {
             this.hideSelection = false;
             setTimeout(() => {
                 this.hideSelection = true;
             }, 1000);
         },
-        handleDragEnter: function (e) {
+        handleDragEnter: function(e) {
             this.containerClasses.push("dark-background");
         },
-        handleDragLeave: function (e) {
+        handleDragLeave: function(e) {
             this.containerClasses.pop();
         },
-        handleDrop: function (event) {
+        handleDrop: function(event) {
             var sourceWidgetID = event.dataTransfer.getData("widget-id");
             var sourceColletionID = event.dataTransfer.getData("collection-id");
             this.containerClasses.pop();
@@ -239,26 +240,26 @@ export default {
                 this.colIndex
             );
         },
-        widgetIDExists: function () {
+        widgetIDExists: function() {
             // checks whether widget id exists
             var queryObject = {
                 id: this.id,
-                parentID: this.collectionID,
+                parentID: this.collectionID
             };
             return this.$store.getters["compare/widgetExists"](queryObject);
         },
-        initializeWidgetFromEmpty: function () {
+        initializeWidgetFromEmpty: function() {
             // if state is selected for an empty widget, initializes it for the first time
             var payload = {
                 id: this.id,
                 rowIndex: this.rowIndex,
                 colIndex: this.colIndex,
-                parentID: this.collectionID,
+                parentID: this.collectionID
             };
             // update changed data in store
             this.$store.commit("compare/setWidget", payload);
         },
-        setPileup: function () {
+        setPileup: function() {
             // check if allowed
             if (!this.selectionOptions.pileup) {
                 return;
@@ -271,13 +272,13 @@ export default {
             var mutationObject = {
                 parentID: this.collectionID,
                 id: this.id,
-                widgetType: "Pileup",
+                widgetType: "Pileup"
             };
             this.$store.commit("compare/setWidgetType", mutationObject);
             // set widget Type in this container
             this.widgetType = "Pileup";
         },
-        setStackup: function () {
+        setStackup: function() {
             // check if allowed
             if (!this.selectionOptions.lineprofile) {
                 return;
@@ -290,13 +291,13 @@ export default {
             var mutationObject = {
                 parentID: this.collectionID,
                 id: this.id,
-                widgetType: "Stackup",
+                widgetType: "Stackup"
             };
             this.$store.commit("compare/setWidgetType", mutationObject);
             // set widget Type in this container
             this.widgetType = "Stackup";
         },
-        setLineprofile: function () {
+        setLineprofile: function() {
             // check if allowed
             if (!this.selectionOptions.lineprofile) {
                 return;
@@ -309,13 +310,13 @@ export default {
             var mutationObject = {
                 parentID: this.collectionID,
                 id: this.id,
-                widgetType: "Lineprofile",
+                widgetType: "Lineprofile"
             };
             this.$store.commit("compare/setWidgetType", mutationObject);
             // set widget Type in this container
             this.widgetType = "Lineprofile";
         },
-        setLola: function () {
+        setLola: function() {
             // check if allowed
             if (!this.selectionOptions.lola) {
                 return;
@@ -328,13 +329,13 @@ export default {
             var mutationObject = {
                 parentID: this.collectionID,
                 id: this.id,
-                widgetType: "Lola",
+                widgetType: "Lola"
             };
             this.$store.commit("compare/setWidgetType", mutationObject);
             // set widget Type in this container
             this.widgetType = "Lola";
         },
-        setEmbedding1d: function () {
+        setEmbedding1d: function() {
             // check if allowed
             if (!this.selectionOptions.embedding1d) {
                 return;
@@ -347,13 +348,13 @@ export default {
             var mutationObject = {
                 parentID: this.collectionID,
                 id: this.id,
-                widgetType: "Embedding1D",
+                widgetType: "Embedding1D"
             };
             this.$store.commit("compare/setWidgetType", mutationObject);
             // set widget Type in this container
             this.widgetType = "Embedding1D";
         },
-        setEmbedding2d: function () {
+        setEmbedding2d: function() {
             // check if allowed
             if (!this.selectionOptions.embedding2d) {
                 return;
@@ -366,32 +367,32 @@ export default {
             var mutationObject = {
                 parentID: this.collectionID,
                 id: this.id,
-                widgetType: "Embedding2D",
+                widgetType: "Embedding2D"
             };
             this.$store.commit("compare/setWidgetType", mutationObject);
             // set widget Type in this container
             this.widgetType = "Embedding2D";
         },
-        propagateDrop: function () {
+        propagateDrop: function() {
             // propagates widgetDrop up to widgetCollection
             // Vue events are not automatically passed on to parents https://stackoverflow.com/questions/43559561/how-to-propagate-a-vue-js-event-up-the-components-chain
             this.$emit("widgetDrop", ...arguments);
-        },
+        }
     },
     computed: {
-        cssStyle: function () {
+        cssStyle: function() {
             return {
                 height: `${this.height}px`,
-                width: `${this.width}px`,
+                width: `${this.width}px`
             };
         },
-        noWidgetType: function () {
+        noWidgetType: function() {
             if (this.widgetType) {
                 return false;
             }
             return true;
-        },
-    },
+        }
+    }
 };
 </script>
 

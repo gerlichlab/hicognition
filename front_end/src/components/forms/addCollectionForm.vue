@@ -59,7 +59,7 @@
                                     style="color: red"
                                     v-if="
                                         !$v.form.used_datasets.required &&
-                                        $v.form.used_datasets.$dirty
+                                            $v.form.used_datasets.$dirty
                                     "
                                     >At least one dataset is required!</span
                                 >
@@ -101,35 +101,35 @@ export default {
     name: "AddCollectionForm",
     mixins: [validationMixin, apiMixin],
     props: {
-        fileType: String,
+        fileType: String
     },
     data: () => ({
         form: {
             name: null,
-            used_datasets: [],
+            used_datasets: []
         },
         datasetSaved: false,
         sending: false,
-        availableDatasets: [],
+        availableDatasets: []
     }),
     validations: {
         // validators for the form
         form: {
             name: {
-                required,
+                required
             },
             used_datasets: {
-                required,
-            },
-        },
+                required
+            }
+        }
     },
     computed: {
-        datasetNumber: function () {
+        datasetNumber: function() {
             return this.form.used_datasets.length;
-        },
+        }
     },
     methods: {
-        startDatasetSelection: function () {
+        startDatasetSelection: function() {
             this.expectSelection = true;
             let preselection = [...this.form.used_datasets];
             let fileType;
@@ -151,21 +151,21 @@ export default {
                 false
             );
         },
-        registerSelectionEventHandlers: function () {
+        registerSelectionEventHandlers: function() {
             EventBus.$on("dataset-selected", this.handleDataSelection);
             EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function () {
+        removeSelectionEventHandlers: function() {
             EventBus.$off("dataset-selected", this.handleDataSelection);
             EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function (ids) {
+        handleDataSelection: function(ids) {
             if (this.expectSelection) {
                 this.form.used_datasets = ids;
                 this.expectSelection = false;
             }
         },
-        hanldeSelectionAbortion: function () {
+        hanldeSelectionAbortion: function() {
             this.expectSelection = false;
         },
         getValidationClass(fieldName) {
@@ -174,14 +174,14 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty,
+                    "md-invalid": field.$invalid && field.$dirty
                 };
             }
         },
-        getDatasets: function () {
+        getDatasets: function() {
             // fetches available datasets (cooler and bedfiles) from store
             this.availableDatasets = this.$store.state.datasets.filter(
-                (element) => {
+                element => {
                     if (this.fileType == "regions") {
                         return element.filetype == "bedfile";
                     } else if (this.fileType == "1d-features") {
@@ -208,7 +208,7 @@ export default {
             );
             formData.append("name", this.form.name);
             // // API call including upload is made in the background
-            this.postData("collections/", formData).then((response) => {
+            this.postData("collections/", formData).then(response => {
                 this.sending = false;
                 this.clearForm();
                 if (response) {
@@ -225,15 +225,15 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        },
+        }
     },
-    mounted: function () {
+    mounted: function() {
         this.getDatasets();
         this.registerSelectionEventHandlers();
     },
-    beforeDestroy: function () {
+    beforeDestroy: function() {
         this.removeSelectionEventHandlers();
-    },
+    }
 };
 </script>
 

@@ -17,26 +17,26 @@ const routes = [
         component: mainRoute,
         redirect: "/main/compare",
         meta: {
-            requiresAuth: true,
+            requiresAuth: true
         },
         children: [
             {
                 path: "compare",
                 component: compareRoute,
                 meta: {
-                    requiresAuth: true,
-                },
+                    requiresAuth: true
+                }
             },
             {
                 path: "session",
                 component: sessionLoadRoute,
                 meta: {
-                    requiresAuth: true,
-                },
-            },
-        ],
+                    requiresAuth: true
+                }
+            }
+        ]
     },
-    { path: "/login", component: loginRoute },
+    { path: "/login", component: loginRoute }
 ];
 
 var router = new VueRouter({ routes });
@@ -44,11 +44,11 @@ var router = new VueRouter({ routes });
 // handle authentication
 
 router.beforeEach((to, from, next) => {
-    if (to.matched.some((record) => record.meta.requiresAuth)) {
+    if (to.matched.some(record => record.meta.requiresAuth)) {
         if (store.getters.isTokenEmpty) {
             next({
                 path: "/login",
-                query: { redirect: to.fullPath },
+                query: { redirect: to.fullPath }
             });
         } else {
             next();

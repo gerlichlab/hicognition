@@ -38,7 +38,7 @@
                                     'md-invalid':
                                         $v.elements[element.id][field]
                                             .$invalid &&
-                                        $v.elements[element.id][field].$dirty,
+                                        $v.elements[element.id][field].$dirty
                                 }"
                             >
                                 <label :for="`${field}-${element.id}`">{{
@@ -53,7 +53,7 @@
                                     :disabled="sending"
                                     v-if="
                                         getFieldOptions(element.id, field) !=
-                                        'freetext'
+                                            'freetext'
                                     "
                                 >
                                     <md-option
@@ -127,16 +127,16 @@ export default {
     mixins: [validationMixin, apiMixin],
     props: {
         fileInformation: Object,
-        fileTypeMapping: Object,
+        fileTypeMapping: Object
     },
     data: () => ({
         datasetSaved: false,
         sending: false,
         elements: [],
-        datasetMetadataMapping: undefined,
+        datasetMetadataMapping: undefined
     }),
     computed: {},
-    validations: function () {
+    validations: function() {
         let outputObject = { elements: {} };
         for (let element of this.elements) {
             let fields = this.getFields(element.id);
@@ -150,12 +150,12 @@ export default {
         return outputObject;
     },
     methods: {
-        getMetadataLayoutClass: function (id) {
+        getMetadataLayoutClass: function(id) {
             let fields = this.getFields(id);
             let sizeQualifier = Math.round(60 / fields.length / 5) * 5;
             return `md-layout-item md-size-${sizeQualifier}`;
         },
-        getFields: function (id) {
+        getFields: function(id) {
             let filename = this.fileInformation[id].filename;
             let valueType = this.fileInformation[id].ValueType;
             if (!valueType) {
@@ -166,7 +166,7 @@ export default {
                 this.datasetMetadataMapping[fileType]["ValueType"][valueType]
             );
         },
-        getFieldOptions: function (id, field) {
+        getFieldOptions: function(id, field) {
             const valueType = this.fileInformation[id].ValueType;
             const fileType = this.getFileType(
                 this.fileInformation[id].filename
@@ -175,7 +175,7 @@ export default {
                 valueType
             ][field];
         },
-        getFileType: function (filename) {
+        getFileType: function(filename) {
             let fileEnding = filename.split(".").pop();
             return this.fileTypeMapping[fileEnding];
         },
@@ -183,7 +183,7 @@ export default {
             this.$v.$reset();
             this.initializeFields();
         },
-        saveDataset: async function () {
+        saveDataset: async function() {
             this.sending = true; // show progress bar
             // switch all datasets to processing
             for (let element of this.elements) {
@@ -211,7 +211,7 @@ export default {
                     this.getFileType(element.file.name)
                 );
                 // send
-                await this.postData("datasets/", formData).then((response) => {
+                await this.postData("datasets/", formData).then(response => {
                     if (!response) {
                         this.sending = false;
                         return;
@@ -242,21 +242,22 @@ export default {
                     ValueType: this.fileInformation[id].ValueType,
                     file: this.fileInformation[id].file,
                     public: this.fileInformation[id].public,
-                    state: undefined,
+                    state: undefined
                 };
                 for (let field of this.getFields(id)) {
                     tempObject[field] = null;
                 }
                 this.elements.push(tempObject);
             }
-        },
+        }
     },
-    mounted: function () {
-        this.datasetMetadataMapping =
-            this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
+    mounted: function() {
+        this.datasetMetadataMapping = this.$store.getters[
+            "getDatasetMetadataMapping"
+        ]["DatasetType"];
         this.initializeFields();
     },
-    watch: {},
+    watch: {}
 };
 </script>
 

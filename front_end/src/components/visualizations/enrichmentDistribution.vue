@@ -17,38 +17,38 @@ export default {
         height: Number,
         intervalSize: Number,
         currentColumn: Number,
-        binsize: Number,
+        binsize: Number
     },
-    data: function () {
+    data: function() {
         return {
             svg: undefined,
             xScale: undefined,
             yScale: undefined,
-            id: Math.round(Math.random() * 1000000),
+            id: Math.round(Math.random() * 1000000)
         };
     },
     computed: {
-        divName: function () {
+        divName: function() {
             return `enrichmentDistribution${this.id}`;
         },
-        plotData: function () {
+        plotData: function() {
             // encode index in data
             return this.rawData.map((elem, i) => {
                 return {
                     value: elem,
-                    index: i,
+                    index: i
                 };
             });
         },
-        margin: function () {
+        margin: function() {
             return {
                 top: this.height * 0.09,
                 bottom: this.height * 0.4,
                 right: this.width * 0.1,
-                left: this.width * 0.1,
+                left: this.width * 0.1
             };
         },
-        maxVal: function () {
+        maxVal: function() {
             // computes maximum value of data passed
             let maxVal = -Infinity;
             for (let elem of this.rawData) {
@@ -58,18 +58,18 @@ export default {
             }
             return maxVal;
         },
-        svgName: function () {
+        svgName: function() {
             return `svg${this.id}`;
         },
-        plotWidth: function () {
+        plotWidth: function() {
             // width of the plotting area without margins
             return this.width - this.margin.left - this.margin.right;
         },
-        plotHeight: function () {
+        plotHeight: function() {
             // height of the plotting area without margins
             return this.height - this.margin.top - this.margin.bottom;
         },
-        intervalStartBin: function () {
+        intervalStartBin: function() {
             if (this.rawData) {
                 let intervalSize = Math.round(
                     this.rawData.length / (1 + 2 * EXPANSION_FACTOR)
@@ -78,7 +78,7 @@ export default {
             }
             return undefined;
         },
-        intervalEndBin: function () {
+        intervalEndBin: function() {
             if (this.rawData) {
                 let intervalSize = Math.round(
                     this.rawData.length / (1 + 2 * EXPANSION_FACTOR)
@@ -88,10 +88,10 @@ export default {
                 );
             }
             return undefined;
-        },
+        }
     },
     methods: {
-        createScales: function () {
+        createScales: function() {
             /*
         Creates scaling functions for plot. Map data values into
         coordinates on the plot
@@ -107,7 +107,7 @@ export default {
                 .domain([0, this.maxVal])
                 .range([0, this.plotHeight]);
         },
-        xAxisGenerator: function (args) {
+        xAxisGenerator: function(args) {
             // x-axis generator function
             if (!isNaN(this.intervalSize)) {
                 return d3
@@ -121,7 +121,7 @@ export default {
                 .tickSizeOuter(0)
                 .tickValues([this.intervalStartBin, this.intervalEndBin])(args);
         },
-        yAxisGenerator: function (args) {
+        yAxisGenerator: function(args) {
             // y-axis generator function
             return d3
                 .axisLeft(this.yScale)
@@ -129,12 +129,12 @@ export default {
                 .tickSize(0)
                 .ticks(3)(args);
         },
-        yAxisFormatter: function (val, index) {
+        yAxisFormatter: function(val, index) {
             if (index % 2 == 0) {
                 return Math.floor((this.maxVal - val) * 10) / 10;
             }
         },
-        xAxisFormatterInterval: function (val) {
+        xAxisFormatterInterval: function(val) {
             if (val == this.intervalStartBin) {
                 return "Start";
             }
@@ -143,7 +143,7 @@ export default {
             }
             return undefined;
         },
-        xAxisFormatter: function (val, index) {
+        xAxisFormatter: function(val, index) {
             if (index % Math.floor(this.plotData.length / 5) == 0) {
                 return (
                     Math.floor(
@@ -159,7 +159,7 @@ export default {
             }
             return "";
         },
-        createBars: function () {
+        createBars: function() {
             /*
         creates bars of barchart and adds them to this.svg
       */
@@ -168,11 +168,11 @@ export default {
                 .data(this.plotData)
                 .enter()
                 .append("rect")
-                .attr("x", (d) => {
+                .attr("x", d => {
                     return this.xScale(d.index);
                 })
                 .attr("width", this.xScale.bandwidth())
-                .attr("fill", (d) => {
+                .attr("fill", d => {
                     if (d.index == this.currentColumn) {
                         return "red";
                     }
@@ -183,26 +183,26 @@ export default {
                 })
                 .attr("height", 0)
                 .transition()
-                .delay((d) => {
+                .delay(d => {
                     return (
                         (this.xScale(d.index) / 150 / this.plotData.length) *
                         1000
                     );
                 })
                 .duration(500)
-                .attr("y", (d) => {
+                .attr("y", d => {
                     return this.plotHeight - this.yScale(d.value);
                 })
-                .attr("height", (d) => {
+                .attr("height", d => {
                     return this.yScale(d.value);
                 });
             // add event listener
             this.svg.selectAll("rect").on("click", this.handleBarClick);
         },
-        handleBarClick: function (e, d) {
+        handleBarClick: function(e, d) {
             this.$emit("barclick", d.index);
         },
-        updateBarChart: function () {
+        updateBarChart: function() {
             /*
         Updates bar chart with new data
       */
@@ -220,11 +220,11 @@ export default {
             // add new ones
             rect.enter()
                 .append("rect")
-                .attr("x", (d) => {
+                .attr("x", d => {
                     return this.xScale(d.index);
                 })
                 .attr("width", this.xScale.bandwidth())
-                .attr("fill", (d) => {
+                .attr("fill", d => {
                     if (d.index == this.currentColumn) {
                         return "red";
                     }
@@ -235,42 +235,42 @@ export default {
                 })
                 .attr("height", 0)
                 .transition()
-                .delay((d) => {
+                .delay(d => {
                     return (
                         (this.xScale(d.index) / 150 / this.plotData.length) *
                         1000
                     );
                 })
                 .duration(500)
-                .attr("y", (d) => {
+                .attr("y", d => {
                     return this.plotHeight - this.yScale(d.value);
                 })
-                .attr("height", (d) => {
+                .attr("height", d => {
                     return this.yScale(d.value);
                 });
             // reposition old bars
             rect.transition()
                 .duration(500)
-                .attr("x", (d) => {
+                .attr("x", d => {
                     return this.xScale(d.index);
                 })
-                .attr("fill", (d) => {
+                .attr("fill", d => {
                     if (d.index == this.currentColumn) {
                         return "red";
                     }
                     return "grey";
                 })
                 .attr("width", this.xScale.bandwidth())
-                .attr("y", (d) => {
+                .attr("y", d => {
                     return this.plotHeight - this.yScale(d.value);
                 })
-                .attr("height", (d) => {
+                .attr("height", d => {
                     return this.yScale(d.value);
                 });
             // add event listener
             this.svg.selectAll("rect").on("click", this.handleBarClick);
         },
-        updateAxes: function () {
+        updateAxes: function() {
             /*
         updates axes with new data
       */
@@ -290,7 +290,7 @@ export default {
                 .duration(500)
                 .call(this.yAxisGenerator);
         },
-        createAxes: function () {
+        createAxes: function() {
             /*       
                Adds axes to an svg object at this.svg
             */
@@ -309,7 +309,7 @@ export default {
                 .attr("class", "y axis")
                 .call(this.yAxisGenerator);
         },
-        createChart: function () {
+        createChart: function() {
             /*
         Wrapper function that creates svg and adds
         chosen visualization
@@ -334,34 +334,34 @@ export default {
             this.createScales();
             this.createAxes();
             this.createBars();
-        },
+        }
     },
-    mounted: function () {
+    mounted: function() {
         this.createScales();
         this.createChart();
     },
     watch: {
-        height: function () {
+        height: function() {
             d3.select(`#${this.svgName}`).remove();
             this.createScales();
             this.createChart();
         },
-        width: function () {
+        width: function() {
             d3.select(`#${this.svgName}`).remove();
             this.createScales();
             this.createChart();
         },
-        plotData: function () {
+        plotData: function() {
             this.createScales();
             this.updateAxes();
             this.updateBarChart();
         },
-        currentColumn: function () {
+        currentColumn: function() {
             this.createScales();
             this.updateAxes();
             this.updateBarChart();
-        },
-    },
+        }
+    }
 };
 </script>
 

@@ -46,13 +46,13 @@ export default {
         uploadNotification
     },
     computed: {
-        ...mapGetters(["notifications"]),
+        ...mapGetters(["notifications"])
     },
     methods: {
-        clearNotifications: function () {
+        clearNotifications: function() {
             this.$store.commit("clearNewNotifications");
         },
-        getNotificationComponent: function (notificationType) {
+        getNotificationComponent: function(notificationType) {
             switch (notificationType) {
                 case "processing_finished":
                     return "processingFinishedNotification";
@@ -63,7 +63,7 @@ export default {
                 default:
                     return "processingFinishedNotification";
             }
-        },
-    },
+        }
+    }
 };
 </script>

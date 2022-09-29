@@ -167,12 +167,12 @@ export default {
     name: "widgetCollection",
     mixins: [apiMixin, formattingMixin],
     props: {
-        id: Number,
+        id: Number
     },
     components: {
-        widgetContainer,
+        widgetContainer
     },
-    data: function () {
+    data: function() {
         return {
             regions: [],
             selectedRegionID: null,
@@ -188,11 +188,11 @@ export default {
             children: [],
             availableData: {},
             expectSelection: false,
-            showWindowSizeSelection: false,
+            showWindowSizeSelection: false
         };
     },
     computed: {
-        windowSizes: function () {
+        windowSizes: function() {
             if (Object.keys(this.availableData).length === 0) {
                 return [];
             }
@@ -216,7 +216,7 @@ export default {
             // sort
             return Array.from(windowsizes).sort((a, b) => a - b);
         },
-        datasetsForIntervalSize: function () {
+        datasetsForIntervalSize: function() {
             // subset available data for this region-set based on selected interval size
             if (Object.keys(this.availableData).length === 0) {
                 return {};
@@ -240,96 +240,90 @@ export default {
             }
             return output;
         },
-        pointWindowSizes: function () {
-            return this.windowSizes.filter((el) => el != "variable");
+        pointWindowSizes: function() {
+            return this.windowSizes.filter(el => el != "variable");
         },
-        isPointFeature: function () {
+        isPointFeature: function() {
             if (this.selectedRegionID) {
                 let dataset = this.regions.filter(
-                    (el) => el.id === this.selectedRegionID
+                    el => el.id === this.selectedRegionID
                 )[0];
                 return dataset.sizeType === "Point";
             }
             return false;
         },
-        dataInfo: function () {
+        dataInfo: function() {
             if (this.selectedRegionID && this.isPointFeature) {
                 return `${
-                    this.regions.filter(
-                        (el) => el.id == this.selectedRegionID
-                    )[0].dataset_name
+                    this.regions.filter(el => el.id == this.selectedRegionID)[0]
+                        .dataset_name
                 } | ${this.convertBasePairsToReadable(
                     this.selectedWindowSize
                 )}`;
             }
             if (this.selectedRegionID && !this.isPointFeature) {
                 return `${
-                    this.regions.filter(
-                        (el) => el.id == this.selectedRegionID
-                    )[0].dataset_name
+                    this.regions.filter(el => el.id == this.selectedRegionID)[0]
+                        .dataset_name
                 } | ${this.selectedWindowSize}`;
             }
             return "  ";
         },
-        allowRegionSelection: function () {
+        allowRegionSelection: function() {
             return this.regions.length > 0;
         },
-        widgetContainerBorder: function () {
+        widgetContainerBorder: function() {
             return {
-                width: `${
-                    this.collectionWidth +
+                width: `${this.collectionWidth +
                     this.paddingWidth +
                     40 +
-                    (this.maxColumnNumber + 1) * this.marginSizeWidth
-                }px`,
-                height: `${
-                    this.collectionHeight +
+                    (this.maxColumnNumber + 1) * this.marginSizeWidth}px`,
+                height: `${this.collectionHeight +
                     this.paddingHeight +
                     40 +
-                    (this.maxRowNumber + 1) * this.marginSizeHeight
-                }px`,
+                    (this.maxRowNumber + 1) * this.marginSizeHeight}px`,
                 background: "rgba(200, 200, 200, 0.2)",
-                "margin-right": "10px",
+                "margin-right": "10px"
             };
         },
-        decreaseRowsAllowed: function () {
+        decreaseRowsAllowed: function() {
             if (this.maxRowNumber == 0) {
                 return false;
             }
             var maxRowElements = Math.max(
-                ...this.children.map((element) => element.rowIndex)
+                ...this.children.map(element => element.rowIndex)
             );
             return this.maxRowNumber > maxRowElements;
         },
-        decreaseColumnsAllowed: function () {
+        decreaseColumnsAllowed: function() {
             if (this.maxColumnNumber == 0) {
                 return false;
             }
             var maxColElements = Math.max(
-                ...this.children.map((element) => element.colIndex)
+                ...this.children.map(element => element.colIndex)
             );
             return this.maxColumnNumber > maxColElements;
         },
-        allowWindowSizeSelection: function () {
+        allowWindowSizeSelection: function() {
             return (
                 this.windowSizes.length > 0 &&
                 this.selectedRegionID &&
                 this.isPointFeature
             );
         },
-        blockZoomOut: function () {
+        blockZoomOut: function() {
             if (this.baseWidth <= 350) {
                 return true;
             }
             return false;
         },
-        collectionHeight: function () {
+        collectionHeight: function() {
             return (this.maxRowNumber + 1) * this.baseHeight;
         },
-        collectionWidth: function () {
+        collectionWidth: function() {
             return (this.maxColumnNumber + 1) * this.baseWidth;
         },
-        elementMatrix: function () {
+        elementMatrix: function() {
             // creates element matrix from children filled up with empty elements
             var matrix = [];
             // create empty matrix
@@ -347,7 +341,7 @@ export default {
                         empty: true,
                         rowIndex: rowIndex,
                         colIndex: colIndex,
-                        parentID: this.id,
+                        parentID: this.id
                     };
                 }
                 matrix.push(emptyRow);
@@ -362,12 +356,12 @@ export default {
                     rowIndex: child.rowIndex,
                     colIndex: child.colIndex,
                     text: child.text,
-                    parentID: this.id,
+                    parentID: this.id
                 };
             }
             return matrix;
         },
-        flattenedElements: function () {
+        flattenedElements: function() {
             // gives a flattened representation of elements
             var output = [];
             for (var row of this.elementMatrix) {
@@ -377,31 +371,27 @@ export default {
             }
             return output;
         },
-        cssStyle: function () {
+        cssStyle: function() {
             return {
-                height: `${
-                    this.collectionHeight +
+                height: `${this.collectionHeight +
                     this.paddingHeight +
-                    (this.maxRowNumber + 1) * this.marginSizeHeight
-                }px`,
-                width: `${
-                    this.collectionWidth +
+                    (this.maxRowNumber + 1) * this.marginSizeHeight}px`,
+                width: `${this.collectionWidth +
                     this.paddingWidth +
-                    (this.maxColumnNumber + 1) * this.marginSizeWidth
-                }px`,
+                    (this.maxColumnNumber + 1) * this.marginSizeWidth}px`,
                 "margin-left": "0px",
                 "margin-right": "0px",
-                float: "left",
+                float: "left"
             };
         },
-        selectionOptions: function () {
+        selectionOptions: function() {
             if (Object.keys(this.availableData).length == 0) {
                 return {
                     pileup: false,
                     lineprofile: false,
                     lola: false,
                     embedding1d: false,
-                    embedding2d: false,
+                    embedding2d: false
                 };
             }
             return {
@@ -412,15 +402,15 @@ export default {
                 embedding1d:
                     Object.keys(this.availableData.embedding1d).length != 0,
                 embedding2d:
-                    Object.keys(this.availableData.embedding2d).length != 0,
+                    Object.keys(this.availableData.embedding2d).length != 0
             };
-        },
+        }
     },
     methods: {
-        handleWindowSizeSelection: function (windowsize) {
+        handleWindowSizeSelection: function(windowsize) {
             this.selectedWindowSize = windowsize;
         },
-        startDatasetSelection: function () {
+        startDatasetSelection: function() {
             this.expectSelection = true;
             let preselection = this.selectedRegionID
                 ? [this.selectedRegionID]
@@ -432,75 +422,75 @@ export default {
                 preselection
             );
         },
-        registerSelectionEventHandlers: function () {
+        registerSelectionEventHandlers: function() {
             EventBus.$on("dataset-selected", this.handleDataSelection);
             EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function () {
+        removeSelectionEventHandlers: function() {
             EventBus.$off("dataset-selected", this.handleDataSelection);
             EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function (id) {
+        handleDataSelection: function(id) {
             if (this.expectSelection) {
                 this.selectedRegionID = id;
                 this.expectSelection = false;
             }
         },
-        hanldeSelectionAbortion: function () {
+        hanldeSelectionAbortion: function() {
             this.expectSelection = false;
         },
-        increaseRows: function () {
+        increaseRows: function() {
             this.maxRowNumber = this.maxRowNumber + 1;
         },
-        decreaseRows: function () {
+        decreaseRows: function() {
             this.maxRowNumber = this.maxRowNumber - 1;
         },
-        increaseColumns: function () {
+        increaseColumns: function() {
             this.maxColumnNumber = this.maxColumnNumber + 1;
         },
-        decreaseColumns: function () {
+        decreaseColumns: function() {
             this.maxColumnNumber = this.maxColumnNumber - 1;
         },
-        getNextID: function () {
+        getNextID: function() {
             return Math.floor(Math.random() * 1000000000);
         },
-        getDatasets: function () {
+        getDatasets: function() {
             this.regions = this.$store.state.datasets.filter(
-                (element) => element.filetype == "bedfile"
+                element => element.filetype == "bedfile"
             );
         },
-        fetchCollections: function () {
-            this.fetchData("collections/").then((response) => {
+        fetchCollections: function() {
+            this.fetchData("collections/").then(response => {
                 // success, store datasets
                 if (response) {
                     this.$store.commit("setCollections", response.data);
                 }
             });
         },
-        handleZoomIn: function () {
+        handleZoomIn: function() {
             this.baseWidth += 50;
             this.baseHeight += 50;
         },
-        handleZoomOut: function () {
+        handleZoomOut: function() {
             this.baseWidth -= 50;
             this.baseHeight -= 50;
         },
-        storeCollectionConfig: function () {
+        storeCollectionConfig: function() {
             var payload = {
                 id: this.id,
                 collectionConfig: {
                     regionID: this.selectedRegionID,
                     regionName: this.regions.filter(
-                        (el) => el.id == this.selectedRegionID
+                        el => el.id == this.selectedRegionID
                     )[0].dataset_name,
                     availableData: this.availableData,
                     datasetsForIntervalSize: this.datasetsForIntervalSize,
-                    intervalSize: this.selectedWindowSize,
-                },
+                    intervalSize: this.selectedWindowSize
+                }
             };
             this.$store.commit("compare/setCollectionConfig", payload);
         },
-        deleteCollection: function () {
+        deleteCollection: function() {
             // call delete of each child
             for (let child of this.children) {
                 EventBus.$emit("delete-widget", child.id);
@@ -514,7 +504,7 @@ export default {
                 );
             }
         },
-        handleWidgetDrop: function (
+        handleWidgetDrop: function(
             sourceColletionID,
             sourceWidgetID,
             rowIndex,
@@ -523,10 +513,11 @@ export default {
             // oupdate widget data that are managed by collection: ID, colIndex, rowIndex, parentID
             var queryObject = {
                 parentID: sourceColletionID,
-                id: sourceWidgetID,
+                id: sourceWidgetID
             };
-            var widgetData =
-                this.$store.getters["compare/getWidgetProperties"](queryObject);
+            var widgetData = this.$store.getters["compare/getWidgetProperties"](
+                queryObject
+            );
             // delete original widget
             EventBus.$emit("delete-widget", sourceWidgetID);
             // update widget data that changed upon drop
@@ -543,7 +534,7 @@ export default {
             // update changed data in store
             this.$store.commit("compare/setWidget", widgetData);
         },
-        handleNewDataAvailable: async function (notification) {
+        handleNewDataAvailable: async function(notification) {
             let data = JSON.parse(notification.data);
             console.log(data);
             if (
@@ -555,33 +546,33 @@ export default {
             }
             this.storeCollectionConfig();
         },
-        updateAvailableData: function (id) {
+        updateAvailableData: function(id) {
             // get availability object
             return this.fetchData(`datasets/${id}/processedDataMap/`).then(
-                (response) => {
+                response => {
                     // success, store availability object
                     this.availableData = response.data;
                 }
             );
         },
-        registerNotificationHandler: function () {
+        registerNotificationHandler: function() {
             this.$store.state.notificationSource.addEventListener(
                 "notification",
                 this.handleNewDataAvailable
             );
         },
-        removeNotificationHandler: function () {
+        removeNotificationHandler: function() {
             this.$store.state.notificationSource.removeEventListener(
                 "notification",
                 this.handleNewDataAvailable
             );
-        },
+        }
     },
     watch: {
         // watch for changes in store
         "$store.state.compare.widgetCollections": {
             deep: true,
-            handler: function (newValue, oldValue) {
+            handler: function(newValue, oldValue) {
                 // check if own entry changed
                 var newEntry = Object.assign({}, newValue[this.id]);
                 var oldEntry = Object.assign({}, oldValue[this.id]);
@@ -592,9 +583,9 @@ export default {
                         this.children.push(child);
                     }
                 }
-            },
+            }
         },
-        selectedRegionID: async function (newVal, oldVal) {
+        selectedRegionID: async function(newVal, oldVal) {
             if (!newVal) {
                 return;
             }
@@ -620,11 +611,11 @@ export default {
             this.$store.commit("compare/decrement_usage_dataset", oldVal);
             this.$store.commit("compare/increment_usage_dataset", newVal);
         },
-        selectedWindowSize: function () {
+        selectedWindowSize: function() {
             this.storeCollectionConfig();
-        },
+        }
     },
-    mounted: function () {
+    mounted: function() {
         // register event handlers
         this.registerSelectionEventHandlers();
         this.registerNotificationHandler();
@@ -651,10 +642,10 @@ export default {
                         stackup: {},
                         lola: {},
                         embedding1d: {},
-                        embedding2d: {},
+                        embedding2d: {}
                     },
-                    intervalSize: undefined,
-                },
+                    intervalSize: undefined
+                }
             };
             this.$store.commit("compare/setCollectionConfig", payload);
         }
@@ -662,13 +653,13 @@ export default {
         if (collectionData.children) {
             this.maxRowNumber =
                 max_array(
-                    Object.values(collectionData.children).map((elem) => {
+                    Object.values(collectionData.children).map(elem => {
                         return elem.rowIndex;
                     })
                 ) || 0;
             this.maxColumnNumber =
                 max_array(
-                    Object.values(collectionData.children).map((elem) => {
+                    Object.values(collectionData.children).map(elem => {
                         return elem.colIndex;
                     })
                 ) || 0;
@@ -682,11 +673,11 @@ export default {
         // get collections
         this.fetchCollections();
     },
-    beforeDestroy: function () {
+    beforeDestroy: function() {
         this.removeSelectionEventHandlers();
         this.removeNotificationHandler();
         EventBus.$emit("widget-collection-deletion", this.id);
-    },
+    }
 };
 </script>
 

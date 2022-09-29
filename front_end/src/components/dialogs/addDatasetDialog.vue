@@ -95,14 +95,14 @@ export default {
     name: "AddDatasetDialog",
     components: {
         addDatasetForm,
-        addDatasetStepper,
+        addDatasetStepper
     },
     props: {
         dialog: Boolean,
-        datatype: String,
+        datatype: String
     },
     computed: {
-        welcomeMessage: function () {
+        welcomeMessage: function() {
             if (this.datatype == "feature") {
                 return "Add genomic feature";
             } else if (this.datatype == "region") {
@@ -111,17 +111,18 @@ export default {
                 return "Add dataset";
             }
         },
-        fileTypeMapping: function () { // REFACTOR supported file types defined also in config.py
+        fileTypeMapping: function() {
+            // REFACTOR supported file types defined also in config.py
             if (this.datatype == "feature") {
                 return {
                     mcool: "cooler",
                     bw: "bigwig",
                     bigwig: "bigwig",
-                    bigWig: "bigwig",
+                    bigWig: "bigwig"
                 };
             } else if (this.datatype == "region") {
                 return {
-                    bed: "bedfile",
+                    bed: "bedfile"
                 };
             } else {
                 return {
@@ -129,14 +130,14 @@ export default {
                     mcool: "cooler",
                     bw: "bigwig",
                     bigwig: "bigwig",
-                    bigWig: "bigwig",
+                    bigWig: "bigwig"
                 };
             }
         },
-        showDialog: function () {
+        showDialog: function() {
             return this.dialog;
-        },
-    },
+        }
+    }
 };
 </script>
 

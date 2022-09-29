@@ -1,16 +1,14 @@
 <template>
     <div>
         <!-- TODO ask -->
-        <widget-collection 
+        <widget-collection
             class="inline top-margin"
             v-for="item in collections"
             :key="item.id"
             :id="item.id"
         />
         <div v-if="!collections[0]">
-            
             <empty-state-basic> </empty-state-basic>
-
         </div>
         <div class="bottom-right">
             <md-button class="md-fab md-primary" @click="addCollection">
@@ -31,33 +29,33 @@ export default {
     mixins: [apiMixin],
     components: {
         widgetCollection,
-        EmptyStateBasic,
+        EmptyStateBasic
     },
-    data: function () {
+    data: function() {
         return {
             currentID: 0,
-            collections: [],
+            collections: []
         };
     },
     methods: {
-        fetchDatasets: function () {
-            this.fetchData("datasets/").then((response) => {
+        fetchDatasets: function() {
+            this.fetchData("datasets/").then(response => {
                 // success, store datasets
                 if (response) {
                     this.$store.commit("setDatasets", response.data);
                 }
             });
         },
-        fetchCollections: function () {
-            this.fetchData("collections/").then((response) => {
+        fetchCollections: function() {
+            this.fetchData("collections/").then(response => {
                 // success, store datasets
                 if (response) {
                     this.$store.commit("setCollections", response.data);
                 }
             });
         },
-        fetchDatasetMetadataMapping: function () {
-            this.fetchData("datasetMetadataMapping/").then((response) => {
+        fetchDatasetMetadataMapping: function() {
+            this.fetchData("datasetMetadataMapping/").then(response => {
                 // success, store resolutions
                 if (response) {
                     this.$store.commit(
@@ -67,7 +65,7 @@ export default {
                 }
             });
         },
-        addCollection: function () {
+        addCollection: function() {
             // add newEntry to store for collection
             this.$store.commit(
                 "compare/createEmptyWidgetCollection",
@@ -75,35 +73,35 @@ export default {
             );
             this.currentID += 1;
         },
-        updateMaxID: function () {
+        updateMaxID: function() {
             var collections = Object.keys(
                 this.$store.getters["compare/getWidgetCollections"]
             );
             this.currentID = Math.max(...collections) + 1;
-        },
+        }
     },
     watch: {
         // watch for changes in store -> compare route only needs to check which collections to render
         "$store.state.compare.widgetCollections": {
             deep: true,
-            handler: function (newValue, oldValue) {
+            handler: function(newValue, oldValue) {
                 // check if own entry changed
                 var newEntry = Object.keys(newValue);
                 var oldEntry = Object.keys(oldValue);
                 if (newEntry != oldEntry) {
-                    this.collections = newEntry.map((elem) => {
+                    this.collections = newEntry.map(elem => {
                         return { id: Number(elem) };
                     });
                 }
-            },
-        },
+            }
+        }
     },
-    mounted: function () {
+    mounted: function() {
         // initilize from store
         var collections = Object.keys(
             this.$store.getters["compare/getWidgetCollections"]
         );
-        this.collections = collections.map((elem) => {
+        this.collections = collections.map(elem => {
             return { id: Number(elem) };
         });
         // set maximum id
@@ -118,11 +116,11 @@ export default {
         this.fetchCollections();
         this.fetchDatasetMetadataMapping();
     },
-    beforeDestroy: function () {
+    beforeDestroy: function() {
         if (this.$globalFlags["serializeCompare"]) {
             EventBus.$emit("serialize-widgets");
         }
-    },
+    }
 };
 </script>
 

@@ -224,33 +224,33 @@ export default {
     name: "Embedding1D",
     mixins: [apiMixin, formattingMixin, widgetMixin],
     computed: {
-        waitSpinnerContainer: function () {
+        waitSpinnerContainer: function() {
             return {
                 height: this.visualizationHeight + "px",
                 width: this.width + "px",
                 display: "flex",
                 "justify-content": "center",
-                "align-items": "center",
+                "align-items": "center"
             };
         },
-        colormap: function () {
+        colormap: function() {
             if (this.overlay == "density") {
                 return "viridis";
             }
             return "magma";
         },
-        tooltipHeight: function () {
+        tooltipHeight: function() {
             if (this.showTooltipControls) {
                 return this.height + 10;
             }
             return this.height - 30;
         },
-        collectionName: function () {
+        collectionName: function() {
             if (this.selectedBinsize) {
                 return this.datasets[this.selectedDataset]["name"];
             }
         },
-        message: function () {
+        message: function() {
             let overlayMessage;
             if (this.overlay == "density") {
                 overlayMessage = "point density";
@@ -265,7 +265,7 @@ export default {
                 this.getBinSizeFormat(this.selectedBinsize)
             );
         },
-        size: function () {
+        size: function() {
             if (!this.widgetData) {
                 return;
             }
@@ -280,7 +280,7 @@ export default {
             }
             return 25;
         },
-        clusterMap: function () {
+        clusterMap: function() {
             return rectBin(
                 this.size,
                 this.widgetData["embedding"].data,
@@ -288,19 +288,19 @@ export default {
                 "mode"
             );
         },
-        aggregationType: function () {
+        aggregationType: function() {
             if (this.overlay == "density") {
                 return "sum";
             }
             return "mean";
         },
-        averageValues: function () {
+        averageValues: function() {
             if (!this.widgetData) {
                 return;
             }
             return this.widgetData["thumbnails"];
         },
-        clusterCounts: function () {
+        clusterCounts: function() {
             if (!this.widgetData) {
                 return;
             }
@@ -318,7 +318,7 @@ export default {
             }
             return clusterCounts;
         },
-        embeddingData: function () {
+        embeddingData: function() {
             if (!this.widgetData) {
                 return;
             }
@@ -333,11 +333,11 @@ export default {
                         )
                     ),
                     shape: [this.size, this.size],
-                    dtype: "float32",
+                    dtype: "float32"
                 };
             }
             let overlayClusters = this.widgetData["cluster_ids"]["data"].map(
-                (el) => {
+                el => {
                     if (el === this.selectedCluster) {
                         return 99999999;
                     }
@@ -354,10 +354,10 @@ export default {
                     )
                 ),
                 shape: [this.size, this.size],
-                dtype: "float32",
+                dtype: "float32"
             };
         },
-        datasetNames: function () {
+        datasetNames: function() {
             if (this.selectedDataset.length == 0) {
                 return [];
             }
@@ -366,23 +366,23 @@ export default {
             ].map((el, i) => {
                 return {
                     name: el,
-                    index: String(i),
+                    index: String(i)
                 };
             });
         },
-        widgetDataID: function () {
+        widgetDataID: function() {
             if (this.binsizes && this.selectedBinsize) {
                 return Number(
                     this.binsizes[this.selectedBinsize][this.clusterNumber]
                 );
             }
-        },
+        }
     },
     methods: {
-        startDatasetSelection: function () {
+        startDatasetSelection: function() {
             this.expectSelection = true;
             // get collections from store
-            let collections = this.$store.state.collections.filter((el) =>
+            let collections = this.$store.state.collections.filter(el =>
                 Object.keys(this.datasets).includes(String(el.id))
             );
             let preselection = this.selectedDataset
@@ -395,31 +395,31 @@ export default {
                 preselection
             );
         },
-        registerSelectionEventHandlers: function () {
+        registerSelectionEventHandlers: function() {
             EventBus.$on("collection-selected", this.handleDataSelection);
             EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function () {
+        removeSelectionEventHandlers: function() {
             EventBus.$off("collection-selected", this.handleDataSelection);
             EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function (id) {
+        handleDataSelection: function(id) {
             if (this.expectSelection) {
                 this.selectedDataset = id;
                 this.expectSelection = false;
             }
         },
-        hanldeSelectionAbortion: function () {
+        hanldeSelectionAbortion: function() {
             this.expectSelection = false;
         },
-        handleHeatmapClick: function (x, y, adjustedX, adjustedY) {
+        handleHeatmapClick: function(x, y, adjustedX, adjustedY) {
             if (this.showTooltipControls) {
                 this.showTooltipControls = false;
             } else if (this.showTooltip && this.selectedCluster !== undefined) {
                 this.showTooltipControls = true;
             }
         },
-        handleMouseMove: function (x, y, adjustedX, adjustedY, size) {
+        handleMouseMove: function(x, y, adjustedX, adjustedY, size) {
             if (!this.showTooltipControls) {
                 this.showTooltip = true;
                 this.tooltipOffsetLeft = adjustedX + 60;
@@ -427,19 +427,19 @@ export default {
                 this.selectCluster(x, y, size);
             }
         },
-        handleMouseEnter: function (x, y, adjustedX, adjustedY) {
+        handleMouseEnter: function(x, y, adjustedX, adjustedY) {
             if (!this.showTooltipControls) {
                 this.showTooltip = true;
                 this.tooltipOffsetLeft = adjustedX + 60;
                 this.tooltipOffsetTop = adjustedY;
             }
         },
-        handleMouseLeftTooltip: function () {
+        handleMouseLeftTooltip: function() {
             if (!this.showTooltipControls) {
                 this.showTooltip = false;
             }
         },
-        handleMouseLeftContainer: function () {
+        handleMouseLeftContainer: function() {
             if (!this.showTooltipControls) {
                 this.selectedCluster = undefined;
             }
@@ -454,7 +454,7 @@ export default {
             }
             return false;
         },
-        selectCluster: function (x, y, visualizationSize) {
+        selectCluster: function(x, y, visualizationSize) {
             let bin_width = visualizationSize / this.size;
             let x_bin = Math.round(x / bin_width);
             let y_bin = Math.round(y / bin_width);
@@ -467,25 +467,25 @@ export default {
                 this.selectedCluster = this.clusterMap[y_bin][x_bin];
             }
         },
-        closeControls: function () {
+        closeControls: function() {
             this.selectedCluster = undefined;
             this.showTooltipControls = false;
             this.showTooltip = false;
         },
-        blankWidget: function () {
+        blankWidget: function() {
             // removes all information that the user can set in case a certain region/dataset combination is not available
             this.widgetData = undefined;
             this.selectedDataset = [];
             this.selectedBinsize = undefined;
             this.widgetDataRef = undefined;
         },
-        handleDatasetSelection: function (id) {
+        handleDatasetSelection: function(id) {
             this.selectedDataset = id;
         },
-        handleBinsizeSelection: function (binsize) {
+        handleBinsizeSelection: function(binsize) {
             this.selectedBinsize = binsize;
         },
-        toStoreObject: function () {
+        toStoreObject: function() {
             // serialize object for storing its state in the store
             return {
                 // collection Data is needed if widget is dropped on new collection
@@ -508,10 +508,10 @@ export default {
                 minHeatmapRange: this.minHeatmapRange,
                 maxHeatmapRange: this.maxHeatmapRange,
                 clusterNumber: this.clusterNumber,
-                selectedCluster: this.selectedCluster,
+                selectedCluster: this.selectedCluster
             };
         },
-        initializeForFirstTime: function (widgetData, collectionData) {
+        initializeForFirstTime: function(widgetData, collectionData) {
             var data = {
                 widgetDataRef: undefined,
                 dragImage: undefined,
@@ -539,21 +539,21 @@ export default {
                 showTooltip: false,
                 showTooltipControls: false,
                 tooltipOffsetTop: 0,
-                tooltipOffsetLeft: 0,
+                tooltipOffsetLeft: 0
             };
             // write properties to store
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
             return data;
         },
-        deleteWidget: function () {
+        deleteWidget: function() {
             /*
                 Needs to be overriden because decrement mutation is different from mixin
             */
             // delete widget from store
             var payload = {
                 parentID: this.collectionID,
-                id: this.id,
+                id: this.id
             };
             // delete widget from store
             this.$store.commit("compare/deleteWidget", payload);
@@ -563,30 +563,28 @@ export default {
                 this.selectedDataset
             );
         },
-        initializeFromStore: function (widgetData, collectionConfig) {
+        initializeFromStore: function(widgetData, collectionConfig) {
             var widgetDataValues;
             var overlayValues;
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
                 // deinfe store queries
                 var payload = {
-                    id: widgetData["widgetDataRef"],
+                    id: widgetData["widgetDataRef"]
                 };
                 // get widget data from store
-                var widgetDataValues =
-                    this.$store.getters["compare/getWidgetDataEmbedding1d"](
-                        payload
-                    );
+                var widgetDataValues = this.$store.getters[
+                    "compare/getWidgetDataEmbedding1d"
+                ](payload);
                 // get overlay data from store
                 var payloadOverlay = {
                     id: widgetData["widgetDataRef"],
-                    overlayIndex: Number(widgetData["overlay"]),
+                    overlayIndex: Number(widgetData["overlay"])
                 };
                 // get overlay data from store
-                var overlayValues =
-                    this.$store.getters["compare/getWidgetDataEmbedding1d"](
-                        payloadOverlay
-                    );
+                var overlayValues = this.$store.getters[
+                    "compare/getWidgetDataEmbedding1d"
+                ](payloadOverlay);
             } else {
                 widgetDataValues = undefined;
                 overlayValues = undefined;
@@ -626,13 +624,13 @@ export default {
                 showTooltipControls: false,
                 showTooltip: false,
                 tooltipOffsetTop: 0,
-                tooltipOffsetLeft: 0,
+                tooltipOffsetLeft: 0
             };
         },
-        handleSliderChange: function (data) {
+        handleSliderChange: function(data) {
             this.setColorScale(data);
         },
-        setColorScale: function (data) {
+        setColorScale: function(data) {
             /* 
                 sets colorScale based on data array
                 containing minPos, maxPos, minRange, maxRange
@@ -642,7 +640,7 @@ export default {
             this.minHeatmapRange = data[2];
             this.maxHeatmapRange = data[3];
         },
-        resetColorScale: function () {
+        resetColorScale: function() {
             /*
                 resets colorscale to undefined
             */
@@ -651,10 +649,10 @@ export default {
             this.minHeatmapRange = undefined;
             this.maxHeatmapRange = undefined;
         },
-        getOverlayData: async function (id, index) {
+        getOverlayData: async function(id, index) {
             var queryObject = {
                 id: id,
-                overlayIndex: index,
+                overlayIndex: index
             };
             if (
                 this.$store.getters["compare/embedding1dDataExists"](
@@ -675,14 +673,14 @@ export default {
                 // request has not been dispatched => put it in store
                 this.$store.commit("compare/setRequest", {
                     url: url,
-                    data: this.fetchData(url),
+                    data: this.fetchData(url)
                 });
                 response = await this.$store.getters["compare/getRequest"](url);
                 // save it in store -> only first request needs to persist it
                 var mutationObject = {
                     id: id,
                     overlayIndex: index,
-                    data: response.data["data"],
+                    data: response.data["data"]
                 };
                 this.$store.commit(
                     "compare/setWidgetDataEmbedding1d",
@@ -691,10 +689,10 @@ export default {
             }
             return response.data["data"];
         },
-        getEmbeddingData: async function (id) {
+        getEmbeddingData: async function(id) {
             // checks whether association data is in store and fetches it if it is not
             var queryObject = {
-                id: id,
+                id: id
             };
             if (
                 this.$store.getters["compare/embedding1dDataExists"](
@@ -715,13 +713,13 @@ export default {
                 // request has not been dispatched => put it in store
                 this.$store.commit("compare/setRequest", {
                     url: url,
-                    data: this.fetchData(url),
+                    data: this.fetchData(url)
                 });
                 response = await this.$store.getters["compare/getRequest"](url);
                 // save it in store -> only first request needs to persist it
                 var mutationObject = {
                     id: id,
-                    data: response.data,
+                    data: response.data
                 };
                 this.$store.commit(
                     "compare/setWidgetDataEmbedding1d",
@@ -731,11 +729,12 @@ export default {
             // return it
             return response.data;
         },
-        updateData: async function () {
+        updateData: async function() {
             this.loading = true;
             // construct data ids to be fecthed
-            let selected_id =
-                this.binsizes[this.selectedBinsize][this.clusterNumber];
+            let selected_id = this.binsizes[this.selectedBinsize][
+                this.clusterNumber
+            ];
             // store widget data ref
             this.widgetDataRef = selected_id;
             // fetch data
@@ -752,13 +751,13 @@ export default {
             // reset color scale
             this.resetColorScale();
             this.loading = false;
-        },
+        }
     },
     watch: {
         // watch for changes in store to be able to update intervals
         "$store.state.compare.widgetCollections": {
             deep: true,
-            handler: function (newValue) {
+            handler: function(newValue) {
                 // update availability object
                 this.datasets =
                     newValue[this.collectionID]["collectionConfig"][
@@ -768,9 +767,9 @@ export default {
                     newValue[this.collectionID]["collectionConfig"][
                         "intervalSize"
                     ];
-            },
+            }
         },
-        datasets: function (newVal, oldVal) {
+        datasets: function(newVal, oldVal) {
             if (
                 !newVal ||
                 !oldVal ||
@@ -784,10 +783,9 @@ export default {
                 this.blankWidget();
                 return;
             }
-            this.binsizes =
-                this.datasets[this.selectedDataset]["data_ids"][
-                    this.intervalSize
-                ];
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
             // check whether binsizes are defined
             if (this.binsizes === undefined) {
                 // not data exists, blank widget DAta
@@ -799,15 +797,14 @@ export default {
             );
             this.updateData();
         },
-        intervalSize: function (newVal, oldVal) {
+        intervalSize: function(newVal, oldVal) {
             // if interval size changes, reload data
             if (!newVal || !oldVal || this.selectedDataset.length == 0) {
                 return;
             }
-            this.binsizes =
-                this.datasets[this.selectedDataset]["data_ids"][
-                    this.intervalSize
-                ];
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
             // check whether binsizes are defined
             if (this.binsizes === undefined) {
                 // not data exists, blank widget DAta
@@ -819,16 +816,15 @@ export default {
             );
             this.updateData();
         },
-        selectedDataset: async function (newVal, oldVal) {
+        selectedDataset: async function(newVal, oldVal) {
             if (!this.selectedDataset || this.selectedDataset.length == 0) {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
             }
             // set binsizes and add default
-            this.binsizes =
-                this.datasets[this.selectedDataset]["data_ids"][
-                    this.intervalSize
-                ];
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
             // check whether binsizes are defined
             if (this.binsizes === undefined) {
                 // not data exists, blank widget DAta
@@ -846,18 +842,19 @@ export default {
             this.$store.commit("compare/decrement_usage_collections", oldVal);
             this.$store.commit("compare/increment_usage_collections", newVal);
         },
-        selectedBinsize: async function () {
+        selectedBinsize: async function() {
             if (!this.selectedBinsize) {
                 return;
             }
             this.updateData();
         },
-        overlay: async function () {
+        overlay: async function() {
             // fetch overlay if needed
             this.loading = true;
             if (this.overlay != "density") {
-                let selected_id =
-                    this.binsizes[this.selectedBinsize][this.clusterNumber];
+                let selected_id = this.binsizes[this.selectedBinsize][
+                    this.clusterNumber
+                ];
                 this.overlayValues = await this.getOverlayData(
                     selected_id,
                     Number(this.overlay)
@@ -868,18 +865,18 @@ export default {
             this.resetColorScale();
             this.loading = false;
         },
-        clusterNumber: function () {
+        clusterNumber: function() {
             if (!this.selectedBinszie) {
                 this.updateData();
             }
-        },
+        }
     },
-    mounted: function () {
+    mounted: function() {
         this.registerSelectionEventHandlers();
     },
-    beforeDestroy: function () {
+    beforeDestroy: function() {
         this.removeSelectionEventHandlers();
-    },
+    }
 };
 </script>
 

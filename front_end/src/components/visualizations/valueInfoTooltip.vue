@@ -10,9 +10,9 @@ export default {
     props: {
         message: String,
         tooltipOffsetLeft: Number,
-        tooltipOffsetTop: Number,
+        tooltipOffsetTop: Number
     },
-    data: function () {
+    data: function() {
         return {
             tooltipStyle: {
                 position: "absolute",
@@ -25,17 +25,17 @@ export default {
                 "border-radius": "5px",
                 padding: "5px",
                 color: "white",
-                "white-space": "nowrap",
-            },
+                "white-space": "nowrap"
+            }
         };
     },
     watch: {
-        tooltipOffsetLeft: function (val) {
+        tooltipOffsetLeft: function(val) {
             this.tooltipStyle["left"] = `${val}px`;
         },
-        tooltipOffsetTop: function (val) {
+        tooltipOffsetTop: function(val) {
             this.tooltipStyle["top"] = `${val}px`;
-        },
-    },
+        }
+    }
 };
 </script>

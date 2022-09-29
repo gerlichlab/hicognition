@@ -39,39 +39,39 @@ import EventBus from "../../eventBus";
 export default {
     name: "assemblyDialog",
     mixins: [apiMixin],
-    data: function () {
+    data: function() {
         return {
             selected_assembly_id: null,
-            showDelete: false,
+            showDelete: false
         };
     },
     components: {
-        assemblyTable,
+        assemblyTable
     },
     props: {
-        dialog: Boolean,
+        dialog: Boolean
     },
     computed: {
-        showDialog: function () {
+        showDialog: function() {
             return this.dialog;
-        },
+        }
     },
     methods: {
-        handleAssemblyDeletion: function () {
+        handleAssemblyDeletion: function() {
             this.deleteData(`assemblies/${this.selected_assembly_id}/`).then(
-                (response) => {
+                response => {
                     EventBus.$emit("fetch-assemblies");
                 }
             );
         },
-        handleSelectionAvailable: function (assembly_id) {
+        handleSelectionAvailable: function(assembly_id) {
             this.selected_assembly_id = assembly_id;
             this.showDelete = true;
         },
-        handleSelectionUnAvailable: function () {
+        handleSelectionUnAvailable: function() {
             this.showDelete = false;
-        },
-    },
+        }
+    }
 };
 </script>
 

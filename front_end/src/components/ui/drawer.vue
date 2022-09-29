@@ -202,10 +202,10 @@
 <script>
 export default {
     name: "drawer",
-    data: function () {
+    data: function() {
         return {
-            isDemo: process.env.SHOWCASE,
+            isDemo: process.env.SHOWCASE
         };
-    },
+    }
 };
 </script>

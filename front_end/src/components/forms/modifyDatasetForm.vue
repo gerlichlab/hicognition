@@ -183,7 +183,7 @@
                                                 :disabled="sending"
                                                 v-if="
                                                     fieldOptions[field] !=
-                                                    'freetext'
+                                                        'freetext'
                                                 "
                                             >
                                                 <md-option
@@ -245,7 +245,7 @@ export default {
     name: "AddDatasetForm",
     mixins: [validationMixin, apiMixin],
     props: {
-        datasetID: Number,
+        datasetID: Number
     },
     data: () => ({
         form: {
@@ -259,14 +259,14 @@ export default {
             DerivationType: null,
             Protein: null,
             cellCycleStage: null,
-            perturbation: null,
+            perturbation: null
         },
         datasetMetadataMapping: null,
         dataset: undefined,
         datasetSaved: false,
         sending: false,
         selectedFile: null,
-        assemblies: {},
+        assemblies: {}
     }),
     validations() {
         // validators for the form
@@ -274,49 +274,49 @@ export default {
             form: {
                 datasetName: {
                     required,
-                    minLength: minLength(3),
+                    minLength: minLength(3)
                 },
                 public: {},
                 ValueType: {
-                    required,
+                    required
                 },
                 cellCycleStage: {
-                    required,
+                    required
                 },
                 perturbation: {
-                    required,
-                },
-            },
+                    required
+                }
+            }
         };
         if (this.valueTypeSelected) {
             for (let key of Object.keys(
                 this.datasetMetadataMapping[this.selectedFileType]["ValueType"][
                     this.form.ValueType
                 ]
-            ).filter((el) => el != "SizeType")) {
+            ).filter(el => el != "SizeType")) {
                 outputObject["form"][key] = { required };
             }
         }
         return outputObject;
     },
     computed: {
-        selectedFileType: function () {
+        selectedFileType: function() {
             if (!this.dataset) {
                 return undefined;
             }
             return this.dataset.filetype;
         },
-        valueTypeFields: function () {
+        valueTypeFields: function() {
             if (this.valueTypeSelected && this.selectedFileType) {
                 return Object.keys(
                     this.datasetMetadataMapping[this.selectedFileType][
                         "ValueType"
                     ][this.form.ValueType]
-                ).filter((el) => el !== "SizeType");
+                ).filter(el => el !== "SizeType");
             }
             return [];
         },
-        fieldOptions: function () {
+        fieldOptions: function() {
             if (this.valueTypeSelected && this.selectedFileType) {
                 return this.datasetMetadataMapping[this.selectedFileType][
                     "ValueType"
@@ -324,13 +324,13 @@ export default {
             }
             return undefined;
         },
-        valueTypeSelected: function () {
+        valueTypeSelected: function() {
             if (this.form.ValueType && this.selectedFileType) {
                 return true;
             }
             return false;
         },
-        valueTypes: function () {
+        valueTypes: function() {
             if (this.selectedFileType) {
                 let valueTypes = Object.keys(
                     this.datasetMetadataMapping[this.selectedFileType][
@@ -345,16 +345,16 @@ export default {
             }
             return undefined;
         },
-        showMetadata: function () {
+        showMetadata: function() {
             // whether to show metadata fields
             if (this.selectedFileType) {
                 return true;
             }
             return false;
-        },
+        }
     },
     methods: {
-        getDatasetFromStore: function () {
+        getDatasetFromStore: function() {
             this.dataset = this.$store.getters["getDataset"](this.datasetID);
         },
         getValidationClass(fieldName) {
@@ -363,19 +363,19 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty,
+                    "md-invalid": field.$invalid && field.$dirty
                 };
             }
         },
         fetchDatasets() {
-            this.fetchData("datasets/").then((response) => {
+            this.fetchData("datasets/").then(response => {
                 // success, store datasets
                 if (response) {
                     this.$store.commit("setDatasets", response.data);
                 }
             });
         },
-        saveDataset: function () {
+        saveDataset: function() {
             this.sending = true; // show progress bar
             // construct form data
             var formData = new FormData();
@@ -387,7 +387,7 @@ export default {
             }
             // API call including upload is made in the background
             this.putData(`datasets/${this.dataset.id}/`, formData).then(
-                async (response) => {
+                async response => {
                     this.sending = false;
                     if (response) {
                         // if error happend, global error handler will eat the response
@@ -398,7 +398,7 @@ export default {
                 }
             );
         },
-        populateFormWithData: function () {
+        populateFormWithData: function() {
             const fieldMapping = {
                 dataset_name: "datasetName",
                 valueType: "ValueType",
@@ -409,7 +409,7 @@ export default {
                 protein: "Protein",
                 derivationType: "DerivationType",
                 normalization: "Normalization",
-                public: "public",
+                public: "public"
             };
             for (let [key, value] of Object.entries(fieldMapping)) {
                 if (value in this.form && this.dataset[key] !== undefined) {
@@ -422,15 +422,16 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        },
+        }
     },
-    mounted: function () {
-        this.datasetMetadataMapping =
-            this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
+    mounted: function() {
+        this.datasetMetadataMapping = this.$store.getters[
+            "getDatasetMetadataMapping"
+        ]["DatasetType"];
         this.getDatasetFromStore();
         // populate form with data
         this.populateFormWithData();
-    },
+    }
 };
 </script>
 

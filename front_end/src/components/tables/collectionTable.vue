@@ -191,7 +191,7 @@
             <div
                 v-else-if="
                     (collections === undefined || assemblies === undefined) &&
-                    !this.showEmpty
+                        !this.showEmpty
                 "
                 class="wait-spinner-container"
             >
@@ -207,7 +207,9 @@
                 v-else
                 md-label="No collections found"
                 style="flexgrow: true"
-                :md-description="`No collections found for this query. Try a different search term or create a new dataset.`"
+                :md-description="
+                    `No collections found for this query. Try a different search term or create a new dataset.`
+                "
             >
             </md-empty-state>
         </transition>
@@ -226,49 +228,49 @@ export default {
         restrictedDatasetType: String,
         finishedCollections: {
             type: Array,
-            default: undefined,
+            default: undefined
         },
         singleSelection: {
             type: Boolean,
-            default: true,
+            default: true
         },
         showEmpty: {
             type: Boolean,
-            default: false,
+            default: false
         },
         preselection: {
             type: Array,
-            default: () => [],
+            default: () => []
         },
         assembly: {
             type: Number,
-            default: undefined,
+            default: undefined
         },
         processingCollections: {
             type: Array,
-            default: undefined,
+            default: undefined
         },
         failedCollections: {
             type: Array,
-            default: undefined,
+            default: undefined
         },
         blockContainedDialog: {
             type: Boolean,
-            default: false,
-        },
+            default: false
+        }
     },
-    data: function () {
+    data: function() {
         let possibleFields;
         if (this.finishedCollections) {
             possibleFields = {
                 name: "Name",
                 dataset_ids: "Contained datasets",
-                status: "Status",
+                status: "Status"
             };
         } else {
             possibleFields = {
                 name: "Name",
-                dataset_ids: "Contained datasets",
+                dataset_ids: "Contained datasets"
             };
         }
         return {
@@ -284,17 +286,17 @@ export default {
             selectedIds: [],
             datasetType: "regions",
             allowAssemblySelection: true,
-            blockAssemblyBlanking: true,
+            blockAssemblyBlanking: true
         };
     },
     computed: {
-        allowDatasetTypeSelection: function () {
+        allowDatasetTypeSelection: function() {
             if (this.restrictedDatasetType) {
                 return false;
             }
             return true;
         },
-        isSelectionDisabled: function (item) {
+        isSelectionDisabled: function(item) {
             if (this.anyProcessing) {
                 return true;
             }
@@ -305,7 +307,7 @@ export default {
             }
             return true;
         },
-        fields: function () {
+        fields: function() {
             const outputFields = {};
             for (let [key, value] of Object.entries(this.possibleFields)) {
                 if (this.selectedFields.includes(key)) {
@@ -314,22 +316,22 @@ export default {
             }
             return outputFields;
         },
-        containedDatasetStyle: function () {
+        containedDatasetStyle: function() {
             if (this.selected) {
                 return {
-                    color: "black",
+                    color: "black"
                 };
             }
             return;
         },
-        caseButtonClass: function () {
+        caseButtonClass: function() {
             if (this.matchCase) {
                 return "md-icon-button md-accent md-raised large-top-margin";
             } else {
                 return "md-icon-button large-top-margin";
             }
         },
-        selected: function () {
+        selected: function() {
             if (this.collections) {
                 let fieldFiltered = this.filterCollectionsOnFields(
                     this.collections
@@ -338,11 +340,11 @@ export default {
                     this.filterCollectionsOnSearchTerm(fieldFiltered)
                 );
             }
-        },
+        }
     },
     methods: {
         showContainingDatasetsTable(collection) {
-            let datasets = this.$store.state.datasets.filter((el) =>
+            let datasets = this.$store.state.datasets.filter(el =>
                 collection.dataset_ids.includes(el.id)
             );
             let datasetType;
@@ -369,7 +371,7 @@ export default {
                 false
             );
         },
-        sortByValue: function (fieldName) {
+        sortByValue: function(fieldName) {
             if (this.sortBy == fieldName && this.sortOrder == "ascending") {
                 this.sortOrder = "descending";
             } else {
@@ -381,7 +383,7 @@ export default {
             if (this.searchTerm === "") {
                 return collections;
             }
-            return collections.filter((el) => {
+            return collections.filter(el => {
                 var included = false;
                 for (let key of Object.keys(this.fields)) {
                     if (typeof el[key] == "string") {
@@ -404,23 +406,23 @@ export default {
             });
         },
         filterCollectionsOnFields(collections) {
-            return collections.filter((el) => {
+            return collections.filter(el => {
                 return (
                     el.kind == this.datasetType &&
                     el.assembly == this.selectedAssembly
                 );
             });
         },
-        showDatasetTable: function (datsets) {
+        showDatasetTable: function(datsets) {
             console.log("IE");
         },
-        getTableRowClass: function (id) {
+        getTableRowClass: function(id) {
             if (this.selectedIds.includes(id)) {
                 return "blue-background";
             }
             return "";
         },
-        handleTableRowClicked: function (id) {
+        handleTableRowClicked: function(id) {
             if (this.singleSelection) {
                 if (this.selectedIds.includes(id)) {
                     this.selectedIds = [];
@@ -457,7 +459,7 @@ export default {
             return "arrow_upward";
         },
         fetchAssemblies() {
-            this.fetchData("assemblies/").then((response) => {
+            this.fetchData("assemblies/").then(response => {
                 if (response) {
                     this.assemblies = response.data;
                     if (this.assembly) {
@@ -517,27 +519,27 @@ export default {
             }
             return this.sortDescending(datasets);
         },
-        deleteClicked: function () {
+        deleteClicked: function() {
             this.clickedDelete = true;
         },
-        handleDelete: async function () {
+        handleDelete: async function() {
             return;
         },
         onSelect(item) {
             this.selected = item;
-        },
+        }
     },
     watch: {
-        datasetType: function () {
+        datasetType: function() {
             this.searchTerm = "";
             this.selectedIds = this.preselection;
             this.$emit("selection-changed", this.selectedIds);
         },
-        searchTerm: function () {
+        searchTerm: function() {
             this.selectedIds = this.preselection;
             this.$emit("selection-changed", this.selectedIds);
         },
-        selectedAssembly: function () {
+        selectedAssembly: function() {
             if (this.blockAssemblyBlanking) {
                 this.selectedIds = this.preselection;
             } else {
@@ -546,17 +548,17 @@ export default {
             this.$emit("selection-changed", this.selectedIds);
             this.blockAssemblyBlanking = false;
         },
-        collections: function () {
+        collections: function() {
             this.selectedIds = this.preselection;
             this.$emit("selection-changed", this.selectedIds);
-        },
+        }
     },
-    created: function () {
+    created: function() {
         this.assemblies = this.fetchAssemblies();
         if (this.restrictedDatasetType) {
             this.datasetType = this.restrictedDatasetType;
         }
-    },
+    }
 };
 </script>
 

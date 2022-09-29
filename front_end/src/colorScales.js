@@ -15,7 +15,7 @@ export function getScale(min, max, scaleType) {
             midpoint = (min + max) / 2;
         }
         return d3
-            .scaleDiverging((t) => d3.interpolateRdBu(1 - t))
+            .scaleDiverging(t => d3.interpolateRdBu(1 - t))
             .domain([min, midpoint, max]);
     } else if (scaleType == "plasma") {
         return d3.scaleSequential(d3.interpolatePlasma).domain([min, max]);

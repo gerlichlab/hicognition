@@ -84,7 +84,8 @@
                             </div>
                             <!-- select file source -->
                             <div class="md-layout-item md-small-size-100">
-                                <md-field> <!-- TODO sprint9 :class=validationClass -->
+                                <md-field>
+                                    <!-- TODO sprint9 :class=validationClass -->
                                     <label for="fileSource">File Source</label>
                                     <md-select
                                         id="fileSource"
@@ -93,16 +94,18 @@
                                         @md-selected="clearInputFields"
                                         required
                                     >
-                                        <md-option value="httpUpload"> 
+                                        <md-option value="httpUpload">
                                             Upload file from device
                                         </md-option>
-                                        <md-option value="url"> 
+                                        <md-option value="url">
                                             Import from URL
                                         </md-option>
-                                        <md-option v-for="repo in repositories"
+                                        <md-option
+                                            v-for="repo in repositories"
                                             :key="repo.id"
-                                            :value="repo.name">
-                                            {{repo.name}}
+                                            :value="repo.name"
+                                        >
+                                            {{ repo.name }}
                                         </md-option>
                                     </md-select>
                                 </md-field>
@@ -111,24 +114,30 @@
                         <!-- choose upload type based on file source -->
                         <!-- file field -->
                         <div class="md-layout-item md-small-size-100">
-                            <formFileInput 
-                                v-if="form.fileSource==='httpUpload'"
+                            <formFileInput
+                                v-if="form.fileSource === 'httpUpload'"
                                 :fileTypeMapping="fileTypeMapping"
                                 @input-changed="fileInputChanged"
-                                @update-component-validity="updateComponentValidity"
+                                @update-component-validity="
+                                    updateComponentValidity
+                                "
                             />
-                            <formURLInput 
-                                v-else-if="form.fileSource==='url'"
+                            <formURLInput
+                                v-else-if="form.fileSource === 'url'"
                                 :fileTypeMapping="fileTypeMapping"
                                 @input-changed="urlInputChanged"
-                                @update-component-validity="updateComponentValidity"
+                                @update-component-validity="
+                                    updateComponentValidity
+                                "
                             />
-                            <formRepositoryInput 
+                            <formRepositoryInput
                                 v-else
                                 :fileTypeMapping="fileTypeMapping"
                                 :repository="repositories[form.fileSource].name"
                                 @input-changed="repositoryInputChanged"
-                                @update-component-validity="updateComponentValidity"
+                                @update-component-validity="
+                                    updateComponentValidity
+                                "
                             />
                         </div>
                     </div>
@@ -266,7 +275,7 @@
                                                 :disabled="sending"
                                                 v-if="
                                                     fieldOptions[field] !=
-                                                    'freetext'
+                                                        'freetext'
                                                 "
                                             >
                                                 <md-option
@@ -326,15 +335,22 @@
                 </md-card-actions>
             </md-card>
             <!-- Submission notification -->
-            <md-snackbar :md-active.sync="datasetSaved">{{ snackbarMessage }}</md-snackbar
-            >
+            <md-snackbar :md-active.sync="datasetSaved">{{
+                snackbarMessage
+            }}</md-snackbar>
         </form>
     </div>
 </template>
 
 <script>
 import { validationMixin } from "vuelidate";
-import { required, minLength, maxLength, requiredIf, url } from "vuelidate/lib/validators";
+import {
+    required,
+    minLength,
+    maxLength,
+    requiredIf,
+    url
+} from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 import formFileInput from "./formFileInput";
@@ -345,7 +361,7 @@ export default {
     name: "AddDatasetForm",
     mixins: [validationMixin, apiMixin],
     props: {
-        fileTypeMapping: Object,
+        fileTypeMapping: Object
     },
     components: {
         formFileInput,
@@ -368,7 +384,7 @@ export default {
             Protein: null,
             cellCycleStage: null,
             perturbation: null,
-            fileSource: 'httpUpload'
+            fileSource: "httpUpload"
         },
         datasetMetadataMapping: null,
         datasetSaved: false,
@@ -384,7 +400,7 @@ export default {
         fileType: null,
         selectedFile: null,
         componentValid: false,
-        snackbarMessage: null,
+        snackbarMessage: null
     }),
     validations() {
         // validators for the form
@@ -392,25 +408,25 @@ export default {
             form: {
                 datasetName: {
                     required,
-                    minLength: minLength(3),
+                    minLength: minLength(3)
                 },
                 public: {},
                 assembly: {
-                    required,
+                    required
                 },
                 ValueType: {
-                    required,
+                    required
                 },
                 cellCycleStage: {
-                    required,
+                    required
                 },
                 perturbation: {
-                    required,
+                    required
                 },
                 description: {
-                    maxLength: maxLength(80),
-                },
-            },
+                    maxLength: maxLength(80)
+                }
+            }
         };
         if (this.valueTypeSelected) {
             for (let key of Object.keys(
@@ -425,15 +441,16 @@ export default {
     },
     computed: {
         selectedFileType: function() {
-            if (this.fileType && 
+            if (
+                this.fileType &&
                 this.fileType.toLowerCase() in this.fileTypeMapping
-            ){
+            ) {
                 return this.fileTypeMapping[this.fileType.toLowerCase()];
             } else {
                 return undefined;
             }
         },
-        valueTypeFields: function () {
+        valueTypeFields: function() {
             if (this.valueTypeSelected && this.selectedFileType) {
                 return Object.keys(
                     this.datasetMetadataMapping[this.selectedFileType][
@@ -443,7 +460,7 @@ export default {
             }
             return [];
         },
-        fieldOptions: function () {
+        fieldOptions: function() {
             if (this.valueTypeSelected && this.selectedFileType) {
                 return this.datasetMetadataMapping[this.selectedFileType][
                     "ValueType"
@@ -451,13 +468,13 @@ export default {
             }
             return undefined;
         },
-        valueTypeSelected: function () {
+        valueTypeSelected: function() {
             if (this.form.ValueType && this.selectedFileType) {
                 return true;
             }
             return false;
         },
-        valueTypes: function () {
+        valueTypes: function() {
             if (this.selectedFileType) {
                 let valueTypes = Object.keys(
                     this.datasetMetadataMapping[this.selectedFileType][
@@ -491,9 +508,11 @@ export default {
             this.metadata = metadata;
 
             // fillFields
-            this.form.datasetName = metadata['json']['track_and_facet_info']['dataset']
-            this.form.description = metadata['json']['track_and_facet_info']['condition']
-            // if (metadata['json']['genome_assembly'] in 
+            this.form.datasetName =
+                metadata["json"]["track_and_facet_info"]["dataset"];
+            this.form.description =
+                metadata["json"]["track_and_facet_info"]["condition"];
+            // if (metadata['json']['genome_assembly'] in
         },
         fillFields: function() {
             // ... TODO fill fields with metadata
@@ -504,7 +523,7 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty,
+                    "md-invalid": field.$invalid && field.$dirty
                 };
             }
         },
@@ -518,7 +537,8 @@ export default {
                 }
             }
         },
-        clearInputFields(event) { // TODO sprint9
+        clearInputFields(event) {
+            // TODO sprint9
             // clear fields
             this.componentValid = false;
             this.fileType = null;
@@ -528,7 +548,7 @@ export default {
             this.selectedFile = null;
         },
         fetchDatasets() {
-            this.fetchData("datasets/").then((response) => {
+            this.fetchData("datasets/").then(response => {
                 // success, store datasets
                 if (response) {
                     this.$store.commit("setDatasets", response.data);
@@ -542,7 +562,7 @@ export default {
             var formData = new FormData();
             for (var key in this.form) {
                 // do not contain fileSource value, as this is only for gui
-                if (key == 'fileSource') {
+                if (key == "fileSource") {
                     continue;
                 }
 
@@ -562,27 +582,34 @@ export default {
             }
             // add filetype
             formData.append("filetype", this.selectedFileType);
-            
-            var postRoute = '';
-            if (this.form.fileSource == 'httpUpload') {
-                formData.append('file', this.selectedFile, this.selectedFile.name);
-                postRoute = 'datasets/';
-                this.snackbarMessage = 'The Dataset was added successfully and is ready for preprocessing!';
-            } else if (this.form.fileSource == 'url') {
-                formData.append('sourceURL', this.sourceURL);
-                this.snackbarMessage = 'The Dataset has been queued for download!';
-                postRoute = 'datasets/URL/';
+
+            var postRoute = "";
+            if (this.form.fileSource == "httpUpload") {
+                formData.append(
+                    "file",
+                    this.selectedFile,
+                    this.selectedFile.name
+                );
+                postRoute = "datasets/";
+                this.snackbarMessage =
+                    "The Dataset was added successfully and is ready for preprocessing!";
+            } else if (this.form.fileSource == "url") {
+                formData.append("sourceURL", this.sourceURL);
+                this.snackbarMessage =
+                    "The Dataset has been queued for download!";
+                postRoute = "datasets/URL/";
             } else {
-                formData.append('repositoryName', this.form.fileSource);
-                formData.append('sampleID', this.sampleID);
-                this.snackbarMessage = 'The Dataset has been queued for download!';
-                postRoute = 'datasets/encode/';
+                formData.append("repositoryName", this.form.fileSource);
+                formData.append("sampleID", this.sampleID);
+                this.snackbarMessage =
+                    "The Dataset has been queued for download!";
+                postRoute = "datasets/encode/";
             }
 
             // API call including upload is made in the background
-            this.postData(postRoute, formData).then((response) => {
+            this.postData(postRoute, formData).then(response => {
                 this.sending = false;
-               // this.clearForm();
+                // this.clearForm();
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
@@ -597,28 +624,29 @@ export default {
             }
         },
         fetchAssemblies() {
-            this.fetchData("assemblies/").then((response) => {
+            this.fetchData("assemblies/").then(response => {
                 if (response) {
                     this.assemblies = response.data;
                 }
             });
         },
         fetchRepositories() {
-            this.fetchData("repositories/").then((response) => {
+            this.fetchData("repositories/").then(response => {
                 if (response) {
                     this.repositories = response.data;
                 }
             });
         }
     },
-    mounted: function () {
-        this.datasetMetadataMapping =
-            this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
+    mounted: function() {
+        this.datasetMetadataMapping = this.$store.getters[
+            "getDatasetMetadataMapping"
+        ]["DatasetType"];
         this.assemblies = this.fetchAssemblies();
-        
+
         // TODO sprint9 add repo list
         this.repositories = this.fetchRepositories();
-    },
+    }
 };
 </script>
 

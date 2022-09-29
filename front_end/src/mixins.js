@@ -10,30 +10,30 @@ import {
     mean_along_columns,
     select_column,
     select_columns,
-    range,
+    range
 } from "./functions";
 
 export var apiMixin = {
     methods: {
-        fetchAndStoreDatasets: function () {
+        fetchAndStoreDatasets: function() {
             // convenience method for fetching datasets and storing them in vuex store
-            this.fetchData("datasets/").then((response) => {
+            this.fetchData("datasets/").then(response => {
                 if (response) {
                     // success, store datasets
                     this.$store.commit("setDatasets", response.data);
                 }
             });
         },
-        fetchAndStoreCollections: function () {
+        fetchAndStoreCollections: function() {
             // convenience method for fetching collections and storing them in vuex store
-            this.fetchData("collections/").then((response) => {
+            this.fetchData("collections/").then(response => {
                 if (response) {
                     // update displayed datasets
                     this.$store.commit("setCollections", response.data);
                 }
             });
         },
-        fetchAndStoreToken: function (username, password) {
+        fetchAndStoreToken: function(username, password) {
             /* fetches token with username ande password and stores it
             using the mutation "setToken". Returns a promise
             */
@@ -44,18 +44,18 @@ export var apiMixin = {
                     {
                         auth: {
                             username: username,
-                            password: password,
-                        },
+                            password: password
+                        }
                     }
                 )
-                .then((response) => {
+                .then(response => {
                     // success, store token in vuex store
                     this.$store.commit("setToken", response.data.token);
                     this.$store.commit("setUserId", response.data.user_id);
                     this.$store.commit("setUserName", response.data.user_name);
                 });
         },
-        fetchData: function (url) {
+        fetchData: function(url) {
             /* Fetches data at url relative to api url.
             Function returns a promise. Assumes a token is stored in store.
             Redirects to login if fetching fails. If there is a session token available, use it
@@ -81,10 +81,10 @@ export var apiMixin = {
             return this.$http
                 .get(process.env.API_URL + url, {
                     headers: {
-                        Authorization: `Basic ${encodedToken}`,
-                    },
+                        Authorization: `Basic ${encodedToken}`
+                    }
                 })
-                .catch((error) => {
+                .catch(error => {
                     if (!error.response) {
                         alert(`HTTP error: ${error}`);
                     } else if (
@@ -102,7 +102,7 @@ export var apiMixin = {
                     // TODO: 401 error writes unknown - unknown make and else for data.error os unknown
                 });
         },
-        postData: function (url, formData) {
+        postData: function(url, formData) {
             /*
                 Will post the provided form data to the specified url.
             */
@@ -127,10 +127,10 @@ export var apiMixin = {
                 .post(process.env.API_URL + url, formData, {
                     headers: {
                         Authorization: `Basic ${encodedToken}`,
-                        "Content-Type": "multipart/form-data",
-                    },
+                        "Content-Type": "multipart/form-data"
+                    }
                 })
-                .catch((error) => {
+                .catch(error => {
                     if (!error.response) {
                         alert(`HTTP error: ${error}`);
                     } else if (
@@ -147,7 +147,7 @@ export var apiMixin = {
                     }
                 });
         },
-        putData: function (url, formData) {
+        putData: function(url, formData) {
             /*
                 Will put the provided form data to the specified url.
             */
@@ -172,10 +172,10 @@ export var apiMixin = {
                 .put(process.env.API_URL + url, formData, {
                     headers: {
                         Authorization: `Basic ${encodedToken}`,
-                        "Content-Type": "multipart/form-data",
-                    },
+                        "Content-Type": "multipart/form-data"
+                    }
                 })
-                .catch((error) => {
+                .catch(error => {
                     if (!error.response) {
                         alert(`HTTP error: ${error}`);
                     } else if (
@@ -192,7 +192,7 @@ export var apiMixin = {
                     }
                 });
         },
-        deleteData: function (url) {
+        deleteData: function(url) {
             /*
                 Will make a delete call to the specified url.
             */
@@ -207,10 +207,10 @@ export var apiMixin = {
             return this.$http
                 .delete(process.env.API_URL + url, {
                     headers: {
-                        Authorization: `Basic ${encodedToken}`,
-                    },
+                        Authorization: `Basic ${encodedToken}`
+                    }
                 })
-                .catch((error) => {
+                .catch(error => {
                     if (!error.response) {
                         alert(`HTTP error: ${error}`);
                     } else if (
@@ -225,13 +225,13 @@ export var apiMixin = {
                         );
                     }
                 });
-        },
-    },
+        }
+    }
 };
 
 export var formattingMixin = {
     methods: {
-        getBinSizeFormat: function (binsize) {
+        getBinSizeFormat: function(binsize) {
             let output;
             if (this.isVariableSize) {
                 output = `${binsize} %`;
@@ -240,7 +240,7 @@ export var formattingMixin = {
             }
             return output;
         },
-        convertBasePairsToReadable: function (baseString) {
+        convertBasePairsToReadable: function(baseString) {
             var basePairs = Number(baseString);
             if (Math.abs(basePairs) < 1000) {
                 return basePairs + "bp";
@@ -249,8 +249,8 @@ export var formattingMixin = {
                 return Math.round(basePairs / 1000) + " kb";
             }
             return Math.round(basePairs / 100000) / 10 + " Mb";
-        },
-    },
+        }
+    }
 };
 
 const TOOLBARHEIGHT = 40;
@@ -264,90 +264,90 @@ export var widgetMixin = {
         id: Number,
         collectionID: Number,
         rowIndex: Number,
-        colIndex: Number,
+        colIndex: Number
     },
-    data: function () {
+    data: function() {
         // get widget data from store for initialization
         return this.initializeWidget();
     },
     computed: {
-        genomicFeatureSelectionClasses: function () {
+        genomicFeatureSelectionClasses: function() {
             if (this.allowBinsizeSelection) {
                 return [
                     "md-layout-item",
                     "md-size-30",
                     "padding-left",
-                    "padding-right",
+                    "padding-right"
                 ];
             } else {
                 return [
                     "md-layout-item",
                     "md-size-30",
                     "padding-left",
-                    "padding-right",
+                    "padding-right"
                 ];
             }
         },
-        visualizationHeight: function () {
+        visualizationHeight: function() {
             return Math.round(this.height - TOOLBARHEIGHT - MESSAGEHEIGHT);
         },
-        visualizationWidth: function () {
+        visualizationWidth: function() {
             return Math.round(this.width * 0.7);
         },
-        showData: function () {
+        showData: function() {
             if (this.widgetData) {
                 return true;
             }
             return false;
         },
-        allowDatasetSelection: function () {
+        allowDatasetSelection: function() {
             if (this.intervalSize) {
                 return true;
             }
             return false;
         },
-        allowBinsizeSelection: function () {
+        allowBinsizeSelection: function() {
             if (this.binsizes) {
                 return Object.keys(this.binsizes).length != 0;
             }
             return false;
         },
-        cssStyle: function () {
+        cssStyle: function() {
             return {
                 height: `${this.height}px`,
-                width: `${this.width}px`,
+                width: `${this.width}px`
             };
         },
-        isVariableSize: function () {
+        isVariableSize: function() {
             return this.intervalSize == "variable";
-        },
+        }
     },
     methods: {
-        blankWidget: function () {
+        blankWidget: function() {
             // removes all information that the user can set in case a certain region/dataset combination is not available
             this.widgetData = undefined;
             this.selectedDataset = undefined;
             this.selectedBinsize = undefined;
             this.widgetDataRef = undefined;
         },
-        getCenterOfArray: function (array) {
+        getCenterOfArray: function(array) {
             // returns value of center entry in array (rounded down)
             return Number(array[Math.floor(array.length / 2)]);
         },
-        registerLifeCycleEventHandlers: function () {
+        registerLifeCycleEventHandlers: function() {
             // registers event handlers that react to life cycle event such as deletion and serialization
             EventBus.$on("serialize-widgets", this.serializeWidget);
             // widget deletion can be trigered via event bus from widget collection
-            EventBus.$on("delete-widget", (id) => {
+            EventBus.$on("delete-widget", id => {
                 if (id == this.id) {
                     this.deleteWidget();
                 }
             });
         },
-        removeEventHandlers: function () {
+        removeEventHandlers: function() {
             EventBus.$off("serialize-widgets", this.serializeWidget);
         },
-        sameCollectionConfig: function (newCollectionData, oldCollectionData) {
+        sameCollectionConfig: function(newCollectionData, oldCollectionData) {
             if (!oldCollectionData) {
                 // no old data -> the widget needs to be freshly initialized
                 return false;
@@ -362,7 +362,7 @@ export var widgetMixin = {
             }
             return true;
         },
-        handleDragStart: function (e) {
+        handleDragStart: function(e) {
             // commit to store once drag starts
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
@@ -384,17 +384,17 @@ export var widgetMixin = {
                 this.width / 2
             );
         },
-        handleDragEnd: function (e) {
+        handleDragEnd: function(e) {
             // remove dragImage from document
             if (this.dragImage) {
                 this.dragImage.remove();
             }
         },
-        deleteWidget: function () {
+        deleteWidget: function() {
             // delete widget from store
             var payload = {
                 parentID: this.collectionID,
-                id: this.id,
+                id: this.id
             };
             // delete widget from store
             this.$store.commit("compare/deleteWidget", payload);
@@ -404,18 +404,19 @@ export var widgetMixin = {
                 this.selectedDataset
             );
         },
-        serializeWidget: function () {
+        serializeWidget: function() {
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
         },
-        initializeWidget: function () {
+        initializeWidget: function() {
             // initialize widget from store
             var queryObject = {
                 parentID: this.collectionID,
-                id: this.id,
+                id: this.id
             };
-            var widgetData =
-                this.$store.getters["compare/getWidgetProperties"](queryObject);
+            var widgetData = this.$store.getters["compare/getWidgetProperties"](
+                queryObject
+            );
             // the collection config at the current collection
             var collectionConfig = this.$store.getters[
                 "compare/getCollectionConfig"
@@ -436,21 +437,21 @@ export var widgetMixin = {
             } else {
                 return this.initializeFromStore(widgetData, collectionConfig);
             }
-        },
+        }
     },
-    mounted: function () {
+    mounted: function() {
         this.registerLifeCycleEventHandlers();
     },
-    beforeDestroy: function () {
+    beforeDestroy: function() {
         this.removeEventHandlers();
-    },
+    }
 };
 
 const EXPANSION_FACTOR = 0.2;
 
 export var sortOrderMixin = {
     computed: {
-        intervalStartBin: function () {
+        intervalStartBin: function() {
             if (this.widgetData) {
                 let intervalSize = Math.round(
                     this.widgetData["shape"][1] / (1 + 2 * EXPANSION_FACTOR)
@@ -459,7 +460,7 @@ export var sortOrderMixin = {
             }
             return undefined;
         },
-        intervalEndBin: function () {
+        intervalEndBin: function() {
             if (this.widgetData) {
                 let intervalSize = Math.round(
                     this.widgetData["shape"][1] / (1 + 2 * EXPANSION_FACTOR)
@@ -470,7 +471,7 @@ export var sortOrderMixin = {
             }
             return undefined;
         },
-        sortedMatrix: function () {
+        sortedMatrix: function() {
             if (!this.widgetData) {
                 return undefined;
             }
@@ -483,7 +484,7 @@ export var sortOrderMixin = {
                 return {
                     data: sorted_matrix,
                     shape: this.widgetData["shape"],
-                    dtype: this.widgetData["dtype"],
+                    dtype: this.widgetData["dtype"]
                 };
             } else if (this.selectedSortOrder == "region") {
                 let selected = select_columns(
@@ -504,7 +505,7 @@ export var sortOrderMixin = {
                 return {
                     data: sorted_matrix,
                     shape: this.widgetData["shape"],
-                    dtype: this.widgetData["dtype"],
+                    dtype: this.widgetData["dtype"]
                 };
             } else if (this.selectedSortOrder == "left boundary") {
                 let sort_index = select_column(
@@ -521,7 +522,7 @@ export var sortOrderMixin = {
                 return {
                     data: sorted_matrix,
                     shape: this.widgetData["shape"],
-                    dtype: this.widgetData["dtype"],
+                    dtype: this.widgetData["dtype"]
                 };
             } else if (this.selectedSortOrder == "right boundary") {
                 let sort_index = select_column(
@@ -538,7 +539,7 @@ export var sortOrderMixin = {
                 return {
                     data: sorted_matrix,
                     shape: this.widgetData["shape"],
-                    dtype: this.widgetData["dtype"],
+                    dtype: this.widgetData["dtype"]
                 };
             } else {
                 var sorted_matrix = sort_matrix_by_index(
@@ -550,17 +551,17 @@ export var sortOrderMixin = {
                 return {
                     data: sorted_matrix,
                     shape: this.widgetData["shape"],
-                    dtype: this.widgetData["dtype"],
+                    dtype: this.widgetData["dtype"]
                 };
             }
         },
-        allowSortOrderSelection: function () {
+        allowSortOrderSelection: function() {
             if (this.sortorders) {
                 return true;
             }
             return false;
         },
-        cssStyle: function () {
+        cssStyle: function() {
             let opacity = this.showSelection ? "0.6" : "1";
             // define border style
             let borderStyle;
@@ -581,31 +582,31 @@ export var sortOrderMixin = {
                 "border-style": `none none ${borderStyle} none`,
                 "border-color": this.sortOrderColor
                     ? this.sortOrderColor
-                    : "none",
+                    : "none"
             };
         },
-        sortDirection: function () {
+        sortDirection: function() {
             if (this.isAscending) {
                 return "Ascending";
             }
             return "Descending";
         },
-        sortKeys: function () {
+        sortKeys: function() {
             if (this.sortorders) {
                 return Object.keys(this.sortorders);
             }
             return {};
         },
-        allowSortOrderTargetSelection: function () {
+        allowSortOrderTargetSelection: function() {
             return (
                 this.sortOrderSelectionState &&
                 this.showData &&
                 !this.sortOrderRecipient
             );
-        },
+        }
     },
     methods: {
-        broadcastSortOrderUpdate: function () {
+        broadcastSortOrderUpdate: function() {
             // tell client widgets that sort order has changed
             EventBus.$emit(
                 "update-sort-order-sharing",
@@ -614,7 +615,7 @@ export var sortOrderMixin = {
                 this.isAscending
             );
         },
-        constructSortOrder: function () {
+        constructSortOrder: function() {
             // extracts sort order values from current selected sort-order
             let values;
             if (this.selectedSortOrder == "center column") {
@@ -649,7 +650,7 @@ export var sortOrderMixin = {
             }
             return values;
         },
-        manageColorUpdate: function () {
+        manageColorUpdate: function() {
             // checks which colors are used for sort order sharing and sets a new one
             let returnedColor = this.$store.getters.getNextSortOrderColor;
             if (!returnedColor) {
@@ -658,19 +659,19 @@ export var sortOrderMixin = {
                 this.setBorderColor(returnedColor);
             }
         },
-        colorExhaustionErrorHandler: function (kind = "sort order shares") {
+        colorExhaustionErrorHandler: function(kind = "sort order shares") {
             // error handler for when there are no more colors to be shared
             alert(`Maximum number of ${kind} reached!`);
             this.emitEmptySortOrderEnd();
             this.showSelection = false;
             return;
         },
-        setBorderColor: function (color) {
+        setBorderColor: function(color) {
             // sets color for widget and commits to store
             this.sortOrderColor = color;
             this.$store.commit("setColorUsage", this.sortOrderColor);
         },
-        handleStartSortOrderShare: function () {
+        handleStartSortOrderShare: function() {
             EventBus.$emit(
                 "select-sort-order-start",
                 this.id,
@@ -678,11 +679,11 @@ export var sortOrderMixin = {
             );
             // add event listener to window to catch next click event
             window.addEventListener("click", this.emitEmptySortOrderEnd, {
-                once: true,
+                once: true
             });
             this.expectingSortOrder = true; // this needs to be closed after receiving again -> otherwise everything updates
         },
-        handleStopSortOrderShare: function () {
+        handleStopSortOrderShare: function() {
             // put in default
             if (this.isVariableSize) {
                 this.selectedSortOrder = "region";
@@ -694,10 +695,10 @@ export var sortOrderMixin = {
             this.sortOrderRecipient = false;
             this.sortOrderTargetID = undefined;
         },
-        emitEmptySortOrderEnd: function () {
+        emitEmptySortOrderEnd: function() {
             EventBus.$emit("select-sort-order-end", undefined, undefined);
         },
-        acceptSortOrderEndEvent: function (
+        acceptSortOrderEndEvent: function(
             target_id,
             sortorder,
             direction,
@@ -712,7 +713,7 @@ export var sortOrderMixin = {
                 color != undefined
             );
         },
-        registerSortOrderClientHandlers: function () {
+        registerSortOrderClientHandlers: function() {
             // register event handlers that are relevant when widget is a sort order share client
             EventBus.$on(
                 "select-sort-order-end",
@@ -758,20 +759,20 @@ export var sortOrderMixin = {
                     this.sortOrderTargetID = new_id;
                 }
             });
-            EventBus.$on("sort-order-source-deletion", (source_id) => {
+            EventBus.$on("sort-order-source-deletion", source_id => {
                 if (this.sortOrderTargetID == source_id) {
                     this.handleStopSortOrderShare();
                 }
             });
         },
-        registerSortOrderSourceHandlers: function () {
+        registerSortOrderSourceHandlers: function() {
             // handlers that are needed if widget is a sort order source
             EventBus.$on("select-sort-order-start", (id, parent_id) => {
                 if (id != this.id && parent_id == this.collectionID) {
                     this.sortOrderSelectionState = true;
                 }
             });
-            EventBus.$on("stop-sort-order-sharing", (target_id) => {
+            EventBus.$on("stop-sort-order-sharing", target_id => {
                 if (target_id == this.id) {
                     this.sortOrderRecipients -= 1;
                     if (this.sortOrderRecipients == 0) {
@@ -783,30 +784,30 @@ export var sortOrderMixin = {
                 }
             });
         },
-        registerSortOrderEventHandlers: function () {
+        registerSortOrderEventHandlers: function() {
             // event bus listeners for sort order sharing
             this.registerSortOrderClientHandlers();
             this.registerSortOrderSourceHandlers();
-        },
-    },
+        }
+    }
 };
 
 export var valueScaleSharingMixin = {
     computed: {
-        allowValueScaleChange: function () {
+        allowValueScaleChange: function() {
             if (this.valueScaleTargetID) {
                 return false;
             }
             return true;
         },
-        allowValueScaleTargetSelection: function () {
+        allowValueScaleTargetSelection: function() {
             return (
                 this.valueScaleSelectionState &&
                 this.showData &&
                 !this.valueScaleRecipient
             );
         },
-        valueScaleBorder: function () {
+        valueScaleBorder: function() {
             if (this.valueScaleRecipients > 0) {
                 return "solid";
             } else if (this.valueScaleTargetID) {
@@ -814,17 +815,17 @@ export var valueScaleSharingMixin = {
             }
             return undefined;
         },
-        cssStyle: function () {
+        cssStyle: function() {
             let opacity = this.showSelection ? "0.6" : "1";
             return {
                 height: `${this.height}px`,
                 width: `${this.width}px`,
-                opacity: opacity,
+                opacity: opacity
             };
-        },
+        }
     },
     methods: {
-        resetColorScale: function () {
+        resetColorScale: function() {
             /*
                 resets colorscale to undefined
             */
@@ -833,7 +834,7 @@ export var valueScaleSharingMixin = {
             this.minHeatmapRange = undefined;
             this.maxHeatmapRange = undefined;
         },
-        setColorScale: function (data) {
+        setColorScale: function(data) {
             /* 
                 sets colorScale based on data array
                 containing minPos, maxPos, minRange, maxRange
@@ -843,7 +844,7 @@ export var valueScaleSharingMixin = {
             this.minHeatmapRange = data[2];
             this.maxHeatmapRange = data[3];
         },
-        broadcastValueScaleUpdate: function () {
+        broadcastValueScaleUpdate: function() {
             // tell client widgets that value scale has changed
             if (this.valueScaleRecipients > 0) {
                 EventBus.$emit(
@@ -857,7 +858,7 @@ export var valueScaleSharingMixin = {
                 );
             }
         },
-        manageValueScaleColorUpdate: function () {
+        manageValueScaleColorUpdate: function() {
             // checks which colors are used for value scale sharing and sets a new one
             let returnedColor = this.$store.getters.getNextValueScaleColor;
             if (!returnedColor) {
@@ -867,7 +868,7 @@ export var valueScaleSharingMixin = {
                 this.$store.commit("setValueScaleColorUsage", returnedColor);
             }
         },
-        handleStartValueScaleShare: function () {
+        handleStartValueScaleShare: function() {
             EventBus.$emit(
                 "select-value-scale-start",
                 this.id,
@@ -875,11 +876,11 @@ export var valueScaleSharingMixin = {
             );
             // add event listener to window to catch next click event
             window.addEventListener("click", this.emitEmptyValueScaleEnd, {
-                once: true,
+                once: true
             });
             this.expectingValueScale = true; // this needs to be closed after receiving again -> otherwise everything updates
         },
-        handleStopValueScaleShare: function () {
+        handleStopValueScaleShare: function() {
             this.minHeatmap = undefined;
             this.maxHeatmap = undefined;
             this.minHeatmapRange = undefined;
@@ -889,10 +890,10 @@ export var valueScaleSharingMixin = {
             this.valueScaleRecipient = false;
             this.valueScaleTargetID = false;
         },
-        emitEmptyValueScaleEnd: function () {
+        emitEmptyValueScaleEnd: function() {
             EventBus.$emit("select-value-scale-end", undefined, undefined);
         },
-        acceptValueScaleEndEvent: function (
+        acceptValueScaleEndEvent: function(
             target_id,
             min,
             max,
@@ -911,7 +912,7 @@ export var valueScaleSharingMixin = {
                 maxRange != undefined
             );
         },
-        registerValueScaleClientHandlers: function () {
+        registerValueScaleClientHandlers: function() {
             // register event handlers that are relevant when widget is value scale share client
             EventBus.$on(
                 "select-value-scale-end",
@@ -967,19 +968,19 @@ export var valueScaleSharingMixin = {
                     this.valueScaleTargetID = new_id;
                 }
             });
-            EventBus.$on("value-scale-source-deletion", (source_id) => {
+            EventBus.$on("value-scale-source-deletion", source_id => {
                 if (this.valueScaleTargetID == source_id) {
                     this.handleStopValueScaleShare();
                 }
             });
         },
-        registerValueScaleSourceHandlers: function () {
+        registerValueScaleSourceHandlers: function() {
             EventBus.$on("select-value-scale-start", (id, widgetType) => {
                 if (id != this.id && this.$options.name == widgetType) {
                     this.valueScaleSelectionState = true;
                 }
             });
-            EventBus.$on("stop-value-scale-sharing", (target_id) => {
+            EventBus.$on("stop-value-scale-sharing", target_id => {
                 if (target_id == this.id) {
                     this.valueScaleRecipients -= 1;
                     if (this.valueScaleRecipients == 0) {
@@ -992,18 +993,18 @@ export var valueScaleSharingMixin = {
                 }
             });
         },
-        registerValueScaleWidgetCollectionHandlers: function () {
-            EventBus.$on("widget-collection-deletion", (collection_id) => {
+        registerValueScaleWidgetCollectionHandlers: function() {
+            EventBus.$on("widget-collection-deletion", collection_id => {
                 if (collection_id == this.collectionID) {
                     this.handleWidgetDeletion();
                 }
             });
         },
-        registerValueScaleEventHandlers: function () {
+        registerValueScaleEventHandlers: function() {
             // event bus listeners for sort order sharing
             this.registerValueScaleClientHandlers();
             this.registerValueScaleSourceHandlers();
             this.registerValueScaleWidgetCollectionHandlers();
-        },
-    },
+        }
+    }
 };
