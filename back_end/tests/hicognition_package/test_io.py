@@ -345,6 +345,5 @@ class TestSortBed(TempDirTestCase):
         # compare
         assert_frame_equal(expected, result)
 
-
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

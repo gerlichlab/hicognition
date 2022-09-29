@@ -13,8 +13,10 @@ from hicognition.utils import parse_description, get_all_interval_ids, parse_bin
 from hicognition.format_checkers import FORMAT_CHECKERS
 from . import api
 from .. import db
+# from ..tasks import download_dataset_file # FIXME One can never include this
 from ..models import (
     Assembly,
+    DataRepository,
     Dataset,
     BedFileMetadata,
     Organism,
@@ -24,25 +26,121 @@ from ..models import (
     EmbeddingIntervalData,
 )
 from ..form_models import (
-    DatasetPostModel,
+    DatasetPostModel, FileDatasetPostModel, URLDatasetPostModel, ENCODEDatasetPostModel
 )
 from .authentication import auth
 from .. import pipeline_steps
 from .errors import forbidden, invalid, not_found
 
+@api.route("/datasets/encode/", methods=["POST"])
+@auth.login_required
+def add_dataset_from_ENCODE():
+    """ """ # TODO docs
+    def is_form_valid():
+        valid = True
+        valid = valid and hasattr(request, "form")
+        valid = valid and len(request.files) == 0
+        return valid
+    
+    if not is_form_valid():
+        return invalid("Form is not valid!")
+    
+    # get data from form
+    try:
+        data = ENCODEDatasetPostModel(**request.form)
+    except ValueError as err:
+        return invalid(f'"Form is not valid: {str(err)}')
+    
+    if db.session.query(DataRepository).get(data.repository_name) is None:
+        return invalid(f'Repository {data.repository_name} not found.')
+    
+    # check whether description is there
+    description = parse_description(data)
+    # check whether dataset should be public
+    set_public = "public" in data and data["public"] == True
+    # add data to Database -> in order to get id for filename
+    new_entry = Dataset(
+        dataset_name=data.dataset_name,
+        description=description,
+        public=set_public,
+        processing_state="uploading",
+        filetype=data.filetype,
+        user_id=g.current_user.id,
+        repository_name=data.repository_name,
+        sample_id=data.sample_id
+    )
+    new_entry.add_fields_from_form(data)
+    try:
+        db.session.add(new_entry)
+    except Exception as err:
+        return invalid('') # TODO
+    db.session.commit()
+
+    g.current_user.launch_task(
+        current_app.queues["short"], # TODO which queue to take
+        "download_dataset_file",
+        "run dataset download from repo",
+        new_entry.id
+    )
+    return jsonify({"message": "success! File is being downloaded."})
+
+@api.route("/datasets/URL/", methods=["POST"])
+@auth.login_required
+def add_dataset_from_URL():
+    """ """ # TODO docs
+    def is_form_valid():
+        valid = True
+        valid = valid and hasattr(request, "form")
+        valid = valid and len(request.files) == 0
+        return valid
+    
+    if not is_form_valid():
+        return invalid("Form is not valid!")
+    
+    # get data from form
+    try:
+        data = URLDatasetPostModel(**request.form)
+    except ValueError as err:
+        return invalid(f'"Form is not valid: {str(err)}')
+    
+    # check whether description is there
+    description = parse_description(data)
+    # add data to Database -> in order to get id for filename
+    new_entry = Dataset(
+        dataset_name=data.dataset_name,
+        description=description,
+        public=data.public,
+        processing_state="uploading",
+        filetype=data.filetype,
+        user_id=g.current_user.id,
+        source_url=data.source_url
+    )
+    new_entry.add_fields_from_form(data)
+    try:
+        db.session.add(new_entry)
+    except Exception as err:
+        return invalid('') # TODO
+    db.session.commit()
+
+    g.current_user.launch_task(
+        current_app.queues["short"], # TODO which queue to take
+        "download_dataset_file",
+        "run dataset download from repo",
+        new_entry.id
+    )
+    return jsonify({"message": "success! File is being downloaded."})
+    
 
 @api.route("/datasets/", methods=["POST"])
 @auth.login_required
 def add_dataset():
     """endpoint to add a new dataset"""
-
+    
     def is_form_invalid():
-        if not hasattr(request, "form"):
-            return True
-        # check whether fileObject is there
-        if len(request.files) == 0:
-            return True
-        return False
+        invalid = False
+        invalid = invalid or not hasattr(request, "form")
+        invalid = invalid or len(request.files) == 0
+        return invalid
 
     current_user = g.current_user
     # check form
@@ -50,11 +148,10 @@ def add_dataset():
         return invalid("Form is not valid!")
     # get data from form
     try:
-        data = DatasetPostModel(**request.form, filename=request.files["file"].filename)
+        data = FileDatasetPostModel(**request.form, filename=request.files["file"].filename)
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
 
-    file_object = request.files["file"]
     # check whether description is there
     description = parse_description(data)
     # check whether dataset should be public
@@ -71,45 +168,23 @@ def add_dataset():
     new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
     db.session.commit()
+    
+    # TODO this doesnt work yet
     # save file in upload directory with database_id as prefix
+    file_object = request.files["file"]
     filename = f"{new_entry.id}_{secure_filename(file_object.filename)}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     file_object.save(file_path)
-    assembly = Assembly.query.get(data.assembly)
-    # check format -> this cannot be done in form checker since file needs to be available
-    chromosome_names = set(pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0])
-    needed_resolutions = parse_binsizes(
-        current_app.config["PREPROCESSING_MAP"], "cooler"
-    )
-    if not FORMAT_CHECKERS[request.form["filetype"]](
-        file_path, chromosome_names, needed_resolutions
-    ):
-        db.session.delete(new_entry)
-        db.session.commit()
-        os.remove(file_path)
-        return invalid("Wrong dataformat or wrong chromosome names!")
-    # add file_path to database entry
     new_entry.file_path = file_path
-    new_entry.processing_state = "uploaded"
-    db.session.add(new_entry)
-    # start preprocessing of bedfile, the other filetypes do not need preprocessing
-    if data.filetype == "bedfile":
-        current_user.launch_task(
-            current_app.queues["short"],
-            "pipeline_bed",
-            "run bed preprocessing",
-            new_entry.id,
-        )
-        new_entry.processing_state = "processing"
-    # if filetype is cooler, store available binsizes
-    if data.filetype == "cooler":
-        binsizes = [
-            resolution.split("/")[2]
-            for resolution in cooler.fileops.list_coolers(file_path)
-        ]
-        new_entry.available_binsizes = json.dumps(binsizes)
+    new_entry.processing_state = "uploaded" #  TODO status only used for tests?
+
+    # validate dataset and delete if not valid
+    if not new_entry.validate_dataset(delete=True):
+        return invalid("Wrong dataformat or wrong chromosome names!")
+
+    new_entry.preprocess_dataset(invoke_redis_task=True)
     db.session.commit()
-    return jsonify({"message": "success! Preprocessing triggered."})
+    return jsonify({"message": "success! File is handed in for preprocessing."}) # TODO preprocessing ambiguous
 
 
 @api.route("/preprocess/datasets/", methods=["POST"])
@@ -655,3 +730,4 @@ def create_region_from_cluster_id(entry_id, cluster_id):
     db.session.commit()
     # return success
     return jsonify({"message": "success! Region subset"})
+

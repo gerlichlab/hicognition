@@ -4,6 +4,7 @@ from pathlib import Path
 from flask.globals import current_app
 import pandas as pd
 from ..models import (
+    DataRepository,
     User,
     Organism,
     Assembly,
@@ -131,6 +132,18 @@ def create_hg19():
         for dataset in Dataset.query.all():
             dataset.assembly = assembly.id
         db.session.commit()
+        
+def add_repositories():
+    """adds repositories depending on info in config file"""
+    if db.session.query(DataRepository).first() is None:
+        for repo_dict in current_app.config["REPOSITORIES"]:
+            repo = DataRepository(
+                name=repo_dict['name'],
+                url=repo_dict['url'],
+                auth_required=repo_dict['auth_required']
+            )
+            db.session.add(repo)
+        db.session.commit()
 
 
 def drop_preprocessing_tables():
@@ -171,6 +184,7 @@ def init_database():
         create_hg19()
         drop_preprocessing_tables()
         drop_tasks()
+        add_repositories()
     # add showcase data if needed
     if (
         current_app.config["SHOWCASE"]

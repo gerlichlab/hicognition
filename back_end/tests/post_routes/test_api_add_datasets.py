@@ -92,6 +92,9 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "available_binsizes": '["5000000"]',
             "user_id": 1,
             "id": 1,
+            'repository_name': None,
+            'sample_id': None,
+            'source_url': None,
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
@@ -152,6 +155,9 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "protein": "CTCF",
             "valueType": "ChromatinAssociation",
             "filetype": "bigwig",
+            'repository_name': None,
+            'sample_id': None,
+            'source_url': None,
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
@@ -214,6 +220,9 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "protein": "CTCF",
             "valueType": "ChromatinAssociation",
             "filetype": "bigwig",
+            'repository_name': None,
+            'sample_id': None,
+            'source_url': None,
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
@@ -254,7 +263,6 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             headers=self.token_headers,
             content_type="multipart/form-data",
         )
-        # import pdb; pdb.set_trace()
         self.assertEqual(response.status_code, 200)
         # check whether dataset has been added to database
         self.assertEqual(len(Dataset.query.all()), 1)
@@ -279,6 +287,9 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "available_binsizes": '["5000000"]',
             "user_id": 1,
             "id": 1,
+            'repository_name': None,
+            'sample_id': None,
+            'source_url': None,
         }
         self.assertEqual(expected, dataset.to_json())
         # check whether binsizes have been added correctly -> test cooler contains single resolution with size 5 * 10**6
@@ -303,6 +314,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
         }
+        #import pdb; pdb.set_trace()
         # dispatch post request
         response = self.client.post(
             "/api/datasets/",
@@ -333,6 +345,10 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "method": "HiC",
             "user_id": 1,
             "id": 1,
+            'repository_name': None,
+            'sample_id': None,
+            'source_url': None,
+
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
@@ -509,7 +525,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "description": "test-description",
             "cellCycleStage": "asynchronous",
             "perturbation": "No perturbation",
-            "ValueType": "SetIdentity",
+            "ValueType": "Derived",
             "public": "false",
             "Method": "HiC",
             "SizeType": "Interval",
@@ -526,7 +542,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_wrongly_formatted_bedfile_rejected(self):
+    def test_wrongly_formatted_bedfile_rejected(self):        
         """Tests whether form with wrongly formatted bedfile is rejected."""
         # construct form data
         data = {
@@ -535,7 +551,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "description": "test-description",
             "cellCycleStage": "asynchronous",
             "perturbation": "No perturbation",
-            "ValueType": "SetIdentity",
+            "ValueType": "Derived",
             "Method": "HiC",
             "public": "false",
             "SizeType": "Interval",

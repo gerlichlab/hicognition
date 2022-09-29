@@ -1,6 +1,8 @@
 """Pydantic models to validate integrity of Forms for the HiCognition API."""
-from pydantic import BaseModel, Field, validator, constr
+from pydantic import BaseModel, Field, validator, constr, AnyUrl
+
 from flask import current_app
+
 
 # pylint: disable=no-self-argument,no-self-use
 class DatasetPostModel(BaseModel):
@@ -21,8 +23,8 @@ class DatasetPostModel(BaseModel):
     user_id: int = None
     processing_state: constr(max_length=64) = None
     filetype: constr(max_length=64)
-    filename: constr(max_length=200)
     value_type: constr(max_length=64) = Field(..., alias="ValueType")
+        
 
     @classmethod
     def get_reverse_alias(cls, key):
@@ -37,6 +39,9 @@ class DatasetPostModel(BaseModel):
             "Protein": "protein",
             "cellCycleStage": "cell_cycle_stage",
             "ValueType": "value_type",
+            "sampleID": "sample_id",
+            "repositoryName": "repository_name",
+            "sourceURL": "source_url"
         }
         return alias_table[key]
 
@@ -77,6 +82,28 @@ class DatasetPostModel(BaseModel):
                 )
         return value_type
 
+
+    @validator("description")
+    def parse_description(cls, description):
+        """Checks if description was provided provided in frontend, if not rewrites it."""
+        if description == "null":
+            description = "No description provided"
+        return description
+    
+    # TODO maybe add another for file type?
+    
+    def __getitem__(self, item):
+        if hasattr(self, item):
+            return getattr(self, item)
+        return getattr(self, self.get_reverse_alias(item))
+
+    def __contains__(self, item):
+        return hasattr(self, item)
+
+class FileDatasetPostModel(DatasetPostModel):
+    """model of dataset with file"""
+    filename: constr(max_length=200)
+    
     @validator("filename")
     def file_has_correct_ending_and_supported_filetype(cls, filename, values, **kwargs):
         """Checks is the file has the appropriate file ending."""
@@ -93,18 +120,28 @@ class DatasetPostModel(BaseModel):
                 f'Invalid filename! For the filetype: {values["filetype"]} we found the file ending: {file_ending}. Supported for this filetype are: {supported_file_endings[values["filetype"]]}.'
             )
         return filename
-
-    @validator("description")
-    def parse_description(cls, description):
-        """Checks if description was provided provided in frontend, if not rewrites it."""
-        if description == "null":
-            description = "No description provided"
-        return description
-
-    def __getitem__(self, item):
-        if hasattr(self, item):
-            return getattr(self, item)
-        return getattr(self, self.get_reverse_alias(item))
-
-    def __contains__(self, item):
-        return hasattr(self, item)
+    
+class URLDatasetPostModel(DatasetPostModel):
+    """model of dataset with an URL"""
+    source_url: AnyUrl = Field(alias="sourceURL")
+    
+    @validator("source_url")
+    def source_url_is_valid(cls, source_url, values, **kwargs):
+        """Checks is the file has the appropriate file ending."""
+        return source_url
+    
+        
+class ENCODEDatasetPostModel(DatasetPostModel):
+    """model of dataset with an URL"""
+    sample_id: constr(max_length=128) = Field(alias="sampleID")
+    repository_name: constr(max_length=64) = Field(alias="repositoryName")
+    
+    # @validator("sample_id")
+    # def sample_id_exists(cls, sample_id):
+    #     return sample_id # TODO
+    
+    # @validator("repository_id")
+    # def repository_id_exists(cls, repository_id):
+    #     return repository_id # TODO
+    
+    

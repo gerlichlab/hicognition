@@ -1,6 +1,7 @@
 <template>
     <div>
-        <widget-collection
+        <!-- TODO ask -->
+        <widget-collection 
             class="inline top-margin"
             v-for="item in collections"
             :key="item.id"

@@ -22,6 +22,16 @@ class Config:
     SHOWCASE = (
         bool(os.environ.get("SHOWCASE")) or False
     )  # if there is anything in showcase this is true
+    
+    # External repositories
+    REPOSITORIES = [
+        {
+            'name': '4dn',
+            'url': 'https://data.4dnucleome.org/files-processed/{id}/@@download',
+            'auth_required': True
+        }
+    ]
+    
     # allowed binsizes for given windowsizes of regions
     PREPROCESSING_MAP = {
         50000: {

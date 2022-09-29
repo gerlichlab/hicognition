@@ -111,7 +111,7 @@ export default {
                 return "Add dataset";
             }
         },
-        fileTypeMapping: function () {
+        fileTypeMapping: function () { // REFACTOR supported file types defined also in config.py
             if (this.datatype == "feature") {
                 return {
                     mcool: "cooler",

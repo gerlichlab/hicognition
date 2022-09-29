@@ -1,9 +1,18 @@
 """Database models for HiCognition."""
+# TODO refactor to allow database to not know about flask-server or similar
+# TODO task launcher: why put it into the user class? 
+
 import datetime
 from flask.globals import current_app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import inspect
+import pandas as pd
+import cooler
+import json
+import os
+from hicognition.utils import parse_binsizes
+from hicognition.format_checkers import FORMAT_CHECKERS
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import JSONWebSignatureSerializer
 import rq
@@ -81,6 +90,14 @@ class User(db.Model, UserMixin):
     tasks = db.relationship(
         "Task", backref="user", lazy="dynamic", cascade="all, delete-orphan"
     )
+    credentials = db.relationship(
+        "User_DataRepository_Credentials", backref="user", lazy="dynamic", cascade="all, delete-orphan"
+    )
+    
+    def add_repository_credentials(self, repository_name: str, key: str, secret: str): # TODO needed?
+        credentials = User_DataRepository_Credentials(self.id, repository_name, key, secret)
+        db.session.add(credentials)
+        return credentials
 
     def set_password(self, password):
         """set password helper."""
@@ -97,9 +114,18 @@ class User(db.Model, UserMixin):
 
     def launch_task(self, queue, name, description, dataset_id, *args, **kwargs):
         """adds task to queue"""
-        rq_job = queue.enqueue(
-            "app.tasks." + name, dataset_id, job_timeout="10h", *args, **kwargs
-        )
+        if isinstance(name, str):
+            rq_job = queue.enqueue(
+                "app.tasks." + name, dataset_id, job_timeout="10h", *args, **kwargs
+            )
+        elif callable(name):
+            rq_job = queue.enqueue(
+                name, dataset_id, job_timeout="10h", *args, **kwargs
+            )
+            name = name.__name__ # TODO hahaha this is bs
+        # rq_job = queue.enqueue(
+        #     "app.tasks." + name, dataset_id, job_timeout="10h", *args, **kwargs
+        # )
         # check whether intervals_id is in kwargs
         if "intervals_id" in kwargs:
             intervals_id = kwargs["intervals_id"]
@@ -115,7 +141,7 @@ class User(db.Model, UserMixin):
         )
         db.session.add(task)
         return task
-
+    
     def launch_collection_task(
         self, queue, name, description, collection_id, *args, **kwargs
     ):
@@ -160,6 +186,47 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         """Format print output."""
         return f"<User {self.username}>"
+
+#class User_ExternSource mtm
+# TODO replace with better name?
+class DataRepository(db.Model):
+    """Model for external data repositories.
+    URL should contain a {id} that can be replaced for the data id.
+    Name is primary key, as this table will hold only a few rows and it makes
+    handling gets/posts easier."""
+    
+    # fields
+    name = db.Column(db.String(64), nullable=False, primary_key=True)
+    url = db.Column(db.String(512))
+    auth_required = db.Column(db.Boolean, default=False)
+
+    def build_url(self, data_id: str):
+        return self.url.format(id = data_id)
+
+    credentials = db.relationship(
+        "User_DataRepository_Credentials", back_populates="repository", lazy="dynamic", cascade="all, delete-orphan")
+
+    def to_json(self):
+        """makes dict from model object"""
+        d = dict()
+        for c in self.__table__.columns:
+            d[c.name] = str(getattr(self, c.name))
+        return d
+
+class User_DataRepository_Credentials(db.Model): # TODO change name
+    """Optional many-to-many object to store user keys for external repos"""
+
+    # fields
+    user_id = db.Column(db.ForeignKey("user.id"), primary_key=True)
+    repository_name = db.Column(db.ForeignKey("data_repository.name"), primary_key=True)
+    key = db.Column(db.String(512), nullable=False)
+    secret = db.Column(db.String(512), nullable=False)
+
+
+    # assoc
+    #user = db.relationship("User", back_populates='credentials')
+    repository = db.relationship("DataRepository", back_populates='credentials')
+
 
 
 class Dataset(db.Model):
@@ -230,6 +297,9 @@ class Dataset(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     available_binsizes = db.Column(db.String(500), default="undefined")
     processing_state = db.Column(db.String(64))
+    repository_name = db.Column(db.ForeignKey("data_repository.name"), nullable=True)
+    sample_id = db.Column(db.String(128), nullable=True) #  TODO add those to the META_FIELDS
+    source_url = db.Column(db.String(512), nullable=True)
     # self relationships
     processing_features = db.relationship(
         "Dataset",
@@ -300,6 +370,8 @@ class Dataset(db.Model):
         cascade="all, delete-orphan",
     )
     tasks = db.relationship("Task", backref="dataset", lazy="dynamic")
+    repository = db.relationship("DataRepository")
+    user = db.relationship("User")
 
     def get_tasks_in_progress(self):
         """Gets the tasks in progress for the dataset."""
@@ -512,6 +584,53 @@ class Dataset(db.Model):
             if target_windowsize not in existing_windowsizes:
                 missing_windowsizes.append(target_windowsize)
         return missing_windowsizes
+
+    def validate_dataset(self, delete=False): # FIXME -> delete should be outside
+        # uli: i have put this in models.py, as a dataset should validate itself
+        # TODO add file_type column to dataset
+        # TODO remove app config somehow?
+
+        # check format -> this cannot be done in form checker since file needs to be available
+        assembly = Assembly.query.get(self.assembly)
+        chromosome_names = set(pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0])
+        needed_resolutions = parse_binsizes(
+            current_app.config["PREPROCESSING_MAP"], "cooler"
+        )
+        valid = FORMAT_CHECKERS[self.filetype](
+            self.file_path, chromosome_names, needed_resolutions
+        )
+
+        if not valid and delete:
+            db.session.delete(self)
+            db.session.commit()
+            os.remove(self.file_path)
+
+        return valid
+            
+
+    def preprocess_dataset(self, invoke_redis_task = False):
+        # datasets should preprocess themselves
+
+        # start preprocessing of bedfile, the other filetypes do not need preprocessing
+        if self.filetype == "bedfile":
+            if invoke_redis_task:
+                self.user.launch_task( #  TODO current user or dataset owner user?
+                    current_app.queues["short"],
+                    "pipeline_bed",
+                    "run bed preprocessing",
+                    self.id,
+                )
+                self.processing_state = "processing"
+
+        # if filetype is cooler, store available binsizes
+        if self.filetype == "cooler":
+            binsizes = [
+                resolution.split("/")[2]
+                for resolution in cooler.fileops.list_coolers(self.file_path)
+            ]
+            self.available_binsizes = json.dumps(binsizes)
+
+        #db.session.commit()
 
     def to_json(self):
         """Generates a JSON from the model"""
