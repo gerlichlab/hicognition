@@ -160,7 +160,7 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
 
 
 # @task_context
-def download_dataset_file(dataset_id: int, delete_if_invalid: bool = False):
+def download_dataset_file(dataset_id: int):
     """
     Downloads dataset file from web and validates + 'preprocesses' it.
     ua
@@ -172,9 +172,10 @@ def download_dataset_file(dataset_id: int, delete_if_invalid: bool = False):
 
     def handle_error(ds: Dataset, msg: str):
         send_notification(ds, f"Dataset creation failed:<br>{msg}", "failed")
-        if delete_if_invalid:
-            db.session.delete(ds)
-            db.session.commit()
+        pipeline_steps.set_task_progress(100)
+    
+        db.session.delete(ds)
+        db.session.commit()
 
     def send_notification(ds: Dataset, msg: str, status: str = "success"):
         job_id = -1
@@ -194,6 +195,7 @@ def download_dataset_file(dataset_id: int, delete_if_invalid: bool = False):
         )
 
     ds = Dataset.query.get(dataset_id)
+    # check whether either url or sample id are provided:
     if not (ds.sample_id and ds.repository_name) and not ds.source_url:
         log.info(f"No sample_id, repo_name or source_url provided for {ds.id}")
         handle_error(
@@ -202,10 +204,6 @@ def download_dataset_file(dataset_id: int, delete_if_invalid: bool = False):
         return
 
     is_repository = ds.sample_id and ds.repository
-    download_func = (
-        download_utils.download_encode if is_repository else download_utils.download_url
-    )
-
     try:
         if is_repository:
             download_utils.download_encode(ds, current_app.config["UPLOAD_DIR"])
@@ -225,8 +223,8 @@ def download_dataset_file(dataset_id: int, delete_if_invalid: bool = False):
     db.session.commit()
 
     valid = (
-        ds.validate_dataset()
-    )  #  TODO can't delete file/object, bc user would not get info about it then
+        ds.validate_dataset(delete=True)
+    )
     if not valid:
         log.info(f"Dataset {ds.id} file was invalid.")
         handle_error(ds, "File formatting was invalid.")
@@ -238,3 +236,4 @@ def download_dataset_file(dataset_id: int, delete_if_invalid: bool = False):
         ds, "Dataset file download was successful!<br>Ready for preprocessing."
     )  # TODO preprocessing ambiguous
     log.info("Success.")
+    pipeline_steps.set_task_progress(100)

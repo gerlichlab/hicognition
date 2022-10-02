@@ -40,7 +40,7 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         # repo1: empty repo (takes urls)
         self.repo1 = DataRepository(  # do we even need that? if no repo specified use none
             name="4DN",
-            url="https://data.4dnucleome.org/files-processed/{id}/@@download",  # TODO bed gz evil
+            url="https://data.4dnucleome.org/files-processed/{id}",  # TODO bed gz evil
             auth_required=True,
         )
         # repo2: 4dn repo (takes url/id)
@@ -119,7 +119,6 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         db.session.add(self.dataset_bad_url)
         db.session.add(self.dataset_valid_not_exists_url)
         db.session.add(self.dataset_url)
-        db.session.add(self.repo1)
         db.session.commit()
 
     # @patch('app.api.get_routes.get_ENCODE_metadata')

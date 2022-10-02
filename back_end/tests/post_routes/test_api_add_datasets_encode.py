@@ -19,7 +19,7 @@ from app.models import (
     User_DataRepository_Credentials,
 )
 from app import db, create_app
-from app.hicognition_lib.hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
@@ -35,10 +35,11 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
             chrom_arms=self.app.config["CHROM_ARMS"],
         )
 
-        db.session.add(self.hg19)
         self.data_repo = DataRepository(
             name="testrepo", url="https://{id}", auth_required=False
         )
+        db.session.add(self.hg19)
+        db.session.add(self.data_repo)
         db.session.commit()
 
         self.token_headers = self.get_token_header(
@@ -46,7 +47,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
         )
         self.token_headers["Content-Type"] = "multipart/form-data"
 
-        self.default_data = {
+        self.default_data = { # TODO there is a better way
             "datasetName": "test",
             "description": "test-description",
             "assembly": "1",
@@ -60,6 +61,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
             "public": "false",
             "sampleID": "4DNFIRCHWS8M",
             "repositoryName": "testrepo",
+            "user_id": 1
         }
 
     def mock_http_request(*args, **kwargs):
@@ -87,6 +89,13 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
             with open("tests/testfiles/4DNFIRCHWS8M.json", "r") as file:
                 return MockResponse(
                     file.read(), 200, headers={"Application": "application/json"}
+                )
+        if args[0] == "https://test.bw":
+            with open("tests/testfiles/test.bw", "rb") as file:
+                return MockResponse(
+                    file.read(),
+                    200,
+                    headers={"Content-Disposition": "filename=filename.json"},
                 )
         return MockResponse("", 404)
 
@@ -134,13 +143,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 400)
         # check whether dataset has been added to database
-        self.assertEqual(len(Dataset.query.all()), 1)
-
-        dataset = Dataset.query.first()
-        self.assertEqual(dataset.repository_name, self.default_data["repositoryName"])
-        self.assertEqual(dataset.repository, self.data_repo)
-        self.assertEqual(dataset.processing_state, "uploading")
-
+        self.assertEqual(len(Dataset.query.all()), 0)
 
 #     @patch("app.models.User.launch_task")
 #     def test_dataset_added_correctly_bigwig_bw_ending(self, mock_launch):

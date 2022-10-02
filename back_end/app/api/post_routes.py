@@ -1,4 +1,5 @@
 """API endpoints for hicognition"""
+import logging
 import os
 import json
 import pandas as pd
@@ -34,13 +35,16 @@ from ..form_models import (
 )
 from .authentication import auth
 from .. import pipeline_steps
-from .errors import forbidden, invalid, not_found
+from .errors import forbidden, internal_server_error, invalid, not_found
 
+class PostException(Exception):
+    pass
 
 @api.route("/datasets/encode/", methods=["POST"])
 @auth.login_required
 def add_dataset_from_ENCODE():
-    """ """  # TODO docs
+    """Endpoint to add dataset directly from an ENCODE repository.
+    Will call new redis worker to download file and notify user when finished."""
 
     def is_form_valid():
         valid = True
@@ -56,6 +60,12 @@ def add_dataset_from_ENCODE():
         data = ENCODEDatasetPostModel(**request.form)
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
+    except Exception as err:
+        raise internal_server_error(err, f"Dataset could not be uploaded: There was a server-side error. Error has been logged.")
+
+    # temporary file_type check
+    if data.filetype.lower() in ['cool', 'cooler', 'mcool']:
+        return invalid(f"Extern import of files with filetype '{data['filetype']}' not yet supported")
 
     if db.session.query(DataRepository).get(data.repository_name) is None:
         return invalid(f"Repository {data.repository_name} not found.")
@@ -94,7 +104,8 @@ def add_dataset_from_ENCODE():
 @api.route("/datasets/URL/", methods=["POST"])
 @auth.login_required
 def add_dataset_from_URL():
-    """ """  # TODO docs
+    """Endpoint to add dataset with file provided by URL.
+    Will call new redis worker to download file and notify user when finished."""
 
     def is_form_valid():
         valid = True
@@ -110,7 +121,13 @@ def add_dataset_from_URL():
         data = URLDatasetPostModel(**request.form)
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
+    except Exception as err:
+        raise internal_server_error(err, f"Dataset could not be uploaded: There was a server-side error. Error has been logged.")
 
+    # temporary file_type check
+    if data.filetype.lower() in ['cool', 'cooler', 'mcool']:
+        return invalid(f"Extern import of files with filetype '{data['filetype']}' not yet supported")
+    
     # check whether description is there
     description = parse_description(data)
     # add data to Database -> in order to get id for filename
@@ -161,6 +178,8 @@ def add_dataset():
         )
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
+    except Exception as err:
+        raise internal_server_error(err, f"Dataset could not be uploaded: There was a server-side error. Error has been logged.")
 
     # check whether description is there
     description = parse_description(data)
@@ -192,7 +211,7 @@ def add_dataset():
     if not new_entry.validate_dataset(delete=True):
         return invalid("Wrong dataformat or wrong chromosome names!")
 
-    new_entry.preprocess_dataset(invoke_redis_task=True)
+    new_entry.preprocess_dataset()
     db.session.commit()
     return jsonify(
         {"message": "success! File is handed in for preprocessing."}

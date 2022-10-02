@@ -27,8 +27,8 @@ class Config:
     REPOSITORIES = [
         {
             "name": "4dn",
-            "url": "https://data.4dnucleome.org/files-processed/{id}/@@download",
-            "auth_required": True,
+            "url": "https://data.4dnucleome.org/files-processed/{id}",
+            "auth_required": False,
         }
     ]
 

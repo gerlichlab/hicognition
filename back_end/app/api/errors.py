@@ -1,7 +1,9 @@
 """ Convenience functions for handling server errors."""
+import logging
 from flask.json import jsonify
 from . import api
 
+log = logging.getLogger() # ASK What logger to use?
 
 @api.app_errorhandler(404)
 def page_not_found(_):
@@ -12,9 +14,10 @@ def page_not_found(_):
 
 
 @api.app_errorhandler(500)
-def internal_server_error(_):
+def internal_server_error(e: Exception, msg: str = ""):
     """API error handler for 500"""
-    response = jsonify({"error": "Internal server error."})
+    log.exceptoin(e)
+    response = jsonify({"error": "Internal server error", "message": msg})
     response.status_code = 500
     return response
 
@@ -34,7 +37,7 @@ def not_found(message):
 
 
 def invalid(message):
-    """API error handler for 404"""
+    """API error handler for 400"""
     response = jsonify({"error": "invalid request", "message": message})
     response.status_code = 400
     return response

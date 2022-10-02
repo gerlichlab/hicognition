@@ -35,6 +35,8 @@ class MD5Error(FileImportError):
 class FileEmptyError(FileImportError):
     pass
 
+class NoFileNameFoundError(FileImportError):
+    pass
 
 class MetadataFetchError(FileImportError):
     pass
@@ -43,10 +45,16 @@ class MetadataFetchError(FileImportError):
 class MetadataError(FileImportError):
     pass
 
+class FiletypeNotSupportedError(FileImportError):
+    pass
+
 
 def download_file(url: str, md5sum: str = None, gunzip_if_compressed: bool = True):
     """ """
+    log.info(f'Downloading {url}')
+    #response = requests.get(url, stream=True)
     response = requests.get(url, stream=True)
+    log.info(f'done.')
     response.raise_for_status()
 
     if response.content is None or response.content == "":
@@ -93,43 +101,57 @@ def _is_gzipped(file_content):
     return file_content[:2] == b"\x1f\x8b"  # Gzip magic numbers
 
 
-def download_encode(ds: Dataset, upload_dir: str, _: str = None):
+def download_encode(ds: Dataset, upload_dir: str):
     """ """
-    log.info(f"Getting metadata for {ds.id} from {ds.repository_name}")
+    # log.info(f"Dataset [{ds.id}]: Getting metadata for sample '{ds.sample_id}' from {ds.repository_name}")
     try:
         metadata = download_ENCODE_metadata(ds.repository.build_url(ds.sample_id))
     except RequestException as err:
-        log.info(f"Dataset {ds.id}: metadata could not be retrieved")
-        raise MetadataFetchError("Metadata Fetch error:%s" % str(err))
+        log.info(f"Dataset [{ds.id}]: metadata could not be retrieved")
+        raise MetadataFetchError(f"Metadata Fetch error:{str(err)}")
 
     # elif metadata.get('href'):
     #     ds.source_url = metadata['href'] # TODO make way to attach href to the repo url
     ds.source_url = metadata.get("open_data_url")
     if not ds.source_url:
-        log.info(f"Dataset {ds.id}: metadata json missing source url")
+        log.info(f"Dataset [{ds.id}]: metadata json missing source url")
         raise MetadataError(
-            "No source URL could be found for sample id %s" % ds.sample_id
+            f"No source URL could be found for sample id {ds.sample_id}"
         )
 
+    # forbid mcool for now (sept2022)
+    if metadata.get("file_format",{}).get("file_format", "").lower() in ['mcool', 'cool']:
+        raise FiletypeNotSupportedError("External import of cooler files not supported yet.")
+        
+
     # download file
-    http_content, http_file_name = download_file(
+    # log.info(f"Dataset [{ds.id}]: Downloading from {ds.source_url}.")
+    download_tuple = download_file(
         url=ds.source_url,
         md5sum=metadata.get("md5sum", None),
         gunzip_if_compressed=True,
     )
-    file_name = secure_filename(
-        f"{ds.id}_{metadata.get('display_title', http_file_name)}"
-    )  # contains file_name with ext
-    file_name = file_name[:-3] if file_name.lower().endswith(".gz") else file_name
-
-    # save file
+    http_content = download_tuple[0]
+    http_file_name = download_tuple[1]
+    # log.info(f"Dataset [{ds.id}]: saved to memory.")
+    
+    file_name = metadata.get('display_title', http_file_name)
+    if not file_name:
+        raise NoFileNameFoundError("For Dataset {ds.id} no file name was found.")
+    if file_name.lower().endswith('gz'):
+        file_name = file_name[:-3]
+    file_name = f"{ds.id}_{file_name}"
     ds.file_path = os.path.join(upload_dir, secure_filename(file_name))
+    
+    # save file
+    # log.info(f"Dataset [{ds.id}]: saving to file {ds.file_path}")
     if os.path.exists(ds.file_path):
-        log.info(f"Datset {ds.id}: File at {ds.file_path} already exists")
+        log.info(f"Dataset [{ds.id}]: File at {ds.file_path} already exists")
         raise IOError(f"File already exists")
-    with open(ds.file_path, "w") as f_out:
-        f_out.write(http_content.decode())
+    with open(ds.file_path, "wb") as f_out:
+        f_out.write(http_content)
 
+    # log.info(f"Dataset [{ds.id}]: saved.")
     ds.processing_state = "uploaded"
     return ds
 
@@ -148,7 +170,12 @@ def download_url(ds: Dataset, upload_dir: str, file_ext: str, md5sum: str = None
         HTTPError 404, 403, 400 or similar if URL is wrong
         IOException if file already exists
     """
-    http_content, http_file_name = download_file(
+    
+    # forbid mcool for now (sept2022)
+    if file_ext.lower() in ['mcool', 'cool']:
+        raise FiletypeNotSupportedError("External import of cooler files not supported yet.")
+    
+    (http_content, http_file_name) = download_file(
         ds.source_url, md5sum, gunzip_if_compressed=True
     )
     if http_file_name:
@@ -163,8 +190,8 @@ def download_url(ds: Dataset, upload_dir: str, file_ext: str, md5sum: str = None
     if os.path.exists(ds.file_path):
         log.info(f"File at {ds.file_path} already exists")
         raise IOError(f"File at {ds.file_path} already exists")
-    with open(ds.file_path, "w") as f_out:
-        f_out.write(http_content.decode())
+    with open(ds.file_path, "wb") as f_out:
+        f_out.write(http_content)
     ds.processing_state = "uploaded"
 
     return ds
