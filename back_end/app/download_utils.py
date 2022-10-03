@@ -5,13 +5,12 @@ post_routes.add_dataset_from_ENCODE and get_routes.get_ENCODE_metadata.
 import os
 import logging
 import json
-from werkzeug.utils import secure_filename
-import requests
-from requests import RequestException
 import re
 import hashlib
 import gzip
-from . import db
+from werkzeug.utils import secure_filename
+import requests
+from requests import RequestException
 from .models import Dataset
 
 
@@ -71,8 +70,8 @@ def download_file(url: str, md5sum: str = None, decompress: bool = True) -> byte
     """
     log.info(f"Downloading {url}")
     # response = requests.get(url, stream=True)
-    response = requests.get(url, stream=True)
-    log.info(f"done.")
+    response = requests.get(url, stream=True, timeout=5)
+    log.info("done.")
     response.raise_for_status()
 
     if response.content is None or response.content == "":
@@ -113,7 +112,7 @@ def download_ENCODE_metadata(url: str, auth: tuple = None) -> dict:
     Returns:
         dict: Returns metadata in form of ENCODE (see https://www.encodeproject.org/profiles/)
     """
-    metadata = requests.get(url, headers={"Accept": "application/json"}, auth=auth)
+    metadata = requests.get(url, headers={"Accept": "application/json"}, auth=auth, timeout=5)
     metadata.raise_for_status()
     metadata_json = json.loads(metadata.content)
     return metadata_json
@@ -144,7 +143,8 @@ def download_encode(ds: Dataset, upload_dir: str):
     Returns:
         Datset: dataset is returned, not yet commited
     """
-    # log.info(f"Dataset [{ds.id}]: Getting metadata for sample '{ds.sample_id}' from {ds.repository_name}")
+    # log.info(f"Dataset [{ds.id}]: Getting metadata for sample 
+    #   '{ds.sample_id}' from {ds.repository_name}")
     try:
         metadata = download_ENCODE_metadata(ds.repository.build_url(ds.sample_id))
     except RequestException as err:
@@ -192,7 +192,7 @@ def download_encode(ds: Dataset, upload_dir: str):
     # log.info(f"Dataset [{ds.id}]: saving to file {ds.file_path}")
     if os.path.exists(ds.file_path):
         log.info(f"Dataset [{ds.id}]: File at {ds.file_path} already exists")
-        raise IOError(f"File already exists")
+        raise IOError("File already exists")
     with open(ds.file_path, "wb") as f_out:
         f_out.write(http_content)
 

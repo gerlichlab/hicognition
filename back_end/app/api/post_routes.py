@@ -15,7 +15,6 @@ from hicognition.format_checkers import FORMAT_CHECKERS
 from . import api
 from .. import db
 
-# from ..tasks import download_dataset_file # FIXME One can never include this
 from ..models import (
     Assembly,
     DataRepository,
@@ -36,10 +35,6 @@ from ..form_models import (
 from .authentication import auth
 from .. import pipeline_steps
 from .errors import forbidden, internal_server_error, invalid, not_found
-
-
-class PostException(Exception):
-    pass
 
 
 @api.route("/datasets/encode/", methods=["POST"])
@@ -63,9 +58,9 @@ def add_dataset_from_ENCODE():
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
     except Exception as err:
-        raise internal_server_error(
+        return internal_server_error(
             err,
-            f"Dataset could not be uploaded: There was a server-side error. Error has been logged.",
+            "Dataset could not be uploaded: There was a server-side error. Error has been logged.",
         )
 
     # temporary file_type check
@@ -93,14 +88,11 @@ def add_dataset_from_ENCODE():
         sample_id=data.sample_id,
     )
     new_entry.add_fields_from_form(data)
-    try:
-        db.session.add(new_entry)
-    except Exception as err:
-        return invalid("")  # TODO
+    db.session.add(new_entry)
     db.session.commit()
 
     g.current_user.launch_task(
-        current_app.queues["short"],  # TODO which queue to take
+        current_app.queues["short"],
         "download_dataset_file",
         "run dataset download from repo",
         new_entry.id,
@@ -129,9 +121,9 @@ def add_dataset_from_URL():
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
     except Exception as err:
-        raise internal_server_error(
+        return internal_server_error(
             err,
-            f"Dataset could not be uploaded: There was a server-side error. Error has been logged.",
+            "Dataset could not be uploaded: There was a server-side error. Error has been logged.",
         )
 
     # temporary file_type check
@@ -153,14 +145,11 @@ def add_dataset_from_URL():
         source_url=data.source_url,
     )
     new_entry.add_fields_from_form(data)
-    try:
-        db.session.add(new_entry)
-    except Exception as err:
-        return invalid("")  # TODO
+    db.session.add(new_entry)
     db.session.commit()
 
     g.current_user.launch_task(
-        current_app.queues["short"],  # TODO which queue to take
+        current_app.queues["short"],
         "download_dataset_file",
         "run dataset download from repo",
         new_entry.id,
@@ -191,9 +180,9 @@ def add_dataset():
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
     except Exception as err:
-        raise internal_server_error(
+        return internal_server_error(
             err,
-            f"Dataset could not be uploaded: There was a server-side error. Error has been logged.",
+            "Dataset could not be uploaded: There was a server-side error. Error has been logged.",
         )
 
     # check whether description is there
@@ -213,14 +202,13 @@ def add_dataset():
     db.session.add(new_entry)
     db.session.commit()
 
-    # TODO this doesnt work yet
     # save file in upload directory with database_id as prefix
     file_object = request.files["file"]
     filename = f"{new_entry.id}_{secure_filename(file_object.filename)}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     file_object.save(file_path)
     new_entry.file_path = file_path
-    new_entry.processing_state = "uploaded"  #  TODO status only used for tests?
+    new_entry.processing_state = "uploaded"
 
     # validate dataset and delete if not valid
     if not new_entry.validate_dataset(delete=True):
