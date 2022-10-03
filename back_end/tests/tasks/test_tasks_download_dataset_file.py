@@ -1,125 +1,121 @@
-""" """
+"""Testfile for tasks.download_dataset_file.
+TODO no tests here currently.
+"""
+
 import unittest
 from unittest.mock import patch
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
-
-from app.tasks import download_dataset_file
-
-# add path to import app
-# import sys
-# sys.path.append("./")
 from app import db
 from app.models import *
 
-import requests
-
 
 class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
-    """Tests for pipeline stackup"""
+    """Tests task for downloading dataset files"""
+    pass
 
-    def setUp(self):
-        # TODO setUp runs twice?!
+    # def setUp(self):
+    #     # TODO setUp runs twice?!
 
-        super(TestDownloadDatasetFile, self).setUp()
-        # add assembly
-        self.hg19 = Assembly(
-            id=1,
-            name="hg19",
-            chrom_sizes=self.app.config["CHROM_SIZES"],
-            chrom_arms=self.app.config["CHROM_ARMS"],
-        )
-        db.session.add(self.hg19)
-        db.session.commit()
-        # make users
-        # user1 exists already
+    #     super(TestDownloadDatasetFile, self).setUp()
+    #     # add assembly
+    #     self.hg19 = Assembly(
+    #         id=1,
+    #         name="hg19",
+    #         chrom_sizes=self.app.config["CHROM_SIZES"],
+    #         chrom_arms=self.app.config["CHROM_ARMS"],
+    #     )
+    #     db.session.add(self.hg19)
+    #     db.session.commit()
+    #     # make users
+    #     # user1 exists already
 
-        self.user = User(id=1, username="user1")
-        self.user.set_password("pass1")
+    #     self.user = User(id=1, username="user1")
+    #     self.user.set_password("pass1")
 
-        # make repos
-        # repo1: empty repo (takes urls)
-        self.repo1 = DataRepository(  # do we even need that? if no repo specified use none
-            name="4DN",
-            url="https://data.4dnucleome.org/files-processed/{id}",  # TODO bed gz evil
-            auth_required=True,
-        )
-        # repo2: 4dn repo (takes url/id)
+    #     # make repos
+    #     # repo1: empty repo (takes urls)
+    #     self.repo1 = DataRepository(  # do we even need that? if no repo specified use none
+    #         name="4DN",
+    #         url="https://data.4dnucleome.org/files-processed/{id}",  # TODO bed gz evil
+    #         auth_required=True,
+    #     )
+    #     # repo2: 4dn repo (takes url/id)
 
-        # make repo_user_credentials
-        # user1_4dn
-        # self.user1_4dn_cred = User_DataRepository_Credentials(
-        #     user_id = "4DN",
-        #     repository_id = 1,
-        #     key='23MPZ4TF',
-        #     secret='exa7hrtx53tjmusq' # TODO remove before upload?!
-        # )
+    #     # make repo_user_credentials
+    #     # user1_4dn
+    #     # self.user1_4dn_cred = User_DataRepository_Credentials(
+    #     #     user_id = "4DN",
+    #     #     repository_id = 1,
+    #     #     key='23MPZ4TF',
+    #     #     secret='exa7hrtx53tjmusq' # TODO remove before upload?!
+    #     # )
 
-        # # make datasets for these test cases:
-        # self.dataset_repo = Dataset(
-        #     dataset_name="ds",
-        #     filetype="bedfile",
-        #     processing_state='uploading',
-        #     user_id=1,
-        #     assembly=1,
-        #     sizeType="Point",
-        #     repository_name = '4DN',
-        #     sample_id = '4DNFIRCHWS8M'
-        # )
-        self.dataset_url = Dataset(
-            dataset_name="ds",
-            filetype="bedfile",
-            processing_state="uploading",
-            user_id=1,
-            assembly=1,
-            sizeType="Point",
-            source_url="valid_url.at/bed.bed.gz",
-        )
-        self.dataset_bad_url = Dataset(
-            dataset_name="ds",
-            filetype="bedfile",
-            processing_state="uploading",
-            user_id=1,
-            assembly=1,
-            sizeType="Point",
-            source_url="thisisnotaurl",
-        )
-        self.dataset_valid_not_exists_url = Dataset(
-            dataset_name="ds",
-            filetype="bedfile",
-            processing_state="uploading",
-            user_id=1,
-            assembly=1,
-            sizeType="Point",
-            source_url="https://this42url1337isgoinnowhere.at",
-        )
-        self.dataset_bed_gz = Dataset(
-            dataset_name="ds",
-            filetype="bedfile",
-            processing_state="uploading",
-            user_id=1,
-            assembly=1,
-            sizeType="Point",
-            source_url="",
-        )
-        self.dataset_bad_id_4dn = Dataset(
-            dataset_name="ds",
-            filetype="bedfile",
-            processing_state="uploading",
-            user_id=1,
-            assembly=1,
-            sizeType="Point",
-            repository_name=1,
-            sample_id="THISISNOTANID",
-        )
+    #     # # make datasets for these test cases:
+    #     # self.dataset_repo = Dataset(
+    #     #     dataset_name="ds",
+    #     #     filetype="bedfile",
+    #     #     processing_state='uploading',
+    #     #     user_id=1,
+    #     #     assembly=1,
+    #     #     sizeType="Point",
+    #     #     repository_name = '4DN',
+    #     #     sample_id = '4DNFIRCHWS8M'
+    #     # )
+    #     self.dataset_url = Dataset(
+    #         dataset_name="ds",
+    #         filetype="bedfile",
+    #         processing_state="uploading",
+    #         user_id=1,
+    #         assembly=1,
+    #         sizeType="Point",
+    #         source_url="valid_url.at/bed.bed.gz",
+    #     )
+    #     self.dataset_bad_url = Dataset(
+    #         dataset_name="ds",
+    #         filetype="bedfile",
+    #         processing_state="uploading",
+    #         user_id=1,
+    #         assembly=1,
+    #         sizeType="Point",
+    #         source_url="thisisnotaurl",
+    #     )
+    #     self.dataset_valid_not_exists_url = Dataset(
+    #         dataset_name="ds",
+    #         filetype="bedfile",
+    #         processing_state="uploading",
+    #         user_id=1,
+    #         assembly=1,
+    #         sizeType="Point",
+    #         source_url="https://this42url1337isgoinnowhere.at",
+    #     )
+    #     self.dataset_bed_gz = Dataset(
+    #         dataset_name="ds",
+    #         filetype="bedfile",
+    #         processing_state="uploading",
+    #         user_id=1,
+    #         assembly=1,
+    #         sizeType="Point",
+    #         source_url="",
+    #     )
+    #     self.dataset_bad_id_4dn = Dataset(
+    #         dataset_name="ds",
+    #         filetype="bedfile",
+    #         processing_state="uploading",
+    #         user_id=1,
+    #         assembly=1,
+    #         sizeType="Point",
+    #         repository_name=1,
+    #         sample_id="THISISNOTANID",
+    #     )
 
-        db.session.add(self.user)
-        # db.session.add(self.dataset_repo)
-        db.session.add(self.dataset_bad_id_4dn)
-        db.session.add(self.dataset_bed_gz)
-        db.session.add(self.dataset_bad_url)
-        db.session.add(self.dataset_valid_not_exists_url)
-        db.session.add(self.dataset_url)
-        db.session.commit()
+    #     db.session.add(self.user)
+    #     # db.session.add(self.dataset_repo)
+    #     db.session.add(self.dataset_bad_id_4dn)
+    #     db.session.add(self.dataset_bed_gz)
+    #     db.session.add(self.dataset_bad_url)
+    #     db.session.add(self.dataset_valid_not_exists_url)
+    #     db.session.add(self.dataset_url)
+    #     db.session.commit()
 
     # @patch('app.api.get_routes.get_ENCODE_metadata')
     # @patch('app.download_utils.download_file') # TODO test this

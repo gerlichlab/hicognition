@@ -1,4 +1,4 @@
-"""Module testing the file handler functions, like download and save file."""
+"""Module testing the download_utils functions, like download and save file."""
 from itertools import product
 import json
 import os
@@ -136,7 +136,7 @@ class TestDownloadFile(ConcurrentTempDirTest):
             test_case = test_cases[id]
             if test_case.get('status_code', 200) != 200:
                 continue
-            (content, name) = download_utils.download_file(id, gunzip_if_compressed=gunzip)
+            (content, name) = download_utils.download_file(id, decompress=gunzip)
             if gunzip:
                 self.assertEqual(name, test_case.get('filename_gunzip', test_case.get('filename')))
             else:
@@ -161,7 +161,7 @@ class TestDownloadFile(ConcurrentTempDirTest):
                 with open(test_case['file'], 'rb') as f:
                     expected = f.read()
             
-            (content, name) = download_utils.download_file(id, gunzip_if_compressed=False)
+            (content, name) = download_utils.download_file(id, decompress=False)
             self.assertEqual(content, expected)
             
     @patch("requests.get", side_effect=mock_http_request)
@@ -174,7 +174,7 @@ class TestDownloadFile(ConcurrentTempDirTest):
             file_path = test_case.get('file_gunzipped', test_case.get('file'))
             with open(file_path, 'rb') as f:
                 expected = f.read()
-            (content, name) = download_utils.download_file(id, gunzip_if_compressed=True)
+            (content, name) = download_utils.download_file(id, decompress=True)
             self.assertEqual(content, expected)
 
     @patch("requests.get", side_effect=mock_http_request)
