@@ -3,7 +3,8 @@ import logging
 from flask.json import jsonify
 from . import api
 
-log = logging.getLogger() # ASK What logger to use?
+log = logging.getLogger()  # ASK What logger to use?
+
 
 @api.app_errorhandler(404)
 def page_not_found(_):

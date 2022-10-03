@@ -121,11 +121,11 @@ class User(db.Model, UserMixin):
 
     def launch_task(self, queue, name, description, dataset_id, *args, **kwargs):
         """adds task to queue"""
-        
+
         rq_job = queue.enqueue(
             "app.tasks." + name, dataset_id, job_timeout="10h", *args, **kwargs
         )
-       
+
         # check whether intervals_id is in kwargs
         if "intervals_id" in kwargs:
             intervals_id = kwargs["intervals_id"]
@@ -620,8 +620,7 @@ class Dataset(db.Model):
         return valid
 
     def preprocess_dataset(self):
-        """Invokes preprocessing of dataset.
-        """
+        """Invokes preprocessing of dataset."""
 
         # start preprocessing of bedfile, the other filetypes do not need preprocessing
         if self.filetype == "bedfile":

@@ -47,7 +47,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
         )
         self.token_headers["Content-Type"] = "multipart/form-data"
 
-        self.default_data = { # TODO there is a better way
+        self.default_data = {  # TODO there is a better way
             "datasetName": "test",
             "description": "test-description",
             "assembly": "1",
@@ -61,7 +61,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
             "public": "false",
             "sampleID": "4DNFIRCHWS8M",
             "repositoryName": "testrepo",
-            "user_id": 1
+            "user_id": 1,
         }
 
     def mock_http_request(*args, **kwargs):
@@ -144,6 +144,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 400)
         # check whether dataset has been added to database
         self.assertEqual(len(Dataset.query.all()), 0)
+
 
 #     @patch("app.models.User.launch_task")
 #     def test_dataset_added_correctly_bigwig_bw_ending(self, mock_launch):

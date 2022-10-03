@@ -173,7 +173,7 @@ def download_dataset_file(dataset_id: int):
     def handle_error(ds: Dataset, msg: str):
         send_notification(ds, f"Dataset creation failed:<br>{msg}", "failed")
         pipeline_steps.set_task_progress(100)
-    
+
         db.session.delete(ds)
         db.session.commit()
 
@@ -222,9 +222,7 @@ def download_dataset_file(dataset_id: int):
 
     db.session.commit()
 
-    valid = (
-        ds.validate_dataset(delete=True)
-    )
+    valid = ds.validate_dataset(delete=True)
     if not valid:
         log.info(f"Dataset {ds.id} file was invalid.")
         handle_error(ds, "File formatting was invalid.")

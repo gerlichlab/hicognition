@@ -37,8 +37,10 @@ from .authentication import auth
 from .. import pipeline_steps
 from .errors import forbidden, internal_server_error, invalid, not_found
 
+
 class PostException(Exception):
     pass
+
 
 @api.route("/datasets/encode/", methods=["POST"])
 @auth.login_required
@@ -61,11 +63,16 @@ def add_dataset_from_ENCODE():
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
     except Exception as err:
-        raise internal_server_error(err, f"Dataset could not be uploaded: There was a server-side error. Error has been logged.")
+        raise internal_server_error(
+            err,
+            f"Dataset could not be uploaded: There was a server-side error. Error has been logged.",
+        )
 
     # temporary file_type check
-    if data.filetype.lower() in ['cool', 'cooler', 'mcool']:
-        return invalid(f"Extern import of files with filetype '{data['filetype']}' not yet supported")
+    if data.filetype.lower() in ["cool", "cooler", "mcool"]:
+        return invalid(
+            f"Extern import of files with filetype '{data['filetype']}' not yet supported"
+        )
 
     if db.session.query(DataRepository).get(data.repository_name) is None:
         return invalid(f"Repository {data.repository_name} not found.")
@@ -122,12 +129,17 @@ def add_dataset_from_URL():
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
     except Exception as err:
-        raise internal_server_error(err, f"Dataset could not be uploaded: There was a server-side error. Error has been logged.")
+        raise internal_server_error(
+            err,
+            f"Dataset could not be uploaded: There was a server-side error. Error has been logged.",
+        )
 
     # temporary file_type check
-    if data.filetype.lower() in ['cool', 'cooler', 'mcool']:
-        return invalid(f"Extern import of files with filetype '{data['filetype']}' not yet supported")
-    
+    if data.filetype.lower() in ["cool", "cooler", "mcool"]:
+        return invalid(
+            f"Extern import of files with filetype '{data['filetype']}' not yet supported"
+        )
+
     # check whether description is there
     description = parse_description(data)
     # add data to Database -> in order to get id for filename
@@ -179,7 +191,10 @@ def add_dataset():
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
     except Exception as err:
-        raise internal_server_error(err, f"Dataset could not be uploaded: There was a server-side error. Error has been logged.")
+        raise internal_server_error(
+            err,
+            f"Dataset could not be uploaded: There was a server-side error. Error has been logged.",
+        )
 
     # check whether description is there
     description = parse_description(data)

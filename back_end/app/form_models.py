@@ -49,7 +49,7 @@ class DatasetPostModel(BaseModel):
 
         allow_population_by_field_name = True
         extra = "forbid"
-    
+
     @validator("value_type")
     def value_type_supported_in_dataset_attribute_mapping(
         cls, value_type, values, **kwargs
@@ -87,7 +87,6 @@ class DatasetPostModel(BaseModel):
         if description == "null":
             description = "No description provided"
         return description
-
 
     def __getitem__(self, item):
         if hasattr(self, item):

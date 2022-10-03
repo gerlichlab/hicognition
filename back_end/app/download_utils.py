@@ -34,8 +34,10 @@ class MD5Error(FileImportError):
 class FileEmptyError(FileImportError):
     pass
 
+
 class NoFileNameFoundError(FileImportError):
     pass
+
 
 class MetadataFetchError(FileImportError):
     pass
@@ -44,14 +46,15 @@ class MetadataFetchError(FileImportError):
 class MetadataError(FileImportError):
     pass
 
+
 class FiletypeNotSupportedError(FileImportError):
     pass
 
 
 def download_file(url: str, md5sum: str = None, decompress: bool = True) -> bytearray:
-    """Downloads a file into memory and checks md5sum if provided, and also 
+    """Downloads a file into memory and checks md5sum if provided, and also
     decompresses it if it is gzip compressed.
-    
+
 
     Args:
         url (str): URL to file
@@ -66,10 +69,10 @@ def download_file(url: str, md5sum: str = None, decompress: bool = True) -> byte
     Returns:
         bytearray: Returns file as byte array
     """
-    log.info(f'Downloading {url}')
-    #response = requests.get(url, stream=True)
+    log.info(f"Downloading {url}")
+    # response = requests.get(url, stream=True)
     response = requests.get(url, stream=True)
-    log.info(f'done.')
+    log.info(f"done.")
     response.raise_for_status()
 
     if response.content is None or response.content == "":
@@ -100,9 +103,7 @@ def download_file(url: str, md5sum: str = None, decompress: bool = True) -> byte
     return content, filename
 
 
-def download_ENCODE_metadata(
-    url: str, auth: tuple = None
-) -> dict:
+def download_ENCODE_metadata(url: str, auth: tuple = None) -> dict:
     """Gets metadata from an ENCODE repository with a provided URL.
 
     Args:
@@ -160,9 +161,13 @@ def download_encode(ds: Dataset, upload_dir: str):
         )
 
     # forbid mcool for now (sept2022)
-    if metadata.get("file_format",{}).get("file_format", "").lower() in ['mcool', 'cool']:
-        raise FiletypeNotSupportedError("External import of cooler files not supported yet.")
-        
+    if metadata.get("file_format", {}).get("file_format", "").lower() in [
+        "mcool",
+        "cool",
+    ]:
+        raise FiletypeNotSupportedError(
+            "External import of cooler files not supported yet."
+        )
 
     # download file
     # log.info(f"Dataset [{ds.id}]: Downloading from {ds.source_url}.")
@@ -174,15 +179,15 @@ def download_encode(ds: Dataset, upload_dir: str):
     http_content = download_tuple[0]
     http_file_name = download_tuple[1]
     # log.info(f"Dataset [{ds.id}]: saved to memory.")
-    
-    file_name = metadata.get('display_title', http_file_name)
+
+    file_name = metadata.get("display_title", http_file_name)
     if not file_name:
         raise NoFileNameFoundError("For Dataset {ds.id} no file name was found.")
-    if file_name.lower().endswith('gz'):
+    if file_name.lower().endswith("gz"):
         file_name = file_name[:-3]
     file_name = f"{ds.id}_{file_name}"
     ds.file_path = os.path.join(upload_dir, secure_filename(file_name))
-    
+
     # save file
     # log.info(f"Dataset [{ds.id}]: saving to file {ds.file_path}")
     if os.path.exists(ds.file_path):
@@ -211,15 +216,17 @@ def download_url(ds: Dataset, upload_dir: str, file_ext: str, md5sum: str = None
         FiletypeNotSupportedError: FileType different than expected
         IOError: Raised if there are problems saving the file
         HTTPError: requests module raises those if there are problems with URL
-    
+
     Returns:
         Datset: dataset is returned, not yet commited
     """
-    
+
     # forbid mcool for now (sept2022)
-    if file_ext.lower() in ['mcool', 'cool']:
-        raise FiletypeNotSupportedError("External import of cooler files not supported yet.")
-    
+    if file_ext.lower() in ["mcool", "cool"]:
+        raise FiletypeNotSupportedError(
+            "External import of cooler files not supported yet."
+        )
+
     (http_content, http_file_name) = download_file(
         ds.source_url, md5sum, decompress=True
     )

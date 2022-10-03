@@ -11,6 +11,7 @@ from app.models import *
 
 class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
     """Tests task for downloading dataset files"""
+
     pass
 
     # def setUp(self):
