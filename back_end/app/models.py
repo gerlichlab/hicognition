@@ -192,17 +192,24 @@ class User(db.Model, UserMixin):
 # TODO replace with better name?
 class DataRepository(db.Model):
     """Model for external data repositories.
-    URL should contain a {id} that can be replaced for the data id.
     Name is primary key, as this table will hold only a few rows and it makes
-    handling gets/posts easier."""
+    handling gets/posts easier.
+    
+    url must contain an {href} tag.
+    file_url must contain the {id} tag.
+    """
 
     # fields
     name = db.Column(db.String(64), nullable=False, primary_key=True)
     url = db.Column(db.String(512))
+    file_url = db.Column(db.String(512))
     auth_required = db.Column(db.Boolean, default=False)
 
-    def build_url(self, data_id: str):
-        return self.url.format(id=data_id)
+    def build_url_sample(self, data_id: str):
+        return self.file_url.format(id=data_id)
+    
+    def build_url(self, href: str):
+        return self.url.format(href=href)
 
     credentials = db.relationship(
         "User_DataRepository_Credentials",
@@ -418,11 +425,6 @@ class Dataset(db.Model):
         ):
             return True
         return False
-
-    def is_deletion_denied(self, app_context):
-        """Determines whether context
-        allows dataset deletion"""
-        return self.user_id != app_context.current_user.id
 
     def add_fields_from_form(self, form, requirement_spec=None):
         """Adds values for fields from form"""

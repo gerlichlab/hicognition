@@ -25,6 +25,7 @@ from .models import (
 )
 from . import pipeline_steps
 from .notifications import NotificationHandler
+from requests.exceptions import ConnectionError, Timeout, RequestException
 
 # from .file_utils import download_ENCODE_metadata, download_file
 from . import download_utils
@@ -215,7 +216,10 @@ def download_dataset_file(dataset_id: int):
                     ds.filetype
                 ][0],
             )
-    except Exception as err:
+    except (ConnectionError, Timeout) as err:
+        log.info(f"Connection failure: {str(err)}")
+        handle_error(ds, f"Connection to external server failed at some point: {str(err)}")
+    except download_utils.DownloadUtilsException as err:
         log.info(str(err))
         handle_error(ds, str(err))
         return

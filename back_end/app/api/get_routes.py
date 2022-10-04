@@ -2,15 +2,15 @@
 import json
 import gzip
 import logging
-from urllib.error import HTTPError
 import pandas as pd
 import requests
+from requests import HTTPError, RequestException
+from requests.exceptions import ConnectionError, Timeout
 from requests.auth import HTTPBasicAuth
 import numpy as np
 from flask import g, make_response
 from flask.json import jsonify
 from flask.globals import current_app
-from .. import download_utils
 from hicognition import data_structures
 from hicognition.utils import (
     update_processing_state,
@@ -34,6 +34,7 @@ from ..models import (
 )
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
+from ..download_utils import DownloadUtilsException, download_ENCODE_metadata, MetadataNotWellformed
 
 # get logger
 log = logging.getLogger("rq.worker")
@@ -616,28 +617,18 @@ def get_ENCODE_metadata(repo_name: str, sample_id: str):
     """
     repository = db.session.query(DataRepository).get(repo_name)
     if repository is None:
-        return jsonify(
-            {
-                "status": "error",
-                "http_status_code": 404,
-                "message": f"ENCODE repository {repo_name} not in our database.",
-            }
-        )
+        return not_found(f"ENCODE repository {repo_name} not in our database.")
 
     # TODO EXCEPTION HANDLING
     try:
-        data = download_utils.download_ENCODE_metadata(repository.build_url(sample_id))
-    except requests.HTTPError as err:
-        return jsonify(
-            {
-                "status": "error",
-                "http_status_code": err.response.status_code,
-                "message": err.response.text,
-            }
-        )
-    except requests.RequestException as err:
-        return jsonify(
-            {"status": "error", "http_status_code": 400, "message": str(err)}
-        )
+        data = download_ENCODE_metadata(repository, sample_id)
+    except HTTPError as err:
+        if err.response.status_code in (404, 403):
+            return jsonify({"status": "error", "http_status_code": err.response.status_code})
+        
+        
+        return invalid(f"Could not get metadata from server: {err.response.text}.  {str(err)}")
+    except (MetadataNotWellformed, DownloadUtilsException, RequestException) as err:
+        return invalid(f"Could not get metadata from server: {str(err)}")
 
     return jsonify({"status": "ok", "http_status_code": 200, "json": data})

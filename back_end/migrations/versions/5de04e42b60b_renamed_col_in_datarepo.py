@@ -1,8 +1,8 @@
-"""sprint9 branch review
+"""renamed col in datarepo
 
-Revision ID: ebe631c74169
+Revision ID: 5de04e42b60b
 Revises: 
-Create Date: 2022-09-30 09:20:54.350816
+Create Date: 2022-10-04 12:54:36.810372
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'ebe631c74169'
+revision = '5de04e42b60b'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,6 +21,7 @@ def upgrade():
     op.create_table('data_repository',
     sa.Column('name', sa.String(length=64), nullable=False),
     sa.Column('url', sa.String(length=512), nullable=True),
+    sa.Column('file_url', sa.String(length=512), nullable=True),
     sa.Column('auth_required', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('name')
     )

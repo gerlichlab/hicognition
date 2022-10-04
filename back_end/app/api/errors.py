@@ -17,7 +17,7 @@ def page_not_found(_):
 @api.app_errorhandler(500)
 def internal_server_error(e: Exception, msg: str = ""):
     """API error handler for 500"""
-    log.exceptoin(e)
+    log.exception(e)
     response = jsonify({"error": "Internal server error", "message": msg})
     response.status_code = 500
     return response

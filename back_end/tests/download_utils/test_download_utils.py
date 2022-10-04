@@ -147,7 +147,7 @@ class TestDownloadFile(ConcurrentTempDirTest):
             (content, name) = download_utils.download_file(
                 id, md5sum=test_case.get("md5sum")
             )
-            with self.assertRaises(download_utils.MD5Error):
+            with self.assertRaises(download_utils.MD5Exception):
                 (content, name) = download_utils.download_file(
                     id, md5sum="thisisnotvalid"
                 )
@@ -187,16 +187,14 @@ class TestDownloadFile(ConcurrentTempDirTest):
                 except Exception:
                     self.fail("this shouldn't raise an exception!")
             else:
-                with self.assertRaises(HTTPError):
+                with self.assertRaises(requests.RequestException):
                     download_utils.download_file(id)
 
     def test_download_non_existant_urls(self):  # , mock_http_request):
         with self.assertRaises(requests.exceptions.MissingSchema) as context:
             download_utils.download_file("hurrthisisnoturl")
         with self.assertRaises(requests.exceptions.ConnectionError) as context:
-            download_utils.download_file(
-                "http://so.ill.add.subdomains.hurrdurthisisaninvaliddomain.fakedomain"
-            )
+            download_utils.download_file("http://hurrdurthisisadomain.fakedomain")
         with self.assertRaises(requests.exceptions.MissingSchema) as context:
             download_utils.download_file("a slkd .at")
 
@@ -208,16 +206,17 @@ class TestDownloadENCODEMetadata(ConcurrentTempDirTest):
     """
 
     def setUp(self) -> None:
+        self.repository = DataRepository(
+            url = '{href}',
+            file_url = '{id}',
+            name = 'test',
+        )
         return super().setUp()
 
     def tearDown(self) -> None:
         return super().tearDown()
 
     sub_path = "test_download_encode_metadata"
-    # def setUp(self):
-    #     super(self.__class__, self).setUp()
-    #     self.TEMP_PATH = os.path.join(self.tmp_path, 'URL')
-    #     os.path.mkdir(self.TEMP_PATH)
 
     @patch("requests.get", side_effect=mock_http_request)
     def test_download_correct_sample(self, mock_http_request):
@@ -225,31 +224,16 @@ class TestDownloadENCODEMetadata(ConcurrentTempDirTest):
             if test_case.get("type") == "encode":
                 with open(test_case["file"]) as json_file:
                     truth = json.load(json_file)
-                rjson = download_utils.download_ENCODE_metadata(id)
+                rjson = download_utils.download_ENCODE_metadata(self.repository, id)
         self.assertEqual(rjson, truth)
 
-    @patch("requests.get", side_effect=mock_http_request)
-    def test_http_errors(self, mock_http_request):
-        for id, test_case in test_cases.items():
-            if test_case.get("status_code", 200) == 200:
-                try:
-                    download_utils.download_file(id)
-                except Exception:
-                    self.fail("this shouldn't raise an exception!")
-            else:
-                with self.assertRaises(HTTPError):
-                    download_utils.download_file(id)
-
-    # @patch('requests.get', side_effect=mock_http_request)
     def test_download_non_existant_urls(self):  # , mock_http_request):
         with self.assertRaises(requests.exceptions.MissingSchema) as context:
-            download_utils.download_file("hurrthisisnoturl")
+            download_utils.download_ENCODE_metadata(self.repository, "hurrthisisnoturl")
         with self.assertRaises(requests.exceptions.ConnectionError) as context:
-            download_utils.download_file(
-                "http://so.ill.add.subdomains.hurrdurthisisaninvaliddomain.fakedomain"
-            )
+            download_utils.download_ENCODE_metadata(self.repository, "http://hurrdurthisisadomain.fakedomain")
         with self.assertRaises(requests.exceptions.MissingSchema) as context:
-            download_utils.download_file("a slkd .at")
+            download_utils.download_ENCODE_metadata(self.repository, "a slkd .at")
 
 
 class TestDownloadENCODE(
@@ -268,7 +252,7 @@ class TestDownloadENCODE(
 
         self.test_cases = {
             "bw": {
-                "metadata": {"open_data_url": "_.~*~._", "display_title": "bwfile.bw"},
+                "metadata": {"open_data_url": "_.~*~._", "display_title": "bwfile.bw", "file_format": {"file_format": "bw"},},
                 "http_content": "tests/testfiles/4DNFI29ICQ36.bw",
                 "http_filename": "http_bwfile.bw",
                 "correct_name": "bwfile.bw",
@@ -277,6 +261,7 @@ class TestDownloadENCODE(
                 "metadata": {
                     "open_data_url": "_.~*~._",
                     "display_title": "bedfile.bed",
+                    "file_format": {"file_format": "bed"},
                 },
                 "http_content": "tests/testfiles/4DNFIRCHWS8M.bed",
                 "http_filename": "http_bedfile.bed",
@@ -286,21 +271,22 @@ class TestDownloadENCODE(
                 "metadata": {
                     "open_data_url": "_.~*~._",
                     "display_title": "bedfile.bed.gz",
+                    "file_format": {"file_format": "bed"},
                 },
                 "http_content": "tests/testfiles/4DNFIRCHWS8M.bed.gz",
                 "http_filename": "http_bedfile.bed.gz",
                 "correct_name": "bedfile.bed",
             },
             "bedgz_no_filename": {
-                "metadata": {"open_data_url": "_.~*~._"},
+                "metadata": {"open_data_url": "_.~*~._", "file_format": {"file_format": "bed"}},
                 "http_content": "tests/testfiles/4DNFIRCHWS8M.bed.gz",
                 "http_filename": "http_bedfile.bed",
                 "correct_name": "http_bedfile.bed",
             },
             "bedgz_no_name_at_all": {
-                "metadata": {"open_data_url": "_.~*~._"},
+                "metadata": {"open_data_url": "_.~*~._", "file_format": {"file_format": "bed"}},
                 "http_content": "tests/testfiles/4DNFIRCHWS8M.bed.gz",
-                "raises": download_utils.NoFileNameFoundError,
+                "raises": download_utils.MetadataNotWellformed,
             },
         }
         self.ds = Dataset(
@@ -316,20 +302,19 @@ class TestDownloadENCODE(
             sample_id="test_sample",
         )
         self.data_repo = DataRepository(
-            name="testrepo", url="https://{id}", auth_required=False
+            name="testrepo", file_url="https://{id}", url="https://{href}", auth_required=False
         )
         self.ds.repository = self.data_repo
+        
+    def test_raises_exception_timeout(self):
+        with self.assertRaises(requests.exceptions.ConnectionError):
+            self.data_repo.file_url = "https://thisissuchaninvalidurlithink.at/{id}"
+            download_utils.download_encode(self.ds, self.tmp_path)
 
     @patch("app.download_utils.download_ENCODE_metadata")
     def test_raises_exception_metadatafetch(self, mock_download_ENCODE_metadata):
         mock_download_ENCODE_metadata.side_effect = HTTPError()
-        with self.assertRaises(download_utils.MetadataFetchError) as context:
-            download_utils.download_encode(self.ds, self.tmp_path)
-
-    @patch("app.download_utils.download_ENCODE_metadata")
-    def test_raises_exception_metadataerror(self, mock_download_ENCODE_metadata):
-        mock_download_ENCODE_metadata.return_value = {}
-        with self.assertRaises(download_utils.MetadataError) as context:
+        with self.assertRaises(requests.exceptions.HTTPError) as context:
             download_utils.download_encode(self.ds, self.tmp_path)
 
     @patch("app.download_utils.download_file")
@@ -358,10 +343,7 @@ class TestDownloadENCODE(
                     content_true = f.read()
                 self.assertEqual(content, content_true)
 
-                os.remove(true_temp_path)  # BAD?!
-            else:
-                with self.assertRaises(test_case["raises"]):
-                    download_utils.download_encode(self.ds, self.tmp_path)
+                os.remove(true_temp_path)
 
     @patch("app.download_utils.download_ENCODE_metadata")
     @patch("app.download_utils.download_file")
@@ -389,7 +371,7 @@ class TestDownloadENCODE(
             mock_download_file.return_value = content, test_case.get("http_filename")
             mock_download_metadata.return_value = test_case.get("metadata", {})
 
-            with self.assertRaises(IOError) as context:
+            with self.assertRaises(download_utils.FileExistsException) as context:
                 download_utils.download_encode(self.ds, self.tmp_path)
 
             os.remove(true_temp_path)  # BAD?!
@@ -418,7 +400,7 @@ class TestDownloadURL(
             sample_id="test_sample",
         )
         self.data_repo = DataRepository(
-            name="testrepo", url="https://{id}", auth_required=False
+            name="testrepo", file_url="https://{id}", url="https://{href}", auth_required=False
         )
         self.ds.repository = self.data_repo
 
@@ -470,7 +452,7 @@ class TestDownloadURL(
         with open(true_file_path, "w") as new_file:
             new_file.write("this is a file and i am here")
 
-        with self.assertRaises(IOError):
+        with self.assertRaises(download_utils.FileExistsException):
             download_utils.download_url(self.ds, self.tmp_path, "bed")
 
 

@@ -208,7 +208,7 @@ def add_dataset():
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     file_object.save(file_path)
     new_entry.file_path = file_path
-    new_entry.processing_state = "uploaded"
+    #new_entry.processing_state = "uploaded"
 
     # validate dataset and delete if not valid
     if not new_entry.validate_dataset(delete=True):
