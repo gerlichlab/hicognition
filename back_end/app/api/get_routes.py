@@ -596,7 +596,6 @@ def get_all_collections():
     return jsonify([dfile.to_json() for dfile in all_available_collections])
 
 
-# TODO sprint9 make get route repositories
 @api.route("/repositories/", methods=["GET"])
 @auth.login_required
 def get_all_repositories():
@@ -604,11 +603,9 @@ def get_all_repositories():
     repositories = db.session.query(DataRepository).all()
     return jsonify(
         {repo.name: repo.to_json() for repo in repositories}
-    )  # TODO this is not so good i think?
+    ) 
 
 
-# ULRICH wanted to do this in js, but got CORS errors all the time (obviously)
-# TODO add tests
 @api.route("/ENCODE/<repo_name>/<sample_id>/", methods=["GET"])
 @auth.login_required
 def get_ENCODE_metadata(repo_name: str, sample_id: str):
@@ -619,14 +616,13 @@ def get_ENCODE_metadata(repo_name: str, sample_id: str):
     if repository is None:
         return not_found(f"ENCODE repository {repo_name} not in our database.")
 
-    # TODO EXCEPTION HANDLING
     try:
         data = download_ENCODE_metadata(repository, sample_id)
     except HTTPError as err:
-        if err.response.status_code in (404, 403):
-            return jsonify({"status": "error", "http_status_code": err.response.status_code})
-        
-        
+        if err.response.status_code == 404:
+            return jsonify({"status": "error", "http_status_code": err.response.status_code, "message": f"Could not find sample {sample_id}"})
+        if err.response.status_code == 403:
+            return jsonify({"status": "error", "http_status_code": err.response.status_code, "message": f"Access forbidden by ENCODE repository"})
         return invalid(f"Could not get metadata from server: {err.response.text}.  {str(err)}")
     except (MetadataNotWellformed, DownloadUtilsException, RequestException) as err:
         return invalid(f"Could not get metadata from server: {str(err)}")

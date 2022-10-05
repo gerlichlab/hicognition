@@ -18,8 +18,8 @@ def delete_dataset_handler(dataset_id):
     if dataset is None:
         return not_found(f"Dataset id {dataset_id} does not exist!")
     # check if data set can be accessed and deleted
-    if dataset.user.id != g.current_user.id:
-        return invalid(f"Dataset with id {dataset_id} is not owned by user!")
+    if dataset.user_id != g.current_user.id:
+        return forbidden(f"Dataset with id {dataset_id} is not owned by user!")
     if dataset.processing_state == 'uploading':
         return invalid(f"Dataset with id {dataset_id} is currently being uploaded!")
     
