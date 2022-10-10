@@ -42,7 +42,7 @@ class DatasetPostModel(BaseModel):
             "repositoryName": "repository_name",
             "sourceURL": "source_url",
         }
-        return alias_table[key]
+        return alias_table.get(key)
 
     class Config:
         """Sets up the alias generator"""
@@ -70,15 +70,25 @@ class DatasetPostModel(BaseModel):
             )
         # check value type members
         for key, possible_values in value_types[value_type].items():
+            if cls.get_reverse_alias(key) not in values:
+                import pdb
+
+                pdb.set_trace()
             # check whether field is freetext
             if possible_values == "freetext":
                 continue
+            # check that all needed values are found
+            if cls.get_reverse_alias(key) not in values:
+                raise ValueError(
+                    f"Required argument '{cls.get_reverse_alias(key)}' for '{value_type}' not found. Supported arguments {value_types[value_type].keys()}."
+                )
             # check that value in form corresponds to possible values
             # this will also check if all mandatory keys are provided since "undefined" is not in possible_values
             if values[cls.get_reverse_alias(key)] not in possible_values:
                 raise ValueError(
                     f"Unsupported possible value '{values[cls.get_reverse_alias(key)]}' for value_type: {value_type}. Supported values {possible_values}."
                 )
+
         return value_type
 
     @validator("description")

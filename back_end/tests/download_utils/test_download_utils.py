@@ -207,9 +207,9 @@ class TestDownloadENCODEMetadata(ConcurrentTempDirTest):
 
     def setUp(self) -> None:
         self.repository = DataRepository(
-            url = '{href}',
-            file_url = '{id}',
-            name = 'test',
+            url="{href}",
+            file_url="{id}",
+            name="test",
         )
         return super().setUp()
 
@@ -231,7 +231,9 @@ class TestDownloadENCODEMetadata(ConcurrentTempDirTest):
         with self.assertRaises(requests.exceptions.MissingSchema) as context:
             download_utils.download_ENCODE_metadata(self.repository, "hurrthisisnoturl")
         with self.assertRaises(requests.exceptions.ConnectionError) as context:
-            download_utils.download_ENCODE_metadata(self.repository, "http://hurrdurthisisadomain.fakedomain")
+            download_utils.download_ENCODE_metadata(
+                self.repository, "http://hurrdurthisisadomain.fakedomain"
+            )
         with self.assertRaises(requests.exceptions.MissingSchema) as context:
             download_utils.download_ENCODE_metadata(self.repository, "a slkd .at")
 
@@ -252,7 +254,11 @@ class TestDownloadENCODE(
 
         self.test_cases = {
             "bw": {
-                "metadata": {"open_data_url": "_.~*~._", "display_title": "bwfile.bw", "file_format": {"file_format": "bw"},},
+                "metadata": {
+                    "open_data_url": "_.~*~._",
+                    "display_title": "bwfile.bw",
+                    "file_format": {"file_format": "bw"},
+                },
                 "http_content": "tests/testfiles/4DNFI29ICQ36.bw",
                 "http_filename": "http_bwfile.bw",
                 "correct_name": "bwfile.bw",
@@ -278,13 +284,19 @@ class TestDownloadENCODE(
                 "correct_name": "bedfile.bed",
             },
             "bedgz_no_filename": {
-                "metadata": {"open_data_url": "_.~*~._", "file_format": {"file_format": "bed"}},
+                "metadata": {
+                    "open_data_url": "_.~*~._",
+                    "file_format": {"file_format": "bed"},
+                },
                 "http_content": "tests/testfiles/4DNFIRCHWS8M.bed.gz",
                 "http_filename": "http_bedfile.bed",
                 "correct_name": "http_bedfile.bed",
             },
             "bedgz_no_name_at_all": {
-                "metadata": {"open_data_url": "_.~*~._", "file_format": {"file_format": "bed"}},
+                "metadata": {
+                    "open_data_url": "_.~*~._",
+                    "file_format": {"file_format": "bed"},
+                },
                 "http_content": "tests/testfiles/4DNFIRCHWS8M.bed.gz",
                 "raises": download_utils.MetadataNotWellformed,
             },
@@ -302,10 +314,13 @@ class TestDownloadENCODE(
             sample_id="test_sample",
         )
         self.data_repo = DataRepository(
-            name="testrepo", file_url="https://{id}", url="https://{href}", auth_required=False
+            name="testrepo",
+            file_url="https://{id}",
+            url="https://{href}",
+            auth_required=False,
         )
         self.ds.repository = self.data_repo
-        
+
     def test_raises_exception_timeout(self):
         with self.assertRaises(requests.exceptions.ConnectionError):
             self.data_repo.file_url = "https://thisissuchaninvalidurlithink.at/{id}"
@@ -400,7 +415,10 @@ class TestDownloadURL(
             sample_id="test_sample",
         )
         self.data_repo = DataRepository(
-            name="testrepo", file_url="https://{id}", url="https://{href}", auth_required=False
+            name="testrepo",
+            file_url="https://{id}",
+            url="https://{href}",
+            auth_required=False,
         )
         self.ds.repository = self.data_repo
 

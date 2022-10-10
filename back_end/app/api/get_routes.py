@@ -2,6 +2,7 @@
 import json
 import gzip
 import logging
+from turtle import update
 import pandas as pd
 import requests
 from requests import HTTPError, RequestException
@@ -11,6 +12,7 @@ import numpy as np
 from flask import g, make_response
 from flask.json import jsonify
 from flask.globals import current_app
+from sqlalchemy import or_
 from hicognition import data_structures
 from hicognition.utils import (
     update_processing_state,
@@ -34,7 +36,11 @@ from ..models import (
 )
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
-from ..download_utils import DownloadUtilsException, download_ENCODE_metadata, MetadataNotWellformed
+from ..download_utils import (
+    DownloadUtilsException,
+    download_ENCODE_metadata,
+    MetadataNotWellformed,
+)
 
 # get logger
 log = logging.getLogger("rq.worker")
@@ -107,7 +113,7 @@ def get_all_datasets():
 
 @api.route("/datasets/<dtype>", methods=["GET"])
 @auth.login_required
-def get_datasets(dtype):
+def get_datasets(dtype: str = ""):
     """Gets all available datasets for a given user."""
     if dtype == "cooler":
         cooler_files = Dataset.query.filter(
@@ -601,9 +607,7 @@ def get_all_collections():
 def get_all_repositories():
     """Gets all repos in the db for file downloads"""
     repositories = db.session.query(DataRepository).all()
-    return jsonify(
-        {repo.name: repo.to_json() for repo in repositories}
-    ) 
+    return jsonify({repo.name: repo.to_json() for repo in repositories})
 
 
 @api.route("/ENCODE/<repo_name>/<sample_id>/", methods=["GET"])
@@ -620,10 +624,24 @@ def get_ENCODE_metadata(repo_name: str, sample_id: str):
         data = download_ENCODE_metadata(repository, sample_id)
     except HTTPError as err:
         if err.response.status_code == 404:
-            return jsonify({"status": "error", "http_status_code": err.response.status_code, "message": f"Could not find sample {sample_id}"})
+            return jsonify(
+                {
+                    "status": "error",
+                    "http_status_code": err.response.status_code,
+                    "message": f"Could not find sample {sample_id}",
+                }
+            )
         if err.response.status_code == 403:
-            return jsonify({"status": "error", "http_status_code": err.response.status_code, "message": f"Access forbidden by ENCODE repository"})
-        return invalid(f"Could not get metadata from server: {err.response.text}.  {str(err)}")
+            return jsonify(
+                {
+                    "status": "error",
+                    "http_status_code": err.response.status_code,
+                    "message": f"Access forbidden by ENCODE repository",
+                }
+            )
+        return invalid(
+            f"Could not get metadata from server: {err.response.text}.  {str(err)}"
+        )
     except (MetadataNotWellformed, DownloadUtilsException, RequestException) as err:
         return invalid(f"Could not get metadata from server: {str(err)}")
 

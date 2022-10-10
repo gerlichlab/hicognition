@@ -10,7 +10,6 @@ import hashlib
 import gzip
 from werkzeug.utils import secure_filename
 import requests
-from requests import RequestException, ConnectionError, Timeout
 from .models import Dataset, DataRepository
 
 
@@ -24,27 +23,26 @@ basedir = os.path.abspath(os.path.dirname(__file__))  # TODO test me
 
 class DownloadUtilsException(Exception):
     """General exception to be thrown if download fails"""
-    pass
+
 
 class MD5Exception(DownloadUtilsException):
     """MD5 checksums do not match"""
-    pass
+
 
 class FileEmptyException(DownloadUtilsException):
     """Downloaded file is empty"""
-    pass
+
 
 class MetadataNotWellformed(DownloadUtilsException):
     """Metadata is missing some needed fields"""
-    pass
+
 
 class FiletypeNotSupportedException(DownloadUtilsException):
     """Temporarily blocks cooler files until we have implemented reprocessing of it"""
-    pass
+
 
 class FileExistsException(DownloadUtilsException):
     """There already is a file at the path"""
-    pass
 
 
 def download_file(url: str, md5sum: str = None, decompress: bool = True) -> bytearray:
@@ -72,7 +70,7 @@ def download_file(url: str, md5sum: str = None, decompress: bool = True) -> byte
         raise FileEmptyException("200: File was empty")
     content = response.content
     log.info("loaded into memory.")
-    
+
     # get filename
     name_search = re.findall(
         "filename=(.+)", response.headers.get("Content-Disposition", "")
@@ -97,7 +95,9 @@ def download_file(url: str, md5sum: str = None, decompress: bool = True) -> byte
     return content, filename
 
 
-def download_ENCODE_metadata(repository: DataRepository, sample_id: str, auth: tuple = None) -> dict:
+def download_ENCODE_metadata(
+    repository: DataRepository, sample_id: str, auth: tuple = None
+) -> dict:
     """Gets metadata from an ENCODE repository with a provided URL.
 
     Args:
@@ -112,24 +112,31 @@ def download_ENCODE_metadata(repository: DataRepository, sample_id: str, auth: t
         dict: Returns metadata in form of ENCODE (see https://www.encodeproject.org/profiles/)
     """
     metadata_url = repository.build_url_sample(sample_id)
-    metadata = requests.get(metadata_url, headers={"Accept": "application/json"}, auth=auth, timeout=5)
+    metadata = requests.get(
+        metadata_url, headers={"Accept": "application/json"}, auth=auth, timeout=5
+    )
     metadata.raise_for_status()
-    
-    
+
     if not metadata or metadata == {}:
         raise MetadataNotWellformed("Returned metadata was empty")
-    
+
     try:
         metadata = json.loads(metadata.content)
-    except Exception as e:
-        raise MetadataNotWellformed("Could not transform returned metadata to json") from e
-    if not (metadata.get('open_data_url') or metadata.get('href')):
+    except Exception as err:
+        raise MetadataNotWellformed(
+            "Could not transform returned metadata to json"
+        ) from err
+    if not (metadata.get("open_data_url") or metadata.get("href")):
         raise MetadataNotWellformed(f"No source URL in metadata of {sample_id}.")
-    if not metadata.get('file_format') or not metadata['file_format'].get('file_format'):
-        raise MetadataNotWellformed(f"No file type specified in metadata of {sample_id}.")
+    if not metadata.get("file_format") or not metadata["file_format"].get(
+        "file_format"
+    ):
+        raise MetadataNotWellformed(
+            f"No file type specified in metadata of {sample_id}."
+        )
     if not metadata.get("display_title"):
         raise MetadataNotWellformed(f"For {sample_id} no file name was found.")
-    
+
     return metadata
 
 
@@ -151,18 +158,18 @@ def download_encode(dataset: Dataset, upload_dir: str):
     Raises:
         FiletypeNotSupportedError: FileType different than expected
         FileExistsException: Raised if there are problems saving the file
-        
+
     Returns:
         Datset: dataset is returned, not yet commited
     """
-    # log.info(f"Dataset [{ds.id}]: Getting metadata for sample 
+    # log.info(f"Dataset [{ds.id}]: Getting metadata for sample
     #   '{ds.sample_id}' from {ds.repository_name}")
     metadata = download_ENCODE_metadata(dataset.repository, dataset.sample_id)
 
-    dataset.source_url = metadata.get('open_data_url')
+    dataset.source_url = metadata.get("open_data_url")
     if not dataset.source_url:
-        dataset.source_url = dataset.repository.build_url(metadata.get('href'))
-    
+        dataset.source_url = dataset.repository.build_url(metadata.get("href"))
+
     # forbid mcool for now (sept2022)
     if metadata["file_format"]["file_format"].lower() in [
         "mcool",
@@ -224,7 +231,7 @@ def download_url(dataset: Dataset, upload_dir: str, file_ext: str, md5sum: str =
             "External import of cooler files not supported yet."
         )
 
-    (http_content, http_file_name) = download_file( # TODO maybe this still breaks?
+    (http_content, http_file_name) = download_file(
         dataset.source_url, md5sum, decompress=True
     )
     if http_file_name:

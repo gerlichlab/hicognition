@@ -11,7 +11,7 @@ from pydantic import ValidationError
 # import sys
 # sys.path.append("./")
 from app.models import Dataset, Assembly
-from app.form_models import FileDatasetPostModel
+from app.form_models import FileDatasetPostModel, URLDatasetPostModel
 from app import db
 
 # TODO do tests for encode + url
@@ -288,6 +288,107 @@ class TestFileDatasetPostModel(LoginTestCase, TempDirTestCase):
         assert data_ojb["Normalization"] == data_ojb["normalization"]
         assert data_ojb["Normalization"] == "ICCF"
 
+
+# class TestURLDatasetPostModel(LoginTestCase, TempDirTestCase):
+#     """Tests the pydantic FileDatasetPostModel which validates the form for posting datasets."""
+
+#     maxDiff = None
+
+#     def setUp(self):
+#         super().setUp()
+#         # add assembly
+#         self.hg19 = Assembly(
+#             id=1,
+#             name="hg19",
+#             chrom_sizes=self.app.config["CHROM_SIZES"],
+#             chrom_arms=self.app.config["CHROM_ARMS"],
+#         )
+#         db.session.add(self.hg19)
+#         db.session.commit()
+#         # add token headers
+#         token = self.add_and_authenticate("test", "asdf")
+#         # create token_header
+#         self.token_headers = self.get_token_header(token)
+#         # add content-type
+#         self.token_headers["Content-Type"] = "multipart/form-data"
+
+
+#         self.valid_data = {
+#             "datasetName": "test",
+#             "description": "test-description",
+#             "assembly": "1",
+#             "cellCycleStage": "asynchronous",
+#             "perturbation": "No perturbation",
+#             "public": "false",
+#             "ValueType": "GenomeAnnotation",
+#             "SizeType": "Point",
+#             "filetype": "bedfile",
+#             "Directionality": "+",
+#             "sourceURL": "http://thisisbed.bed"
+#         }
+
+#         validation_error_testcases = {
+#             'sourceURL_missing': {
+#                 "sourceURL": None,
+#                 "sourcseURL": "http://thisisbed.bed"
+#             },
+#             'name_missing': {
+#                 "datasetName": None
+#             },
+#             '': {
+#                 "sourceURL": None,
+#                 "sourcseURL": "http://thisisbed.bed"
+#             },
+#             'sourceURL_missing': {
+#                 "sourceURL": None,
+#                 "sourcseURL": "http://thisisbed.bed"
+#             },
+#         }
+
+#     def test_invalid_data(self):
+#         for k in self.valid_data.keys():
+#             temp_data = self.valid_data.copy()
+#             temp_data[k] = None
+#             with self.assertRaises(ValueError):
+#                 URLDatasetPostModel(**temp_data)
+
+
+#     def test_working_bed(self):
+#         """Test of correct bed POST form."""
+#         test_object = {
+#             "datasetName": "test",
+#             "description": "test-description",
+#             "assembly": "1",
+#             "cellCycleStage": "asynchronous",
+#             "perturbation": "No perturbation",
+#             "public": "false",
+#             "ValueType": "GenomeAnnotation",
+#             "SizeType": "Point",
+#             "filetype": "bedfile",
+#             "Directionality": "+",
+#             "sourcseURL": "http://thisisbed.bed"
+#         }
+#         expected_object = {
+#             "dataset_name": "test",
+#             "description": "test-description",
+#             "assembly": 1,
+#             "cell_cycle_stage": "asynchronous",
+#             "perturbation": "No perturbation",
+#             "public": False,
+#             "value_type": "GenomeAnnotation",
+#             "method": "undefined",
+#             "normalization": "undefined",
+#             "filetype": "bedfile",
+#             "processing_state": None,
+#             "protein": "undefined",
+#             "directionality": "+",
+#             "derivation_type": "undefined",
+#             "size_type": "Point",
+#             "user_id": None,
+#             "source_url": "http://thisisbed.bed"
+#         }
+#         data_ojb = URLDatasetPostModel(**test_object)
+#         self.assertEqual(expected_object, data_ojb.dict())
 
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)

@@ -1,15 +1,10 @@
 """Tasks for the redis-queue"""
-import hashlib
 import os
 import logging
 from flask import current_app
-from matplotlib.pyplot import switch_backend
-from werkzeug.utils import secure_filename
 import pandas as pd
-import requests
-import gzip
-import json
 from datetime import datetime
+from requests.exceptions import ConnectionError, Timeout
 from hicognition import io_helpers
 from rq import get_current_job
 from . import create_app, db
@@ -18,14 +13,9 @@ from .models import (
     Dataset,
     IndividualIntervalData,
     Collection,
-    Task,
-    User,
-    DataRepository,
-    User_DataRepository_Credentials,
 )
 from . import pipeline_steps
 from .notifications import NotificationHandler
-from requests.exceptions import ConnectionError, Timeout, RequestException
 
 # from .file_utils import download_ENCODE_metadata, download_file
 from . import download_utils
@@ -168,7 +158,6 @@ def download_dataset_file(dataset_id: int):
     - ua: have put this in tasks, as this made most sense.
     - ua: I would actually put this into download_functions.py if possible.
 
-    TODO Important: may throw an error if dataset id not found
     """
 
     def handle_error(ds: Dataset, msg: str):
@@ -179,13 +168,9 @@ def download_dataset_file(dataset_id: int):
         db.session.commit()
 
     def send_notification(ds: Dataset, msg: str, status: str = "success"):
-        job_id = -1
-        if get_current_job() is not None:
-            job_id = get_current_job().get_id()
-
         notification_handler.send_notification_general(
             {
-                "id": get_current_job().get_id(),
+                "id": -1 if get_current_job() is None else get_current_job().get_id(),
                 "dataset_name": ds.dataset_name,
                 "time": datetime.now(),
                 "notification_type": "upload_notification",
@@ -195,47 +180,54 @@ def download_dataset_file(dataset_id: int):
             }
         )
 
-    ds = Dataset.query.get(dataset_id)
+    dataset = Dataset.query.get(dataset_id)
+    if not dataset:
+        log.info(f"Dataset {dataset_id} not found")
+        handle_error(dataset, f"Dataset with id {dataset.id} was not found.")
+        return
+
     # check whether either url or sample id are provided:
-    if not (ds.sample_id and ds.repository_name) and not ds.source_url:
-        log.info(f"No sample_id, repo_name or source_url provided for {ds.id}")
+    if not (dataset.sample_id and dataset.repository_name) and not dataset.source_url:
+        log.info(f"No sample_id, repo_name or source_url provided for {dataset.id}")
         handle_error(
-            ds, f"Neither sample id + repository, nor file URL have been provided."
+            dataset, f"Neither sample id + repository, nor file URL have been provided."
         )
         return
 
-    is_repository = ds.sample_id and ds.repository
+    is_repository = dataset.sample_id and dataset.repository
     try:
         if is_repository:
-            download_utils.download_encode(ds, current_app.config["UPLOAD_DIR"])
+            download_utils.download_encode(dataset, current_app.config["UPLOAD_DIR"])
         else:
             download_utils.download_url(
-                ds,
+                dataset,
                 current_app.config["UPLOAD_DIR"],
                 current_app.config["DATASET_OPTION_MAPPING"]["supported_file_endings"][
-                    ds.filetype
+                    dataset.filetype
                 ][0],
             )
     except (ConnectionError, Timeout) as err:
         log.info(f"Connection failure: {str(err)}")
-        handle_error(ds, f"Connection to external server failed at some point: {str(err)}")
+        handle_error(
+            dataset, f"Connection to external server failed at some point: {str(err)}"
+        )
     except download_utils.DownloadUtilsException as err:
         log.info(str(err))
-        handle_error(ds, str(err))
+        handle_error(dataset, str(err))
         return
 
     db.session.commit()
 
-    valid = ds.validate_dataset(delete=True)
+    valid = dataset.validate_dataset(delete=True)
     if not valid:
-        log.info(f"Dataset {ds.id} file was invalid.")
-        handle_error(ds, "File formatting was invalid.")
+        log.info(f"Dataset {dataset.id} file was invalid.")
+        handle_error(dataset, "File formatting was invalid.")
         return
 
-    ds.preprocess_dataset()
+    dataset.preprocess_dataset()
     db.session.commit()
     send_notification(
-        ds, "Dataset file download was successful!<br>Ready for preprocessing."
+        dataset, "Dataset file download was successful!<br>Ready for preprocessing."
     )  # TODO preprocessing ambiguous
     log.info("Success.")
     pipeline_steps.set_task_progress(100)

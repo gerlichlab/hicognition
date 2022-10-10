@@ -12,6 +12,7 @@ from hicognition.test_helpers import LoginTestCase
 from app import db
 from app.models import DataRepository
 
+
 class MockResponse:
     def __init__(self, content, status_code, headers={}):
         self.content = content
@@ -25,11 +26,11 @@ class MockResponse:
             raise exc
         return
 
+
 class TestGetMetadata(LoginTestCase):
     """Test get_route for encode metadata.
     Haven't tested whether correct stuff is returned, as this is already tested in
     test_download_functions"""
-
 
     def setUp(self):
         super().setUp()
@@ -64,8 +65,8 @@ class TestGetMetadata(LoginTestCase):
 
     @patch("requests.get")
     def test_forbidden(self, mock_request):
-        mock_request.return_value = MockResponse('', 403)
-        
+        mock_request.return_value = MockResponse("", 403)
+
         response = self.client.get(
             f"/api/ENCODE/{self.data_repo_4dn.name}/sampleid/",
             content_type="application/json",
@@ -80,7 +81,7 @@ class TestGetMetadata(LoginTestCase):
         mock_download_metadata.return_value = MockResponse(
             '{"open_data_url": "thisisanurl", "file_format": {"file_format": "bed"}, "display_title":"title", "href": "thisisanurl"}',
             200,
-            headers={'Application': "application/json"}
+            headers={"Application": "application/json"},
         )
         response = self.client.get(
             f"/api/ENCODE/{self.data_repo_4dn.name}/sampleid/",

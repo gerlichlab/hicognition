@@ -194,7 +194,7 @@ class DataRepository(db.Model):
     """Model for external data repositories.
     Name is primary key, as this table will hold only a few rows and it makes
     handling gets/posts easier.
-    
+
     url must contain an {href} tag.
     file_url must contain the {id} tag.
     """
@@ -207,7 +207,7 @@ class DataRepository(db.Model):
 
     def build_url_sample(self, data_id: str):
         return self.file_url.format(id=data_id)
-    
+
     def build_url(self, href: str):
         return self.url.format(href=href)
 
