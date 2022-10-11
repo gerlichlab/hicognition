@@ -15,6 +15,8 @@ from hicognition.format_checkers import FORMAT_CHECKERS
 from . import api
 from .. import db
 
+from .. import download_utils
+
 from ..models import (
     Assembly,
     DataRepository,
@@ -56,7 +58,7 @@ def add_dataset_from_ENCODE():
     try:
         data = ENCODEDatasetPostModel(**request.form)
     except ValueError as err:
-        return invalid(f'"Form is not valid: {str(err)}')
+        return invalid(f'Form is not valid: {str(err)}')
     except Exception as err:
         return internal_server_error(
             err,
@@ -69,8 +71,14 @@ def add_dataset_from_ENCODE():
             f"Extern import of files with filetype '{data['filetype']}' not yet supported"
         )
 
-    if db.session.query(DataRepository).get(data.repository_name) is None:
+    repository = db.session.query(DataRepository).get(data.repository_name)
+    if not repository:
         return invalid(f"Repository {data.repository_name} not found.")
+
+    # check if the sample exists:
+    response = download_utils.download_ENCODE_metadata(repository, data.sample_id)
+    if response['status_code'] != 200:
+        return invalid(f"Could not load metadata: {response['status_code']}")
 
     # check whether description is there
     description = parse_description(data)

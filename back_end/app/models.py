@@ -201,8 +201,8 @@ class DataRepository(db.Model):
 
     # fields
     name = db.Column(db.String(64), nullable=False, primary_key=True)
-    url = db.Column(db.String(512))
-    file_url = db.Column(db.String(512))
+    url = db.Column(db.String(512), default="")
+    file_url = db.Column(db.String(512), default="")
     auth_required = db.Column(db.Boolean, default=False)
 
     def build_url_sample(self, data_id: str):

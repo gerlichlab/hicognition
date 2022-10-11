@@ -20,10 +20,9 @@ class DatasetPostModel(BaseModel):
     protein: constr(max_length=64) = Field("undefined", alias="Protein")
     cell_cycle_stage: constr(max_length=64) = Field(..., alias="cellCycleStage")
     perturbation: constr(max_length=64)
-    user_id: int = None
     processing_state: constr(max_length=64) = None
-    filetype: constr(max_length=64)
-    value_type: constr(max_length=64) = Field(..., alias="ValueType")
+    filetype: constr(max_length=64) = Field("undefined", alias="filetype")
+    value_type: constr(max_length=64) = Field("undefined", alias="ValueType")
 
     @classmethod
     def get_reverse_alias(cls, key):
@@ -41,6 +40,7 @@ class DatasetPostModel(BaseModel):
             "sampleID": "sample_id",
             "repositoryName": "repository_name",
             "sourceURL": "source_url",
+            "filetype": "filetype",
         }
         return alias_table.get(key)
 
@@ -50,6 +50,21 @@ class DatasetPostModel(BaseModel):
         allow_population_by_field_name = True
         extra = "forbid"
 
+    @validator("filetype")
+    def check_filetype(cls, filetype, values, **kwargs):
+        supported_file_endings = current_app.config["DATASET_OPTION_MAPPING"][
+            "supported_file_endings"
+        ]
+        if not filetype:
+            raise ValueError(
+                f"Filetype is required! Supported filestypes and endings are: {supported_file_endings}."
+            )
+        if filetype not in supported_file_endings:
+            raise ValueError(
+                f"Unsupported filetype! We do not support following filetype: {filetype}. Supported filestypes and endings are: {supported_file_endings}."
+            )
+        return filetype
+
     @validator("value_type")
     def value_type_supported_in_dataset_attribute_mapping(
         cls, value_type, values, **kwargs
@@ -58,15 +73,16 @@ class DatasetPostModel(BaseModel):
         dataset_type_mapping = current_app.config["DATASET_OPTION_MAPPING"][
             "DatasetType"
         ]
-        if values["filetype"] not in dataset_type_mapping.keys():
-            raise ValueError(
-                f'Unsupported filetype! We do not support following filetype: {values["filetype"]}. Supported filestypes are: {dataset_type_mapping.keys()}.'
-            )
-        value_types = dataset_type_mapping[values["filetype"]]["ValueType"]
+        if not values.get("filetype"):
+            raise ValueError("No valid file type has been provided.")
+
+        value_types = dataset_type_mapping.get(values.get("filetype"), dict()).get(
+            "ValueType", dict()
+        )
         # checks if the particular value_type is defined in the app config
         if value_type not in value_types.keys():
             raise ValueError(
-                f'Unsupported value_type! We do not support value_type: {value_type} for the filetype {values["filetype"]}. We support {value_types.keys()}.'
+                f'Unsupported value_type! We do not support value_type: {value_type} for the filetype \'{values.get("filetype")}\'. We support {value_types.keys()}.'
             )
         # check value type members
         for key, possible_values in value_types[value_type].items():
@@ -119,13 +135,11 @@ class FileDatasetPostModel(DatasetPostModel):
             "supported_file_endings"
         ]
         file_ending = filename.split(".")[-1]
-        if values["filetype"] not in supported_file_endings:
+        if file_ending.lower() not in supported_file_endings.get(
+            values.get("filetype")
+        ):
             raise ValueError(
-                f'Unsupported filetype! We do not support following filetype: {values["filetype"]}. Supported filestypes and endings are: {supported_file_endings}.'
-            )
-        if file_ending.lower() not in supported_file_endings[values["filetype"]]:
-            raise ValueError(
-                f'Invalid filename! For the filetype: {values["filetype"]} we found the file ending: {file_ending}. Supported for this filetype are: {supported_file_endings[values["filetype"]]}.'
+                f'Invalid filename! For the filetype: {values.get("filetype")} we found the file ending: {file_ending}. Supported for this filetype are: {supported_file_endings.get(values.get("filetype"))}.'
             )
         return filename
 
@@ -134,11 +148,6 @@ class URLDatasetPostModel(DatasetPostModel):
     """model of dataset with an URL"""
 
     source_url: AnyUrl = Field(alias="sourceURL")
-
-    @validator("source_url")
-    def source_url_is_valid(cls, source_url, values, **kwargs):
-        """Checks is the file has the appropriate file ending."""
-        return source_url
 
 
 class ENCODEDatasetPostModel(DatasetPostModel):

@@ -150,47 +150,32 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
         log.error(err, exc_info=True)
 
 
-# @task_context
 def download_dataset_file(dataset_id: int):
     """
     Downloads dataset file from web and validates + 'preprocesses' it.
-    ua
-    - ua: have put this in tasks, as this made most sense.
-    - ua: I would actually put this into download_functions.py if possible.
-
     """
-
-    def handle_error(ds: Dataset, msg: str):
-        send_notification(ds, f"Dataset creation failed:<br>{msg}", "failed")
-        pipeline_steps.set_task_progress(100)
-
-        db.session.delete(ds)
-        db.session.commit()
-
-    def send_notification(ds: Dataset, msg: str, status: str = "success"):
-        notification_handler.send_notification_general(
-            {
-                "id": -1 if get_current_job() is None else get_current_job().get_id(),
-                "dataset_name": ds.dataset_name,
-                "time": datetime.now(),
-                "notification_type": "upload_notification",
-                "owner": ds.user.id,
-                "message": msg,
-                "status": status,
-            }
-        )
 
     dataset = Dataset.query.get(dataset_id)
     if not dataset:
         log.info(f"Dataset {dataset_id} not found")
-        handle_error(dataset, f"Dataset with id {dataset.id} was not found.")
+        _handle_error(dataset, f"Dataset with id {dataset_id} was not found.")
         return
 
     # check whether either url or sample id are provided:
-    if not (dataset.sample_id and dataset.repository_name) and not dataset.source_url:
-        log.info(f"No sample_id, repo_name or source_url provided for {dataset.id}")
-        handle_error(
+    if not ((dataset.sample_id and dataset.repository_name) or dataset.source_url):
+        log.info(f"No sample_id, repo_name or source_url provided for {dataset_id}")
+        _handle_error(
             dataset, f"Neither sample id + repository, nor file URL have been provided."
+        )
+        return
+
+    if dataset.source_url and (dataset.sample_id or dataset.repository_name):
+        log.info(
+            f"Source URL provided together with sample ID and/or repository name for dataset {dataset_id}"
+        )
+        _handle_error(
+            dataset,
+            f"Source URL provided together with sample ID and/or repository name for dataset {dataset_id}",
         )
         return
 
@@ -208,12 +193,12 @@ def download_dataset_file(dataset_id: int):
             )
     except (ConnectionError, Timeout) as err:
         log.info(f"Connection failure: {str(err)}")
-        handle_error(
+        _handle_error(
             dataset, f"Connection to external server failed at some point: {str(err)}"
         )
     except download_utils.DownloadUtilsException as err:
         log.info(str(err))
-        handle_error(dataset, str(err))
+        _handle_error(dataset, str(err))
         return
 
     db.session.commit()
@@ -221,13 +206,35 @@ def download_dataset_file(dataset_id: int):
     valid = dataset.validate_dataset(delete=True)
     if not valid:
         log.info(f"Dataset {dataset.id} file was invalid.")
-        handle_error(dataset, "File formatting was invalid.")
+        _handle_error(dataset, "File formatting was invalid.")
         return
 
     dataset.preprocess_dataset()
     db.session.commit()
-    send_notification(
+    _send_notification(
         dataset, "Dataset file download was successful!<br>Ready for preprocessing."
     )  # TODO preprocessing ambiguous
     log.info("Success.")
     pipeline_steps.set_task_progress(100)
+
+
+def _handle_error(ds: Dataset, msg: str):
+    _send_notification(ds, f"Dataset creation failed:<br>{msg}", "failed")
+    pipeline_steps.set_task_progress(100)
+
+    db.session.delete(ds)
+    db.session.commit()
+
+
+def _send_notification(ds: Dataset, msg: str, status: str = "success"):
+    notification_handler.send_notification_general(
+        {
+            "id": -1 if get_current_job() is None else get_current_job().get_id(),
+            "dataset_name": ds.dataset_name,
+            "time": datetime.now(),
+            "notification_type": "upload_notification",
+            "owner": ds.user.id,
+            "message": msg,
+            "status": status,
+        }
+    )

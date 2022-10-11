@@ -14,7 +14,7 @@ from app.models import DataRepository
 
 
 class MockResponse:
-    def __init__(self, content, status_code, headers={}):
+    def __init__(self, content, status_code, headers=dict()):
         self.content = content
         self.status_code = status_code
         self.headers = headers

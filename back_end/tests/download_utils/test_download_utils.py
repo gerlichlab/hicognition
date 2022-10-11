@@ -4,14 +4,12 @@ import json
 import os
 import shutil
 import unittest
-from unittest.mock import PropertyMock, patch
+from unittest.mock import patch
+import gzip
 from requests.exceptions import HTTPError
 import requests
-import gzip
 from app.models import DataRepository, Dataset
-from hicognition.test_helpers import TempDirTestCase
-
-import app.download_utils as download_utils
+from app import download_utils
 
 # add path to import app
 # import sys
@@ -19,6 +17,11 @@ import app.download_utils as download_utils
 
 
 class ConcurrentTempDirTest(unittest.TestCase):
+    """Creates and deletes temporary directory structures.
+    First one creates tmp_dir. Last one deletes tmp_dir.
+    Every instance mkdirs their own dir in tmp_dir/
+    """
+
     TEMP_PATH = "./tmp_test"
     sub_path: str
 
@@ -88,8 +91,12 @@ test_cases = {
 
 
 def mock_http_request(*args, **kwargs):
+    """requests.get mock"""
+
     class MockResponse:
-        def __init__(self, content, status_code, headers={}):
+        """Mocks an http request"""
+
+        def __init__(self, content, status_code, headers=dict()):
             self.content = content
             self.status_code = status_code
             self.headers = headers
@@ -120,11 +127,8 @@ class TestDownloadFile(ConcurrentTempDirTest):
     def setUp(self) -> None:
         return super().setUp()
 
-    def tearDown(self) -> None:
-        return super().tearDown()
-
     @patch("requests.get", side_effect=mock_http_request)
-    def test_get_correct_filename(self, mock_http_request):  # TODO theres an easier way
+    def test_get_correct_filename(self, mock_http_request):
         test_inputs = list(product(test_cases, [True, False]))
 
         for id, gunzip in test_inputs:
@@ -190,7 +194,7 @@ class TestDownloadFile(ConcurrentTempDirTest):
                 with self.assertRaises(requests.RequestException):
                     download_utils.download_file(id)
 
-    def test_download_non_existant_urls(self):  # , mock_http_request):
+    def test_download_non_existant_urls(self):
         with self.assertRaises(requests.exceptions.MissingSchema) as context:
             download_utils.download_file("hurrthisisnoturl")
         with self.assertRaises(requests.exceptions.ConnectionError) as context:
@@ -212,9 +216,6 @@ class TestDownloadENCODEMetadata(ConcurrentTempDirTest):
             name="test",
         )
         return super().setUp()
-
-    def tearDown(self) -> None:
-        return super().tearDown()
 
     sub_path = "test_download_encode_metadata"
 
@@ -238,9 +239,7 @@ class TestDownloadENCODEMetadata(ConcurrentTempDirTest):
             download_utils.download_ENCODE_metadata(self.repository, "a slkd .at")
 
 
-class TestDownloadENCODE(
-    ConcurrentTempDirTest
-):  # TODO extend tests, define testcases in dict
+class TestDownloadENCODE(ConcurrentTempDirTest):
     sub_path = "test_download_encode"
 
     def tearDown(self) -> None:
@@ -248,10 +247,6 @@ class TestDownloadENCODE(
 
     def setUp(self):
         super().setUp()
-        # super(self.__class__, self).setUp()
-        # self.TEMP_PATH = os.path.join(self.tmp_path, 'URL')
-        # os.path.mkdir(self.TEMP_PATH)
-
         self.test_cases = {
             "bw": {
                 "metadata": {
@@ -392,9 +387,9 @@ class TestDownloadENCODE(
             os.remove(true_temp_path)  # BAD?!
 
 
-class TestDownloadURL(
-    ConcurrentTempDirTest
-):  # DEFINE how i want to get info from this.
+class TestDownloadURL(ConcurrentTempDirTest):
+    """Tests download utils for URLs"""
+
     sub_path = "test_download_url"
 
     def setUp(self):

@@ -1,5 +1,5 @@
 """Testfile for tasks.download_dataset_file.
-TODO no tests here currently.
+TODO more tests?
 """
 
 import unittest
@@ -7,158 +7,99 @@ from unittest.mock import patch
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 from app import db
 from app.models import *
+from app.tasks import download_dataset_file
 
 
 class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
     """Tests task for downloading dataset files"""
 
-    pass
+    def setUp(self):
+        super(TestDownloadDatasetFile, self).setUp()
+        self.assembly = Assembly(
+            id=1,
+            name="hg19",
+            chrom_sizes=self.app.config["CHROM_SIZES"],
+            chrom_arms=self.app.config["CHROM_ARMS"],
+        )
+        db.session.add(self.assembly)
+        self.repository = DataRepository(
+            file_url="{id}", url="{href}", name="repo_name"
+        )
+        db.session.add(self.repository)
 
-    # def setUp(self):
-    #     # TODO setUp runs twice?!
+        self.dataset = Dataset(id=1, dataset_name="ds1", filetype="bedfile")
+        self.dataset.user = User(id=2)
+        self.dataset.repository = self.repository
+        self.dataset.assembly = self.assembly.id
+        db.session.add(self.dataset)
 
-    #     super(TestDownloadDatasetFile, self).setUp()
-    #     # add assembly
-    #     self.hg19 = Assembly(
-    #         id=1,
-    #         name="hg19",
-    #         chrom_sizes=self.app.config["CHROM_SIZES"],
-    #         chrom_arms=self.app.config["CHROM_ARMS"],
-    #     )
-    #     db.session.add(self.hg19)
-    #     db.session.commit()
-    #     # make users
-    #     # user1 exists already
+        db.session.commit()
 
-    #     self.user = User(id=1, username="user1")
-    #     self.user.set_password("pass1")
+    test_cases = {
+        "valid_url": {"preprocessed"},
+        "valid_samples": {"preprocessed"},
+        "valid_url": {"preprocessed"},
+        "valid_url": {"preprocessed"},
+    }
 
-    #     # make repos
-    #     # repo1: empty repo (takes urls)
-    #     self.repo1 = DataRepository(  # do we even need that? if no repo specified use none
-    #         name="4DN",
-    #         url="https://data.4dnucleome.org/files-processed/{id}",  # TODO bed gz evil
-    #         auth_required=True,
-    #     )
-    #     # repo2: 4dn repo (takes url/id)
+    @patch("app.tasks._handle_error")
+    def test_dataset_not_found(self, mock_error):
+        download_dataset_file(123123)
+        self.assertTrue(mock_error.called)
 
-    #     # make repo_user_credentials
-    #     # user1_4dn
-    #     # self.user1_4dn_cred = User_DataRepository_Credentials(
-    #     #     user_id = "4DN",
-    #     #     repository_id = 1,
-    #     #     key='23MPZ4TF',
-    #     #     secret='exa7hrtx53tjmusq' # TODO remove before upload?!
-    #     # )
+    @patch("app.tasks._handle_error")
+    @patch("app.models.Dataset.query.get")
+    def test_invalid_inputs(self, mock_get_dataset, mock_error):
+        test_cases = {
+            "none": {},
+            "sample_id_only": {"sample_id": "asdf"},
+            "sample_repo_only": {"repository_name": "asdf"},
+            "sample_all_three": {
+                "sample_id": "asdf",
+                "repository_name": "asdf",
+                "source_url": "https://asdfasdfasdfasdfa.at",
+            },
+        }
+        for key, test_case in test_cases.items():
+            with self.subTest(tc=key):
+                dataset = self.dataset
+                dataset.sample_id = test_case.get("sample_id")
+                dataset.repository_name = test_case.get("repository_name")
+                dataset.source_url = test_case.get("source_url")
+                mock_get_dataset.return_value = dataset
 
-    #     # # make datasets for these test cases:
-    #     # self.dataset_repo = Dataset(
-    #     #     dataset_name="ds",
-    #     #     filetype="bedfile",
-    #     #     processing_state='uploading',
-    #     #     user_id=1,
-    #     #     assembly=1,
-    #     #     sizeType="Point",
-    #     #     repository_name = '4DN',
-    #     #     sample_id = '4DNFIRCHWS8M'
-    #     # )
-    #     self.dataset_url = Dataset(
-    #         dataset_name="ds",
-    #         filetype="bedfile",
-    #         processing_state="uploading",
-    #         user_id=1,
-    #         assembly=1,
-    #         sizeType="Point",
-    #         source_url="valid_url.at/bed.bed.gz",
-    #     )
-    #     self.dataset_bad_url = Dataset(
-    #         dataset_name="ds",
-    #         filetype="bedfile",
-    #         processing_state="uploading",
-    #         user_id=1,
-    #         assembly=1,
-    #         sizeType="Point",
-    #         source_url="thisisnotaurl",
-    #     )
-    #     self.dataset_valid_not_exists_url = Dataset(
-    #         dataset_name="ds",
-    #         filetype="bedfile",
-    #         processing_state="uploading",
-    #         user_id=1,
-    #         assembly=1,
-    #         sizeType="Point",
-    #         source_url="https://this42url1337isgoinnowhere.at",
-    #     )
-    #     self.dataset_bed_gz = Dataset(
-    #         dataset_name="ds",
-    #         filetype="bedfile",
-    #         processing_state="uploading",
-    #         user_id=1,
-    #         assembly=1,
-    #         sizeType="Point",
-    #         source_url="",
-    #     )
-    #     self.dataset_bad_id_4dn = Dataset(
-    #         dataset_name="ds",
-    #         filetype="bedfile",
-    #         processing_state="uploading",
-    #         user_id=1,
-    #         assembly=1,
-    #         sizeType="Point",
-    #         repository_name=1,
-    #         sample_id="THISISNOTANID",
-    #     )
+                download_dataset_file(1)
+                self.assertTrue(mock_error.called)
+                mock_error.reset_mock()
 
-    #     db.session.add(self.user)
-    #     # db.session.add(self.dataset_repo)
-    #     db.session.add(self.dataset_bad_id_4dn)
-    #     db.session.add(self.dataset_bed_gz)
-    #     db.session.add(self.dataset_bad_url)
-    #     db.session.add(self.dataset_valid_not_exists_url)
-    #     db.session.add(self.dataset_url)
-    #     db.session.commit()
+    @patch("app.models.Dataset.preprocess_dataset")
+    @patch("app.models.Dataset.validate_dataset")
+    @patch("app.download_utils.download_url")
+    @patch("app.download_utils.download_encode")
+    @patch("app.models.Dataset.query.get")
+    def test_valid_inputs(
+        self,
+        mock_get_dataset,
+        mock_download_url,
+        mock_download_encode,
+        mock_validate,
+        mock_preprocess,
+    ):
+        test_cases = {
+            "url": {"source_url": "http://urlurl1337url.at"},
+            "encode": {"sample_id": "asdf", "repository_name": "asdf"},
+        }
+        for key, test_case in test_cases.items():
+            with self.subTest(tc=key):
+                dataset = self.dataset
+                dataset.sample_id = test_case.get("sample_id")
+                dataset.repository_name = test_case.get("repository_name")
+                dataset.source_url = test_case.get("source_url")
+                mock_get_dataset.return_value = dataset
+                download_dataset_file(1)
 
-    # @patch('app.api.get_routes.get_ENCODE_metadata')
-    # @patch('app.download_utils.download_file') # TODO test this
-    # def test_download_wo_authentication(self, mock_encode_metadata, mock_json_content):
-    #     mock_encode_metadata = str({
-    #         'status': 'ok',
-    #         'json': {
-    #             'open_data_url': 'thisisurl',
-    #             'href': 'thisisurl',
-    #             'md5sum': '0934773585cd8b75960444d97cc3d41e',
-    #             'display_title': '4DNFIRCHWS8M.bed.gz'
-    #         }
-    #     })
-    #     file_name = '4DNFIRCHWS8M.bed.gz'
-    #     with open(os.path.join(TempDirTestCase.TEMP_PATH, '4DNFIRCHWS8M.bed.gz'), 'rb') as bedgz_file:
-    #         content = bedgz_file.read()
-    #     mock_json_content = (file_name, content)
-    #     http_status = download_dataset_file(self.dataset_no_auth.id, TempDirTestCase.TEMP_PATH)
-
-    #     self.assertEqual(True, http_status)
-    #     # TODO check file content
-
-    # def test_download_url_not_valid(self): # TODO throws no exceptions, check for notification and deleted
-    #     with self.assertRaises(requests.exceptions.MissingSchema):
-    #         download_dataset_file(
-    #             self.dataset_bad_url.id,
-    #             TempDirTestCase.TEMP_PATH
-    # )
-    # def test_download_url_valid_but_not_real(self): # TODO throws no exceptions, check for notification and deleted
-    #     with self.assertRaises(requests.exceptions.ConnectionError):
-    #         download_dataset_file(
-    #             self.dataset_valid_not_exists_url.id,
-    #             TempDirTestCase.TEMP_PATH
-    #         )
-
-    # def test_download_id_not_valid(self): # TODO throws no exceptions, check for notification and deleted
-    #     http_status = download_dataset_file(self.dataset_bad_id_4dn.id, TempDirTestCase.TEMP_PATH)
-    #     self.assertEqual(200, http_status)
-
-    # def test_download_dataset_not_found(self):
-    #     download_dataset_file(1000, TempDirTestCase.TEMP_PATH)
-    #     self.assertRaises()
+                self.assertTrue(mock_preprocess.called)
+                mock_preprocess.reset_mock()
 
 
 if __name__ == "__main__":
