@@ -76,9 +76,10 @@ def add_dataset_from_ENCODE():
         return invalid(f"Repository {data.repository_name} not found.")
 
     # check if the sample exists:
-    response = download_utils.download_ENCODE_metadata(repository, data.sample_id)
-    if response['status_code'] != 200:
-        return invalid(f"Could not load metadata: {response['status_code']}")
+    try:
+        response = download_utils.download_ENCODE_metadata(repository, data.sample_id)
+    except download_utils.MetadataNotWellformed as err:
+        return invalid(f"Could not load metadata: {str(err)}")
 
     # check whether description is there
     description = parse_description(data)
