@@ -141,6 +141,7 @@ def add_repositories():
             repo = DataRepository(
                 name=repo_dict["name"],
                 url=repo_dict["url"],
+                file_url=repo_dict["file_url"],
                 auth_required=repo_dict["auth_required"],
             )
             db.session.add(repo)
