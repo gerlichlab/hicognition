@@ -71,6 +71,7 @@
                             <addDatasetForm
                                 @close-dialog="$emit('close-dialog')"
                                 :fileTypeMapping="fileTypeMapping"
+                                :datasetType="datatype"
                             ></addDatasetForm>
                         </div>
                     </md-tab>
@@ -78,6 +79,7 @@
                         <addDatasetStepper
                             @close-dialog="$emit('close-dialog')"
                             :fileTypeMapping="fileTypeMapping"
+                            :datasetType="datatype"
                         >
                         </addDatasetStepper>
                     </md-tab>
@@ -90,6 +92,7 @@
 <script>
 import addDatasetForm from "../forms/addDatasetForm";
 import addDatasetStepper from "../ui/addDatasetStepper.vue";
+import { apiMixin } from "../../mixins";
 
 export default {
     name: "AddDatasetDialog",
@@ -97,10 +100,14 @@ export default {
         addDatasetForm,
         addDatasetStepper
     },
+    mixins: [apiMixin],
     props: {
         dialog: Boolean,
         datatype: String
     },
+    data: () => ({
+        fileTypes: null
+    }),
     computed: {
         welcomeMessage: function() {
             if (this.datatype == "feature") {
@@ -110,6 +117,9 @@ export default {
             } else {
                 return "Add dataset";
             }
+        },
+        showDialog: function() {
+            return this.dialog;
         },
         fileTypeMapping: function() {
             // REFACTOR supported file types defined also in config.py
@@ -134,9 +144,6 @@ export default {
                 };
             }
         },
-        showDialog: function() {
-            return this.dialog;
-        }
     }
 };
 </script>

@@ -65,6 +65,16 @@ export default {
                 }
             });
         },
+        fetchFileTypes: function() {
+            this.fetchData("filetypes/camelCase/").then(response => {
+                if (response) {
+                    this.$store.commit(
+                        "setFileTypes",
+                        response.data
+                    )
+                }
+            });
+        },
         addCollection: function() {
             // add newEntry to store for collection
             this.$store.commit(
@@ -112,6 +122,7 @@ export default {
         }
         //
         EventBus.$on("session-loaded", this.updateMaxID);
+        this.fetchFileTypes();
         this.fetchDatasets();
         this.fetchCollections();
         this.fetchDatasetMetadataMapping();

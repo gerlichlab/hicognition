@@ -13,6 +13,7 @@ from flask import g, make_response
 from flask.json import jsonify
 from flask.globals import current_app
 from sqlalchemy import or_
+from .. import utils
 from hicognition import data_structures
 from hicognition.utils import (
     update_processing_state,
@@ -59,12 +60,12 @@ def test_protected():
     return jsonify({"test": "Hello, world!"})
 
 
-@api.route("/resolutions/", methods=["GET"])
-@auth.login_required
-def get_resolutions():
-    """Gets available combinations of windowsizes and binsizes
-    from config file"""
-    return jsonify(current_app.config["PREPROCESSING_MAP"])
+# @api.route("/resolutions/", methods=["GET"])
+# @auth.login_required
+# def get_resolutions():
+#     """Gets available combinations of windowsizes and binsizes
+#     from config file"""
+#     return jsonify(current_app.config["PREPROCESSING_MAP"])
 
 
 @api.route("/datasetMetadataMapping/", methods=["get"])
@@ -73,6 +74,19 @@ def get_metadata_mapping():
     """Get route for metadata mapping"""
     return jsonify(current_app.config["DATASET_OPTION_MAPPING"])
 
+@api.route("/filetypes/<format>/", methods=["GET"])
+@auth.login_required
+def get_filetypes(format: str):
+    """Returns filetype and associated metadata in format specified
+    Used for dynamically creating metadata fields in front end.
+    Used to know which file types to accept.
+
+    Args:
+        format (str): either "snake_case", "camelCase" or "human"
+    """
+    file_types = current_app.config["FILETYPES"]
+    formatted_file_types = utils.convert_format(file_types, format)
+    return jsonify(formatted_file_types)
 
 @api.route("/organisms/", methods=["GET"])
 @auth.login_required
