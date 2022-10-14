@@ -116,7 +116,7 @@
                         <div class="md-layout-item md-small-size-100">
                             <formFileInput
                                 v-if="form.fileSource === 'httpUpload'"
-                                :fileTypeMapping="fileTypeMapping"
+                                :fileTypeMapping="fileTypeExtensions"
                                 @input-changed="fileInputChanged"
                                 @update-component-validity="
                                     updateComponentValidity
@@ -124,7 +124,7 @@
                             />
                             <formURLInput
                                 v-else-if="form.fileSource === 'url'"
-                                :fileTypeMapping="fileTypeMapping"
+                                :fileTypeMapping="fileTypeExtensions"
                                 @input-changed="urlInputChanged"
                                 @update-component-validity="
                                     updateComponentValidity
@@ -132,7 +132,7 @@
                             />
                             <formRepositoryInput
                                 v-else
-                                :fileTypeMapping="fileTypeMapping"
+                                :fileTypeMapping="fileTypeExtensions"
                                 :repository="repositories[form.fileSource].name"
                                 @input-changed="repositoryInputChanged"
                                 @update-component-validity="
@@ -202,7 +202,6 @@ export default {
     name: "AddDatasetForm",
     mixins: [validationMixin, apiMixin],
     props: {
-        fileTypeMapping: Object,
         datasetType: String,
     },
     components: {
@@ -220,7 +219,6 @@ export default {
             description: null,
             fileSource: "httpUpload"
         },
-        datasetMetadataMapping: null,
         fileTypes: null,
         datasetSaved: false,
         sending: false,
@@ -261,13 +259,13 @@ export default {
         selectedFileType: function() {
             if (
                 this.fileExt &&
-                this.fileExt.toLowerCase() in this.fileTypeMapping
+                this.fileExt.toLowerCase() in this.fileTypeExtensions
             ) {
-                return this.fileTypeMapping[this.fileExt.toLowerCase()];
+                return this.fileTypeExtensions[this.fileExt.toLowerCase()];
             } else {
                 return undefined;
             }
-        },
+        }
     },
     methods: {
         metadataChanged: function(metadata) {
@@ -326,7 +324,6 @@ export default {
         },
         saveDataset() {
             this.sending = true; // show progress bar
-
             // construct form data
             var formData = new FormData();
             for (var key in this.form) {
@@ -381,7 +378,7 @@ export default {
             // API call including upload is made in the background
             this.postData(postRoute, formData).then(response => {
                 this.sending = false;
-                // this.clearForm();
+                this.clearForm();
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
@@ -410,10 +407,7 @@ export default {
             });
         }
     },
-    mounted: function() {
-        this.datasetMetadataMapping = this.$store.getters[
-            "getDatasetMetadataMapping"
-        ]["DatasetType"];
+    created: function() {
         this.assemblies = this.fetchAssemblies();
 
         // TODO sprint9 add repo list
@@ -421,12 +415,17 @@ export default {
 
         var fileTypes = this.$store.getters["getFileTypes"];
         this.fileTypes = {};
+        this.fileTypeExtensions = {};
 
-        for (var key in fileTypes) {
-            if (fileTypes[key]['datasetType'].includes(this.datasetType)) {
-                this.fileTypes[key] = fileTypes[key];
+        Object.entries(fileTypes).forEach(([name, fileType]) => {
+            // check if region or feature accept data type
+            if (fileType['datasetType'].includes(this.datasetType)) { 
+                this.fileTypes[name] = fileType;
+                fileType['fileExt'].forEach(ext => {
+                    this.fileTypeExtensions[ext] = name;
+                });
             }
-        }
+        });
     }
 };
 </script>

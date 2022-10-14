@@ -70,7 +70,6 @@
                         >
                             <addDatasetForm
                                 @close-dialog="$emit('close-dialog')"
-                                :fileTypeMapping="fileTypeMapping"
                                 :datasetType="datatype"
                             ></addDatasetForm>
                         </div>
@@ -78,7 +77,6 @@
                     <md-tab id="tab-bulk" md-label="Bulk">
                         <addDatasetStepper
                             @close-dialog="$emit('close-dialog')"
-                            :fileTypeMapping="fileTypeMapping"
                             :datasetType="datatype"
                         >
                         </addDatasetStepper>
@@ -103,7 +101,7 @@ export default {
     mixins: [apiMixin],
     props: {
         dialog: Boolean,
-        datatype: String
+        datatype: String // region or feature
     },
     data: () => ({
         fileTypes: null
@@ -120,29 +118,6 @@ export default {
         },
         showDialog: function() {
             return this.dialog;
-        },
-        fileTypeMapping: function() {
-            // REFACTOR supported file types defined also in config.py
-            if (this.datatype == "feature") {
-                return {
-                    mcool: "cooler",
-                    bw: "bigwig",
-                    bigwig: "bigwig",
-                    bigWig: "bigwig"
-                };
-            } else if (this.datatype == "region") {
-                return {
-                    bed: "bedfile"
-                };
-            } else {
-                return {
-                    bed: "bedfile",
-                    mcool: "cooler",
-                    bw: "bigwig",
-                    bigwig: "bigwig",
-                    bigWig: "bigwig"
-                };
-            }
         },
     }
 };
