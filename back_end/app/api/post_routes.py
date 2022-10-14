@@ -29,11 +29,11 @@ from ..models import (
     EmbeddingIntervalData,
 )
 from ..form_models import (
-    DatasetPostModel,
     FileDatasetPostModel,
     URLDatasetPostModel,
     ENCODEDatasetPostModel,
 )
+from ..utils import Format, convert_format
 from .authentication import auth
 from .. import pipeline_steps
 from .errors import forbidden, internal_server_error, invalid, not_found
@@ -44,14 +44,7 @@ from .errors import forbidden, internal_server_error, invalid, not_found
 def add_dataset_from_ENCODE():
     """Endpoint to add dataset directly from an ENCODE repository.
     Will call new redis worker to download file and notify user when finished."""
-
-    def is_form_valid():
-        valid = True
-        valid = valid and hasattr(request, "form")
-        valid = valid and len(request.files) == 0
-        return valid
-
-    if not is_form_valid():
+    if not hasattr(request, "form") and len(request.files) == 0:
         return invalid("Form is not valid!")
 
     # get data from form
@@ -59,11 +52,6 @@ def add_dataset_from_ENCODE():
         data = ENCODEDatasetPostModel(**request.form)
     except ValueError as err:
         return invalid(f'Form is not valid: {str(err)}')
-    except Exception as err:
-        return internal_server_error(
-            err,
-            "Dataset could not be uploaded: There was a server-side error. Error has been logged.",
-        )
 
     # temporary file_type check
     if data.filetype.lower() in ["cool", "cooler", "mcool"]:

@@ -66,7 +66,7 @@ export default {
             });
         },
         fetchFileTypes: function() {
-            this.fetchData("filetypes/camelCase/").then(response => {
+            this.fetchData("filetypes/").then(response => {
                 if (response) {
                     this.$store.commit(
                         "setFileTypes",

@@ -34,7 +34,8 @@ fieldData = [
                 <template v-if="field=='freetext'">
                     <div :key="name" class="md-layout-item md-small-size-100">
                         <md-field>
-                            <label :for="name">{{ camelCase(name) }}</label>
+                            <!-- <label :for="name">{{ camelCase(name) }}</label> -->
+                            <label :for="name">{{ name }}</label>
                             <md-input :name="name" :id="name" v-model="form[name]" @change="fieldChanged"/>
                         </md-field>
                     </div>
@@ -44,7 +45,8 @@ fieldData = [
                 <template v-else-if="Array.isArray(field)">
                     <div :key="name"  class="md-layout-item md-small-size-100">
                         <md-field>
-                            <label :for="name">{{ camelCase(name) }}</label>
+                            <!-- <label :for="name">{{ camelCase(name) }}</label> -->
+                            <label :for="name">{{ name }}</label>
                             <md-select :name="name" :id="name" v-model="form[name]" @md-selected="selected(name)">
                                 <md-option v-for="option in field" :key="option" :value="option">
                                     {{ option }}
@@ -58,10 +60,12 @@ fieldData = [
                 <template v-else-if="typeof field === 'object'">
                     <div :key="name"  class="md-layout-item md-small-size-100">
                         <md-field>
-                            <label :for="name">{{ camelCase(name) }}</label>
+                            <!-- <label :for="name">{{ camelCase(name) }}</label> -->
+                            <label :for="name">{{ name }}</label>
                             <md-select :name="name" :id="name" v-model="form[name]" @md-selected="selected(name)">
                                 <md-option v-for="(option, optionName) in field" :key="optionName" :value="optionName">
-                                    {{ camelCase(optionName) }}
+                                    <!-- {{ camelCase(optionName) }} -->
+                                    {{ optionName }}
                                 </md-option>
                             </md-select>
                         </md-field>
@@ -74,7 +78,7 @@ fieldData = [
     </div>
 </template>
 <script>
-import { metadataField as metadataField } from './metadataFields.vue';
+import { metadataField as metadataField } from './metadataField.vue';
 export default {
   components: { metadataField },
     name: "metadataField",
@@ -99,11 +103,11 @@ export default {
             this.subSelections[selectFieldName] = this.fieldData[selectFieldName][this.form[selectFieldName]];
             this.$forceUpdate();
         },
-        camelCase: function(text) { // https://stackoverflow.com/questions/21147832/convert-camel-case-to-human-readable-string
-            if (typeof text === 'string' || text instanceof String)
-            var words = text.match(/[A-Za-z][a-z]*/g) || [];
-            return words.map((word) => word.charAt(0).toUpperCase() + word.substring(1)).join(" ");
-        },
+        // camelCase: function(text) { // https://stackoverflow.com/questions/21147832/convert-camel-case-to-human-readable-string
+        //     if (typeof text === 'string' || text instanceof String)
+        //     var words = text.match(/[A-Za-z][a-z]*/g) || [];
+        //     return words.map((word) => word.charAt(0).toUpperCase() + word.substring(1)).join(" ");
+        // },
         hasSubSelections: function() {
             return Object.keys(this.subSelections).length > 0;
         },

@@ -133,7 +133,7 @@
                             <formRepositoryInput
                                 v-else
                                 :fileTypeMapping="fileTypeExtensions"
-                                :repository="repositories[form.fileSource].name"
+                                :repository="repositories[form.fileSource]['name']"
                                 @input-changed="repositoryInputChanged"
                                 @update-component-validity="
                                     updateComponentValidity
@@ -146,7 +146,7 @@
                         <md-divider />
                         <md-list>
                             <md-subheader>Dataset descriptions</md-subheader>
-                            <metadataFields :fieldData="fileTypes[selectedFileType]['metadata']" @data-changed="metadataChanged" />
+                            <metadataField :fieldData="fileTypes[selectedFileType]['metadata']" @data-changed="metadataChanged" />
                         </md-list>
                         <md-divider />
                     </div>
@@ -196,7 +196,7 @@ import { apiMixin } from "../../mixins";
 import formFileInput from "./formFileInput";
 import formURLInput from "./formURLInput";
 import formRepositoryInput from "./formRepositoryInput";
-import metadataFields from "./metadataFields";
+import metadataField from "./metadataField";
 
 export default {
     name: "AddDatasetForm",
@@ -208,7 +208,7 @@ export default {
         formFileInput,
         formRepositoryInput,
         formURLInput,
-        metadataFields
+        metadataField
     },
     data: () => ({
         form: {
@@ -326,26 +326,10 @@ export default {
             this.sending = true; // show progress bar
             // construct form data
             var formData = new FormData();
-            for (var key in this.form) {
-                // do not contain fileSource value, as this is only for gui
-                if (key == "fileSource") {
-                    continue;
-                }
-                // only include fields if they are not null
-                if (this.form[key]) {
-                    if (key == "file") {
-                        // file data needs to be included like this because the form data only contains the filename at this stage
-                        formData.append(
-                            key,
-                            this.selectedFile,
-                            this.selectedFile.name
-                        );
-                    } else {
-                        formData.append(key, this.form[key]);
-                    }
-                }
-            }
-            // add filetype
+            formData.append('dataset_name', this.form['datasetName']);
+            formData.append('public', this.form['public']);
+            formData.append('assembly', this.form['assembly']);
+            formData.append('assembly', this.form['description']);
             formData.append("filetype", this.selectedFileType);
             Object.entries(this.metadata).forEach(([k,v]) => {
                 formData.append(k, v)
@@ -354,29 +338,23 @@ export default {
             // Differentiate depending on chosen file source
             var postRoute = "";
             if (this.form.fileSource == "httpUpload") {
-                formData.append(
-                    "file",
-                    this.selectedFile,
-                    this.selectedFile.name
-                );
+                formData.append("file",this.selectedFile,this.selectedFile.name);
                 postRoute = "datasets/";
                 this.snackbarMessage =
                     "The Dataset was added successfully and is ready for preprocessing!";
             } else if (this.form.fileSource == "url") {
-                formData.append("sourceURL", this.sourceURL);
-                this.snackbarMessage =
-                    "The Dataset has been queued for download!";
+                formData.append("source_url", this.sourceURL);
+                this.snackbarMessage = "The Dataset has been queued for download!";
                 postRoute = "datasets/URL/";
             } else {
-                formData.append("repositoryName", this.form.fileSource);
-                formData.append("sampleID", this.sampleID);
-                this.snackbarMessage =
-                    "The Dataset has been queued for download!";
+                formData.append("repository_name", this.form.fileSource);
+                formData.append("sample_id", this.sampleID);
+                this.snackbarMessage = "The Dataset has been queued for download!";
                 postRoute = "datasets/encode/";
             }
 
             // API call including upload is made in the background
-            this.postData(postRoute, formData).then(response => {
+            this.postData(postRoute, formData).then((response) => {
                 this.sending = false;
                 this.clearForm();
                 if (response) {
@@ -384,6 +362,7 @@ export default {
                     this.datasetSaved = true;
                     this.fetchAndStoreDatasets(); // apiMixin
                 }
+                this.$forceUpdate();
             });
         },
         validateDataset() {
@@ -419,9 +398,9 @@ export default {
 
         Object.entries(fileTypes).forEach(([name, fileType]) => {
             // check if region or feature accept data type
-            if (fileType['datasetType'].includes(this.datasetType)) { 
+            if (fileType['dataset_type'].includes(this.datasetType)) { 
                 this.fileTypes[name] = fileType;
-                fileType['fileExt'].forEach(ext => {
+                fileType['file_ext'].forEach(ext => {
                     this.fileTypeExtensions[ext] = name;
                 });
             }

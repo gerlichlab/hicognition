@@ -67,12 +67,12 @@
             <addDatasetDialog
                 :dialog="showAddRegionDialog"
                 @close-dialog="showAddRegionDialog = false"
-                datatype="region"
+                :datatype="`region`"
             ></addDatasetDialog>
             <addDatasetDialog
                 :dialog="showAddFeatureDialog"
                 @close-dialog="showAddFeatureDialog = false"
-                datatype="feature"
+                :datatype="`feature`"
             ></addDatasetDialog>
             <addMetadataDialog
                 :dialog="showAddMetadataDialog"
