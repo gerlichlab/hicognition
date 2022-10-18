@@ -22,105 +22,80 @@ fieldData = [
 -->
 
 <template>
-    <!-- check if data is a list of rows -->
-    <div v-if="inputType=='array'">
-        <metadataField v-for="(row, index) in fieldData" :fieldData="row" :name="`meta-row-${index}`" :key="`meta-row-${index}`" @data-changed="childDataChanged"/>
+    <div v-if="isField" :key="fieldName" class="md-layout-item md-small-size-100">
+        <!-- simple text fields -->
+        <md-field>
+            <label :for="fieldName">{{ fieldName }}</label>
+            <md-input v-if="fieldContent=='freetext'" :name="fieldName" :id="fieldName" v-model="fieldValue" @change="changed"/>
+            <md-select  v-else-if="Array.isArray(fieldContent)" :name="fieldName" :id="fieldName" v-model="fieldValue" @md-selected="changed">
+                <md-option v-for="option in fieldContent" :key="option" :value="option">
+                    {{ option }}
+                </md-option>
+            </md-select>
+            <md-select v-else-if="typeof fieldContent === 'object'" :name="fieldName" :id="fieldName" v-model="fieldValue" @md-selected="emitComplexSelect">
+                <md-option v-for="(option, optionName) in fieldContent" :key="optionName" :value="optionName">
+                    {{ optionName }}
+                </md-option>
+            </md-select>
+        </md-field>
     </div>
-    <!-- work with dicts -->
     <div v-else>
-        <div class="md-layout md-gutter">
-            <template v-for="(field, name) in fieldData">
-                <!-- simple text fields -->
-                <template v-if="field=='freetext'">
-                    <div :key="name" class="md-layout-item md-small-size-100">
-                        <md-field>
-                            <!-- <label :for="name">{{ camelCase(name) }}</label> -->
-                            <label :for="name">{{ name }}</label>
-                            <md-input :name="name" :id="name" v-model="form[name]" @change="fieldChanged"/>
-                        </md-field>
-                    </div>
-                </template>
-
-                <!-- make a select box for simple selections -->
-                <template v-else-if="Array.isArray(field)">
-                    <div :key="name"  class="md-layout-item md-small-size-100">
-                        <md-field>
-                            <!-- <label :for="name">{{ camelCase(name) }}</label> -->
-                            <label :for="name">{{ name }}</label>
-                            <md-select :name="name" :id="name" v-model="form[name]" @md-selected="selected(name)">
-                                <md-option v-for="option in field" :key="option" :value="option">
-                                    {{ option }}
-                                </md-option>
-                            </md-select>
-                        </md-field>
-                    </div>
-                </template>
-
-                <!-- make a select box that invokes further field generation -->
-                <template v-else-if="typeof field === 'object'">
-                    <div :key="name"  class="md-layout-item md-small-size-100">
-                        <md-field>
-                            <!-- <label :for="name">{{ camelCase(name) }}</label> -->
-                            <label :for="name">{{ name }}</label>
-                            <md-select :name="name" :id="name" v-model="form[name]" @md-selected="selected(name)">
-                                <md-option v-for="(option, optionName) in field" :key="optionName" :value="optionName">
-                                    <!-- {{ camelCase(optionName) }} -->
-                                    {{ optionName }}
-                                </md-option>
-                            </md-select>
-                        </md-field>
-                    </div>
-                </template>
-            </template>
+        <!-- check if data is a list of rows -->
+        <div v-if="inputType=='array'">
+            <metadataField v-for="(row, index) in fieldContent" :fieldContent="row" :name="`meta-row-${index}`" :key="`meta-row-${index}`" @data-changed="pipeChanges"/>
         </div>
-        <!-- placeholder for further fields -->
-        <metadataField v-for="(selection, selectFieldName) in subSelections" :fieldData="selection" :name="selectFieldName" :key="selectFieldName" @data-changed="childDataChanged"/>
+        <!-- work with dicts -->
+        <div v-else>
+            <div class="md-layout md-gutter">
+                <metadataField v-for="(field, name) in fieldContent" :fieldName="name" :fieldContent="field" isField="true" :name="name" :key="name" @data-changed="pipeChanges" @complex-select="complexSelect"/>
+            </div>
+            <!-- placeholder for further fields -->
+            <metadataField v-for="(selection, selectFieldName) in subSelections" :fieldContent="selection" :name="selectFieldName" :key="selectFieldName" @data-changed="pipeChanges"/>
+        </div>
     </div>
 </template>
 <script>
-import { metadataField as metadataField } from './metadataField.vue';
+import metadataField from './metadataField.vue';
 export default {
-  components: { metadataField },
+    components: { metadataField },
     name: "metadataField",
     props: {
-        fieldData: null
+        isField: false,
+        fieldName: null,
+        fieldContent: null,
     },
-    emits: [],
+    emits: [
+        'complex-select',
+        'data-changed'
+    ],
     data: () => ({
-        form: {},
+        fieldValue: null,
         subSelections: {}
     }),
     methods: {
-        fieldChanged: function() {
-            this.$emit("data-changed", JSON.parse(JSON.stringify(this.form)));
+        changed: function() {
+            this.$emit("data-changed", this.fieldName, this.fieldValue);
         },
-        selected: function(selectFieldName) {
-            this.$emit("data-changed", JSON.parse(JSON.stringify(this.form)));
-
-            if (Array.isArray(this.fieldData[selectFieldName])) {
-                return;
-            }
-            this.subSelections[selectFieldName] = this.fieldData[selectFieldName][this.form[selectFieldName]];
+        emitComplexSelect: function() {
+            this.changed();
+            this.$emit("complex-select", this.fieldName, this.fieldValue);
+        },
+        complexSelect: function(name, selection) {
+            this.subSelections[name] = this.fieldContent[name][selection];
             this.$forceUpdate();
         },
-        // camelCase: function(text) { // https://stackoverflow.com/questions/21147832/convert-camel-case-to-human-readable-string
-        //     if (typeof text === 'string' || text instanceof String)
-        //     var words = text.match(/[A-Za-z][a-z]*/g) || [];
-        //     return words.map((word) => word.charAt(0).toUpperCase() + word.substring(1)).join(" ");
-        // },
-        hasSubSelections: function() {
-            return Object.keys(this.subSelections).length > 0;
-        },
-        childDataChanged: function(childForm) {
-            this.$emit(
-                "data-changed", 
-                {...JSON.parse(JSON.stringify(this.form)), ...childForm}
-            );
-            
+        pipeChanges: function(field, value) {
+            this.$emit("data-changed", field, value);
         },
     },
     created: function() {
-        this.inputType = Array.isArray(this.fieldData) ? "array" : typeof this.fieldData;
+        this.inputType = Array.isArray(this.fieldContent) ? "array" : typeof this.fieldContent;
+    },
+    //beforeUnmount: function() {
+    beforeDestroy: function() {
+        if (this.isField) {
+            this.$emit("data-changed", this.fieldName, null);
+        }
     }
 };
 </script>

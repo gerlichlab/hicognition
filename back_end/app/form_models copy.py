@@ -1,44 +1,36 @@
 """Pydantic models to validate integrity of Forms for the HiCognition API."""
-from enum import Enum
-from typing import Any
-from pydantic import BaseModel, Field, validator, constr, AnyUrl, Json
+from pydantic import BaseModel, Field, validator, constr, AnyUrl
 
 from flask import current_app
 from .utils import convert_format, Format
 
-class SizeTypeEnum(str, Enum):
-    point = 'point'
-    interval = 'interval'
-
-class DatasetTypeEnum(str, Enum):
-    region = 'region'
-    feature = 'feature'
+class DatasetMetadataModel(BaseModel):
+    
+    
+    class Config:
+        orm_mode = True
 
 # pylint: disable=no-self-argument,no-self-use
 class DatasetPostModel(BaseModel):
     """Is a model of the dataset upload form."""
 
-    dataset_name: constr(min_length=3, max_length=81) = Field(...)
-    public: bool = Field(...)
-    assembly: int = Field(...)
+    dataset_name: constr(min_length=3, max_length=81)
+    public: bool
+    assembly: int
     description: constr(max_length=81) = Field("No description provided")
-    dataset_type: DatasetTypeEnum = Field(...)
-    sizeType: SizeTypeEnum
-    filetype: constr(max_length=64) = Field("undefined")
-    metadata_json: Json[Any]
+    filetype: constr(max_length=64)
+    sizeType: constr(max_length=64)
+    filetype: constr(max_length=64)
+    value_type: constr(max_length=64)
+
+    dataset_metadata: list[DatasetMetadataModel]
+    # def __init__(self, form: dict, **data):
+    #     form = convert_format(form, Format.SNAKE_CASE)
+    #     super.__init__(self, **data)
 
     class Config(BaseModel.Config):
         allow_population_by_field_name = True
         extra = "allow"
-
-    @validator("sizeType")
-    def require_size_type_region(cls, sizeType, values, **kwargs):
-        if not sizeType and values['dataset_type'] == DatasetTypeEnum.region:
-            raise ValueError("Size type required for regions.")
-
-        if sizeType and values['dataset_type'] != DatasetTypeEnum.region:
-            raise ValueError("Specifying size type only allowed for regions.")
-        return sizeType
 
     @validator("filetype")
     def check_filetype(cls, filetype, values, **kwargs):
@@ -71,21 +63,41 @@ class DatasetPostModel(BaseModel):
 
 class FileDatasetPostModel(DatasetPostModel):
     """model of dataset with file"""
-    filename: constr(max_length=200) = Field(...)
+
+    filename: constr(max_length=200)
+
+    # @validator("filename")
+    # def file_has_correct_ending_and_supported_filetype(cls, filename, values, **kwargs):
+    #     """Checks is the file has the appropriate file ending."""
+    #     supported_file_endings = current_app.config["DATASET_OPTION_MAPPING"][
+    #         "supported_file_endings"
+    #     ]
+    #     file_ending = filename.split(".")[-1]
+    #     if file_ending.lower() not in supported_file_endings.get(
+    #         values.get("filetype")
+    #     ):
+    #         raise ValueError(
+    #             f'Invalid filename! For the filetype: {values.get("filetype")} we found the file ending: {file_ending}. Supported for this filetype are: {supported_file_endings.get(values.get("filetype"))}.'
+    #         )
+    #     return filename
 
 
 class URLDatasetPostModel(DatasetPostModel):
     """model of dataset with an URL"""
-    source_url: AnyUrl = Field(...)
+
+    source_url: AnyUrl
 
 
 class ENCODEDatasetPostModel(DatasetPostModel):
     """model of dataset with an URL"""
-    sample_id: constr(max_length=128, min_length=3) = Field(...)
-    repository_name: constr(max_length=128) = Field(...)
+
+    sample_id: constr(max_length=128)
+    repository_name: constr(max_length=64)
 
     # @validator("sample_id")
-    # def validate_sample_id(cls, sample_id, values, **kwargs):
-    #     if not sample_id or sample_id.strip() == '':
-    #         raise ValueError("sample_id may not be empty")
-    #     return sample_id
+    # def sample_id_exists(cls, sample_id):
+    #     return sample_id # TODO
+
+    # @validator("repository_id")
+    # def repository_id_exists(cls, repository_id):
+    #     return repository_id # TODO

@@ -179,6 +179,8 @@ def download_dataset_file(dataset_id: int):
         )
         return
 
+    dataset.upload_state = 'uploading'
+    db.session.commit()
     is_repository = dataset.sample_id and dataset.repository
     try:
         if is_repository:
@@ -209,6 +211,8 @@ def download_dataset_file(dataset_id: int):
         _handle_error(dataset, "File formatting was invalid.")
         return
 
+    dataset.upload_state = 'uploaded'
+    db.session.commit()
     dataset.preprocess_dataset()
     db.session.commit()
     _send_notification(

@@ -139,134 +139,58 @@ class Config:
     }
     CLUSTER_NUMBER_LARGE = 20
     CLUSTER_NUMBER_SMALL = 10
-    
+    # dataset-option mapping -> puts different optionvalues for dataset into relation
     FILETYPES = {
+        "bedfile": ["bed"],
+        "cooler": ["mcool"],
+        "bigwig": ["bw", "bigwig"],
+    }
+    DATASET_TYPES = {
         "bedfile": {
-            "dataset_type": ["region"],
-            "file_ext": ["bed"],
-            "metadata": [
-                { # row 1
-                    "Cell cycle Stage": "freetext",
-                    "Perturbation": "freetext"
+            "ValueType": {
+                "Peak": {
+                    "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
+                    "SizeType": ["Point", "Interval"],
+                    "Protein": "freetext",
+                    "Directionality": ["+", "-", "No directionality"],
                 },
-                { # row 2
-                    "Value Type":  {
-                        "Peak": {
-                            "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
-                            # "Size Type": ["Point", "Interval"],
-                            "Protein": "freetext",
-                            "Directionality": ["+", "-", "No directionality"],
-                        },
-                        "Genome Annotation": {
-                            # "Size Type": ["Point", "Interval"],
-                            "Directionality": ["+", "-", "No directionality"],
-                        },
-                        "Derived": {
-                            "Method": ["HiC", "Other Dataset"],
-                            # "Size Type": ["Point", "Interval"],
-                        }
-                    }
-                }
-            ]
+                "GenomeAnnotation": {
+                    "SizeType": ["Point", "Interval"],
+                    "Directionality": ["+", "-", "No directionality"],
+                },
+                "Derived": {
+                    "Method": ["HiC", "Other Dataset"],
+                    "SizeType": ["Point", "Interval"],
+                },
+            }
         },
         "bigwig": {
-            "dataset_type": "feature",
-            "file_ext": ["bw", "bigwig"],
-            "metadata": {
-                "Cell cycle Stage": "freetext",
-                "Perturbation": "freetext",
-                "ValueType": {
-                    "Derived": {
-                        "Normalization": ["Base-line-correct", "No Normalization"],
-                        "DerivationType": ["InsulationScore", "PairingScore"],
-                        "Method": ["HiC"],
-                    },
-                    "ChromatinAssociation": {
-                        "Protein": "freetext",
-                        "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
-                        "Normalization": ["NormToControl", "RPM", "No Normalization"],
-                    },
-                    "GeneExpression": {
-                        "Normalization": [
-                            "NormToControl",
-                            "RPM",
-                            "RPKM",
-                            "No Normalization",
-                        ],
-                        "Method": ["RNAseq", "GroSeq", "SLAMseq", "NETseq"],
-                    },
-                }
-            },
+            "ValueType": {
+                "Derived": {
+                    "Normalization": ["Base-line-correct", "No Normalization"],
+                    "DerivationType": ["InsulationScore", "PairingScore"],
+                    "Method": ["HiC"],
+                },
+                "ChromatinAssociation": {
+                    "Protein": "freetext",
+                    "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
+                    "Normalization": ["NormToControl", "RPM", "No Normalization"],
+                },
+                "GeneExpression": {
+                    "Normalization": [
+                        "NormToControl",
+                        "RPM",
+                        "RPKM",
+                        "No Normalization",
+                    ],
+                    "Method": ["RNAseq", "GroSeq", "SLAMseq", "NETseq"],
+                },
+            }
         },
         "cooler": {
-            "dataset_type": "feature",
-            "file_ext": ["bw", "bigwig"],
-            "metadata": {
-                "Cell cycle Stage": "freetext",
-                "Perturbation": "freetext",
-                "ValueType": {
-                    "Interaction": {"Method": ["HiC"], "Normalization": ["ICCF"]}
-                }
+            "ValueType": {
+                "Interaction": {"Method": ["HiC"], "Normalization": ["ICCF"]}
             }
-        }
-    }
-    
-       
-    
-    # dataset-option mapping -> puts different optionvalues for dataset into relation
-    DATASET_OPTION_MAPPING = {
-        "supported_file_endings": {
-            "bedfile": ["bed"],
-            "cooler": ["mcool"],
-            "bigwig": ["bw", "bigwig"],
-        },
-        "DatasetType": {
-            "bedfile": {
-                "ValueType": {
-                    "Peak": {
-                        "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
-                        "SizeType": ["Point", "Interval"],
-                        "Protein": "freetext",
-                        "Directionality": ["+", "-", "No directionality"],
-                    },
-                    "GenomeAnnotation": {
-                        "SizeType": ["Point", "Interval"],
-                        "Directionality": ["+", "-", "No directionality"],
-                    },
-                    "Derived": {
-                        "Method": ["HiC", "Other Dataset"],
-                        "SizeType": ["Point", "Interval"],
-                    },
-                }
-            },
-            "bigwig": {
-                "ValueType": {
-                    "Derived": {
-                        "Normalization": ["Base-line-correct", "No Normalization"],
-                        "DerivationType": ["InsulationScore", "PairingScore"],
-                        "Method": ["HiC"],
-                    },
-                    "ChromatinAssociation": {
-                        "Protein": "freetext",
-                        "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
-                        "Normalization": ["NormToControl", "RPM", "No Normalization"],
-                    },
-                    "GeneExpression": {
-                        "Normalization": [
-                            "NormToControl",
-                            "RPM",
-                            "RPKM",
-                            "No Normalization",
-                        ],
-                        "Method": ["RNAseq", "GroSeq", "SLAMseq", "NETseq"],
-                    },
-                }
-            },
-            "cooler": {
-                "ValueType": {
-                    "Interaction": {"Method": ["HiC"], "Normalization": ["ICCF"]}
-                }
-            },
         },
     }
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled

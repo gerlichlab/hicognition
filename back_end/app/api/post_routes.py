@@ -8,6 +8,7 @@ import numpy as np
 from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from flask.json import jsonify
+from requests import HTTPError
 
 # from hicognition.utils import get_all_interval_ids, parse_binsizes
 from hicognition.utils import parse_description, get_all_interval_ids, parse_binsizes
@@ -44,9 +45,11 @@ from .errors import forbidden, internal_server_error, invalid, not_found
 def add_dataset_from_ENCODE():
     """Endpoint to add dataset directly from an ENCODE repository.
     Will call new redis worker to download file and notify user when finished."""
-    if not hasattr(request, "form") and len(request.files) == 0:
+    if not hasattr(request, "form") or len(request.files) > 0:
         return invalid("Form is not valid!")
 
+    if hasattr(request.form, "nonexsitant"):
+        import pdb;pdb.set_trace()
     # get data from form
     try:
         data = ENCODEDatasetPostModel(**request.form)
@@ -66,7 +69,7 @@ def add_dataset_from_ENCODE():
     # check if the sample exists:
     try:
         response = download_utils.download_ENCODE_metadata(repository, data.sample_id)
-    except download_utils.MetadataNotWellformed as err:
+    except (download_utils.MetadataNotWellformed, HTTPError) as err:
         return invalid(f"Could not load metadata: {str(err)}")
 
     # check whether description is there
@@ -78,13 +81,16 @@ def add_dataset_from_ENCODE():
         dataset_name=data.dataset_name,
         description=description,
         public=set_public,
-        processing_state="uploading",
+        dataset_type=data.dataset_type,
+        processing_state="new",
+        upload_state="new",
         filetype=data.filetype,
         user_id=g.current_user.id,
         repository_name=data.repository_name,
         sample_id=data.sample_id,
+        metadata_json=data.metadata_json
     )
-    new_entry.add_fields_from_form(data)
+    # new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
     db.session.commit()
 
@@ -136,12 +142,15 @@ def add_dataset_from_URL():
         dataset_name=data.dataset_name,
         description=description,
         public=data.public,
-        processing_state="uploading",
+        dataset_type=data.dataset_type,
+        processing_state="new",
+        upload_state="new",
         filetype=data.filetype,
         user_id=g.current_user.id,
         source_url=data.source_url,
+        metadata_json=data.metadata_json
     )
-    new_entry.add_fields_from_form(data)
+    # new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
     db.session.commit()
 
@@ -191,11 +200,14 @@ def add_dataset():
         dataset_name=data.dataset_name,
         description=description,
         public=set_public,
-        processing_state="uploading",
+        dataset_type=data.dataset_type,
+        processing_state="new",
+        upload_state="uploading",
         filetype=data.filetype,
         user_id=current_user.id,
+        metadata_json=data.metadata_json
     )
-    new_entry.add_fields_from_form(data)
+    # new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
     db.session.commit()
 

@@ -19,6 +19,7 @@ import rq
 import hicognition
 import redis
 from . import db
+from sqlalchemy import Column, Integer, ForeignKey, String, Enum, Table, UniqueConstraint, Boolean, Text, DateTime, JSON
 
 
 # define association tables
@@ -239,84 +240,77 @@ class User_DataRepository_Credentials(db.Model):  # TODO change name
     # user = db.relationship("User", back_populates='credentials')
     repository = db.relationship("DataRepository", back_populates="credentials")
 
+class DatasetMetadata(db.Model): 
+    dataset_id = Column(Integer, ForeignKey("dataset.id"))
+    key = Column(String(128), required=True)
+    value = Column(String(128), required=True)
 
 class Dataset(db.Model):
     """Dataset database model"""
 
-    # define groups of fields for requirement checking
-    COMMON_REQUIRED_KEYS = [
-        "cellCycleStage",
-        "datasetName",
-        "perturbation",
-        "ValueType",
-        "public",
-    ]
-    ADD_REQUIRED_KEYS = ["assembly", "filetype"]
-    DATASET_META_FIELDS = {  # TODO: remove dependancy
-        "assembly": "assembly",
-        "cellCycleStage": "cellCycleStage",
-        "perturbation": "perturbation",
-        "ValueType": "valueType",
-        "Method": "method",
-        "SizeType": "sizeType",
-        "Normalization": "normalization",
-        "DerivationType": "derivationType",
-        "Protein": "protein",
-        "Directionality": "directionality",
-    }
-    DATASET_META_FIELDS_NEW = {
-        "assembly": "assembly",
-        "cell_cycle_stage": "cellCycleStage",
-        "perturbation": "perturbation",
-        "value_type": "valueType",
-        "method": "method",
-        "size_type": "sizeType",
-        "normalization": "normalization",
-        "derivation_type": "derivationType",
-        "protein": "protein",
-        "directionality": "directionality",
-    }
-    DATASET_META_FIELDS_MODIFY = {
-        "datasetName": "dataset_name",
-        "cellCycleStage": "cellCycleStage",
-        "perturbation": "perturbation",
-        "ValueType": "valueType",
-        "Method": "method",
-        "Normalization": "normalization",
-        "DerivationType": "derivationType",
-        "Protein": "protein",
-        "Directionality": "directionality",
-        "public": "public",
-    }
+    # # define groups of fields for requirement checking
+    # COMMON_REQUIRED_KEYS = [
+    #     "cellCycleStage",
+    #     "datasetName",
+    #     "perturbation",
+    #     "ValueType",
+    #     "public",
+    # ]
+    # ADD_REQUIRED_KEYS = ["assembly", "filetype"]
+    # DATASET_META_FIELDS = {  # TODO: remove dependancy
+    #     "assembly": "assembly",
+    #     "cellCycleStage": "cellCycleStage",
+    #     "perturbation": "perturbation",
+    #     "ValueType": "valueType",
+    #     "Method": "method",
+    #     "SizeType": "sizeType",
+    #     "Normalization": "normalization",
+    #     "DerivationType": "derivationType",
+    #     "Protein": "protein",
+    #     "Directionality": "directionality",
+    # }
+    # DATASET_META_FIELDS_NEW = {
+    #     "assembly": "assembly",
+    #     "cell_cycle_stage": "cellCycleStage",
+    #     "perturbation": "perturbation",
+    #     "value_type": "valueType",
+    #     "method": "method",
+    #     "size_type": "sizeType",
+    #     "normalization": "normalization",
+    #     "derivation_type": "derivationType",
+    #     "protein": "protein",
+    #     "directionality": "directionality",
+    # }
+    # DATASET_META_FIELDS_MODIFY = {
+    #     "datasetName": "dataset_name",
+    #     "cellCycleStage": "cellCycleStage",
+    #     "perturbation": "perturbation",
+    #     "ValueType": "valueType",
+    #     "Method": "method",
+    #     "Normalization": "normalization",
+    #     "DerivationType": "derivationType",
+    #     "Protein": "protein",
+    #     "Directionality": "directionality",
+    #     "public": "public",
+    # }
     # fields
-    id = db.Column(db.Integer, primary_key=True)
-    dataset_name = db.Column(db.String(512), nullable=False)
-    description = db.Column(db.String(81), default="undefined")
-    perturbation = db.Column(db.String(64), default="undefined")
-    assembly = db.Column(db.Integer, db.ForeignKey("assembly.id"))
-    cellCycleStage = db.Column(db.String(64), default="undefined")
-    valueType = db.Column(db.String(64), default="undefined")
-    method = db.Column(db.String(64), default="undefined")
-    normalization = db.Column(db.String(64), default="undefined")
-    derivationType = db.Column(db.String(64), default="undefined")
-    sizeType = db.Column(db.String(64), default="undefined", nullable=False)
-    file_path = db.Column(db.String(512), nullable=False)
-    public = db.Column(db.Boolean, default=False, nullable=False)
-    protein = db.Column(db.String(64), default="undefined")
-    directionality = db.Column(db.String(64), default="undefined")
-    filetype = db.Column(db.String(64), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    available_binsizes = db.Column(db.String(500), default="undefined")
-    processing_state = db.Column(db.String(64))
-    repository_name = db.Column(db.ForeignKey("data_repository.name"), nullable=True)
-    sample_id = db.Column(
-        db.String(128), nullable=True
-    )  #  TODO add those to the META_FIELDS
-    source_url = db.Column(db.String(512), nullable=True)
-    dataset_type = db.Column(db.String(64), nullable=False) # Enum("region", "feature")
-    upload_state = db.Column(db.String(64), nullable=False, default='new') # Enum('new', 'uploading', 'uploaded', 'upload_failed')
-    #processing_state = db.Column(db.Enum('idle', 'processing', 'processing_failed'), required=True, default='new')
-    metadata_json = db.Column(db.JSON, nullable=True)
+    id = Column(Integer, primary_key=True)
+    assembly_id = Column(Integer, ForeignKey("assembly.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
+    
+    name = Column(String(512), required=True)
+    description = Column(String(81))
+    size_type = Column(Enum('interval', 'point'), required=False) # required for regions!
+    value_type = Column(String(128), required=True)
+    file_path = Column(String(512), required=True)
+    public = Column(Boolean, required=True, default=False)
+    filetype = Column(Enum('bedfile', 'bigwig', 'cooler'), required=True)
+    data_type = Column(Enum(["region", "feature"]), required=True)
+    upload_state = Column(Enum('new', 'uploading', 'uploaded', 'failed'), required=True, default='new')
+    processing_state = Column(Enum('idle', 'processing', 'finished', 'failed'), required=True, default='idle') 
+
+    dataset_metadata = Column(JSON, required=False)
+
     # self relationships
     processing_features = db.relationship(
         "Dataset",
@@ -904,7 +898,7 @@ class Intervals(db.Model):
 
 
 class AverageIntervalData(db.Model):
-    """db.Table to hold information and pointers to data for
+    """Table to hold information and pointers to data for
     average values of a dataset at the linked intervals dataset."""
 
     id = db.Column(db.Integer, primary_key=True)
@@ -965,7 +959,7 @@ class AverageIntervalData(db.Model):
 
 
 class IndividualIntervalData(db.Model):
-    """db.Table to hold information and pointers to data for
+    """Table to hold information and pointers to data for
     values extracted at each instance held in the linked intervals dataset.
     E.g. for bigwig stack-ups or displaying snipped Hi-C matrices."""
 
@@ -1022,7 +1016,7 @@ class IndividualIntervalData(db.Model):
 
 
 class AssociationIntervalData(db.Model):
-    """db.Table to hold information and pointers to data for values extracted by calculating
+    """Table to hold information and pointers to data for values extracted by calculating
     association metrics between dataset collections and intervals. E.g.: LOLA enrichment data,
     Continuous values enrichment."""
 
@@ -1058,7 +1052,7 @@ class AssociationIntervalData(db.Model):
 
 
 class EmbeddingIntervalData(db.Model):
-    """db.Table to hold information and pointers to data for values extracted by calculating
+    """Table to hold information and pointers to data for values extracted by calculating
     embeddings of intervals based on values in dataset collections and intervals. E.g.: 1D-embeddings based
     on chip-seq data, 2d-embeddings based on Hi-C data."""
 

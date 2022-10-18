@@ -39,34 +39,56 @@
                             </md-field>
                         </div>
                         <!-- Genotype field -->
-                        <div class="md-layout-item md-small-size-100">
-                            <md-field :class="getValidationClass('assembly')">
-                                <label for="assembly">Genome assembly</label>
-                                <md-select
-                                    name="assembly"
-                                    id="assembly"
-                                    v-model="form.assembly"
-                                    :disabled="sending"
-                                >
-                                    <md-optgroup
-                                        v-for="(values, org) in assemblies"
-                                        :key="org"
-                                        :label="org"
+                        <div class="md-layout-item md-layout md-gutter">
+                            <div class="md-layout-item md-small-size-100">
+                                <md-field :class="getValidationClass('assembly')">
+                                    <label for="assembly">Genome assembly</label>
+                                    <md-select
+                                        name="assembly"
+                                        id="assembly"
+                                        v-model="form.assembly"
+                                        :disabled="sending"
                                     >
-                                        <md-option
-                                            v-for="assembly in values"
-                                            :key="assembly.id"
-                                            :value="assembly.id"
-                                            >{{ assembly.name }}</md-option
+                                        <md-optgroup
+                                            v-for="(values, org) in assemblies"
+                                            :key="org"
+                                            :label="org"
                                         >
-                                    </md-optgroup>
-                                </md-select>
-                                <span
-                                    class="md-error"
-                                    v-if="!$v.form.assembly.required"
-                                    >A genome assembly is required</span
-                                >
-                            </md-field>
+                                            <md-option
+                                                v-for="assembly in values"
+                                                :key="assembly.id"
+                                                :value="assembly.id"
+                                                >{{ assembly.name }}</md-option
+                                            >
+                                        </md-optgroup>
+                                    </md-select>
+                                    <span
+                                        class="md-error"
+                                        v-if="!$v.form.assembly.required"
+                                        >A genome assembly is required</span
+                                    >
+                                </md-field>
+                            </div>
+                            <!-- Size Type -->
+                            <div v-if="datasetType=='region'" class="md-layout-item md-small-size-100">
+                                <md-field :class="getValidationClass('sizeType')">
+                                    <label for="sizeType">SizeType</label>
+                                    <md-select
+                                        name="sizeType"
+                                        id="sizeType"
+                                        v-model="form.sizeType"
+                                        :disabled="sending"
+                                    >
+                                        <md-option value="point">Point</md-option>
+                                        <md-option value="interval">Interval</md-option>
+                                    </md-select>
+                                    <span
+                                        class="md-error"
+                                        v-if="!$v.form.sizeType.required"
+                                        >A size type is required for regions</span
+                                    >
+                                </md-field>
+                            </div>
                         </div>
                     </div>
 
@@ -91,7 +113,7 @@
                                         id="fileSource"
                                         name="fileSource"
                                         v-model="form.fileSource"
-                                        @md-selected="clearInputFields"
+                                        @md-selected="fileSourceChanged"
                                         required
                                     >
                                         <md-option value="httpUpload">
@@ -146,7 +168,7 @@
                         <md-divider />
                         <md-list>
                             <md-subheader>Dataset descriptions</md-subheader>
-                            <metadataField :fieldData="fileTypes[selectedFileType]['metadata']" @data-changed="metadataChanged" />
+                            <metadataField :fieldContent="fileTypes[selectedFileType]['metadata']" @data-changed="metadataChanged" />
                         </md-list>
                         <md-divider />
                     </div>
@@ -188,6 +210,7 @@
 import { validationMixin } from "vuelidate";
 import {
     required,
+    requiredIf,
     minLength,
     maxLength,
 } from "vuelidate/lib/validators";
@@ -215,6 +238,7 @@ export default {
             datasetName: null,
             public: true,
             assembly: null,
+            sizeType: null,
             file: null,
             description: null,
             fileSource: "httpUpload"
@@ -250,6 +274,11 @@ export default {
                 },
                 description: {
                     maxLength: maxLength(80)
+                },
+                sizeType: {
+                    required: requiredIf(function() {
+                        return this.datasetType == 'region'
+                    })
                 }
             }
         };
@@ -268,8 +297,9 @@ export default {
         }
     },
     methods: {
-        metadataChanged: function(metadata) {
-            this.metadata = metadata;
+        metadataChanged: function(key, value) {
+            console.log(key + " = " + value);
+            this.metadata[key] = value;
         },
         updateComponentValidity: function(validity) {
             this.componentValid = validity;
@@ -313,8 +343,9 @@ export default {
                     this.form[key] = null;
                 }
             }
+            this.form.fileSource = 'httpUpload';
         },
-        clearInputFields(event) {
+        fileSourceChanged(event) {
             // clear fields
             this.componentValid = false;
             this.fileExt = null;
@@ -326,14 +357,16 @@ export default {
             this.sending = true; // show progress bar
             // construct form data
             var formData = new FormData();
+            formData.append('dataset_type', this.datasetType);
             formData.append('dataset_name', this.form['datasetName']);
             formData.append('public', this.form['public']);
             formData.append('assembly', this.form['assembly']);
-            formData.append('assembly', this.form['description']);
+            if (this.datasetType == 'region') {
+                formData.append("sizeType", this.form["sizeType"]);
+            }
+            formData.append('description', this.form['description']);
             formData.append("filetype", this.selectedFileType);
-            Object.entries(this.metadata).forEach(([k,v]) => {
-                formData.append(k, v)
-            });
+            formData.append("metadata_json", JSON.stringify(this.metadata));
 
             // Differentiate depending on chosen file source
             var postRoute = "";
@@ -362,7 +395,6 @@ export default {
                     this.datasetSaved = true;
                     this.fetchAndStoreDatasets(); // apiMixin
                 }
-                this.$forceUpdate();
             });
         },
         validateDataset() {

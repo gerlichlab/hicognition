@@ -18,72 +18,85 @@ from itsdangerous import JSONWebSignatureSerializer
 import rq
 import hicognition
 import redis
+from sqlalchemy import Column, Integer, ForeignKey, String, Enum, Table, UniqueConstraint, Boolean, Text, DateTime, JSON
+from sqlalchemy.ext.declarative import declarative_base
+from pydantic import BaseModel as Model
 from . import db
+Model = declarative_base()
 
 
 # define association tables
 
-session_dataset_assoc_table = db.Table(
+session_dataset_assoc_table = Table(
     "session_dataset_assoc_table",
-    db.Column("session_id", db.Integer, db.ForeignKey("session.id")),
-    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id")),
+    Model.metadata,
+    Column("session_id", Integer, ForeignKey("session.id")),
+    Column("dataset_id", Integer, ForeignKey("dataset.id")),
 )
 
-session_collection_assoc_table = db.Table(
+session_collection_assoc_table = Table(
     "session_collection_assoc_table",
-    db.Column("session_id", db.Integer, db.ForeignKey("session.id")),
-    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id")),
+    Model.metadata,
+    Column("session_id", Integer, ForeignKey("session.id")),
+    Column("collection_id", Integer, ForeignKey("collection.id")),
 )
 
-dataset_collection_assoc_table = db.Table(
+dataset_collection_assoc_table = Table(
     "dataset_collection_assoc_table",
-    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id")),
-    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id")),
+    Model.metadata,
+    Column("collection_id", Integer, ForeignKey("collection.id")),
+    Column("dataset_id", Integer, ForeignKey("dataset.id")),
 )
 
-dataset_preprocessing_table = db.Table(
+dataset_preprocessing_table = Table(
     "dataset_dataset_preprocessing_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
-    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
-    db.UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
+    Model.metadata,
+    Column("dataset_region", Integer, ForeignKey("dataset.id")),
+    Column("dataset_feature", Integer, ForeignKey("dataset.id")),
+    UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
 )
 
-dataset_failed_table = db.Table(
+dataset_failed_table = Table(
     "dataset_failed_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
-    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
-    db.UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
+    Model.metadata,
+    Column("dataset_region", Integer, ForeignKey("dataset.id")),
+    Column("dataset_feature", Integer, ForeignKey("dataset.id")),
+    UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
 )
 
-dataset_completed_table = db.Table(
+dataset_completed_table = Table(
     "dataset_completed_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
-    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
-    db.UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
+    Model.metadata,
+    Column("dataset_region", Integer, ForeignKey("dataset.id")),
+    Column("dataset_feature", Integer, ForeignKey("dataset.id")),
+    UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
 )
 
-collections_preprocessing_table = db.Table(
+collections_preprocessing_table = Table(
     "collections_preprocessing_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
-    db.Column("collection_feature", db.Integer, db.ForeignKey("collection.id")),
-    db.UniqueConstraint("dataset_region", "collection_feature", name="uix_1"),
+    Model.metadata,
+    Column("dataset_region", Integer, ForeignKey("dataset.id")),
+    Column("collection_feature", Integer, ForeignKey("collection.id")),
+    UniqueConstraint("dataset_region", "collection_feature", name="uix_1"),
 )
 
-collections_failed_table = db.Table(
+collections_failed_table = Table(
     "collections_failed_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
-    db.Column("collection_feature", db.Integer, db.ForeignKey("collection.id")),
-    db.UniqueConstraint("dataset_region", "collection_feature", name="uix_1"),
+    Model.metadata,
+    Column("dataset_region", Integer, ForeignKey("dataset.id")),
+    Column("collection_feature", Integer, ForeignKey("collection.id")),
+    UniqueConstraint("dataset_region", "collection_feature", name="uix_1"),
 )
 
 
-class User(db.Model, UserMixin):
+class User(Model, UserMixin):
     """User database model"""
+    __tablename__ = "User"
 
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), index=True, unique=True)
-    email = db.Column(db.String(120), index=True, unique=True)
-    password_hash = db.Column(db.String(128))
+    id = Column(Integer, primary_key=True)
+    username = Column(String(64), index=True, unique=True)
+    email = Column(String(120), index=True, unique=True)
+    password_hash = Column(String(128))
     datasets = db.relationship(
         "Dataset", backref="owner", lazy="dynamic", cascade="all, delete-orphan"
     )
@@ -190,7 +203,7 @@ class User(db.Model, UserMixin):
 
 # class User_ExternSource mtm
 # TODO replace with better name?
-class DataRepository(db.Model):
+class DataRepository(Model):
     """Model for external data repositories.
     Name is primary key, as this table will hold only a few rows and it makes
     handling gets/posts easier.
@@ -198,12 +211,13 @@ class DataRepository(db.Model):
     url must contain an {href} tag.
     file_url must contain the {id} tag.
     """
+    __tablename__ = "DataRepository"
 
     # fields
-    name = db.Column(db.String(64), nullable=False, primary_key=True)
-    url = db.Column(db.String(512), default="")
-    file_url = db.Column(db.String(512), default="")
-    auth_required = db.Column(db.Boolean, default=False)
+    name = Column(String(64), nullable=False, primary_key=True)
+    url = Column(String(512), default="")
+    file_url = Column(String(512), default="")
+    auth_required = Column(Boolean, default=False)
 
     def build_url_sample(self, data_id: str):
         return self.file_url.format(id=data_id)
@@ -226,22 +240,24 @@ class DataRepository(db.Model):
         return d
 
 
-class User_DataRepository_Credentials(db.Model):  # TODO change name
+class User_DataRepository_Credentials(Model):  # TODO change name
     """Optional many-to-many object to store user keys for external repos"""
+    __tablename__ = "User_DataRepository_Credentials"
 
     # fields
-    user_id = db.Column(db.ForeignKey("user.id"), primary_key=True)
-    repository_name = db.Column(db.ForeignKey("data_repository.name"), primary_key=True)
-    key = db.Column(db.String(512), nullable=False)
-    secret = db.Column(db.String(512), nullable=False)
+    user_id = Column(ForeignKey("user.id"), primary_key=True)
+    repository_name = Column(ForeignKey("data_repository.name"), primary_key=True)
+    key = Column(String(512), nullable=False)
+    secret = Column(String(512), nullable=False)
 
     # assoc
     # user = db.relationship("User", back_populates='credentials')
     repository = db.relationship("DataRepository", back_populates="credentials")
 
 
-class Dataset(db.Model):
+class Dataset(Model):
     """Dataset database model"""
+    __tablename__ = "Dataset"
 
     # define groups of fields for requirement checking
     COMMON_REQUIRED_KEYS = [
@@ -289,35 +305,31 @@ class Dataset(db.Model):
         "public": "public",
     }
     # fields
-    id = db.Column(db.Integer, primary_key=True)
-    dataset_name = db.Column(db.String(512), nullable=False)
-    description = db.Column(db.String(81), default="undefined")
-    perturbation = db.Column(db.String(64), default="undefined")
-    assembly = db.Column(db.Integer, db.ForeignKey("assembly.id"))
-    cellCycleStage = db.Column(db.String(64), default="undefined")
-    valueType = db.Column(db.String(64), default="undefined")
-    method = db.Column(db.String(64), default="undefined")
-    normalization = db.Column(db.String(64), default="undefined")
-    derivationType = db.Column(db.String(64), default="undefined")
-    sizeType = db.Column(db.String(64), default="undefined", nullable=False)
-    file_path = db.Column(db.String(512), nullable=False)
-    public = db.Column(db.Boolean, default=False, nullable=False)
-    protein = db.Column(db.String(64), default="undefined")
-    directionality = db.Column(db.String(64), default="undefined")
-    filetype = db.Column(db.String(64), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    available_binsizes = db.Column(db.String(500), default="undefined")
-    processing_state = db.Column(db.String(64))
-    repository_name = db.Column(db.ForeignKey("data_repository.name"), nullable=True)
-    sample_id = db.Column(
-        db.String(128), nullable=True
+    id = Column(Integer, primary_key=True)
+    dataset_name = Column(String(512), index=True)
+    description = Column(String(81), default="undefined")
+    perturbation = Column(String(64), default="undefined")
+    assembly = Column(Integer, ForeignKey("assembly.id"))
+    cellCycleStage = Column(String(64), default="undefined")
+    valueType = Column(String(64), default="undefined")
+    method = Column(String(64), default="undefined")
+    normalization = Column(String(64), default="undefined")
+    derivationType = Column(String(64), default="undefined")
+    sizeType = Column(String(64), default="undefined")
+    file_path = Column(String(512), index=True)
+    public = Column(Boolean, default=False)
+    protein = Column(String(64), default="undefined")
+    directionality = Column(String(64), default="undefined")
+    filetype = Column(String(64), index=True)
+    user_id = Column(Integer, ForeignKey("user.id"))
+    available_binsizes = Column(String(500), default="undefined")
+    processing_state = Column(String(64))
+    repository_name = Column(ForeignKey("data_repository.name"), nullable=True)
+    sample_id = Column(
+        String(128), nullable=True
     )  #  TODO add those to the META_FIELDS
-    source_url = db.Column(db.String(512), nullable=True)
-    dataset_type = db.Column(db.String(64), nullable=False) # Enum("region", "feature")
-    upload_state = db.Column(db.String(64), nullable=False, default='new') # Enum('new', 'uploading', 'uploaded', 'upload_failed')
-    #processing_state = db.Column(db.Enum('idle', 'processing', 'processing_failed'), required=True, default='new')
-    metadata_json = db.Column(db.JSON, nullable=True)
-    # self relationships
+    source_url = Column(String(512), nullable=True)
+    # self db.relationships
     processing_features = db.relationship(
         "Dataset",
         secondary=dataset_preprocessing_table,
@@ -646,7 +658,7 @@ class Dataset(db.Model):
             ]
             self.available_binsizes = json.dumps(binsizes)
 
-        # db.session.commit()
+        # session.commit()
 
     def to_json(self):
         """Generates a JSON from the model"""
@@ -676,17 +688,18 @@ class Dataset(db.Model):
         return json_dataset
 
 
-class Collection(db.Model):
+class Collection(Model):
     """Collections of datasets with optional name and description.
     One dataset can belong to many collections and one collection can
     have many datasets."""
+    __tablename__ = "Collection"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(1024))
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    public = db.Column(db.Boolean, default=False)
-    kind = db.Column(
-        db.String(256)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(1024))
+    user_id = Column(Integer, ForeignKey("user.id"))
+    public = Column(Boolean, default=False)
+    kind = Column(
+        String(256)
     )  # What kind of datasets are collected (regions, 1d-features, 2d-features)
     tasks = db.relationship("Task", backref="collection", lazy="dynamic")
     datasets = db.relationship("Dataset", secondary=dataset_collection_assoc_table)
@@ -707,7 +720,7 @@ class Collection(db.Model):
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
-    processing_state = db.Column(db.String(64))
+    processing_state = Column(String(64))
 
     def get_tasks_in_progress(self):
         """Gets the Task that are in progress for the collection"""
@@ -801,20 +814,22 @@ class Collection(db.Model):
         return f"<Collection {self.name}>"
 
 
-class ObsExp(db.Model):
+class ObsExp(Model):
     """Cache table for obs/exp dataframes"""
+    __tablename__ = "ObsExp"
 
-    id = db.Column(db.Integer, primary_key=True)
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
-    binsize = db.Column(db.Integer, index=True)
-    filepath = db.Column(db.String(512), index=True)
+    id = Column(Integer, primary_key=True)
+    dataset_id = Column(Integer, ForeignKey("dataset.id"))
+    binsize = Column(Integer, index=True)
+    filepath = Column(String(512), index=True)
 
 
-class Organism(db.Model):
+class Organism(Model):
     """Organism table for genome assembly"""
+    __tablename__ = "Organism"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(512))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(512))
     assemblies = db.relationship(
         "Assembly",
         backref="source_organism",
@@ -827,15 +842,16 @@ class Organism(db.Model):
         return {"id": self.id, "name": self.name}
 
 
-class Assembly(db.Model):
+class Assembly(Model):
     """Genome assembly database model"""
+    __tablename__ = "Assembly"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(512))
-    chrom_sizes = db.Column(db.String(512), index=True)
-    chrom_arms = db.Column(db.String(512), index=True)
-    organism_id = db.Column(db.Integer, db.ForeignKey("organism.id"))
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(512))
+    chrom_sizes = Column(String(512), index=True)
+    chrom_arms = Column(String(512), index=True)
+    organism_id = Column(Integer, ForeignKey("organism.id"))
+    user_id = Column(Integer, ForeignKey("user.id"))
 
     def to_json(self):
         """Generates json output."""
@@ -843,14 +859,15 @@ class Assembly(db.Model):
         return json_dataset
 
 
-class Intervals(db.Model):
+class Intervals(Model):
     """Genomic IntervalData database model"""
+    __tablename__ = "Intervals"
 
-    id = db.Column(db.Integer, primary_key=True)
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
-    name = db.Column(db.String(512), index=True)
-    file_path_sub_sample_index = db.Column(db.String(512), index=True)
-    windowsize = db.Column(db.Integer, index=True)
+    id = Column(Integer, primary_key=True)
+    dataset_id = Column(Integer, ForeignKey("dataset.id"))
+    name = Column(String(512), index=True)
+    file_path_sub_sample_index = Column(String(512), index=True)
+    windowsize = Column(Integer, index=True)
     averageIntervalData = db.relationship(
         "AverageIntervalData",
         backref="source_intervals",
@@ -903,17 +920,18 @@ class Intervals(db.Model):
         return json_intervals
 
 
-class AverageIntervalData(db.Model):
-    """db.Table to hold information and pointers to data for
+class AverageIntervalData(Model):
+    """Table to hold information and pointers to data for
     average values of a dataset at the linked intervals dataset."""
+    __tablename__ = "AverageIntervalData"
 
-    id = db.Column(db.Integer, primary_key=True)
-    binsize = db.Column(db.Integer)
-    name = db.Column(db.String(512), index=True)
-    file_path = db.Column(db.String(512), index=True)
-    value_type = db.Column(db.String(64))
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
-    intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
+    id = Column(Integer, primary_key=True)
+    binsize = Column(Integer)
+    name = Column(String(512), index=True)
+    file_path = Column(String(512), index=True)
+    value_type = Column(String(64))
+    dataset_id = Column(Integer, ForeignKey("dataset.id"))
+    intervals_id = Column(Integer, ForeignKey("intervals.id"))
 
     def add_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
         """Adds self to preprocessed dataset map"""
@@ -964,23 +982,24 @@ class AverageIntervalData(db.Model):
         return json_average_interval_data
 
 
-class IndividualIntervalData(db.Model):
-    """db.Table to hold information and pointers to data for
+class IndividualIntervalData(Model):
+    """Table to hold information and pointers to data for
     values extracted at each instance held in the linked intervals dataset.
     E.g. for bigwig stack-ups or displaying snipped Hi-C matrices."""
+    __tablename__ = "IndividualIntervalData"
 
-    id = db.Column(db.Integer, primary_key=True)
-    binsize = db.Column(db.Integer)
-    name = db.Column(db.String(512), index=True)
-    file_path = db.Column(db.String(512), index=True)
-    file_path_small = db.Column(
-        db.String(128), index=True
+    id = Column(Integer, primary_key=True)
+    binsize = Column(Integer)
+    name = Column(String(512), index=True)
+    file_path = Column(String(512), index=True)
+    file_path_small = Column(
+        String(128), index=True
     )  # location of downsampled file
-    dataset_id = db.Column(
-        db.Integer, db.ForeignKey("dataset.id")
+    dataset_id = Column(
+        Integer, ForeignKey("dataset.id")
     )  # dataset, which was used for value extraction
-    intervals_id = db.Column(
-        db.Integer, db.ForeignKey("intervals.id")
+    intervals_id = Column(
+        Integer, ForeignKey("intervals.id")
     )  # intervals over which the values were extracted
 
     def add_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
@@ -1021,18 +1040,19 @@ class IndividualIntervalData(db.Model):
         return json_individual_interval_data
 
 
-class AssociationIntervalData(db.Model):
-    """db.Table to hold information and pointers to data for values extracted by calculating
+class AssociationIntervalData(Model):
+    """Table to hold information and pointers to data for values extracted by calculating
     association metrics between dataset collections and intervals. E.g.: LOLA enrichment data,
     Continuous values enrichment."""
+    __tablename__ = "AssociationIntervalData"
 
-    id = db.Column(db.Integer, primary_key=True)
-    binsize = db.Column(db.Integer)
-    name = db.Column(db.String(512), index=True)
-    file_path = db.Column(db.String(512), index=True)
-    value_type = db.Column(db.String(64))
-    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
-    intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
+    id = Column(Integer, primary_key=True)
+    binsize = Column(Integer)
+    name = Column(String(512), index=True)
+    file_path = Column(String(512), index=True)
+    value_type = Column(String(64))
+    collection_id = Column(Integer, ForeignKey("collection.id"))
+    intervals_id = Column(Integer, ForeignKey("intervals.id"))
 
     def add_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
         """Adds self to preprocessed dataset map"""
@@ -1057,25 +1077,26 @@ class AssociationIntervalData(db.Model):
         ] = str(self.id)
 
 
-class EmbeddingIntervalData(db.Model):
-    """db.Table to hold information and pointers to data for values extracted by calculating
+class EmbeddingIntervalData(Model):
+    """Table to hold information and pointers to data for values extracted by calculating
     embeddings of intervals based on values in dataset collections and intervals. E.g.: 1D-embeddings based
     on chip-seq data, 2d-embeddings based on Hi-C data."""
+    __tablename__ = "EmbeddingIntervalData"
 
-    id = db.Column(db.Integer, primary_key=True)
-    binsize = db.Column(db.Integer)
-    name = db.Column(db.String(512), index=True)
-    file_path = db.Column(db.String(512), index=True)
-    file_path_feature_values = db.Column(db.String(512), index=True)
-    thumbnail_path = db.Column(db.String(512), index=True)
-    cluster_id_path = db.Column(db.String(512), index=True)
-    feature_distribution_path = db.Column(db.String(512), index=True)
-    value_type = db.Column(db.String(64))
-    normalization = db.Column(db.String(64))
-    cluster_number = db.Column(db.String(64))
-    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
-    intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
+    id = Column(Integer, primary_key=True)
+    binsize = Column(Integer)
+    name = Column(String(512), index=True)
+    file_path = Column(String(512), index=True)
+    file_path_feature_values = Column(String(512), index=True)
+    thumbnail_path = Column(String(512), index=True)
+    cluster_id_path = Column(String(512), index=True)
+    feature_distribution_path = Column(String(512), index=True)
+    value_type = Column(String(64))
+    normalization = Column(String(64))
+    cluster_number = Column(String(64))
+    collection_id = Column(Integer, ForeignKey("collection.id"))
+    dataset_id = Column(Integer, ForeignKey("dataset.id"))
+    intervals_id = Column(Integer, ForeignKey("intervals.id"))
 
     def _add_1d_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
         """Adds self if 1d embedding"""
@@ -1130,17 +1151,19 @@ class EmbeddingIntervalData(db.Model):
             self._add_1d_to_preprocessed_dataset_map(preprocessed_dataset_map)
 
 
-class Task(db.Model):
+class Task(Model):
     """Models the tasks dispatched to the redis queue."""
+    __tablename__ = "Task"
 
-    id = db.Column(db.String(36), primary_key=True)
-    name = db.Column(db.String(512), index=True)
-    description = db.Column(db.String(512))
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
-    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
-    intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
-    complete = db.Column(db.Boolean, default=False)
+
+    id = Column(String(36), primary_key=True)
+    name = Column(String(512), index=True)
+    description = Column(String(512))
+    user_id = Column(Integer, ForeignKey("user.id"))
+    dataset_id = Column(Integer, ForeignKey("dataset.id"))
+    collection_id = Column(Integer, ForeignKey("collection.id"))
+    intervals_id = Column(Integer, ForeignKey("intervals.id"))
+    complete = Column(Boolean, default=False)
 
     @staticmethod
     def filter_failed_tasks(tasks):
@@ -1168,15 +1191,16 @@ class Task(db.Model):
         return job.meta.get("progress", 0) if job is not None else 100
 
 
-class BedFileMetadata(db.Model):
+class BedFileMetadata(Model):
     """Models the associated with a bedfile"""
+    __tablename__ = "BedFileMetadata"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(512))
-    file_path = db.Column(db.String(512))
-    metadata_fields = db.Column(db.String(1024))
-    dataset_id = db.Column(
-        db.Integer, db.ForeignKey("dataset.id")
+    id = Column(Integer, primary_key=True)
+    name = Column(String(512))
+    file_path = Column(String(512))
+    metadata_fields = Column(String(1024))
+    dataset_id = Column(
+        Integer, ForeignKey("dataset.id")
     )  # intervals over which the values were extracted
 
     def __repr__(self):
@@ -1184,18 +1208,19 @@ class BedFileMetadata(db.Model):
         return f"<Metadata {self.name}>"
 
 
-class Session(db.Model):
+class Session(Model):
     """Model for session data that represents configurations
     of views. For example, compare views."""
+    __tablename__ = "Session"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128))
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    session_object = db.Column(db.Text(10**9))
-    created_utc = db.Column(
-        db.DateTime, nullable=False, default=datetime.datetime.utcnow
+    id = Column(Integer, primary_key=True)
+    name = Column(String(128))
+    user_id = Column(Integer, ForeignKey("user.id"))
+    session_object = Column(Text(10**9))
+    created_utc = Column(
+        DateTime, nullable=False, default=datetime.datetime.utcnow
     )
-    session_type = db.Column(db.String(100))
+    session_type = Column(String(100))
     datasets = db.relationship("Dataset", secondary=session_dataset_assoc_table)
     collections = db.relationship(
         "Collection", secondary=session_collection_assoc_table

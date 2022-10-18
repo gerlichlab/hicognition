@@ -1,8 +1,8 @@
-"""renamed col in datarepo
+"""sprint9
 
-Revision ID: 5de04e42b60b
+Revision ID: f88fe53fcc63
 Revises: 
-Create Date: 2022-10-04 12:54:36.810372
+Create Date: 2022-10-12 08:03:54.092964
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '5de04e42b60b'
+revision = 'f88fe53fcc63'
 down_revision = None
 branch_labels = None
 depends_on = None
