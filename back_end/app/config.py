@@ -5,6 +5,13 @@ import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+def _recursive_keys(metadata_dict: dict) -> set:
+    keys = set()
+    for key, value in metadata_dict.items():
+        keys.add(key)
+        if isinstance(value, dict):
+            keys.update(_recursive_keys(value))
+    return keys
 
 class Config:
     """Config class for hicognition server."""
@@ -150,7 +157,35 @@ class Config:
                     "Perturbation": "freetext"
                 },
                 { # row 2
-                    "Value Type":  {
+                    "ValueType":  {
+                        "Peak": {
+                            "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
+                            # "Size Type": ["Point", "Interval"],
+                            "Protein": "freetext",
+                            "Directionality": ["+", "-", "No directionality"],
+                        },
+                        "Genome Annotation": {
+                            # "Size Type": ["Point", "Interval"],
+                            "Directionality": ["+", "-", "No directionality"],
+                        },
+                        "Derived": {
+                            "Method": ["HiC", "Other Dataset"],
+                            # "Size Type": ["Point", "Interval"],
+                        }
+                    }
+                }
+            ]
+        },
+        "bedpe_file": {
+            "dataset_type": ["region"],
+            "file_ext": ["bedpe"],
+            "metadata": [
+                { # row 1
+                    "Cell cycle Stage": "freetext",
+                    "Perturbation": "freetext"
+                },
+                { # row 2
+                    "ValueType":  {
                         "Peak": {
                             "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
                             # "Size Type": ["Point", "Interval"],
@@ -172,47 +207,63 @@ class Config:
         "bigwig": {
             "dataset_type": "feature",
             "file_ext": ["bw", "bigwig"],
-            "metadata": {
-                "Cell cycle Stage": "freetext",
-                "Perturbation": "freetext",
-                "ValueType": {
-                    "Derived": {
-                        "Normalization": ["Base-line-correct", "No Normalization"],
-                        "DerivationType": ["InsulationScore", "PairingScore"],
-                        "Method": ["HiC"],
-                    },
-                    "ChromatinAssociation": {
-                        "Protein": "freetext",
-                        "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
-                        "Normalization": ["NormToControl", "RPM", "No Normalization"],
-                    },
-                    "GeneExpression": {
-                        "Normalization": [
-                            "NormToControl",
-                            "RPM",
-                            "RPKM",
-                            "No Normalization",
-                        ],
-                        "Method": ["RNAseq", "GroSeq", "SLAMseq", "NETseq"],
-                    },
+            "metadata": [
+                {
+                    "Cell cycle Stage": "freetext",
+                    "Perturbation": "freetext",
+                },
+                {
+                    "ValueType": {
+                        "Derived": {
+                            "Normalization": ["Base-line-correct", "No Normalization"],
+                            "DerivationType": ["InsulationScore", "PairingScore"],
+                            "Method": ["HiC"],
+                        },
+                        "ChromatinAssociation": {
+                            "Protein": "freetext",
+                            "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
+                            "Normalization": ["NormToControl", "RPM", "No Normalization"],
+                        },
+                        "GeneExpression": {
+                            "Normalization": [
+                                "NormToControl",
+                                "RPM",
+                                "RPKM",
+                                "No Normalization",
+                            ],
+                            "Method": ["RNAseq", "GroSeq", "SLAMseq", "NETseq"],
+                        },
+                    }
                 }
-            },
+            ],
         },
         "cooler": {
             "dataset_type": "feature",
             "file_ext": ["bw", "bigwig"],
-            "metadata": {
-                "Cell cycle Stage": "freetext",
-                "Perturbation": "freetext",
-                "ValueType": {
-                    "Interaction": {"Method": ["HiC"], "Normalization": ["ICCF"]}
+            "metadata": [
+                {
+                    "Cell cycle Stage": "freetext",
+                    "Perturbation": "freetext",
+                },
+                {
+                    "ValueType": 
+                    {
+                        "Interaction": {
+                            "Method": ["HiC"], 
+                            "Normalization": ["ICCF"]
+                        }
+                    }
                 }
-            }
+            ]
         }
     }
-    
-       
-    
+
+    # Extract all metadata keys from config specification
+    METADATA_KEYS = set()
+    for file_type, file_type_config in FILETYPES.items():
+        for row in file_type_config.get('metadata', []):
+            METADATA_KEYS.update(_recursive_keys(row))
+
     # dataset-option mapping -> puts different optionvalues for dataset into relation
     DATASET_OPTION_MAPPING = {
         "supported_file_endings": {

@@ -24,6 +24,7 @@ class TestGetDatasets(LoginTestCase):
             dataset_name="test1",
             file_path="/test/path/1",
             filetype="cooler",
+            dataset_type="feature",
             processing_state="finished",
             user_id=1,
         )
@@ -32,6 +33,7 @@ class TestGetDatasets(LoginTestCase):
             dataset_name="test2",
             file_path="/test/path/2",
             filetype="cooler",
+            dataset_type="feature",
             processing_state="finished",
             user_id=1,
         )
@@ -41,6 +43,7 @@ class TestGetDatasets(LoginTestCase):
             dataset_name="test2",
             file_path="/test/path/2",
             filetype="cooler",
+            dataset_type="feature",
             processing_state="finished",
             user_id=2,
         )
@@ -50,6 +53,7 @@ class TestGetDatasets(LoginTestCase):
             dataset_name="test3",
             file_path="/test/path/3",
             filetype="bedfile",
+            dataset_type="region",
             processing_state="finished",
             user_id=1,
         )
@@ -58,6 +62,7 @@ class TestGetDatasets(LoginTestCase):
             dataset_name="test4",
             file_path="/test/path/4",
             filetype="bedfile",
+            dataset_type="region",
             processing_state="finished",
             public=True,
             user_id=2,
@@ -68,6 +73,7 @@ class TestGetDatasets(LoginTestCase):
             dataset_name="test4",
             file_path="/test/path/4",
             filetype="bedfile",
+            dataset_type="region",
             processing_state="finished",
             user_id=2,
         )
@@ -187,6 +193,7 @@ class TestGetDatasets(LoginTestCase):
         )
         # check response
         self.assertEqual(response.status_code, 200)
+        import pdb;pdb.set_trace()
         expected = [dataset.to_json() for dataset in self.owned_datasets]
         self.assertEqual(response.json, expected)
         # check response for coolers

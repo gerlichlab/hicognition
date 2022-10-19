@@ -292,31 +292,31 @@ class Dataset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     dataset_name = db.Column(db.String(512), nullable=False)
     description = db.Column(db.String(81), default="undefined")
+    assembly = db.Column(db.Integer, db.ForeignKey("assembly.id")) # FIXME assembly -> assembly_id
+    sizeType = db.Column(db.String(64), default="undefined", nullable=False) # FIXME sizeType -> size_type
+    file_path = db.Column(db.String(512))
+    public = db.Column(db.Boolean, default=False, nullable=False)
+    filetype = db.Column(db.String(64), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    processing_state = db.Column(db.String(64)) # 'new', 'processing', 'processing_failed', 'success'
+    repository_name = db.Column(db.ForeignKey("data_repository.name"), nullable=True)
+    sample_id = db.Column(db.String(128), nullable=True)
+    source_url = db.Column(db.String(512), nullable=True)
+    dataset_type = db.Column(db.String(64), nullable=False) # Enum("region", "feature")
+    upload_state = db.Column(db.String(64), nullable=False, default='new') # Enum('new', 'uploading', 'uploaded', 'upload_failed')
+    metadata_json = db.Column(db.JSON, nullable=True)
+
+
     perturbation = db.Column(db.String(64), default="undefined")
-    assembly = db.Column(db.Integer, db.ForeignKey("assembly.id"))
     cellCycleStage = db.Column(db.String(64), default="undefined")
     valueType = db.Column(db.String(64), default="undefined")
     method = db.Column(db.String(64), default="undefined")
     normalization = db.Column(db.String(64), default="undefined")
     derivationType = db.Column(db.String(64), default="undefined")
-    sizeType = db.Column(db.String(64), default="undefined", nullable=False)
-    file_path = db.Column(db.String(512), nullable=False)
-    public = db.Column(db.Boolean, default=False, nullable=False)
     protein = db.Column(db.String(64), default="undefined")
     directionality = db.Column(db.String(64), default="undefined")
-    filetype = db.Column(db.String(64), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     available_binsizes = db.Column(db.String(500), default="undefined")
-    processing_state = db.Column(db.String(64))
-    repository_name = db.Column(db.ForeignKey("data_repository.name"), nullable=True)
-    sample_id = db.Column(
-        db.String(128), nullable=True
-    )  #  TODO add those to the META_FIELDS
-    source_url = db.Column(db.String(512), nullable=True)
-    dataset_type = db.Column(db.String(64), nullable=False) # Enum("region", "feature")
-    upload_state = db.Column(db.String(64), nullable=False, default='new') # Enum('new', 'uploading', 'uploaded', 'upload_failed')
-    #processing_state = db.Column(db.Enum('idle', 'processing', 'processing_failed'), required=True, default='new')
-    metadata_json = db.Column(db.JSON, nullable=True)
+    
     # self relationships
     processing_features = db.relationship(
         "Dataset",
@@ -429,20 +429,6 @@ class Dataset(db.Model):
         ):
             return True
         return False
-
-    def add_fields_from_form(self, form, requirement_spec=None):
-        """Adds values for fields from form"""
-        if requirement_spec is None:
-            requirement_spec = self.DATASET_META_FIELDS_NEW
-        for form_key, dataset_field in requirement_spec.items():
-            if form_key in form:
-                if form_key == "public":
-                    self.__setattr__(
-                        dataset_field,
-                        "public" in form and form["public"].lower() == "true",
-                    )
-                else:
-                    self.__setattr__(dataset_field, form[form_key])
 
     def add_fields_from_dataset(self, other_dataset):
         """adds metadata from other dataset"""
@@ -651,12 +637,16 @@ class Dataset(db.Model):
     def to_json(self):
         """Generates a JSON from the model"""
         json_dataset = {}
-        for key in inspect(Dataset).columns.keys():
-            if key == "processing_id":
-                continue
-            value = self.__getattribute__(key)
-            if value != "undefined":
-                json_dataset[key] = value
+        for column in self.__class__.__table__.c.keys():
+            if self.__getattribute__(column) != "undefined":
+                json_dataset[column] = self.__getattribute__(column)
+
+        # for key in inspect(Dataset).columns.keys():
+        #     if key == "processing_id":
+        #         continue
+        #     value = self.__getattribute__(key)
+        #     if value != "undefined":
+        #         json_dataset[key] = value
         # add processing datasets
         json_dataset["processing_datasets"] = [
             dataset.id for dataset in self.processing_features

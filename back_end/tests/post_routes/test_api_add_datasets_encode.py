@@ -59,7 +59,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
             "metadata_json": json.dumps({
                 "Cell cycle Stage": "asynchronous",
                 "Perturbation": "No perturbation",
-                "Value Type": "Peak",
+                "ValueType": "Peak",
                 "Method": "ChipSeq",
                 "Size Type": "Point",
                 "Directionality": "+",
@@ -151,7 +151,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
         dataset = Dataset.query.first()
         self.assertEqual(dataset.repository_name, self.default_data["repository_name"])
         self.assertEqual(dataset.repository, self.data_repo)
-        self.assertEqual(dataset.processing_state, "uploading")
+        self.assertEqual(dataset.processing_state, "new")
 
 
 if __name__ == "__main__":

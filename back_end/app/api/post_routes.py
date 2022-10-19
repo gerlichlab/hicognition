@@ -8,15 +8,12 @@ import numpy as np
 from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from flask.json import jsonify
-from requests import HTTPError
 
 # from hicognition.utils import get_all_interval_ids, parse_binsizes
-from hicognition.utils import parse_description, get_all_interval_ids, parse_binsizes
+from hicognition.utils import get_all_interval_ids, parse_binsizes
 from hicognition.format_checkers import FORMAT_CHECKERS
 from . import api
 from .. import db
-
-from .. import download_utils
 
 from ..models import (
     Assembly,
@@ -34,10 +31,9 @@ from ..form_models import (
     URLDatasetPostModel,
     ENCODEDatasetPostModel,
 )
-from ..utils import Format, convert_format
 from .authentication import auth
 from .. import pipeline_steps
-from .errors import forbidden, internal_server_error, invalid, not_found
+from .errors import forbidden, invalid, not_found
 
 
 @api.route("/datasets/encode/", methods=["POST"])
@@ -47,50 +43,26 @@ def add_dataset_from_ENCODE():
     Will call new redis worker to download file and notify user when finished."""
     if not hasattr(request, "form") or len(request.files) > 0:
         return invalid("Form is not valid!")
-
-    if hasattr(request.form, "nonexsitant"):
-        import pdb;pdb.set_trace()
-    # get data from form
+    
+    # validate data
     try:
         data = ENCODEDatasetPostModel(**request.form)
     except ValueError as err:
         return invalid(f'Form is not valid: {str(err)}')
 
-    # temporary file_type check
-    if data.filetype.lower() in ["cool", "cooler", "mcool"]:
-        return invalid(
-            f"Extern import of files with filetype '{data['filetype']}' not yet supported"
-        )
-
     repository = db.session.query(DataRepository).get(data.repository_name)
     if not repository:
         return invalid(f"Repository {data.repository_name} not found.")
 
-    # check if the sample exists:
-    try:
-        response = download_utils.download_ENCODE_metadata(repository, data.sample_id)
-    except (download_utils.MetadataNotWellformed, HTTPError) as err:
-        return invalid(f"Could not load metadata: {str(err)}")
-
-    # check whether description is there
-    description = parse_description(data)
-    # check whether dataset should be public
-    set_public = "public" in data and data["public"] == True
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
-        dataset_name=data.dataset_name,
-        description=description,
-        public=set_public,
-        dataset_type=data.dataset_type,
         processing_state="new",
         upload_state="new",
-        filetype=data.filetype,
-        user_id=g.current_user.id,
-        repository_name=data.repository_name,
-        sample_id=data.sample_id,
-        metadata_json=data.metadata_json
+        user_id=g.current_user.id
     )
-    # new_entry.add_fields_from_form(data)
+    # fill with form data
+    [new_entry.__setattr__(key, data[key]) for key in data.__dict__.keys()]
+
     db.session.add(new_entry)
     db.session.commit()
 
@@ -109,47 +81,24 @@ def add_dataset_from_URL():
     """Endpoint to add dataset with file provided by URL.
     Will call new redis worker to download file and notify user when finished."""
 
-    def is_form_valid():
-        valid = True
-        valid = valid and hasattr(request, "form")
-        valid = valid and len(request.files) == 0
-        return valid
-
-    if not is_form_valid():
+    if not hasattr(request, "form") or len(request.files) > 0:
         return invalid("Form is not valid!")
 
-    # get data from form
+    # validate data
     try:
         data = URLDatasetPostModel(**request.form)
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
-    except Exception as err:
-        return internal_server_error(
-            err,
-            "Dataset could not be uploaded: There was a server-side error. Error has been logged.",
-        )
 
-    # temporary file_type check
-    if data.filetype.lower() in ["cool", "cooler", "mcool"]:
-        return invalid(
-            f"Extern import of files with filetype '{data['filetype']}' not yet supported"
-        )
-
-    # check whether description is there
-    description = parse_description(data)
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
-        dataset_name=data.dataset_name,
-        description=description,
-        public=data.public,
-        dataset_type=data.dataset_type,
         processing_state="new",
         upload_state="new",
-        filetype=data.filetype,
-        user_id=g.current_user.id,
-        source_url=data.source_url,
-        metadata_json=data.metadata_json
+        user_id=g.current_user.id
     )
+    # fill with form data
+    [new_entry.__setattr__(key, data[key]) for key in data.__dict__.keys()]
+
     # new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
     db.session.commit()
@@ -167,46 +116,24 @@ def add_dataset_from_URL():
 @auth.login_required
 def add_dataset():
     """endpoint to add a new dataset"""
-
-    def is_form_invalid():
-        invalid = False
-        invalid = invalid or not hasattr(request, "form")
-        invalid = invalid or len(request.files) == 0
-        return invalid
-
-    current_user = g.current_user
-    # check form
-    if is_form_invalid():
+    
+    if not hasattr(request, "form") or len(request.files) == 0:
         return invalid("Form is not valid!")
-    # get data from form
+
     try:
-        data = FileDatasetPostModel(
-            **request.form, filename=request.files["file"].filename
-        )
+        data = FileDatasetPostModel(**request.form, filename=request.files["file"].filename)
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
-    except Exception as err:
-        return internal_server_error(
-            err,
-            "Dataset could not be uploaded: There was a server-side error. Error has been logged.",
-        )
-
-    # check whether description is there
-    description = parse_description(data)
-    # check whether dataset should be public
-    set_public = "public" in data and data["public"] == True
+    
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
-        dataset_name=data.dataset_name,
-        description=description,
-        public=set_public,
-        dataset_type=data.dataset_type,
         processing_state="new",
-        upload_state="uploading",
-        filetype=data.filetype,
-        user_id=current_user.id,
-        metadata_json=data.metadata_json
+        upload_state="new",
+        user_id=g.current_user.id
     )
+    # fill with form data
+    [new_entry.__setattr__(key, data[key]) for key in data.__dict__.keys()]
+    
     # new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
     db.session.commit()
