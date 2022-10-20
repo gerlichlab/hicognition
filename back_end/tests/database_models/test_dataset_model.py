@@ -6,7 +6,7 @@ from hicognition.test_helpers import LoginTestCase
 # import sys
 # sys.path.append("./")
 from app import db
-from app.models import Dataset, Task
+from app.models import Assembly, Dataset, Task
 
 
 class TestSetProcessingState(LoginTestCase):
@@ -14,13 +14,21 @@ class TestSetProcessingState(LoginTestCase):
     does its job."""
 
     def add_test_datasets(self, state):
-        """adds test datasets to db"""
-        dataset1 = Dataset(
+        """adds test datasets to db"""       
+        self.hg19 = Assembly(
+            id=1,
+            name="hg19",
+            chrom_sizes=self.app.config["CHROM_SIZES"],
+            chrom_arms=self.app.config["CHROM_ARMS"],
+        )
+        db.session.add(self.hg19)
+        dataset1 = self.create_dataset(
             dataset_name="test1",
             file_path="/test/path/1",
             filetype="cooler",
             processing_state=state,
             user_id=1,
+            assembly=1
         )
         db.session.add(dataset1)
         db.session.commit()

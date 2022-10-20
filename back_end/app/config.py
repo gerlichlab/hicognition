@@ -239,7 +239,7 @@ class Config:
         },
         "cooler": {
             "dataset_type": "feature",
-            "file_ext": ["bw", "bigwig"],
+            "file_ext": ["mcool"],
             "metadata": [
                 {
                     "Cell cycle Stage": "freetext",

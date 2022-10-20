@@ -132,6 +132,7 @@ def add_dataset():
         user_id=g.current_user.id
     )
     # fill with form data
+    # TODO check if everything is as expected in config!
     [new_entry.__setattr__(key, data[key]) for key in data.__dict__.keys()]
     
     # new_entry.add_fields_from_form(data)
@@ -144,7 +145,7 @@ def add_dataset():
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     file_object.save(file_path)
     new_entry.file_path = file_path
-    new_entry.processing_state = "uploaded"
+    new_entry.upload_state = "uploaded"
 
     # validate dataset and delete if not valid
     if not new_entry.validate_dataset(delete=True):
@@ -672,7 +673,7 @@ def create_region_from_cluster_id(entry_id, cluster_id):
         dataset_name=form_data["name"],
         description=bed_ds.description,
         public=False,  # derived regions are private by default - you can choose to make them public
-        processing_state="uploading",
+        processing_state="uploading", # FIXME
         filetype="bedfile",
         user_id=g.current_user.id,
     )

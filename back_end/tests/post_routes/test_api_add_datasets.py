@@ -1,4 +1,5 @@
 """Module with tests realted adding datasets."""
+import logging
 import os
 import io
 import json
@@ -49,7 +50,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         mock_parse_binsizes.return_value = [5000000]
         # construct form data
         data = {
-            "datasetName": "test",
+            "dataset_name": "test",
             "description": "test-description",
             "assembly": "1",
             "cellCycleStage": "asynchronous",
@@ -75,7 +76,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         expected = {
             "normalization": "ICCF",
             "dataset_name": "test",
-            "processing_state": "uploaded",
+            "processing_state": "new",
+            "upload_state": "uploaded",
             "description": "test-description",
             "perturbation": "No perturbation",
             "file_path": "./tmp_test/1_test.mcool",
@@ -95,6 +97,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "repository_name": None,
             "sample_id": None,
             "source_url": None,
+            "metadata_json": {}
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
@@ -111,7 +114,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         a post request."""
         # construct form data
         data = {
-            "datasetName": "test",
+            "dataset_name": "test",
             "assembly": "1",
             "cellCycleStage": "asynchronous",
             "perturbation": "No perturbation",
@@ -141,7 +144,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "user_id": 1,
             "normalization": "RPM",
             "dataset_name": "test",
-            "processing_state": "uploaded",
+            "processing_state": "new",
+            "upload_state": "uploaded",
             "description": "test-description",
             "perturbation": "No perturbation",
             "file_path": "./tmp_test/1_test.bw",
@@ -158,6 +162,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "repository_name": None,
             "sample_id": None,
             "source_url": None,
+            "metadata_json": {}
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
@@ -175,7 +180,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         a post request."""
         # construct form data
         data = {
-            "datasetName": "test",
+            "dataset_name": "test",
             "assembly": "1",
             "cellCycleStage": "asynchronous",
             "perturbation": "No perturbation",
@@ -206,7 +211,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "user_id": 1,
             "normalization": "RPM",
             "dataset_name": "test",
-            "processing_state": "uploaded",
+            "processing_state": "new",
+            "upload_state": "uploaded",
             "description": "test-description",
             "perturbation": "No perturbation",
             "file_path": "./tmp_test/1_test.bigwig",
@@ -223,6 +229,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "repository_name": None,
             "sample_id": None,
             "source_url": None,
+            "metadata_json": {}
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
@@ -245,7 +252,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         mock_parse_binsizes.return_value = [5000000]
         # construct form data
         data = {
-            "datasetName": "test",
+            "dataset_name": "test",
             "assembly": "1",
             "cellCycleStage": "asynchronous",
             "perturbation": "No perturbation",
@@ -270,7 +277,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         expected = {
             "normalization": "ICCF",
             "dataset_name": "test",
-            "processing_state": "uploaded",
+            "processing_state": "new",
+            "upload_state": "uploaded",
             "description": "No description provided",
             "perturbation": "No perturbation",
             "file_path": "./tmp_test/1_test.mcool",
@@ -290,6 +298,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "repository_name": None,
             "sample_id": None,
             "source_url": None,
+            "metadata_json": {}
         }
         self.assertEqual(expected, dataset.to_json())
         # check whether binsizes have been added correctly -> test cooler contains single resolution with size 5 * 10**6
@@ -302,7 +311,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         a post request."""
         # construct form data
         data = {
-            "datasetName": "test",
+            "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
             "cellCycleStage": "asynchronous",
@@ -310,11 +319,10 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "ValueType": "Derived",
             "public": "false",
             "Method": "HiC",
-            "SizeType": "Interval",
+            "SizeType": "interval",
             "filetype": "bedfile",
-            "file": (io.BytesIO(b"abcdef"), "test.bed"),
+            "file": (open("tests/testfiles/tad_boundaries.bed", "rb"), "test.bed"),
         }
-        # import pdb; pdb.set_trace()
         # dispatch post request
         response = self.client.post(
             "/api/datasets/",
@@ -329,8 +337,9 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         expected = {
             "dataset_name": "test",
             "processing_state": "processing",
+            "upload_state": "uploaded",
             "description": "test-description",
-            "sizeType": "Interval",
+            "sizeType": "interval",
             "perturbation": "No perturbation",
             "file_path": "./tmp_test/1_test.bed",
             "processing_datasets": [],
@@ -348,21 +357,21 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "repository_name": None,
             "sample_id": None,
             "source_url": None,
+            "metadata_json": {}
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
         self.assertTrue(os.path.exists(dataset.file_path))
         # test whether uploaded file is equal to expected file
-        expected_file = b"abcdef"
-        with open(dataset.file_path, "rb") as actual_file:
-            self.assertEqual(expected_file, actual_file.read())
+        with open(dataset.file_path, "rb") as actual_file, open("tests/testfiles/tad_boundaries.bed", "rb") as expected_file:
+            self.assertEqual(expected_file.read(), actual_file.read())
 
     @patch("app.models.User.launch_task")
     def test_incorrect_filetype_is_rejected(self, mock_launch):
         """Tests whether incorrect filetype is rejected"""
         # construct form data
         data = {
-            "datasetName": "test",
+            "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
             "cellCycleStage": "asynchronous",
@@ -370,7 +379,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "ValueType": "Derived",
             "public": "false",
             "Method": "HiC",
-            "SizeType": "Interval",
+            "SizeType": "interval",
             "filetype": "bad",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
             "Directionality": "-",
@@ -383,13 +392,14 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             content_type="multipart/form-data",
         )
         self.assertEqual(response.status_code, 400)
-
+        
+    @patch("app.models.Dataset.validate_dataset")
     @patch("app.models.User.launch_task")
-    def test_bed_pipeline_launched_correctly(self, mock_launch):
+    def test_bed_pipeline_launched_correctly(self, mock_launch, mock_prepr):
         """Tests whether bed pipeline is called with the right arguments."""
         # construct form data
         data = {
-            "datasetName": "test",
+            "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
             "cellCycleStage": "asynchronous",
@@ -397,7 +407,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "ValueType": "Derived",
             "Method": "HiC",
             "public": "false",
-            "SizeType": "Interval",
+            "SizeType": "interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
             "Directionality": "-",
@@ -425,7 +435,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "ValueType": "Derived",
             "public": "false",
             "Method": "HiC",
-            "SizeType": "Interval",
+            "SizeType": "interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
             "Directionality": "-",
@@ -443,7 +453,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         """Tests whether form without file is rejected"""
         # construct form data
         data = {
-            "datasetName": "IE",
+            "dataset_name": "IE",
             "assembly": "1",
             "description": "test-description",
             "cellCycleStage": "asynchronous",
@@ -451,7 +461,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "ValueType": "Derived",
             "public": "false",
             "Method": "HiC",
-            "SizeType": "Interval",
+            "SizeType": "interval",
             "filetype": "bedfile",
             "Directionality": "-",
         }
@@ -468,7 +478,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         """Tests whether form with bedfile, but cooler file-ending is rejected"""
         # construct form data
         data = {
-            "datasetName": "test",
+            "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
             "cellCycleStage": "asynchronous",
@@ -476,7 +486,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "ValueType": "Derived",
             "public": "false",
             "Method": "HiC",
-            "SizeType": "Interval",
+            "SizeType": "interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.mcool"),
             "Directionality": "-",
@@ -494,7 +504,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         """Tests whether form with cooler, but bed file-ending is rejected"""
         # construct form data
         data = {
-            "datasetName": "test",
+            "dataset_name": "test",
             "description": "test-description",
             "assembly": "1",
             "cellCycleStage": "asynchronous",
@@ -519,7 +529,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         """Tests whether form with file without ending is rejected."""
         # construct form data
         data = {
-            "datasetName": "test",
+            "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
             "cellCycleStage": "asynchronous",
@@ -527,7 +537,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "ValueType": "Derived",
             "public": "false",
             "Method": "HiC",
-            "SizeType": "Interval",
+            "SizeType": "interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test"),
             "Directionality": "-",
@@ -545,7 +555,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         """Tests whether form with wrongly formatted bedfile is rejected."""
         # construct form data
         data = {
-            "datasetName": "test",
+            "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
             "cellCycleStage": "asynchronous",
@@ -553,7 +563,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "ValueType": "Derived",
             "Method": "HiC",
             "public": "false",
-            "SizeType": "Interval",
+            "SizeType": "interval",
             "filetype": "bedfile",
             "file": open("tests/testfiles/wrongly_formatted_bedfile.bed", "rb"),
             "Directionality": "-",
@@ -582,7 +592,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         rejected."""
         # construct form data
         data = {
-            "datasetName": "test",
+            "dataset_name": "test",
             "description": "test-description",
             "assembly": "1",
             "cellCycleStage": "asynchronous",
@@ -611,12 +621,14 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             )
         )
 
+    @patch("app.models.Dataset.validate_dataset")
+    @patch("app.models.Dataset.preprocess_dataset")
     @patch("app.models.User.launch_task")
-    def test_public_flag_set_correctly_if_true(self, mock_launch_task):
+    def test_public_flag_set_correctly_if_true(self, mock_launch_task, mock_prep, mock_validate):
         """Tests whether form with file without ending is rejected."""
         # construct form data
         data = {
-            "datasetName": "test",
+            "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
             "cellCycleStage": "asynchronous",
@@ -624,7 +636,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "ValueType": "Derived",
             "public": "true",
             "Method": "HiC",
-            "SizeType": "Interval",
+            "SizeType": "interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
             "Directionality": "-",
@@ -641,12 +653,14 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         dataset = Dataset.query.get(1)
         self.assertTrue(dataset.public)
 
+    @patch("app.models.Dataset.validate_dataset")
+    @patch("app.models.Dataset.preprocess_dataset")
     @patch("app.models.User.launch_task")
-    def test_public_flag_set_correctly_if_false(self, mock_launch_task):
+    def test_public_flag_set_correctly_if_false(self, mock_launch_task, mock_preprocess, mock_validate):
         """Tests whether form with file without ending is rejected."""
         # construct form data
         data = {
-            "datasetName": "test",
+            "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
             "cellCycleStage": "asynchronous",
@@ -654,7 +668,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "ValueType": "Derived",
             "public": "false",
             "Method": "HiC",
-            "SizeType": "Interval",
+            "SizeType": "interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
             "Directionality": "-",

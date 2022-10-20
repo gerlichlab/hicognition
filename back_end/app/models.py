@@ -293,7 +293,7 @@ class Dataset(db.Model):
     dataset_name = db.Column(db.String(512), nullable=False)
     description = db.Column(db.String(81), default="undefined")
     assembly = db.Column(db.Integer, db.ForeignKey("assembly.id")) # FIXME assembly -> assembly_id
-    sizeType = db.Column(db.String(64), default="undefined", nullable=False) # FIXME sizeType -> size_type
+    sizeType = db.Column(db.String(64), default="undefined") # FIXME sizeType -> size_type
     file_path = db.Column(db.String(512))
     public = db.Column(db.Boolean, default=False, nullable=False)
     filetype = db.Column(db.String(64), nullable=False)
@@ -302,7 +302,7 @@ class Dataset(db.Model):
     repository_name = db.Column(db.ForeignKey("data_repository.name"), nullable=True)
     sample_id = db.Column(db.String(128), nullable=True)
     source_url = db.Column(db.String(512), nullable=True)
-    dataset_type = db.Column(db.String(64), nullable=False) # Enum("region", "feature")
+    # dataset_type = db.Column(db.String(64), nullable=False) # Enum("region", "feature")
     upload_state = db.Column(db.String(64), nullable=False, default='new') # Enum('new', 'uploading', 'uploaded', 'upload_failed')
     metadata_json = db.Column(db.JSON, nullable=True)
 
@@ -632,7 +632,7 @@ class Dataset(db.Model):
             ]
             self.available_binsizes = json.dumps(binsizes)
 
-        # db.session.commit()
+        db.session.commit()
 
     def to_json(self):
         """Generates a JSON from the model"""

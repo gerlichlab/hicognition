@@ -55,7 +55,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
             "sample_id": "4DNFIRCHWS8M",
             "repository_name": "testrepo",
             "sizeType": "point",
-            "dataset_type": "region",
+            # "dataset_type": "region",
             "metadata_json": json.dumps({
                 "Cell cycle Stage": "asynchronous",
                 "Perturbation": "No perturbation",
@@ -116,14 +116,14 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
             "no_repo": {
                 "data": {**self.default_data, "repository_name": ""},
                 "code": 400,
-                "msg": "Repository",
+                "msg": "Form is not valid",
                 "return_value": {"status_code": 400},
             }
         }
 
         for key, test_case in test_cases.items():
             mock_get_metadata.return_value = test_case["return_value"]
-            with self.subTest(test_case=test_case):
+            with self.subTest(test_case=key):
                 response = self.client.post(
                     "/api/datasets/encode/",
                     data=test_case["data"],

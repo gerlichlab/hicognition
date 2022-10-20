@@ -35,8 +35,8 @@ class TestPipelineStackup(LoginTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # make datasets
-        self.bedfile = Dataset(id=1, filetype="bedfile")
-        self.bigwigfile = Dataset(id=2, filetype="bigwig")
+        self.bedfile = self.create_dataset(id=1, user_id=1, assembly=1, dataset_name="test", filetype="bedfile")
+        self.bigwigfile = self.create_dataset(id=2, user_id=1, assembly=1, dataset_name="test", filetype="bigwig")
         # make intervals
         self.intervals1 = Intervals(id=1, dataset_id=1)
         self.intervals2 = Intervals(id=1, dataset_id=1)
@@ -110,14 +110,14 @@ class TestStackupPipelineStep(LoginTestCase, TempDirTestCase):
         # call setUp of LoginTestCase to initialize app
         super().setUp()
         # add dataset
-        self.dataset = Dataset(
+        self.dataset = self.create_dataset(
             dataset_name="test3",
             file_path="/test/path/test3.bw",
             filetype="bigwig",
             processing_state="finished",
             user_id=1,
         )
-        self.dataset2 = Dataset(
+        self.dataset2 = self.create_dataset(
             dataset_name="test4",
             file_path="./tests/testfiles/test.bw",
             filetype="bigwig",
@@ -188,14 +188,14 @@ class TestStackupWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
         # call setUp of LoginTestCase to initialize app
         super().setUp()
         # add dataset
-        self.dataset = Dataset(
+        self.dataset = self.create_dataset(
             dataset_name="test3",
             file_path="/test/path/test3.bw",
             filetype="bigwig",
             processing_state="finished",
             user_id=1,
         )
-        self.dataset2 = Dataset(
+        self.dataset2 = self.create_dataset(
             dataset_name="test4",
             file_path="./tests/testfiles/test.bw",
             filetype="bigwig",
@@ -267,14 +267,14 @@ class TestStackupWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
         # call setUp of LoginTestCase to initialize app
         super().setUp()
         # add dataset
-        self.dataset = Dataset(
+        self.dataset = self.create_dataset(
             dataset_name="test3",
             file_path="/test/path/test3.bw",
             filetype="bigwig",
             processing_state="finished",
             user_id=1,
         )
-        self.dataset2 = Dataset(
+        self.dataset2 = self.create_dataset(
             dataset_name="test4",
             file_path="./tests/testfiles/test.bw",
             filetype="bigwig",

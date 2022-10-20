@@ -18,62 +18,64 @@ class TestGetDatasets(LoginTestCase):
     def setUp(self):
         """adds test datasets to db"""
         super().setUp()
+        self.add_default_assembly(add_and_commit=True)
         # add owned coolers
-        self.owned_cooler_1 = Dataset(
+        self.owned_cooler_1 = self.create_dataset(
             id=1,
+            assembly=1,
             dataset_name="test1",
             file_path="/test/path/1",
             filetype="cooler",
-            dataset_type="feature",
             processing_state="finished",
             user_id=1,
         )
-        self.owned_cooler_2 = Dataset(
+        self.owned_cooler_2 = self.create_dataset(
             id=2,
+            assembly=1,
             dataset_name="test2",
             file_path="/test/path/2",
             filetype="cooler",
-            dataset_type="feature",
             processing_state="finished",
             user_id=1,
         )
         # add unowned coolers
-        self.unowned_cooler = Dataset(
+        self.unowned_cooler = self.create_dataset(
             id=3,
+            assembly=1,
             dataset_name="test2",
             file_path="/test/path/2",
             filetype="cooler",
-            dataset_type="feature",
             processing_state="finished",
             user_id=2,
         )
         # add owned bedfile
-        self.owned_bedfile = Dataset(
+        self.owned_bedfile = self.create_dataset(
             id=4,
+            assembly=1,
             dataset_name="test3",
             file_path="/test/path/3",
             filetype="bedfile",
-            dataset_type="region",
             processing_state="finished",
             user_id=1,
         )
         # add public bedfile
-        self.public_bedfile = Dataset(
+        self.public_bedfile = self.create_dataset(
+            id=6,
             dataset_name="test4",
+            assembly=1,
             file_path="/test/path/4",
             filetype="bedfile",
-            dataset_type="region",
             processing_state="finished",
             public=True,
             user_id=2,
         )
         # add unowned bedfile
-        self.unowned_bedfile = Dataset(
+        self.unowned_bedfile = self.create_dataset(
             id=5,
+            assembly=1,
             dataset_name="test4",
             file_path="/test/path/4",
             filetype="bedfile",
-            dataset_type="region",
             processing_state="finished",
             user_id=2,
         )
@@ -193,7 +195,6 @@ class TestGetDatasets(LoginTestCase):
         )
         # check response
         self.assertEqual(response.status_code, 200)
-        import pdb;pdb.set_trace()
         expected = [dataset.to_json() for dataset in self.owned_datasets]
         self.assertEqual(response.json, expected)
         # check response for coolers
@@ -314,11 +315,11 @@ class TestGetBedFile(LoginTestCase):
         """adds test datasets to db"""
         super().setUp()
         # create test datasets
-        self.unowned_dataset = Dataset(id=1, user_id=2, filetype="bedfile")
-        self.owned_dataset_not_bed = Dataset(id=2, user_id=1, filetype="cooler")
-        self.owned_dataset_wo_file = Dataset(id=3, user_id=1, filetype="bedfile")
-        self.owned_dataset_w_file = Dataset(
-            id=4,
+        self.unowned_dataset = self.create_dataset(id=1, dataset_name="test", user_id=2, filetype="bedfile")
+        self.owned_dataset_not_bed = self.create_dataset(id=2, dataset_name="test", user_id=1, filetype="cooler")
+        self.owned_dataset_wo_file = self.create_dataset(id=3, dataset_name="test", user_id=1, filetype="bedfile")
+        self.owned_dataset_w_file = self.create_dataset(
+            id=4, dataset_name="test",
             user_id=1,
             file_path="tests/testfiles/tad_boundaries.bed",
             filetype="bedfile",

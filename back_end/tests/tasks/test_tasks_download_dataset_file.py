@@ -27,7 +27,7 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         )
         db.session.add(self.repository)
 
-        self.dataset = Dataset(id=1, dataset_name="ds1", filetype="bedfile")
+        self.dataset = self.create_dataset(id=1, dataset_name="ds1", filetype="bedfile")
         self.dataset.user = User(id=2)
         self.dataset.repository = self.repository
         self.dataset.assembly = self.assembly.id

@@ -48,15 +48,15 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # create bed dataset
-        self.bed_file = Dataset(
+        self.bed_file = self.create_dataset(
             id=1, user_id=1, filetype="bedfile", assembly=1, dataset_name="test"
         )
         # create intervals
         self.intervals_1 = Intervals(id=1, windowsize=100000, dataset_id=1)
         # create feature datasets
-        self.feature_1 = Dataset(id=2, user_id=1, filetype="bigwig", assembly=1)
-        self.feature_2 = Dataset(id=3, user_id=1, filetype="bigwig", assembly=1)
-        self.feature_3 = Dataset(id=4, user_id=1, filetype="bigwig", assembly=1)
+        self.feature_1 = self.create_dataset(id=2, dataset_name="test", user_id=1, filetype="bigwig", assembly=1)
+        self.feature_2 = self.create_dataset(id=3, dataset_name="test", user_id=1, filetype="bigwig", assembly=1)
+        self.feature_3 = self.create_dataset(id=4, dataset_name="test", user_id=1, filetype="bigwig", assembly=1)
         # create collection
         self.collection_1 = Collection(
             id=1,
@@ -206,14 +206,14 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
         np.save(data_path_3, self.test_data_3)
         # add database entries
         # create bed dataset
-        self.bed_file = Dataset(id=1, user_id=1, filetype="bedfile")
+        self.bed_file = self.create_dataset(id=1, dataset_name="test", user_id=1, filetype="bedfile")
         # create intervals
         self.intervals_1 = Intervals(id=1, windowsize=100000, dataset_id=1)
         self.intervals_2 = Intervals(id=2, windowsize=None, dataset_id=1)
         # create feature datasets
-        self.feature_1 = Dataset(id=2, user_id=1, filetype="bigwig")
-        self.feature_2 = Dataset(id=3, user_id=1, filetype="bigwig")
-        self.feature_3 = Dataset(id=4, user_id=1, filetype="bigwig")
+        self.feature_1 = self.create_dataset(id=2, dataset_name="test", user_id=1, filetype="bigwig")
+        self.feature_2 = self.create_dataset(id=3, dataset_name="test", user_id=1, filetype="bigwig")
+        self.feature_3 = self.create_dataset(id=4, dataset_name="test", user_id=1, filetype="bigwig")
         # create collection
         self.collection_1 = Collection(
             id=1, datasets=[self.feature_1, self.feature_2, self.feature_3]
@@ -439,13 +439,13 @@ class TestEmbedding1DWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
         np.save(data_path_3, self.test_data_3)
         # add database entries
         # create bed dataset
-        self.bed_file = Dataset(id=1, user_id=1, filetype="bedfile")
+        self.bed_file = self.create_dataset(id=1, dataset_name="test", user_id=1, filetype="bedfile")
         # create intervals
         self.intervals_1 = Intervals(id=1, windowsize=100000, dataset_id=1)
         # create feature datasets
-        self.feature_1 = Dataset(id=2, user_id=1, filetype="bigwig")
-        self.feature_2 = Dataset(id=3, user_id=1, filetype="bigwig")
-        self.feature_3 = Dataset(id=4, user_id=1, filetype="bigwig")
+        self.feature_1 = self.create_dataset(id=2, dataset_name="test", user_id=1, filetype="bigwig")
+        self.feature_2 = self.create_dataset(id=3, dataset_name="test", user_id=1, filetype="bigwig")
+        self.feature_3 = self.create_dataset(id=4, dataset_name="test", user_id=1, filetype="bigwig")
         # create collection
         self.collection_1 = Collection(
             id=1, datasets=[self.feature_1, self.feature_2, self.feature_3]
@@ -546,13 +546,13 @@ class TestEmbedding1DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
         np.save(data_path_3, self.test_data_3)
         # add database entries
         # create bed dataset
-        self.bed_file = Dataset(id=1, user_id=1, filetype="bedfile")
+        self.bed_file = self.create_dataset(id=1, dataset_name="test", user_id=1, filetype="bedfile")
         # create intervals
         self.intervals_1 = Intervals(id=1, windowsize=None, dataset_id=1)
         # create feature datasets
-        self.feature_1 = Dataset(id=2, user_id=1, filetype="bigwig")
-        self.feature_2 = Dataset(id=3, user_id=1, filetype="bigwig")
-        self.feature_3 = Dataset(id=4, user_id=1, filetype="bigwig")
+        self.feature_1 = self.create_dataset(id=2, dataset_name="test", user_id=1, filetype="bigwig")
+        self.feature_2 = self.create_dataset(id=3, dataset_name="test", user_id=1, filetype="bigwig")
+        self.feature_3 = self.create_dataset(id=4, dataset_name="test", user_id=1, filetype="bigwig")
         # create collection
         self.collection_1 = Collection(
             id=1, datasets=[self.feature_1, self.feature_2, self.feature_3]

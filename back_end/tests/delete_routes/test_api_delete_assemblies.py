@@ -46,7 +46,7 @@ class TestDeleteAssembly(LoginTestCase, TempDirTestCase):
             chrom_arms=self._create_empty_file_in_tempdir("arms38.txt"),
         )
         # define associted datasets
-        self.dataset1 = Dataset(id=1, assembly=2)
+        self.dataset1 = self.create_dataset(id=1, dataset_name="test1", assembly=2, user_id=1)
         # aut
         token = self.add_and_authenticate("test", "asdf")
         # create token_headers

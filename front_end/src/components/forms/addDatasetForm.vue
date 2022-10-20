@@ -357,7 +357,7 @@ export default {
             this.sending = true; // show progress bar
             // construct form data
             var formData = new FormData();
-            formData.append('dataset_type', this.datasetType);
+            //formData.append('dataset_type', this.datasetType);
             formData.append('dataset_name', this.form['datasetName']);
             formData.append('public', this.form['public']);
             formData.append('assembly', this.form['assembly']);
