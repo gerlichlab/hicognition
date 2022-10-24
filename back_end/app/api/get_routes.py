@@ -24,6 +24,7 @@ from .. import db
 from ..models import (
     BedFileMetadata,
     DataRepository,
+    IntervalDataTypeEnum,
     Intervals,
     Dataset,
     AverageIntervalData,
@@ -234,7 +235,7 @@ def get_processed_data_mapping_of_dataset(dataset_id):
             f"Dataset with id '{dataset_id}' is not owned by logged in user!"
         )
     # check whether dataset is bedfile
-    if dataset.filetype != "bedfile":
+    if dataset.filetype not in ["bedfile", "bedpefile"]:
         return invalid(f"Dataset with id '{dataset_id}' is not a bedfile!")
     # create output object
     output = {
@@ -246,10 +247,40 @@ def get_processed_data_mapping_of_dataset(dataset_id):
         "embedding2d": data_structures.recDict(),
     }
     # populate output object
-    associated_intervals = dataset.intervals.all()
-    for interval in associated_intervals:
-        for preprocessed_dataset in interval.get_associated_preprocessed_datasets():
-            preprocessed_dataset.add_to_preprocessed_dataset_map(output)
+    for interval in dataset.intervals:
+        windows_size = "variable" if dataset.sizeType == "Interval" else interval.windowsize
+        for ivd in interval.interval_data:
+            if (ivd.feature in ivd.source_intervals.source_dataset.processing_features) or (
+                ivd.feature in ivd.source_intervals.source_dataset.failed_features) or (
+                ivd.feature in ivd.source_intervals.source_dataset.processing_collections) or (
+                ivd.feature in ivd.source_intervals.source_dataset.failed_collections
+            ):
+                continue
+
+            interval_datatype = ivd.intervaldata_type
+            if interval_datatype == IntervalDataTypeEnum.EMBEDDING_1D.value:
+                interval_datatype = 'embedding1d'
+            elif interval_datatype == IntervalDataTypeEnum.EMBEDDING_2D.value:
+                interval_datatype = 'embedding2d'
+            
+            # assigning name of feature
+            feature_name = ivd.feature.dataset_name if isinstance(ivd.feature, Dataset) else ivd.feature.name
+            output[interval_datatype][ivd.feature.id]["name"] = feature_name
+
+            # assigning feature names if feature is a collection
+            if isinstance(ivd.feature, Collection):
+                output[interval_datatype][ivd.feature.id]["collection_dataset_names"] = ivd.feature.to_json()["dataset_names"]
+
+            # assigning the id
+            if isinstance(ivd, AverageIntervalData) and interval_datatype == 'pileup':
+                output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][ivd.binsize][ivd.value_type] = str(ivd.id)
+            elif isinstance(ivd, EmbeddingIntervalData) and interval_datatype == "embedding1d":
+                output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][ivd.binsize][ivd.cluster_number] = str(ivd.id)
+            elif isinstance(ivd, EmbeddingIntervalData) and interval_datatype == "embedding2d":
+                output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][ivd.binsize][ivd.normalization][ivd.cluster_number] = str(ivd.id)
+            else:
+                output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][ivd.binsize] = str(ivd.id)
+
     return jsonify(output)
 
 

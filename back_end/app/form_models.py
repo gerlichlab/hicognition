@@ -38,13 +38,13 @@ class DatasetModel(BaseModel):
     def __contains__(self, item):
         return hasattr(self, item)
 
-class DatsetPutModel(DatasetModel):
+class DatasetPutModel(DatasetModel):
     """Is a model of the dataset modify form."""
     dataset_name: Optional[constr(min_length=3, max_length=81)] = Field(alias="datasetName")
     public: Optional[bool] = Field(alias="Public")
     description: Optional[constr(max_length=81)] = Field(alias="Description")
-    perturbation: Optional[constr(max_length=64)] = Field(aliases=["Perturbation", "perturbation"])
-    cellCycleStage: Optional[constr(max_length=64)] = Field(aliases=["Cell cycle Stage", "cellCycleStage"])
+    perturbation: Optional[constr(max_length=64)] = Field(alias="Perturbation")
+    cellCycleStage: Optional[constr(max_length=64)] = Field(alias="Cell cycle Stage")
     method: Optional[constr(max_length=64)] = Field(alias="Method")
     normalization: Optional[constr(max_length=64)] = Field(alias="Normalization")
     derivationType: Optional[constr(max_length=64)] = Field(alias="DerivationType")
@@ -133,7 +133,7 @@ class FileDatasetPostModel(DatasetPostModel):
     @validator("filename")
     def check_filename(cls, filename, values, **kwargs):
         if 'filetype' not in values:
-            raise ValueError("File type is missing.")
+            raise ValueError("Invalid filename! File type is missing.")
         
         temp_filename = filename
         if temp_filename.lower().endswith('.gz'):

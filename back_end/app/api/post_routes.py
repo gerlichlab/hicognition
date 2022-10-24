@@ -669,16 +669,13 @@ def create_region_from_cluster_id(entry_id, cluster_id):
     # load regions
     regions = pd.read_csv(bed_ds.file_path, sep="\t", header=None)
     # create new dataset
-    new_entry = Dataset(
-        dataset_name=form_data["name"],
-        description=bed_ds.description,
-        public=False,  # derived regions are private by default - you can choose to make them public
-        processing_state="uploading", # FIXME
+    new_entry = bed_ds.copy(
+        dataset_name = form_data["name"],
+        public = False,
+        processing_state="uploading",
         filetype="bedfile",
-        user_id=g.current_user.id,
+        user_id=g.current_user.id
     )
-    # add fields
-    new_entry.add_fields_from_dataset(bed_ds)
     db.session.add(new_entry)
     db.session.commit()
     # subset and write to file

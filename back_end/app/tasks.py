@@ -41,6 +41,10 @@ notification_handler = NotificationHandler()
 
 basedir = os.path.abspath(os.path.dirname(__file__))  # TODO unused
 
+# class WrongDatasetTypeError(Exception):
+#     """Thrown if task is called with wrong dataset type"""
+
+
 # # @task_context
 def pipeline_bed(dataset_id):
     """Starts the pipeline for

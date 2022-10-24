@@ -2,7 +2,7 @@
 from flask import g, request
 from flask.json import jsonify
 
-from ..form_models import DatsetPutModel
+from ..form_models import DatasetPutModel
 from . import api
 from .. import db
 from ..models import Dataset
@@ -25,7 +25,7 @@ def modify_dataset(dataset_id):
     if not hasattr(request, "form") or len(request.form) == 0:
         return invalid("Form is not valid!")
     try:
-        data = DatsetPutModel(**request.form)
+        data = DatasetPutModel(**request.form)
     except ValueError as err:
         return invalid(f'Form is not valid: {str(err)}')
     
