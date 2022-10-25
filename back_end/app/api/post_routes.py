@@ -349,7 +349,7 @@ def preprocess_collections():
     return jsonify({"message": "success! Preprocessing triggered."})
 
 
-@api.route("/bedFileMetadata/", methods=["POST"])
+@api.route("/bedFileMetadata/", methods=["POST"]) # TODO bedpe
 @auth.login_required
 def add_bedfile_metadata():
     """Add metadata file to metadata table.
@@ -420,7 +420,7 @@ def add_bedfile_metadata():
     )
 
 
-@api.route("/bedFileMetadata/<metadata_id>/setFields", methods=["POST"])
+@api.route("/bedFileMetadata/<metadata_id>/setFields", methods=["POST"]) # TODO bedpe
 @auth.login_required
 def add_bedfile_metadata_fields(metadata_id):
     """Add relevant metadatafields of the corresponding metadatafile."""
@@ -673,7 +673,6 @@ def create_region_from_cluster_id(entry_id, cluster_id):
         dataset_name = form_data["name"],
         public = False,
         processing_state="uploading",
-        filetype="bedfile",
         user_id=g.current_user.id
     )
     db.session.add(new_entry)

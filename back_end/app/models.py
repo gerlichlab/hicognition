@@ -493,7 +493,7 @@ class Dataset(db.Model):
         """Invokes preprocessing of dataset."""
 
         # start preprocessing of bedfile, the other filetypes do not need preprocessing
-        if self.filetype in ["bedfile", "bedpefile"]:
+        if self.filetype in ["bedfile", "bedpe_file"]:
             self.user.launch_task(  #  TODO current user or dataset owner user?
                 current_app.queues["short"],
                 "pipeline_bed",

@@ -367,6 +367,68 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             self.assertEqual(expected_file.read(), actual_file.read())
 
     @patch("app.models.User.launch_task")
+    def test_dataset_added_correctly_bedpe(self, mock_launch):
+        """Tests whether a bedpe dataset is added
+        correctly to the Dataset table following
+        a post request."""
+        # construct form data
+        data = {
+            "dataset_name": "test",
+            "assembly": "1",
+            "description": "test-description",
+            "cellCycleStage": "asynchronous",
+            "perturbation": "No perturbation",
+            "ValueType": "Derived",
+            "public": "false",
+            "Method": "HiC",
+            "SizeType": "interval",
+            "filetype": "bedpe_file",
+            "file": (open("tests/testfiles/test_small.bedpe", "rb"), "test_small.bedpe"),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=self.token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether dataset has been added to database
+        self.assertEqual(len(Dataset.query.all()), 1)
+        dataset = Dataset.query.first()
+        expected = {
+            "dataset_name": "test",
+            "processing_state": "processing",
+            "upload_state": "uploaded",
+            "description": "test-description",
+            "sizeType": "interval",
+            "perturbation": "No perturbation",
+            "file_path": "./tmp_test/1_test_small.bedpe",
+            "processing_datasets": [],
+            "failed_datasets": [],
+            "processing_collections": [],
+            "failed_collections": [],
+            "assembly": 1,
+            "public": False,
+            "cellCycleStage": "asynchronous",
+            "valueType": "Derived",
+            "filetype": "bedpe_file",
+            "method": "HiC",
+            "user_id": 1,
+            "id": 1,
+            "repository_name": None,
+            "sample_id": None,
+            "source_url": None,
+            "metadata_json": {}
+        }
+        self.assertEqual(expected, dataset.to_json())
+        # test whether uploaded file exists
+        self.assertTrue(os.path.exists(dataset.file_path))
+        # test whether uploaded file is equal to expected file
+        with open(dataset.file_path, "rb") as actual_file, open("tests/testfiles/test_small.bedpe", "rb") as expected_file:
+            self.assertEqual(expected_file.read(), actual_file.read())
+
+    @patch("app.models.User.launch_task")
     def test_incorrect_filetype_is_rejected(self, mock_launch):
         """Tests whether incorrect filetype is rejected"""
         # construct form data
