@@ -23,7 +23,7 @@ from . import api
 from .. import db
 from ..models import (
     BedFileMetadata,
-    DataRepository,
+    Repository,
     IntervalDataTypeEnum,
     Intervals,
     Dataset,
@@ -34,7 +34,6 @@ from ..models import (
     Session,
     Collection,
     Organism,
-    User_DataRepository_Credentials,
 )
 from .authentication import auth
 from .errors import forbidden, not_found, invalid
@@ -249,7 +248,7 @@ def get_processed_data_mapping_of_dataset(dataset_id):
     # populate output object
     for interval in dataset.intervals:
         windows_size = "variable" if dataset.sizeType == "Interval" else interval.windowsize
-        for ivd in interval.interval_data:
+        for ivd in interval.interval_data: # FIXME SOON!
             if (ivd.feature in ivd.source_intervals.source_dataset.processing_features) or (
                 ivd.feature in ivd.source_intervals.source_dataset.failed_features) or (
                 ivd.feature in ivd.source_intervals.source_dataset.processing_collections) or (
@@ -654,7 +653,7 @@ def get_all_collections():
 @auth.login_required
 def get_all_repositories():
     """Gets all repos in the db for file downloads"""
-    repositories = db.session.query(DataRepository).all()
+    repositories = db.session.query(Repository).all()
     return jsonify({repo.name: repo.to_json() for repo in repositories})
 
 
@@ -664,7 +663,7 @@ def get_ENCODE_metadata(repo_name: str, sample_id: str):
     """fetches metadata from an ENCODE repository about a file
     to auto-fill form when user wants import from it
     """
-    repository = db.session.query(DataRepository).get(repo_name)
+    repository = db.session.query(Repository).get(repo_name)
     if repository is None:
         return not_found(f"ENCODE repository {repo_name} not in our database.")
 

@@ -7,7 +7,7 @@ from unittest.mock import patch
 # add path to import app
 # import sys
 # sys.path.append("./")
-from app.models import Dataset, Assembly, DataRepository
+from app.models import Dataset, Assembly, Repository
 from app import db
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
@@ -31,7 +31,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
             chrom_arms=self.app.config["CHROM_ARMS"],
         )
 
-        self.data_repo = DataRepository(
+        self.data_repo = Repository(
             name="testrepo",
             url="https://{href}",
             auth_required=False,

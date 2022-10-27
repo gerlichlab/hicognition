@@ -95,7 +95,7 @@ class User(db.Model, UserMixin):
         "Task", backref="user", lazy="dynamic", cascade="all, delete-orphan"
     )
     credentials = db.relationship(
-        "User_DataRepository_Credentials",
+        "RepositoryAuth",
         backref="user",
         lazy="dynamic",
         cascade="all, delete-orphan",
@@ -104,7 +104,7 @@ class User(db.Model, UserMixin):
     def add_repository_credentials(
         self, repository_name: str, key: str, secret: str
     ):  # TODO needed?
-        credentials = User_DataRepository_Credentials(
+        credentials = RepositoryAuth(
             self.id, repository_name, key, secret
         )
         db.session.add(credentials)
@@ -194,7 +194,7 @@ class User(db.Model, UserMixin):
 
 # class User_ExternSource mtm
 # TODO replace with better name?
-class DataRepository(db.Model):
+class Repository(db.Model):
     """Model for external data repositories.
     Name is primary key, as this table will hold only a few rows and it makes
     handling gets/posts easier.
@@ -216,7 +216,7 @@ class DataRepository(db.Model):
         return self.url.format(href=href)
 
     credentials = db.relationship(
-        "User_DataRepository_Credentials",
+        "RepositoryAuth",
         back_populates="repository",
         lazy="dynamic",
         cascade="all, delete-orphan",
@@ -230,18 +230,18 @@ class DataRepository(db.Model):
         return d
 
 
-class User_DataRepository_Credentials(db.Model):  # TODO change name
+class RepositoryAuth(db.Model):  # TODO change name
     """Optional many-to-many object to store user keys for external repos"""
 
     # fields
-    user_id = db.Column(db.ForeignKey("user.id"), primary_key=True)
-    repository_name = db.Column(db.ForeignKey("data_repository.name"), primary_key=True)
+    user_id = db.Column(db.ForeignKey("user.id", name='fk_repoauth_user'), primary_key=True)
+    repository_name = db.Column(db.ForeignKey("repository.name", name='fk_repoauth_repo'), primary_key=True)
     key = db.Column(db.String(512), nullable=False)
     secret = db.Column(db.String(512), nullable=False)
 
     # assoc
     # user = db.relationship("User", back_populates='credentials')
-    repository = db.relationship("DataRepository", back_populates="credentials")
+    repository = db.relationship("Repository", back_populates="credentials")
 
 
 class Dataset(db.Model):
@@ -250,14 +250,14 @@ class Dataset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     dataset_name = db.Column(db.String(512), nullable=False)
     description = db.Column(db.String(81), default="undefined")
-    assembly = db.Column(db.Integer, db.ForeignKey("assembly.id")) # FIXME assembly -> assembly_id
-    sizeType = db.Column(db.String(64), default="undefined") # FIXME sizeType -> size_type
+    assembly = db.Column(db.Integer, db.ForeignKey("assembly.id", name='fk_dataset_assembly'))
+    sizeType = db.Column(db.String(64), default="undefined")
     file_path = db.Column(db.String(512))
     public = db.Column(db.Boolean, default=False, nullable=False)
     filetype = db.Column(db.String(64), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", name='fk_dataset_user'), nullable=False)
     processing_state = db.Column(db.String(64)) # 'new', 'processing', 'processing_failed', 'success'
-    repository_name = db.Column(db.ForeignKey("data_repository.name"), nullable=True)
+    repository_name = db.Column(db.ForeignKey("repository.name", name='fk_dataset_repository'), nullable=True)
     sample_id = db.Column(db.String(128), nullable=True)
     source_url = db.Column(db.String(512), nullable=True)
     # dataset_type = db.Column(db.String(64), nullable=False) # Enum("region", "feature")
@@ -339,7 +339,7 @@ class Dataset(db.Model):
         cascade="all, delete-orphan",
     )
     tasks = db.relationship("Task", backref="dataset", lazy="dynamic", cascade="all, delete-orphan")
-    repository = db.relationship("DataRepository")
+    repository = db.relationship("Repository")
     user = db.relationship("User")
 
     def get_tasks_in_progress(self):
@@ -720,11 +720,15 @@ class Intervals(db.Model):
 
     @classmethod
     def __declare_last__(cls):
-        cls.interval_data = db.relationship("BaseIntervalData", backref="interval",)
+        #cls.interval_data = db.relationship("BaseIntervalData", backref="interval",)
         cls.average_interval_data = db.relationship("AverageIntervalData", cascade="all, delete-orphan")
         cls.individual_interval_data = db.relationship("IndividualIntervalData", cascade="all, delete-orphan")
         cls.association_interval_data = db.relationship("AssociationIntervalData", cascade="all, delete-orphan")
         cls.embedding_interval_data = db.relationship("EmbeddingIntervalData", cascade="all, delete-orphan")
+
+    @property
+    def interval_data(self):
+        return [*self.average_interval_data, *self.individual_interval_data, *self.association_interval_data, *self.embedding_interval_data]
     
     def __repr__(self):
         """Format print output."""
@@ -748,9 +752,11 @@ class IntervalDataTypeEnum(Enum):
     EMBEDDING_1D = "1d-embedding"
     EMBEDDING_2D = "2d-embedding"
 
-class BaseIntervalData(AbstractConcreteBase, db.Model):
+#class BaseIntervalData(AbstractConcreteBase, db.Model):
+class BaseIntervalData(db.Model):
     """Abstract base class for interval data classes.
     """
+    __abstract__ = True
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512), index=True)
     file_path = db.Column(db.String(512), index=True)
@@ -795,7 +801,7 @@ class AverageIntervalData(BaseIntervalData):
     """db.Table to hold information and pointers to data for
     average values of a dataset at the linked intervals dataset."""
     id = db.Column(db.Integer, primary_key=True)
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id", name='fk_averageivd_dataset'))
 
     @classmethod
     def __declare_last__(cls):
@@ -814,7 +820,7 @@ class IndividualIntervalData(BaseIntervalData):
 
     id = db.Column(db.Integer, primary_key=True)
     file_path_small = db.Column(db.String(128), index=True)  # location of downsampled file
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id", name='fk_individualivd_dataset'))
     @classmethod
     def __declare_last__(cls):
         cls.source_dataset = db.relationship("Dataset")
@@ -831,7 +837,7 @@ class AssociationIntervalData(BaseIntervalData):
     Continuous values enrichment."""
 
     id = db.Column(db.Integer, primary_key=True)
-    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
+    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id", name='fk_associationivd_collection'))
     
     @classmethod
     def __declare_last__(cls):
@@ -855,8 +861,8 @@ class EmbeddingIntervalData(BaseIntervalData):
     feature_distribution_path = db.Column(db.String(512), index=True)
     normalization = db.Column(db.String(64))
     cluster_number = db.Column(db.String(64))
-    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
+    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id", name='fk_embeddingivd_collection'))
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id", name='fk_embeddingivd_dataset'))
     
     @classmethod
     def __declare_last__(cls):

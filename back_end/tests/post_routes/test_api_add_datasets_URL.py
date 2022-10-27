@@ -8,7 +8,7 @@ from unittest.mock import patch
 from app.models import (
     Dataset,
     Assembly,
-    DataRepository,
+    Repository,
 )
 from app import db, create_app
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
@@ -33,7 +33,7 @@ class TestAddDataSetsURL(LoginTestCase, TempDirTestCase):
             chrom_arms=self.app.config["CHROM_ARMS"],
         )
 
-        self.data_repo = DataRepository(
+        self.data_repo = Repository(
             name="testrepo", url="https://{id}", auth_required=False
         )
         db.session.add(self.hg19)

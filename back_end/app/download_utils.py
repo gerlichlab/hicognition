@@ -10,7 +10,7 @@ import hashlib
 import gzip
 from werkzeug.utils import secure_filename
 import requests
-from .models import Dataset, DataRepository
+from .models import Dataset, Repository
 
 
 # get logger
@@ -96,12 +96,12 @@ def download_file(url: str, md5sum: str = None, decompress: bool = True) -> byte
 
 
 def download_ENCODE_metadata(
-    repository: DataRepository, sample_id: str, auth: tuple = None
+    repository: Repository, sample_id: str, auth: tuple = None
 ) -> dict:
     """Gets metadata from an ENCODE repository with a provided URL.
 
     Args:
-        repository (DataRepository): repository to contact
+        repository (Repository): repository to contact
         sample_id (str): sample id provided
         auth (tuple, optional): needed if authentication is required. Defaults to None.
 

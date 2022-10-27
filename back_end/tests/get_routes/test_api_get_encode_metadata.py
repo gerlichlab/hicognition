@@ -10,7 +10,7 @@ from hicognition.test_helpers import LoginTestCase
 # import sys
 # sys.path.append("./")
 from app import db
-from app.models import DataRepository
+from app.models import Repository
 
 
 class MockResponse:
@@ -35,7 +35,7 @@ class TestGetMetadata(LoginTestCase):
     def setUp(self):
         super().setUp()
 
-        self.data_repo_4dn = DataRepository(
+        self.data_repo_4dn = Repository(
             name="4dn", url="thisisurl", auth_required=False, file_url="thisisurl"
         )
         db.session.add(self.data_repo_4dn)

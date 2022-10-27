@@ -67,11 +67,11 @@ class DatasetPostModel(DatasetModel):
 
     dataset_name: constr(min_length=3, max_length=81) = Field(...)
     public: bool = Field(...)
-    assembly: int = Field(...)
+    assembly: int = Field(..., alias="assembly")
     description: str = Field("No description provided", max_length=81)
     #dataset_type: DatasetTypeEnum = Field(...)
-    #sizeType: SizeTypeEnum = Field(alias="SizeType")
-    filetype: str = Field(..., max_length=64)
+    #size_type: SizeTypeEnum = Field(alias="SizeType")
+    filetype: str = Field(..., max_length=64, alias="filetype")
     sizeType: str = Field(...,alias="SizeType")
     metadata_json: Json[Any] = Field(default={})
 

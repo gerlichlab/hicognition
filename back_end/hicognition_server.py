@@ -13,20 +13,21 @@ from app.background_tasks import (
     add_app_context,
     send_keep_alive_message,
 )
-from app.models import (
-    User,
-    Dataset,
-    Intervals,
-    Task,
-    AverageIntervalData,
-    BedFileMetadata,
-    Session,
-    Collection,
-    EmbeddingIntervalData,
-    AssociationIntervalData,
-    Organism,
-    Assembly,
-)
+from app.models import *
+# (
+#     User,
+#     Dataset,
+#     Intervals,
+#     Task,
+#     AverageIntervalData,
+#     BedFileMetadata,
+#     Session,
+#     Collection,
+#     EmbeddingIntervalData,
+#     AssociationIntervalData,
+#     Organism,
+#     Assembly,
+# )
 from flask_migrate import Migrate
 from flask.cli import AppGroup
 from apscheduler.schedulers.background import BackgroundScheduler
