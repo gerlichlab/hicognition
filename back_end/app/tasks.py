@@ -2,9 +2,9 @@
 import os
 import logging
 from typing import Any
+from datetime import datetime
 from flask import current_app
 import pandas as pd
-from datetime import datetime
 from requests.exceptions import ConnectionError, Timeout
 from hicognition import io_helpers
 from rq import get_current_job
@@ -39,7 +39,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))  # TODO unused
 # hacked way to access functions by string as seen here:
 # https://stackoverflow.com/questions/2447353/getattr-on-a-module
 def __getattr__(name: str) -> Any:
-    attr_dict =  {
+    attr_dict = {
         "pipeline_bed": pipeline_bed,
         "pipeline_pileup": pipeline_pileup,
         "pipeline_stackup": pipeline_stackup,
@@ -76,13 +76,15 @@ def pipeline_bed(dataset_id):
     # clean dataset
     log.info("      Clean...")
     dir_path = os.path.dirname(dataset.file_path)
-    file_name_split = os.path.basename(dataset.file_path).split('.')
-    file_name_cleaned = f"{'.'.join(file_name_split[:-1])}_cleaned.{file_name_split[-1]}"
+    file_name_split = os.path.basename(dataset.file_path).split(".")
+    file_name_cleaned = (
+        f"{'.'.join(file_name_split[:-1])}_cleaned.{file_name_split[-1]}"
+    )
     file_path_cleaned = os.path.join(dir_path, file_name_cleaned)
-    
-    if dataset.filetype == 'bedfile': 
+
+    if dataset.filetype == "bedfile":
         io_helpers.clean_bed(file_path, file_path_cleaned)
-    elif dataset.filetype == 'bedpe_file':
+    elif dataset.filetype == "bedpe_file":
         io_helpers.clean_bedpe(file_path, file_path_cleaned)
     # set cleaned_file_name as file_name
     dataset.file_path = file_path_cleaned
@@ -183,7 +185,8 @@ def download_dataset_file(dataset_id: int):
     if not ((dataset.sample_id and dataset.repository_name) or dataset.source_url):
         log.info(f"No sample_id, repo_name or source_url provided for {dataset_id}")
         _handle_error(
-            dataset, f"Neither sample id + repository, nor file URL have been provided."
+            dataset,
+            f"Neither sample id + repository, nor file URL have been provided dataset {dataset_id}",
         )
         return
 
@@ -197,7 +200,7 @@ def download_dataset_file(dataset_id: int):
         )
         return
 
-    dataset.upload_state = 'uploading'
+    dataset.upload_state = "uploading"
     db.session.commit()
     is_repository = dataset.sample_id and dataset.repository
     try:
@@ -229,7 +232,7 @@ def download_dataset_file(dataset_id: int):
         _handle_error(dataset, "File formatting was invalid.")
         return
 
-    dataset.upload_state = 'uploaded'
+    dataset.upload_state = "uploaded"
     db.session.commit()
     dataset.preprocess_dataset()
     db.session.commit()
@@ -240,22 +243,22 @@ def download_dataset_file(dataset_id: int):
     pipeline_steps.set_task_progress(100)
 
 
-def _handle_error(ds: Dataset, msg: str):
-    _send_notification(ds, f"Dataset creation failed:<br>{msg}", "failed")
+def _handle_error(dataset: Dataset, msg: str):
+    _send_notification(dataset, f"Dataset creation failed:<br>{msg}", "failed")
     pipeline_steps.set_task_progress(100)
 
-    db.session.delete(ds)
+    db.session.delete(dataset)
     db.session.commit()
 
 
-def _send_notification(ds: Dataset, msg: str, status: str = "success"):
+def _send_notification(dataset: Dataset, msg: str, status: str = "success"):
     notification_handler.send_notification_general(
         {
             "id": -1 if get_current_job() is None else get_current_job().get_id(),
-            "dataset_name": ds.dataset_name,
+            "dataset_name": dataset.dataset_name,
             "time": datetime.now(),
             "notification_type": "upload_notification",
-            "owner": ds.user.id,
+            "owner": dataset.user.id,
             "message": msg,
             "status": status,
         }

@@ -23,6 +23,7 @@ def internal_server_error(e: Exception, msg: str = ""):
     response.status_code = 500
     return response
 
+
 @api.errorhandler(HTTPException)
 def any_error(e: Exception, msg: str = ""):
     """API error handler for 500"""
@@ -30,7 +31,6 @@ def any_error(e: Exception, msg: str = ""):
     response = jsonify({"error": "Internal server error", "message": f"{msg} {e}"})
     response.status_code = 500
     return response
-    
 
 
 def forbidden(message):

@@ -1,16 +1,14 @@
 """API endpoints for hicognition"""
-import logging
 import os
 import json
 import pandas as pd
-import cooler
 import numpy as np
 from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from flask.json import jsonify
 
 # from hicognition.utils import get_all_interval_ids, parse_binsizes
-from hicognition.utils import get_all_interval_ids, parse_binsizes
+from hicognition.utils import get_all_interval_ids
 from hicognition.format_checkers import FORMAT_CHECKERS
 from . import api
 from .. import db
@@ -43,12 +41,12 @@ def add_dataset_from_ENCODE():
     Will call new redis worker to download file and notify user when finished."""
     if not hasattr(request, "form") or len(request.files) > 0:
         return invalid("Form is not valid!")
-    
+
     # validate data
     try:
         data = ENCODEDatasetPostModel(**request.form)
     except ValueError as err:
-        return invalid(f'Form is not valid: {str(err)}')
+        return invalid(f"Form is not valid: {str(err)}")
 
     repository = db.session.query(Repository).get(data.repository_name)
     if not repository:
@@ -56,12 +54,10 @@ def add_dataset_from_ENCODE():
 
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
-        processing_state="new",
-        upload_state="new",
-        user_id=g.current_user.id
+        processing_state="new", upload_state="new", user_id=g.current_user.id
     )
     # fill with form data
-    [new_entry.__setattr__(key, data[key]) for key in data.__dict__.keys()]
+    [new_entry.setattr(key, val) for key, val in data.__dict__.items()]
 
     db.session.add(new_entry)
     db.session.commit()
@@ -92,12 +88,10 @@ def add_dataset_from_URL():
 
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
-        processing_state="new",
-        upload_state="new",
-        user_id=g.current_user.id
+        processing_state="new", upload_state="new", user_id=g.current_user.id
     )
     # fill with form data
-    [new_entry.__setattr__(key, data[key]) for key in data.__dict__.keys()]
+    [new_entry.setattr(key, val) for key, val in data.__dict__.items()]
 
     # new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
@@ -116,25 +110,25 @@ def add_dataset_from_URL():
 @auth.login_required
 def add_dataset():
     """endpoint to add a new dataset"""
-    
+
     if not hasattr(request, "form") or len(request.files) == 0:
         return invalid("Form is not valid!")
 
     try:
-        data = FileDatasetPostModel(**request.form, filename=request.files["file"].filename)
+        data = FileDatasetPostModel(
+            **request.form, filename=request.files["file"].filename
+        )
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
-    
+
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
-        processing_state="new",
-        upload_state="new",
-        user_id=g.current_user.id
+        processing_state="new", upload_state="new", user_id=g.current_user.id
     )
     # fill with form data
     # TODO check if everything is as expected in config!
-    [new_entry.__setattr__(key, data[key]) for key in data.__dict__.keys()]
-    
+    [new_entry.setattr(key, val) for key, val in data.__dict__.items()]
+
     # new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
     db.session.commit()
@@ -349,7 +343,7 @@ def preprocess_collections():
     return jsonify({"message": "success! Preprocessing triggered."})
 
 
-@api.route("/bedFileMetadata/", methods=["POST"]) # TODO bedpe
+@api.route("/bedFileMetadata/", methods=["POST"])  # TODO bedpe
 @auth.login_required
 def add_bedfile_metadata():
     """Add metadata file to metadata table.
@@ -420,7 +414,7 @@ def add_bedfile_metadata():
     )
 
 
-@api.route("/bedFileMetadata/<metadata_id>/setFields", methods=["POST"]) # TODO bedpe
+@api.route("/bedFileMetadata/<metadata_id>/setFields", methods=["POST"])  # TODO bedpe
 @auth.login_required
 def add_bedfile_metadata_fields(metadata_id):
     """Add relevant metadatafields of the corresponding metadatafile."""
@@ -670,10 +664,10 @@ def create_region_from_cluster_id(entry_id, cluster_id):
     regions = pd.read_csv(bed_ds.file_path, sep="\t", header=None)
     # create new dataset
     new_entry = bed_ds.copy(
-        dataset_name = form_data["name"],
-        public = False,
+        dataset_name=form_data["name"],
+        public=False,
         processing_state="uploading",
-        user_id=g.current_user.id
+        user_id=g.current_user.id,
     )
     db.session.add(new_entry)
     db.session.commit()

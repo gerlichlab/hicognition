@@ -5,6 +5,7 @@ import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+
 def _recursive_keys(metadata_dict: dict) -> set:
     keys = set()
     for key, value in metadata_dict.items():
@@ -12,6 +13,7 @@ def _recursive_keys(metadata_dict: dict) -> set:
         if isinstance(value, dict):
             keys.update(_recursive_keys(value))
     return keys
+
 
 class Config:
     """Config class for hicognition server."""
@@ -146,18 +148,15 @@ class Config:
     }
     CLUSTER_NUMBER_LARGE = 20
     CLUSTER_NUMBER_SMALL = 10
-    
+
     FILETYPES = {
         "bedfile": {
             "dataset_type": ["region"],
             "file_ext": ["bed"],
             "metadata": [
-                { # row 1
-                    "Cell cycle Stage": "freetext",
-                    "Perturbation": "freetext"
-                },
-                { # row 2
-                    "ValueType":  {
+                {"Cell cycle Stage": "freetext", "Perturbation": "freetext"},  # row 1
+                {  # row 2
+                    "ValueType": {
                         "Peak": {
                             "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
                             # "Size Type": ["Point", "Interval"],
@@ -171,21 +170,18 @@ class Config:
                         "Derived": {
                             "Method": ["HiC", "Other Dataset"],
                             # "Size Type": ["Point", "Interval"],
-                        }
+                        },
                     }
-                }
-            ]
+                },
+            ],
         },
         "bedpe_file": {
             "dataset_type": ["region"],
             "file_ext": ["bedpe"],
             "metadata": [
-                { # row 1
-                    "Cell cycle Stage": "freetext",
-                    "Perturbation": "freetext"
-                },
-                { # row 2
-                    "ValueType":  {
+                {"Cell cycle Stage": "freetext", "Perturbation": "freetext"},  # row 1
+                {  # row 2
+                    "ValueType": {
                         "Peak": {
                             "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
                             # "Size Type": ["Point", "Interval"],
@@ -199,10 +195,10 @@ class Config:
                         "Derived": {
                             "Method": ["HiC", "Other Dataset"],
                             # "Size Type": ["Point", "Interval"],
-                        }
+                        },
                     }
-                }
-            ]
+                },
+            ],
         },
         "bigwig": {
             "dataset_type": "feature",
@@ -222,7 +218,11 @@ class Config:
                         "ChromatinAssociation": {
                             "Protein": "freetext",
                             "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
-                            "Normalization": ["NormToControl", "RPM", "No Normalization"],
+                            "Normalization": [
+                                "NormToControl",
+                                "RPM",
+                                "No Normalization",
+                            ],
                         },
                         "GeneExpression": {
                             "Normalization": [
@@ -234,7 +234,7 @@ class Config:
                             "Method": ["RNAseq", "GroSeq", "SLAMseq", "NETseq"],
                         },
                     }
-                }
+                },
             ],
         },
         "cooler": {
@@ -246,22 +246,18 @@ class Config:
                     "Perturbation": "freetext",
                 },
                 {
-                    "ValueType": 
-                    {
-                        "Interaction": {
-                            "Method": ["HiC"], 
-                            "Normalization": ["ICCF"]
-                        }
+                    "ValueType": {
+                        "Interaction": {"Method": ["HiC"], "Normalization": ["ICCF"]}
                     }
-                }
-            ]
-        }
+                },
+            ],
+        },
     }
 
     # Extract all metadata keys from config specification
     METADATA_KEYS = set()
     for file_type, file_type_config in FILETYPES.items():
-        for row in file_type_config.get('metadata', []):
+        for row in file_type_config.get("metadata", []):
             METADATA_KEYS.update(_recursive_keys(row))
 
     # dataset-option mapping -> puts different optionvalues for dataset into relation

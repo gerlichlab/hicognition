@@ -38,7 +38,7 @@ def bed_preprocess_pipeline_step(dataset_id, windowsize):
     log.info(f"  Generating Intervals: {dataset_id} with {windowsize}")
     # get database object
     dataset = Dataset.query.get(dataset_id)
-    
+
     # read bed(pe) file
     bed_path = dataset.file_path
     bed_bedpe = pd.read_csv(bed_path, sep="\t", header=None)

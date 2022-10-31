@@ -2,28 +2,25 @@
 # TODO refactor to allow database to not know about flask-server or similar
 # TODO task launcher: why put it into the user class?
 
+import os
 from abc import abstractmethod
 import datetime
 from enum import Enum
-import logging
+import json
+import pandas as pd
 from flask.globals import current_app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.ext.declarative import declared_attr, AbstractConcreteBase
-import pandas as pd
+from sqlalchemy.ext.declarative import declared_attr
+import rq
+import redis
 import cooler
-import json
-import os
-import importlib
 from itertools import chain
-from hicognition.utils import parse_binsizes
-from hicognition.format_checkers import FORMAT_CHECKERS
-from hicognition.data_structures import recDict as recursive_dict
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import JSONWebSignatureSerializer
-import rq
 import hicognition
-import redis
+from hicognition.utils import parse_binsizes
+from hicognition.format_checkers import FORMAT_CHECKERS
 from . import db
 
 
@@ -31,54 +28,90 @@ from . import db
 
 session_dataset_assoc_table = db.Table(
     "session_dataset_assoc_table",
-    db.Column("session_id", db.Integer, db.ForeignKey("session.id", ondelete="CASCADE")),
-    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
+    db.Column(
+        "session_id", db.Integer, db.ForeignKey("session.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "dataset_id", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
 )
 
 session_collection_assoc_table = db.Table(
     "session_collection_assoc_table",
-    db.Column("session_id", db.Integer, db.ForeignKey("session.id", ondelete="CASCADE")),
-    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id", ondelete="CASCADE")),
+    db.Column(
+        "session_id", db.Integer, db.ForeignKey("session.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "collection_id", db.Integer, db.ForeignKey("collection.id", ondelete="CASCADE")
+    ),
 )
 
 dataset_collection_assoc_table = db.Table(
     "dataset_collection_assoc_table",
-    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id", ondelete="CASCADE")),
-    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
+    db.Column(
+        "collection_id", db.Integer, db.ForeignKey("collection.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "dataset_id", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
 )
 
 dataset_preprocessing_table = db.Table(
     "dataset_dataset_preprocessing_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
-    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
+    db.Column(
+        "dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "dataset_feature", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
     db.UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
 )
 
 dataset_failed_table = db.Table(
     "dataset_failed_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
-    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
+    db.Column(
+        "dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "dataset_feature", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
     db.UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
 )
 
 dataset_completed_table = db.Table(
     "dataset_completed_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
-    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
+    db.Column(
+        "dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "dataset_feature", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
     db.UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
 )
 
 collections_preprocessing_table = db.Table(
     "collections_preprocessing_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
-    db.Column("collection_feature", db.Integer, db.ForeignKey("collection.id", ondelete="CASCADE")),
+    db.Column(
+        "dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "collection_feature",
+        db.Integer,
+        db.ForeignKey("collection.id", ondelete="CASCADE"),
+    ),
     db.UniqueConstraint("dataset_region", "collection_feature", name="uix_1"),
 )
 
 collections_failed_table = db.Table(
     "collections_failed_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
-    db.Column("collection_feature", db.Integer, db.ForeignKey("collection.id", ondelete="CASCADE")),
+    db.Column(
+        "dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "collection_feature",
+        db.Integer,
+        db.ForeignKey("collection.id", ondelete="CASCADE"),
+    ),
     db.UniqueConstraint("dataset_region", "collection_feature", name="uix_1"),
 )
 
@@ -103,14 +136,12 @@ class User(db.Model, UserMixin):
         cascade="all, delete-orphan",
     )
 
-    def add_repository_credentials(
-        self, repository_name: str, key: str, secret: str
-    ):  # TODO needed?
-        credentials = RepositoryAuth(
-            self.id, repository_name, key, secret
-        )
-        db.session.add(credentials)
-        return credentials
+    # def add_repository_credentials(
+    #     self, repository_name: str, key: str, secret: str
+    # ):  # TODO needed?
+    #     credentials = RepositoryAuth(self.id, repository_name, key, secret)
+    #     db.session.add(credentials)
+    #     return credentials
 
     def set_password(self, password):
         """set password helper."""
@@ -135,22 +166,20 @@ class User(db.Model, UserMixin):
         # check if func is name of function in tasks.py, then import those
         if isinstance(func, str):
             import app.tasks
+
             func = app.tasks.__getattr__(func)
 
-        rq_job = queue.enqueue(_rq_job_wrapper, func, *args, **kwargs, job_timeout="10h")
+        rq_job = queue.enqueue(
+            _rq_job_wrapper, func, *args, **kwargs, job_timeout="10h"
+        )
 
-        # check whether intervals_id is in kwargs
-        if "intervals_id" in kwargs:
-            intervals_id = kwargs["intervals_id"]
-        else:
-            intervals_id = None
         task = Task(
             id=rq_job.get_id(),
             name=func,
             description=description,
             user_id=self.id,
             dataset_id=dataset_id,
-            intervals_id=intervals_id,
+            intervals_id=kwargs.get("intervals_id", None),
         )
         db.session.add(task)
         return task
@@ -162,18 +191,14 @@ class User(db.Model, UserMixin):
         rq_job = queue.enqueue(
             "app.tasks." + name, collection_id, job_timeout="10h", *args, **kwargs
         )
-        # check whether inverals_id is in kwargs
-        if "intervals_id" in kwargs:
-            intervals_id = kwargs["intervals_id"]
-        else:
-            intervals_id = None
+
         task = Task(
             id=rq_job.get_id(),
             name=name,
             description=description,
             user_id=self.id,
             collection_id=collection_id,
-            intervals_id=intervals_id,
+            intervals_id=kwargs.get("intervals_id", None),
         )
         db.session.add(task)
         return task
@@ -201,8 +226,6 @@ class User(db.Model, UserMixin):
         return f"<User {self.username}>"
 
 
-# class User_ExternSource mtm
-# TODO replace with better name?
 class Repository(db.Model):
     """Model for external data repositories.
     Name is primary key, as this table will hold only a few rows and it makes
@@ -219,9 +242,11 @@ class Repository(db.Model):
     auth_required = db.Column(db.Boolean, default=False)
 
     def build_url_sample(self, data_id: str):
+        """inserts id into repo metadata url"""
         return self.file_url.format(id=data_id)
 
     def build_url(self, href: str):
+        """inserts href into general repo url"""
         return self.url.format(href=href)
 
     credentials = db.relationship(
@@ -243,8 +268,12 @@ class RepositoryAuth(db.Model):  # TODO change name
     """Optional many-to-many object to store user keys for external repos"""
 
     # fields
-    user_id = db.Column(db.ForeignKey("user.id", name='fk_repoauth_user'), primary_key=True)
-    repository_name = db.Column(db.ForeignKey("repository.name", name='fk_repoauth_repo'), primary_key=True)
+    user_id = db.Column(
+        db.ForeignKey("user.id", name="fk_repoauth_user"), primary_key=True
+    )
+    repository_name = db.Column(
+        db.ForeignKey("repository.name", name="fk_repoauth_repo"), primary_key=True
+    )
     key = db.Column(db.String(512), nullable=False)
     secret = db.Column(db.String(512), nullable=False)
 
@@ -255,24 +284,34 @@ class RepositoryAuth(db.Model):  # TODO change name
 
 class Dataset(db.Model):
     """Dataset database model"""
+
     # fields
     id = db.Column(db.Integer, primary_key=True)
     dataset_name = db.Column(db.String(512), nullable=False)
     description = db.Column(db.String(81), default="undefined")
-    assembly = db.Column(db.Integer, db.ForeignKey("assembly.id", name='fk_dataset_assembly'))
+    assembly = db.Column(
+        db.Integer, db.ForeignKey("assembly.id", name="fk_dataset_assembly")
+    )
     sizeType = db.Column(db.String(64), default="undefined")
     file_path = db.Column(db.String(512))
     public = db.Column(db.Boolean, default=False, nullable=False)
     filetype = db.Column(db.String(64), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id", name='fk_dataset_user'), nullable=False)
-    processing_state = db.Column(db.String(64)) # 'new', 'processing', 'processing_failed', 'success'
-    repository_name = db.Column(db.ForeignKey("repository.name", name='fk_dataset_repository'), nullable=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", name="fk_dataset_user"), nullable=False
+    )
+    processing_state = db.Column(
+        db.String(64)
+    )  # 'new', 'processing', 'processing_failed', 'success'
+    repository_name = db.Column(
+        db.ForeignKey("repository.name", name="fk_dataset_repository"), nullable=True
+    )
     sample_id = db.Column(db.String(128), nullable=True)
     source_url = db.Column(db.String(512), nullable=True)
     # dataset_type = db.Column(db.String(64), nullable=False) # Enum("region", "feature")
-    upload_state = db.Column(db.String(64), nullable=False, default='new') # Enum('new', 'uploading', 'uploaded', 'upload_failed')
+    upload_state = db.Column(
+        db.String(64), nullable=False, default="new"
+    )  # Enum('new', 'uploading', 'uploaded', 'upload_failed')
     metadata_json = db.Column(db.JSON, nullable=True)
-
 
     perturbation = db.Column(db.String(64), default="undefined")
     cellCycleStage = db.Column(db.String(64), default="undefined")
@@ -283,7 +322,7 @@ class Dataset(db.Model):
     protein = db.Column(db.String(64), default="undefined")
     directionality = db.Column(db.String(64), default="undefined")
     available_binsizes = db.Column(db.String(500), default="undefined")
-    
+
     # self relationships
     processing_features = db.relationship(
         "Dataset",
@@ -307,8 +346,12 @@ class Dataset(db.Model):
         backref="completed_regions",
     )
 
-    intervals = db.relationship("Intervals", back_populates="source_dataset", 
-        lazy="dynamic", cascade="all, delete-orphan")
+    intervals = db.relationship(
+        "Intervals",
+        back_populates="source_dataset",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
 
     obs_exp = db.relationship(
         "ObsExp",
@@ -347,12 +390,19 @@ class Dataset(db.Model):
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
+
     @property
     def interval_data(self):
-        return [*self.averageIntervalData, *self.individualIntervalData, *self.embeddingData]
-    
-    
-    tasks = db.relationship("Task", backref="dataset", lazy="dynamic", cascade="all, delete-orphan")
+        """makes a big list of interval data objects"""
+        return [
+            *self.averageIntervalData,
+            *self.individualIntervalData,
+            *self.embeddingData,
+        ]
+
+    tasks = db.relationship(
+        "Task", backref="dataset", lazy="dynamic", cascade="all, delete-orphan"
+    )
     repository = db.relationship("Repository")
     user = db.relationship("User")
 
@@ -382,7 +432,7 @@ class Dataset(db.Model):
                 self.processing_state = "processing"
         database.session.add(self)
         database.session.commit()
-    
+
     # @property # uli
     # def processing_state(self):
     #     failed = sum([iv_data.job_status == 'failed' for iv_data in self.interval_data]) > 0
@@ -408,18 +458,18 @@ class Dataset(db.Model):
         ):
             return True
         return False
-    
+
     def copy(self, **kwargs):
         dataset = Dataset()
         for column in self.__class__.__table__.c.keys():
             # forbid id, dataset_name and public flag
-            if column in ['id', 'dataset_name', 'public']:
+            if column in ["id", "dataset_name", "public"]:
                 continue
-            dataset.__setattr__(column, self.__getattribute__(column))
+            dataset.setattr(column, self.getattr(column))
 
         for key, value in kwargs.items():
             if key in self.__class__.__table__.c.keys():
-                dataset.__setattr__(key, value)
+                dataset.setattr(key, value)
 
         return dataset
 
@@ -522,6 +572,7 @@ class Dataset(db.Model):
         # start preprocessing of bedfile, the other filetypes do not need preprocessing
         if self.filetype in ["bedfile", "bedpe_file"]:
             import app.tasks
+
             self.user.launch_task(  #  TODO current user or dataset owner user?
                 current_app.queues["short"],
                 app.tasks.pipeline_bed,
@@ -544,8 +595,8 @@ class Dataset(db.Model):
         """Generates a JSON from the model"""
         json_dataset = {}
         for column in self.__class__.__table__.c.keys():
-            if self.__getattribute__(column) != "undefined":
-                json_dataset[column] = self.__getattribute__(column)
+            if self.getattr(column) != "undefined":
+                json_dataset[column] = self.getattr(column)
 
         # add processing datasets
         json_dataset["processing_datasets"] = [
@@ -585,7 +636,7 @@ class Collection(db.Model):
     )
     failed_for_datasets = db.relationship("Dataset", secondary=collections_failed_table)
     sessions = db.relationship("Session", secondary=session_collection_assoc_table)
-    
+
     associationData = db.relationship(
         "AssociationIntervalData",
         lazy="dynamic",
@@ -622,7 +673,7 @@ class Collection(db.Model):
 
     def delete_data_of_associated_entries(self):
         """Deletes associated Data"""
-        assoc_data = self.associationData # .all()
+        assoc_data = self.associationData  # .all()
         deletion_queue = assoc_data
         for entry in deletion_queue:
             # remove files
@@ -740,7 +791,7 @@ class Intervals(db.Model):
     name = db.Column(db.String(512), index=True)
     file_path_sub_sample_index = db.Column(db.String(512), index=True)
     windowsize = db.Column(db.Integer, index=True)
-    
+
     source_dataset = db.relationship("Dataset", back_populates="intervals")
     tasks = db.relationship(
         "Task", backref="intervals", lazy="dynamic", cascade="all, delete-orphan"
@@ -748,16 +799,29 @@ class Intervals(db.Model):
 
     @classmethod
     def __declare_last__(cls):
-        #cls.interval_data = db.relationship("BaseIntervalData", backref="interval",)
-        cls.average_interval_data = db.relationship("AverageIntervalData", cascade="all, delete-orphan")
-        cls.individual_interval_data = db.relationship("IndividualIntervalData", cascade="all, delete-orphan")
-        cls.association_interval_data = db.relationship("AssociationIntervalData", cascade="all, delete-orphan")
-        cls.embedding_interval_data = db.relationship("EmbeddingIntervalData", cascade="all, delete-orphan")
+        # cls.interval_data = db.relationship("BaseIntervalData", backref="interval",)
+        cls.average_interval_data = db.relationship(
+            "AverageIntervalData", cascade="all, delete-orphan"
+        )
+        cls.individual_interval_data = db.relationship(
+            "IndividualIntervalData", cascade="all, delete-orphan"
+        )
+        cls.association_interval_data = db.relationship(
+            "AssociationIntervalData", cascade="all, delete-orphan"
+        )
+        cls.embedding_interval_data = db.relationship(
+            "EmbeddingIntervalData", cascade="all, delete-orphan"
+        )
 
     @property
     def interval_data(self):
-        return [*self.average_interval_data, *self.individual_interval_data, *self.association_interval_data, *self.embedding_interval_data]
-    
+        return [
+            *self.average_interval_data,
+            *self.individual_interval_data,
+            *self.association_interval_data,
+            *self.embedding_interval_data,
+        ]
+
     def __repr__(self):
         """Format print output."""
         return f"<Intervals {self.name}>"
@@ -772,7 +836,10 @@ class Intervals(db.Model):
         }
         return json_intervals
 
+
 class IntervalDataTypeEnum(Enum):
+    """mapping of data types for front end..."""
+
     PILEUP = "pileup"
     STACKUP = "stackup"
     LINEPROFILE = "lineprofile"
@@ -780,24 +847,26 @@ class IntervalDataTypeEnum(Enum):
     EMBEDDING_1D = "1d-embedding"
     EMBEDDING_2D = "2d-embedding"
 
-#class BaseIntervalData(AbstractConcreteBase, db.Model):
+
+# NOTE some of these functions have no doc string, but most of them are properties or
+# declared attrs, adding docstrings here decreases readability
 class BaseIntervalData(db.Model):
-    """Abstract base class for interval data classes.
-    """
+    """Abstract base class for interval data classes."""
+
     __abstract__ = True
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(512), index=True)
     file_path = db.Column(db.String(512), index=True)
     value_type = db.Column(db.String(64))
     binsize = db.Column(db.Integer)
-    job_status = db.Column(db.String(64)) #, nullable=False) # success, fail, <job_id>
+    job_status = db.Column(db.String(64))  # , nullable=False) # success, fail, <job_id>
 
     @declared_attr
     def intervals_id(cls):
         return db.Column(db.Integer, db.ForeignKey("intervals.id", ondelete="CASCADE"))
 
     @declared_attr
-    def source_intervals(cls): # FIXME  plural and naming
+    def source_intervals(cls):  # FIXME  plural and naming
         return db.relationship("Intervals")
 
     @property
@@ -807,10 +876,11 @@ class BaseIntervalData(db.Model):
 
     @declared_attr
     def __mapper_args__(cls):
-        # configurate subclasses about concrete table inheritance
+        """adds the __mapper_args__ dunder var to every object inherting from this
+        class. every table inherting needs to be declared as polymorphic"""
+
         if cls.__name__ != "BaseIntervalData":
-            return {'polymorphic_identity': cls.__name__,
-                    'concrete': True}
+            return {"polymorphic_identity": cls.__name__, "concrete": True}
         else:
             return {}
 
@@ -825,20 +895,31 @@ class BaseIntervalData(db.Model):
             data[col] = getattr(self, col.name)
         return data
 
+
 class AverageIntervalData(BaseIntervalData):
     """db.Table to hold information and pointers to data for
     average values of a dataset at the linked intervals dataset."""
+
     id = db.Column(db.Integer, primary_key=True)
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id", name='fk_averageivd_dataset', ondelete="CASCADE"))
+    dataset_id = db.Column(
+        db.Integer,
+        db.ForeignKey("dataset.id", name="fk_averageivd_dataset", ondelete="CASCADE"),
+    )
 
     @classmethod
     def __declare_last__(cls):
-        cls.source_dataset = db.relationship("Dataset", back_populates="averageIntervalData")
+        cls.source_dataset = db.relationship(
+            "Dataset", back_populates="averageIntervalData"
+        )
         cls.feature = cls.source_dataset
 
     @property
     def intervaldata_type(self) -> IntervalDataTypeEnum:
-        return IntervalDataTypeEnum.PILEUP.value if self.value_type in ["Obs/Exp", "ICCF"] else IntervalDataTypeEnum.LINEPROFILE.value
+        return (
+            IntervalDataTypeEnum.PILEUP.value
+            if self.value_type in ["Obs/Exp", "ICCF"]
+            else IntervalDataTypeEnum.LINEPROFILE.value
+        )
 
 
 class IndividualIntervalData(BaseIntervalData):
@@ -847,13 +928,21 @@ class IndividualIntervalData(BaseIntervalData):
     E.g. for bigwig stack-ups or displaying snipped Hi-C matrices."""
 
     id = db.Column(db.Integer, primary_key=True)
-    file_path_small = db.Column(db.String(128), index=True)  # location of downsampled file
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id", name='fk_individualivd_dataset', ondelete="CASCADE"))
+    file_path_small = db.Column(
+        db.String(128), index=True
+    )  # location of downsampled file
+    dataset_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "dataset.id", name="fk_individualivd_dataset", ondelete="CASCADE"
+        ),
+    )
+
     @classmethod
     def __declare_last__(cls):
         cls.source_dataset = db.relationship("Dataset")
         cls.feature = cls.source_dataset
-    
+
     @property
     def intervaldata_type(self) -> IntervalDataTypeEnum:
         return IntervalDataTypeEnum.STACKUP.value
@@ -865,13 +954,20 @@ class AssociationIntervalData(BaseIntervalData):
     Continuous values enrichment."""
 
     id = db.Column(db.Integer, primary_key=True)
-    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id", name='fk_associationivd_collection', ondelete="CASCADE"))
-    
+    collection_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "collection.id", name="fk_associationivd_collection", ondelete="CASCADE"
+        ),
+    )
+
     @classmethod
     def __declare_last__(cls):
-        cls.source_collection = db.relationship("Collection", back_populates="associationData")
+        cls.source_collection = db.relationship(
+            "Collection", back_populates="associationData"
+        )
         cls.feature = cls.source_collection
-        
+
     @property
     def intervaldata_type(self) -> IntervalDataTypeEnum:
         return IntervalDataTypeEnum.LOLA.value
@@ -889,21 +985,36 @@ class EmbeddingIntervalData(BaseIntervalData):
     feature_distribution_path = db.Column(db.String(512), index=True)
     normalization = db.Column(db.String(64))
     cluster_number = db.Column(db.String(64))
-    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id", name='fk_embeddingivd_collection', ondelete="CASCADE"))
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id", name='fk_embeddingivd_dataset', ondelete="CASCADE"))
-    
+    collection_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "collection.id", name="fk_embeddingivd_collection", ondelete="CASCADE"
+        ),
+    )
+    dataset_id = db.Column(
+        db.Integer,
+        db.ForeignKey("dataset.id", name="fk_embeddingivd_dataset", ondelete="CASCADE"),
+    )
+
     @classmethod
     def __declare_last__(cls):
         cls.source_dataset = db.relationship("Dataset", back_populates="embeddingData")
-        cls.source_collection = db.relationship("Collection", back_populates="embeddingData")
+        cls.source_collection = db.relationship(
+            "Collection", back_populates="embeddingData"
+        )
 
     @property
     def feature(self):
+        """as embeddings can be 1d or 2d feature is set dynamically"""
         return self.source_dataset if self.source_dataset else self.source_collection
 
     @property
     def intervaldata_type(self) -> IntervalDataTypeEnum:
-        return IntervalDataTypeEnum.EMBEDDING_2D.value if self.value_type =="2d-embedding" else IntervalDataTypeEnum.EMBEDDING_1D.value
+        return (
+            IntervalDataTypeEnum.EMBEDDING_2D.value
+            if self.value_type == "2d-embedding"
+            else IntervalDataTypeEnum.EMBEDDING_1D.value
+        )
 
 
 class Task(db.Model):
@@ -942,18 +1053,16 @@ class Task(db.Model):
         """Fetches the progress of the rq job"""
         job = self.get_rq_job()
         return job.meta.get("progress", 0) if job is not None else 100
-    
-    
 
 
-
+# DO NOT REMOVE
 # class Task(db.Model):
 #     """Models the tasks dispatched to the redis queue."""
 
 #     #id = db.Column(db.String(36), primary_key=True)
 #     id = db.Column(db.Integer, primary_key=True)
 #     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    
+
 #     func = db.Column(db.String(512))
 #     progress = db.Column(db.Integer, default=0)
 #     status = db.Column(db.String(64), default='none') # running, failed, finished
@@ -988,7 +1097,7 @@ class Task(db.Model):
 #         """Fetches the progress of the rq job"""
 #         job = self.get_rq_job()
 #         return job.meta.get("progress", 0) if job is not None else 100
-    
+
 #     @staticmethod
 #     def create(func, user: User, commit=True, *args, **kwargs):
 #         args_dict = {}
@@ -1003,7 +1112,7 @@ class Task(db.Model):
 #         if commit:
 #             db.session.commit()
 #         return task
-    
+
 #     def launch(self, queue=None): # TODO give this a go
 #         if queue is None:
 #             return self._run_task()
@@ -1017,7 +1126,7 @@ class Task(db.Model):
 #                 # TODO redis worker exception handling
 
 #             queue.enqueue(
-#                 wrap_with_app_context, 
+#                 wrap_with_app_context,
 #                 job_id = self.id,
 #                 task = self
 #             )
@@ -1037,14 +1146,13 @@ class Task(db.Model):
 #             self.status = 'failed'
 #             db.session.commit()
 #             raise err
-            
+
 #     @property
 #     def stored_function(self):
 #         module_name, func_name = self.func.rsplit('.',1)
 #         module = importlib.import_module(module_name)
 #         func = getattr(module, func_name)
 #         return func
-    
 
 
 class BedFileMetadata(db.Model):
@@ -1140,10 +1248,11 @@ def any_tasks_failed(tasks):
                 return True
     return False
 
+
 def _rq_job_wrapper(func, *args, **kwargs):
     import app
+
     curr_app = app.create_app(os.getenv("FLASK_CONFIG") or "default")
     app_context = curr_app.app_context()
     app_context.push()
     return func(*args, **kwargs)
-

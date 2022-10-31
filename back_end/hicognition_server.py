@@ -14,6 +14,7 @@ from app.background_tasks import (
     send_keep_alive_message,
 )
 from app.models import *
+
 # (
 #     User,
 #     Dataset,
@@ -162,7 +163,7 @@ def make_shell_context():
         "Organism": Organism,
         "Assembly": Assembly,
         "Repository": Repository,
-        "RepositoryAuth": RepositoryAuth
+        "RepositoryAuth": RepositoryAuth,
     }
 
 

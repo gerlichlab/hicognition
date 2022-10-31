@@ -27,8 +27,7 @@ def modify_dataset(dataset_id):
     try:
         data = DatasetPutModel(**request.form)
     except ValueError as err:
-        return invalid(f'Form is not valid: {str(err)}')
-    
+        return invalid(f"Form is not valid: {str(err)}")
 
     # check whether dataset exists
     dataset = Dataset.query.get(dataset_id)
@@ -47,7 +46,11 @@ def modify_dataset(dataset_id):
     # dataset.add_fields_from_form(
     #     data, requirement_spec=Dataset.DATASET_META_FIELDS_MODIFY
     # )
-    [dataset.__setattr__(key, data[key]) for key in data.__dict__.keys() if data[key] is not None and key != 'metadata_json'] # FIXME put routes still give old names, metadata fields are wrong!
+    [
+        dataset.setattr(key, value)
+        for key, value in data.__dict__.keys()
+        if value is not None and key != "metadata_json"
+    ]  # FIXME put routes still give old names, metadata fields are wrong!
     # TODO metadata_json
     db.session.add(dataset)
     db.session.commit()

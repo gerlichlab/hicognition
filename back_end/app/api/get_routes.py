@@ -2,18 +2,12 @@
 import json
 import gzip
 import logging
-from turtle import update
 import pandas as pd
-import requests
 from requests import HTTPError, RequestException
-from requests.exceptions import ConnectionError, Timeout
-from requests.auth import HTTPBasicAuth
 import numpy as np
 from flask import g, make_response
 from flask.json import jsonify
 from flask.globals import current_app
-from sqlalchemy import or_
-from .. import utils
 from hicognition import data_structures
 from hicognition.utils import (
     update_processing_state,
@@ -74,22 +68,24 @@ def get_metadata_mapping():
     """Get route for metadata mapping"""
     return jsonify(current_app.config["DATASET_OPTION_MAPPING"])
 
+
 @api.route("/filetypes/", methods=["GET"])
 @auth.login_required
 def get_filetypes():
     """Returns filetype and associated metadata"""
     return jsonify(current_app.config["FILETYPES"])
     # file_types = current_app.config["FILETYPES"]
-    # 
+    #
     # if format == "snake_case":
     #     format = utils.Format.SNAKE_CASE
     # elif format == "camelCase":
     #     format = utils.Format.CAMELCASE
     # elif format == "human":
     #     format = utils.Format.HUMAN_READABLE
-        
+
     # formatted_file_types = utils.convert_format(file_types, format)
     # return jsonify(formatted_file_types)
+
 
 @api.route("/organisms/", methods=["GET"])
 @auth.login_required
@@ -245,40 +241,69 @@ def get_processed_data_mapping_of_dataset(dataset_id):
         "embedding1d": data_structures.recDict(),
         "embedding2d": data_structures.recDict(),
     }
-    # populate output object
+    # populate output object #
     for interval in dataset.intervals:
-        windows_size = "variable" if dataset.sizeType == "Interval" else interval.windowsize
-        for ivd in interval.interval_data: # FIXME SOON!
-            if (ivd.feature in ivd.source_intervals.source_dataset.processing_features) or (
-                ivd.feature in ivd.source_intervals.source_dataset.failed_features) or (
-                ivd.feature in ivd.source_intervals.source_dataset.processing_collections) or (
-                ivd.feature in ivd.source_intervals.source_dataset.failed_collections
+        windows_size = (
+            "variable" if dataset.sizeType == "Interval" else interval.windowsize
+        )
+        for ivd in interval.interval_data: 
+            if ( # TODO i don't like this
+                (ivd.feature in ivd.source_intervals.source_dataset.processing_features)
+                or (ivd.feature in ivd.source_intervals.source_dataset.failed_features)
+                or (
+                    ivd.feature
+                    in ivd.source_intervals.source_dataset.processing_collections
+                )
+                or (
+                    ivd.feature
+                    in ivd.source_intervals.source_dataset.failed_collections
+                )
             ):
                 continue
 
             interval_datatype = ivd.intervaldata_type
             if interval_datatype == IntervalDataTypeEnum.EMBEDDING_1D.value:
-                interval_datatype = 'embedding1d'
+                interval_datatype = "embedding1d"
             elif interval_datatype == IntervalDataTypeEnum.EMBEDDING_2D.value:
-                interval_datatype = 'embedding2d'
-            
+                interval_datatype = "embedding2d"
+
             # assigning name of feature
-            feature_name = ivd.feature.dataset_name if isinstance(ivd.feature, Dataset) else ivd.feature.name
+            feature_name = (
+                ivd.feature.dataset_name
+                if isinstance(ivd.feature, Dataset)
+                else ivd.feature.name
+            )
             output[interval_datatype][ivd.feature.id]["name"] = feature_name
 
             # assigning feature names if feature is a collection
             if isinstance(ivd.feature, Collection):
-                output[interval_datatype][ivd.feature.id]["collection_dataset_names"] = ivd.feature.to_json()["dataset_names"]
+                output[interval_datatype][ivd.feature.id][
+                    "collection_dataset_names"
+                ] = ivd.feature.to_json()["dataset_names"]
 
             # assigning the id
-            if isinstance(ivd, AverageIntervalData) and interval_datatype == 'pileup':
-                output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][ivd.binsize][ivd.value_type] = str(ivd.id)
-            elif isinstance(ivd, EmbeddingIntervalData) and interval_datatype == "embedding1d":
-                output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][ivd.binsize][ivd.cluster_number] = str(ivd.id)
-            elif isinstance(ivd, EmbeddingIntervalData) and interval_datatype == "embedding2d":
-                output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][ivd.binsize][ivd.normalization][ivd.cluster_number] = str(ivd.id)
+            if isinstance(ivd, AverageIntervalData) and interval_datatype == "pileup":
+                output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][
+                    ivd.binsize
+                ][ivd.value_type] = str(ivd.id)
+            elif (
+                isinstance(ivd, EmbeddingIntervalData)
+                and interval_datatype == "embedding1d"
+            ):
+                output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][
+                    ivd.binsize
+                ][ivd.cluster_number] = str(ivd.id)
+            elif (
+                isinstance(ivd, EmbeddingIntervalData)
+                and interval_datatype == "embedding2d"
+            ):
+                output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][
+                    ivd.binsize
+                ][ivd.normalization][ivd.cluster_number] = str(ivd.id)
             else:
-                output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][ivd.binsize] = str(ivd.id)
+                output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][
+                    ivd.binsize
+                ] = str(ivd.id)
 
     return jsonify(output)
 

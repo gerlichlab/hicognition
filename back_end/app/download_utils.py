@@ -16,10 +16,6 @@ from .models import Dataset, Repository
 # get logger
 log = logging.getLogger("rq.worker")
 
-# set basedir
-
-basedir = os.path.abspath(os.path.dirname(__file__))  # TODO test me
-
 
 class DownloadUtilsException(Exception):
     """General exception to be thrown if download fails"""
