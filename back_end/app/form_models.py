@@ -6,7 +6,6 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field, validator, constr, AnyHttpUrl, Json
 
 from flask import current_app
-from .utils import convert_format, Format
 
 class SizeTypeEnum(str, Enum):
     point = 'point'

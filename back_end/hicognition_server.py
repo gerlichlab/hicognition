@@ -161,6 +161,8 @@ def make_shell_context():
         "AssociationIntervalData": AssociationIntervalData,
         "Organism": Organism,
         "Assembly": Assembly,
+        "Repository": Repository,
+        "RepositoryAuth": RepositoryAuth
     }
 
 

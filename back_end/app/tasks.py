@@ -1,13 +1,14 @@
 """Tasks for the redis-queue"""
 import os
 import logging
+from typing import Any
 from flask import current_app
 import pandas as pd
 from datetime import datetime
 from requests.exceptions import ConnectionError, Timeout
 from hicognition import io_helpers
 from rq import get_current_job
-from . import create_app, db
+from . import db
 from .models import (
     Assembly,
     Dataset,
@@ -23,15 +24,6 @@ from . import download_utils
 # get logger
 log = logging.getLogger("rq.worker")
 
-app = None
-# setup app context
-# def task_context(func):
-#     def create_context():
-#         app = create_app(os.getenv("FLASK_CONFIG") or "default")
-#         app.app_context().push()
-#     return create_context
-app = create_app(os.getenv("FLASK_CONFIG") or "default")
-app.app_context().push()
 
 # set up notification handler
 
@@ -44,6 +36,21 @@ basedir = os.path.abspath(os.path.dirname(__file__))  # TODO unused
 # class WrongDatasetTypeError(Exception):
 #     """Thrown if task is called with wrong dataset type"""
 
+# hacked way to access functions by string as seen here:
+# https://stackoverflow.com/questions/2447353/getattr-on-a-module
+def __getattr__(name: str) -> Any:
+    attr_dict =  {
+        "pipeline_bed": pipeline_bed,
+        "pipeline_pileup": pipeline_pileup,
+        "pipeline_stackup": pipeline_stackup,
+        "pipeline_lola": pipeline_lola,
+        "pipeline_embedding_1d": pipeline_embedding_1d,
+        "download_dataset_file": download_dataset_file,
+    }
+    if name not in attr_dict:
+        raise AttributeError(f"function {name} not in app.tasks")
+    return attr_dict[name]
+
 
 # # @task_context
 def pipeline_bed(dataset_id):
@@ -54,24 +61,31 @@ def pipeline_bed(dataset_id):
     Output-folder is not needed for this since the file_path
     of Dataset entry contains it.
     """
-    dataset_object = Dataset.query.get(dataset_id)
-    if dataset_object.sizeType == "Interval":
+    dataset = Dataset.query.get(dataset_id)
+    if dataset.sizeType == "Interval":
         window_sizes = ["variable"]
     else:
         window_sizes = [
             size
-            for size in app.config["PREPROCESSING_MAP"].keys()
+            for size in current_app.config["PREPROCESSING_MAP"].keys()
             if size != "variable"
         ]
     log.info(f"Bed pipeline started for {dataset_id} with {window_sizes}")
     # bed-file preprocessing: sorting, clodius, uploading to higlass
-    file_path = dataset_object.file_path
+    file_path = dataset.file_path
     # clean dataset
     log.info("      Clean...")
-    cleaned_file_name = file_path.split(".")[0] + "_cleaned.bed"
-    io_helpers.clean_bed(file_path, cleaned_file_name)
+    dir_path = os.path.dirname(dataset.file_path)
+    file_name_split = os.path.basename(dataset.file_path).split('.')
+    file_name_cleaned = f"{'.'.join(file_name_split[:-1])}_cleaned.{file_name_split[-1]}"
+    file_path_cleaned = os.path.join(dir_path, file_name_cleaned)
+    
+    if dataset.filetype == 'bedfile': 
+        io_helpers.clean_bed(file_path, file_path_cleaned)
+    elif dataset.filetype == 'bedpe_file':
+        io_helpers.clean_bedpe(file_path, file_path_cleaned)
     # set cleaned_file_name as file_name
-    dataset_object.file_path = cleaned_file_name
+    dataset.file_path = file_path_cleaned
     # delete old file
     log.info("      Delete Unsorted...")
     io_helpers.remove_safely(file_path, current_app.logger)

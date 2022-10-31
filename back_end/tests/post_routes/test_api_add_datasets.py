@@ -481,9 +481,14 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             headers=self.token_headers,
             content_type="multipart/form-data",
         )
+        # # check whether launch task has been called with the right arguments
+        # mock_launch.assert_called_with(
+        #     self.app.queues["short"], "pipeline_bed", "run bed preprocessing", 1
+        # )
         # check whether launch task has been called with the right arguments
+        import app.tasks
         mock_launch.assert_called_with(
-            self.app.queues["short"], "pipeline_bed", "run bed preprocessing", 1
+            self.app.queues["short"], app.tasks.pipeline_bed, "run bed preprocessing", 1
         )
 
     def test_badform_no_dataset_name(self):

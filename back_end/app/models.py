@@ -5,6 +5,7 @@
 from abc import abstractmethod
 import datetime
 from enum import Enum
+import logging
 from flask.globals import current_app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -13,6 +14,7 @@ import pandas as pd
 import cooler
 import json
 import os
+import importlib
 from itertools import chain
 from hicognition.utils import parse_binsizes
 from hicognition.format_checkers import FORMAT_CHECKERS
@@ -29,54 +31,54 @@ from . import db
 
 session_dataset_assoc_table = db.Table(
     "session_dataset_assoc_table",
-    db.Column("session_id", db.Integer, db.ForeignKey("session.id")),
-    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id")),
+    db.Column("session_id", db.Integer, db.ForeignKey("session.id", ondelete="CASCADE")),
+    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
 )
 
 session_collection_assoc_table = db.Table(
     "session_collection_assoc_table",
-    db.Column("session_id", db.Integer, db.ForeignKey("session.id")),
-    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id")),
+    db.Column("session_id", db.Integer, db.ForeignKey("session.id", ondelete="CASCADE")),
+    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id", ondelete="CASCADE")),
 )
 
 dataset_collection_assoc_table = db.Table(
     "dataset_collection_assoc_table",
-    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id")),
-    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id")),
+    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id", ondelete="CASCADE")),
+    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
 )
 
 dataset_preprocessing_table = db.Table(
     "dataset_dataset_preprocessing_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
-    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
+    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
+    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
     db.UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
 )
 
 dataset_failed_table = db.Table(
     "dataset_failed_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
-    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
+    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
+    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
     db.UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
 )
 
 dataset_completed_table = db.Table(
     "dataset_completed_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
-    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
+    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
+    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
     db.UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
 )
 
 collections_preprocessing_table = db.Table(
     "collections_preprocessing_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
-    db.Column("collection_feature", db.Integer, db.ForeignKey("collection.id")),
+    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
+    db.Column("collection_feature", db.Integer, db.ForeignKey("collection.id", ondelete="CASCADE")),
     db.UniqueConstraint("dataset_region", "collection_feature", name="uix_1"),
 )
 
 collections_failed_table = db.Table(
     "collections_failed_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
-    db.Column("collection_feature", db.Integer, db.ForeignKey("collection.id")),
+    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")),
+    db.Column("collection_feature", db.Integer, db.ForeignKey("collection.id", ondelete="CASCADE")),
     db.UniqueConstraint("dataset_region", "collection_feature", name="uix_1"),
 )
 
@@ -123,12 +125,19 @@ class User(db.Model, UserMixin):
         serializer = Serializer(current_app.config["SECRET_KEY"], expires_in=expiration)
         return serializer.dumps({"id": self.id}).decode("utf-8")
 
-    def launch_task(self, queue, name, description, dataset_id, *args, **kwargs):
+    # TODO continue working on this
+    # TODO move to Task class, have started on this already but commented out
+    def launch_task(self, queue, func, description, dataset_id=None, *args, **kwargs):
         """adds task to queue"""
+        if dataset_id:
+            args = [dataset_id, *args]
 
-        rq_job = queue.enqueue(
-            "app.tasks." + name, dataset_id, job_timeout="10h", *args, **kwargs
-        )
+        # check if func is name of function in tasks.py, then import those
+        if isinstance(func, str):
+            import app.tasks
+            func = app.tasks.__getattr__(func)
+
+        rq_job = queue.enqueue(_rq_job_wrapper, func, *args, **kwargs, job_timeout="10h")
 
         # check whether intervals_id is in kwargs
         if "intervals_id" in kwargs:
@@ -137,7 +146,7 @@ class User(db.Model, UserMixin):
             intervals_id = None
         task = Task(
             id=rq_job.get_id(),
-            name=name,
+            name=func,
             description=description,
             user_id=self.id,
             dataset_id=dataset_id,
@@ -338,6 +347,11 @@ class Dataset(db.Model):
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
+    @property
+    def interval_data(self):
+        return [*self.averageIntervalData, *self.individualIntervalData, *self.embeddingData]
+    
+    
     tasks = db.relationship("Task", backref="dataset", lazy="dynamic", cascade="all, delete-orphan")
     repository = db.relationship("Repository")
     user = db.relationship("User")
@@ -368,6 +382,19 @@ class Dataset(db.Model):
                 self.processing_state = "processing"
         database.session.add(self)
         database.session.commit()
+    
+    # @property # uli
+    # def processing_state(self):
+    #     failed = sum([iv_data.job_status == 'failed' for iv_data in self.interval_data]) > 0
+    #     success = sum([iv_data.job_status == 'success' for iv_data in self.interval_data]) > 0
+    #     running_tasks = [iv_data for iv_data in self.interval_data if iv_data.job_status not in ['failed', 'success']]
+
+    #     if failed:
+    #         return "failed"
+    #     elif success:
+    #         return "success"
+    #     else:
+    #         return "processing"
 
     def is_access_denied(self, app_context):
         """Determine whether context
@@ -494,9 +521,10 @@ class Dataset(db.Model):
 
         # start preprocessing of bedfile, the other filetypes do not need preprocessing
         if self.filetype in ["bedfile", "bedpe_file"]:
+            import app.tasks
             self.user.launch_task(  #  TODO current user or dataset owner user?
                 current_app.queues["short"],
-                "pipeline_bed",
+                app.tasks.pipeline_bed,
                 "run bed preprocessing",
                 self.id,
             )
@@ -708,7 +736,7 @@ class Intervals(db.Model):
     """Genomic IntervalData database model"""
 
     id = db.Column(db.Integer, primary_key=True)
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE"))
     name = db.Column(db.String(512), index=True)
     file_path_sub_sample_index = db.Column(db.String(512), index=True)
     windowsize = db.Column(db.Integer, index=True)
@@ -766,7 +794,7 @@ class BaseIntervalData(db.Model):
 
     @declared_attr
     def intervals_id(cls):
-        return db.Column(db.Integer, db.ForeignKey("intervals.id"))
+        return db.Column(db.Integer, db.ForeignKey("intervals.id", ondelete="CASCADE"))
 
     @declared_attr
     def source_intervals(cls): # FIXME  plural and naming
@@ -801,7 +829,7 @@ class AverageIntervalData(BaseIntervalData):
     """db.Table to hold information and pointers to data for
     average values of a dataset at the linked intervals dataset."""
     id = db.Column(db.Integer, primary_key=True)
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id", name='fk_averageivd_dataset'))
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id", name='fk_averageivd_dataset', ondelete="CASCADE"))
 
     @classmethod
     def __declare_last__(cls):
@@ -820,7 +848,7 @@ class IndividualIntervalData(BaseIntervalData):
 
     id = db.Column(db.Integer, primary_key=True)
     file_path_small = db.Column(db.String(128), index=True)  # location of downsampled file
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id", name='fk_individualivd_dataset'))
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id", name='fk_individualivd_dataset', ondelete="CASCADE"))
     @classmethod
     def __declare_last__(cls):
         cls.source_dataset = db.relationship("Dataset")
@@ -837,7 +865,7 @@ class AssociationIntervalData(BaseIntervalData):
     Continuous values enrichment."""
 
     id = db.Column(db.Integer, primary_key=True)
-    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id", name='fk_associationivd_collection'))
+    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id", name='fk_associationivd_collection', ondelete="CASCADE"))
     
     @classmethod
     def __declare_last__(cls):
@@ -861,8 +889,8 @@ class EmbeddingIntervalData(BaseIntervalData):
     feature_distribution_path = db.Column(db.String(512), index=True)
     normalization = db.Column(db.String(64))
     cluster_number = db.Column(db.String(64))
-    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id", name='fk_embeddingivd_collection'))
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id", name='fk_embeddingivd_dataset'))
+    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id", name='fk_embeddingivd_collection', ondelete="CASCADE"))
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id", name='fk_embeddingivd_dataset', ondelete="CASCADE"))
     
     @classmethod
     def __declare_last__(cls):
@@ -876,7 +904,6 @@ class EmbeddingIntervalData(BaseIntervalData):
     @property
     def intervaldata_type(self) -> IntervalDataTypeEnum:
         return IntervalDataTypeEnum.EMBEDDING_2D.value if self.value_type =="2d-embedding" else IntervalDataTypeEnum.EMBEDDING_1D.value
-
 
 
 class Task(db.Model):
@@ -915,6 +942,109 @@ class Task(db.Model):
         """Fetches the progress of the rq job"""
         job = self.get_rq_job()
         return job.meta.get("progress", 0) if job is not None else 100
+    
+    
+
+
+
+# class Task(db.Model):
+#     """Models the tasks dispatched to the redis queue."""
+
+#     #id = db.Column(db.String(36), primary_key=True)
+#     id = db.Column(db.Integer, primary_key=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    
+#     func = db.Column(db.String(512))
+#     progress = db.Column(db.Integer, default=0)
+#     status = db.Column(db.String(64), default='none') # running, failed, finished
+#     args = db.Column(db.JSON)
+
+#     user = db.relationship("User")
+
+#     @property
+#     def complete(self):
+#         return self.progress == 100
+
+#     @staticmethod
+#     def filter_failed_tasks(tasks):
+#         """Returns failed tasks of the tasks provided"""
+#         output = []
+#         for task in tasks:
+#             if task.get_rq_job() is None:
+#                 output.append(task)
+#                 continue
+#             if task.get_rq_job().get_status() == "failed":
+#                 output.append(task)
+#         return output
+
+#     def get_rq_job(self):
+#         """Fetches the rq job of the task"""
+#         try:
+#             return rq.job.Job.fetch(self.id, connection=current_app.redis)
+#         except (redis.exceptions.RedisError, rq.exceptions.NoSuchJobError):
+#             return None
+
+#     def get_progress(self):
+#         """Fetches the progress of the rq job"""
+#         job = self.get_rq_job()
+#         return job.meta.get("progress", 0) if job is not None else 100
+    
+#     @staticmethod
+#     def create(func, user: User, commit=True, *args, **kwargs):
+#         args_dict = {}
+#         args_dict['unnamed'] = args
+#         args_dict['named'] = dict(kwargs)
+#         task = Task(
+#             func=func.__qualname__,
+#             user=user,
+#             args=args_dict
+#         )
+#         db.session.add(task)
+#         if commit:
+#             db.session.commit()
+#         return task
+    
+#     def launch(self, queue=None): # TODO give this a go
+#         if queue is None:
+#             return self._run_task()
+#         else:
+#             def wrap_with_app_context(self: Task):
+#                 # make app context
+#                 from . import create_app
+#                 app = create_app(os.getenv("FLASK_CONFIG") or "default")
+#                 app.app_context().push()
+#                 self._run_task()
+#                 # TODO redis worker exception handling
+
+#             queue.enqueue(
+#                 wrap_with_app_context, 
+#                 job_id = self.id,
+#                 task = self
+#             )
+
+#     def _run_task(self):
+#         self.status = 'running'
+#         db.session.commit()
+#         try:
+#             return_value = self.stored_function(
+#                 *self.args['unnamed'],
+#                 **self.args['named']
+#             )
+#             self.status = 'success'
+#             db.session.commit()
+#             return return_value
+#         except Exception as err:
+#             self.status = 'failed'
+#             db.session.commit()
+#             raise err
+            
+#     @property
+#     def stored_function(self):
+#         module_name, func_name = self.func.rsplit('.',1)
+#         module = importlib.import_module(module_name)
+#         func = getattr(module, func_name)
+#         return func
+    
 
 
 class BedFileMetadata(db.Model):
@@ -1009,3 +1139,11 @@ def any_tasks_failed(tasks):
             if task.get_rq_job().get_status() == "failed":
                 return True
     return False
+
+def _rq_job_wrapper(func, *args, **kwargs):
+    import app
+    curr_app = app.create_app(os.getenv("FLASK_CONFIG") or "default")
+    app_context = curr_app.app_context()
+    app_context.push()
+    return func(*args, **kwargs)
+

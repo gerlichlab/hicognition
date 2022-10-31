@@ -79,8 +79,8 @@
                                         v-model="form.sizeType"
                                         :disabled="sending"
                                     >
-                                        <md-option value="point">Point</md-option>
-                                        <md-option value="interval">Interval</md-option>
+                                        <md-option value="Point">Point</md-option>
+                                        <md-option value="Interval">Interval</md-option>
                                     </md-select>
                                     <span
                                         class="md-error"
