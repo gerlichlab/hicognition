@@ -47,8 +47,9 @@ def modify_dataset(dataset_id):
     #     data, requirement_spec=Dataset.DATASET_META_FIELDS_MODIFY
     # )
     [
-        dataset.setattr(key, value)
-        for key, value in data.__dict__.keys()
+        setattr(dataset, key, value)
+        
+        for key, value in data.__dict__.items()
         if value is not None and key != "metadata_json"
     ]  # FIXME put routes still give old names, metadata fields are wrong!
     # TODO metadata_json

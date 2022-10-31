@@ -465,11 +465,11 @@ class Dataset(db.Model):
             # forbid id, dataset_name and public flag
             if column in ["id", "dataset_name", "public"]:
                 continue
-            dataset.setattr(column, self.getattr(column))
+            setattr(dataset, column, getattr(self, column))
 
         for key, value in kwargs.items():
             if key in self.__class__.__table__.c.keys():
-                dataset.setattr(key, value)
+                setattr(dataset, key, value)
 
         return dataset
 
@@ -595,8 +595,8 @@ class Dataset(db.Model):
         """Generates a JSON from the model"""
         json_dataset = {}
         for column in self.__class__.__table__.c.keys():
-            if self.getattr(column) != "undefined":
-                json_dataset[column] = self.getattr(column)
+            if getattr(self, column) != "undefined":
+                json_dataset[column] = getattr(self, column)
 
         # add processing datasets
         json_dataset["processing_datasets"] = [

@@ -8,7 +8,7 @@ from flask import g, request, current_app
 from flask.json import jsonify
 
 # from hicognition.utils import get_all_interval_ids, parse_binsizes
-from hicognition.utils import get_all_interval_ids
+from hicognition.utils import get_all_interval_ids, parse_binsizes
 from hicognition.format_checkers import FORMAT_CHECKERS
 from . import api
 from .. import db
@@ -57,7 +57,7 @@ def add_dataset_from_ENCODE():
         processing_state="new", upload_state="new", user_id=g.current_user.id
     )
     # fill with form data
-    [new_entry.setattr(key, val) for key, val in data.__dict__.items()]
+    [setattr(new_entry, key, val) for key, val in data.__dict__.items()]
 
     db.session.add(new_entry)
     db.session.commit()
@@ -91,7 +91,7 @@ def add_dataset_from_URL():
         processing_state="new", upload_state="new", user_id=g.current_user.id
     )
     # fill with form data
-    [new_entry.setattr(key, val) for key, val in data.__dict__.items()]
+    [setattr(new_entry, key, val) for key, val in data.__dict__.items()]
 
     # new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
@@ -127,7 +127,7 @@ def add_dataset():
     )
     # fill with form data
     # TODO check if everything is as expected in config!
-    [new_entry.setattr(key, val) for key, val in data.__dict__.items()]
+    [setattr(new_entry, key, val) for key, val in data.__dict__.items()]
 
     # new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
