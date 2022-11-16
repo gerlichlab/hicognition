@@ -10,6 +10,7 @@
             @drop="handleDrop"
         >
             <div @mouseleave="hideSelection = true" class="fill-height">
+                <!-- add icon -->
                 <div v-if="hideSelection" class="fill-height">
                     <div
                         class="md-layout md-gutter md-alignment-center-center fill-height no-margin"
@@ -22,9 +23,10 @@
                         </md-button>
                     </div>
                 </div>
+                <!-- present list of diagram options when add is hovered over -->
                 <div
-                    class="md-layout md-gutter md-alignment-center-center fill-height no-margin"
                     v-else
+                    class="md-layout md-gutter md-alignment-center-center fill-height no-margin"
                 >
                     <div class="list">
                         <md-list :md-expand-single="true">
@@ -33,13 +35,13 @@
                                 <md-list slot="md-expand">
                                     <md-list-item
                                         class="md-inset"
-                                        @click="setPileup"
+                                        @click="setWidget('Pileup')"
                                         :disabled="!selectionOptions.pileup"
                                         >Average 2D</md-list-item
                                     >
                                     <md-list-item
                                         class="md-inset"
-                                        @click="setLineprofile"
+                                        @click="setWidget('Lineprofile')"
                                         :disabled="
                                             !selectionOptions.lineprofile
                                         "
@@ -55,7 +57,7 @@
                                 <md-list slot="md-expand">
                                     <md-list-item
                                         class="md-inset"
-                                        @click="setStackup"
+                                        @click="setWidget('Stackup')"
                                         :disabled="
                                             !selectionOptions.lineprofile
                                         "
@@ -63,7 +65,7 @@
                                     >
                                     <md-list-item
                                         class="md-inset"
-                                        @click="setEmbedding1d"
+                                        @click="setWidget('Embedding1D')"
                                         :disabled="
                                             !selectionOptions.embedding1d
                                         "
@@ -71,7 +73,7 @@
                                     >
                                     <md-list-item
                                         class="md-inset"
-                                        @click="setEmbedding2d"
+                                        @click="setWidget('Embedding2D')"
                                         :disabled="
                                             !selectionOptions.embedding2d
                                         "
@@ -87,7 +89,7 @@
                                 <md-list slot="md-expand">
                                     <md-list-item
                                         class="md-inset"
-                                        @click="setLola"
+                                        @click="setWidget('Lola')"
                                         :disabled="!selectionOptions.lola"
                                         >Lola</md-list-item
                                     >
@@ -98,6 +100,15 @@
                 </div>
             </div>
         </div>
+        <baseWidget 
+            :height="height"
+            :width="width"
+            :empty="empty"
+            :id="id"
+            :collectionID="collectionID"
+            :rowIndex="rowIndex"
+            :colIndex="colIndex"
+        />
         <stackupWidget
             v-if="this.widgetType == 'Stackup'"
             :height="height"
@@ -183,13 +194,10 @@ export default {
         // get widget type from store
         var widgetType;
         if (!this.empty) {
-            var queryObject = {
+            widgetType = this.$store.getters["compare/getWidgetType"]({
                 parentID: this.collectionID,
-                id: this.id
-            };
-            widgetType = this.$store.getters["compare/getWidgetType"](
-                queryObject
-            );
+                widgetID: this.widgetID
+            });
         } else {
             widgetType = undefined;
         }
@@ -204,7 +212,7 @@ export default {
         width: Number,
         height: Number,
         empty: Boolean,
-        id: Number,
+        widgetID: Number,
         collectionID: Number,
         rowIndex: Number,
         colIndex: Number,
@@ -240,138 +248,32 @@ export default {
                 this.colIndex
             );
         },
-        widgetIDExists: function() {
-            // checks whether widget id exists
-            var queryObject = {
-                id: this.id,
+        setWidget: function(widgetType) {
+            // check if widget is in store
+            var widgetIDExists = this.$store.getters["compare/widgetExists"]({
+                widgetID: this.widgetID,
                 parentID: this.collectionID
-            };
-            return this.$store.getters["compare/widgetExists"](queryObject);
-        },
-        initializeWidgetFromEmpty: function() {
-            // if state is selected for an empty widget, initializes it for the first time
-            var payload = {
-                id: this.id,
-                rowIndex: this.rowIndex,
-                colIndex: this.colIndex,
-                parentID: this.collectionID
-            };
-            // update changed data in store
-            this.$store.commit("compare/setWidget", payload);
-        },
-        setPileup: function() {
-            // check if allowed
-            if (!this.selectionOptions.pileup) {
-                return;
+            });
+            if (!widgetIDExists) {
+                // initialize widget
+                this.$store.commit("compare/setWidget", {
+                    id: this.widgetID,
+                    rowIndex: this.rowIndex,
+                    colIndex: this.colIndex,
+                    parentID: this.collectionID
+                });
             }
-            // check if widget is in store
-            if (!this.widgetIDExists()) {
-                this.initializeWidgetFromEmpty();
-            }
-            // set widgetType in store
-            var mutationObject = {
-                parentID: this.collectionID,
-                id: this.id,
-                widgetType: "Pileup"
-            };
-            this.$store.commit("compare/setWidgetType", mutationObject);
             // set widget Type in this container
-            this.widgetType = "Pileup";
-        },
-        setStackup: function() {
-            // check if allowed
-            if (!this.selectionOptions.lineprofile) {
-                return;
-            }
-            // check if widget is in store
-            if (!this.widgetIDExists()) {
-                this.initializeWidgetFromEmpty();
-            }
-            // set widgetType in store
-            var mutationObject = {
-                parentID: this.collectionID,
-                id: this.id,
-                widgetType: "Stackup"
-            };
-            this.$store.commit("compare/setWidgetType", mutationObject);
-            // set widget Type in this container
-            this.widgetType = "Stackup";
-        },
-        setLineprofile: function() {
-            // check if allowed
-            if (!this.selectionOptions.lineprofile) {
-                return;
-            }
-            // check if widget is in store
-            if (!this.widgetIDExists()) {
-                this.initializeWidgetFromEmpty();
-            }
-            // set widgetType in store
-            var mutationObject = {
-                parentID: this.collectionID,
-                id: this.id,
-                widgetType: "Lineprofile"
-            };
-            this.$store.commit("compare/setWidgetType", mutationObject);
-            // set widget Type in this container
-            this.widgetType = "Lineprofile";
-        },
-        setLola: function() {
-            // check if allowed
-            if (!this.selectionOptions.lola) {
-                return;
-            }
-            // check if widget is in store
-            if (!this.widgetIDExists()) {
-                this.initializeWidgetFromEmpty();
-            }
-            // set widgetType in store
-            var mutationObject = {
-                parentID: this.collectionID,
-                id: this.id,
-                widgetType: "Lola"
-            };
-            this.$store.commit("compare/setWidgetType", mutationObject);
-            // set widget Type in this container
-            this.widgetType = "Lola";
-        },
-        setEmbedding1d: function() {
-            // check if allowed
-            if (!this.selectionOptions.embedding1d) {
-                return;
-            }
-            // check if widget is in store
-            if (!this.widgetIDExists()) {
-                this.initializeWidgetFromEmpty();
-            }
-            // set widgetType in store
-            var mutationObject = {
-                parentID: this.collectionID,
-                id: this.id,
-                widgetType: "Embedding1D"
-            };
-            this.$store.commit("compare/setWidgetType", mutationObject);
-            // set widget Type in this container
-            this.widgetType = "Embedding1D";
-        },
-        setEmbedding2d: function() {
-            // check if allowed
-            if (!this.selectionOptions.embedding2d) {
-                return;
-            }
-            // check if widget is in store
-            if (!this.widgetIDExists()) {
-                this.initializeWidgetFromEmpty();
-            }
-            // set widgetType in store
-            var mutationObject = {
-                parentID: this.collectionID,
-                id: this.id,
-                widgetType: "Embedding2D"
-            };
-            this.$store.commit("compare/setWidgetType", mutationObject);
-            // set widget Type in this container
-            this.widgetType = "Embedding2D";
+            this.widgetType = widgetType;
+            // set it in store
+            this.$store.commit(
+                "compare/setWidgetType",
+                {
+                    parentID: this.collectionID,
+                    widgetID: this.widgetID,
+                    widgetType: widgetType
+                }
+            );
         },
         propagateDrop: function() {
             // propagates widgetDrop up to widgetCollection

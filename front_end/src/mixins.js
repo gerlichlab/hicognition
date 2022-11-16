@@ -92,7 +92,7 @@ export var apiMixin = {
                         error.response.status == 401
                     ) {
                         // if forbidden error is returned, delete token and return to login
-                        this.$store.commit("clearToken");
+                        this.$store.commit("clearToken"); // FIXME currently token cleared when 403 is sent
                         this.$router.push("/login");
                     } else {
                         alert(
