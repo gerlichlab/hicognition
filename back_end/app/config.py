@@ -152,7 +152,7 @@ class Config:
     FILETYPES = {
         "bedfile": {
             "dataset_type": ["region"],
-            "file_ext": ["bed"],
+            "file_ext": ["bed", "bedpe"],
             "metadata": [
                 {"Cell cycle Stage": "freetext", "Perturbation": "freetext"},  # row 1
                 {  # row 2
@@ -175,31 +175,31 @@ class Config:
                 },
             ],
         },
-        "bedpe_file": {
-            "dataset_type": ["region"],
-            "file_ext": ["bedpe"],
-            "metadata": [
-                {"Cell cycle Stage": "freetext", "Perturbation": "freetext"},  # row 1
-                {  # row 2
-                    "ValueType": {
-                        "Peak": {
-                            "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
-                            # "Size Type": ["Point", "Interval"],
-                            "Protein": "freetext",
-                            "Directionality": ["+", "-", "No directionality"],
-                        },
-                        "Genome Annotation": {
-                            # "Size Type": ["Point", "Interval"],
-                            "Directionality": ["+", "-", "No directionality"],
-                        },
-                        "Derived": {
-                            "Method": ["HiC", "Other Dataset"],
-                            # "Size Type": ["Point", "Interval"],
-                        },
-                    }
-                },
-            ],
-        },
+        # "bedpe_file": {
+        #     "dataset_type": ["region"],
+        #     "file_ext": ["bedpe"],
+        #     "metadata": [
+        #         {"Cell cycle Stage": "freetext", "Perturbation": "freetext"},  # row 1
+        #         {  # row 2
+        #             "ValueType": {
+        #                 "Peak": {
+        #                     "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
+        #                     # "Size Type": ["Point", "Interval"],
+        #                     "Protein": "freetext",
+        #                     "Directionality": ["+", "-", "No directionality"],
+        #                 },
+        #                 "Genome Annotation": {
+        #                     # "Size Type": ["Point", "Interval"],
+        #                     "Directionality": ["+", "-", "No directionality"],
+        #                 },
+        #                 "Derived": {
+        #                     "Method": ["HiC", "Other Dataset"],
+        #                     # "Size Type": ["Point", "Interval"],
+        #                 },
+        #             }
+        #         },
+        #     ],
+        # },
         "bigwig": {
             "dataset_type": "feature",
             "file_ext": ["bw", "bigwig"],

@@ -82,9 +82,9 @@ def pipeline_bed(dataset_id):
     )
     file_path_cleaned = os.path.join(dir_path, file_name_cleaned)
 
-    if dataset.filetype == "bedfile":
+    if dataset.file_path.lower().endswith('bed'):
         io_helpers.clean_bed(file_path, file_path_cleaned)
-    elif dataset.filetype == "bedpe_file":
+    elif dataset.file_path.lower().endswith('bedpe'):
         io_helpers.clean_bedpe(file_path, file_path_cleaned)
     # set cleaned_file_name as file_name
     dataset.file_path = file_path_cleaned

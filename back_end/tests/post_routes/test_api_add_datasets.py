@@ -382,7 +382,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "public": "false",
             "Method": "HiC",
             "SizeType": "interval",
-            "filetype": "bedpe_file",
+            "filetype": "bedfile",
             "file": (open("tests/testfiles/test_small.bedpe", "rb"), "test_small.bedpe"),
         }
         # dispatch post request
@@ -412,7 +412,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "public": False,
             "cellCycleStage": "asynchronous",
             "valueType": "Derived",
-            "filetype": "bedpe_file",
+            "filetype": "bedfile",
             "method": "HiC",
             "user_id": 1,
             "id": 1,

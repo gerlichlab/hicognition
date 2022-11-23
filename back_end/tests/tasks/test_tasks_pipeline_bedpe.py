@@ -30,7 +30,7 @@ class TestPipelineBase(LoginTestCase, TempDirTestCase):
         self.dataset_point = self.create_dataset(
             dataset_name="test3",
             file_path="/test/path/test3.bedpe",
-            filetype="bedpe_file",
+            filetype="bedfile",
             processing_state="finished",
             user_id=1,
             assembly=1,
@@ -39,7 +39,7 @@ class TestPipelineBase(LoginTestCase, TempDirTestCase):
         self.dataset_interval = self.create_dataset(
             dataset_name="test4",
             file_path="/test/path/test4.bedpe",
-            filetype="bedpe_file",
+            filetype="bedfile",
             processing_state="finished",
             user_id=1,
             assembly=1,
