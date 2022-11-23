@@ -99,7 +99,7 @@
                     :height="item.height"
                     :width="item.width"
                     :empty="item.empty"
-                    :id="item.id"
+                    :widgetID="item.id"
                     :collectionID="id"
                     :rowIndex="item.rowIndex"
                     :colIndex="item.colIndex"

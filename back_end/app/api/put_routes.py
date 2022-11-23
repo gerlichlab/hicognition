@@ -58,11 +58,11 @@ def modify_dataset(dataset_id):
     return jsonify({"message": "success! Preprocessing triggered."})
 
 
-@api.route("/user/<id>", methods=["POST"])
-@auth.login_required
-def modify_user(user_id):
-    # which side should i start implementing from?
-    # 1. model
-    # 2. here
-    # 3. front
-    pass
+# @api.route("/user/<id>", methods=["POST"])
+# @auth.login_required
+# def modify_user(user_id):
+#     # which side should i start implementing from?
+#     # 1. model
+#     # 2. here
+#     # 3. front
+#     pass
