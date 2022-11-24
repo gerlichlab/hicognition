@@ -100,15 +100,6 @@
                 </div>
             </div>
         </div>
-        <baseWidget 
-            :height="height"
-            :width="width"
-            :empty="empty"
-            :id="id"
-            :collectionID="collectionID"
-            :rowIndex="rowIndex"
-            :colIndex="colIndex"
-        />
         <stackupWidget
             v-if="this.widgetType == 'Stackup'"
             :height="height"
@@ -196,7 +187,7 @@ export default {
         if (!this.empty) {
             widgetType = this.$store.getters["compare/getWidgetType"]({
                 parentID: this.collectionID,
-                widgetID: this.widgetID
+                id: this.id
             });
         } else {
             widgetType = undefined;
@@ -212,7 +203,7 @@ export default {
         width: Number,
         height: Number,
         empty: Boolean,
-        widgetID: Number,
+        id: Number,
         collectionID: Number,
         rowIndex: Number,
         colIndex: Number,
@@ -250,14 +241,14 @@ export default {
         },
         setWidget: function(widgetType) {
             // check if widget is in store
-            var widgetIDExists = this.$store.getters["compare/widgetExists"]({
-                widgetID: this.widgetID,
+            var idExists = this.$store.getters["compare/widgetExists"]({
+                id: this.id,
                 parentID: this.collectionID
             });
-            if (!widgetIDExists) {
+            if (!idExists) {
                 // initialize widget
                 this.$store.commit("compare/setWidget", {
-                    id: this.widgetID,
+                    id: this.id,
                     rowIndex: this.rowIndex,
                     colIndex: this.colIndex,
                     parentID: this.collectionID
@@ -270,7 +261,7 @@ export default {
                 "compare/setWidgetType",
                 {
                     parentID: this.collectionID,
-                    widgetID: this.widgetID,
+                    id: this.id,
                     widgetType: widgetType
                 }
             );

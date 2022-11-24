@@ -124,7 +124,7 @@ const compareModule = {
         widgetExists: state => payload => {
             // checks whether widget with id exists
             return (
-                payload.widgetID in
+                payload.id in
                 state.widgetCollections[payload.parentID]["children"]
             );
         },
@@ -178,11 +178,11 @@ const compareModule = {
         },
         getWidgetType: state => payload => {
             if (
-                payload.widgetID in
+                payload.id in
                 state.widgetCollections[payload.parentID]["children"]
             ) {
                 return state.widgetCollections[payload.parentID]["children"][
-                    payload.widgetID
+                    payload.id
                 ]["widgetType"];
             }
             return undefined;
@@ -388,7 +388,7 @@ const compareModule = {
         setWidgetType(state, payload) {
             Vue.set(
                 state.widgetCollections[payload.parentID]["children"][
-                    payload.widgetID
+                    payload.id
                 ],
                 "widgetType",
                 payload.widgetType

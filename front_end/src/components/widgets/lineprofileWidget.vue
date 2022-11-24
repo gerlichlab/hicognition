@@ -13,7 +13,7 @@
         >
             <div class="md-layout toolbarheight">
                 <div
-                    class="md-layout-item md-size-15 padding-left padding-right"
+                    class="md-layout-item md-size-15 padding-left"
                 >
                     <div class="menu-button">
                         <md-button
@@ -29,7 +29,7 @@
                     </div>
                 </div>
                 <div
-                    class="md-layout-item md-size-60 padding-left padding-right"
+                    class="md-layout-item md-size-45 padding-left padding-right"
                 >
                     <md-menu
                         :md-offset-x="50"
@@ -59,6 +59,32 @@
                         </md-menu-content>
                     </md-menu>
                 </div>
+                <template v-if="isBedpeFile">
+                    <div
+                        class="md-layout-item md-size-5 toggle-paired-buttons"
+                    >
+                        <div class="no-padding-top md-icon-button">
+                            <md-button class="md-icon" :class="{'md-primary': pairedLeftSide}"  @click="togglePairedSides('left')">
+                                <md-icon>looks_one</md-icon>
+                                <md-tooltip md-direction="top" md-delay="300">
+                                    Plot left support data
+                                </md-tooltip>
+                            </md-button>
+                        </div>
+                    </div>
+                    <div
+                        class="md-layout-item md-size-10 toggle-paired-buttons"
+                    >
+                        <div class="no-padding-top">
+                            <md-button class="md-icon md-mini" :class="{'md-primary': pairedRightSide}" @click="togglePairedSides('right')" style="margin-left: 10px">
+                                <md-icon>looks_two</md-icon>
+                            </md-button>
+                                <md-tooltip md-direction="top" md-delay="300">
+                                    Plot right support data
+                                </md-tooltip>
+                        </div>
+                    </div>
+                </template>
                 <div class="md-layout-item md-size-10">
                     <md-menu
                         :md-offset-x="50"
@@ -194,6 +220,9 @@
                 :height="lineprofileHeight"
                 :lineprofileNames="lineProfileNames"
                 :lineprofileData="widgetData"
+                :paired="isBedpeFile"
+                :pairedLeft="pairedLeftSide"
+                :pairedRight="pairedRightSide"
                 :normalized="normalized"
                 :showInterval="isVariableSize"
                 :valueScaleColor="valueScaleColor"
@@ -262,11 +291,11 @@ export default {
             if (datasetSummary.length > 40) {
                 datasetSummary = "multiple datasets | ";
             }
-            return (
-                datasetSummary +
+            datasetSummary = datasetSummary +
                 "binsize " +
-                this.getBinSizeFormat(this.selectedBinsize)
-            );
+                this.getBinSizeFormat(this.selectedBinsize);
+            
+            return datasetSummary;
         }
     },
     methods: {
@@ -452,7 +481,10 @@ export default {
                 normalized: this.normalized,
                 minTarget: this.minTarget,
                 maxTarget: this.maxTarget,
-                ignoreTarget: this.ignoreTarget
+                ignoreTarget: this.ignoreTarget,
+                pairedLeftSide: true,
+                pairedRightSide: true,
+                pairedSidesMutuallyExclusive: false,
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -489,7 +521,10 @@ export default {
                 colormap: null, // this value have no meaning, they are for compatibility with the valuescale mixin
                 minTarget: undefined,
                 maxTarget: undefined,
-                ignoreTarget: true
+                ignoreTarget: true,
+                pairedLeftSide: true,
+                pairedRightSide: true,
+                pairedSidesMutuallyExclusive: false,
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -584,7 +619,10 @@ export default {
                 ignoreTarget:
                     widgetData["ignoreTarget"] !== undefined
                         ? widgetData["ignoreTarget"]
-                        : true
+                        : true,
+                pairedLeftSide: true,
+                pairedRightSide: true,
+                pairedSidesMutuallyExclusive: false,
             };
         },
         getlineprofileData: async function(id) {
@@ -618,17 +656,33 @@ export default {
             let selected_ids = this.binsizes[this.selectedBinsize];
             // store widget data ref
             this.widgetDataRef = selected_ids;
-            // fetch data
-            var selected_data = [];
-            for (let selected_id of selected_ids) {
-                selected_data.push(await this.getlineprofileData(selected_id));
+            
+            // prepare line data and names
+            var lineData = [];
+            var lineNames = [];
+            for (let i in this.selectedDataset) {
+                let datasetId = this.selectedDataset[i];
+                let data = await this.getlineprofileData(datasetId);
+                let name = this.datasets[datasetId]["name"];
+
+                if (!this.isBedpeFile) {
+                    lineData.push(data);
+                    lineNames.push(name)
+                } else {
+                    if (this.pairedLeftSide) {
+                        lineData.push(data[0]);
+                        lineNames.push(`${name} (1)`);
+                    }
+                    if (this.pairedRightSide) {
+                        lineData.push(data[1]);
+                        lineNames.push(`${name} (2)`);
+                    }
+                }
             }
-            // get lineprofile names
-            this.lineProfileNames = this.selectedDataset.map(elem => {
-                return this.datasets[elem]["name"];
-            });
-            this.widgetData = selected_data;
-            // broadcast value scale update
+
+            this.widgetData = lineData;
+            this.lineProfileNames = lineNames;
+            //broadcast value scale update
             this.broadcastValueScaleUpdate();
         },
         getIdsOfBinsizes: function() {
@@ -651,6 +705,15 @@ export default {
                 }
             }
             return binsizes;
+        },
+        togglePairedSides: function(side) {
+            if (side == 'left' || this.sidesMutuallyExclusive) {
+                this.pairedLeftSide = !this.pairedLeftSide;
+            }
+            if (side == 'right' || this.sidesMutuallyExclusive) {
+                this.pairedRightSide = !this.pairedRightSide;
+            }
+            this.updateData();
         }
     },
     watch: {
@@ -823,5 +886,10 @@ export default {
 
 .md-field {
     min-height: 30px;
+}
+
+.toggle-paired-buttons {
+    padding-top: 8px;
+    padding-bottom:8px;
 }
 </style>

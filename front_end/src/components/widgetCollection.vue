@@ -99,7 +99,7 @@
                     :height="item.height"
                     :width="item.width"
                     :empty="item.empty"
-                    :widgetID="item.id"
+                    :id="item.id"
                     :collectionID="id"
                     :rowIndex="item.rowIndex"
                     :colIndex="item.colIndex"
@@ -192,6 +192,21 @@ export default {
         };
     },
     computed: {
+        region: function() {
+            if (!this.selectedRegionID) {
+                return undefined;
+            }
+            return this.regions.filter(el => el.id == this.selectedRegionID)[0];
+        },
+        regionIsPairedEnd: function() {
+            //return true; // TODO during dev, remove after
+
+            if (this.region) {
+                return this.region.file_path.toLowerCase().endsWith('bedpe');
+            } else {
+                return false;
+            }
+        },
         windowSizes: function() {
             if (Object.keys(this.availableData).length === 0) {
                 return [];
@@ -253,21 +268,24 @@ export default {
             return false;
         },
         dataInfo: function() {
-            if (this.selectedRegionID && this.isPointFeature) {
-                return `${
-                    this.regions.filter(el => el.id == this.selectedRegionID)[0]
-                        .dataset_name
-                } | ${this.convertBasePairsToReadable(
-                    this.selectedWindowSize
-                )}`;
+            if (!this.region) {
+                return "  ";
             }
-            if (this.selectedRegionID && !this.isPointFeature) {
-                return `${
-                    this.regions.filter(el => el.id == this.selectedRegionID)[0]
-                        .dataset_name
-                } | ${this.selectedWindowSize}`;
+            var outputStr = "";
+
+            outputStr += this.region.dataset_name;
+            var windowSizeStr = this.selectedWindowSize;
+            if (this.isPointFeature) {
+                windowSizeStr = this.convertBasePairsToReadable(windowSizeStr);
             }
-            return "  ";
+            outputStr += " | ";
+            outputStr += windowSizeStr;
+
+            if (this.regionIsPairedEnd) {
+                outputStr += " | Off-diagonale region-set";
+            }
+
+            return outputStr;
         },
         allowRegionSelection: function() {
             return this.regions.length > 0;

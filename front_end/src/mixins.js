@@ -320,7 +320,16 @@ export var widgetMixin = {
         },
         isVariableSize: function() {
             return this.intervalSize == "variable";
-        }
+        },
+        isBedpeFile: function() {
+            //return true; // TODO during dev, remove after
+
+            if (this.region) {
+                return this.region.file_path.toLowerCase().endsWith('bedpe');
+            } else {
+                return false;
+            }
+        },
     },
     methods: {
         blankWidget: function() {
@@ -421,6 +430,27 @@ export var widgetMixin = {
             var collectionConfig = this.$store.getters[
                 "compare/getCollectionConfig"
             ](this.collectionID);
+            // set region object for widget (which is the same for every widget in collection)
+            var region = this.$store.getters["getDataset"](collectionConfig['regionID']);
+
+            var defaults = {
+                region: region,
+                widgetDataRef: undefined,
+                dragImage: undefined,
+                widgetData: undefined,
+                selectedDataset: [],
+                selectedBinsize: undefined,
+                intervalSize: collectionConfig["intervalSize"],
+                emptyClass: ["smallMargin", "empty"],
+                binsizes: {},
+                showMenu: false,
+                showDatasetSelection: false,
+                showBinSizeSelection: false,
+                minHeatmapRange: undefined,
+                maxHeatmapRange: undefined,
+                bedpeSides: 0
+            }
+
             // the collection config the widget comes from
             var oldCollectionConfig = widgetData["collectionConfig"];
             if (
@@ -430,12 +460,17 @@ export var widgetMixin = {
                     oldCollectionConfig
                 )
             ) {
-                return this.initializeForFirstTime(
+                return {
+                    ...defaults, 
+                    ...this.initializeForFirstTime(
                     widgetData,
                     collectionConfig
-                );
+                )};
             } else {
-                return this.initializeFromStore(widgetData, collectionConfig);
+                return {
+                    ...defaults,
+                    ...this.initializeFromStore(widgetData, collectionConfig)
+                };
             }
         }
     },
