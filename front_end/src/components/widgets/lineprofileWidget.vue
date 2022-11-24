@@ -59,32 +59,30 @@
                         </md-menu-content>
                     </md-menu>
                 </div>
-                <template v-if="isBedpeFile">
-                    <div
-                        class="md-layout-item md-size-5 toggle-paired-buttons"
-                    >
-                        <div class="no-padding-top md-icon-button">
-                            <md-button class="md-icon" :class="{'md-primary': pairedLeftSide}"  @click="togglePairedSides('left')">
-                                <md-icon>looks_one</md-icon>
-                                <md-tooltip md-direction="top" md-delay="300">
-                                    Plot left support data
-                                </md-tooltip>
-                            </md-button>
-                        </div>
+                <div
+                    class="md-layout-item md-size-5 toggle-paired-buttons"
+                >
+                    <div v-if="isBedpeFile" class="no-padding-top md-icon-button">
+                        <md-button class="md-icon" :class="{'md-primary': pairedLeftSide}"  @click="togglePairedSides('left')">
+                            <md-icon>looks_one</md-icon>
+                            <md-tooltip md-direction="top" md-delay="300">
+                                Plot left support data
+                            </md-tooltip>
+                        </md-button>
                     </div>
-                    <div
-                        class="md-layout-item md-size-10 toggle-paired-buttons"
-                    >
-                        <div class="no-padding-top">
-                            <md-button class="md-icon md-mini" :class="{'md-primary': pairedRightSide}" @click="togglePairedSides('right')" style="margin-left: 10px">
-                                <md-icon>looks_two</md-icon>
-                            </md-button>
-                                <md-tooltip md-direction="top" md-delay="300">
-                                    Plot right support data
-                                </md-tooltip>
-                        </div>
+                </div>
+                <div
+                    class="md-layout-item md-size-10 toggle-paired-buttons"
+                >
+                    <div v-if="isBedpeFile" class="no-padding-top">
+                        <md-button class="md-icon md-mini" :class="{'md-primary': pairedRightSide}" @click="togglePairedSides('right')" style="margin-left: 8px">
+                            <md-icon>looks_two</md-icon>
+                        </md-button>
+                            <md-tooltip md-direction="top" md-delay="300">
+                                Plot right support data
+                            </md-tooltip>
                     </div>
-                </template>
+                </div>
                 <div class="md-layout-item md-size-10">
                     <md-menu
                         :md-offset-x="50"
@@ -482,9 +480,9 @@ export default {
                 minTarget: this.minTarget,
                 maxTarget: this.maxTarget,
                 ignoreTarget: this.ignoreTarget,
-                pairedLeftSide: true,
-                pairedRightSide: true,
-                pairedSidesMutuallyExclusive: false,
+                pairedLeftSide: this.pairedLeftSide,
+                pairedRightSide: true.pairedRightSide,
+                pairedSidesMutuallyExclusive: this.pairedSidesMutuallyExclusive,
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -620,9 +618,9 @@ export default {
                     widgetData["ignoreTarget"] !== undefined
                         ? widgetData["ignoreTarget"]
                         : true,
-                pairedLeftSide: true,
-                pairedRightSide: true,
-                pairedSidesMutuallyExclusive: false,
+                pairedLeftSide: widgetData["pairedLeftSide"] !== undefined ? widgetData["pairedLeftSide"] : true,
+                pairedRightSide: widgetData["pairedRightSide"] !== undefined ? widgetData["pairedRightSide"] : true,
+                pairedSidesMutuallyExclusive: widgetData["pairedSidesMutuallyExclusive"] !== undefined ? widgetData["pairedSidesMutuallyExclusive"] : false,
             };
         },
         getlineprofileData: async function(id) {
@@ -706,15 +704,6 @@ export default {
             }
             return binsizes;
         },
-        togglePairedSides: function(side) {
-            if (side == 'left' || this.sidesMutuallyExclusive) {
-                this.pairedLeftSide = !this.pairedLeftSide;
-            }
-            if (side == 'right' || this.sidesMutuallyExclusive) {
-                this.pairedRightSide = !this.pairedRightSide;
-            }
-            this.updateData();
-        }
     },
     watch: {
         // watch for changes in store to be able to update intervals
