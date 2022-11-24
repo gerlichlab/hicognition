@@ -319,7 +319,7 @@ def preprocess_collections():
             continue
         for binsize in preprocessing_map[windowsize]["collections"][collection.kind]:
             for collection in collections:
-                current_user.launch_collection_task(
+                current_user.launch_task(
                     current_app.queues[
                         current_app.config["PIPELINE_QUEUES"]["collections"][
                             collection.kind

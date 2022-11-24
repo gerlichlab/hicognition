@@ -158,15 +158,16 @@ class User(db.Model, UserMixin):
 
     # TODO continue working on this
     # TODO move to Task class, have started on this already but commented out
-    def launch_task(self, queue, func, description, dataset_id=None, *args, **kwargs):
+    def launch_task(self, queue, func, description, dataset_id=None, collection_id=None, *args, **kwargs):
         """adds task to queue"""
         if dataset_id:
             args = [dataset_id, *args]
+        if collection_id:
+            args = [collection_id, *args]
 
         # check if func is name of function in tasks.py, then import those
         if isinstance(func, str):
             import app.tasks
-
             func = app.tasks.__getattr__(func)
 
         rq_job = queue.enqueue(
@@ -179,24 +180,6 @@ class User(db.Model, UserMixin):
             description=description,
             user_id=self.id,
             dataset_id=dataset_id,
-            intervals_id=kwargs.get("intervals_id", None),
-        )
-        db.session.add(task)
-        return task
-
-    def launch_collection_task(
-        self, queue, name, description, collection_id, *args, **kwargs
-    ):
-        """adds task based on collection to queue"""
-        rq_job = queue.enqueue(
-            "app.tasks." + name, collection_id, job_timeout="10h", *args, **kwargs
-        )
-
-        task = Task(
-            id=rq_job.get_id(),
-            name=name,
-            description=description,
-            user_id=self.id,
             collection_id=collection_id,
             intervals_id=kwargs.get("intervals_id", None),
         )
