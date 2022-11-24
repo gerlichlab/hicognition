@@ -322,7 +322,7 @@ export var widgetMixin = {
             return this.intervalSize == "variable";
         },
         isBedpeFile: function() {
-            //return true; // TODO during dev, remove after
+            return true; // TODO during dev, remove after
 
             if (this.region) {
                 return this.region.file_path.toLowerCase().endsWith('bedpe');
@@ -332,6 +332,17 @@ export var widgetMixin = {
         },
     },
     methods: {
+        togglePairedSides: function(side) {
+            if (side == 'left' || this.pairedSidesMutuallyExclusive) {
+                this.pairedLeftSide = !this.pairedLeftSide;
+            }
+            if (side == 'right' || this.pairedSidesMutuallyExclusive) {
+                this.pairedRightSide = !this.pairedRightSide;
+            }
+            if (this.binsizes !== undefined && Object.keys(this.binsizes).length > 0) {
+                this.updateData();
+            }
+        },
         blankWidget: function() {
             // removes all information that the user can set in case a certain region/dataset combination is not available
             this.widgetData = undefined;
@@ -448,7 +459,6 @@ export var widgetMixin = {
                 showBinSizeSelection: false,
                 minHeatmapRange: undefined,
                 maxHeatmapRange: undefined,
-                bedpeSides: 0
             }
 
             // the collection config the widget comes from
