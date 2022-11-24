@@ -29,7 +29,7 @@
                     </div>
                 </div>
                 <div
-                    class="md-layout-item md-size-60 padding-left padding-right"
+                    class="md-layout-item md-size-45 padding-left padding-right"
                 >
                     <md-menu
                         :md-offset-x="50"
@@ -59,7 +59,26 @@
                         </md-menu-content>
                     </md-menu>
                 </div>
-
+                <div class="md-layout-item md-size-5 toggle-paired-buttons">
+                    <div v-if="isBedpeFile" class="no-padding-top md-icon-button">
+                        <md-button class="md-icon" :class="{'md-primary': pairedLeftSide}"  @click="togglePairedSides('left')">
+                            <md-icon>looks_one</md-icon>
+                            <md-tooltip md-direction="top" md-delay="300">
+                                Plot left support data
+                            </md-tooltip>
+                        </md-button>
+                    </div>
+                </div>
+                <div class="md-layout-item md-size-10 toggle-paired-buttons">
+                    <div v-if="isBedpeFile" class="no-padding-top">
+                        <md-button class="md-icon md-mini" :class="{'md-primary': pairedRightSide}" @click="togglePairedSides('right')" style="margin-left: 8px">
+                            <md-icon>looks_two</md-icon>
+                        </md-button>
+                            <md-tooltip md-direction="top" md-delay="300">
+                                Plot right support data
+                            </md-tooltip>
+                    </div>
+                </div>
                 <div class="md-layout-item md-size-10">
                     <md-menu
                         md-size="small"
@@ -441,7 +460,10 @@ export default {
                 valueScaleTargetID: this.valueScaleTargetID,
                 valueScaleColor: this.valueScaleColor,
                 minHeatmapRange: this.minHeatmapRange,
-                maxHeatmapRange: this.maxHeatmapRange
+                maxHeatmapRange: this.maxHeatmapRange,
+                pairedLeftSide: this.pairedLeftSide,
+                pairedRightSide: this.pairedRightSide,
+                pairedSidesMutuallyExclusive: this.pairedSidesMutuallyExclusive,
             };
         },
         prepareDeletionSortOrder: function() {
@@ -542,7 +564,10 @@ export default {
                 showTooltip: false,
                 tooltipOffsetTop: 0,
                 tooltipOffsetLeft: 0,
-                tooltipMessage: undefined
+                tooltipMessage: undefined,
+                pairedLeftSide: true,
+                pairedRightSide: false,
+                pairedSidesMutuallyExclusive: true,
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -618,7 +643,10 @@ export default {
                 showTooltip: false,
                 tooltipOffsetTop: 0,
                 tooltipOffsetLeft: 0,
-                tooltipMessage: undefined
+                tooltipMessage: undefined,
+                pairedLeftSide: widgetData["pairedLeftSide"] !== undefined ? widgetData["pairedLeftSide"] : true,
+                pairedRightSide: widgetData["pairedRightSide"] !== undefined ? widgetData["pairedRightSide"] : false,
+                pairedSidesMutuallyExclusive: widgetData["pairedSidesMutuallyExclusive"] !== undefined ? widgetData["pairedSidesMutuallyExclusive"] : true,
             };
         },
         getStackupData: async function(id) {
@@ -652,6 +680,13 @@ export default {
             var stackup_id = this.binsizes[this.selectedBinsize];
             this.widgetDataRef = stackup_id;
             var data = await this.getStackupData(stackup_id);
+            if (this.isBedpeFile) {
+                if (this.pairedLeftSide) {
+                    data = data[0];
+                } else {
+                    data = data[1];
+                }
+            }
             this.widgetData = data;
             // fetch metadata
             var response = await this.fetchData(
@@ -875,5 +910,10 @@ export default {
 
 .md-field {
     min-height: 30px;
+}
+
+.toggle-paired-buttons {
+    padding-top: 8px;
+    padding-bottom:8px;
 }
 </style>
