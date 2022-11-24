@@ -646,7 +646,7 @@ export default {
                 tooltipMessage: undefined,
                 pairedLeftSide: widgetData["pairedLeftSide"] !== undefined ? widgetData["pairedLeftSide"] : true,
                 pairedRightSide: widgetData["pairedRightSide"] !== undefined ? widgetData["pairedRightSide"] : false,
-                pairedSidesMutuallyExclusive: widgetData["pairedSidesMutuallyExclusive"] !== undefined ? widgetData["pairedSidesMutuallyExclusive"] : true,
+                pairedSidesMutuallyExclusive: true,
             };
         },
         getStackupData: async function(id) {
@@ -680,13 +680,13 @@ export default {
             var stackup_id = this.binsizes[this.selectedBinsize];
             this.widgetDataRef = stackup_id;
             var data = await this.getStackupData(stackup_id);
-            if (this.isBedpeFile) {
-                if (this.pairedLeftSide) {
-                    data = data[0];
-                } else {
-                    data = data[1];
-                }
-            }
+            // if (this.isBedpeFile) {
+            //     if (this.pairedLeftSide) {
+            //         data = data[0];
+            //     } else {
+            //         data = data[1];
+            //     }
+            // }
             this.widgetData = data;
             // fetch metadata
             var response = await this.fetchData(
