@@ -481,7 +481,7 @@ export default {
                 maxTarget: this.maxTarget,
                 ignoreTarget: this.ignoreTarget,
                 pairedLeftSide: this.pairedLeftSide,
-                pairedRightSide: true.pairedRightSide,
+                pairedRightSide: this.pairedRightSide,
                 pairedSidesMutuallyExclusive: this.pairedSidesMutuallyExclusive,
             };
         },
