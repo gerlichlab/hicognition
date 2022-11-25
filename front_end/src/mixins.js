@@ -322,7 +322,7 @@ export var widgetMixin = {
             return this.intervalSize == "variable";
         },
         isBedpeFile: function() {
-            return true; // TODO during dev, remove after
+            //return true; // TODO during dev, remove after
 
             if (this.region) {
                 return this.region.file_path.toLowerCase().endsWith('bedpe');
