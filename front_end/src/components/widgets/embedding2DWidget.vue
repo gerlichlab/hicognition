@@ -881,9 +881,9 @@ export default {
                     queryObject
                 )
             ) {
-                return this.$store.getters["compare/getWidgetDataEmbedding2d"](
+                return this.handleReceivedData(this.$store.getters["compare/getWidgetDataEmbedding2d"](
                     queryObject
-                );
+                ));
             }
             // pileup does not exists in store, check whether request has been dispatched
             let url = `embeddingIntervalData/${id}/`;
@@ -910,7 +910,7 @@ export default {
                 );
             }
             // return it
-            return response.data;
+            return this.handleReceivedData(response.data);
         },
         updateData: async function() {
             this.loading = true;
@@ -932,15 +932,15 @@ export default {
                 "ObsExp",
                 obs_exp_id
             );
-            if (this.isBedpeFile) {
-                if (this.pairedLeftSide) {
-                    iccf_data = iccf_data[0];
-                    obs_exp_data = obs_exp_data[0];
-                } else {
-                    iccf_data = iccf_data[1];
-                    obs_exp_data = obs_exp_data[1];
-                }
-            }
+            // if (this.isBedpeFile) {
+            //     if (this.pairedLeftSide) {
+            //         iccf_data = iccf_data[0];
+            //         obs_exp_data = obs_exp_data[0];
+            //     } else {
+            //         iccf_data = iccf_data[1];
+            //         obs_exp_data = obs_exp_data[1];
+            //     }
+            // }
             this.widgetData = {
                 ICCF: iccf_data,
                 ObsExp: obs_exp_data

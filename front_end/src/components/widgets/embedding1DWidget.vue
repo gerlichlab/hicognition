@@ -692,9 +692,9 @@ export default {
                     queryObject
                 )
             ) {
-                return this.$store.getters["compare/getWidgetDataEmbedding1d"](
+                return this.handleReceivedData(this.$store.getters["compare/getWidgetDataEmbedding1d"](
                     queryObject
-                );
+                ));
             }
             // overlay data does not exist, check whether request has been dispatched
             let url = `embeddingIntervalData/${id}/${index}/`;
@@ -703,14 +703,7 @@ export default {
             let response;
             if (requestData) {
                 response = await requestData;
-                data = response.data;
-                if (this.isBedpeFile) {
-                    if (this.pairedLeftSide) {
-                        data = response.data[0];
-                    } else {
-                        data = response.data[1];
-                    }
-                }
+                data = this.handleReceivedData(response.data);
             } else {
                 // request has not been dispatched => put it in store
                 this.$store.commit("compare/setRequest", {
@@ -718,26 +711,19 @@ export default {
                     data: this.fetchData(url)
                 });
                 response = await this.$store.getters["compare/getRequest"](url);
-                data = response.data;
-                if (this.isBedpeFile) {
-                    if (this.pairedLeftSide) {
-                        data = response.data[0];
-                    } else {
-                        data = response.data[1];
-                    }
-                }
+                data = this.handleReceivedData(response.data);
                 // save it in store -> only first request needs to persist it
                 var mutationObject = {
                     id: id,
                     overlayIndex: index,
-                    data: data["data"]
+                    data: data
                 };
                 this.$store.commit(
                     "compare/setWidgetDataEmbedding1d",
                     mutationObject
                 );
             }
-            return data["data"];
+            return data;
         },
         getEmbeddingData: async function(id) {
             // checks whether association data is in store and fetches it if it is not
@@ -749,24 +735,16 @@ export default {
                     queryObject
                 )
             ) {
-                return this.$store.getters["compare/getWidgetDataEmbedding1d"](
+                return this.handleReceivedData(this.$store.getters["compare/getWidgetDataEmbedding1d"](
                     queryObject
-                );
+                ));
             }
             // pileup does not exists in store, check whether request has been dispatched
             let url = `embeddingIntervalData/${id}/`;
             let requestData = this.$store.getters["compare/getRequest"](url);
-            let data;
             let response;
             if (requestData) {
                 response = await requestData;
-                if (this.isBedpeFile) {
-                    if (this.pairedLeftSide) {
-                        data = data[0];
-                    } else {
-                        data = data[1];
-                    }
-                }
             } else {
                 // request has not been dispatched => put it in store
                 this.$store.commit("compare/setRequest", {
@@ -774,14 +752,6 @@ export default {
                     data: this.fetchData(url)
                 });
                 response = await this.$store.getters["compare/getRequest"](url);
-                data = response.data;
-                if (this.isBedpeFile) {
-                    if (this.pairedLeftSide) {
-                        data = data[0];
-                    } else {
-                        data = data[1];
-                    }
-                }
                 // save it in store -> only first request needs to persist it
                 var mutationObject = {
                     id: id,
@@ -792,8 +762,7 @@ export default {
                     mutationObject
                 );
             }
-            // return it
-            return data;
+            return this.handleReceivedData(response.data);
         },
         updateData: async function() {
             this.loading = true;

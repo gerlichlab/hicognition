@@ -680,14 +680,7 @@ export default {
             var stackup_id = this.binsizes[this.selectedBinsize];
             this.widgetDataRef = stackup_id;
             var data = await this.getStackupData(stackup_id);
-            if (this.isBedpeFile) {
-                if (this.pairedLeftSide) {
-                    data = data[0];
-                } else {
-                    data = data[1];
-                }
-            }
-            this.widgetData = data;
+            this.widgetData = this.handleReceivedData(data);
             // fetch metadata
             var response = await this.fetchData(
                 `individualIntervalData/${stackup_id}/metadatasmall`
@@ -711,7 +704,7 @@ export default {
             // add random sort order
             seedrandom("I am a random seed!");
             let randArray = [];
-            for (let index = 0; index < data.shape[0]; index++) {
+            for (let index = 0; index < this.widgetData.shape[0]; index++) {
                 randArray.push(Math.random());
             }
             this.sortorders["random"] = randArray;

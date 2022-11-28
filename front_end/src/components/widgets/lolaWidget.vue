@@ -333,13 +333,7 @@ export default {
             this.widgetDataRef = selected_id;
             // fetch data
             this.widgetData = await this.getLolaData(selected_id);
-            if (this.isBedpeFile) {
-                if (this.pairedLeftSide) {
-                    this.widgetData = this.widgetData[0];
-                } else {
-                    this.widgetData = this.widgetData[1];
-                }
-            }
+            this.widgetData = this.handleReceivedData(this.widgetData);
             // blank selected column
             this.selectedColumn = undefined;
         }

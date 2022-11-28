@@ -322,7 +322,7 @@ export var widgetMixin = {
             return this.intervalSize == "variable";
         },
         isBedpeFile: function() {
-            //return true; // TODO during dev, remove after
+            return true; // TODO during dev, remove after
 
             if (this.region) {
                 return this.region.file_path.toLowerCase().endsWith('bedpe');
@@ -332,6 +332,24 @@ export var widgetMixin = {
         },
     },
     methods: {
+        handleReceivedData: function(data) {
+            if (!this.isBedpeFile) {
+                return data;
+            } else {
+                let tmp_data = [];
+                if (this.pairedLeftSide) {
+                    tmp_data.push(data[0]);
+                } 
+                if (this.pairedRightSide) {
+                    tmp_data.push(data[1]);
+                }
+                if (this.pairedSidesMutuallyExclusive) {
+                    return tmp_data[0];
+                } else {
+                    return tmp_data;
+                }
+            }
+        },
         togglePairedSides: function(side) {
             if (side == 'left' || this.pairedSidesMutuallyExclusive) {
                 this.pairedLeftSide = !this.pairedLeftSide;
