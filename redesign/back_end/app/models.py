@@ -45,21 +45,21 @@ class File(BaseModel):
     name = Column(String(128))
     md5 = Column(String(32), unique=True, index=True)
     path = Column(String(512))
-    directory_id = Column(Integer, ForeignKey('directory.id', name='fk_file_directory'))
+    # directory_id = Column(Integer, ForeignKey('directory.id', name='fk_file_directory'))
     owner_id = Column(Integer, ForeignKey('user.id', name='fk_file_user'))
     
-    directory = relationship('Directory', backref='files')
+    # directory = relationship('Directory', backref='files')
     owner = relationship('User', backref='files')
 
-class Directory(BaseModel):
-    __tablename__ = "directory"
+# class Directory(BaseModel):
+#     __tablename__ = "directory"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(128))
-    path = Column(String(512))
+#     id = Column(Integer, primary_key=True, index=True)
+#     name = Column(String(128))
+#     path = Column(String(512))
 
-    owner_id = Column(Integer, ForeignKey('user.id', name='fk_file_user'))
-    owner = relationship('User', backref='files')
+#     owner_id = Column(Integer, ForeignKey('user.id', name='fk_file_user'))
+#     owner = relationship('User', backref='files')
 
     
 class BaseFeatureSet(BaseModel):
@@ -129,9 +129,9 @@ class Data(BaseModel):
     def owner_id(cls):
         return Column(Integer, ForeignKey('user.id', name=f'fk_{cls.__name__.lower()}_user'), nullable=False)
     
-    @declared_attr
-    def directory_id(cls):
-        return Column(Integer, ForeignKey('directory.id', name=f'fk_{cls.__name__.lower()}_dir'))
+    # @declared_attr
+    # def directory_id(cls):
+    #     return Column(Integer, ForeignKey('directory.id', name=f'fk_{cls.__name__.lower()}_dir'))
     
     @declared_attr
     def task_id(cls):
@@ -145,15 +145,15 @@ class Data(BaseModel):
     # relationships
     @declared_attr
     def regionset(cls):
-        return relationship('Region', backref=f'{cls.__name__.lower()}s')
+        return relationship('RegionSet', backref=f'{cls.__name__.lower()}s')
     
     @declared_attr
     def owner(cls):
         return relationship('User', backref=f'{cls.__name__.lower()}s')
     
-    @declared_attr
-    def directory(cls):
-        return relationship('Directory', backref=f'{cls.__name__.lower()}s')
+    # @declared_attr
+    # def directory(cls):
+    #     return relationship('Directory', backref=f'{cls.__name__.lower()}s')
 
 class Task(BaseModel):
     __tablename__ = 'task'
@@ -196,7 +196,7 @@ class _association_data_feature(BaseModel):
     __abstract__ = True
     _c = None  # calulation_class
     _f = None  # feature_class
-    __tablename__ = None
+    
     @property
     def _cn(cls):
         return cls._c.__name__.lower()

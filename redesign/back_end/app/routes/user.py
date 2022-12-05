@@ -1,7 +1,10 @@
-from flask_restx import Resource, fields, marshal_with
+from flask_restx import Resource, fields, marshal_with, Namespace
 from app.services.user import user_service
 from app.daos import user_dao
 from .. import api, ma
+
+user_ns = Namespace('user', 'User related endpoints.')
+
 
 user_fields = {
     'id': fields.Integer(description="Unique identifying user id", readonly=True),
@@ -28,22 +31,25 @@ class UserSchemaRequest(ma.Schema):
 
 
 
-@api.route('/user')
+@user_ns.route('/')
 class UserAPI(Resource):
     @marshal_with(user_fields, envelope='user')
     def get(self):
         user = user_dao.get_all()
-        return user_service.get_by_name_and_pw('dev', 'asdf')
+        return user
     def post(self):
         return "test"
         pass
 
-@api.route('/user/<int:id>')
+@user_ns.route('/<int:id>')
 class UserIdAPI(Resource):
     @marshal_with(user_fields, envelope='user')
     def get(self, id):
         user = user_dao.get_by_id(id)
+        return user_service.check_password('dev')
         return user
     def post(self, id):
         return "test"
         pass
+
+api.add_namespace(user_ns) 

@@ -6,3 +6,8 @@ def file_model(ns: Namespace):
     "name": fields.String(),
     "md5": fields.String(),
 })
+
+def user_model(ns: Namespace):
+    return ns.model('User', {
+        
+    })

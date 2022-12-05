@@ -34,8 +34,8 @@ class FileDAO(BaseDAO):
     def get_by_hash(self, md5: str):
         return db.session.query(self.model).filter_by(md5=md5).first()
 
-class DirectoryDAO(BaseDAO):
-    pass
+# class DirectoryDAO(BaseDAO):
+#     pass
 
 class BaseFeatureSetDAO(BaseDAO):
     def get_by_name(self, name: str):
@@ -59,7 +59,7 @@ class TaskDAO(BaseDAO):
 
 user_dao = UserDAO(User)
 file_dao = FileDAO(File)
-dir_dao = DirectoryDAO(Directory)
+# dir_dao = DirectoryDAO(Directory)
 regionset_dao = BaseFeatureSetDAO(RegionSet)
 feature1d_dao = BaseFeatureSetDAO(Feature1D)
 feature2d_dao = BaseFeatureSetDAO(Feature2D)
