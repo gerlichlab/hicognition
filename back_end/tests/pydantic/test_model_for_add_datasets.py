@@ -15,7 +15,7 @@ from app.form_models import FileDatasetPostModel, URLDatasetPostModel
 from app import db
 
 # TODO do tests for encode + url
-class TestFileDatasetPostModel(LoginTestCase, TempDirTestCase):
+class TestFileDatasetPostModel(LoginTestCase):
     """Tests the pydantic FileDatasetPostModel which validates the form for posting datasets."""
 
     maxDiff = None
@@ -90,7 +90,6 @@ class TestFileDatasetPostModel(LoginTestCase, TempDirTestCase):
             "directionality": "undefined",
             "derivation_type": "undefined",
             "size_type": "undefined",
-            "user_id": None,
         }
         data_ojb = FileDatasetPostModel(**test_object)
         self.assertEqual(expected_object, data_ojb.dict())
@@ -127,7 +126,6 @@ class TestFileDatasetPostModel(LoginTestCase, TempDirTestCase):
             "directionality": "+",
             "derivation_type": "undefined",
             "size_type": "Point",
-            "user_id": None,
         }
         data_ojb = FileDatasetPostModel(**test_object)
         self.assertEqual(expected_object, data_ojb.dict())
@@ -164,7 +162,6 @@ class TestFileDatasetPostModel(LoginTestCase, TempDirTestCase):
             "directionality": "undefined",
             "derivation_type": "undefined",
             "size_type": "undefined",
-            "user_id": None,
         }
         data_ojb = FileDatasetPostModel(**test_object)
         self.assertEqual(expected_object, data_ojb.dict())
