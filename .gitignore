@@ -50,3 +50,5 @@ front_end/e2e/cypress/videos/*
 *.sln
 
 playground/*
+
+.env_secret

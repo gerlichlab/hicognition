@@ -30,6 +30,12 @@ services:
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
+            - MAIL_SERVER=${MAIL_SERVER}
+            - MAIL_PORT=${MAIL_PORT}
+            - MAIL_USERNAME=${MAIL_USERNAME}
+            - MAL_PASSWORD=${MAIL_PASSWORD}
+            - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+            - SECRET_SALT=${SECRET_SALT}
         ports:
             # only map localhost-port
             - "5000:5000"
@@ -64,6 +70,12 @@ services:
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
+            - MAIL_SERVER=${MAIL_SERVER}
+            - MAIL_PORT=${MAIL_PORT}
+            - MAIL_USERNAME=${MAIL_USERNAME}
+            - MAL_PASSWORD=${MAIL_PASSWORD}
+            - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+            - SECRET_SALT=${SECRET_SALT}
         depends_on:
                 - redis-server
         build:
@@ -87,6 +99,12 @@ services:
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
+            - MAIL_SERVER=${MAIL_SERVER}
+            - MAIL_PORT=${MAIL_PORT}
+            - MAIL_USERNAME=${MAIL_USERNAME}
+            - MAL_PASSWORD=${MAIL_PASSWORD}
+            - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+            - SECRET_SALT=${SECRET_SALT}
         depends_on:
                 - redis-server
         build:
@@ -110,6 +128,12 @@ services:
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
+            - MAIL_SERVER=${MAIL_SERVER}
+            - MAIL_PORT=${MAIL_PORT}
+            - MAIL_USERNAME=${MAIL_USERNAME}
+            - MAL_PASSWORD=${MAIL_PASSWORD}
+            - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+            - SECRET_SALT=${SECRET_SALT}
         depends_on:
                 - redis-server
         build:
