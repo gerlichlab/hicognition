@@ -8,6 +8,7 @@ from unittest.mock import patch
 # sys.path.append("./")
 from app.models import Dataset, Assembly, DataRepository
 from app import db
+from app.download_utils import MetadataNotWellformed
 from hicognition.test_helpers import LoginTestCase, TempDirTestCase
 
 
@@ -107,6 +108,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
                 "data": {**self.default_data, "sampleID": ""},
                 "code": 400,
                 "msg": "Could not load metadata",
+                "exception": MetadataNotWellformed(),
                 "return_value": {"status_code": 400},
             },
             "repo_not_found": {
@@ -125,14 +127,20 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
                 "data": {**self.default_data, "repositoryName": "testrepo"},
                 "code": 400,
                 "msg": "Could not load metadata",
+                "exception": MetadataNotWellformed(),
                 "return_value": {"status_code": 404},
             },
         }
 
         for key, test_case in test_cases.items():
+            # add exception raising if necessary
+            if "exception" in test_case:
+                mock_get_metadata.side_effect = test_case["exception"]
+                del test_case["exception"]
+            else:
+                mock_get_metadata.side_effect = None
             mock_get_metadata.return_value = test_case["return_value"]
             with self.subTest(test_case=test_case):
-                # import pdb;pdb.set_trace()
                 response = self.client.post(
                     "/api/datasets/encode/",
                     data=test_case["data"],
