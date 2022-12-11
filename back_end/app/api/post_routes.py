@@ -3,7 +3,6 @@ import logging
 import os
 import json
 import pandas as pd
-import cooler
 import numpy as np
 from werkzeug.utils import secure_filename
 from flask import g, request, current_app

@@ -1,7 +1,14 @@
 """Pydantic models to validate integrity of Forms for the HiCognition API."""
+import re
 from pydantic import BaseModel, Field, validator, constr, AnyUrl
 
 from flask import current_app
+
+
+class UserRegistrationModel(BaseModel):
+    user_name: constr(min_length=3, max_length=81) = Field(..., alias="userName")
+    email_address: str = Field(..., alias='emailAddress') # TODO: validate email
+    password: constr(min_length=5) = Field(..., alias="password1")
 
 
 # pylint: disable=no-self-argument,no-self-use

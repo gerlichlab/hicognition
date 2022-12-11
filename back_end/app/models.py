@@ -84,6 +84,10 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
+    email_confirmed = db.Column(db.Boolean, default=False)
+    created_at = db.Column(
+        db.DateTime,  default=datetime.datetime.utcnow
+    )
     datasets = db.relationship(
         "Dataset", backref="owner", lazy="dynamic", cascade="all, delete-orphan"
     )
@@ -292,6 +296,9 @@ class Dataset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     dataset_name = db.Column(db.String(512), index=True)
     description = db.Column(db.String(81), default="undefined")
+    created_at = db.Column(
+        db.DateTime,  default=datetime.datetime.utcnow
+    )
     perturbation = db.Column(db.String(64), default="undefined")
     assembly = db.Column(db.Integer, db.ForeignKey("assembly.id"))
     cellCycleStage = db.Column(db.String(64), default="undefined")
@@ -648,7 +655,7 @@ class Dataset(db.Model):
         """Generates a JSON from the model"""
         json_dataset = {}
         for key in inspect(Dataset).columns.keys():
-            if key == "processing_id":
+            if (key == "processing_id") or (key == 'created_at'):
                 continue
             value = self.__getattribute__(key)
             if value != "undefined":
@@ -680,6 +687,9 @@ class Collection(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(1024))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    created_at = db.Column(
+        db.DateTime,  default=datetime.datetime.utcnow
+    )
     public = db.Column(db.Boolean, default=False)
     kind = db.Column(
         db.String(256)
@@ -810,6 +820,9 @@ class Organism(db.Model):
     """Organism table for genome assembly"""
 
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(
+        db.DateTime,  default=datetime.datetime.utcnow
+    )
     name = db.Column(db.String(512))
     assemblies = db.relationship(
         "Assembly",
@@ -827,6 +840,9 @@ class Assembly(db.Model):
     """Genome assembly database model"""
 
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(
+        db.DateTime,  default=datetime.datetime.utcnow
+    )
     name = db.Column(db.String(512))
     chrom_sizes = db.Column(db.String(512), index=True)
     chrom_arms = db.Column(db.String(512), index=True)
@@ -844,6 +860,9 @@ class Intervals(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
+    created_at = db.Column(
+        db.DateTime,  default=datetime.datetime.utcnow
+    )
     name = db.Column(db.String(512), index=True)
     file_path_sub_sample_index = db.Column(db.String(512), index=True)
     windowsize = db.Column(db.Integer, index=True)
@@ -904,6 +923,9 @@ class AverageIntervalData(db.Model):
     average values of a dataset at the linked intervals dataset."""
 
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(
+        db.DateTime,  default=datetime.datetime.utcnow
+    )
     binsize = db.Column(db.Integer)
     name = db.Column(db.String(512), index=True)
     file_path = db.Column(db.String(512), index=True)
@@ -966,6 +988,9 @@ class IndividualIntervalData(db.Model):
     E.g. for bigwig stack-ups or displaying snipped Hi-C matrices."""
 
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(
+        db.DateTime,  default=datetime.datetime.utcnow
+    )
     binsize = db.Column(db.Integer)
     name = db.Column(db.String(512), index=True)
     file_path = db.Column(db.String(512), index=True)
@@ -1023,6 +1048,9 @@ class AssociationIntervalData(db.Model):
     Continuous values enrichment."""
 
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(
+        db.DateTime,  default=datetime.datetime.utcnow
+    )
     binsize = db.Column(db.Integer)
     name = db.Column(db.String(512), index=True)
     file_path = db.Column(db.String(512), index=True)
@@ -1059,6 +1087,9 @@ class EmbeddingIntervalData(db.Model):
     on chip-seq data, 2d-embeddings based on Hi-C data."""
 
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(
+        db.DateTime,  default=datetime.datetime.utcnow
+    )
     binsize = db.Column(db.Integer)
     name = db.Column(db.String(512), index=True)
     file_path = db.Column(db.String(512), index=True)
@@ -1130,6 +1161,9 @@ class Task(db.Model):
     """Models the tasks dispatched to the redis queue."""
 
     id = db.Column(db.String(36), primary_key=True)
+    created_at = db.Column(
+        db.DateTime,  default=datetime.datetime.utcnow
+    )
     name = db.Column(db.String(512), index=True)
     description = db.Column(db.String(512))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
@@ -1168,6 +1202,9 @@ class BedFileMetadata(db.Model):
     """Models the associated with a bedfile"""
 
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(
+        db.DateTime, default=datetime.datetime.utcnow
+    )
     name = db.Column(db.String(512))
     file_path = db.Column(db.String(512))
     metadata_fields = db.Column(db.String(1024))

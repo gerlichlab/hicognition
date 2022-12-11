@@ -2,9 +2,12 @@
 from flask import g, request, current_app
 from flask.json import jsonify
 from flask_httpauth import HTTPBasicAuth
+from sqlalchemy.exc import IntegrityError
 from . import api
 from . import errors
+from ..form_models import UserRegistrationModel
 from ..models import User, Session
+from .. import db
 
 
 auth = HTTPBasicAuth()
@@ -58,6 +61,33 @@ def get_token():
             "user_name": user_name,
         }
     )
+
+
+@api.route('/register/', methods=['POST'])
+def register():
+    if not hasattr(request, "form"):
+        return errors.invalid("Request does not contain a form!")
+    # get data from form
+    try:
+        data = UserRegistrationModel(**request.form)
+    except ValueError as err:
+        return errors.invalid(f'Form is not valid: {str(err)}')
+    except Exception as err:
+        return errors.internal_server_error(
+            err,
+            "Registration could not be performed: There was a server-side problem. Error has been logged.",
+        )
+    # create user
+    try:
+        user = User(username=data.user_name, email=data.email_address)
+        user.set_password(data.password)
+        db.session.add(user)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return errors.invalid('User with this name or email address already exists!')
+    # TODO: send confirmation email
+    return jsonify({"message": "Registration successful"})
 
 
 @api.before_request
