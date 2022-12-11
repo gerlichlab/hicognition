@@ -5,6 +5,7 @@ import store from "./store";
 
 import mainRoute from "./routes/mainRoute";
 import loginRoute from "./routes/loginRoute";
+import registerRoute from "./routes/registerRoute"
 import compareRoute from "./routes/compareRoute";
 import sessionLoadRoute from "./routes/sessionLoadRoute";
 
@@ -36,7 +37,8 @@ const routes = [
             }
         ]
     },
-    { path: "/login", component: loginRoute }
+    { path: "/login", component: loginRoute },
+    {path: "/register", component: registerRoute}
 ];
 
 var router = new VueRouter({ routes });

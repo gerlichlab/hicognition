@@ -15,6 +15,23 @@ import {
 
 export var apiMixin = {
     methods: {
+        registerUser: function(formData) {
+            return this.$http
+                .post(process.env.API_URL + 'register/', formData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data"
+                    }
+                }).catch(error => {
+                    if (!error.response) {
+                        alert(`HTTP error: ${error}`);
+                    } else {
+                        // this helps to look into [object Object] errors: ${JSON.stringify(error.response)}
+                        alert(
+                            `HTTP error: ${error.response.status} - Error: ${error.response.data.error} - ${error.response.data.message}`
+                        );
+                    }
+            })
+        },
         fetchAndStoreDatasets: function() {
             // convenience method for fetching datasets and storing them in vuex store
             this.fetchData("datasets/").then(response => {
