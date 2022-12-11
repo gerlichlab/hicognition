@@ -4,7 +4,7 @@
         <div class="md-toolbar-row span-window-horizontal">
             <div class="md-toolbar-section-start">
                 <span class="md-title"
-                    >HiCognition {{ process.env.VERSION }}</span
+                    >HiCognition {{ appversion }}</span
                 >
             </div>
         </div>
