@@ -63,6 +63,7 @@
                         id="password1"
                         v-model="form.password1"
                         :disabled="sending"
+                        type="password"
                         required
                     />
                     <span
@@ -79,6 +80,7 @@
                         id="password2"
                         v-model="form.password2"
                         :disabled="sending"
+                        type="password"
                         required
                     />
                     <span
