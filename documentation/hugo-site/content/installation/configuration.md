@@ -33,7 +33,7 @@ These environment variables should be redefined if you deploy a new HiCognition 
 
 - `SECRET_KEY` | Secret key of flask app that is used to sign the generated token
 - `DATABASE_URI` | Connection string to the HiCogntion MySQL database (including username and password)
-- `MYQSL_PASSWORD` | Password for MySQL database
+- `MYSQL_PASSWORD` | Password for MySQL database
 
 ##### Take from example `.env` file
 
