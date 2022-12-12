@@ -658,10 +658,9 @@ export default {
             // prepare line data and names
             var lineData = [];
             var lineNames = [];
-            for (let i in this.selectedDataset) {
-                let datasetId = this.selectedDataset[i];
-                let data = await this.getlineprofileData(datasetId);
-                let name = this.datasets[datasetId]["name"];
+            for (let i = 0; i < selected_ids.length; i++) {
+                let data = await this.getlineprofileData(selected_ids[i]);
+                let name = this.datasets[this.selectedDataset[i]]["name"];
 
                 if (!this.isBedpeFile) {
                     lineData.push(data);
