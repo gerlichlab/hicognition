@@ -1,7 +1,9 @@
 """Tests user registration"""
 import unittest
+from unittest.mock import patch, MagicMock
 from hicognition.test_helpers import LoginTestCase
 from werkzeug.security import check_password_hash
+from app.confirmation import ConfirmationHandler
 
 from app import db
 from app.models import User
@@ -20,35 +22,35 @@ class TestUserRegistration(LoginTestCase):
                 "status_code": 400,
                 "msg": "Form is not valid"
             },
-            "form_without_user_name": {
+            "form_without_userName": {
                 "data": {
-                    "email_address": "test@test.at",
-                    "password": "test"
+                    "emailAddress": "test@test.at",
+                    "password1": "test"
                 },
                 "status_code": 400,
                 "msg": "Form is not valid"
             },
             "form_without_email": {
                 "data": {
-                    "user_name": "test",
-                    "password": "Test"
+                    "userName": "test",
+                    "password1": "Test"
                 },
                 "status_code": 400,
                 "msg": "Form is not valid"
             },
             "form_without_password": {
                 "data": {
-                    "user_name": "test",
-                    "email_address": "test@test.at"
+                    "userName": "test",
+                    "emailAddress": "test@test.at"
                 },
                 "status_code": 400,
                 "msg": "Form is not valid"
             },
             "valid_form": {
                 "data": {
-                    "user_name": "test",
-                    "password": "test12345",
-                    "email_address": "test@test.at"
+                    "userName": "test",
+                    "password1": "test12345",
+                    "emailAddress": "test@test.at"
                 },
                 "status_code": 200,
                 "msg": "Registration successful"
@@ -73,18 +75,18 @@ class TestUserRegistration(LoginTestCase):
         test_cases = {
             "duplicate_name": {
                 "data": {
-                    "user_name": "test",
-                    "email_address": "test2@test.at",
-                    "password": "test1234"
+                    "userName": "test",
+                    "emailAddress": "test2@test.at",
+                    "password1": "test1234"
                 },
                 "status_code": 400,
                 "msg": "User with this name or email address already exists!"
             },
             "duplicate_mail_address": {
                 "data": {
-                    "user_name": "test2",
-                    "email_address": "test@test.at",
-                    "password": "test1234"
+                    "userName": "test2",
+                    "emailAddress": "test@test.at",
+                    "password1": "test1234"
                 },
                 "status_code": 400,
                 "msg": "User with this name or email address already exists!"
@@ -111,9 +113,9 @@ class TestUserRegistration(LoginTestCase):
         self.client.post(
                 "/api/register/",
                 data={
-                    "user_name": "test",
-                    "password": "test12345",
-                    "email_address": "test@test.at"
+                    "userName": "test",
+                    "password1": "test12345",
+                    "emailAddress": "test@test.at"
                 },
                 content_type="multipart/form-data",
             )
@@ -125,6 +127,34 @@ class TestUserRegistration(LoginTestCase):
         self.assertTrue(check_password_hash(u.password_hash, 'test12345'))
         self.assertEqual(u.email_confirmed, False)
 
+
+# class TestConfirmationEmail(LoginTestCase):
+#     """Tests that test sending of confirmation email"""
+
+#     def test_email_rendering(self):
+#         conf_handler = ConfirmationHandler(mail_client=MagicMock(), secret_key="abc", secret_salt="123")
+#         result = conf_handler._generate_confirmation_url("test@test.at")
+#         import pdb; pdb.set_trace()
+
+
+    # @patch("app.confirmation_handler")
+    # def test_email_sending_called_correctly(self, mock_handler):
+    #     self.client.post(
+    #             "/api/register/",
+    #             data={
+    #                 "userName": "test",
+    #                 "password1": "test12345",
+    #                 "emailAddress": "test@test.at"
+    #             },
+    #             content_type="multipart/form-data",
+    #         )
+    #     # check whether user has been created successfully and confirmed flag was set to False
+    #     self.assertEqual(len(User.query.all()), 1)
+    #     u = User.query.all()[0]
+    #     self.assertEqual(u.username, 'test')
+    #     self.assertEqual(u.email, 'test@test.at')
+    #     self.assertTrue(check_password_hash(u.password_hash, 'test12345'))
+    #     self.assertEqual(u.email_confirmed, False)
 
 
 if __name__ == "__main__":
