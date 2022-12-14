@@ -131,7 +131,7 @@ def confirm_email(token):
 def check_confirmed(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
-        if g.current_user.email_confirmed is False:
+        if g.current_user.email_confirmed is not True:
             return errors.forbidden("Unconfirmed")
         return func(*args, **kwargs)
 

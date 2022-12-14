@@ -108,9 +108,14 @@ export var apiMixin = {
                         error.response.status == 403 ||
                         error.response.status == 401
                     ) {
-                        // if forbidden error is returned, delete token and return to login
-                        this.$store.commit("clearToken");
-                        this.$router.push("/login");
+                        // check whether this is a confirmation failure
+                        if (error.response.data.message == 'Unconfirmed') {
+                            this.$router.push("/resendEmail")
+                        }else{
+                            // Token problem, delete it and return to login
+                            this.$store.commit("clearToken");
+                            this.$router.push("/login");
+                        }
                     } else {
                         alert(
                             `HTTP error: ${error.response.status} - Error: ${error.response.data.error} - ${error.response.data.message}`
@@ -154,8 +159,14 @@ export var apiMixin = {
                         error.response.status == 403 ||
                         error.response.status == 401
                     ) {
-                        // if forbidden error is returned, redirect to login page
-                        this.$router.push("/login");
+                        // check whether this is a confirmation failure
+                        if (error.response.data.message == 'Unconfirmed') {
+                            this.$router.push("/resendEmail")
+                        }else{
+                            // Token problem, delete it and return to login
+                            this.$store.commit("clearToken");
+                            this.$router.push("/login");
+                        }
                     } else {
                         // this helps to look into [object Object] errors: ${JSON.stringify(error.response)}
                         alert(
@@ -199,8 +210,14 @@ export var apiMixin = {
                         error.response.status == 403 ||
                         error.response.status == 401
                     ) {
-                        // if forbidden error is returned, redirect to login page
-                        this.$router.push("/login");
+                        // check whether this is a confirmation failure
+                        if (error.response.data.message == 'Unconfirmed') {
+                            this.$router.push("/resendEmail")
+                        }else{
+                            // Token problem, delete it and return to login
+                            this.$store.commit("clearToken");
+                            this.$router.push("/login");
+                        }
                     } else {
                         // this helps to look into [object Object] errors: ${JSON.stringify(error.response)}
                         alert(
@@ -234,8 +251,14 @@ export var apiMixin = {
                         error.response.status == 403 ||
                         error.response.status == 401
                     ) {
-                        // if forbidden error is returned, redirect to login page
-                        this.$router.push("/login");
+                        // check whether this is a confirmation failure
+                        if (error.response.data.message == 'Unconfirmed') {
+                            this.$router.push("/resendEmail")
+                        }else{
+                            // Token problem, delete it and return to login
+                            this.$store.commit("clearToken");
+                            this.$router.push("/login");
+                        }
                     } else {
                         alert(
                             `HTTP error: ${error.response.status} - Error: ${error.response.data.error} - ${error.response.data.message}`

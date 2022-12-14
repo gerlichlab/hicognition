@@ -8,6 +8,7 @@ import loginRoute from "./routes/loginRoute";
 import registerRoute from "./routes/registerRoute"
 import compareRoute from "./routes/compareRoute";
 import sessionLoadRoute from "./routes/sessionLoadRoute";
+import resendEmailRoute from "./routes/resendEmailRoute";
 
 // define routes
 
@@ -38,7 +39,8 @@ const routes = [
         ]
     },
     { path: "/login", component: loginRoute },
-    {path: "/register", component: registerRoute}
+    {path: "/register", component: registerRoute},
+    {path: "/resendEmail", component: resendEmailRoute}
 ];
 
 var router = new VueRouter({ routes });
