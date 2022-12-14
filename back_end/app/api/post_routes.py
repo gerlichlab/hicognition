@@ -33,13 +33,14 @@ from ..form_models import (
     URLDatasetPostModel,
     ENCODEDatasetPostModel,
 )
-from .authentication import auth
+from .authentication import auth, check_confirmed
 from .. import pipeline_steps
 from .errors import forbidden, internal_server_error, invalid, not_found
 
 
 @api.route("/datasets/encode/", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def add_dataset_from_ENCODE():
     """Endpoint to add dataset directly from an ENCODE repository.
     Will call new redis worker to download file and notify user when finished."""
@@ -110,6 +111,7 @@ def add_dataset_from_ENCODE():
 
 @api.route("/datasets/URL/", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def add_dataset_from_URL():
     """Endpoint to add dataset with file provided by URL.
     Will call new redis worker to download file and notify user when finished."""
@@ -167,6 +169,7 @@ def add_dataset_from_URL():
 
 @api.route("/datasets/", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def add_dataset():
     """endpoint to add a new dataset"""
 
@@ -231,6 +234,7 @@ def add_dataset():
 
 @api.route("/preprocess/datasets/", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def preprocess_dataset():
     """Starts preprocessing pipeline
     for datasets specified in the request body"""
@@ -323,6 +327,7 @@ def preprocess_dataset():
 
 @api.route("/preprocess/collections/", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def preprocess_collections():
     """Starts preprocessing pipeline
     for collections specified in the request body"""
@@ -422,6 +427,7 @@ def preprocess_collections():
 
 @api.route("/bedFileMetadata/", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def add_bedfile_metadata():
     """Add metadata file to metadata table.
     If uploaded metadatafile has different row-number than original bedfile ->
@@ -493,6 +499,7 @@ def add_bedfile_metadata():
 
 @api.route("/bedFileMetadata/<metadata_id>/setFields", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def add_bedfile_metadata_fields(metadata_id):
     """Add relevant metadatafields of the corresponding metadatafile."""
 
@@ -528,6 +535,7 @@ def add_bedfile_metadata_fields(metadata_id):
 
 @api.route("/sessions/", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def create_session():
     """Creates a session with name."""
 
@@ -592,6 +600,7 @@ def create_session():
 
 @api.route("/collections/", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def create_collection():
     """Creates a dataset collection"""
 
@@ -633,6 +642,7 @@ def create_collection():
 
 @api.route("/assemblies/", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def create_assembly():
     """Creates a genome assembly."""
 
@@ -695,6 +705,7 @@ def create_assembly():
 
 @api.route("/embeddingIntervalData/<entry_id>/<cluster_id>/create/", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def create_region_from_cluster_id(entry_id, cluster_id):
     """Creates new region for cluster_id at entry_id"""
 

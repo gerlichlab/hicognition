@@ -1,6 +1,6 @@
 """Tests for db manipulation of tasks"""
 import unittest
-from hicognition.test_helpers import LoginTestCase
+from tests.test_utils.test_helpers import LoginTestCase
 from app.pipeline_worker_functions import (
     _add_embedding_2d_to_db,
     _add_embedding_1d_to_db,

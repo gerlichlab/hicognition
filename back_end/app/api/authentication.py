@@ -1,4 +1,5 @@
 """ Authenticating credentials of a request and dealing with the tokens. """
+from functools import wraps
 from flask import g, request, current_app
 from flask.json import jsonify
 from flask_httpauth import HTTPBasicAuth
@@ -18,6 +19,7 @@ class ShowCaseUser:
     def __init__(self):
         self.id = None
         self.is_anonymous = False
+        self.email_confirmed = True
 
     def generate_auth_token(self, expiration):
         return "ASDF"
@@ -124,6 +126,16 @@ def confirm_email(token):
     db.session.add(g.current_user)
     db.session.commit()
     return jsonify({"message": "Confirmation successful!"})
+
+
+def check_confirmed(func):
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        if g.current_user.email_confirmed is False:
+            return errors.forbidden("Unconfirmed")
+        return func(*args, **kwargs)
+
+    return decorated_function
 
 
 @api.before_request

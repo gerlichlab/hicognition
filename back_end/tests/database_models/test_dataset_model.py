@@ -1,6 +1,6 @@
 """Tests whether preprocessing states for datasets are set correctly."""
 from unittest.mock import patch
-from hicognition.test_helpers import LoginTestCase
+from tests.test_utils.test_helpers import LoginTestCase
 
 # add path to import app
 # import sys

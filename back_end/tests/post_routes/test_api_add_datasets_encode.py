@@ -9,7 +9,7 @@ from unittest.mock import patch
 from app.models import Dataset, Assembly, DataRepository
 from app import db
 from app.download_utils import MetadataNotWellformed
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):

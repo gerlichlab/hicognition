@@ -4,12 +4,13 @@ from flask.json import jsonify
 from . import api
 from .. import db
 from ..models import Dataset
-from .authentication import auth
+from .authentication import auth, check_confirmed
 from .errors import forbidden, invalid, not_found
 
 
 @api.route("/datasets/<dataset_id>/", methods=["PUT"])
 @auth.login_required
+@check_confirmed
 def modify_dataset(dataset_id):
     """endpoint to add a new dataset"""
 
@@ -48,6 +49,7 @@ def modify_dataset(dataset_id):
 
 @api.route("/user/<id>", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def modify_user(user_id):
     # which side should i start implementing from?
     # 1. model

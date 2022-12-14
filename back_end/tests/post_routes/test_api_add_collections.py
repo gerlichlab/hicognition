@@ -1,7 +1,7 @@
 """Module with tests realted adding and managing collections."""
 
 import unittest
-from hicognition.test_helpers import LoginTestCase
+from tests.test_utils.test_helpers import LoginTestCase
 
 # add path to import app
 # import sys

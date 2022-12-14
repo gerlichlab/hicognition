@@ -5,7 +5,7 @@ import io
 import unittest
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # import sys
 # add path to import app

@@ -11,7 +11,7 @@ from app.models import (
     DataRepository,
 )
 from app import db, create_app
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestAddDataSetsURL(LoginTestCase, TempDirTestCase):

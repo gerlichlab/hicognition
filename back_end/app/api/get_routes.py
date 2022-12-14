@@ -2,12 +2,8 @@
 import json
 import gzip
 import logging
-from turtle import update
 import pandas as pd
-import requests
 from requests import HTTPError, RequestException
-from requests.exceptions import ConnectionError, Timeout
-from requests.auth import HTTPBasicAuth
 import numpy as np
 from flask import g, make_response
 from flask.json import jsonify
@@ -32,9 +28,8 @@ from ..models import (
     Session,
     Collection,
     Organism,
-    User_DataRepository_Credentials,
 )
-from .authentication import auth
+from .authentication import auth, check_confirmed
 from .errors import forbidden, not_found, invalid
 from ..download_utils import (
     DownloadUtilsException,
@@ -61,6 +56,7 @@ def test_protected():
 
 @api.route("/resolutions/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_resolutions():
     """Gets available combinations of windowsizes and binsizes
     from config file"""
@@ -76,6 +72,7 @@ def get_metadata_mapping():
 
 @api.route("/organisms/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_organisms():
     """Get route for available organisms"""
     return jsonify([org.to_json() for org in Organism.query.all()])
@@ -83,6 +80,7 @@ def get_organisms():
 
 @api.route("/assemblies/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_assemblies():
     """Gets all assemblies in the database."""
     output = {}
@@ -100,6 +98,7 @@ def get_assemblies():
 
 @api.route("/datasets/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_all_datasets():
     """Gets all available datasets for a given user."""
     all_available_datasets = Dataset.query.filter(
@@ -113,6 +112,7 @@ def get_all_datasets():
 
 @api.route("/datasets/<dtype>", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_datasets(dtype: str = ""):
     """Gets all available datasets for a given user."""
     if dtype == "cooler":
@@ -141,6 +141,7 @@ def get_datasets(dtype: str = ""):
 
 @api.route("/datasets/<dataset_id>/name/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_name_of_dataset(dataset_id):
     """Returns the name for a given dataset, if the user owns the requested dataset."""
     dataset = Dataset.query.get(dataset_id)
@@ -157,6 +158,7 @@ def get_name_of_dataset(dataset_id):
 
 @api.route("/datasets/<dataset_id>/bedFile/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_dataset_file(dataset_id):
     """Returns the bedFile associate with a region dataset"""
     dataset = Dataset.query.get(dataset_id)
@@ -182,6 +184,7 @@ def get_dataset_file(dataset_id):
 
 @api.route("/datasets/<dataset_id>/processedDataMap/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_processed_data_mapping_of_dataset(dataset_id):
     """Gets processed data map of a given region dataset.
     This object has the following structure:
@@ -238,6 +241,7 @@ def get_processed_data_mapping_of_dataset(dataset_id):
 
 @api.route("/intervals/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_intervals():
     """Gets all available intervals for a given user."""
     # SQL join to get all intervals that come from a dataset owned by the respective user
@@ -256,6 +260,7 @@ def get_intervals():
 
 @api.route("/intervals/<interval_id>/metadata", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_interval_metadata(interval_id):
     """returns available metadata for given intervals."""
     interval = Intervals.query.get(interval_id)
@@ -292,6 +297,7 @@ def get_interval_metadata(interval_id):
 
 @api.route("/averageIntervalData/<entry_id>/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_pileup_data(entry_id):
     """returns pileup data for the specified pileup id if it exists and
     access is allowed."""
@@ -319,6 +325,7 @@ def get_pileup_data(entry_id):
 
 @api.route("/associationIntervalData/<entry_id>/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_association_data(entry_id):
     """returns data for the specified association data id if it exists and
     access is allowed."""
@@ -344,6 +351,7 @@ def get_association_data(entry_id):
 
 @api.route("/embeddingIntervalData/<entry_id>/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_embedding_data(entry_id):
     """returns data for the specified embedding data id if it exists and
     access is allowed."""
@@ -438,6 +446,7 @@ def get_embedding_data(entry_id):
 
 @api.route("/embeddingIntervalData/<entry_id>/<feature_index>/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_embedding_feature(entry_id, feature_index):
     """Gets feature vector with feature_index for entry_id"""
     # Check for existence
@@ -467,6 +476,7 @@ def get_embedding_feature(entry_id, feature_index):
 
 @api.route("/individualIntervalData/<entry_id>/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_stackup_data(entry_id):
     """returns stackup data for the specified stackup id if it exists and
     access is allowed."""
@@ -493,6 +503,7 @@ def get_stackup_data(entry_id):
 
 @api.route("/individualIntervalData/<entry_id>/metadatasmall", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_stackup_metadata_small(entry_id):
     """returns metadata for small stackup. This needs to be done since
     the subsampeled stackup contains only a subset of the original intervals.
@@ -543,6 +554,7 @@ def get_stackup_metadata_small(entry_id):
 
 @api.route("/sessions/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_all_sessions():
     """Gets all available sessions for a given user."""
     all_available_sessions = Session.query.filter(
@@ -553,6 +565,7 @@ def get_all_sessions():
 
 @api.route("/sessions/<session_id>/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_session_data_with_id(session_id):
     """Returns session data with given id"""
     # check whether session with id exists
@@ -572,6 +585,7 @@ def get_session_data_with_id(session_id):
 
 @api.route("/sessions/<session_id>/sessionToken/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_session_token(session_id):
     """Returns session token for a given session."""
     # check whether session with id exists
@@ -590,6 +604,7 @@ def get_session_token(session_id):
 
 @api.route("/collections/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_all_collections():
     """Gets all available collections for a given user."""
     all_available_collections = Collection.query.filter(
@@ -604,6 +619,7 @@ def get_all_collections():
 
 @api.route("/repositories/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_all_repositories():
     """Gets all repos in the db for file downloads"""
     repositories = db.session.query(DataRepository).all()
@@ -612,6 +628,7 @@ def get_all_repositories():
 
 @api.route("/ENCODE/<repo_name>/<sample_id>/", methods=["GET"])
 @auth.login_required
+@check_confirmed
 def get_ENCODE_metadata(repo_name: str, sample_id: str):
     """fetches metadata from an ENCODE repository about a file
     to auto-fill form when user wants import from it

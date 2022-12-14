@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import patch
 import pandas as pd
-from hicognition.test_helpers import LoginTestCase
+from tests.test_utils.test_helpers import LoginTestCase
 
 # add path to import app
 # import sys

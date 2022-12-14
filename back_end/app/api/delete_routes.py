@@ -5,12 +5,13 @@ import hicognition
 from . import api
 from .. import db
 from ..models import Assembly, Collection, Dataset, Session
-from .authentication import auth
+from .authentication import auth, check_confirmed
 from .errors import forbidden, invalid, not_found
 
 
 @api.route("/datasets/<dataset_id>/", methods=["DELETE"])
 @auth.login_required
+@check_confirmed
 def delete_dataset_handler(dataset_id):
     """Deletes"""
     # check if data set exists
@@ -51,6 +52,7 @@ def delete_dataset_handler(dataset_id):
 
 @api.route("/sessions/<session_id>/", methods=["DELETE"])
 @auth.login_required
+@check_confirmed
 def delete_session_handler(session_id):
     """Deletes Session."""
     # check if data set exists
@@ -70,6 +72,7 @@ def delete_session_handler(session_id):
 
 @api.route("/collections/<collection_id>/", methods=["DELETE"])
 @auth.login_required
+@check_confirmed
 def delete_collection_handler(collection_id):
     """Deletes Collection."""
     # check if data set exists
@@ -90,6 +93,7 @@ def delete_collection_handler(collection_id):
 
 @api.route("/assemblies/<assembly_id>/", methods=["DELETE"])
 @auth.login_required
+@check_confirmed
 def delete_assembly_handler(assembly_id):
     """Deletes assemblies. Assemblies can only be deleted if no datasets are associated.."""
     # check if assembly exists

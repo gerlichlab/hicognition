@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 from flask import render_template
 from flask_mail import Message
-from hicognition.test_helpers import LoginTestCase
+from tests.test_utils.test_helpers import LoginTestCase
 from werkzeug.security import check_password_hash
 from app.confirmation import ConfirmationHandler
 

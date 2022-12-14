@@ -4,7 +4,7 @@ TODO more tests?
 
 import unittest
 from unittest.mock import patch
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 from app import db
 from app.models import *
 from app.tasks import download_dataset_file

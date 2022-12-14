@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 import pandas as pd
 from flask.globals import current_app
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 # import sys

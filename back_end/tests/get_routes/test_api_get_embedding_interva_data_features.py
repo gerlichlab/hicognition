@@ -5,7 +5,7 @@ import json
 import unittest
 from unittest.mock import patch
 import numpy as np
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 # import sys

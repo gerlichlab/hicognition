@@ -1,7 +1,7 @@
 """Module with the tests for the background cleanup tasks."""
 import unittest
 from unittest.mock import MagicMock, patch
-from hicognition.test_helpers import LoginTestCase
+from tests.test_utils.test_helpers import LoginTestCase
 
 # add path to import app
 # import sys

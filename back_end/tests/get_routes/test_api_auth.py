@@ -1,5 +1,6 @@
 """Tests api-authentication"""
-from hicognition.test_helpers import LoginTestCase
+import unittest
+from tests.test_utils.test_helpers import LoginTestCase
 
 # add path to import app
 # import sys
@@ -91,3 +92,7 @@ class TestAuth(LoginTestCase):
             "/api/tokens/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 403)
+
+
+if __name__ == "__main__":
+    res = unittest.main(verbosity=3, exit=False)

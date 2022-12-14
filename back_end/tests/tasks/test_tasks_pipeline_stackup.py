@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import patch
 import pandas as pd
 import numpy as np
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 from hicognition import interval_operations
 
 # add path to import app

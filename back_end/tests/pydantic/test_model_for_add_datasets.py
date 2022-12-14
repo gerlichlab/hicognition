@@ -4,7 +4,7 @@ import io
 import json
 import unittest
 from unittest.mock import patch
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 from pydantic import ValidationError
 
 # add path to import app
