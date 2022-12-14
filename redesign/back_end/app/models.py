@@ -18,16 +18,6 @@ class BaseModel(Base):
         return self.to_dict().as_dict()
     pass
 
-# class UserRole(BaseModel):
-#     __tablename__ = "assoc_user_role"
-#     user_id = Column(Integer, ForeignKey('user.id', name='fk_userrole_user'), primary_key=True)
-#     role_id = Column(Integer, ForeignKey('role.role', name='fk_userrole_user'), primary_key=True)
-
-# class Role(BaseModel):
-#     __tablename__ = "role"
-    
-#     role = Column(String(64), primary_key=True)
-    
 class User(BaseModel):
     __tablename__ = "user"
     
@@ -36,30 +26,31 @@ class User(BaseModel):
     password_hash = Column(String(500), nullable=False)
     email = Column(String(200), unique=True)
     
-    # roles = relationship('role', backref='users', secondary=UserRole)
+# class FileTags(BaseModel):
+#     __tablename__ = "file_tags"
+#     file_id = Column(Integer, primary_key=True, index=True)
+#     tag_name = Column(String(64), primary_key=True, index=True)
+#     tag_value = Column(String(1024), nullable=True)
     
 class File(BaseModel):
+    """File is an association class between User and PhysicalFile.
+    It acts as a symlink. """
     __tablename__ = "file"
 
     id = Column(Integer, primary_key=True, index=True)
+    md5 = Column(String(32), ForeignKey('physicalfile.md5', name='fk_file_physicalfile'), unique=True, index=True)
+    user_id = Column(Integer, ForeignKey('user.id', name='fk_file_user'))
     name = Column(String(128))
-    md5 = Column(String(32), unique=True, index=True)
-    path = Column(String(512))
-    # directory_id = Column(Integer, ForeignKey('directory.id', name='fk_file_directory'))
-    owner_id = Column(Integer, ForeignKey('user.id', name='fk_file_user'))
     
-    # directory = relationship('Directory', backref='files')
-    owner = relationship('User', backref='files')
+    user_md5_unique = UniqueConstraint(user_id, md5, name='unq_file')
+    user = relationship('User', backref='files')
+    
 
-# class Directory(BaseModel):
-#     __tablename__ = "directory"
-
-#     id = Column(Integer, primary_key=True, index=True)
-#     name = Column(String(128))
-#     path = Column(String(512))
-
-#     owner_id = Column(Integer, ForeignKey('user.id', name='fk_file_user'))
-#     owner = relationship('User', backref='files')
+class PhysicalFile(BaseModel):
+    __tablename__ = "physicalfile"
+    
+    md5 = Column(String(32), primary_key=True, index=True)
+    path = Column(String(512))
 
     
 class BaseFeatureSet(BaseModel):
@@ -112,7 +103,7 @@ class Feature2D(BaseFeatureSet):
     pass
     
 
-class Data(BaseModel):
+class Calculation(BaseModel):
     __abstract__ = True
     _feature_class = BaseFeatureSet # change this when inheriting
     
@@ -162,37 +153,38 @@ class Task(BaseModel):
     job_id = Column(Integer, unique=True) # TODO meeeeh
     
 
-class LinegraphData(Data):
+class LinegraphCalculation(Calculation):
     __tablename__ = 'calc_linegraph'
     _feature_class = Feature1D
 
 
-class LolaData(Data):
+class LolaCalculation(Calculation):
     __tablename__ = 'calc_lola'
     _feature_class = RegionSet
 
 
-class Umap1DData(Data):
+class Umap1DCalculation(Calculation):
     __tablename__ = 'calc_umap1d'
     _feature_class = Feature1D
 
 
-class Umap2DData(Data):
+class Umap2DCalculation(Calculation):
     __tablename__ = 'calc_umap2d'
     _feature_class = Feature2D
 
 
-class StackedLineprofileData(Data):
+class StackedLineprofileCalculation(Calculation):
     __tablename__ = 'calc_stackup'
     _feature_class = Feature1D
 
 
-class HeatmapData(Data):
+class HeatmapCalculation(Calculation):
     __tablename__ = 'calc_heatmap'
     _feature_class = Feature2D
     
 
-class _association_data_feature(BaseModel):
+class _association_calculation_feature(BaseModel):
+    """abstract class to make many-to-many relationships (collections)"""
     __abstract__ = True
     _c = None  # calulation_class
     _f = None  # feature_class
@@ -205,7 +197,7 @@ class _association_data_feature(BaseModel):
         return cls._f.__name__.lower()
         
     @declared_attr
-    def data_id(cls):
+    def calculation_id(cls):
         return Column(
             Integer,
             ForeignKey(
@@ -225,7 +217,7 @@ class _association_data_feature(BaseModel):
             primary_key=True
         )
     @declared_attr
-    def data(cls):
+    def calculation(cls):
         return relationship(cls._c, backref='features')
     @declared_attr
     def feature(cls):
@@ -237,17 +229,18 @@ class _association_data_feature(BaseModel):
 
 # create nr of feature associations
 # TODO check out warnings produced, should be neglible
-def _assoc_creator(data_cls, feature_cls):
-    tablename = f'assoc_{data_cls.__name__.lower()}_{feature_cls.__name__.lower()}'
+def _assoc_creator(calculation_cls, feature_cls):
+    tablename = f'assoc_{calculation_cls.__name__.lower()}_{feature_cls.__name__.lower()}'
     
-    class _T(_association_data_feature):
-        _c = data_cls
+    class _T(_association_calculation_feature):
+        _c = calculation_cls
         _f = feature_cls
         __tablename__ = tablename
     _T.__name__ = tablename
     return _T
-_data_models = [LinegraphData, Umap2DData, LolaData]
-for calc_cls in _data_models:
+
+_calculation_models = [LinegraphCalculation, Umap2DCalculation, LolaCalculation] # add more
+for calc_cls in _calculation_models:
     _assoc_creator(calc_cls, calc_cls._feature_class) # not assigned to anything as attached to base metadata
 
 class TagsSet(BaseModel):

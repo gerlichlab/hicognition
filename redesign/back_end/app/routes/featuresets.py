@@ -22,27 +22,47 @@ class BaseFeatureSetAPI(Resource):
     def get(self):
         return self.dao.get_all()
     def post(self):
+        # accepts files and parameters
         raise NotImplementedError
-    def delete(self):
+
+class BaseFeatureSetIdAPI(Resource):
+    dao = None
+    def get(self, id):
+        return self.dao.get_by_id(id)
+    def put(self, id):
+        # allows to change parameters
         raise NotImplementedError
-    def put(self):
+    def delete(self, id):
         raise NotImplementedError
+    
 
 ns_regionset = Namespace('region', 'Routes for RegionSet datasets.')
 @ns_regionset.route('/')
 class RegionSetAPI(BaseFeatureSetAPI):
     dao = regionset_dao
     pass
+@ns_regionset.route('/<int:id>')
+class RegionSetIdAPI(BaseFeatureSetIdAPI):
+    dao = regionset_dao
+    pass
 
 ns_feature1d = Namespace('feature1d', 'Routes for Feature1D (bigwig) datasets.')
 @ns_feature1d.route('/')
-class RegionSetAPI(BaseFeatureSetAPI):
+class Feature1DAPI(BaseFeatureSetAPI):
+    dao = feature1d_dao
+    pass
+@ns_feature1d.route('/<int:id>')
+class Feature1DIdAPI(BaseFeatureSetIdAPI):
     dao = feature1d_dao
     pass
 
 ns_feature2d = Namespace('feature2d', 'Routes for Feature2D (HiC) datasets.')
 @ns_feature2d.route('/')
-class RegionSetAPI(BaseFeatureSetAPI):
+class Feature2DAPI(BaseFeatureSetAPI):
+    dao = feature2d_dao
+    pass
+@ns_feature2d.route('/<int:id>')
+class Feature2DIdAPI(BaseFeatureSetIdAPI):
     dao = feature2d_dao
     pass
 

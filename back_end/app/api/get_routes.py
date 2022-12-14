@@ -386,7 +386,17 @@ def get_pileup_data(entry_id):
         for entry in np_data.flatten()
     ]
     json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
-    return jsonify(json_data)
+    if pileup.intervaldata_type == IntervalDataTypeEnum.LINEPROFILE.value:
+        np_data = 2*np_data
+        # Convert np.nan and np.isinf to None -> this is handeled by jsonify correctly
+        flat_data2 = [
+            entry if not (np.isnan(entry) or np.isinf(entry)) else None
+            for entry in np_data.flatten()
+        ]
+        json_data2 = {"data": flat_data2, "shape": np_data.shape, "dtype": "float32"}
+        return jsonify([json_data, json_data2])
+    else:
+        return jsonify(json_data)
 
 
 @api.route("/associationIntervalData/<entry_id>/", methods=["GET"])
@@ -411,7 +421,14 @@ def get_association_data(entry_id):
         for entry in np_data.flatten()
     ]
     json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
-    return jsonify(json_data)
+    np_data = 2*np_data
+    # Convert np.nan and np.isinf to None -> this is handeled by jsonify correctly
+    flat_data2 = [
+        entry if not (np.isnan(entry) or np.isinf(entry)) else None
+        for entry in np_data.flatten()
+    ]
+    json_data2 = {"data": flat_data2, "shape": np_data.shape, "dtype": "float32"}
+    return jsonify([json_data, json_data2])
 
 
 @api.route("/embeddingIntervalData/<entry_id>/", methods=["GET"])
@@ -436,23 +453,39 @@ def get_embedding_data(entry_id):
         cluster_ids = np.load(embedding_data.cluster_id_path).astype(float)
         thumbnails = np.load(embedding_data.thumbnail_path).astype(float)
         # Convert np.nan and np.isinf to None -> this is handeled by jsonify correctly
-        json_data = {
-            "embedding": {
-                "data": flatten_and_clean_array(embedding),
-                "shape": embedding.shape,
-                "dtype": "float32",
-            },
-            "cluster_ids": {
-                "data": flatten_and_clean_array(cluster_ids),
-                "shape": cluster_ids.shape,
-                "dtype": "float32",
-            },
-            "thumbnails": {
-                "data": flatten_and_clean_array(thumbnails),
-                "shape": thumbnails.shape,
-                "dtype": "float32",
-            },
-        }
+        json_data = [{
+                "embedding": {
+                    "data": flatten_and_clean_array(embedding),
+                    "shape": embedding.shape,
+                    "dtype": "float32",
+                },
+                "cluster_ids": {
+                    "data": flatten_and_clean_array(cluster_ids),
+                    "shape": cluster_ids.shape,
+                    "dtype": "float32",
+                },
+                "thumbnails": {
+                    "data": flatten_and_clean_array(thumbnails),
+                    "shape": thumbnails.shape,
+                    "dtype": "float32",
+                }
+            },{
+                "embedding": {
+                    "data": flatten_and_clean_array(embedding*2),
+                    "shape": embedding.shape,
+                    "dtype": "float32",
+                },
+                "cluster_ids": {
+                    "data": flatten_and_clean_array(cluster_ids),
+                    "shape": cluster_ids.shape,
+                    "dtype": "float32",
+                },
+                "thumbnails": {
+                    "data": flatten_and_clean_array(thumbnails*2),
+                    "shape": thumbnails.shape,
+                    "dtype": "float32",
+            }
+        }]
     else:
         # Check whether collections are owned
         collection = embedding_data.source_collection
@@ -465,7 +498,7 @@ def get_embedding_data(entry_id):
         if embedding_data.cluster_id_path is not None:
             cluster_ids = np.load(embedding_data.cluster_id_path).astype(float)
             average_data = np.load(embedding_data.thumbnail_path).astype(float)
-            json_data = {
+            json_data = [{
                 "embedding": {
                     "data": flatten_and_clean_array(embedding),
                     "shape": embedding.shape,
@@ -480,10 +513,26 @@ def get_embedding_data(entry_id):
                     "data": flatten_and_clean_array(average_data),
                     "shape": average_data.shape,
                     "dtype": "float32",
+                }
+            },{
+                "embedding": {
+                    "data": flatten_and_clean_array(embedding*2),
+                    "shape": embedding.shape,
+                    "dtype": "float32",
                 },
+                "cluster_ids": {
+                    "data": flatten_and_clean_array(cluster_ids),
+                    "shape": cluster_ids.shape,
+                    "dtype": "float32",
+                },
+                "thumbnails": {
+                    "data": flatten_and_clean_array(average_data*2),
+                    "shape": average_data.shape,
+                    "dtype": "float32",
             }
+        }]
         else:
-            json_data = {
+            json_data = [{
                 "embedding": {
                     "data": flatten_and_clean_array(embedding),
                     "shape": embedding.shape,
@@ -499,7 +548,23 @@ def get_embedding_data(entry_id):
                     "shape": None,
                     "dtype": None,
                 },
-            }
+            },{
+                "embedding": {
+                    "data": flatten_and_clean_array(embedding*2),
+                    "shape": embedding.shape,
+                    "dtype": "float32",
+                },
+                "cluster_ids": {
+                    "data": None,
+                    "shape": None,
+                    "dtype": None,
+                },
+                "thumbnails": {
+                    "data": None,
+                    "shape": None,
+                    "dtype": None,
+                },
+            }]
     # compress
     content = gzip.compress(json.dumps(json_data).encode("utf8"), 4)
     response = make_response(content)
@@ -528,7 +593,8 @@ def get_embedding_feature(entry_id, feature_index):
         entry if not (np.isnan(entry) or np.isinf(entry)) else None
         for entry in selected_row.flatten()
     ]
-    json_data = {"data": flat_data, "shape": selected_row.shape, "dtype": "float32"}
+    json_data = [{"data": flat_data, "shape": selected_row.shape, "dtype": "float32"}, 
+                 {"data": flat_data, "shape": selected_row.shape, "dtype": "float32"}]
     # compress
     content = gzip.compress(json.dumps(json_data).encode("utf8"), 4)
     response = make_response(content)
@@ -560,7 +626,14 @@ def get_stackup_data(entry_id):
         for entry in np_data.flatten()
     ]
     json_data = {"data": flat_data, "shape": np_data.shape, "dtype": "float32"}
-    return jsonify(json_data)
+    np_data = 2*np_data
+    # Convert np.nan and np.isinf to None -> this is handeled by jsonify correctly
+    flat_data2 = [
+        entry if not (np.isnan(entry) or np.isinf(entry)) else None
+        for entry in np_data.flatten()
+    ]
+    json_data2 = {"data": flat_data2, "shape": np_data.shape, "dtype": "float32"}
+    return jsonify([json_data, json_data2])
 
 
 @api.route("/individualIntervalData/<entry_id>/metadatasmall", methods=["GET"])

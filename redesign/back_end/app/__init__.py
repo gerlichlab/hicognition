@@ -33,13 +33,12 @@ def create_app(config):
     from app.services.file import file_service
     file_service.init_app(app)
     
-    from app.routes import user, file, featureset_routes
+    from app.routes import user, file, featuresets, calculations
     
-    return app
-    
-    from app.daos import user_dao
-    user_dao.add_user('dev', 'asdf', 'dev@devteam.at')
-    db.session.commit()
+    # from app.daos.daos import user_dao
+    # from app.models import User
+    # user_dao.add(User(username='dev', password_hash='asdf', email='dev@devteam.at'))
+    # db.session.commit()
     
     return app
     # app.config.from_object(config[config_name])
