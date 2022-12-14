@@ -253,3 +253,32 @@ class TagsSet(BaseModel):
     candidate_key = UniqueConstraint(tag_name, tag_value, 'unique_tagname_tagvalue')
 
 Base.metadata.create_all(engine, checkfirst=True)
+
+
+
+# class File_Group(BaseModel):
+#     __tablename__ = "assoc_file_group"
+#     physical_file_id = Column(Integer, primary_key=True, index=True)
+#     owner_id = Column(Integer, primary_key=True, index=True)
+#     group_id = Column(Integer, ForeignKey('group.id', name='fk_groupsymlink_user'), primary_key=True, index=True)
+#     may_edit = Column(Boolean, default=True)
+#     fk_symlink = ForeignKeyConstraint([physical_file_id, owner_id], ["physicalfile.id", "physicalfile.owner_id"], name='fk_usersymlinkgroup_symlink')
+
+# class User_Group(BaseModel):
+#     __tablename__ = "assoc_user_group"
+#     user_id = Column(Integer, ForeignKey('user.id', name='fk_usergroup_user'), primary_key=True, index=True)
+#     group_id = Column(Integer, ForeignKey('group.id', name='fk_usergroup_group'), primary_key=True, index=True)
+#     permissions = Column(String(50), nullable=True) # use some enum or smth like that
+
+# class User(BaseModel):
+#     __tablename__ = "user"
+    
+#     id = Column(Integer, primary_key=True, index=True)
+#     username = Column(String(50), unique=True)
+#     password_hash = Column(String(500), nullable=False)
+#     email = Column(String(200), unique=True)
+    
+#     files = relationship('file', backref='creator')
+#     api_keys = relationship('apikey', backref='user')
+#     groups_created = relationship('group', backref='creator')
+#     group_memberships = relationship('group', backref='users', secondary=User_Group)
