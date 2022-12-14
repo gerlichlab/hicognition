@@ -109,7 +109,7 @@ export var apiMixin = {
                         error.response.status == 401
                     ) {
                         // check whether this is a confirmation failure
-                        if (error.response.data.message == 'Unconfirmed') {
+                        if (error.response.data.message.includes('Unconfirmed')) {
                             this.$router.push("/resendEmail")
                         }else{
                             // Token problem, delete it and return to login

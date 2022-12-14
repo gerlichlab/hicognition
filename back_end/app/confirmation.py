@@ -22,7 +22,7 @@ class ConfirmationHandler():
         return serializer.dumps(email, salt=self._secret_salt)
 
     def _generate_confirmation_url(self, base_url, email):
-        return base_url + '/confirmation/' + self._generate_confirmation_token(email)
+        return base_url + '/#/confirmEmail?emailToken=' + self._generate_confirmation_token(email)
 
     def generate_confirmation_email(self, base_url, email):
         return render_template("confirmation_email.html", confirm_url=self._generate_confirmation_url(base_url, email))

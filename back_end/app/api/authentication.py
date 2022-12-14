@@ -91,7 +91,7 @@ def register():
         return errors.invalid('User with this name or email address already exists!')
     # send confirmation email
     try:
-        confirmation_handler.send_confirmation_mail(request.base_url.split("/register/")[0], data.email_address)
+        confirmation_handler.send_confirmation_mail(request.base_url.split("/api/register/")[0], data.email_address)
     except BaseException as e:
         current_app.logger.info('Confirmation sending failed!')
         current_app.logger.error(e)
@@ -103,7 +103,7 @@ def register():
 def resend_confirmation_mail():
     # send confirmation email
     try:
-        confirmation_handler.send_confirmation_mail(request.base_url.split("/resend/")[0], g.current_user.email)
+        confirmation_handler.send_confirmation_mail(request.base_url.split("/api/resend/")[0], g.current_user.email)
     except BaseException as e:
         current_app.logger.info('Confirmation sending failed!')
         current_app.logger.error(e)
@@ -117,10 +117,10 @@ def confirm_email(token):
     # check if token is ok
     email = confirmation_handler.confirm_token(token)
     if not email:
-        return errors.forbidden("Token wrong or expired.")
+        return errors.forbidden("Unconfirmed: Token wrong or expired.")
     # check if email matches
     if not (g.current_user.email == email):
-        return errors.forbidden("Wrong email address.")
+        return errors.forbidden("Unconfirmed: Wrong email address.")
     # set confirmation state
     g.current_user.email_confirmed = True
     db.session.add(g.current_user)
