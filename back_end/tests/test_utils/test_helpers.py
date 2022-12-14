@@ -63,13 +63,13 @@ class LoginTestCase(unittest.TestCase):
             "Content-Type": "application/json",
         }
 
-    def add_and_authenticate(self, username, password):
+    def add_and_authenticate(self, username, password, confirmed=True):
         """adds a user with username and password, authenticates
         the user and returns a token."""
         # add new user
         new_user = User(username=username)
         new_user.set_password(password)
-        new_user.email_confirmed = True
+        new_user.email_confirmed = confirmed
         db.session.add(new_user)
         db.session.commit()
         # get token

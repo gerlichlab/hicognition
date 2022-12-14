@@ -135,57 +135,56 @@ class TestConfirmationEmail(LoginTestCase):
 
     def test_email_sending_called_correctly(self):
         # mock send method
-        confirmation_handler._mail_client.send = MagicMock()
-        # dispatch api call
-        response = self.client.post(
-                "/api/register/",
-                data={
-                    "userName": "test",
-                    "password1": "test12345",
-                    "emailAddress": "test@test.at"
-                },
-                content_type="multipart/form-data",
+        with patch.object(confirmation_handler._mail_client, 'send') as mock_method:
+            # dispatch api call
+            self.client.post(
+                    "/api/register/",
+                    data={
+                        "userName": "test",
+                        "password1": "test12345",
+                        "emailAddress": "test@test.at"
+                    },
+                    content_type="multipart/form-data",
+                )
+            # check whether email has been sent correctly
+            msg = Message(
+                html=confirmation_handler.generate_confirmation_email("http://localhost/api","test@test.at"),
+                subject="Confirm your email",
+                recipients=["test@test.at"]
             )
-        # check whether email has been sent correctly
-        msg = Message(
-            html=confirmation_handler.generate_confirmation_email("http://localhost/api","test@test.at"),
-            subject="Confirm your email",
-            recipients=["test@test.at"]
-        )
-        # compare calls; flask mail messages cannot be compared directly
-        actual = confirmation_handler._mail_client.send.mock_calls[0].args[0]
-        self.assertEqual(msg.html, actual.html)
-        self.assertEqual(msg.subject, actual.subject)
-        self.assertEqual(msg.recipients, actual.recipients)
+            # compare calls; flask mail messages cannot be compared directly
+            actual = mock_method.mock_calls[0].args[0]
+            self.assertEqual(msg.html, actual.html)
+            self.assertEqual(msg.subject, actual.subject)
+            self.assertEqual(msg.recipients, actual.recipients)
 
     def test_resending_works(self):
-        # mock send method
-        confirmation_handler._mail_client.send = MagicMock()
-        # add user
-        token = self.add_and_authenticate("test", "asdf")
-        token_headers = self.get_token_header(token)
-        # add mail address
-        user = User.query.first()
-        user.email = "test@test.at"
-        db.session.add(user)
-        db.session.commit()
-        # dispatch api call
-        response = self.client.get(
-                "/api/resend/",
-                headers=token_headers
+        with patch.object(confirmation_handler._mail_client, 'send') as mock_method:
+            # add user
+            token = self.add_and_authenticate("test", "asdf")
+            token_headers = self.get_token_header(token)
+            # add mail address
+            user = User.query.first()
+            user.email = "test@test.at"
+            db.session.add(user)
+            db.session.commit()
+            # dispatch api call
+            response = self.client.get(
+                    "/api/resend/",
+                    headers=token_headers
+                )
+            self.assertEqual(response.status_code, 200)
+            # check whether email has been sent correctly
+            msg = Message(
+                html=confirmation_handler.generate_confirmation_email("http://localhost/api","test@test.at"),
+                subject="Confirm your email",
+                recipients=["test@test.at"]
             )
-        self.assertEqual(response.status_code, 200)
-        # check whether email has been sent correctly
-        msg = Message(
-            html=confirmation_handler.generate_confirmation_email("http://localhost/api","test@test.at"),
-            subject="Confirm your email",
-            recipients=["test@test.at"]
-        )
-        # compare calls; flask mail messages cannot be compared directly
-        actual = confirmation_handler._mail_client.send.mock_calls[0].args[0]
-        self.assertEqual(msg.html, actual.html)
-        self.assertEqual(msg.subject, actual.subject)
-        self.assertEqual(msg.recipients, actual.recipients)
+            # compare calls; flask mail messages cannot be compared directly
+            actual = mock_method.mock_calls[0].args[0]
+            self.assertEqual(msg.html, actual.html)
+            self.assertEqual(msg.subject, actual.subject)
+            self.assertEqual(msg.recipients, actual.recipients)
 
 
 class TestUserConfirmation(LoginTestCase):

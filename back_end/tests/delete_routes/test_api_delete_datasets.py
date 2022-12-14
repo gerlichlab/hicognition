@@ -152,7 +152,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             "/api/datasets/500/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 404)
-
+ 
     def test_delete_dataset_wo_permission(self):
         """Should return 403 since dataset is not owned."""
         token = self.add_and_authenticate("test", "asdf")

@@ -60,6 +60,19 @@ class TestDeleteAssembly(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
+    def test_no_confirmation(self):
+        # aut
+        token = self.add_and_authenticate("test2", "asdf", confirmed=False)
+        # create token_headers
+        self.token_headers = self.get_token_header(token)
+        response = self.client.delete(
+            "/api/assemblies/500/",
+            headers=self.token_headers,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.get_json()['message'], 'Unconfirmed')
+
     def test_delete_wo_id(self):
         """Should return 405 since delete is not allowed for /api/assemblies"""
         response = self.client.delete(
