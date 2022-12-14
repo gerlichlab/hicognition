@@ -7,7 +7,7 @@ import app.database as db
 class BaseDAO:
     def __init__(self, model):
         self.model = model
-        
+         
     def get_all(self):
         return db.session.query(self.model).all()
         
@@ -30,9 +30,13 @@ class UserDAO(BaseDAO):
     def get_by_email(self, email: str):
         return db.session.query(self.model).filter_by(email=email).first()
 
-class FileDAO(BaseDAO):
+class PhysicalFileDAO(BaseDAO):
     def get_by_hash(self, md5: str):
         return db.session.query(self.model).filter_by(md5=md5).first()
+    
+class FileDAO(BaseDAO):
+    def get_by_hash_userid(self, md5: str, user_id: int):
+        return db.session.query(self.model).filter_by(md5=md5, user_id=user_id).first()
 
 # class DirectoryDAO(BaseDAO):
 #     pass
@@ -59,16 +63,17 @@ class TaskDAO(BaseDAO):
 
 user_dao = UserDAO(User)
 file_dao = FileDAO(File)
+physicalfile_dao = PhysicalFileDAO(PhysicalFile)
 # dir_dao = DirectoryDAO(Directory)
 regionset_dao = BaseFeatureSetDAO(RegionSet)
 feature1d_dao = BaseFeatureSetDAO(Feature1D)
 feature2d_dao = BaseFeatureSetDAO(Feature2D)
 
-linegraphcalculation_dao = CalculationDAO(LinegraphData)
-lolacalculation_dao = CalculationDAO(LolaData)
-umap1Dcalculation_dao = CalculationDAO(Umap1DData)
-umap2Dcalculation_dao = CalculationDAO(Umap2DData)
-stackedlineprofilecalculation_dao = CalculationDAO(StackedLineprofileData)
-heatmapcalculation_dao = CalculationDAO(HeatmapData)
+linegraphcalculation_dao = CalculationDAO(LinegraphCalculation)
+lolacalculation_dao = CalculationDAO(LolaCalculation)
+umap1Dcalculation_dao = CalculationDAO(Umap1DCalculation)
+umap2Dcalculation_dao = CalculationDAO(Umap2DCalculation)
+stackedlineprofilecalculation_dao = CalculationDAO(StackedLineprofileCalculation)
+heatmapcalculation_dao = CalculationDAO(HeatmapCalculation)
 
 task_dao = TaskDAO(Task)

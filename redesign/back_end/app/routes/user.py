@@ -46,7 +46,7 @@ class UserIdAPI(Resource):
     @marshal_with(user_fields, envelope='user')
     def get(self, id):
         user = user_dao.get_by_id(id)
-        return user_service.check_password('dev')
+        #return user_service.check_password('dev')
         return user
     def post(self, id):
         return "test"
