@@ -94,7 +94,9 @@
                         >Passwords need to be equal</span
                     >
                 </md-field>
-            </md-card-content>
+            </md-card-content> 
+            <!-- Progress bar -->
+            <md-progress-bar md-mode="indeterminate" v-if="sending" />
             <!-- Buttons for user creation -->
             <md-card-actions>
                 <md-button
@@ -231,6 +233,14 @@ export default {
 </script>
 
 <style scoped>
+.md-progress-bar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+}
+
+
 .halfwidth {
     width: 20vw;
     height: 35v;
