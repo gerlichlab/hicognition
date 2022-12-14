@@ -158,5 +158,95 @@ class TestConfirmationEmail(LoginTestCase):
         self.assertEqual(msg.subject, actual.subject)
         self.assertEqual(msg.recipients, actual.recipients)
 
+    def test_resending_works(self):
+        # mock send method
+        confirmation_handler._mail_client.send = MagicMock()
+        # add user
+        token = self.add_and_authenticate("test", "asdf")
+        token_headers = self.get_token_header(token)
+        # add mail address
+        user = User.query.first()
+        user.email = "test@test.at"
+        db.session.add(user)
+        db.session.commit()
+        # dispatch api call
+        response = self.client.get(
+                "/api/resend/",
+                headers=token_headers
+            )
+        self.assertEqual(response.status_code, 200)
+        # check whether email has been sent correctly
+        msg = Message(
+            html=confirmation_handler.generate_confirmation_email("http://localhost/api","test@test.at"),
+            subject="Confirm your email",
+            recipients=["test@test.at"]
+        )
+        # compare calls; flask mail messages cannot be compared directly
+        actual = confirmation_handler._mail_client.send.mock_calls[0].args[0]
+        self.assertEqual(msg.html, actual.html)
+        self.assertEqual(msg.subject, actual.subject)
+        self.assertEqual(msg.recipients, actual.recipients)
+
+
+class TestUserConfirmation(LoginTestCase):
+    """Tests email confirmation route."""
+
+    def test_access_denied_without_token(self):
+        """Test whether request results in 401 error
+        if no token is provided."""
+        # dispatch request
+        response = self.client.get(
+            "/api/confirmation/asdf/"
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_invalid_token_rejected(self):
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        token_headers = self.get_token_header(token)
+        # dispatch post request
+        response = self.client.get(
+            "/api/confirmation/asdf/", headers=token_headers
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_valid_token_with_wrong_mail_address_rejected(self):
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        token_headers = self.get_token_header(token)
+        # add mail address
+        user = User.query.first()
+        user.email = "test@test.at"
+        db.session.add(user)
+        db.session.commit()
+        # generate token for other address
+        wrong_address_token = confirmation_handler._generate_confirmation_token("test2@test.at")
+        # dispatch post request
+        response = self.client.get(
+            f"/api/confirmation/{wrong_address_token}/", headers=token_headers
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_valid_token_succeeds(self):
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        token_headers = self.get_token_header(token)
+        # add mail address
+        user = User.query.first()
+        user.email = "test@test.at"
+        db.session.add(user)
+        db.session.commit()
+        # generate token for other address
+        correct_address_token = confirmation_handler._generate_confirmation_token("test@test.at")
+        # dispatch post request
+        response = self.client.get(
+            f"/api/confirmation/{correct_address_token}/", headers=token_headers
+        )
+        self.assertEqual(response.status_code, 200)
+        # check that user is confirmed
+        self.assertTrue(user.email_confirmed)
+
+
+
 if __name__ == "__main__":
     res = unittest.main(verbosity=3, exit=False)
