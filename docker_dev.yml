@@ -33,7 +33,7 @@ services:
             - MAIL_SERVER=${MAIL_SERVER}
             - MAIL_PORT=${MAIL_PORT}
             - MAIL_USERNAME=${MAIL_USERNAME}
-            - MAL_PASSWORD=${MAIL_PASSWORD}
+            - MAIL_PASSWORD=${MAIL_PASSWORD}
             - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
             - SECRET_SALT=${SECRET_SALT}
         ports:
@@ -73,7 +73,7 @@ services:
             - MAIL_SERVER=${MAIL_SERVER}
             - MAIL_PORT=${MAIL_PORT}
             - MAIL_USERNAME=${MAIL_USERNAME}
-            - MAL_PASSWORD=${MAIL_PASSWORD}
+            - MAIL_PASSWORD=${MAIL_PASSWORD}
             - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
             - SECRET_SALT=${SECRET_SALT}
         depends_on:
@@ -102,7 +102,7 @@ services:
             - MAIL_SERVER=${MAIL_SERVER}
             - MAIL_PORT=${MAIL_PORT}
             - MAIL_USERNAME=${MAIL_USERNAME}
-            - MAL_PASSWORD=${MAIL_PASSWORD}
+            - MAIL_PASSWORD=${MAIL_PASSWORD}
             - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
             - SECRET_SALT=${SECRET_SALT}
         depends_on:
@@ -131,7 +131,7 @@ services:
             - MAIL_SERVER=${MAIL_SERVER}
             - MAIL_PORT=${MAIL_PORT}
             - MAIL_USERNAME=${MAIL_USERNAME}
-            - MAL_PASSWORD=${MAIL_PASSWORD}
+            - MAIL_PASSWORD=${MAIL_PASSWORD}
             - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
             - SECRET_SALT=${SECRET_SALT}
         depends_on:

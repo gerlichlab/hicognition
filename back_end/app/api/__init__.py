@@ -1,7 +1,7 @@
 """Init script for HiCognition API"""
 from flask import Blueprint, current_app
 
-api = Blueprint("api", __name__)
+api = Blueprint("api", __name__, template_folder="../templates")
 
 if current_app.config["SHOWCASE"]:
     from . import (

@@ -7,6 +7,7 @@ from . import api
 from . import errors
 from ..form_models import UserRegistrationModel
 from ..models import User, Session
+from .. import confirmation_handler
 from .. import db
 
 
@@ -86,7 +87,13 @@ def register():
     except IntegrityError:
         db.session.rollback()
         return errors.invalid('User with this name or email address already exists!')
-    # TODO: send confirmation email
+    # send confirmation email
+    try:
+        confirmation_handler.send_confirmation_mail(request.base_url.split("/register/")[0], data.email_address)
+    except BaseException as e:
+        current_app.logger.info('Confirmation sending failed!')
+        current_app.logger.error(e)
+        return errors.internal_server_error(e, "Sending mail failed!")
     return jsonify({"message": "Registration successful"})
 
 
