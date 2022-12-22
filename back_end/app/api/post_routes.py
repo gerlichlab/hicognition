@@ -703,11 +703,11 @@ def create_assembly():
     return jsonify({"message": "success! Assembly added."})
 
 
-@api.route("/embeddingIntervalData/<entry_id>/<cluster_id>/create/", methods=["POST"])
+@api.route("/embeddingIntervalData/<entry_id>/createRegion/", methods=["POST"])
 @auth.login_required
 @check_confirmed
-def create_region_from_cluster_id(entry_id, cluster_id):
-    """Creates new region for cluster_id at entry_id"""
+def create_region_from_cluster_id(entry_id):
+    """Creates new region for cluster_ids at entry_id"""
 
     def is_form_invalid():
         if not hasattr(request, "form"):
@@ -715,7 +715,7 @@ def create_region_from_cluster_id(entry_id, cluster_id):
         if len(request.form) == 0:
             return True
         # check attributes
-        if sorted(request.form.keys()) != ["name"]:
+        if sorted(request.form.keys()) != ['cluster_ids',"name"]:
             return True
         return False
 
@@ -739,15 +739,16 @@ def create_region_from_cluster_id(entry_id, cluster_id):
         return invalid("Form is not valid!")
     # get data from form
     form_data = request.form
+    new_region_ids = set([int(cluster_id) for cluster_id in form_data['cluster_ids']])
     # check whetehr thumbnails exist
     if embedding_data.cluster_id_path is None:
         return not_found("ClusterIDs do not exist")
     # load cluster ids
     cluster_ids = np.load(embedding_data.cluster_id_path).astype(int)
-    # check whether cluster id is inside
+    # check whether new ids exist
     unique_ids = set(cluster_ids.astype(int))
-    if int(cluster_id) not in unique_ids:
-        return not_found("Cluster id does not exist!")
+    if (new_region_ids & unique_ids) != new_region_ids:
+        return not_found(f"Some cluster ids do not exist: {new_region_ids | unique_ids}")
     # load regions
     regions = pd.read_csv(bed_ds.file_path, sep="\t", header=None)
     # create new dataset
@@ -764,7 +765,7 @@ def create_region_from_cluster_id(entry_id, cluster_id):
     db.session.add(new_entry)
     db.session.commit()
     # subset and write to file
-    mask = cluster_ids == int(cluster_id)
+    mask = pd.Series(cluster_ids).isin(new_region_ids).values
     subset = regions.iloc[mask, :]
     filename = f"{new_entry.id}_subset_{bed_ds.dataset_name}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
