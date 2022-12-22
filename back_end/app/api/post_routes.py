@@ -739,7 +739,7 @@ def create_region_from_cluster_id(entry_id):
         return invalid("Form is not valid!")
     # get data from form
     form_data = request.form
-    new_region_ids = set([int(cluster_id) for cluster_id in form_data['cluster_ids']])
+    new_region_ids = set([int(cluster_id) for cluster_id in json.loads(form_data['cluster_ids'])])
     # check whetehr thumbnails exist
     if embedding_data.cluster_id_path is None:
         return not_found("ClusterIDs do not exist")

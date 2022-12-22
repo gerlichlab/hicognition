@@ -115,7 +115,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         """No authentication provided, response should be 401"""
         # protected route
         response = self.client.post(
-            "/api/embeddingIntervalData/1/0/create/", content_type="multipart/form-data"
+            "/api/embeddingIntervalData/1/createRegion/", content_type="multipart/form-data"
         )
         self.assertEqual(response.status_code, 401)
 
@@ -127,7 +127,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         token_headers = self.get_token_header(token)
         # make request
         response = self.client.post(
-            "/api/embeddingIntervalData/500/0/create/",
+            "/api/embeddingIntervalData/500/createRegion/",
             headers=token_headers,
             content_type="multipart/form-data",
         )
@@ -151,7 +151,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make request for forbidden collection
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embedding_data_dataset_unowned.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_dataset_unowned.id}/createRegion/",
             headers=token_headers,
             content_type="multipart/form-data",
         )
@@ -175,7 +175,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embedding_data_intervals_unowned.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_unowned.id}/createRegion/",
             headers=token_headers,
             content_type="multipart/form-data",
         )
@@ -199,7 +199,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/createRegion/",
             headers=token_headers,
             content_type="multipart/form-data",
         )
@@ -225,7 +225,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         data = {"datasetName": "asdf"}
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/createRegion/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
@@ -249,10 +249,10 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         )
         db.session.commit()
         # construct form
-        data = {"name": "asdf"}
+        data = {"name": "asdf", 'cluster_ids': '[0]'}
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/createRegion/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
@@ -277,10 +277,10 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
         )
         db.session.commit()
         # construct form
-        data = {"name": "asdf"}
+        data = {"name": "asdf", "cluster_ids": "[1]"}
         # make request with owned interval
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embedding_data_owned.id}/1/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_owned.id}/createRegion/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
@@ -417,7 +417,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
         token_headers = self.get_token_header(token)
         # make request
         response = self.client.post(
-            "/api/embeddingIntervalData/500/0/create/",
+            "/api/embeddingIntervalData/500/createRegion/",
             headers=token_headers,
             content_type="multipart/form-data",
         )
@@ -441,7 +441,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make request for forbidden collection
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embedding_data_collection_unowned.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_collection_unowned.id}/createRegion/",
             headers=token_headers,
             content_type="multipart/form-data",
         )
@@ -465,7 +465,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embedding_data_intervals_unowned.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_unowned.id}/createRegion/",
             headers=token_headers,
             content_type="multipart/form-data",
         )
@@ -489,7 +489,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
         db.session.commit()
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/createRegion/",
             headers=token_headers,
             content_type="multipart/form-data",
         )
@@ -515,7 +515,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
         data = {"datasetName": "asdf"}
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/createRegion/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
@@ -539,10 +539,10 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
         )
         db.session.commit()
         # construct form
-        data = {"name": "asdf"}
+        data = {"name": "asdf", "cluster_ids": "[0]"}
         # make request with forbidden intervall
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/0/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_intervals_wo_thumbnail_data.id}/createRegion/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
@@ -567,10 +567,10 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
         )
         db.session.commit()
         # construct form
-        data = {"name": "asdf"}
+        data = {"name": "asdf", "cluster_ids": "[1]"}
         # make request with owned interval
         response = self.client.post(
-            f"/api/embeddingIntervalData/{self.embedding_data_owned.id}/1/create/",
+            f"/api/embeddingIntervalData/{self.embedding_data_owned.id}/createRegion/",
             data=data,
             headers=token_headers,
             content_type="multipart/form-data",
