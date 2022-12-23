@@ -445,7 +445,7 @@ export default {
             let [x, y, adjustedX, adjustedY] = this.getMouseCoordinates(
                 mousedata
             );
-            this.$emit("heatmap-clicked", x, y, adjustedX, adjustedY);
+            this.$emit("heatmap-clicked", x, y, adjustedX, adjustedY, this.visualizationSize);
         },
         handleMouseMove: function(mousedata) {
             if (this.trackMouse) {

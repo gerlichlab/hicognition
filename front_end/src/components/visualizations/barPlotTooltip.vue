@@ -1,14 +1,14 @@
 <template>
     <md-card
         :style="tooltipStyle"
-        v-show="showTooltip && clusterID !== undefined"
+        v-show="showTooltip && clusterIDs.length !== 0"
     >
         <div class="md-layout-item md-size-100 blue-background">
             <span class="md-caption padding-left">{{ dataInfo }}</span>
         </div>
         <md-card-content class="no-padding">
             <embedding-distribution
-                v-if="clusterID !== undefined"
+                v-if="clusterIDs.length !== 0"
                 :rawData="selectedDistribution"
                 :width="width"
                 :height="plotSize"
@@ -61,7 +61,7 @@ export default {
         showControls: Boolean,
         tooltipOffsetLeft: Number,
         tooltipOffsetTop: Number,
-        clusterID: Number,
+        clusterIDs: Array,
         embeddingID: Number,
         collectionName: String,
         regionName: String,
@@ -80,7 +80,7 @@ export default {
                 height: `${this.height}px`
             },
             showDialog: false,
-            newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterID}`,
+            newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterIDs}`,
             datasetSaved: false,
             showcase_bool: process.env.SHOWCASE
         };
@@ -93,26 +93,35 @@ export default {
             }
             return sum;
         },
+        selectedCounts: function(){
+            let sum = 0;
+            for (let [key, value] of this.clusterCounts) {
+                if (this.clusterIDs.includes(key)){
+                    sum += value;
+                }
+            }
+            return sum;
+        },
         dataInfo: function() {
             if (
                 this.clusterCounts !== undefined &&
-                this.clusterCounts.get(this.clusterID) !== undefined
+               this.selectedCounts !== undefined
             ) {
-                return `Cluster: ${this.clusterID} | ${this.clusterCounts.get(
-                    this.clusterID
-                )}/${this.totalRegions} Regions`;
+                return `Cluster: ${this.clusterIDs} | ${this.selectedCounts} 
+                            /${this.totalRegions} Regions`;
             }
-            return `Cluster: ${this.clusterID}`;
+            return `Cluster: ${this.clusterIDs}`;
         },
         plotSize: function() {
             return this.width * 0.8;
         },
         selectedDistribution: function() {
-            if (this.clusterID !== undefined) {
+            // TODO: average together
+            if (this.clusterIDs.length != 0) {
                 return select_row(
                     this.averageValues.data,
                     this.averageValues.shape,
-                    this.clusterID
+                    this.clusterIDs[0]
                 );
             }
         },
@@ -147,9 +156,10 @@ export default {
             // create form
             let formData = new FormData();
             formData.append("name", this.newRegionName);
+            formData.append("cluster_ids", JSON.stringify([this.clusterIDs]))
             // do api call
             this.postData(
-                `embeddingIntervalData/${this.embeddingID}/${this.clusterID}/create/`,
+                `embeddingIntervalData/${this.embeddingID}/createRegion/`,
                 formData
             ).then(response => {
                 if (response) {
@@ -175,7 +185,7 @@ export default {
             this.tooltipStyle["width"] = `${val}px`;
         },
         showControls: function(val) {
-            this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterID}`;
+            this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterIDs}`;
             if (!val) {
                 this.tooltipStyle["height"] = `${this.height}px`;
             }

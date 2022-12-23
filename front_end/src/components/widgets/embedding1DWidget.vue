@@ -134,6 +134,19 @@
                                     </md-list-item>
                                 </md-list>
                             </md-list-item>
+                            <md-list-item
+                                class="md-inset"
+                                @click="
+                                    selectMultiple = true;
+                                    clickedClusters = [];
+                                    showMenu = false;
+                                "
+                            >
+                                <span class="md-body-1">Select multiple</span>
+                                <md-icon v-if="selectMultiple"
+                                    >done</md-icon
+                                >
+                            </md-list-item>
                         </md-menu-content>
                     </md-menu>
                 </div>
@@ -178,7 +191,7 @@
                     :showControls="showTooltipControls"
                     :tooltipOffsetLeft="tooltipOffsetLeft"
                     :tooltipOffsetTop="tooltipOffsetTop"
-                    :clusterID="selectedCluster"
+                    :clusterIDs="highlightedClusters"
                     :embeddingID="widgetDataID"
                     :collectionName="collectionName"
                     :regionName="regionName"
@@ -322,7 +335,7 @@ export default {
             if (!this.widgetData) {
                 return;
             }
-            if (this.selectedCluster === undefined) {
+            if (this.selectedCluster === undefined && this.clickedClusters.length == 0) {
                 return {
                     data: flatten(
                         rectBin(
@@ -338,7 +351,7 @@ export default {
             }
             let overlayClusters = this.widgetData["cluster_ids"]["data"].map(
                 el => {
-                    if (el === this.selectedCluster) {
+                    if (el === this.selectedCluster || this.clickedClusters.includes(el)) {
                         return 99999999;
                     }
                     return 1;
@@ -376,6 +389,15 @@ export default {
                     this.binsizes[this.selectedBinsize][this.clusterNumber]
                 );
             }
+        },
+        highlightedClusters: function(){
+            if (!this.selectMultiple) {
+                if (this.selectedCluster === undefined){
+                    return []
+                }
+                return [this.selectedCluster]
+            }
+            return this.clickedClusters
         }
     },
     methods: {
@@ -412,15 +434,30 @@ export default {
         hanldeSelectionAbortion: function() {
             this.expectSelection = false;
         },
-        handleHeatmapClick: function(x, y, adjustedX, adjustedY) {
-            if (this.showTooltipControls) {
-                this.showTooltipControls = false;
-            } else if (this.showTooltip && this.selectedCluster !== undefined) {
-                this.showTooltipControls = true;
+        handleHeatmapClick: function(x, y, adjustedX, adjustedY, visualizationSize) {
+            if (!this.selectMultiple){
+                if (this.showTooltipControls) {
+                    this.showTooltipControls = false;
+                } else if (this.showTooltip && this.selectedCluster !== undefined) {
+                    this.showTooltipControls = true;
+                }
+            }else{
+                let bin_width = visualizationSize / this.size;
+                let x_bin = Math.round(x / bin_width);
+                let y_bin = Math.round(y / bin_width);
+                let clickedCluster = this.clusterMap[y_bin][x_bin];
+                if (clickedCluster === undefined){
+                    return
+                }
+                if (!this.clickedClusters.includes(clickedCluster)) {
+                    this.clickedClusters.push(clickedCluster)
+                }else{
+                    this.clickedClusters = this.clickedClusters.filter((val) => val !== clickedCluster)
+                }
             }
         },
         handleMouseMove: function(x, y, adjustedX, adjustedY, size) {
-            if (!this.showTooltipControls) {
+            if (!this.showTooltipControls && !this.selectMultiple) {
                 this.showTooltip = true;
                 this.tooltipOffsetLeft = adjustedX + 60;
                 this.tooltipOffsetTop = adjustedY;
@@ -539,7 +576,9 @@ export default {
                 showTooltip: false,
                 showTooltipControls: false,
                 tooltipOffsetTop: 0,
-                tooltipOffsetLeft: 0
+                tooltipOffsetLeft: 0,
+                selectMultiple: false,
+                clickedClusters: []
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -624,7 +663,9 @@ export default {
                 showTooltipControls: false,
                 showTooltip: false,
                 tooltipOffsetTop: 0,
-                tooltipOffsetLeft: 0
+                tooltipOffsetLeft: 0,
+                selectMultiple: false,
+                clickedCluster: []
             };
         },
         handleSliderChange: function(data) {
