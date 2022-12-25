@@ -224,6 +224,32 @@ export function mean_along_columns(array, shape) {
     return output;
 }
 
+export function mean_along_rows(array, shape) {
+    /*
+        Takes a flattened array with shape and calculates mean along columns
+    */
+    // check array
+    if (
+        array.length == 0 ||
+        shape.length != 2 ||
+        array.length != shape[0] * shape[1]
+    ) {
+        return undefined;
+    }
+    let [row_number, col_number] = shape;
+    // calculate mean
+    let output = [];
+    for (let col_index = 0; col_index < col_number; col_index++) {
+        let sum = 0;
+        for (let row_index = 0; row_index < row_number; row_index++) {
+            sum += array[row_index * col_number + col_index];
+        }
+        output.push(sum / row_number);
+    }
+    return output;
+}
+
+
 export function min_array(array) {
     /*
         returns minimum element of array

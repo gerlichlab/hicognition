@@ -13,6 +13,7 @@ import {
     select_columns,
     select_3d_along_first_axis,
     mean_along_columns,
+    mean_along_rows,
     rectBin,
     flatten
 } from "../functions.js";
@@ -470,6 +471,25 @@ describe("When mean_along_columns is called", function() {
         expect(mean_along_columns([2, 3, 5, 6], [2, 2])).toEqual([2.5, 5.5]);
     });
 });
+
+// test mean along rows
+
+describe("When mean_along_rows is called", function() {
+    it("Should return undefined if array is length 0", () => {
+        expect(mean_along_rows([], [1, 2])).toEqual(undefined);
+    });
+    it("Should return undefined if shape is length 0", () => {
+        expect(mean_along_rows([1, 2], [])).toEqual(undefined);
+    });
+    it("Should return undefined if array and shape do not match", () => {
+        expect(mean_along_rows([1, 2], [3, 4])).toEqual(undefined);
+    });
+    it("Should return correct mean", () => {
+        expect(mean_along_rows([1, 2, 3, 4, 5, 6], [2, 3])).toEqual([2.5, 3.5,4.5]);
+        expect(mean_along_rows([2, 3, 5, 6], [2, 2])).toEqual([3.5, 4.5]);
+    });
+});
+
 
 // test rectBin
 

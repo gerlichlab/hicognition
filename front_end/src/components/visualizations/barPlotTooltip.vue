@@ -45,7 +45,7 @@
 
 <script>
 import { apiMixin } from "../../mixins";
-import { select_row } from "../../functions";
+import { select_rows, mean_along_rows } from "../../functions";
 import embeddingDistribution from "../visualizations/embeddingDistribution.vue";
 
 export default {
@@ -116,13 +116,14 @@ export default {
             return this.width * 0.8;
         },
         selectedDistribution: function() {
-            // TODO: average together
             if (this.clusterIDs.length != 0) {
-                return select_row(
+                let selected_rows = select_rows(
                     this.averageValues.data,
                     this.averageValues.shape,
-                    this.clusterIDs[0]
+                    this.clusterIDs
                 );
+                // reduce selection along rows
+                return mean_along_rows(selected_rows.result, selected_rows.shape)
             }
         },
         minValue: function() {
@@ -156,7 +157,7 @@ export default {
             // create form
             let formData = new FormData();
             formData.append("name", this.newRegionName);
-            formData.append("cluster_ids", JSON.stringify([this.clusterIDs]))
+            formData.append("cluster_ids", JSON.stringify(this.clusterIDs))
             // do api call
             this.postData(
                 `embeddingIntervalData/${this.embeddingID}/createRegion/`,
