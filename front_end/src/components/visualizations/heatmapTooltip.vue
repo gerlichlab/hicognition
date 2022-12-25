@@ -70,7 +70,7 @@ export default {
         showControls: Boolean,
         tooltipOffsetLeft: Number,
         tooltipOffsetTop: Number,
-        clusterID: Number,
+        clusterIDs: Array,
         embeddingID: Number,
         datasetName: String,
         regionName: String,
@@ -95,7 +95,7 @@ export default {
                 height: `${this.height}px`
             },
             showDialog: false,
-            newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterID}`,
+            newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterIDs}`,
             datasetSaved: false,
             minHeatmapTarget: undefined,
             maxHeatmapTarget: undefined,
@@ -112,16 +112,24 @@ export default {
             }
             return sum;
         },
+        selectedCounts: function(){
+            let sum = 0;
+            for (let [key, value] of this.clusterCounts) {
+                if (this.clusterIDs.includes(key)){
+                    sum += value;
+                }
+            }
+            return sum;
+        },
         dataInfo: function() {
             if (
                 this.clusterCounts !== undefined &&
-                this.clusterCounts.get(this.clusterID) !== undefined
+               this.selectedCounts !== undefined
             ) {
-                return `Cluster: ${this.clusterID} | ${this.clusterCounts.get(
-                    this.clusterID
-                )}/${this.totalRegions} Regions`;
+                return `Cluster: ${this.clusterIDs} | ${this.selectedCounts} 
+                            /${this.totalRegions} Regions`;
             }
-            return `Cluster: ${this.clusterID}`;
+            return `Cluster: ${this.clusterIDs}`;
         },
         distributionSize: function() {
             return 100;
@@ -152,15 +160,6 @@ export default {
         },
         heatmapSize: function() {
             return this.width * 0.8;
-        },
-        selectedDistribution: function() {
-            if (this.clusterID !== undefined) {
-                return select_row(
-                    this.distributionData.data,
-                    this.distributionData.shape,
-                    this.clusterID
-                );
-            }
         }
     },
     methods: {
@@ -195,9 +194,10 @@ export default {
             // create form
             let formData = new FormData();
             formData.append("name", this.newRegionName);
+            formData.append("cluster_ids", JSON.stringify(this.clusterIDs))
             // do api call
             this.postData(
-                `embeddingIntervalData/${this.embeddingID}/${this.clusterID}/create/`,
+                `embeddingIntervalData/${this.embeddingID}/createRegion/`,
                 formData
             ).then(response => {
                 if (response) {
@@ -223,7 +223,7 @@ export default {
             this.tooltipStyle["width"] = `${val}px`;
         },
         showControls: function(val) {
-            this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterID}`;
+            this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterIDs}`;
             if (!val) {
                 this.tooltipStyle["height"] = `${this.height}px`;
             }

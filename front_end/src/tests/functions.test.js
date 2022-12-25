@@ -602,13 +602,13 @@ describe("When rectBin is called, it", function() {
 
 describe("When select 3d along first axis is called, it", function() {
     it("Should return undefined if array is length 0", () => {
-        expect(select_3d_along_first_axis([], [1, 2, 3], 2)).toEqual(undefined);
+        expect(select_3d_along_first_axis([], [1, 2, 3], [2])).toEqual(undefined);
     });
     it("Should return undefined if shape is length 0", () => {
-        expect(select_3d_along_first_axis([1, 2], [], 2)).toEqual(undefined);
+        expect(select_3d_along_first_axis([1, 2], [], [2])).toEqual(undefined);
     });
     it("Should return undefined if array and shape do not match", () => {
-        expect(select_3d_along_first_axis([1, 2], [3, 4, 5], 2)).toEqual(
+        expect(select_3d_along_first_axis([1, 2], [3, 4, 5], [2])).toEqual(
             undefined
         );
     });
@@ -619,21 +619,24 @@ describe("When select 3d along first axis is called, it", function() {
     });
     it("Should return undefined if index is < 0", () => {
         expect(
-            select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], -2)
+            select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], [-2])
         ).toEqual(undefined);
     });
     it("Should return undefined if index is > example_number", () => {
         expect(
-            select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], 3)
+            select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], [3])
         ).toEqual(undefined);
     });
-    it("Should return correct column", () => {
+    it("Should return correct columns", () => {
         expect(
-            select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], 0)
+            select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], [0])
         ).toEqual([1, 2, 3, 4]);
         expect(
-            select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], 1)
+            select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], [1])
         ).toEqual([5, 6, 7, 8]);
+        expect(
+            select_3d_along_first_axis([1, 2, 3, 4, 5, 6, 7, 8], [2, 2, 2], [0,1])
+        ).toEqual([1,2,3,4, 5, 6, 7, 8]);
     });
 });
 

@@ -672,7 +672,7 @@ export default {
                 tooltipOffsetTop: 0,
                 tooltipOffsetLeft: 0,
                 selectMultiple: false,
-                clickedCluster: []
+                clickedClusters: []
             };
         },
         handleSliderChange: function(data) {

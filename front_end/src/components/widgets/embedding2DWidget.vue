@@ -172,6 +172,19 @@
                                     </md-list-item>
                                 </md-list>
                             </md-list-item>
+                            <md-list-item
+                                class="md-inset"
+                                @click="
+                                    selectMultiple = !selectMultiple;
+                                    clickedClusters = [];
+                                    showMenu = false;
+                                "
+                            >
+                                <span class="md-body-1">Select multiple</span>
+                                <md-icon v-if="selectMultiple"
+                                    >done</md-icon
+                                >
+                            </md-list-item>
                         </md-menu-content>
                     </md-menu>
                 </div>
@@ -223,7 +236,7 @@
                     :minHeatmapAllRange="minValue"
                     :maxHeatmapAllRange="maxValue"
                     :tooltipOffsetTop="tooltipOffsetTop"
-                    :clusterID="selectedCluster"
+                    :clusterIDs="highlightedClusters"
                     :embeddingID="widgetDataID"
                     :datasetName="datasetName"
                     :regionName="regionName"
@@ -266,7 +279,8 @@ import {
     flatten,
     select_3d_along_first_axis,
     getPercentile,
-    getPerMilRank
+    getPerMilRank,
+    mean_along_rows
 } from "../../functions";
 import heatmap from "../visualizations/heatmap.vue";
 import tooltip from "../visualizations/heatmapTooltip.vue";
@@ -453,13 +467,17 @@ export default {
             if (!this.widgetData || !this.widgetData[this.valueType]) {
                 return;
             }
-            if (this.selectedCluster !== undefined) {
-                return {
-                    data: select_3d_along_first_axis(
+            if (this.highlightedClusters.length != 0) {
+                let thumbnails = select_3d_along_first_axis(
                         this.widgetData[this.valueType]["thumbnails"].data,
                         this.widgetData[this.valueType]["thumbnails"].shape,
-                        this.selectedCluster
-                    ),
+                        this.highlightedClusters
+                    )
+                let [rowNumber, colNumber] = this.widgetData[this.valueType]["thumbnails"].shape.slice(1);
+                let matrixSize = rowNumber * colNumber;
+                let averageThumbnail = mean_along_rows(thumbnails, [this.highlightedClusters.length, matrixSize])
+                return {
+                    data:averageThumbnail,
                     shape: this.widgetData[this.valueType][
                         "thumbnails"
                     ].shape.slice(1),
@@ -491,7 +509,7 @@ export default {
             if (!this.widgetData || !this.widgetData[this.valueType]) {
                 return;
             }
-            if (this.selectedCluster === undefined) {
+            if (this.selectedCluster === undefined && this.clickedClusters.length == 0) {
                 return {
                     data: flatten(
                         rectBin(
@@ -508,7 +526,7 @@ export default {
             let overlayClusters = this.widgetData[this.valueType][
                 "cluster_ids"
             ]["data"].map(el => {
-                if (el === this.selectedCluster) {
+                if (el === this.selectedCluster || this.clickedClusters.includes(el)) {
                     return 99999999;
                 }
                 return 1;
@@ -525,6 +543,15 @@ export default {
                 shape: [this.size, this.size],
                 dtype: "float32"
             };
+        },
+        highlightedClusters: function(){
+            if (!this.selectMultiple) {
+                if (this.selectedCluster === undefined){
+                    return []
+                }
+                return [this.selectedCluster]
+            }
+            return this.clickedClusters
         }
     },
     methods: {
@@ -624,15 +651,36 @@ export default {
         handleBinsizeSelection: function(binsize) {
             this.selectedBinsize = binsize;
         },
-        handleHeatmapClick: function(x, y, adjustedX, adjustedY) {
-            if (this.showTooltipControls) {
-                this.showTooltipControls = false;
-            } else if (this.thumbnail) {
-                this.showTooltipControls = true;
+        handleHeatmapClick: function(x, y, adjustedX, adjustedY, visualizationSize) {
+            if (!this.selectMultiple){
+                if (this.showTooltipControls) {
+                    this.showTooltipControls = false;
+                } else if (this.showTooltip && this.selectedCluster !== undefined) {
+                    this.showTooltipControls = true;
+                }
+            }else{
+                let bin_width = visualizationSize / this.size;
+                let x_bin = Math.round(x / bin_width);
+                let y_bin = Math.round(y / bin_width);
+                let clickedCluster = this.clusterMap[y_bin][x_bin];
+                if (clickedCluster === undefined){
+                    return
+                }
+                if (!this.clickedClusters.includes(clickedCluster)) {
+                    this.clickedClusters.push(clickedCluster)
+                }else{
+                    this.clickedClusters = this.clickedClusters.filter((val) => val !== clickedCluster)
+                }
+                // check whether controls should be shown
+                if (this.clickedClusters.length > 0){
+                    this.showTooltipControls = true;
+                }else{
+                    this.showTooltipControls = false;
+                }
             }
         },
         handleMouseMove: function(x, y, adjustedX, adjustedY, size) {
-            if (!this.showTooltipControls) {
+            if (!this.showTooltipControls && !this.selectMultiple) {
                 this.showTooltip = true;
                 this.tooltipOffsetLeft = adjustedX + 60;
                 this.tooltipOffsetTop = adjustedY;
@@ -660,6 +708,7 @@ export default {
             this.selectedCluster = undefined;
             this.showTooltipControls = false;
             this.showTooltip = false;
+            this.clickedClusters = [];
         },
         resetThumbnail: function() {
             this.selectedCluster = undefined;
@@ -721,7 +770,9 @@ export default {
                 showTooltipControls: false,
                 tooltipOffsetTop: 0,
                 tooltipOffsetLeft: 0,
-                shareValueScale: false
+                shareValueScale: false,
+                selectMultiple: false,
+                clickedClusters: []
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -806,7 +857,9 @@ export default {
                 showTooltipControls: false,
                 tooltipOffsetTop: 0,
                 tooltipOffsetLeft: 0,
-                shareValueScale: widgetData["shareValueScale"]
+                shareValueScale: widgetData["shareValueScale"],
+                selectMultiple: false,
+                clickedClusters: []
             };
         },
         handleSliderChange: function(data) {

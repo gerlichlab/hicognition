@@ -85,7 +85,7 @@ export function max_array_along_rows(array, shape) {
     return output.map(elem => (elem == -Infinity ? undefined : elem));
 }
 
-export function select_3d_along_first_axis(array, shape, index) {
+export function select_3d_along_first_axis(array, shape, indices) {
     /*
         selects entries from 3d array along first axis
     */
@@ -93,18 +93,24 @@ export function select_3d_along_first_axis(array, shape, index) {
     if (
         array.length == 0 ||
         shape.length != 3 ||
-        array.length != shape[0] * shape[1] * shape[2]
+        array.length != shape[0] * shape[1] * shape[2] ||
+        indices === undefined
     ) {
         return undefined;
     }
     let [example_number, row_number, col_number] = shape;
-    // check col_index
-    if (index == undefined || index < 0 || index >= example_number) {
-        return undefined;
-    }
     // select
     let example_size = row_number * col_number;
-    return array.slice(example_size * index, example_size * (index + 1));
+    let output = [];
+    for (let index of indices){
+        // check indices
+        if (index == undefined || index < 0 || index >= example_number) {
+            return undefined;
+        }
+        let temp = array.slice(example_size * index, example_size * (index + 1))
+        output.push(...temp)
+    }
+    return output;
 }
 
 export function select_column(array, shape, col_index) {
