@@ -177,6 +177,28 @@ export function select_row(array, shape, row_index) {
     return array.slice(col_number * row_index, col_number * (row_index + 1));
 }
 
+export function select_rows(array, shape, row_indices) {
+    /*
+        returns all values in rows in row_indices as a flattened array
+        together with the resulting shape
+    */
+    if (row_indices === undefined){
+        return undefined
+    }
+    // extract rows
+    let output = [];
+    for (let index of row_indices) {
+        let temp = select_row(array, shape, index);
+        if (temp === undefined) {
+            return undefined;
+        }
+        output.push(...temp);
+    }
+    return { result: output, shape: [row_indices.length, shape[1]] };
+}
+
+
+
 export function mean_along_columns(array, shape) {
     /*
         Takes a flattened array with shape and calculates mean along columns

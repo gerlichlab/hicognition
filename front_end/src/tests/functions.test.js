@@ -9,6 +9,7 @@ import {
     max_array_along_rows,
     select_column,
     select_row,
+    select_rows,
     select_columns,
     select_3d_along_first_axis,
     mean_along_columns,
@@ -361,6 +362,45 @@ describe("When select_row is called, it", function() {
         expect(select_row([1, 2, 3, 4, 5, 6], [2, 3], 1)).toEqual([4, 5, 6]);
     });
 });
+//
+
+describe('When select rows is called it',function() {
+    it("Should return undefined if array is length 0", () => {
+        expect(select_rows([], [1,2], [2])).toEqual(undefined);
+    });
+    it("Should return undefined if shape is length 0", () => {
+        expect(select_rows([1, 2], [], [2])).toEqual(undefined);
+    });
+    it("Should return undefined if array and shape do not match", () => {
+        expect(select_rows([1, 2], [3, 4], [2])).toEqual(undefined);
+    });
+    it("Should return undefined if row_index is not defined", () => {
+        expect(select_rows([1, 2, 3, 4], [2, 2])).toEqual(undefined);
+    });
+    it("Should return undefined if row_index is < 0", () => {
+        expect(select_rows([1, 2, 3, 4], [2, 2], [-2])).toEqual(undefined);
+    });
+    it("Should return undefined if row_index is > row_number", () => {
+        expect(select_rows([1, 2, 3, 4], [2, 2], [3])).toEqual(undefined);
+    });
+    it("Should return correct single row", () => {
+        expect(select_rows([1, 2, 3, 4, 5, 6], [2, 3], [0])).toEqual({
+            result: [1, 2, 3],
+            shape: [1, 3]
+        });
+        expect(select_rows([1, 2, 3, 4, 5, 6], [2, 3], [1])).toEqual({
+            result: [4, 5, 6],
+            shape: [1, 3]
+        });
+    });
+    it("Should return correct multiple rows", () => {
+        expect(select_rows([1, 2, 3, 4, 5, 6], [2, 3], [0, 1])).toEqual({
+            result: [1, 2, 3, 4, 5, 6],
+            shape: [2, 3]
+        });
+    });
+})
+
 
 // test select columns
 

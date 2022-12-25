@@ -137,7 +137,7 @@
                             <md-list-item
                                 class="md-inset"
                                 @click="
-                                    selectMultiple = true;
+                                    selectMultiple = !selectMultiple;
                                     clickedClusters = [];
                                     showMenu = false;
                                 "
@@ -454,6 +454,12 @@ export default {
                 }else{
                     this.clickedClusters = this.clickedClusters.filter((val) => val !== clickedCluster)
                 }
+                // check whether controls should be shown
+                if (this.clickedClusters.length > 0){
+                    this.showTooltipControls = true;
+                }else{
+                    this.showTooltipControls = false;
+                }
             }
         },
         handleMouseMove: function(x, y, adjustedX, adjustedY, size) {
@@ -508,6 +514,7 @@ export default {
             this.selectedCluster = undefined;
             this.showTooltipControls = false;
             this.showTooltip = false;
+            this.clickedClusters = [];
         },
         blankWidget: function() {
             // removes all information that the user can set in case a certain region/dataset combination is not available
