@@ -52,3 +52,5 @@ front_end/e2e/cypress/videos/*
 playground/*
 
 .env_secret
+
+logs/*

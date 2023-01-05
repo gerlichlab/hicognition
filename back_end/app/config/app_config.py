@@ -12,6 +12,9 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY") or "eieieiei"
     SECRET_SALT = os.environ.get("SECRET_SALT") or 'blblblbl'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Log file
+    LOG_FILE = '/logs/application.logs'
+    ERROR_LOG_FILE = '/logs/error.logs'
     # mail settings
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', '465'))

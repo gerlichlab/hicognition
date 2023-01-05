@@ -22,6 +22,7 @@ services:
         volumes:  
             - ${HICOGNITION_DIR}:/code
             - ${SHOWCASE_DIR}:/showcase_data/
+            - ${LOG_DIR}:/logs/
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
@@ -62,6 +63,7 @@ services:
     redis-worker-long:
         volumes:  
             - ${HICOGNITION_DIR}:/code
+            - ${LOG_DIR}:/logs/
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
@@ -91,6 +93,7 @@ services:
     redis-worker-medium:
         volumes:  
             - ${HICOGNITION_DIR}:/code
+            - ${LOG_DIR}:/logs/
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
@@ -120,6 +123,7 @@ services:
     redis-worker-short:
         volumes:  
             - ${HICOGNITION_DIR}:/code
+            - ${LOG_DIR}:/logs/
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py

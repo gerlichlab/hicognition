@@ -1,6 +1,7 @@
 """Start hicognition server."""
 import os
 import atexit
+import logging
 
 # import json
 from getpass import getpass

@@ -5,7 +5,9 @@ from flask_sse import sse
 from flask_mail import Mail
 import rq
 from redis import Redis
-from .config import config
+import logging
+from .logging_utils import create_logging_config
+from .config.app_config import config
 from .confirmation import ConfirmationHandler
 
 db = SQLAlchemy()
@@ -27,6 +29,8 @@ def create_app(config_name):
     """factory to create app."""
     app = Flask(__name__)
     app.config.from_object(config[config_name])
+    create_logging_config(config[config_name])
+    # init db
     db.init_app(app)
     # add redis queue
     app.redis = Redis.from_url(app.config["REDIS_URL"])
