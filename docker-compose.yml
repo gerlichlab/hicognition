@@ -6,8 +6,10 @@ services:
         container_name: flask-server
         volumes:
             - ${DATA_DIR}:/code/temp/
+            - ${LOG_DIR}:/logs/
         environment:
             - FLASK_DEBUG=0
+            - FLASK_CONFIG=production
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
             - SECRET_KEY=${SECRET_KEY}
@@ -77,9 +79,11 @@ services:
     redis-worker-long:
         volumes:  
             - ${DATA_DIR}:/code/temp/
+            - ${LOG_DIR}:/logs/
         environment:
-            - FLASK_DEBUG=1
+            - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
+            - FLASK_CONFIG=production
             - SECRET_KEY=${SECRET_KEY}
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
@@ -107,9 +111,11 @@ services:
     redis-worker-medium:
         volumes:  
             - ${DATA_DIR}:/code/temp/
+            - ${LOG_DIR}:/logs/
         environment:
-            - FLASK_DEBUG=1
+            - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
+            - FLASK_CONFIG=production
             - SECRET_KEY=${SECRET_KEY}
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
@@ -137,9 +143,11 @@ services:
     redis-worker-short:
         volumes:  
             - ${DATA_DIR}:/code/temp/
+            - ${LOG_DIR}:/logs/
         environment:
-            - FLASK_DEBUG=1
+            - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
+            - FLASK_CONFIG=production
             - SECRET_KEY=${SECRET_KEY}
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}

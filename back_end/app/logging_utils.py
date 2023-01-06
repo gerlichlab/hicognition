@@ -1,6 +1,4 @@
-from flask import request, g
 from logging.config import dictConfig
-import logging
 
 def create_logging_config(app_config):
     dictConfig({
@@ -35,24 +33,28 @@ def create_logging_config(app_config):
         },
         "loggers": {
             "gunicorn.error": {
-                "handlers": ["console", 'error_file'] if app_config.DEBUG else ["console", "error_file"],
+                "handlers": ["console", "error_file"],
                 "level": "INFO",
                 "propagate": False,
             },
             "apscheduler": {
-                "handlers": ["console", 'app_log_file'] if app_config.DEBUG else ["console", "error_file"],
+                "handlers": ["console", "app_log_file"],
                 "level": "WARNING",
                 "propagate": True
             },
             "numexpr": {
-                "handlers": ["console", 'app_log_file'] if app_config.DEBUG else ["console", "error_file"],
+                "handlers": ["console", "error_file"],
                 "level": "WARNING",
                 "propagate": True
+            },
+            "app": {
+                "level":  "DEBUG" if app_config.DEBUG else "INFO",
+                "handlers": ["console", "app_log_file"],
+                "propagate": False
             }
         },
         "root": {
-            # TODO:only log to file when not in debug mode
             "level": "DEBUG" if app_config.DEBUG else "INFO",
-            "handlers": ["console", "app_log_file"] if app_config.DEBUG else ["console", "app_log_file"],
+            "handlers": ["console", "app_log_file"],
         }
     })

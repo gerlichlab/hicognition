@@ -5,7 +5,6 @@ from flask_sse import sse
 from flask_mail import Mail
 import rq
 from redis import Redis
-import logging
 from .logging_utils import create_logging_config
 from .config.app_config import config
 from .confirmation import ConfirmationHandler

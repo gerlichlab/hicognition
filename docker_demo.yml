@@ -4,11 +4,15 @@ services:
     # flask-api server
     hicognition:
         container_name: flask-server
+        volumes:  
+            - ${LOG_DIR}:/logs/
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=mysql+pymysql://hicognition:${MYSQL_PASSWORD}@mysql/hicognition
             - SHOWCASE=1
+            - LOG_FILE_NAME=/logs/dev_application.logs
+            - ERROR_LOG_FILE_NAME=/logs/dev_error.logs
         # might not work on my machine, but also not strictly required?
         ports:
             # only map localhost-port
