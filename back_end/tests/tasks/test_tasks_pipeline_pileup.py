@@ -138,7 +138,7 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         # check whether processing has finished
         self.assertEqual(self.bedfile.processing_features, [])
 
-    @patch("app.pipeline_steps.log.error")
+    @patch("app.pipeline_steps.current_app.logger.error")
     @patch("app.pipeline_steps.pd.read_csv")
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.pileup_pipeline_step")

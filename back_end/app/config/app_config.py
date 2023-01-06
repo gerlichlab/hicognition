@@ -11,6 +11,7 @@ class Config:
 
     SECRET_KEY = os.environ.get("SECRET_KEY") or "eieieiei"
     SECRET_SALT = os.environ.get("SECRET_SALT") or 'blblblbl'
+    DBUG = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Log file
     LOG_FILE = '/logs/application.logs'
@@ -229,6 +230,7 @@ class TestingConfig(Config):
     """Config class for testing server."""
 
     TESTING = True
+    DEBUG = True
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     UPLOAD_DIR = "./tmp_test"
     STACKUP_THRESHOLD = 10  # Threshold of when stackup is downsampled
@@ -238,6 +240,7 @@ class End2EndConfig(DevelopmentConfig):
     """Extension of the development config class."""
 
     END2END = True
+    DEBUG = True
 
 
 class ProductionConfig(Config):

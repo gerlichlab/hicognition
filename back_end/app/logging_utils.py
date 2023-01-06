@@ -43,6 +43,11 @@ def create_logging_config(app_config):
                 "handlers": ["console", 'app_log_file'] if app_config.DEBUG else ["console", "error_file"],
                 "level": "WARNING",
                 "propagate": True
+            },
+            "numexpr": {
+                "handlers": ["console", 'app_log_file'] if app_config.DEBUG else ["console", "error_file"],
+                "level": "WARNING",
+                "propagate": True
             }
         },
         "root": {

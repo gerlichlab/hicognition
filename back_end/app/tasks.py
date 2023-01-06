@@ -59,17 +59,17 @@ def pipeline_bed(dataset_id):
             for size in app.config["PREPROCESSING_MAP"].keys()
             if size != "variable"
         ]
-    log.info(f"Bed pipeline started for {dataset_id} with {window_sizes}")
+    current_app.logger.info(f"Bed pipeline started for {dataset_id} with {window_sizes}")
     # bed-file preprocessing: sorting, clodius, uploading to higlass
     file_path = dataset_object.file_path
     # clean dataset
-    log.info("      Clean...")
+    current_app.logger.debug("      Clean...")
     cleaned_file_name = file_path.split(".")[0] + "_cleaned.bed"
     io_helpers.clean_bed(file_path, cleaned_file_name)
     # set cleaned_file_name as file_name
     dataset_object.file_path = cleaned_file_name
     # delete old file
-    log.info("      Delete Unsorted...")
+    current_app.logger.debug("      Delete Unsorted...")
     io_helpers.remove_safely(file_path, current_app.logger)
     db.session.commit()
     for window in window_sizes:
@@ -96,7 +96,7 @@ def pipeline_pileup(dataset_id, intervals_id, binsize):
         pipeline_steps.set_dataset_finished(dataset_id, intervals_id)
     except BaseException as err:
         pipeline_steps.set_dataset_failed(dataset_id, intervals_id)
-        log.error(err, exc_info=True)
+        current_app.logger.error(err, exc_info=True)
 
 
 # @task_context
@@ -109,7 +109,7 @@ def pipeline_stackup(dataset_id, intervals_id, binsize):
         pipeline_steps.set_dataset_finished(dataset_id, intervals_id)
     except BaseException as err:
         pipeline_steps.set_dataset_failed(dataset_id, intervals_id)
-        log.error(err, exc_info=True)
+        current_app.logger.error(err, exc_info=True)
 
 
 # @task_context
@@ -122,7 +122,7 @@ def pipeline_lola(collection_id, intervals_id, binsize):
         pipeline_steps.set_collection_finished(collection_id, intervals_id)
     except BaseException as err:
         pipeline_steps.set_collection_failed(collection_id, intervals_id)
-        log.error(err, exc_info=True)
+        current_app.logger.error(err, exc_info=True)
 
 
 # @task_context
@@ -147,7 +147,7 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
         pipeline_steps.set_collection_finished(collection_id, intervals_id)
     except BaseException as err:
         pipeline_steps.set_collection_failed(collection_id, intervals_id)
-        log.error(err, exc_info=True)
+        current_app.logger.error(err, exc_info=True)
 
 
 def download_dataset_file(dataset_id: int):
@@ -157,20 +157,20 @@ def download_dataset_file(dataset_id: int):
 
     dataset = Dataset.query.get(dataset_id)
     if not dataset:
-        log.info(f"Dataset {dataset_id} not found")
+        current_app.logger.info(f"Dataset {dataset_id} not found")
         _handle_error(dataset, f"Dataset with id {dataset_id} was not found.")
         return
 
     # check whether either url or sample id are provided:
     if not ((dataset.sample_id and dataset.repository_name) or dataset.source_url):
-        log.info(f"No sample_id, repo_name or source_url provided for {dataset_id}")
+        current_app.logger.info(f"No sample_id, repo_name or source_url provided for {dataset_id}")
         _handle_error(
             dataset, f"Neither sample id + repository, nor file URL have been provided."
         )
         return
 
     if dataset.source_url and (dataset.sample_id or dataset.repository_name):
-        log.info(
+        current_app.logger.info(
             f"Source URL provided together with sample ID and/or repository name for dataset {dataset_id}"
         )
         _handle_error(
@@ -192,12 +192,12 @@ def download_dataset_file(dataset_id: int):
                 ][0],
             )
     except (ConnectionError, Timeout) as err:
-        log.info(f"Connection failure: {str(err)}")
+        current_app.logger.info(f"Connection failure: {str(err)}")
         _handle_error(
             dataset, f"Connection to external server failed at some point: {str(err)}"
         )
     except download_utils.DownloadUtilsException as err:
-        log.info(str(err))
+        current_app.logger.info(str(err))
         _handle_error(dataset, str(err))
         return
 
@@ -205,7 +205,7 @@ def download_dataset_file(dataset_id: int):
 
     valid = dataset.validate_dataset(delete=True)
     if not valid:
-        log.info(f"Dataset {dataset.id} file was invalid.")
+        current_app.logger.info(f"Dataset {dataset.id} file was invalid.")
         _handle_error(dataset, "File formatting was invalid.")
         return
 
@@ -214,7 +214,7 @@ def download_dataset_file(dataset_id: int):
     _send_notification(
         dataset, "Dataset file download was successful!<br>Ready for preprocessing."
     )  # TODO preprocessing ambiguous
-    log.info("Success.")
+    current_app.logger.info("Success.")
     pipeline_steps.set_task_progress(100)
 
 

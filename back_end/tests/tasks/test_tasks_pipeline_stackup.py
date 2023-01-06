@@ -80,7 +80,7 @@ class TestPipelineStackup(LoginTestCase):
         # check whether processing has finished
         self.assertEqual(len(self.bedfile.processing_features), 0)
 
-    @patch("app.pipeline_steps.log.error")
+    @patch("app.pipeline_steps.current_app.logger.error")
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.stackup_pipeline_step")
     def test_dataset_set_failed_if_failed(

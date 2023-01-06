@@ -88,7 +88,7 @@ class TestPipelineLola(LoginTestCase):
         # check whether processing has finished
         self.assertEqual(self.bedfile.processing_collections, [])
 
-    @patch("app.pipeline_steps.log.error")
+    @patch("app.pipeline_steps.current_app.logger.error")
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.enrichment_pipeline_step")
     def test_dataset_set_failed_if_failed(

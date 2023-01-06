@@ -117,7 +117,7 @@ class TestUnconfirmedUser(LoginTestCase):
             },
             "create_regions_from_embedding": {
                 "method": "post",
-                "route": "/api/embeddingIntervalData/500/0/create/"
+                "route": "/api/embeddingIntervalData/500/createRegion/"
             },
             "modify_dataset": {
                 "method": "put",

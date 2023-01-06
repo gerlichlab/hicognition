@@ -126,7 +126,7 @@ class TestCleanupFailedTasks(LoginTestCase):
         self.assertEqual(2, len(Task.query.all()))
         self.assertTrue("wJob3" not in [task.id for task in Task.query.all()])
 
-    @patch("app.pipeline_steps.log.error")
+    @patch("app.pipeline_steps.current_app.logger.error")
     def test_update_failed_dataset(self, mock_error):
         """Tests whether setting a dataset failed works"""
         # add stuff to database
@@ -143,7 +143,7 @@ class TestCleanupFailedTasks(LoginTestCase):
         coolerfile = Dataset.query.get(2)
         self.assertEqual(bedfile.failed_features[0], coolerfile)
 
-    @patch("app.pipeline_steps.log.error")
+    @patch("app.pipeline_steps.current_app.logger.error")
     def test_update_failed_collection(self, mock_error):
         """Tests whether setting a collection failed works"""
         # add stuff to database

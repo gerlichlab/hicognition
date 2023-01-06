@@ -148,7 +148,7 @@ class TestConfirmationEmail(LoginTestCase):
                 )
             # check whether email has been sent correctly
             msg = Message(
-                html=confirmation_handler.generate_confirmation_email("http://localhost/api","test@test.at"),
+                html=confirmation_handler.generate_confirmation_email("http://localhost","test@test.at"),
                 subject="Confirm your email",
                 recipients=["test@test.at"]
             )
@@ -176,7 +176,7 @@ class TestConfirmationEmail(LoginTestCase):
             self.assertEqual(response.status_code, 200)
             # check whether email has been sent correctly
             msg = Message(
-                html=confirmation_handler.generate_confirmation_email("http://localhost/api","test@test.at"),
+                html=confirmation_handler.generate_confirmation_email("http://localhost","test@test.at"),
                 subject="Confirm your email",
                 recipients=["test@test.at"]
             )

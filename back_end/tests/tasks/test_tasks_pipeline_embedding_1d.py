@@ -161,7 +161,7 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
         # check whether processing has finished
         self.assertEqual(self.bed_file.processing_collections, [])
 
-    @patch("app.pipeline_steps.log.error")
+    @patch("app.pipeline_steps.current_app.logger.error")
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.stackup_pipeline_step")
     @patch("app.pipeline_steps.embedding_1d_pipeline_step")
