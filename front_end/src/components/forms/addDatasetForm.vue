@@ -39,34 +39,56 @@
                             </md-field>
                         </div>
                         <!-- Genotype field -->
-                        <div class="md-layout-item md-small-size-100">
-                            <md-field :class="getValidationClass('assembly')">
-                                <label for="assembly">Genome assembly</label>
-                                <md-select
-                                    name="assembly"
-                                    id="assembly"
-                                    v-model="form.assembly"
-                                    :disabled="sending"
-                                >
-                                    <md-optgroup
-                                        v-for="(values, org) in assemblies"
-                                        :key="org"
-                                        :label="org"
+                        <div class="md-layout-item md-layout md-gutter">
+                            <div class="md-layout-item md-small-size-100">
+                                <md-field :class="getValidationClass('assembly')">
+                                    <label for="assembly">Genome assembly</label>
+                                    <md-select
+                                        name="assembly"
+                                        id="assembly"
+                                        v-model="form.assembly"
+                                        :disabled="sending"
                                     >
-                                        <md-option
-                                            v-for="assembly in values"
-                                            :key="assembly.id"
-                                            :value="assembly.id"
-                                            >{{ assembly.name }}</md-option
+                                        <md-optgroup
+                                            v-for="(values, org) in assemblies"
+                                            :key="org"
+                                            :label="org"
                                         >
-                                    </md-optgroup>
-                                </md-select>
-                                <span
-                                    class="md-error"
-                                    v-if="!$v.form.assembly.required"
-                                    >A genome assembly is required</span
-                                >
-                            </md-field>
+                                            <md-option
+                                                v-for="assembly in values"
+                                                :key="assembly.id"
+                                                :value="assembly.id"
+                                                >{{ assembly.name }}</md-option
+                                            >
+                                        </md-optgroup>
+                                    </md-select>
+                                    <span
+                                        class="md-error"
+                                        v-if="!$v.form.assembly.required"
+                                        >A genome assembly is required</span
+                                    >
+                                </md-field>
+                            </div>
+                            <!-- Size Type -->
+                            <div v-if="datasetType=='region'" class="md-layout-item md-small-size-100">
+                                <md-field :class="getValidationClass('sizeType')">
+                                    <label for="sizeType">SizeType</label>
+                                    <md-select
+                                        name="sizeType"
+                                        id="sizeType"
+                                        v-model="form.sizeType"
+                                        :disabled="sending"
+                                    >
+                                        <md-option value="Point">Point</md-option>
+                                        <md-option value="Interval">Interval</md-option>
+                                    </md-select>
+                                    <span
+                                        class="md-error"
+                                        v-if="!$v.form.sizeType.required"
+                                        >A size type is required for regions</span
+                                    >
+                                </md-field>
+                            </div>
                         </div>
                     </div>
 
@@ -91,7 +113,7 @@
                                         id="fileSource"
                                         name="fileSource"
                                         v-model="form.fileSource"
-                                        @md-selected="clearInputFields"
+                                        @md-selected="fileSourceChanged"
                                         required
                                     >
                                         <md-option value="httpUpload">
@@ -116,7 +138,7 @@
                         <div class="md-layout-item md-small-size-100">
                             <formFileInput
                                 v-if="form.fileSource === 'httpUpload'"
-                                :fileTypeMapping="fileTypeMapping"
+                                :fileTypeMapping="fileTypeExtensions"
                                 @input-changed="fileInputChanged"
                                 @update-component-validity="
                                     updateComponentValidity
@@ -124,7 +146,7 @@
                             />
                             <formURLInput
                                 v-else-if="form.fileSource === 'url'"
-                                :fileTypeMapping="fileTypeMapping"
+                                :fileTypeMapping="fileTypeExtensions"
                                 @input-changed="urlInputChanged"
                                 @update-component-validity="
                                     updateComponentValidity
@@ -132,8 +154,8 @@
                             />
                             <formRepositoryInput
                                 v-else
-                                :fileTypeMapping="fileTypeMapping"
-                                :repository="repositories[form.fileSource].name"
+                                :fileTypeMapping="fileTypeExtensions"
+                                :repository="repositories[form.fileSource]['name']"
                                 @input-changed="repositoryInputChanged"
                                 @update-component-validity="
                                     updateComponentValidity
@@ -146,164 +168,7 @@
                         <md-divider />
                         <md-list>
                             <md-subheader>Dataset descriptions</md-subheader>
-                            <md-list-item>
-                                <div class="md-layout md-gutter">
-                                    <div
-                                        class="md-layout-item md-small-size-100"
-                                    >
-                                        <md-field
-                                            :class="
-                                                getValidationClass(
-                                                    'perturbation'
-                                                )
-                                            "
-                                        >
-                                            <label for="perturbation"
-                                                >Perturbation</label
-                                            >
-                                            <md-input
-                                                name="perturbation"
-                                                id="perturbation"
-                                                v-model="form.perturbation"
-                                                :disabled="sending"
-                                                required
-                                            />
-                                            <span
-                                                class="md-error"
-                                                v-if="
-                                                    !$v.form.perturbation
-                                                        .required
-                                                "
-                                                >Perturbation information is
-                                                required is required</span
-                                            >
-                                        </md-field>
-                                    </div>
-                                    <div
-                                        class="md-layout-item md-small-size-100"
-                                    >
-                                        <md-field
-                                            :class="
-                                                getValidationClass(
-                                                    'cellCycleStage'
-                                                )
-                                            "
-                                        >
-                                            <label for="perturbation"
-                                                >Cell cycle Stage</label
-                                            >
-                                            <md-input
-                                                name="cellcycleStage"
-                                                id="cellcycleStage"
-                                                v-model="form.cellCycleStage"
-                                                :disabled="sending"
-                                                required
-                                            />
-                                            <span
-                                                class="md-error"
-                                                v-if="
-                                                    !$v.form.cellCycleStage
-                                                        .required
-                                                "
-                                                >Cell cycle stage is
-                                                required</span
-                                            >
-                                        </md-field>
-                                    </div>
-                                </div>
-                            </md-list-item>
-                            <md-list-item>
-                                <div class="md-layout md-gutter">
-                                    <div
-                                        class="md-layout-item md-small-size-100"
-                                    >
-                                        <md-field
-                                            :class="
-                                                getValidationClass('valueType')
-                                            "
-                                        >
-                                            <label for="valueType"
-                                                >Value Type</label
-                                            >
-                                            <md-select
-                                                name="valueType"
-                                                id="valueType"
-                                                v-model="form.ValueType"
-                                                required
-                                                :disabled="sending"
-                                            >
-                                                <md-option
-                                                    v-for="valueType in valueTypes"
-                                                    :key="valueType"
-                                                    :value="valueType"
-                                                    >{{ valueType }}</md-option
-                                                >
-                                            </md-select>
-                                            <span
-                                                class="md-error"
-                                                v-if="
-                                                    !$v.form.ValueType.required
-                                                "
-                                                >A ValueType is required</span
-                                            >
-                                        </md-field>
-                                    </div>
-                                </div>
-                            </md-list-item>
-                            <md-list-item>
-                                <div
-                                    class="md-layout md-gutter"
-                                    v-if="valueTypeSelected"
-                                >
-                                    <div
-                                        class="md-layout-item md-small-size-100"
-                                        v-for="field in valueTypeFields"
-                                        :key="field"
-                                    >
-                                        <md-field
-                                            :class="getValidationClass(field)"
-                                        >
-                                            <label for="valueType">{{
-                                                field
-                                            }}</label>
-
-                                            <md-select
-                                                :name="field"
-                                                :id="field"
-                                                v-model="form[field]"
-                                                required
-                                                :disabled="sending"
-                                                v-if="
-                                                    fieldOptions[field] !=
-                                                        'freetext'
-                                                "
-                                            >
-                                                <md-option
-                                                    v-for="option in fieldOptions[
-                                                        field
-                                                    ]"
-                                                    :key="option"
-                                                    :value="option"
-                                                    >{{ option }}</md-option
-                                                >
-                                            </md-select>
-                                            <md-input
-                                                :name="field"
-                                                :id="field"
-                                                v-model="form[field]"
-                                                :disabled="sending"
-                                                required
-                                                v-else
-                                            />
-                                            <span
-                                                class="md-error"
-                                                v-if="!$v.form[field].required"
-                                                >{{ field }} is required</span
-                                            >
-                                        </md-field>
-                                    </div>
-                                </div>
-                            </md-list-item>
+                            <metadataField :fieldContent="fileTypes[selectedFileType]['metadata']" @data-changed="metadataChanged" />
                         </md-list>
                         <md-divider />
                     </div>
@@ -318,7 +183,6 @@
                         />
                     </md-field>
                 </md-card-content>
-
                 <!-- Progress bar -->
                 <md-progress-bar md-mode="indeterminate" v-if="sending" />
                 <!-- Buttons for submission and closing -->
@@ -346,57 +210,51 @@
 import { validationMixin } from "vuelidate";
 import {
     required,
+    requiredIf,
     minLength,
     maxLength,
-    requiredIf,
-    url
 } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 import formFileInput from "./formFileInput";
 import formURLInput from "./formURLInput";
 import formRepositoryInput from "./formRepositoryInput";
+import metadataField from "./metadataField";
 
 export default {
     name: "AddDatasetForm",
     mixins: [validationMixin, apiMixin],
     props: {
-        fileTypeMapping: Object
+        datasetType: String,
     },
     components: {
         formFileInput,
         formRepositoryInput,
-        formURLInput
+        formURLInput,
+        metadataField
     },
     data: () => ({
         form: {
             datasetName: null,
             public: true,
             assembly: null,
+            sizeType: null,
             file: null,
             description: null,
-            ValueType: null,
-            Normalization: null,
-            Method: null,
-            SizeType: null,
-            Directionality: null,
-            DerivationType: null,
-            Protein: null,
-            cellCycleStage: null,
-            perturbation: null,
             fileSource: "httpUpload"
         },
-        datasetMetadataMapping: null,
+        fileTypes: null,
         datasetSaved: false,
         sending: false,
         selectedFile: null,
         sourceURL: null,
-        fileType: null,
+        metadata: {},
         assemblies: {},
         repositories: {}, // TODO sprint9
-        metadata: null,
+        repositoryMetadata: null,
         sampleID: null,
         sourceURL: null,
+        fileExt: null,
         fileType: null,
         selectedFile: null,
         componentValid: false,
@@ -414,108 +272,57 @@ export default {
                 assembly: {
                     required
                 },
-                ValueType: {
-                    required
-                },
-                cellCycleStage: {
-                    required
-                },
-                perturbation: {
-                    required
-                },
                 description: {
                     maxLength: maxLength(80)
+                },
+                sizeType: {
+                    required: requiredIf(function() {
+                        return this.datasetType == 'region'
+                    })
                 }
             }
         };
-        if (this.valueTypeSelected) {
-            for (let key of Object.keys(
-                this.datasetMetadataMapping[this.selectedFileType]["ValueType"][
-                    this.form.ValueType
-                ]
-            )) {
-                outputObject["form"][key] = { required };
-            }
-        }
         return outputObject;
     },
     computed: {
         selectedFileType: function() {
             if (
-                this.fileType &&
-                this.fileType.toLowerCase() in this.fileTypeMapping
+                this.fileExt &&
+                this.fileExt.toLowerCase() in this.fileTypeExtensions
             ) {
-                return this.fileTypeMapping[this.fileType.toLowerCase()];
+                return this.fileTypeExtensions[this.fileExt.toLowerCase()];
             } else {
                 return undefined;
             }
-        },
-        valueTypeFields: function() {
-            if (this.valueTypeSelected && this.selectedFileType) {
-                return Object.keys(
-                    this.datasetMetadataMapping[this.selectedFileType][
-                        "ValueType"
-                    ][this.form.ValueType]
-                );
-            }
-            return [];
-        },
-        fieldOptions: function() {
-            if (this.valueTypeSelected && this.selectedFileType) {
-                return this.datasetMetadataMapping[this.selectedFileType][
-                    "ValueType"
-                ][this.form.ValueType];
-            }
-            return undefined;
-        },
-        valueTypeSelected: function() {
-            if (this.form.ValueType && this.selectedFileType) {
-                return true;
-            }
-            return false;
-        },
-        valueTypes: function() {
-            if (this.selectedFileType) {
-                let valueTypes = Object.keys(
-                    this.datasetMetadataMapping[this.selectedFileType][
-                        "ValueType"
-                    ]
-                );
-                // if there is only one value type, select it
-                if (valueTypes.length == 1) {
-                    this.$set(this.form, "ValueType", valueTypes[0]);
-                }
-                return valueTypes;
-            }
-            return undefined;
         }
     },
     methods: {
+        metadataChanged: function(key, value) {
+            console.log(key + " = " + value);
+            this.metadata[key] = value;
+        },
         updateComponentValidity: function(validity) {
             this.componentValid = validity;
         },
-        fileInputChanged: function(file, fileType) {
+        fileInputChanged: function(file, fileExt) {
             this.selectedFile = file;
-            this.fileType = fileType;
+            this.fileExt = fileExt;
         },
-        urlInputChanged: function(url, fileType) {
+        urlInputChanged: function(url, fileExt) {
             this.sourceURL = url;
-            this.fileType = fileType;
+            this.fileExt = fileExt;
         },
-        repositoryInputChanged: function(sampleID, fileType, metadata) {
+        repositoryInputChanged: function(sampleID, fileExt, repositoryMetadata) {
             this.sampleID = sampleID;
-            this.fileType = fileType;
-            this.metadata = metadata;
+            this.fileExt = fileExt;
+            this.repositoryMetadata = repositoryMetadata;
 
             // fillFields
             this.form.datasetName =
-                metadata["json"]["track_and_facet_info"]["dataset"];
+                repositoryMetadata["json"]["track_and_facet_info"]["dataset"];
             this.form.description =
-                metadata["json"]["track_and_facet_info"]["condition"];
+                repositoryMetadata["json"]["track_and_facet_info"]["condition"];
             // if (metadata['json']['genome_assembly'] in
-        },
-        fillFields: function() {
-            // ... TODO fill fields with metadata
         },
         getValidationClass(fieldName) {
             // matrial validation class for form field;
@@ -536,84 +343,57 @@ export default {
                     this.form[key] = null;
                 }
             }
+            this.form.fileSource = 'httpUpload';
         },
-        clearInputFields(event) {
-            // TODO sprint9
+        fileSourceChanged(event) {
             // clear fields
             this.componentValid = false;
-            this.fileType = null;
+            this.fileExt = null;
             this.selectedFile = null;
             this.sampleID = null;
             this.sourceURL = null;
-            this.selectedFile = null;
-        },
-        fetchDatasets() {
-            this.fetchData("datasets/").then(response => {
-                // success, store datasets
-                if (response) {
-                    this.$store.commit("setDatasets", response.data);
-                }
-            });
         },
         saveDataset() {
             this.sending = true; // show progress bar
-
             // construct form data
             var formData = new FormData();
-            for (var key in this.form) {
-                // do not contain fileSource value, as this is only for gui
-                if (key == "fileSource") {
-                    continue;
-                }
-
-                // only include fields if they are not null
-                if (this.form[key]) {
-                    if (key == "file") {
-                        // file data needs to be included like this because the form data only contains the filename at this stage
-                        formData.append(
-                            key,
-                            this.selectedFile,
-                            this.selectedFile.name
-                        );
-                    } else {
-                        formData.append(key, this.form[key]);
-                    }
-                }
+            //formData.append('dataset_type', this.datasetType);
+            formData.append('dataset_name', this.form['datasetName']);
+            formData.append('public', this.form['public']);
+            formData.append('assembly', this.form['assembly']);
+            if (this.datasetType == 'region') {
+                formData.append("sizeType", this.form["sizeType"]);
             }
-            // add filetype
+            formData.append('description', this.form['description']);
             formData.append("filetype", this.selectedFileType);
+            formData.append("metadata_json", JSON.stringify(this.metadata));
 
+            // Differentiate depending on chosen file source
             var postRoute = "";
             if (this.form.fileSource == "httpUpload") {
-                formData.append(
-                    "file",
-                    this.selectedFile,
-                    this.selectedFile.name
-                );
+                formData.append("file",this.selectedFile,this.selectedFile.name);
                 postRoute = "datasets/";
                 this.snackbarMessage =
                     "The Dataset was added successfully and is ready for preprocessing!";
             } else if (this.form.fileSource == "url") {
-                formData.append("sourceURL", this.sourceURL);
-                this.snackbarMessage =
-                    "The Dataset has been queued for download!";
+                formData.append("source_url", this.sourceURL);
+                this.snackbarMessage = "The Dataset has been queued for download!";
                 postRoute = "datasets/URL/";
             } else {
-                formData.append("repositoryName", this.form.fileSource);
-                formData.append("sampleID", this.sampleID);
-                this.snackbarMessage =
-                    "The Dataset has been queued for download!";
+                formData.append("repository_name", this.form.fileSource);
+                formData.append("sample_id", this.sampleID);
+                this.snackbarMessage = "The Dataset has been queued for download!";
                 postRoute = "datasets/encode/";
             }
 
             // API call including upload is made in the background
-            this.postData(postRoute, formData).then(response => {
+            this.postData(postRoute, formData).then((response) => {
                 this.sending = false;
-                // this.clearForm();
+                this.clearForm();
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
-                    this.fetchDatasets();
+                    this.fetchAndStoreDatasets(); // apiMixin
                 }
             });
         },
@@ -638,14 +418,25 @@ export default {
             });
         }
     },
-    mounted: function() {
-        this.datasetMetadataMapping = this.$store.getters[
-            "getDatasetMetadataMapping"
-        ]["DatasetType"];
+    created: function() {
         this.assemblies = this.fetchAssemblies();
 
         // TODO sprint9 add repo list
         this.repositories = this.fetchRepositories();
+
+        var fileTypes = this.$store.getters["getFileTypes"];
+        this.fileTypes = {};
+        this.fileTypeExtensions = {};
+
+        Object.entries(fileTypes).forEach(([name, fileType]) => {
+            // check if region or feature accept data type
+            if (fileType['dataset_type'].includes(this.datasetType)) { 
+                this.fileTypes[name] = fileType;
+                fileType['file_ext'].forEach(ext => {
+                    this.fileTypeExtensions[ext] = name;
+                });
+            }
+        });
     }
 };
 </script>

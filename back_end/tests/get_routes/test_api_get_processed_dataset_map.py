@@ -24,35 +24,35 @@ class TestGetProcessedDatasetMap(LoginTestCase):
     def setUp(self):
         super().setUp()
         # create datasets
-        self.owned_bedfile = Dataset(
+        self.owned_bedfile = self.create_dataset(
             id=1,
             user_id=1,
             filetype="bedfile",
             dataset_name="testfile",
             processing_state="finished",
         )
-        self.not_owned_bedfile = Dataset(
+        self.not_owned_bedfile = self.create_dataset(
             id=2,
             user_id=2,
             filetype="bedfile",
             dataset_name="testfile2",
             processing_state="finished",
         )
-        self.owned_coolerfile = Dataset(
+        self.owned_coolerfile = self.create_dataset(
             id=3,
             user_id=1,
             filetype="cooler",
             dataset_name="testfile3",
             processing_state="finished",
         )
-        self.owned_bigwig = Dataset(
+        self.owned_bigwig = self.create_dataset(
             id=4,
             user_id=1,
             filetype="bigwig",
             dataset_name="testfile4",
             processing_state="finished",
         )
-        self.owned_bedfile_interval = Dataset(
+        self.owned_bedfile_interval = self.create_dataset(
             id=9,
             user_id=1,
             filetype="bedfile",
@@ -66,28 +66,28 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             self.owned_bigwig,
             self.owned_bedfile_interval,
         ]
-        self.not_owned_bigwig = Dataset(
+        self.not_owned_bigwig = self.create_dataset(
             id=5,
             user_id=2,
             filetype="bigwig",
             dataset_name="testfile5",
             processing_state="finished",
         )
-        self.not_owned_cooler = Dataset(
+        self.not_owned_cooler = self.create_dataset(
             id=6,
             user_id=2,
             filetype="cooler",
             dataset_name="testfile6",
             processing_state="finished",
         )
-        self.owned_bedfile2 = Dataset(
+        self.owned_bedfile2 = self.create_dataset(
             id=7,
             user_id=1,
             filetype="bedfile",
             dataset_name="testfile7",
             processing_state="finished",
         )
-        self.owned_bedfile3 = Dataset(
+        self.owned_bedfile3 = self.create_dataset(
             id=8,
             user_id=1,
             filetype="bedfile",

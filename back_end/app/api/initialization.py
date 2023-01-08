@@ -4,7 +4,7 @@ from pathlib import Path
 from flask.globals import current_app
 import pandas as pd
 from ..models import (
-    DataRepository,
+    Repository,
     User,
     Organism,
     Assembly,
@@ -136,9 +136,9 @@ def create_hg19():
 
 def add_repositories():
     """adds repositories depending on info in config file"""
-    if db.session.query(DataRepository).first() is None:
+    if db.session.query(Repository).first() is None:
         for repo_dict in current_app.config["REPOSITORIES"]:
-            repo = DataRepository(
+            repo = Repository(
                 name=repo_dict["name"],
                 url=repo_dict["url"],
                 file_url=repo_dict["file_url"],

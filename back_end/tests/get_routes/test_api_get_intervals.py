@@ -20,7 +20,7 @@ class TestGetIntervals(LoginTestCase):
     def setUp(self):
         super().setUp()
         # add owned dataset
-        self.owned_dataset = Dataset(
+        self.owned_dataset = self.create_dataset(
             id=1,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -28,7 +28,7 @@ class TestGetIntervals(LoginTestCase):
             user_id=1,
         )
         # add unowned dataset
-        self.unowned_dataset = Dataset(
+        self.unowned_dataset = self.create_dataset(
             id=2,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -36,7 +36,7 @@ class TestGetIntervals(LoginTestCase):
             user_id=2,
         )
         # add public dataset
-        self.unowned_public_dataset = Dataset(
+        self.unowned_public_dataset = self.create_dataset(
             id=3,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -189,7 +189,7 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
     def setUp(self):
         super().setUp()
         # add owned dataset
-        self.owned_dataset = Dataset(
+        self.owned_dataset = self.create_dataset(
             id=1,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -197,7 +197,7 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
             user_id=1,
         )
         # add unowned dataset
-        self.unowned_dataset = Dataset(
+        self.unowned_dataset = self.create_dataset(
             id=2,
             dataset_name="test1",
             file_path="/test/path/1",

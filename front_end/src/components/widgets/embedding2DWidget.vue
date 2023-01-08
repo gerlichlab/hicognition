@@ -25,7 +25,7 @@
                     </div>
                 </div>
                 <div
-                    class="md-layout-item md-size-60 padding-left padding-right"
+                    class="md-layout-item md-size-45 padding-left padding-right"
                 >
                     <md-menu
                         :md-offset-x="50"
@@ -54,6 +54,26 @@
                             </md-menu-item>
                         </md-menu-content>
                     </md-menu>
+                </div>
+                <div class="md-layout-item md-size-5 toggle-paired-buttons">
+                    <div v-if="isBedpeFile" class="no-padding-top md-icon-button">
+                        <md-button class="md-icon" :class="{'md-primary': pairedLeftSide}"  @click="togglePairedSides('left')">
+                            <md-icon>looks_one</md-icon>
+                            <md-tooltip md-direction="top" md-delay="300">
+                                Plot left support data
+                            </md-tooltip>
+                        </md-button>
+                    </div>
+                </div>
+                <div class="md-layout-item md-size-10 toggle-paired-buttons">
+                    <div v-if="isBedpeFile" class="no-padding-top">
+                        <md-button class="md-icon md-mini" :class="{'md-primary': pairedRightSide}" @click="togglePairedSides('right')" style="margin-left: 8px">
+                            <md-icon>looks_two</md-icon>
+                        </md-button>
+                            <md-tooltip md-direction="top" md-delay="300">
+                                Plot right support data
+                            </md-tooltip>
+                    </div>
                 </div>
                 <div class="md-layout-item md-size-10">
                     <md-menu
@@ -738,7 +758,10 @@ export default {
                 maxHeatmapRange: this.maxHeatmapRange,
                 selectedCluster: this.selectedCluster,
                 clusterNumber: this.clusterNumber,
-                shareValueScale: this.shareValueScale
+                shareValueScale: this.shareValueScale,
+                pairedLeftSide: this.pairedLeftSide,
+                pairedRightSide: this.pairedRightSide,
+                pairedSidesMutuallyExclusive: this.pairedSidesMutuallyExclusive,
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -772,7 +795,10 @@ export default {
                 tooltipOffsetLeft: 0,
                 shareValueScale: false,
                 selectMultiple: false,
-                clickedClusters: []
+                clickedClusters: [],
+                pairedLeftSide: true,
+                pairedRightSide: false,
+                pairedSidesMutuallyExclusive: true,
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -818,6 +844,16 @@ export default {
                         "compare/getWidgetDataEmbedding2d"
                     ](queryObsExp)
                 };
+                if (this.isBedpeFile) {
+                    if (this.pairedLeftSide) {
+                        widgetDataValues["ICCF"] = widgetDataValues["ICCF"][0];
+                        widgetDataValues["ObsExp"] = widgetDataValues["ObsExp"][0];
+                    } else {
+                        widgetDataValues["ICCF"] = widgetDataValues["ICCF"][1];
+                        widgetDataValues["ObsExp"] = widgetDataValues["ObsExp"][1];
+                    }
+                }
+                
             } else {
                 widgetDataValues = undefined;
             }
@@ -859,7 +895,10 @@ export default {
                 tooltipOffsetLeft: 0,
                 shareValueScale: widgetData["shareValueScale"],
                 selectMultiple: false,
-                clickedClusters: []
+                clickedClusters: [],
+                pairedLeftSide: widgetData["pairedLeftSide"] !== undefined ? widgetData["pairedLeftSide"] : true,
+                pairedRightSide: widgetData["pairedRightSide"] !== undefined ? widgetData["pairedRightSide"] : false,
+                pairedSidesMutuallyExclusive: true,
             };
         },
         handleSliderChange: function(data) {
@@ -895,9 +934,9 @@ export default {
                     queryObject
                 )
             ) {
-                return this.$store.getters["compare/getWidgetDataEmbedding2d"](
+                return this.handleReceivedData(this.$store.getters["compare/getWidgetDataEmbedding2d"](
                     queryObject
-                );
+                ));
             }
             // pileup does not exists in store, check whether request has been dispatched
             let url = `embeddingIntervalData/${id}/`;
@@ -924,7 +963,7 @@ export default {
                 );
             }
             // return it
-            return response.data;
+            return this.handleReceivedData(response.data);
         },
         updateData: async function() {
             this.loading = true;
@@ -946,6 +985,15 @@ export default {
                 "ObsExp",
                 obs_exp_id
             );
+            // if (this.isBedpeFile) {
+            //     if (this.pairedLeftSide) {
+            //         iccf_data = iccf_data[0];
+            //         obs_exp_data = obs_exp_data[0];
+            //     } else {
+            //         iccf_data = iccf_data[1];
+            //         obs_exp_data = obs_exp_data[1];
+            //     }
+            // }
             this.widgetData = {
                 ICCF: iccf_data,
                 ObsExp: obs_exp_data
@@ -1107,5 +1155,10 @@ export default {
 
 .md-field {
     min-height: 30px;
+}
+
+.toggle-paired-buttons {
+    padding-top: 8px;
+    padding-bottom:8px;
 }
 </style>

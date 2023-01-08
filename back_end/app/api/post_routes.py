@@ -1,5 +1,4 @@
 """API endpoints for hicognition"""
-import logging
 import os
 import json
 import pandas as pd
@@ -9,16 +8,14 @@ from flask import g, request, current_app
 from flask.json import jsonify
 
 # from hicognition.utils import get_all_interval_ids, parse_binsizes
-from hicognition.utils import parse_description, get_all_interval_ids, parse_binsizes
+from hicognition.utils import get_all_interval_ids, parse_binsizes
 from hicognition.format_checkers import FORMAT_CHECKERS
 from . import api
 from .. import db
 
-from .. import download_utils
-
 from ..models import (
     Assembly,
-    DataRepository,
+    Repository,
     Dataset,
     BedFileMetadata,
     Organism,
@@ -28,14 +25,13 @@ from ..models import (
     EmbeddingIntervalData,
 )
 from ..form_models import (
-    DatasetPostModel,
     FileDatasetPostModel,
     URLDatasetPostModel,
     ENCODEDatasetPostModel,
 )
 from .authentication import auth, check_confirmed
 from .. import pipeline_steps
-from .errors import forbidden, internal_server_error, invalid, not_found
+from .errors import forbidden, invalid, not_found
 
 
 @api.route("/datasets/encode/", methods=["POST"])
@@ -44,59 +40,26 @@ from .errors import forbidden, internal_server_error, invalid, not_found
 def add_dataset_from_ENCODE():
     """Endpoint to add dataset directly from an ENCODE repository.
     Will call new redis worker to download file and notify user when finished."""
-
-    def is_form_valid():
-        valid = True
-        valid = valid and hasattr(request, "form")
-        valid = valid and len(request.files) == 0
-        return valid
-
-    if not is_form_valid():
+    if not hasattr(request, "form") or len(request.files) > 0:
         return invalid("Form is not valid!")
 
-    # get data from form
+    # validate data
     try:
         data = ENCODEDatasetPostModel(**request.form)
     except ValueError as err:
-        return invalid(f'Form is not valid: {str(err)}')
-    except Exception as err:
-        return internal_server_error(
-            err,
-            "Dataset could not be uploaded: There was a server-side error. Error has been logged.",
-        )
+        return invalid(f"Form is not valid: {str(err)}")
 
-    # temporary file_type check
-    if data.filetype.lower() in ["cool", "cooler", "mcool"]:
-        return invalid(
-            f"Extern import of files with filetype '{data['filetype']}' not yet supported"
-        )
-
-    repository = db.session.query(DataRepository).get(data.repository_name)
+    repository = db.session.query(Repository).get(data.repository_name)
     if not repository:
         return invalid(f"Repository {data.repository_name} not found.")
 
-    # check if the sample exists:
-    try:
-        response = download_utils.download_ENCODE_metadata(repository, data.sample_id)
-    except download_utils.MetadataNotWellformed as err:
-        return invalid(f"Could not load metadata: {str(err)}")
-
-    # check whether description is there
-    description = parse_description(data)
-    # check whether dataset should be public
-    set_public = "public" in data and data["public"] == True
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
-        dataset_name=data.dataset_name,
-        description=description,
-        public=set_public,
-        processing_state="uploading",
-        filetype=data.filetype,
-        user_id=g.current_user.id,
-        repository_name=data.repository_name,
-        sample_id=data.sample_id,
+        processing_state="new", upload_state="new", user_id=g.current_user.id
     )
-    new_entry.add_fields_from_form(data)
+    # fill with form data
+    [setattr(new_entry, key, val) for key, val in data.__dict__.items()]
+
     db.session.add(new_entry)
     db.session.commit()
 
@@ -116,45 +79,23 @@ def add_dataset_from_URL():
     """Endpoint to add dataset with file provided by URL.
     Will call new redis worker to download file and notify user when finished."""
 
-    def is_form_valid():
-        valid = True
-        valid = valid and hasattr(request, "form")
-        valid = valid and len(request.files) == 0
-        return valid
-
-    if not is_form_valid():
+    if not hasattr(request, "form") or len(request.files) > 0:
         return invalid("Form is not valid!")
 
-    # get data from form
+    # validate data
     try:
         data = URLDatasetPostModel(**request.form)
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
-    except Exception as err:
-        return internal_server_error(
-            err,
-            "Dataset could not be uploaded: There was a server-side error. Error has been logged.",
-        )
 
-    # temporary file_type check
-    if data.filetype.lower() in ["cool", "cooler", "mcool"]:
-        return invalid(
-            f"Extern import of files with filetype '{data['filetype']}' not yet supported"
-        )
-
-    # check whether description is there
-    description = parse_description(data)
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
-        dataset_name=data.dataset_name,
-        description=description,
-        public=data.public,
-        processing_state="uploading",
-        filetype=data.filetype,
-        user_id=g.current_user.id,
-        source_url=data.source_url,
+        processing_state="new", upload_state="new", user_id=g.current_user.id
     )
-    new_entry.add_fields_from_form(data)
+    # fill with form data
+    [setattr(new_entry, key, val) for key, val in data.__dict__.items()]
+
+    # new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
     db.session.commit()
 
@@ -173,43 +114,25 @@ def add_dataset_from_URL():
 def add_dataset():
     """endpoint to add a new dataset"""
 
-    def is_form_invalid():
-        invalid = False
-        invalid = invalid or not hasattr(request, "form")
-        invalid = invalid or len(request.files) == 0
-        return invalid
-
-    current_user = g.current_user
-    # check form
-    if is_form_invalid():
+    if not hasattr(request, "form") or len(request.files) == 0:
         return invalid("Form is not valid!")
-    # get data from form
+
     try:
         data = FileDatasetPostModel(
             **request.form, filename=request.files["file"].filename
         )
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
-    except Exception as err:
-        return internal_server_error(
-            err,
-            "Dataset could not be uploaded: There was a server-side error. Error has been logged.",
-        )
 
-    # check whether description is there
-    description = parse_description(data)
-    # check whether dataset should be public
-    set_public = "public" in data and data["public"] == True
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
-        dataset_name=data.dataset_name,
-        description=description,
-        public=set_public,
-        processing_state="uploading",
-        filetype=data.filetype,
-        user_id=current_user.id,
+        processing_state="new", upload_state="new", user_id=g.current_user.id
     )
-    new_entry.add_fields_from_form(data)
+    # fill with form data
+    # TODO check if everything is as expected in config!
+    [setattr(new_entry, key, val) for key, val in data.__dict__.items()]
+
+    # new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
     db.session.commit()
 
@@ -219,7 +142,7 @@ def add_dataset():
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     file_object.save(file_path)
     new_entry.file_path = file_path
-    new_entry.processing_state = "uploaded"
+    new_entry.upload_state = "uploaded"
 
     # validate dataset and delete if not valid
     if not new_entry.validate_dataset(delete=True):
@@ -401,7 +324,7 @@ def preprocess_collections():
             continue
         for binsize in preprocessing_map[windowsize]["collections"][collection.kind]:
             for collection in collections:
-                current_user.launch_collection_task(
+                current_user.launch_task(
                     current_app.queues[
                         current_app.config["PIPELINE_QUEUES"]["collections"][
                             collection.kind
@@ -425,7 +348,7 @@ def preprocess_collections():
     return jsonify({"message": "success! Preprocessing triggered."})
 
 
-@api.route("/bedFileMetadata/", methods=["POST"])
+@api.route("/bedFileMetadata/", methods=["POST"])  # TODO bedpe
 @auth.login_required
 @check_confirmed
 def add_bedfile_metadata():
@@ -497,7 +420,7 @@ def add_bedfile_metadata():
     )
 
 
-@api.route("/bedFileMetadata/<metadata_id>/setFields", methods=["POST"])
+@api.route("/bedFileMetadata/<metadata_id>/setFields", methods=["POST"])  # TODO bedpe
 @auth.login_required
 @check_confirmed
 def add_bedfile_metadata_fields(metadata_id):
@@ -752,16 +675,12 @@ def create_region_from_cluster_id(entry_id):
     # load regions
     regions = pd.read_csv(bed_ds.file_path, sep="\t", header=None)
     # create new dataset
-    new_entry = Dataset(
+    new_entry = bed_ds.copy(
         dataset_name=form_data["name"],
-        description=bed_ds.description,
-        public=False,  # derived regions are private by default - you can choose to make them public
+        public=False,
         processing_state="uploading",
-        filetype="bedfile",
         user_id=g.current_user.id,
     )
-    # add fields
-    new_entry.add_fields_from_dataset(bed_ds)
     db.session.add(new_entry)
     db.session.commit()
     # subset and write to file

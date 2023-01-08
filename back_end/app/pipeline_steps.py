@@ -28,27 +28,28 @@ notification_handler = NotificationHandler()
 
 def bed_preprocess_pipeline_step(dataset_id, windowsize):
     """
-    Performs bedpe preprocessing pipeline step:
-    * Convert bed to bedpe
+    Performs preprocessing pipeline step for bed and bedpe:
     * Create downsampled indices
     * add Intervals dataset entry
     """
     current_app.logger.info(f"  Generating Intervals: {dataset_id} with {windowsize}")
     # get database object
     dataset = Dataset.query.get(dataset_id)
+
+    # read bed(pe) file
     bed_path = dataset.file_path
-    bed = pd.read_csv(bed_path, sep="\t", header=None)
+    bed_bedpe = pd.read_csv(bed_path, sep="\t", header=None)
     index_file = os.path.join(
         current_app.config["UPLOAD_DIR"], bed_path.split(os.sep)[-1] + "_indices.npy"
     )
-    if len(bed) < current_app.config["STACKUP_THRESHOLD"]:
+    if len(bed_bedpe) < current_app.config["STACKUP_THRESHOLD"]:
         # if there are less rows than the stackup theshold, index file are the indices of this file
-        sub_sample_index = np.arange(len(bed))
+        sub_sample_index = np.arange(len(bed_bedpe))
     else:
         # set random seed
         np.random.seed(42)
         # subsample
-        all_indices = np.arange(len(bed))
+        all_indices = np.arange(len(bed_bedpe))
         sub_sample_index = np.random.choice(
             all_indices, current_app.config["STACKUP_THRESHOLD"], replace=False
         )

@@ -2,23 +2,26 @@
 # TODO refactor to allow database to not know about flask-server or similar
 # TODO task launcher: why put it into the user class?
 
+import os
+from abc import abstractmethod
 import datetime
+from enum import Enum
+import json
+import pandas as pd
 from flask.globals import current_app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer
-from sqlalchemy import inspect
-import pandas as pd
+from sqlalchemy.ext.declarative import declared_attr
+import rq
+import redis
 import cooler
-import json
-import os
-from hicognition.utils import parse_binsizes
-from hicognition.format_checkers import FORMAT_CHECKERS
+from itertools import chain
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import JSONWebSignatureSerializer
-import rq
 import hicognition
-import redis
+from hicognition.utils import parse_binsizes
+from hicognition.format_checkers import FORMAT_CHECKERS
 from . import db
 
 
@@ -26,54 +29,90 @@ from . import db
 
 session_dataset_assoc_table = db.Table(
     "session_dataset_assoc_table",
-    db.Column("session_id", db.Integer, db.ForeignKey("session.id")),
-    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id")),
+    db.Column(
+        "session_id", db.Integer, db.ForeignKey("session.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "dataset_id", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
 )
 
 session_collection_assoc_table = db.Table(
     "session_collection_assoc_table",
-    db.Column("session_id", db.Integer, db.ForeignKey("session.id")),
-    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id")),
+    db.Column(
+        "session_id", db.Integer, db.ForeignKey("session.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "collection_id", db.Integer, db.ForeignKey("collection.id", ondelete="CASCADE")
+    ),
 )
 
 dataset_collection_assoc_table = db.Table(
     "dataset_collection_assoc_table",
-    db.Column("collection_id", db.Integer, db.ForeignKey("collection.id")),
-    db.Column("dataset_id", db.Integer, db.ForeignKey("dataset.id")),
+    db.Column(
+        "collection_id", db.Integer, db.ForeignKey("collection.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "dataset_id", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
 )
 
 dataset_preprocessing_table = db.Table(
     "dataset_dataset_preprocessing_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
-    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
+    db.Column(
+        "dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "dataset_feature", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
     db.UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
 )
 
 dataset_failed_table = db.Table(
     "dataset_failed_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
-    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
+    db.Column(
+        "dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "dataset_feature", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
     db.UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
 )
 
 dataset_completed_table = db.Table(
     "dataset_completed_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
-    db.Column("dataset_feature", db.Integer, db.ForeignKey("dataset.id")),
+    db.Column(
+        "dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "dataset_feature", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
     db.UniqueConstraint("dataset_region", "dataset_feature", name="uix_1"),
 )
 
 collections_preprocessing_table = db.Table(
     "collections_preprocessing_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
-    db.Column("collection_feature", db.Integer, db.ForeignKey("collection.id")),
+    db.Column(
+        "dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "collection_feature",
+        db.Integer,
+        db.ForeignKey("collection.id", ondelete="CASCADE"),
+    ),
     db.UniqueConstraint("dataset_region", "collection_feature", name="uix_1"),
 )
 
 collections_failed_table = db.Table(
     "collections_failed_table",
-    db.Column("dataset_region", db.Integer, db.ForeignKey("dataset.id")),
-    db.Column("collection_feature", db.Integer, db.ForeignKey("collection.id")),
+    db.Column(
+        "dataset_region", db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE")
+    ),
+    db.Column(
+        "collection_feature",
+        db.Integer,
+        db.ForeignKey("collection.id", ondelete="CASCADE"),
+    ),
     db.UniqueConstraint("dataset_region", "collection_feature", name="uix_1"),
 )
 
@@ -96,20 +135,18 @@ class User(db.Model, UserMixin):
         "Task", backref="user", lazy="dynamic", cascade="all, delete-orphan"
     )
     credentials = db.relationship(
-        "User_DataRepository_Credentials",
+        "RepositoryAuth",
         backref="user",
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
 
-    def add_repository_credentials(
-        self, repository_name: str, key: str, secret: str
-    ):  # TODO needed?
-        credentials = User_DataRepository_Credentials(
-            self.id, repository_name, key, secret
-        )
-        db.session.add(credentials)
-        return credentials
+    # def add_repository_credentials(
+    #     self, repository_name: str, key: str, secret: str
+    # ):  # TODO needed?
+    #     credentials = RepositoryAuth(self.id, repository_name, key, secret)
+    #     db.session.add(credentials)
+    #     return credentials
 
     def set_password(self, password):
         """set password helper."""
@@ -124,48 +161,32 @@ class User(db.Model, UserMixin):
         serializer = Serializer(current_app.config["SECRET_KEY"], expires_in=expiration)
         return serializer.dumps({"id": self.id}).decode("utf-8")
 
-    def launch_task(self, queue, name, description, dataset_id, *args, **kwargs):
+    # TODO continue working on this
+    # TODO move to Task class, have started on this already but commented out
+    def launch_task(self, queue, func, description, dataset_id=None, collection_id=None, *args, **kwargs):
         """adds task to queue"""
+        if dataset_id:
+            args = [dataset_id, *args]
+        if collection_id:
+            args = [collection_id, *args]
+
+        # check if func is name of function in tasks.py, then import those
+        if isinstance(func, str):
+            import app.tasks
+            func = app.tasks.__getattr__(func)
 
         rq_job = queue.enqueue(
-            "app.tasks." + name, dataset_id, job_timeout="10h", *args, **kwargs
+            _rq_job_wrapper, func, *args, **kwargs, job_timeout="10h"
         )
 
-        # check whether intervals_id is in kwargs
-        if "intervals_id" in kwargs:
-            intervals_id = kwargs["intervals_id"]
-        else:
-            intervals_id = None
         task = Task(
             id=rq_job.get_id(),
-            name=name,
+            name=func,
             description=description,
             user_id=self.id,
             dataset_id=dataset_id,
-            intervals_id=intervals_id,
-        )
-        db.session.add(task)
-        return task
-
-    def launch_collection_task(
-        self, queue, name, description, collection_id, *args, **kwargs
-    ):
-        """adds task based on collection to queue"""
-        rq_job = queue.enqueue(
-            "app.tasks." + name, collection_id, job_timeout="10h", *args, **kwargs
-        )
-        # check whether inverals_id is in kwargs
-        if "intervals_id" in kwargs:
-            intervals_id = kwargs["intervals_id"]
-        else:
-            intervals_id = None
-        task = Task(
-            id=rq_job.get_id(),
-            name=name,
-            description=description,
-            user_id=self.id,
             collection_id=collection_id,
-            intervals_id=intervals_id,
+            intervals_id=kwargs.get("intervals_id", None),
         )
         db.session.add(task)
         return task
@@ -193,9 +214,7 @@ class User(db.Model, UserMixin):
         return f"<User {self.username}>"
 
 
-# class User_ExternSource mtm
-# TODO replace with better name?
-class DataRepository(db.Model):
+class Repository(db.Model):
     """Model for external data repositories.
     Name is primary key, as this table will hold only a few rows and it makes
     handling gets/posts easier.
@@ -211,13 +230,15 @@ class DataRepository(db.Model):
     auth_required = db.Column(db.Boolean, default=False)
 
     def build_url_sample(self, data_id: str):
+        """inserts id into repo metadata url"""
         return self.file_url.format(id=data_id)
 
     def build_url(self, href: str):
+        """inserts href into general repo url"""
         return self.url.format(href=href)
 
     credentials = db.relationship(
-        "User_DataRepository_Credentials",
+        "RepositoryAuth",
         back_populates="repository",
         lazy="dynamic",
         cascade="all, delete-orphan",
@@ -231,96 +252,68 @@ class DataRepository(db.Model):
         return d
 
 
-class User_DataRepository_Credentials(db.Model):  # TODO change name
+class RepositoryAuth(db.Model):  # TODO change name
     """Optional many-to-many object to store user keys for external repos"""
 
     # fields
-    user_id = db.Column(db.ForeignKey("user.id"), primary_key=True)
-    repository_name = db.Column(db.ForeignKey("data_repository.name"), primary_key=True)
+    user_id = db.Column(
+        db.ForeignKey("user.id", name="fk_repoauth_user"), primary_key=True
+    )
+    repository_name = db.Column(
+        db.ForeignKey("repository.name", name="fk_repoauth_repo"), primary_key=True
+    )
     key = db.Column(db.String(512), nullable=False)
     secret = db.Column(db.String(512), nullable=False)
 
     # assoc
     # user = db.relationship("User", back_populates='credentials')
-    repository = db.relationship("DataRepository", back_populates="credentials")
+    repository = db.relationship("Repository", back_populates="credentials")
 
 
 class Dataset(db.Model):
     """Dataset database model"""
 
-    # define groups of fields for requirement checking
-    COMMON_REQUIRED_KEYS = [
-        "cellCycleStage",
-        "datasetName",
-        "perturbation",
-        "ValueType",
-        "public",
-    ]
-    ADD_REQUIRED_KEYS = ["assembly", "filetype"]
-    DATASET_META_FIELDS = {  # TODO: remove dependancy
-        "assembly": "assembly",
-        "cellCycleStage": "cellCycleStage",
-        "perturbation": "perturbation",
-        "ValueType": "valueType",
-        "Method": "method",
-        "SizeType": "sizeType",
-        "Normalization": "normalization",
-        "DerivationType": "derivationType",
-        "Protein": "protein",
-        "Directionality": "directionality",
-    }
-    DATASET_META_FIELDS_NEW = {
-        "assembly": "assembly",
-        "cell_cycle_stage": "cellCycleStage",
-        "perturbation": "perturbation",
-        "value_type": "valueType",
-        "method": "method",
-        "size_type": "sizeType",
-        "normalization": "normalization",
-        "derivation_type": "derivationType",
-        "protein": "protein",
-        "directionality": "directionality",
-    }
-    DATASET_META_FIELDS_MODIFY = {
-        "datasetName": "dataset_name",
-        "cellCycleStage": "cellCycleStage",
-        "perturbation": "perturbation",
-        "ValueType": "valueType",
-        "Method": "method",
-        "Normalization": "normalization",
-        "DerivationType": "derivationType",
-        "Protein": "protein",
-        "Directionality": "directionality",
-        "public": "public",
-    }
     # fields
     id = db.Column(db.Integer, primary_key=True)
-    dataset_name = db.Column(db.String(512), index=True)
+    dataset_name = db.Column(db.String(512), nullable=False)
     description = db.Column(db.String(81), default="undefined")
     created_at = db.Column(
         db.DateTime,  default=datetime.datetime.utcnow
     )
+    assembly = db.Column(
+        db.Integer, db.ForeignKey("assembly.id", name="fk_dataset_assembly")
+    )
+    sizeType = db.Column(db.String(64), default="undefined")
+    file_path = db.Column(db.String(512))
+    public = db.Column(db.Boolean, default=False, nullable=False)
+    filetype = db.Column(db.String(64), nullable=False)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", name="fk_dataset_user"), nullable=False
+    )
+    processing_state = db.Column(
+        db.String(64)
+    )  # 'new', 'processing', 'processing_failed', 'success'
+    repository_name = db.Column(
+        db.ForeignKey("repository.name", name="fk_dataset_repository"), nullable=True
+    )
+    sample_id = db.Column(db.String(128), nullable=True)
+    source_url = db.Column(db.String(512), nullable=True)
+    # dataset_type = db.Column(db.String(64), nullable=False) # Enum("region", "feature")
+    upload_state = db.Column(
+        db.String(64), nullable=False, default="new"
+    )  # Enum('new', 'uploading', 'uploaded', 'upload_failed')
+    metadata_json = db.Column(db.JSON, nullable=True)
+
     perturbation = db.Column(db.String(64), default="undefined")
-    assembly = db.Column(db.Integer, db.ForeignKey("assembly.id"))
     cellCycleStage = db.Column(db.String(64), default="undefined")
     valueType = db.Column(db.String(64), default="undefined")
     method = db.Column(db.String(64), default="undefined")
     normalization = db.Column(db.String(64), default="undefined")
     derivationType = db.Column(db.String(64), default="undefined")
-    sizeType = db.Column(db.String(64), default="undefined")
-    file_path = db.Column(db.String(512), index=True)
-    public = db.Column(db.Boolean, default=False)
     protein = db.Column(db.String(64), default="undefined")
     directionality = db.Column(db.String(64), default="undefined")
-    filetype = db.Column(db.String(64), index=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     available_binsizes = db.Column(db.String(500), default="undefined")
-    processing_state = db.Column(db.String(64))
-    repository_name = db.Column(db.ForeignKey("data_repository.name"), nullable=True)
-    sample_id = db.Column(
-        db.String(128), nullable=True
-    )  #  TODO add those to the META_FIELDS
-    source_url = db.Column(db.String(512), nullable=True)
+
     # self relationships
     processing_features = db.relationship(
         "Dataset",
@@ -343,13 +336,14 @@ class Dataset(db.Model):
         secondaryjoin=dataset_completed_table.c.dataset_feature == id,
         backref="completed_regions",
     )
-    # Relationships
+
     intervals = db.relationship(
         "Intervals",
-        backref="source_dataset",
+        back_populates="source_dataset",
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
+
     obs_exp = db.relationship(
         "ObsExp",
         backref="computed_for",
@@ -368,19 +362,16 @@ class Dataset(db.Model):
     sessions = db.relationship("Session", secondary=session_dataset_assoc_table)
     averageIntervalData = db.relationship(
         "AverageIntervalData",
-        backref="source_dataset",
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
     individualIntervalData = db.relationship(
         "IndividualIntervalData",
-        backref="source_dataset",
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
     embeddingData = db.relationship(
         "EmbeddingIntervalData",
-        backref="source_dataset",
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
@@ -390,8 +381,20 @@ class Dataset(db.Model):
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
-    tasks = db.relationship("Task", backref="dataset", lazy="dynamic")
-    repository = db.relationship("DataRepository")
+
+    @property
+    def interval_data(self):
+        """makes a big list of interval data objects"""
+        return [
+            *self.averageIntervalData,
+            *self.individualIntervalData,
+            *self.embeddingData,
+        ]
+
+    tasks = db.relationship(
+        "Task", backref="dataset", lazy="dynamic", cascade="all, delete-orphan"
+    )
+    repository = db.relationship("Repository")
     user = db.relationship("User")
 
     def get_tasks_in_progress(self):
@@ -421,6 +424,19 @@ class Dataset(db.Model):
         database.session.add(self)
         database.session.commit()
 
+    # @property # uli
+    # def processing_state(self):
+    #     failed = sum([iv_data.job_status == 'failed' for iv_data in self.interval_data]) > 0
+    #     success = sum([iv_data.job_status == 'success' for iv_data in self.interval_data]) > 0
+    #     running_tasks = [iv_data for iv_data in self.interval_data if iv_data.job_status not in ['failed', 'success']]
+
+    #     if failed:
+    #         return "failed"
+    #     elif success:
+    #         return "success"
+    #     else:
+    #         return "processing"
+
     def is_access_denied(self, app_context):
         """Determine whether context
         allows access to dataset."""
@@ -434,122 +450,34 @@ class Dataset(db.Model):
             return True
         return False
 
-    def add_fields_from_form(self, form, requirement_spec=None):
-        """Adds values for fields from form"""
-        if requirement_spec is None:
-            requirement_spec = self.DATASET_META_FIELDS_NEW
-        for form_key, dataset_field in requirement_spec.items():
-            if form_key in form:
-                if form_key == "public":
-                    self.__setattr__(
-                        dataset_field,
-                        "public" in form and form["public"].lower() == "true",
-                    )
-                else:
-                    self.__setattr__(dataset_field, form[form_key])
-
-    def add_fields_from_dataset(self, other_dataset):
-        """adds metadata from other dataset"""
-        for dataset_field in self.DATASET_META_FIELDS.values():
-            if other_dataset.__getattribute__(dataset_field) is not None:
-                self.__setattr__(
-                    dataset_field, other_dataset.__getattribute__(dataset_field)
-                )
-
-    def blank_fields(self):
-        """Blanks dataset fields"""
-        # common fields
-        for field in self.COMMON_REQUIRED_KEYS:
-            self.__setattr__(field, "undefined")
-        # metadata_fields
-        for key in self.DATASET_META_FIELDS_MODIFY.keys():
-            if key == "public":
+    def copy(self, **kwargs):
+        dataset = Dataset()
+        for column in self.__class__.__table__.c.keys():
+            # forbid id, dataset_name and public flag
+            if column in ["id", "dataset_name", "public"]:
                 continue
-            self.__setattr__(key, "undefined")
+            setattr(dataset, column, getattr(self, column))
 
-    @classmethod
-    def modify_dataset_requirements_fulfilled(cls, form, filetype):
-        """Checks whether all fields that are needed to modiy a dataset are fulfilled"""
-        form_keys = set(form.keys())
-        if any(key not in form_keys for key in cls.COMMON_REQUIRED_KEYS):
-            return False
-        # check metadata
-        dataset_type_mapping = current_app.config["DATASET_OPTION_MAPPING"][
-            "DatasetType"
-        ]
-        value_types = dataset_type_mapping[filetype]["ValueType"]
-        if form["ValueType"] not in value_types.keys():
-            return False
-        # check value type members
-        for key, possible_values in value_types[form["ValueType"]].items():
-            # skip size type
-            if key == "SizeType":
-                continue
-            if key not in form_keys:
-                return False
-            # check whether field is freetext
-            if possible_values == "freetext":
-                continue
-            # check that value in form corresponds to possible values
-            if form[key] not in possible_values:
-                return False
-        # check whether there is a field that is unsuitable
-        for key in cls.ADD_REQUIRED_KEYS + ["SizeType"]:
-            if key in form_keys:
-                return False
-        return True
+        for key, value in kwargs.items():
+            if key in self.__class__.__table__.c.keys():
+                setattr(dataset, key, value)
+
+        return dataset
 
     def delete_data_of_associated_entries(self):
         """deletes files of associated entries"""
-        intervals = []
-        average_interval_data = []
-        individual_interval_data = []
-        embedding_interval_data = []
-        metadata = []
-        # cooler only needs deletion of derived averageIntervalData
-        if self.filetype == "cooler":
-            average_interval_data = AverageIntervalData.query.filter(
-                AverageIntervalData.dataset_id == self.id
-            ).all()
-            embedding_interval_data = EmbeddingIntervalData.query.filter(
-                EmbeddingIntervalData.dataset_id == self.id
-            ).all()
-        # bedfile needs deletion of intervals and averageIntervalData
-        if self.filetype == "bedfile":
-            intervals = Intervals.query.filter(Intervals.dataset_id == self.id).all()
-            average_interval_data = AverageIntervalData.query.filter(
-                AverageIntervalData.intervals_id.in_([entry.id for entry in intervals])
-            ).all()
-            individual_interval_data = IndividualIntervalData.query.filter(
-                IndividualIntervalData.intervals_id.in_(
-                    [entry.id for entry in intervals]
-                )
-            ).all()
-            embedding_interval_data = EmbeddingIntervalData.query.filter(
-                EmbeddingIntervalData.intervals_id.in_(
-                    [entry.id for entry in intervals]
-                )
-            ).all()
-            metadata = BedFileMetadata.query.filter(
-                BedFileMetadata.dataset_id == self.id
-            ).all()
-        if self.filetype == "bigwig":
-            average_interval_data = AverageIntervalData.query.filter(
-                AverageIntervalData.dataset_id == self.id
-            ).all()
-            individual_interval_data = IndividualIntervalData.query.filter(
-                IndividualIntervalData.dataset_id == self.id
-            ).all()
-        # delete files and remove from database
-        deletion_queue = (
-            [self]
-            + intervals
-            + average_interval_data
-            + individual_interval_data
-            + embedding_interval_data
-            + metadata
+        # join lists
+        deletion_queue = chain(
+            [self],
+            *[x.interval_data for x in self.intervals.all()],
+            self.intervals.all(),
+            self.bedFileMetadata.all(),
+            self.individualIntervalData.all(),
+            self.embeddingData.all(),
+            self.averageIntervalData.all(),
         )
-        for entry in deletion_queue:
+        # create set form joined list
+        for entry in set(deletion_queue):
             if isinstance(entry, IndividualIntervalData):
                 hicognition.io_helpers.remove_safely(
                     entry.file_path_small, current_app.logger
@@ -633,10 +561,12 @@ class Dataset(db.Model):
         """Invokes preprocessing of dataset."""
 
         # start preprocessing of bedfile, the other filetypes do not need preprocessing
-        if self.filetype == "bedfile":
+        if self.filetype in ["bedfile"]:#, "bedpe_file"]:
+            import app.tasks
+
             self.user.launch_task(  #  TODO current user or dataset owner user?
                 current_app.queues["short"],
-                "pipeline_bed",
+                app.tasks.pipeline_bed,
                 "run bed preprocessing",
                 self.id,
             )
@@ -650,17 +580,16 @@ class Dataset(db.Model):
             ]
             self.available_binsizes = json.dumps(binsizes)
 
-        # db.session.commit()
+        db.session.commit()
 
     def to_json(self):
         """Generates a JSON from the model"""
         json_dataset = {}
-        for key in inspect(Dataset).columns.keys():
-            if (key == "processing_id") or (key == 'created_at'):
-                continue
-            value = self.__getattribute__(key)
-            if value != "undefined":
-                json_dataset[key] = value
+        # TODO: add created_at and processing_id to avoided keys
+        for column in self.__class__.__table__.c.keys():
+            if getattr(self, column) != "undefined":
+                json_dataset[column] = getattr(self, column)
+
         # add processing datasets
         json_dataset["processing_datasets"] = [
             dataset.id for dataset in self.processing_features
@@ -702,15 +631,14 @@ class Collection(db.Model):
     )
     failed_for_datasets = db.relationship("Dataset", secondary=collections_failed_table)
     sessions = db.relationship("Session", secondary=session_collection_assoc_table)
+
     associationData = db.relationship(
         "AssociationIntervalData",
-        backref="source_collection",
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
     embeddingData = db.relationship(
         "EmbeddingIntervalData",
-        backref="source_collection",
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
@@ -740,7 +668,7 @@ class Collection(db.Model):
 
     def delete_data_of_associated_entries(self):
         """Deletes associated Data"""
-        assoc_data = self.associationData.all()
+        assoc_data = self.associationData  # .all()
         deletion_queue = assoc_data
         for entry in deletion_queue:
             # remove files
@@ -860,49 +788,43 @@ class Intervals(db.Model):
     """Genomic IntervalData database model"""
 
     id = db.Column(db.Integer, primary_key=True)
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
+    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE"))
     created_at = db.Column(
         db.DateTime,  default=datetime.datetime.utcnow
     )
     name = db.Column(db.String(512), index=True)
     file_path_sub_sample_index = db.Column(db.String(512), index=True)
     windowsize = db.Column(db.Integer, index=True)
-    averageIntervalData = db.relationship(
-        "AverageIntervalData",
-        backref="source_intervals",
-        lazy="dynamic",
-        cascade="all, delete-orphan",
-    )
-    individualIntervalData = db.relationship(
-        "IndividualIntervalData",
-        backref="source_intervals",
-        lazy="dynamic",
-        cascade="all, delete-orphan",
-    )
-    associationIntervalData = db.relationship(
-        "AssociationIntervalData",
-        backref="source_intervals",
-        lazy="dynamic",
-        cascade="all, delete-orphan",
-    )
-    embeddingIntervalData = db.relationship(
-        "EmbeddingIntervalData",
-        backref="source_intervals",
-        lazy="dynamic",
-        cascade="all, delete-orphan",
-    )
+
+    source_dataset = db.relationship("Dataset", back_populates="intervals")
     tasks = db.relationship(
         "Task", backref="intervals", lazy="dynamic", cascade="all, delete-orphan"
     )
 
-    def get_associated_preprocessed_datasets(self):
-        """returns all associated datasets"""
-        return (
-            self.averageIntervalData.all()
-            + self.individualIntervalData.all()
-            + self.associationIntervalData.all()
-            + self.embeddingIntervalData.all()
+    @classmethod
+    def __declare_last__(cls):
+        # cls.interval_data = db.relationship("BaseIntervalData", backref="interval",)
+        cls.average_interval_data = db.relationship(
+            "AverageIntervalData", cascade="all, delete-orphan"
         )
+        cls.individual_interval_data = db.relationship(
+            "IndividualIntervalData", cascade="all, delete-orphan"
+        )
+        cls.association_interval_data = db.relationship(
+            "AssociationIntervalData", cascade="all, delete-orphan"
+        )
+        cls.embedding_interval_data = db.relationship(
+            "EmbeddingIntervalData", cascade="all, delete-orphan"
+        )
+
+    @property
+    def interval_data(self):
+        return [
+            *self.average_interval_data,
+            *self.individual_interval_data,
+            *self.association_interval_data,
+            *self.embedding_interval_data,
+        ]
 
     def __repr__(self):
         """Format print output."""
@@ -919,72 +841,96 @@ class Intervals(db.Model):
         return json_intervals
 
 
-class AverageIntervalData(db.Model):
-    """Table to hold information and pointers to data for
-    average values of a dataset at the linked intervals dataset."""
+class IntervalDataTypeEnum(Enum):
+    """mapping of data types for front end..."""
 
+    PILEUP = "pileup"
+    STACKUP = "stackup"
+    LINEPROFILE = "lineprofile"
+    LOLA = "lola"
+    EMBEDDING_1D = "1d-embedding"
+    EMBEDDING_2D = "2d-embedding"
+
+
+# NOTE some of these functions have no doc string, but most of them are properties or
+# declared attrs, adding docstrings here decreases readability
+class BaseIntervalData(db.Model):
+    """Abstract base class for interval data classes."""
+
+    __abstract__ = True
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(
         db.DateTime,  default=datetime.datetime.utcnow
     )
-    binsize = db.Column(db.Integer)
     name = db.Column(db.String(512), index=True)
     file_path = db.Column(db.String(512), index=True)
     value_type = db.Column(db.String(64))
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
-    intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
+    binsize = db.Column(db.Integer)
+    job_status = db.Column(db.String(64))  # , nullable=False) # success, fail, <job_id>
 
-    def add_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
-        """Adds self to preprocessed dataset map"""
-        dataset = Dataset.query.get(self.dataset_id)
-        # check whether there are any uncompleted tasks for the region dataset associated with these features
-        interval = Intervals.query.get(self.intervals_id)
-        region_dataset = interval.source_dataset
-        # check whether region_dataset is interval
-        if region_dataset.sizeType == "Interval":
-            windowsize = "variable"
+    @declared_attr
+    def intervals_id(cls):
+        return db.Column(db.Integer, db.ForeignKey("intervals.id", ondelete="CASCADE"))
+
+    @declared_attr
+    def source_intervals(cls):  # FIXME  plural and naming
+        return db.relationship("Intervals")
+
+    @property
+    @abstractmethod
+    def intervaldata_type(self) -> IntervalDataTypeEnum:
+        pass
+
+    @declared_attr
+    def __mapper_args__(cls):
+        """adds the __mapper_args__ dunder var to every object inherting from this
+        class. every table inherting needs to be declared as polymorphic"""
+
+        if cls.__name__ != "BaseIntervalData":
+            return {"polymorphic_identity": cls.__name__, "concrete": True}
         else:
-            windowsize = interval.windowsize
-        # check whether dataset is in failed or processing datasets
-        if (dataset in region_dataset.processing_features) or (
-            dataset in region_dataset.failed_features
-        ):
-            return
-        if self.value_type in ["Obs/Exp", "ICCF"]:
-            preprocessed_dataset_map["pileup"][dataset.id][
-                "name"
-            ] = dataset.dataset_name
-            preprocessed_dataset_map["pileup"][dataset.id]["data_ids"][windowsize][
-                self.binsize
-            ][self.value_type] = str(self.id)
-        else:
-            preprocessed_dataset_map["lineprofile"][dataset.id][
-                "name"
-            ] = dataset.dataset_name
-            preprocessed_dataset_map["lineprofile"][dataset.id]["data_ids"][windowsize][
-                self.binsize
-            ] = str(self.id)
+            return {}
 
     def __repr__(self):
         """Format print output."""
-        return f"<AverageIntervalData {self.name}>"
+        return f"<{self.__class__.__name__} {self.name}>"
 
     def to_json(self):
         """Formats json output."""
-        json_average_interval_data = {
-            "id": self.id,
-            "binsize": self.binsize,
-            "name": self.name,
-            "file_path": self.file_path,
-            "dataset_id": self.dataset_id,
-            "intervals_id": self.intervals_id,
-            "value_type": self.value_type,
-        }
-        return json_average_interval_data
+        data = {}
+        for col in self.__table__.columns:
+            data[col] = getattr(self, col.name)
+        return data
 
 
-class IndividualIntervalData(db.Model):
-    """Table to hold information and pointers to data for
+class AverageIntervalData(BaseIntervalData):
+    """db.Table to hold information and pointers to data for
+    average values of a dataset at the linked intervals dataset."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    dataset_id = db.Column(
+        db.Integer,
+        db.ForeignKey("dataset.id", name="fk_averageivd_dataset", ondelete="CASCADE"),
+    )
+
+    @classmethod
+    def __declare_last__(cls):
+        cls.source_dataset = db.relationship(
+            "Dataset", back_populates="averageIntervalData"
+        )
+        cls.feature = cls.source_dataset
+
+    @property
+    def intervaldata_type(self) -> IntervalDataTypeEnum:
+        return (
+            IntervalDataTypeEnum.PILEUP.value
+            if self.value_type in ["Obs/Exp", "ICCF"]
+            else IntervalDataTypeEnum.LINEPROFILE.value
+        )
+
+
+class IndividualIntervalData(BaseIntervalData):
+    """db.Table to hold information and pointers to data for
     values extracted at each instance held in the linked intervals dataset.
     E.g. for bigwig stack-ups or displaying snipped Hi-C matrices."""
 
@@ -992,59 +938,28 @@ class IndividualIntervalData(db.Model):
     created_at = db.Column(
         db.DateTime,  default=datetime.datetime.utcnow
     )
-    binsize = db.Column(db.Integer)
-    name = db.Column(db.String(512), index=True)
-    file_path = db.Column(db.String(512), index=True)
     file_path_small = db.Column(
         db.String(128), index=True
     )  # location of downsampled file
     dataset_id = db.Column(
-        db.Integer, db.ForeignKey("dataset.id")
-    )  # dataset, which was used for value extraction
-    intervals_id = db.Column(
-        db.Integer, db.ForeignKey("intervals.id")
-    )  # intervals over which the values were extracted
+        db.Integer,
+        db.ForeignKey(
+            "dataset.id", name="fk_individualivd_dataset", ondelete="CASCADE"
+        ),
+    )
 
-    def add_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
-        """Adds self to preprocessed dataset map"""
-        dataset = Dataset.query.get(self.dataset_id)
-        # check whether there are any uncompleted tasks for the feature dataset
-        interval = Intervals.query.get(self.intervals_id)
-        region_dataset = interval.source_dataset
-        # check whether region_dataset is interval
-        if region_dataset.sizeType == "Interval":
-            windowsize = "variable"
-        else:
-            windowsize = interval.windowsize
-        # check whether dataset is in failed or processing datasets
-        if (dataset in region_dataset.processing_features) or (
-            dataset in region_dataset.failed_features
-        ):
-            return
-        preprocessed_dataset_map["stackup"][dataset.id]["name"] = dataset.dataset_name
-        preprocessed_dataset_map["stackup"][dataset.id]["data_ids"][windowsize][
-            self.binsize
-        ] = str(self.id)
+    @classmethod
+    def __declare_last__(cls):
+        cls.source_dataset = db.relationship("Dataset")
+        cls.feature = cls.source_dataset
 
-    def __repr__(self):
-        """Format print output."""
-        return f"<IndividualIntervalData {self.name}>"
-
-    def to_json(self):
-        """Formats json output."""
-        json_individual_interval_data = {
-            "id": self.id,
-            "binsize": self.binsize,
-            "name": self.name,
-            "file_path": self.file_path,
-            "dataset_id": self.dataset_id,
-            "intervals_id": self.intervals_id,
-        }
-        return json_individual_interval_data
+    @property
+    def intervaldata_type(self) -> IntervalDataTypeEnum:
+        return IntervalDataTypeEnum.STACKUP.value
 
 
-class AssociationIntervalData(db.Model):
-    """Table to hold information and pointers to data for values extracted by calculating
+class AssociationIntervalData(BaseIntervalData):
+    """db.Table to hold information and pointers to data for values extracted by calculating
     association metrics between dataset collections and intervals. E.g.: LOLA enrichment data,
     Continuous values enrichment."""
 
@@ -1052,38 +967,27 @@ class AssociationIntervalData(db.Model):
     created_at = db.Column(
         db.DateTime,  default=datetime.datetime.utcnow
     )
-    binsize = db.Column(db.Integer)
-    name = db.Column(db.String(512), index=True)
-    file_path = db.Column(db.String(512), index=True)
-    value_type = db.Column(db.String(64))
-    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
-    intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
+    collection_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "collection.id", name="fk_associationivd_collection", ondelete="CASCADE"
+        ),
+    )
 
-    def add_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
-        """Adds self to preprocessed dataset map"""
-        collection = Collection.query.get(self.collection_id)
-        interval = Intervals.query.get(self.intervals_id)
-        region_dataset = interval.source_dataset
-        # check whether region_dataset is interval
-        if region_dataset.sizeType == "Interval":
-            windowsize = "variable"
-        else:
-            windowsize = interval.windowsize
-        if (collection in region_dataset.processing_collections) or (
-            collection in region_dataset.failed_collections
-        ):
-            return
-        preprocessed_dataset_map["lola"][collection.id]["name"] = collection.name
-        preprocessed_dataset_map["lola"][collection.id][
-            "collection_dataset_names"
-        ] = collection.to_json()["dataset_names"]
-        preprocessed_dataset_map["lola"][collection.id]["data_ids"][windowsize][
-            self.binsize
-        ] = str(self.id)
+    @classmethod
+    def __declare_last__(cls):
+        cls.source_collection = db.relationship(
+            "Collection", back_populates="associationData"
+        )
+        cls.feature = cls.source_collection
+
+    @property
+    def intervaldata_type(self) -> IntervalDataTypeEnum:
+        return IntervalDataTypeEnum.LOLA.value
 
 
-class EmbeddingIntervalData(db.Model):
-    """Table to hold information and pointers to data for values extracted by calculating
+class EmbeddingIntervalData(BaseIntervalData):
+    """db.Table to hold information and pointers to data for values extracted by calculating
     embeddings of intervals based on values in dataset collections and intervals. E.g.: 1D-embeddings based
     on chip-seq data, 2d-embeddings based on Hi-C data."""
 
@@ -1091,71 +995,42 @@ class EmbeddingIntervalData(db.Model):
     created_at = db.Column(
         db.DateTime,  default=datetime.datetime.utcnow
     )
-    binsize = db.Column(db.Integer)
-    name = db.Column(db.String(512), index=True)
-    file_path = db.Column(db.String(512), index=True)
     file_path_feature_values = db.Column(db.String(512), index=True)
     thumbnail_path = db.Column(db.String(512), index=True)
     cluster_id_path = db.Column(db.String(512), index=True)
     feature_distribution_path = db.Column(db.String(512), index=True)
-    value_type = db.Column(db.String(64))
     normalization = db.Column(db.String(64))
     cluster_number = db.Column(db.String(64))
-    collection_id = db.Column(db.Integer, db.ForeignKey("collection.id"))
-    dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id"))
-    intervals_id = db.Column(db.Integer, db.ForeignKey("intervals.id"))
+    collection_id = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            "collection.id", name="fk_embeddingivd_collection", ondelete="CASCADE"
+        ),
+    )
+    dataset_id = db.Column(
+        db.Integer,
+        db.ForeignKey("dataset.id", name="fk_embeddingivd_dataset", ondelete="CASCADE"),
+    )
 
-    def _add_1d_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
-        """Adds self if 1d embedding"""
-        collection = Collection.query.get(self.collection_id)
-        # check whether there are any uncompleted tasks for the feature dataset
-        interval = Intervals.query.get(self.intervals_id)
-        region_dataset = interval.source_dataset
-        # check whether region_dataset is interval
-        if region_dataset.sizeType == "Interval":
-            windowsize = "variable"
-        else:
-            windowsize = interval.windowsize
-        if (collection in region_dataset.processing_collections) or (
-            collection in region_dataset.failed_collections
-        ):
-            return
-        preprocessed_dataset_map["embedding1d"][collection.id]["name"] = collection.name
-        preprocessed_dataset_map["embedding1d"][collection.id][
-            "collection_dataset_names"
-        ] = collection.to_json()["dataset_names"]
-        preprocessed_dataset_map["embedding1d"][collection.id]["data_ids"][windowsize][
-            self.binsize
-        ][self.cluster_number] = str(self.id)
+    @classmethod
+    def __declare_last__(cls):
+        cls.source_dataset = db.relationship("Dataset", back_populates="embeddingData")
+        cls.source_collection = db.relationship(
+            "Collection", back_populates="embeddingData"
+        )
 
-    def _add_2d_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
-        """Adds self if 2d embedding"""
-        dataset = Dataset.query.get(self.dataset_id)
-        # check whether there are any uncompleted tasks for the feature dataset
-        interval = Intervals.query.get(self.intervals_id)
-        region_dataset = interval.source_dataset
-        # check whether region_dataset is interval
-        if region_dataset.sizeType == "Interval":
-            windowsize = "variable"
-        else:
-            windowsize = interval.windowsize
-        if (dataset in region_dataset.processing_features) or (
-            dataset in region_dataset.failed_features
-        ):
-            return
-        preprocessed_dataset_map["embedding2d"][dataset.id][
-            "name"
-        ] = dataset.dataset_name
-        preprocessed_dataset_map["embedding2d"][dataset.id]["data_ids"][windowsize][
-            self.binsize
-        ][self.normalization][self.cluster_number] = str(self.id)
+    @property
+    def feature(self):
+        """as embeddings can be 1d or 2d feature is set dynamically"""
+        return self.source_dataset if self.source_dataset else self.source_collection
 
-    def add_to_preprocessed_dataset_map(self, preprocessed_dataset_map):
-        """Add self to preprocesse dataset_map"""
-        if self.value_type == "2d-embedding":
-            self._add_2d_to_preprocessed_dataset_map(preprocessed_dataset_map)
-        else:
-            self._add_1d_to_preprocessed_dataset_map(preprocessed_dataset_map)
+    @property
+    def intervaldata_type(self) -> IntervalDataTypeEnum:
+        return (
+            IntervalDataTypeEnum.EMBEDDING_2D.value
+            if self.value_type == "2d-embedding"
+            else IntervalDataTypeEnum.EMBEDDING_1D.value
+        )
 
 
 class Task(db.Model):
@@ -1197,6 +1072,106 @@ class Task(db.Model):
         """Fetches the progress of the rq job"""
         job = self.get_rq_job()
         return job.meta.get("progress", 0) if job is not None else 100
+
+
+# DO NOT REMOVE
+# class Task(db.Model):
+#     """Models the tasks dispatched to the redis queue."""
+
+#     #id = db.Column(db.String(36), primary_key=True)
+#     id = db.Column(db.Integer, primary_key=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+
+#     func = db.Column(db.String(512))
+#     progress = db.Column(db.Integer, default=0)
+#     status = db.Column(db.String(64), default='none') # running, failed, finished
+#     args = db.Column(db.JSON)
+
+#     user = db.relationship("User")
+
+#     @property
+#     def complete(self):
+#         return self.progress == 100
+
+#     @staticmethod
+#     def filter_failed_tasks(tasks):
+#         """Returns failed tasks of the tasks provided"""
+#         output = []
+#         for task in tasks:
+#             if task.get_rq_job() is None:
+#                 output.append(task)
+#                 continue
+#             if task.get_rq_job().get_status() == "failed":
+#                 output.append(task)
+#         return output
+
+#     def get_rq_job(self):
+#         """Fetches the rq job of the task"""
+#         try:
+#             return rq.job.Job.fetch(self.id, connection=current_app.redis)
+#         except (redis.exceptions.RedisError, rq.exceptions.NoSuchJobError):
+#             return None
+
+#     def get_progress(self):
+#         """Fetches the progress of the rq job"""
+#         job = self.get_rq_job()
+#         return job.meta.get("progress", 0) if job is not None else 100
+
+#     @staticmethod
+#     def create(func, user: User, commit=True, *args, **kwargs):
+#         args_dict = {}
+#         args_dict['unnamed'] = args
+#         args_dict['named'] = dict(kwargs)
+#         task = Task(
+#             func=func.__qualname__,
+#             user=user,
+#             args=args_dict
+#         )
+#         db.session.add(task)
+#         if commit:
+#             db.session.commit()
+#         return task
+
+#     def launch(self, queue=None): # TODO give this a go
+#         if queue is None:
+#             return self._run_task()
+#         else:
+#             def wrap_with_app_context(self: Task):
+#                 # make app context
+#                 from . import create_app
+#                 app = create_app(os.getenv("FLASK_CONFIG") or "default")
+#                 app.app_context().push()
+#                 self._run_task()
+#                 # TODO redis worker exception handling
+
+#             queue.enqueue(
+#                 wrap_with_app_context,
+#                 job_id = self.id,
+#                 task = self
+#             )
+
+#     def _run_task(self):
+#         self.status = 'running'
+#         db.session.commit()
+#         try:
+#             return_value = self.stored_function(
+#                 *self.args['unnamed'],
+#                 **self.args['named']
+#             )
+#             self.status = 'success'
+#             db.session.commit()
+#             return return_value
+#         except Exception as err:
+#             self.status = 'failed'
+#             db.session.commit()
+#             raise err
+
+#     @property
+#     def stored_function(self):
+#         module_name, func_name = self.func.rsplit('.',1)
+#         module = importlib.import_module(module_name)
+#         func = getattr(module, func_name)
+#         return func
 
 
 class BedFileMetadata(db.Model):
@@ -1266,6 +1241,9 @@ class Session(db.Model):
         return f"<Session {self.name}>"
 
 
+# This maps abstract tables to other tables
+db.configure_mappers()
+
 # helpers
 
 
@@ -1291,3 +1269,12 @@ def any_tasks_failed(tasks):
             if task.get_rq_job().get_status() == "failed":
                 return True
     return False
+
+
+def _rq_job_wrapper(func, *args, **kwargs):
+    import app
+
+    curr_app = app.create_app(os.getenv("FLASK_CONFIG") or "default")
+    app_context = curr_app.app_context()
+    app_context.push()
+    return func(*args, **kwargs)

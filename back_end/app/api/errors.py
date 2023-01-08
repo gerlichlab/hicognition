@@ -1,4 +1,5 @@
 """ Convenience functions for handling server errors."""
+from http.client import HTTPException
 import logging
 from flask.json import jsonify
 from . import api
@@ -19,6 +20,15 @@ def internal_server_error(e: Exception, msg: str = ""):
     """API error handler for 500"""
     log.exception(e)
     response = jsonify({"error": "Internal server error", "message": msg})
+    response.status_code = 500
+    return response
+
+
+@api.errorhandler(HTTPException)
+def any_error(e: Exception, msg: str = ""):
+    """API error handler for 500"""
+    log.exception(e)
+    response = jsonify({"error": "Internal server error", "message": f"{msg} {e}"})
     response.status_code = 500
     return response
 

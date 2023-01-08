@@ -15,10 +15,10 @@ class TestAddSessionObject(LoginTestCase, TempDirTestCase):
     def setUp(self):
         super().setUp()
         # add datasets
-        self.empty_owned_dataset_1 = Dataset(id=1, user_id=1)
-        self.empty_owned_dataset_2 = Dataset(id=2, user_id=1)
+        self.empty_owned_dataset_1 = self.create_dataset(id=1, dataset_name="test", user_id=1)
+        self.empty_owned_dataset_2 = self.create_dataset(id=2, dataset_name="test", user_id=1)
         self.owned_datasets = [self.empty_owned_dataset_1, self.empty_owned_dataset_2]
-        self.empty_unowned_dataset = Dataset(id=1, user_id=2)
+        self.empty_unowned_dataset = self.create_dataset(id=1, dataset_name="test", user_id=2)
         self.collection_1 = Collection(id=1, user_id=1)
         self.collection_2 = Collection(id=2, user_id=2)
 

@@ -25,7 +25,7 @@
                     </div>
                 </div>
                 <div
-                    class="md-layout-item md-size-60 padding-left padding-right"
+                    class="md-layout-item md-size-45 padding-left padding-right"
                 >
                     <md-menu
                         :md-offset-x="50"
@@ -54,6 +54,30 @@
                             </md-menu-item>
                         </md-menu-content>
                     </md-menu>
+                </div>
+                <div
+                    class="md-layout-item md-size-5 toggle-paired-buttons"
+                >
+                    <div v-if="isBedpeFile" class="no-padding-top md-icon-button">
+                        <md-button class="md-icon" :class="{'md-primary': pairedLeftSide}"  @click="togglePairedSides('left')">
+                            <md-icon>looks_one</md-icon>
+                            <md-tooltip md-direction="top" md-delay="300">
+                                Plot left support data
+                            </md-tooltip>
+                        </md-button>
+                    </div>
+                </div>
+                <div
+                    class="md-layout-item md-size-10 toggle-paired-buttons"
+                >
+                    <div v-if="isBedpeFile" class="no-padding-top">
+                        <md-button class="md-icon md-mini" :class="{'md-primary': pairedRightSide}" @click="togglePairedSides('right')" style="margin-left: 8px">
+                            <md-icon>looks_two</md-icon>
+                        </md-button>
+                            <md-tooltip md-direction="top" md-delay="300">
+                                Plot right support data
+                            </md-tooltip>
+                    </div>
                 </div>
                 <div class="md-layout-item md-size-10">
                     <md-menu
@@ -552,7 +576,10 @@ export default {
                 minHeatmapRange: this.minHeatmapRange,
                 maxHeatmapRange: this.maxHeatmapRange,
                 clusterNumber: this.clusterNumber,
-                selectedCluster: this.selectedCluster
+                selectedCluster: this.selectedCluster,
+                pairedLeftSide: this.pairedLeftSide,
+                pairedRightSide: this.pairedRightSide,
+                pairedSidesMutuallyExclusive: this.pairedSidesMutuallyExclusive,
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -585,7 +612,10 @@ export default {
                 tooltipOffsetTop: 0,
                 tooltipOffsetLeft: 0,
                 selectMultiple: false,
-                clickedClusters: []
+                clickedClusters: [],
+                pairedLeftSide: true,
+                pairedRightSide: false,
+                pairedSidesMutuallyExclusive: true,
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -672,7 +702,10 @@ export default {
                 tooltipOffsetTop: 0,
                 tooltipOffsetLeft: 0,
                 selectMultiple: false,
-                clickedClusters: []
+                clickedClusters: [],
+                pairedLeftSide: widgetData["pairedLeftSide"] !== undefined ? widgetData["pairedLeftSide"] : true,
+                pairedRightSide: widgetData["pairedRightSide"] !== undefined ? widgetData["pairedRightSide"] : false,
+                pairedSidesMutuallyExclusive: true,
             };
         },
         handleSliderChange: function(data) {
@@ -707,16 +740,18 @@ export default {
                     queryObject
                 )
             ) {
-                return this.$store.getters["compare/getWidgetDataEmbedding1d"](
+                return this.handleReceivedData(this.$store.getters["compare/getWidgetDataEmbedding1d"](
                     queryObject
-                );
+                ));
             }
             // overlay data does not exist, check whether request has been dispatched
             let url = `embeddingIntervalData/${id}/${index}/`;
             let requestData = this.$store.getters["compare/getRequest"](url);
+            let data;
             let response;
             if (requestData) {
                 response = await requestData;
+                data = this.handleReceivedData(response.data);
             } else {
                 // request has not been dispatched => put it in store
                 this.$store.commit("compare/setRequest", {
@@ -724,18 +759,19 @@ export default {
                     data: this.fetchData(url)
                 });
                 response = await this.$store.getters["compare/getRequest"](url);
+                data = this.handleReceivedData(response.data);
                 // save it in store -> only first request needs to persist it
                 var mutationObject = {
                     id: id,
                     overlayIndex: index,
-                    data: response.data["data"]
+                    data: data
                 };
                 this.$store.commit(
                     "compare/setWidgetDataEmbedding1d",
                     mutationObject
                 );
             }
-            return response.data["data"];
+            return data;
         },
         getEmbeddingData: async function(id) {
             // checks whether association data is in store and fetches it if it is not
@@ -747,9 +783,9 @@ export default {
                     queryObject
                 )
             ) {
-                return this.$store.getters["compare/getWidgetDataEmbedding1d"](
+                return this.handleReceivedData(this.$store.getters["compare/getWidgetDataEmbedding1d"](
                     queryObject
-                );
+                ));
             }
             // pileup does not exists in store, check whether request has been dispatched
             let url = `embeddingIntervalData/${id}/`;
@@ -774,8 +810,7 @@ export default {
                     mutationObject
                 );
             }
-            // return it
-            return response.data;
+            return this.handleReceivedData(response.data);
         },
         updateData: async function() {
             this.loading = true;
@@ -786,7 +821,8 @@ export default {
             // store widget data ref
             this.widgetDataRef = selected_id;
             // fetch data
-            this.widgetData = await this.getEmbeddingData(selected_id);
+            var data = await this.getEmbeddingData(selected_id);
+            this.widgetData = data;
             // fetch overlay if needed
             if (this.overlay != "density") {
                 this.overlayValues = await this.getOverlayData(
@@ -969,5 +1005,10 @@ export default {
 
 .md-field {
     min-height: 30px;
+}
+
+.toggle-paired-buttons {
+    padding-top: 8px;
+    padding-bottom:8px;
 }
 </style>

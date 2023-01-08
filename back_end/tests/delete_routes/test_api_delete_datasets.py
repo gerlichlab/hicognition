@@ -60,26 +60,26 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         """adds test datasets to db"""
         super().setUp()
         # create owned data_set cooler
-        self.owned_cooler = Dataset(id=1, filetype="cooler", user_id=1)
+        self.owned_cooler = self.create_dataset(id=1, dataset_name="ds1", filetype="cooler", user_id=1)
         # create not owned data_set
-        self.unowned_cooler = Dataset(id=2, filetype="cooler", user_id=2)
+        self.unowned_cooler = self.create_dataset(id=2, dataset_name="ds1", filetype="cooler", user_id=2)
         # create owned data_set bed
-        self.owned_bedfile = Dataset(id=3, filetype="bedfile", user_id=1)
+        self.owned_bedfile = self.create_dataset(id=3, dataset_name="ds1", filetype="bedfile", user_id=1)
         # create not owned data_set bed
-        self.unowned_bedfile = Dataset(id=4, filetype="bedfile", user_id=2)
+        self.unowned_bedfile = self.create_dataset(id=4, dataset_name="ds1", filetype="bedfile", user_id=2)
         # create owned data_set bigwig
-        self.owned_bigwig = Dataset(id=5, filetype="bigwig", user_id=1)
+        self.owned_bigwig = self.create_dataset(id=5, dataset_name="ds1", filetype="bigwig", user_id=1)
         # create cooler that is in processing state
-        self.owned_cooler_w_wrong_path = Dataset(
-            id=7, filetype="cooler", file_path="/code/tmp/bad_file_path", user_id=1
+        self.owned_cooler_w_wrong_path = self.create_dataset(
+            id=7, dataset_name="ds1", filetype="cooler", file_path="/code/tmp/bad_file_path", user_id=1
         )
         # create public, unowned cooler
-        self.unowned_public_cooler = Dataset(
-            id=8, filetype="cooler", user_id=2, public=True
+        self.unowned_public_cooler = self.create_dataset(
+            id=8, dataset_name="ds1", filetype="cooler", user_id=2, public=True
         )
         # create public, owned cooler
-        self.owned_public_cooler = Dataset(
-            id=9, filetype="cooler", user_id=1, public=True
+        self.owned_public_cooler = self.create_dataset(
+            id=9, dataset_name="ds1", filetype="cooler", user_id=1, public=True
         )
         # create Intervals for owned data_set
         self.owned_intervals = Intervals(id=1, dataset_id=3)
@@ -281,8 +281,8 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         # create token_headers
         token_headers = self.get_token_header(token)
         # create processing dataset
-        owned_cooler_processing = Dataset(
-            id=6, filetype="cooler", user_id=1, processing_regions=[self.owned_bedfile]
+        owned_cooler_processing = self.create_dataset(
+            id=6, dataset_name="test", filetype="cooler", user_id=1, processing_regions=[self.owned_bedfile]
         )
         # add dataset that is processing
         db.session.add_all([owned_cooler_processing, self.owned_bedfile])
@@ -302,8 +302,8 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         # create token_headers
         token_headers = self.get_token_header(token)
         # create processing dataset
-        owned_bedfile_processing = Dataset(
-            id=6, filetype="bedfile", user_id=1, processing_features=[self.owned_cooler]
+        owned_bedfile_processing = self.create_dataset(
+            id=6, dataset_name="test", filetype="bedfile", user_id=1, processing_features=[self.owned_cooler]
         )
         # add dataset that is processing
         db.session.add_all([owned_bedfile_processing, self.owned_cooler])

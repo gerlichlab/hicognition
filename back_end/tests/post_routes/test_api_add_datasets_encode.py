@@ -1,4 +1,5 @@
 """Module with tests realted adding datasets."""
+import json
 import unittest
 from unittest.mock import patch
 
@@ -6,7 +7,7 @@ from unittest.mock import patch
 # add path to import app
 # import sys
 # sys.path.append("./")
-from app.models import Dataset, Assembly, DataRepository
+from app.models import Dataset, Assembly, Repository
 from app import db
 from app.download_utils import MetadataNotWellformed
 from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
@@ -31,7 +32,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
             chrom_arms=self.app.config["CHROM_ARMS"],
         )
 
-        self.data_repo = DataRepository(
+        self.data_repo = Repository(
             name="testrepo",
             url="https://{href}",
             auth_required=False,
@@ -47,24 +48,28 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
         self.token_headers["Content-Type"] = "multipart/form-data"
 
         self.default_data = {
-            "datasetName": "test",
+            "dataset_name": "test",
             "description": "test-description",
             "assembly": "1",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
-            "ValueType": "Peak",
-            "Method": "ChipSeq",
-            "SizeType": "Point",
             "filetype": "bedfile",
-            "Directionality": "+",
             "public": "false",
-            "sampleID": "4DNFIRCHWS8M",
-            "repositoryName": "testrepo",
+            "sample_id": "4DNFIRCHWS8M",
+            "repository_name": "testrepo",
+            "sizeType": "point",
+            # "dataset_type": "region",
+            "metadata_json": json.dumps({
+                "Cell cycle Stage": "asynchronous",
+                "Perturbation": "No perturbation",
+                "ValueType": "Peak",
+                "Method": "ChipSeq",
+                "Size Type": "Point",
+                "Directionality": "+",
+            })
         }
 
     def test_repo_not_found(self):
         data = self.default_data
-        data["repositoryName"] = "not_there"
+        data["repository_name"] = "not_there"
 
         response = self.client.post(
             "/api/datasets/encode/",
@@ -78,19 +83,12 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
     @patch("app.download_utils.download_ENCODE_metadata")
     def test_form_validity(self, mock_get_metadata, mock_launch):
         mock_get_metadata.return_value = {"status_code": 200}
-
         test_cases = {
             "default": {
                 "data": self.default_data,
                 "code": 200,
                 "msg": "success",
                 "return_value": {"status_code": 200},
-            },
-            "default_w_file": {
-                "data": {**self.default_data, "file": 1},
-                "code": 400,
-                "msg": "Form is not valid",
-                "return_value": {"status_code": 400},
             },
             "filetype_notsupported": {
                 "data": {**self.default_data, "filetype": "notsupp"},
@@ -105,22 +103,22 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
                 "return_value": {"status_code": 400},
             },
             "no_sampleid": {
-                "data": {**self.default_data, "sampleID": ""},
+                "data": {**self.default_data, "sample_id": ""},
                 "code": 400,
-                "msg": "Could not load metadata",
+                "msg": "Form is not valid",
                 "exception": MetadataNotWellformed(),
                 "return_value": {"status_code": 400},
             },
             "repo_not_found": {
-                "data": {**self.default_data, "repositoryName": "nonexsitant"},
+                "data": {**self.default_data, "repository_name": "nonexsitant"},
                 "code": 400,
                 "msg": "Repository",
                 "return_value": {"status_code": 400},
             },
             "no_repo": {
-                "data": {**self.default_data, "repositoryName": ""},
+                "data": {**self.default_data, "repository_name": ""},
                 "code": 400,
-                "msg": "Repository",
+                "msg": "Form is not valid",
                 "return_value": {"status_code": 400},
             },
             "sample_not_found": {
@@ -166,9 +164,9 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
         self.assertEqual(len(Dataset.query.all()), 1)
 
         dataset = Dataset.query.first()
-        self.assertEqual(dataset.repository_name, self.default_data["repositoryName"])
+        self.assertEqual(dataset.repository_name, self.default_data["repository_name"])
         self.assertEqual(dataset.repository, self.data_repo)
-        self.assertEqual(dataset.processing_state, "uploading")
+        self.assertEqual(dataset.processing_state, "new")
 
 
 if __name__ == "__main__":

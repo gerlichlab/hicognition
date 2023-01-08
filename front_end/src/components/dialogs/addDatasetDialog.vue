@@ -70,14 +70,14 @@
                         >
                             <addDatasetForm
                                 @close-dialog="$emit('close-dialog')"
-                                :fileTypeMapping="fileTypeMapping"
+                                :datasetType="datatype"
                             ></addDatasetForm>
                         </div>
                     </md-tab>
                     <md-tab id="tab-bulk" md-label="Bulk">
                         <addDatasetStepper
                             @close-dialog="$emit('close-dialog')"
-                            :fileTypeMapping="fileTypeMapping"
+                            :datasetType="datatype"
                         >
                         </addDatasetStepper>
                     </md-tab>
@@ -90,6 +90,7 @@
 <script>
 import addDatasetForm from "../forms/addDatasetForm";
 import addDatasetStepper from "../ui/addDatasetStepper.vue";
+import { apiMixin } from "../../mixins";
 
 export default {
     name: "AddDatasetDialog",
@@ -97,10 +98,14 @@ export default {
         addDatasetForm,
         addDatasetStepper
     },
+    mixins: [apiMixin],
     props: {
         dialog: Boolean,
-        datatype: String
+        datatype: String // region or feature
     },
+    data: () => ({
+        fileTypes: null
+    }),
     computed: {
         welcomeMessage: function() {
             if (this.datatype == "feature") {
@@ -111,32 +116,9 @@ export default {
                 return "Add dataset";
             }
         },
-        fileTypeMapping: function() {
-            // REFACTOR supported file types defined also in config.py
-            if (this.datatype == "feature") {
-                return {
-                    mcool: "cooler",
-                    bw: "bigwig",
-                    bigwig: "bigwig",
-                    bigWig: "bigwig"
-                };
-            } else if (this.datatype == "region") {
-                return {
-                    bed: "bedfile"
-                };
-            } else {
-                return {
-                    bed: "bedfile",
-                    mcool: "cooler",
-                    bw: "bigwig",
-                    bigwig: "bigwig",
-                    bigWig: "bigwig"
-                };
-            }
-        },
         showDialog: function() {
             return this.dialog;
-        }
+        },
     }
 };
 </script>

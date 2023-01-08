@@ -83,8 +83,8 @@ class TestCleanupFailedTasks(LoginTestCase):
         self.failed_task_dataset = Task(id="wJob4", dataset_id=2, intervals_id=1)
         self.failed_task_collection = Task(id="wJob4", collection_id=1, intervals_id=1)
         # add datasets, collections and intervals
-        self.bed = Dataset(id=1, filetype="bedfile")
-        self.cooler = Dataset(id=2, filetype="coolerfile")
+        self.bed = self.create_dataset(id=1, user_id=1, dataset_name="test", filetype="bedfile")
+        self.cooler = self.create_dataset(id=2, user_id=1, dataset_name="test", filetype="coolerfile")
         self.collection = Collection(
             id=1,
         )

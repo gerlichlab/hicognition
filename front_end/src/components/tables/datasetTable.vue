@@ -618,25 +618,26 @@ export default {
             });
         },
         filterDatasetsOnMetadata(datasets) {
-            return datasets.filter(el => {
-                let output = true;
-                let atLeastOne = false;
-                for (let [key, value] of Object.entries(this.filterFields)) {
-                    if (!el[key]) {
-                        // this is needed to only remove datasets without field if filtering on this field is switched on
-                        if (this.isFilterFieldDirty(value)) {
-                            return false;
-                        }
-                        continue;
-                    }
-                    let filterString = `${value}-${el[key]}`;
-                    atLeastOne = true;
-                    if (!this.filterSelection.includes(filterString)) {
-                        output = false;
-                    }
-                }
-                return output && atLeastOne;
-            });
+            return datasets;
+            // return datasets.filter(el => { // TODO this fails
+            //     let output = true;
+            //     let atLeastOne = false;
+            //     for (let [key, value] of Object.entries(this.filterFields)) {
+            //         if (!el[key]) {
+            //             // this is needed to only remove datasets without field if filtering on this field is switched on
+            //             if (this.isFilterFieldDirty(value)) {
+            //                 return false;
+            //             }
+            //             continue;
+            //         }
+            //         let filterString = `${value}-${el[key]}`;
+            //         atLeastOne = true;
+            //         if (!this.filterSelection.includes(filterString)) {
+            //             output = false;
+            //         }
+            //     }
+            //     return output && atLeastOne;
+            // });
         },
         filterDatasetsOnSearchTerm(datasets) {
             if (this.searchTerm === "") {

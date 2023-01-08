@@ -8,7 +8,7 @@ from unittest.mock import patch
 import gzip
 from requests.exceptions import HTTPError
 import requests
-from app.models import DataRepository, Dataset
+from app.models import Repository, Dataset
 from app import download_utils
 
 # add path to import app
@@ -210,7 +210,7 @@ class TestDownloadENCODEMetadata(ConcurrentTempDirTest):
     """
 
     def setUp(self) -> None:
-        self.repository = DataRepository(
+        self.repository = Repository(
             url="{href}",
             file_url="{id}",
             name="test",
@@ -308,7 +308,7 @@ class TestDownloadENCODE(ConcurrentTempDirTest):
             repository_name="testrepo",
             sample_id="test_sample",
         )
-        self.data_repo = DataRepository(
+        self.data_repo = Repository(
             name="testrepo",
             file_url="https://{id}",
             url="https://{href}",
@@ -409,7 +409,7 @@ class TestDownloadURL(ConcurrentTempDirTest):
             repository_name="testrepo",
             sample_id="test_sample",
         )
-        self.data_repo = DataRepository(
+        self.data_repo = Repository(
             name="testrepo",
             file_url="https://{id}",
             url="https://{href}",

@@ -21,9 +21,9 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
     def setUp(self):
         super().setUp()
         # add owned collection
-        self.owned_feature_dataset = Dataset(id=1, user_id=1, filetype="cooler")
+        self.owned_feature_dataset = self.create_dataset(id=1, dataset_name="test", user_id=1, filetype="cooler")
         # add unowned collection
-        self.unowned_feature_dataset = Dataset(id=2, user_id=2, filetype="cooler")
+        self.unowned_feature_dataset = self.create_dataset(id=2, dataset_name="test", user_id=2, filetype="cooler")
         # add owned bedfile
         self.dummy_regions = pd.DataFrame(
             {
@@ -38,7 +38,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
             header=None,
             index=False,
         )
-        self.owned_bedfile = Dataset(
+        self.owned_bedfile = self.create_dataset(
             id=3,
             filetype="bedfile",
             user_id=1,
@@ -53,7 +53,7 @@ class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
             directionality="+",
         )
         # add unowned bedfile
-        self.unowned_bedfile = Dataset(id=4, filetype="bedfile", user_id=2)
+        self.unowned_bedfile = self.create_dataset(id=4, dataset_name="test", filetype="bedfile", user_id=2)
         # add intervals for owned bedfile
         self.owned_intervals = Intervals(
             id=1, dataset_id=self.owned_bedfile.id, windowsize=200000
@@ -332,9 +332,10 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
             header=None,
             index=False,
         )
-        self.owned_bedfile = Dataset(
+        self.owned_bedfile = self.create_dataset(
             id=3,
-            filetype="bedfile",
+            filetype="bedfile", 
+            dataset_name="test",
             user_id=1,
             file_path=os.path.join(TempDirTestCase.TEMP_PATH, "region.csv"),
             assembly=1,
@@ -347,7 +348,7 @@ class TestCreateRegionFrom1DEmbedding(LoginTestCase, TempDirTestCase):
             directionality="+",
         )
         # add unowned bedfile
-        self.unowned_bedfile = Dataset(id=4, filetype="bedfile", user_id=2)
+        self.unowned_bedfile = self.create_dataset(id=4, dataset_name="test", filetype="bedfile", user_id=2)
         # add intervals for owned bedfile
         self.owned_intervals = Intervals(
             id=1, dataset_id=self.owned_bedfile.id, windowsize=200000

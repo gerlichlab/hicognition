@@ -29,20 +29,19 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
             current_app.config["UPLOAD_DIR"] + "/test.bed", index=False, sep="\t"
         )
         # create datasets
-        dataset1 = Dataset(id=1, filetype="bedfile", user_id=1)
-        dataset2 = Dataset(id=2, filetype="bedfile", user_id=1)
-        dataset3 = Dataset(
-            id=3,
+        dataset1 = self.create_dataset(id=1, dataset_name="test", filetype="bedfile", user_id=1)
+        dataset2 = self.create_dataset(id=2, dataset_name="test", filetype="bedfile", user_id=1)
+        dataset3 = self.create_dataset(
+            id=3, dataset_name="test",
             filetype="bedfile",
             user_id=1,
             file_path=current_app.config["UPLOAD_DIR"] + "/test.bed",
-            dataset_name="test",
         )
-        dataset4 = Dataset(id=4, filetype="bedfile", user_id=2)
-        dataset5 = Dataset(id=5, filetype="bigwig", user_id=1)
-        dataset6 = Dataset(id=6, filetype="bigwig", user_id=1)
-        dataset7 = Dataset(id=7, filetype="cooler", user_id=1)
-        dataset8 = Dataset(id=8, filetype="cooler", user_id=1)
+        dataset4 = self.create_dataset(id=4, dataset_name="test", filetype="bedfile", user_id=2)
+        dataset5 = self.create_dataset(id=5, dataset_name="test", filetype="bigwig", user_id=1)
+        dataset6 = self.create_dataset(id=6, dataset_name="test", filetype="bigwig", user_id=1)
+        dataset7 = self.create_dataset(id=7, dataset_name="test", filetype="cooler", user_id=1)
+        dataset8 = self.create_dataset(id=8, dataset_name="test", filetype="cooler", user_id=1)
         interval1 = Intervals(id=1, name="interval1", windowsize=100000, dataset_id=3)
         interval2 = Intervals(id=2, name="interval2", windowsize=50000, dataset_id=3)
         interval3 = Intervals(id=3, name="interval3", windowsize=400000, dataset_id=3)
@@ -103,7 +102,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
             collection4,
         ]
 
-    @patch("app.models.User.launch_collection_task")
+    @patch("app.models.User.launch_task")
     def test_pipeline_lola_is_called_correctly(self, mock_launch):
         """Tests whether enrichment analysis is called correctly"""
         # add data
@@ -142,7 +141,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
                     binsize=binsize,
                 )
 
-    @patch("app.models.User.launch_collection_task")
+    @patch("app.models.User.launch_task")
     def test_pipeline_lola_is_called_correctly_w_small_preprocessing_map(
         self, mock_launch
     ):
@@ -183,7 +182,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
                     binsize=binsize,
                 )
 
-    @patch("app.models.User.launch_collection_task")
+    @patch("app.models.User.launch_task")
     def test_intervals_created_if_they_dont_exist(self, mock_launch):
         """Check whether preprocess bedfiles is called when intervals do not exist"""
         db.session.add_all(self.incomplete_data)
@@ -210,7 +209,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         self.assertTrue(10000 in windowsizes)
         self.assertTrue(20000 in windowsizes)
 
-    @patch("app.models.User.launch_collection_task")
+    @patch("app.models.User.launch_task")
     def test_pipeline_1d_embedding_is_called_correctly(self, mock_launch):
         """Tests whether embedding analysis is called correctly"""
         # add data
@@ -249,7 +248,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
                     binsize=binsize,
                 )
 
-    @patch("app.models.User.launch_collection_task")
+    @patch("app.models.User.launch_task")
     def test_user_cannot_access_other_collection(self, mock_launch):
         """Tests whether pipeline cannot be started for unowned collection.."""
         # add data
@@ -273,7 +272,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-    @patch("app.models.User.launch_collection_task")
+    @patch("app.models.User.launch_task")
     def test_404_on_non_existent_collection(self, mock_launch):
         """Tests whether cooler pipeline to do pileups is called correctly."""
         # add data
@@ -297,7 +296,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 404)
 
-    @patch("app.models.User.launch_collection_task")
+    @patch("app.models.User.launch_task")
     def test_400_on_bad_form(self, mock_launch):
         """Tests whether bad form raises 400 error."""
         # add data
@@ -317,7 +316,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    @patch("app.models.User.launch_collection_task")
+    @patch("app.models.User.launch_task")
     @patch("app.models.Task.get_rq_job")
     def test_tasks_deleted_after_relaunch(self, mock_get_rq_job, mock_launch):
         """Tests whether preprocessing api call deletes any remaining

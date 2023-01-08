@@ -1,7 +1,8 @@
 """Pydantic models to validate integrity of Forms for the HiCognition API."""
 import re
-from pydantic import BaseModel, Field, validator, constr, AnyUrl
-
+import json
+from typing import Any, Optional
+from pydantic import BaseModel, Field, validator, constr, AnyHttpUrl, Json
 from flask import current_app
 
 
@@ -11,115 +12,27 @@ class UserRegistrationModel(BaseModel):
     password: constr(min_length=5) = Field(..., alias="password1")
 
 
-# pylint: disable=no-self-argument,no-self-use
-class DatasetPostModel(BaseModel):
-    """Is a model of the dataset upload form."""
+class DatasetModel(BaseModel):
+    """Base pydantic form model for dataset.
+    Allows for additional fields using a metadata json.
+    """
 
-    dataset_name: constr(min_length=3, max_length=81) = Field(..., alias="datasetName")
-    public: bool
-    assembly: int
-    description: constr(max_length=81) = Field("No description provided")
-    normalization: constr(max_length=64) = Field("undefined", alias="Normalization")
-    method: constr(max_length=64) = Field("undefined", alias="Method")
-    size_type: constr(max_length=64) = Field("undefined", alias="SizeType")
-    directionality: constr(max_length=64) = Field("undefined", alias="Directionality")
-    derivation_type: constr(max_length=64) = Field("undefined", alias="DerivationType")
-    protein: constr(max_length=64) = Field("undefined", alias="Protein")
-    cell_cycle_stage: constr(max_length=64) = Field(..., alias="cellCycleStage")
-    perturbation: constr(max_length=64)
-    processing_state: constr(max_length=64) = None
-    filetype: constr(max_length=64) = Field("undefined", alias="filetype")
-    value_type: constr(max_length=64) = Field("undefined", alias="ValueType")
-
-    @classmethod
-    def get_reverse_alias(cls, key):
-        """Returns the reverse alias i.e. the pydantic field name if provided the front-end alias."""
-        alias_table = {
-            "datasetName": "dataset_name",
-            "Normalization": "normalization",
-            "Method": "method",
-            "SizeType": "size_type",
-            "Directionality": "directionality",
-            "DerivationType": "derivation_type",
-            "Protein": "protein",
-            "cellCycleStage": "cell_cycle_stage",
-            "ValueType": "value_type",
-            "sampleID": "sample_id",
-            "repositoryName": "repository_name",
-            "sourceURL": "source_url",
-            "filetype": "filetype",
+    def __init__(self, **data: Any) -> None:
+        # temporary until metadata is resolved
+        metadata_json = json.loads(data.get("metadata_json", "{}"))
+        metadata_update_dict = {
+            key: value
+            for key, value in metadata_json.items()
+            if key in current_app.config["METADATA_KEYS"]
         }
-        return alias_table.get(key)
+        data.update(metadata_update_dict)
+        super().__init__(**data)
 
-    class Config:
-        """Sets up the alias generator"""
-
+    class Config(BaseModel.Config):
         allow_population_by_field_name = True
         extra = "forbid"
 
-    @validator("filetype")
-    def check_filetype(cls, filetype, values, **kwargs):
-        supported_file_endings = current_app.config["DATASET_OPTION_MAPPING"][
-            "supported_file_endings"
-        ]
-        if not filetype:
-            raise ValueError(
-                f"Filetype is required! Supported filestypes and endings are: {supported_file_endings}."
-            )
-        if filetype not in supported_file_endings:
-            raise ValueError(
-                f"Unsupported filetype! We do not support following filetype: {filetype}. Supported filestypes and endings are: {supported_file_endings}."
-            )
-        return filetype
-
-    @validator("value_type")
-    def value_type_supported_in_dataset_attribute_mapping(
-        cls, value_type, values, **kwargs
-    ):
-        """Checks whether value_type passed dataset_attribute_mapping."""
-        dataset_type_mapping = current_app.config["DATASET_OPTION_MAPPING"][
-            "DatasetType"
-        ]
-        if not values.get("filetype"):
-            raise ValueError("No valid file type has been provided.")
-
-        value_types = dataset_type_mapping.get(values.get("filetype"), dict()).get(
-            "ValueType", dict()
-        )
-        # checks if the particular value_type is defined in the app config
-        if value_type not in value_types.keys():
-            raise ValueError(
-                f'Unsupported value_type! We do not support value_type: {value_type} for the filetype \'{values.get("filetype")}\'. We support {value_types.keys()}.'
-            )
-        # check value type members
-        for key, possible_values in value_types[value_type].items():
-            if cls.get_reverse_alias(key) not in values:
-                import pdb
-
-                pdb.set_trace()
-            # check whether field is freetext
-            if possible_values == "freetext":
-                continue
-            # check that all needed values are found
-            if cls.get_reverse_alias(key) not in values:
-                raise ValueError(
-                    f"Required argument '{cls.get_reverse_alias(key)}' for '{value_type}' not found. Supported arguments {value_types[value_type].keys()}."
-                )
-            # check that value in form corresponds to possible values
-            # this will also check if all mandatory keys are provided since "undefined" is not in possible_values
-            if values[cls.get_reverse_alias(key)] not in possible_values:
-                raise ValueError(
-                    f"Unsupported possible value '{values[cls.get_reverse_alias(key)]}' for value_type: {value_type}. Supported values {possible_values}."
-                )
-
-        return value_type
-
-    @validator("description")
-    def parse_description(cls, description):
-        """Checks if description was provided provided in frontend, if not rewrites it."""
-        if description == "null":
-            description = "No description provided"
-        return description
+    # TODO add checks for correct metadata
 
     def __getitem__(self, item):
         if hasattr(self, item):
@@ -130,43 +43,147 @@ class DatasetPostModel(BaseModel):
         return hasattr(self, item)
 
 
+class DatasetPutModel(DatasetModel):
+    """Is a model of the dataset modify form."""
+
+    dataset_name: Optional[constr(min_length=3, max_length=81)] = Field(
+        alias="datasetName"
+    )
+    public: Optional[bool] = Field(alias="Public")
+    description: Optional[constr(max_length=81)] = Field(alias="Description")
+    perturbation: Optional[constr(max_length=64)] = Field(alias="Perturbation")
+    cellCycleStage: Optional[constr(max_length=64)] = Field(alias="Cell cycle Stage")
+    method: Optional[constr(max_length=64)] = Field(alias="Method")
+    normalization: Optional[constr(max_length=64)] = Field(alias="Normalization")
+    derivationType: Optional[constr(max_length=64)] = Field(alias="DerivationType")
+    protein: Optional[constr(max_length=64)] = Field(alias="Protein")
+    directionality: Optional[constr(max_length=64)] = Field(alias="Directionality")
+    valueType: Optional[constr(max_length=64)] = Field(alias="ValueType")
+    metadata_json: Optional[Json[Any]]
+
+
+# pylint: disable=no-self-argument,no-self-use
+class DatasetPostModel(DatasetModel):
+    """Is a model of the dataset upload form."""
+
+    def __init__(__pydantic_self__, **data: Any) -> None:
+        # remove empty fields
+        data = {
+            key: value
+            for key, value in data.items()
+            if value is not None and value.strip() != ""
+        }
+        if "sizeType" not in data and "SizeType" not in data:
+            data["sizeType"] = ""
+        super().__init__(**data)
+
+    dataset_name: constr(min_length=3, max_length=81) = Field(...)
+    public: bool = Field(...)
+    assembly: int = Field(..., alias="assembly")
+    description: str = Field("No description provided", max_length=81)
+    # dataset_type: DatasetTypeEnum = Field(...)
+    # size_type: SizeTypeEnum = Field(alias="SizeType")
+    filetype: str = Field(..., max_length=64, alias="filetype")
+    sizeType: str = Field(..., alias="SizeType")
+    metadata_json: Json[Any] = Field(default={})
+
+    perturbation: Optional[constr(max_length=64)] = Field(alias="Perturbation")
+    cellCycleStage: Optional[constr(max_length=64)] = Field(alias="Cell cycle Stage")
+    valueType: Optional[constr(max_length=64)] = Field(alias="ValueType")
+    method: Optional[constr(max_length=64)] = Field(alias="Method")
+    normalization: Optional[constr(max_length=64)] = Field(alias="Normalization")
+    derivationType: Optional[constr(max_length=64)] = Field(alias="DerivationType")
+    protein: Optional[constr(max_length=64)] = Field(alias="Protein")
+    directionality: Optional[constr(max_length=64)] = Field(alias="Directionality")
+
+    @validator("filetype")
+    def check_filetype(cls, filetype, values, **kwargs):
+        allowed_file_types = current_app.config["FILETYPES"]
+        if not filetype:
+            raise ValueError(
+                f"Filetype is required! Supported: {allowed_file_types.keys()}."
+            )
+        if filetype not in allowed_file_types:
+            raise ValueError(
+                f"Unsupported filetype! We do not support following filetype: {filetype}. Supported: {allowed_file_types.keys()}."
+            )
+        return filetype
+
+    @validator("sizeType")
+    def check_sizeType(cls, sizeType, values, **kwargs):
+        if "filetype" not in values:
+            raise ValueError("File type is missing.")
+
+        is_region = "region" in current_app.config["FILETYPES"].get(
+            values["filetype"], {}
+        ).get("dataset_type", [])
+        has_sizeType = sizeType and sizeType.strip() != ""
+        if has_sizeType and is_region:
+            return sizeType
+
+        if has_sizeType and not is_region:
+            raise ValueError(
+                f"sizeType only allowed for regions. {values['filetype']} is a feature"
+            )
+        if is_region and not has_sizeType:
+            raise ValueError(f"sizeType required for regions.")
+        return None
+
+    # @validator("description")
+    # def parse_description(cls, description):
+    #     """Checks if description was provided provided in frontend, if not rewrites it."""
+    #     if not description or description == "null" or description == '':
+    #         description = "No description provided"
+    #     return description
+
+
 class FileDatasetPostModel(DatasetPostModel):
     """model of dataset with file"""
 
-    filename: constr(max_length=200)
+    filename: constr(max_length=200) = Field(...)
 
     @validator("filename")
-    def file_has_correct_ending_and_supported_filetype(cls, filename, values, **kwargs):
-        """Checks is the file has the appropriate file ending."""
-        supported_file_endings = current_app.config["DATASET_OPTION_MAPPING"][
-            "supported_file_endings"
-        ]
-        file_ending = filename.split(".")[-1]
-        if file_ending.lower() not in supported_file_endings.get(
-            values.get("filetype")
-        ):
+    def check_filename(cls, filename, values, **kwargs):
+        """Checks if file is correct, removes gz from compressed files"""
+        if "filetype" not in values:
+            raise ValueError("Invalid filename! File type is missing.")
+
+        temp_filename = filename
+        if temp_filename.lower().endswith(".gz"):
+            temp_filename = temp_filename[:-3]
+
+        file_ext = temp_filename[temp_filename.rindex(".") + 1 :]
+        file_extensions = (
+            current_app.config["FILETYPES"]
+            .get(values["filetype"], {})
+            .get("file_ext", [])
+        )
+
+        if file_ext not in file_extensions:
             raise ValueError(
-                f'Invalid filename! For the filetype: {values.get("filetype")} we found the file ending: {file_ending}. Supported for this filetype are: {supported_file_endings.get(values.get("filetype"))}.'
+                f"File extension {file_ext} not allowed. Allowed: {file_extensions}"
             )
+
         return filename
 
 
 class URLDatasetPostModel(DatasetPostModel):
     """model of dataset with an URL"""
 
-    source_url: AnyUrl = Field(alias="sourceURL")
+    source_url: AnyHttpUrl = Field(...)
 
 
 class ENCODEDatasetPostModel(DatasetPostModel):
     """model of dataset with an URL"""
 
-    sample_id: constr(max_length=128) = Field(alias="sampleID")
-    repository_name: constr(max_length=64) = Field(alias="repositoryName")
+    sample_id: constr(max_length=128, min_length=3) = Field(...)
+    repository_name: constr(max_length=128) = Field(...)
 
-    # @validator("sample_id")
-    # def sample_id_exists(cls, sample_id):
-    #     return sample_id # TODO
-
-    # @validator("repository_id")
-    # def repository_id_exists(cls, repository_id):
-    #     return repository_id # TODO
+    @validator("filetype")
+    def check_filetype(cls, filetype, values, **kwargs):
+        # temporary file_type check
+        if filetype.lower() in ["cool", "cooler", "mcool"]:
+            raise ValueError(
+                f"Extern import of files with filetype '{filetype}' not yet supported"
+            )
+        return super().check_filetype(filetype, values, **kwargs)

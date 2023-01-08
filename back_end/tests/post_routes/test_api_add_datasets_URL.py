@@ -8,7 +8,7 @@ from unittest.mock import patch
 from app.models import (
     Dataset,
     Assembly,
-    DataRepository,
+    Repository,
 )
 from app import db, create_app
 from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
@@ -33,7 +33,7 @@ class TestAddDataSetsURL(LoginTestCase, TempDirTestCase):
             chrom_arms=self.app.config["CHROM_ARMS"],
         )
 
-        self.data_repo = DataRepository(
+        self.data_repo = Repository(
             name="testrepo", url="https://{id}", auth_required=False
         )
         db.session.add(self.hg19)
@@ -46,7 +46,7 @@ class TestAddDataSetsURL(LoginTestCase, TempDirTestCase):
         self.token_headers["Content-Type"] = "multipart/form-data"
 
         self.default_data = {  # TODO there is a better way
-            "datasetName": "test",
+            "dataset_name": "test",
             "description": "test-description",
             "assembly": "1",
             "cellCycleStage": "asynchronous",
@@ -55,9 +55,9 @@ class TestAddDataSetsURL(LoginTestCase, TempDirTestCase):
             "Method": "ChipSeq",
             "SizeType": "Point",
             "filetype": "bedfile",
-            "Directionality": "+",
+            "directionality": "+",
             "public": "false",
-            "sourceURL": "https://thisisavalidbutnotexistingurl.at/file.bed.gz",
+            "source_url": "https://thisisavalidbutnotexistingurl.at/file.bed.gz",
         }
 
     def test_reject_non_url(self):
@@ -67,7 +67,7 @@ class TestAddDataSetsURL(LoginTestCase, TempDirTestCase):
 
         for url in fake_urls:
             with self.subTest(url=url):
-                data["sourceURL"] = url
+                data["source_url"] = url
                 response = self.client.post(
                     "/api/datasets/URL/",
                     data=data,
@@ -80,7 +80,7 @@ class TestAddDataSetsURL(LoginTestCase, TempDirTestCase):
     def test_reject_files(self):
         """Test that forms including files are rejected"""
         data = self.default_data
-        data["file"] = ""
+        data["file"] = "23"
         response = self.client.post(
             "/api/datasets/URL/",
             data=data,
@@ -103,7 +103,7 @@ class TestAddDataSetsURL(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue("success" in response.get_json()["message"])
         self.assertEqual(len(Dataset.query.all()), 1)
-        self.assertEqual(Dataset.query.get(1).processing_state, "uploading")
+        self.assertEqual(Dataset.query.get(1).upload_state, "new")
         self.assertTrue(mock_launch.called)
 
 

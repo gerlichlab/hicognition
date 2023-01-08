@@ -40,8 +40,8 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # add dataset
-        self.bedfile = Dataset(id=1, filetype="bedfile", user_id=1, assembly=1)
-        self.coolerfile = Dataset(id=2, filetype="cooler", user_id=1, assembly=1)
+        self.bedfile = self.create_dataset(id=1, dataset_name="test", filetype="bedfile", user_id=1, assembly=1)
+        self.coolerfile = self.create_dataset(id=2, dataset_name="test", filetype="cooler", user_id=1, assembly=1)
         # add intervals
         self.intervals1 = Intervals(
             id=1, name="testRegion1", dataset_id=1, windowsize=200000
@@ -178,7 +178,7 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # add dataset
-        self.dataset = Dataset(
+        self.dataset = self.create_dataset(
             dataset_name="test3",
             file_path="/test/path/test3.mcool",
             filetype="cooler",
@@ -186,7 +186,7 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
             user_id=1,
             assembly=1,
         )
-        self.dataset2 = Dataset(
+        self.dataset2 = self.create_dataset(
             dataset_name="test4",
             file_path="/test/path/test4.mcool",
             filetype="cooler",
@@ -322,7 +322,7 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # add dataset
-        self.cooler = Dataset(
+        self.cooler = self.create_dataset(
             dataset_name="test3",
             file_path="./tests/testfiles/test.mcool",
             filetype="cooler",
@@ -555,7 +555,7 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # add dataset
-        self.cooler = Dataset(
+        self.cooler = self.create_dataset(
             dataset_name="test3",
             file_path="./tests/testfiles/test.mcool",
             filetype="cooler",

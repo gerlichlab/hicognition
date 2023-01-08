@@ -21,15 +21,15 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
 
     def setUp(self):
         super().setUp()
-        self.owned_dataset = Dataset(id=1, user_id=1)
-        self.unowned_dataset = Dataset(id=1, user_id=2)
+        self.owned_dataset = self.create_dataset(id=1, dataset_name="test", user_id=1)
+        self.unowned_dataset = self.create_dataset(id=1, dataset_name="test", user_id=2)
         # create dataset with test data length 6
         test_filepath_len_6 = os.path.join(TempDirTestCase.TEMP_PATH, "test.bed")
         test_data_len_6 = pd.DataFrame(
             {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
         )
         test_data_len_6.to_csv(test_filepath_len_6, sep="\t", header=None)
-        self.dataset_len_6 = Dataset(id=1, user_id=1, file_path=test_filepath_len_6)
+        self.dataset_len_6 = self.create_dataset(id=1, dataset_name="test", user_id=1, file_path=test_filepath_len_6)
 
     def test_access_denied_without_token(self):
         """Test whether post request results in 401 error
@@ -305,11 +305,11 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
     def setUp(self):
         super().setUp()
         # create unowned dataset-metadata combination
-        self.unowned_dataset = Dataset(id=1, user_id=2)
+        self.unowned_dataset = self.create_dataset(id=1, dataset_name="test", user_id=2)
         self.metadata_unowned_dataset = BedFileMetadata(id=1, dataset_id=1)
         self.unowned = [self.unowned_dataset, self.metadata_unowned_dataset]
         # create owned dataset-metadata combination with empty metadata
-        self.owned_dataset = Dataset(id=2, user_id=1)
+        self.owned_dataset = self.create_dataset(id=2, dataset_name="test", user_id=1)
         self.empty_metadata_owned_dataset = BedFileMetadata(id=2, dataset_id=2)
         self.owned_empty = [self.owned_dataset, self.empty_metadata_owned_dataset]
         # create owned dataset-metadata combination with exisiting fields

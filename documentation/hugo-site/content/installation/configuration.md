@@ -33,7 +33,7 @@ These environment variables should be redefined if you deploy a new HiCognition 
 
 - `SECRET_KEY` | Secret key of flask app that is used to sign the generated token
 - `DATABASE_URI` | Connection string to the HiCogntion MySQL database (including username and password)
-- `MYQSL_PASSWORD` | Password for MySQL database
+- `MYSQL_PASSWORD` | Password for MySQL database
 
 ##### Take from example `.env` file
 
@@ -48,6 +48,7 @@ These environment variables can likely be taken from our example `.env` file and
 - `MYSQL_DATA_DIR` | Relative directory to persist MySQL database to
 - `INTEGRATION_TESTS` | Relative path to the integration test directory
 - `DOC_PATH` | Relative path to documentation files
+- `REPOSITORIES` | Defines a list of ENCODE repositories to use. Default: [4D Nucleome](https://www.4dnucleome.org/)
 
 
 #### Development instance
@@ -222,6 +223,8 @@ This configuration variable defines metadata options for different data types. T
 
 Here, each dataset type can define multiple value types that can have multiple custom options. Note that changing option values only requires changing this configuration option, whereas adding value types and types of options requires changing the `Dataset` database model.
 
+Temporarily `FILETYPES` has been defined that allows for definition of optional metadata fields, that will be used for dynamically creating the file upload forms for feature and region sets.
+
 #### `STACKUP_THRESHOLD`
 
 This configuration variable defines the number of rows above which intervals are downsampled for displaying in the [stacked lineprofile widget](/widgets/stackup/).
@@ -232,8 +235,9 @@ Defines the number of processes to use per worker to calculate observed/expected
 
 ## Docker compose files
 
-There are three different Docker compose files that allow starting HiCognition in different modes:
+There are four different Docker compose files that allow starting HiCognition in different modes:
 
 - `docker-compose.yml` | This file is used to start HiCognition in "production mode"
 - `docker_dev.yml` | This file is used to start HiCognition in "development mode"
 - `docker_integration_tests.yml` | This file is used to run the integration tests (see the [testing section](/development/tests/) for more details)
+- `docker_dev_hicog_lib.yml` | This file is used to start HiCognition in "development mode". It allows placement of [hicognition_lib](https://github.com/gerlichlab/hicognition_lib) and [ngs_lib](https://github.com/gerlichlab/ngs_lib) in the root of the directory.

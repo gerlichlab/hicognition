@@ -376,6 +376,15 @@ const compareModule = {
                     payload.data;
             }
         },
+        // setWidgetType(state, payload) {
+        //     Vue.set(
+        //         state.widgetCollections[payload.parentID]["children"][
+        //             payload.id
+        //         ],
+        //         "widgetType",
+        //         payload.widgetType
+        //     );
+        // },
         setWidgetType(state, payload) {
             Vue.set(
                 state.widgetCollections[payload.parentID]["children"][
@@ -412,6 +421,7 @@ const store = new Vuex.Store({
         user_name: null,
         resolutions: null,
         datasetMetadataMapping: null,
+        fileTypes: null,
         collections: null,
         datasets: null, // datasets are in the global store because they will be shared for all functionalities for a given user throughout a session
         usedSortOrders: Array(COLORPALETTE.length).fill(0), // flags for used numbers
@@ -447,6 +457,9 @@ const store = new Vuex.Store({
         },
         getDatasetMetadataMapping: state => {
             return state.datasetMetadataMapping;
+        },
+        getFileTypes: state => {
+            return state.fileTypes;
         },
         isTokenEmpty: state => {
             return state.token == null;
@@ -569,6 +582,9 @@ const store = new Vuex.Store({
         },
         setDatasetMetadataMapping(state, mapping) {
             state.datasetMetadataMapping = mapping;
+        },
+        setFileTypes(state, fileTypes) {
+            state.fileTypes = fileTypes;
         }
     }
 });

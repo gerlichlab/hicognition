@@ -4,7 +4,7 @@ date: 2022-02-16T10:09:57+01:00
 weight: 2
 ---
 
-Genomic features are an essential part of the [region-set focus approach](/concept/region_set_focus/) and are defined as 1D- or 2D-continuous data that is mapped to a genomic coordinate system. Examples are ChiP-seq read density, Hi-C interaction values, and GRO-seq tracks. Genomic features are mainly used to understand genomic regions in the context of the region-set focus approach. They can thus be thought of as "independent variables" that are used to explain the "dependent" genomic regions.
+Genomic features are an essential part of the [region-set focus approach](/concepts/region_set_focus/) and are defined as 1D- or 2D-continuous data that is mapped to a genomic coordinate system. Examples are ChiP-seq read density, Hi-C interaction values, and GRO-seq tracks. Genomic features are mainly used to understand genomic regions in the context of the region-set focus approach. They can thus be thought of as "independent variables" that are used to explain the "dependent" genomic regions.
 
 ## Data requirements
 

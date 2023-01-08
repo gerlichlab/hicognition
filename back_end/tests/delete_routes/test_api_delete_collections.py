@@ -7,7 +7,7 @@ from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 # import sys
 # sys.path.append("./")
 from app import db
-from app.models import Collection, AssociationIntervalData
+from app.models import Collection, AssociationIntervalData, Intervals
 
 
 class TestDeleteCollection(LoginTestCase, TempDirTestCase):
@@ -24,10 +24,13 @@ class TestDeleteCollection(LoginTestCase, TempDirTestCase):
         self.collection_user_1 = Collection(id=1, user_id=1, name="test")
         self.collection_user_1_2 = Collection(id=2, user_id=1, name="test2")
         self.collection_user_2 = Collection(id=3, user_id=2, name="test3")
+        # define interval
+        self.interval = Intervals(id=1)
         # define associated data
         self.assoc_path = self._create_empty_file_in_tempdir("test.npy")
         self.assoc_data = AssociationIntervalData(
-            file_path=self.assoc_path, collection_id=self.collection_user_1.id
+            file_path=self.assoc_path, collection_id=self.collection_user_1.id,
+            intervals_id=1
         )
 
     def test_no_auth(self):

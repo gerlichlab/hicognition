@@ -4,11 +4,14 @@ date: 2022-02-18T12:06:53+01:00
 weight: 1
 ---
 
-Widget collections and widgets have controls that allow resizing, zooming, and selecting hosted datasets. Widget collections always have the same set of controls. In contrast, widgets have additional, context-dependent controls that depend on the type of loaded widgets (see the description of widget types in this section).
+Widgets and widget collections have controls that allow resizing, zooming, and selecting hosted datasets.
+Widget collections always have the same set of controls.
+Widgets have additional, context-dependent controls that depend on the type of loaded widgets (see the description of widget types in this section).
 
 ## Widget Collection
 
-Widget collections represent genomic region sets and can host a variable number of widgets representing genomic features at this shared region set. Thus, the controls found on widget collections can change the selected region set and the arrangement of contained widgets.
+Widget collections represent genomic region sets and can host a variable number of widgets representing genomic features at this shared region set.
+Thus, the controls found on widget collections can change the selected region set and the arrangement of contained widgets.
 
 ### Select genomic region set
 
@@ -22,6 +25,10 @@ This will cause the [dataset selection dialogue](/data_management/regions/#viewi
 
 Once selected, the name of the selected region set will be displayed on the blue horizontal bar at the top of the widget collection.
 <img src="/widget_collection_context_bar.png" class="quarter-width">
+
+When an offdiagonal region set (BEDPE) is selcted, this is indicated as well.
+
+<img src="/widget_collection_offdiagonal.png" class="quarter-width">
 
 ### Set window size
 
@@ -45,7 +52,9 @@ If you want to delete a widget collection, you can click on the garbage can at t
 
 ### Creating slots
 
-Widget collections can contain multiple slots for widgets. These slots can be created by hitting the arrow buttons on the right and bottom of a widget collection. For example, you can click the arrow on the right to create an additional slot for a widget:
+Widget collections can contain multiple slots for widgets.
+These slots can be created by hitting the arrow buttons on the right and bottom of a widget collection.
+For example, you can click the arrow on the right to create an additional slot for a widget:
 
 
 <img src="/resize_widget_collection.png" class="half-width">
@@ -70,7 +79,8 @@ Widgets can be dragged from one slot to another in order to create the perfect a
 
 ## Widgets
 
-All widget types have their own "widget controls" described in the chapter of the respective widgets. In addition to that, all widgets share controls for selecting datasets, selecting bin size, and deleting widgets.
+All widget types have their own "widget controls" described in the chapter of the respective widgets.
+In addition to that, all widgets share controls for selecting datasets, selecting bin size, and deleting widgets.
 
 ### Selecting genomic features
 
@@ -78,7 +88,8 @@ To select a genomic feature for a given widget, click the button on the top righ
 
 <img src="/select_dataset_widget.png" class="one-quarter-width">
 
-This will open the [dataset selection table](/data_management/regions/#viewing) or the [collection selection table](/data_management/collections/#managing-collections) depending on which data type is suitable for the current widget. Using this table, you can select which features you want to load into the given widget.
+This will open the [dataset selection table](/data_management/regions/#viewing) or the [collection selection table](/data_management/collections/#managing-collections) depending on which data type is suitable for the current widget.
+Using this table, you can select which features you want to load into the given widget.
 
 ### Changing bin size
 
@@ -87,5 +98,15 @@ To change the genomic resolution at which you want to look at the data, you can 
 <img src="/changing_binsize.png" class="one-quarter-width">
 
 {{% notice note %}}
-For point features, binsize will be in genomic coordinates, whereas for interval features, binsize will be in the percentage of the respective region size. See this [section](/data_management/regions/#types-of-genomic-regions) for a more detailed explanation.
+For point features, binsize will be in genomic coordinates, whereas for interval features, binsize will be in the percentage of the respective region size.
+See this [section](/data_management/regions/#types-of-genomic-regions) for a more detailed explanation.
 {{% /notice %}}
+
+### Off-diagonal region sets (BEDPE): Visualizing supports
+
+When an off-diagonal genomic region set (imported using BEDPE-files) is used, the widget will display icons (squared 1 and 2) for displaying left and right support data.
+These icons are not be displayed for 2d-feature heatmaps.
+Depending on the widget type, displaying left and right support may be mutually exclusive, and clicking the icons will toggle the displayed support.
+
+
+<img src="/bedpe_support_selection.png" class="one-quarter-width">

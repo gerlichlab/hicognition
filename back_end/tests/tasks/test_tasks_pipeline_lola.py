@@ -41,7 +41,7 @@ class TestPipelineLola(LoginTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # add region
-        self.bedfile = Dataset(id=1, filetype="bedfile", user_id=1, assembly=1)
+        self.bedfile = self.create_dataset(id=1, dataset_name="test", filetype="bedfile", user_id=1, assembly=1)
         # add intervals
         self.intervals1 = Intervals(
             id=1, name="testRegion1", dataset_id=1, windowsize=200000
@@ -134,14 +134,14 @@ class EnrichmentSetupClass(LoginTestCase, TempDirTestCase):
         pos_file = os.path.join(self.TEMP_PATH, "pos.bed")
         self.positions.to_csv(pos_file, header=None, sep="\t", index=False)
         # create datasets
-        self.query_dataset = Dataset(
-            id=1, file_path=pos_file, filetype="bedfile", assembly=1
+        self.query_dataset = self.create_dataset(
+            id=1, dataset_name="test", user_id=1, file_path=pos_file, filetype="bedfile", assembly=1
         )
-        self.target_dataset_1 = Dataset(
-            id=2, file_path=target_1_file, filetype="bedfile", assembly=1
+        self.target_dataset_1 = self.create_dataset(
+            id=2, dataset_name="test", user_id=1, file_path=target_1_file, filetype="bedfile", assembly=1
         )
-        self.target_dataset_2 = Dataset(
-            id=3, file_path=target_2_file, filetype="bedfile", assembly=1
+        self.target_dataset_2 = self.create_dataset(
+            id=3, dataset_name="test", user_id=1, file_path=target_2_file, filetype="bedfile", assembly=1
         )
         # create intervals
         self.query_interval = Intervals(id=1, windowsize=100000, dataset_id=1)
@@ -155,29 +155,32 @@ class EnrichmentSetupClass(LoginTestCase, TempDirTestCase):
             file_path=test_file, binsize=50000, collection_id=1, intervals_id=1
         )
         # add tad boundaries
-        self.tad_boundaries = Dataset(
-            id=4,
+        self.tad_boundaries = self.create_dataset(
+            id=4, dataset_name="test",
             file_path="tests/testfiles/tad_boundaries.bed",
             filetype="bedfile",
             assembly=1,
+            user_id=1
         )
         self.tad_boundaries_interval = Intervals(id=2, windowsize=200000, dataset_id=4)
         # add ctcf peaks
-        self.ctcf_peaks = Dataset(
-            id=5,
+        self.ctcf_peaks = self.create_dataset(
+            id=5, dataset_name="test",
             file_path="tests/testfiles/CTCF_peaks.bed",
             filetype="bedfile",
             assembly=1,
+            user_id=1
         )
         self.collection_2 = Collection(id=2, datasets=[self.tad_boundaries])
         self.collection_3 = Collection(id=3, datasets=[self.ctcf_peaks])
         # add variable intervals
-        self.tads = Dataset(
-            id=6,
+        self.tads = self.create_dataset(
+            id=6, dataset_name="test",
             file_path="tests/testfiles/G2_tads_w_size.bed",
             filetype="bedfile",
             assembly=1,
             sizeType="Interval",
+            user_id=1
         )
         self.tad_interval = Intervals(id=3, dataset_id=6)
 

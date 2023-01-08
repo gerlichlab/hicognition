@@ -1,4 +1,5 @@
 """Module with tests realted to managing and modifying datasets."""
+import logging
 import unittest
 from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
@@ -43,7 +44,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # add content-type
         self.token_headers["Content-Type"] = "multipart/form-data"
         # create datasets
-        self.owned_cooler_1 = Dataset(
+        self.owned_cooler_1 = self.create_dataset(
             id=1,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -52,7 +53,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             user_id=1,
             assembly=1,
         )
-        self.bedfile_1 = Dataset(
+        self.bedfile_1 = self.create_dataset(
             id=2,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -61,7 +62,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             user_id=1,
             assembly=1,
         )
-        self.bedfile_2 = Dataset(
+        self.bedfile_2 = self.create_dataset(
             id=3,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -70,7 +71,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             user_id=1,
             assembly=1,
         )
-        self.bigwig_1 = Dataset(
+        self.bigwig_1 = self.create_dataset(
             id=4,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -80,7 +81,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             assembly=1,
         )
         # add unowned coolers
-        self.unowned_cooler = Dataset(
+        self.unowned_cooler = self.create_dataset(
             id=4,
             dataset_name="test2",
             file_path="/test/path/2",
@@ -98,10 +99,20 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
     def test_dataset_does_not_exist(self):
         """Tests whether 404 is returned when dataset does not exist."""
         # put datasets
+        data = {
+            "datasetName": "changedName",
+            "cellCycleStage": "changedCellCycleStage",
+            "perturbation": "hangedPerturbation",
+            "ValueType": "Interaction",
+            "public": "false",
+            "Method": "HiC",
+            "Normalization": "ICCF",
+        }
         response = self.client.put(
             "/api/datasets/500/",
+            data = data,
             headers=self.token_headers,
-            content_type="application/json",
+            content_type="multipart/form-data",
         )
         self.assertEqual(response.status_code, 404)
 
@@ -110,11 +121,21 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # add datasets
         db.session.add(self.unowned_cooler)
         db.session.commit()
+        data = {
+            "datasetName": "changedName",
+            "cellCycleStage": "changedCellCycleStage",
+            "perturbation": "hangedPerturbation",
+            "ValueType": "Interaction",
+            "public": "false",
+            "Method": "HiC",
+            "Normalization": "ICCF",
+        }
         # put datasets
         response = self.client.put(
             f"/api/datasets/{self.unowned_cooler.id}/",
+            data=data,
             headers=self.token_headers,
-            content_type="application/json",
+            content_type="multipart/form-data",
         )
         self.assertEqual(response.status_code, 403)
 
@@ -131,69 +152,47 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_badform_no_common_required_keys(self):
-        """Test 400 returned if no form is provided."""
-        # add datasets
-        db.session.add(self.owned_cooler_1)
-        db.session.commit()
-        # construct form
-        data = {"Method": "HiC", "Normalization": "ICCF", "public": "false"}
-        # put datasets
-        response = self.client.put(
-            f"/api/datasets/{self.owned_cooler_1.id}/",
-            headers=self.token_headers,
-            data=data,
-            content_type="multipart/form-data",
-        )
-        self.assertEqual(response.status_code, 400)
+    # removed, does not make sense anymore
+    # def test_badform_no_common_required_keys(self):
+    #     """Test 400 returned if no form is provided."""
+    #     # add datasets
+    #     db.session.add(self.owned_cooler_1)
+    #     db.session.commit()
+    #     # construct form
+    #     data = {"Method": "HiC", "Normalization": "ICCF", "public": "false"}
+    #     # put datasets
+    #     response = self.client.put(
+    #         f"/api/datasets/{self.owned_cooler_1.id}/",
+    #         headers=self.token_headers,
+    #         data=data,
+    #         content_type="multipart/form-data",
+    #     )
+    #     self.assertEqual(response.status_code, 400)
 
-    def test_badform_no_metdata(self):
-        """Test 400 returned if no form is provided."""
-        # add datasets
-        db.session.add(self.owned_cooler_1)
-        db.session.commit()
-        # construct form
-        data = {
-            "datasetName": "test",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
-            "ValueType": "Interaction",
-            "public": "false",
-        }
-        # put datasets
-        response = self.client.put(
-            f"/api/datasets/{self.owned_cooler_1.id}/",
-            headers=self.token_headers,
-            data=data,
-            content_type="multipart/form-data",
-        )
-        self.assertEqual(response.status_code, 400)
+    # is allowed now
+    # def test_badform_no_metdata(self):
+    #     """Test 400 returned if no form is provided."""
+    #     # add datasets
+    #     db.session.add(self.owned_cooler_1)
+    #     db.session.commit()
+    #     # construct form
+    #     data = {
+    #         "datasetName": "test",
+    #         "cellCycleStage": "asynchronous",
+    #         "perturbation": "No perturbation",
+    #         "ValueType": "Interaction",
+    #         "public": "false",
+    #     }
+    #     # put datasets
+    #     response = self.client.put(
+    #         f"/api/datasets/{self.owned_cooler_1.id}/",
+    #         headers=self.token_headers,
+    #         data=data,
+    #         content_type="multipart/form-data",
+    #     )
+    #     self.assertEqual(response.status_code, 400)
 
     def test_badform_incorrect_valuetype(self):
-        """Test 400 returned if no form is provided."""
-        # add datasets
-        db.session.add(self.owned_cooler_1)
-        db.session.commit()
-        # construct form
-        data = {
-            "datasetName": "test",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
-            "ValueType": "BadValueType",
-            "Method": "HiC",
-            "public": "false",
-            "Normalization": "ICCF",
-        }
-        # put datasets
-        response = self.client.put(
-            f"/api/datasets/{self.owned_cooler_1.id}/",
-            headers=self.token_headers,
-            data=data,
-            content_type="multipart/form-data",
-        )
-        self.assertEqual(response.status_code, 400)
-
-    def test_badform_contains_assembly(self):
         """Test 400 returned if no form is provided."""
         # add datasets
         db.session.add(self.owned_cooler_1)
@@ -214,6 +213,19 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             f"/api/datasets/{self.owned_cooler_1.id}/",
             headers=self.token_headers,
             data=data,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_badform_contains_assembly(self):
+        """Test 400 returned if no form is provided."""
+        # add datasets
+        db.session.add(self.owned_cooler_1)
+        db.session.commit()
+        # put datasets
+        response = self.client.put(
+            f"/api/datasets/{self.owned_cooler_1.id}/",
+            headers=self.token_headers,
             content_type="multipart/form-data",
         )
         self.assertEqual(response.status_code, 400)
