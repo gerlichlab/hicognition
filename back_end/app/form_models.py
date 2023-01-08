@@ -71,18 +71,19 @@ class DatasetPostModel(DatasetModel):
         data = {
             key: value
             for key, value in data.items()
-            if value is not None and value.strip() != ""
+            if value is not None and value.strip() != "" and value != 'null'
         }
         if "sizeType" not in data and "SizeType" not in data:
             data["sizeType"] = ""
         super().__init__(**data)
 
-    dataset_name: constr(min_length=3, max_length=81) = Field(...)
-    public: bool = Field(...)
+    dataset_name: constr(min_length=3, max_length=81) = Field(..., alias="datasetName")
+    public: bool = Field(..., alias="Public")
     assembly: int = Field(..., alias="assembly")
-    description: str = Field("No description provided", max_length=81)
+    description: str = Field("No description provided", max_length=81, alias="Description")
     # dataset_type: DatasetTypeEnum = Field(...)
     # size_type: SizeTypeEnum = Field(alias="SizeType")
+    #processing_state: Optional[str] = Field(None)
     filetype: str = Field(..., max_length=64, alias="filetype")
     sizeType: str = Field(..., alias="SizeType")
     metadata_json: Json[Any] = Field(default={})
@@ -90,11 +91,11 @@ class DatasetPostModel(DatasetModel):
     perturbation: Optional[constr(max_length=64)] = Field(alias="Perturbation")
     cellCycleStage: Optional[constr(max_length=64)] = Field(alias="Cell cycle Stage")
     valueType: Optional[constr(max_length=64)] = Field(alias="ValueType")
-    method: Optional[constr(max_length=64)] = Field(alias="Method")
-    normalization: Optional[constr(max_length=64)] = Field(alias="Normalization")
-    derivationType: Optional[constr(max_length=64)] = Field(alias="DerivationType")
-    protein: Optional[constr(max_length=64)] = Field(alias="Protein")
-    directionality: Optional[constr(max_length=64)] = Field(alias="Directionality")
+    method: Optional[constr(max_length=64)] = Field('undefined',alias="Method")
+    normalization: Optional[constr(max_length=64)] = Field('undefined',alias="Normalization")
+    derivationType: Optional[constr(max_length=64)] = Field('undefined', alias="DerivationType")
+    protein: Optional[constr(max_length=64)] = Field('undefined', alias="Protein")
+    directionality: Optional[constr(max_length=64)] = Field('undefined', alias="Directionality")
 
     @validator("filetype")
     def check_filetype(cls, filetype, values, **kwargs):

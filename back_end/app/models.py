@@ -19,9 +19,9 @@ import cooler
 from itertools import chain
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import JSONWebSignatureSerializer
-import hicognition
-from hicognition.utils import parse_binsizes
-from hicognition.format_checkers import FORMAT_CHECKERS
+from . import lib as hicognition
+from .lib.utils import parse_binsizes
+from .lib.format_checkers import FORMAT_CHECKERS
 from . import db
 
 
@@ -585,9 +585,8 @@ class Dataset(db.Model):
     def to_json(self):
         """Generates a JSON from the model"""
         json_dataset = {}
-        # TODO: add created_at and processing_id to avoided keys
         for column in self.__class__.__table__.c.keys():
-            if getattr(self, column) != "undefined":
+            if getattr(self, column) != "undefined" and column not in ['created_at']:
                 json_dataset[column] = getattr(self, column)
 
         # add processing datasets

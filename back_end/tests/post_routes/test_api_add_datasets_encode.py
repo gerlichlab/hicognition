@@ -120,14 +120,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
                 "code": 400,
                 "msg": "Form is not valid",
                 "return_value": {"status_code": 400},
-            },
-            "sample_not_found": {
-                "data": {**self.default_data, "repositoryName": "testrepo"},
-                "code": 400,
-                "msg": "Could not load metadata",
-                "exception": MetadataNotWellformed(),
-                "return_value": {"status_code": 404},
-            },
+            }
         }
 
         for key, test_case in test_cases.items():

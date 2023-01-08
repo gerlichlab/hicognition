@@ -8,8 +8,8 @@ import numpy as np
 from flask import g, make_response
 from flask.json import jsonify
 from flask.globals import current_app
-from hicognition import data_structures
-from hicognition.utils import (
+from ..lib import data_structures
+from ..lib.utils import (
     update_processing_state,
     flatten_and_clean_array,
 )

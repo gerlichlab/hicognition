@@ -18,9 +18,9 @@ from sklearn.impute import SimpleImputer
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 import pylola
-import hicognition
-from hicognition import io_helpers, interval_operations, feature_extraction
-from hicognition.utils import get_optimal_binsize
+from . import lib as hicognition
+from .lib import io_helpers, interval_operations, feature_extraction
+from .lib.utils import get_optimal_binsize
 from . import db
 from .models import (
     Assembly,

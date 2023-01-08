@@ -1,7 +1,7 @@
 """Tests the image feature extraction in the hicognition library"""
 import unittest
 import numpy as np
-from hicognition import feature_extraction
+from app.lib import feature_extraction
 
 
 class TestExtractImageFeatures(unittest.TestCase):

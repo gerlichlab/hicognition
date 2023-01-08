@@ -6,7 +6,7 @@ from datetime import datetime
 from flask import current_app
 import pandas as pd
 from requests.exceptions import ConnectionError, Timeout
-from hicognition import io_helpers
+from .lib import io_helpers
 from rq import get_current_job
 from . import db
 from .models import (

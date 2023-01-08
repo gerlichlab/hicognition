@@ -7,7 +7,7 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 import numpy as np
 from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
-from hicognition.utils import get_optimal_binsize
+from app.lib.utils import get_optimal_binsize
 
 # add path to import app
 # import sys
