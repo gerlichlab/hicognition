@@ -63,7 +63,8 @@ def create_user(name, password):
         user = User.query.filter(User.username == name).first()
     else:
         # otherwise make a new one
-        user = User(username=name)
+        # and confirm email, email address stays empty form manual created users
+        user = User(username=name, email_confirmed = True)
     # prompt for password if not defined
     if password is None:
         password = getpass(f"Enter password for {name}: ")
