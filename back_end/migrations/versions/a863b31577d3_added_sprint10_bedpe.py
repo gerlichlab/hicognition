@@ -73,7 +73,6 @@ def upgrade():
     op.drop_index('ix_dataset_dataset_name', table_name='dataset')
     op.drop_index('ix_dataset_file_path', table_name='dataset')
     op.drop_index('ix_dataset_filetype', table_name='dataset')
-    op.drop_constraint('dataset_ibfk_3', 'dataset', type_='foreignkey')
     op.create_foreign_key('fk_dataset_repository', 'dataset', 'repository', ['repository_name'], ['name'])
     op.drop_constraint('dataset_collection_assoc_table_ibfk_2', 'dataset_collection_assoc_table', type_='foreignkey')
     op.drop_constraint('dataset_collection_assoc_table_ibfk_1', 'dataset_collection_assoc_table', type_='foreignkey')
