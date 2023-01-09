@@ -8,7 +8,8 @@ dependencies:
   - python=3.8.0
   # user required tools:
   - cooler >= 0.8.8
-  - numpy >= 1.18.5
+  # numpy is fixed for now since newest version (v1.24.0) is currently bugged
+  - numpy == 1.23.5
   - sortedcontainers >= 2.2.2
   - matplotlib >= 3.2.2
   - multiprocess >= 0.70.10
