@@ -280,9 +280,6 @@ class Dataset(db.Model):
     created_at = db.Column(
         db.DateTime,  default=datetime.datetime.utcnow
     )
-    assembly = db.Column(
-        db.Integer, db.ForeignKey("assembly.id", name="fk_dataset_assembly")
-    )
     sizeType = db.Column(db.String(64), default="undefined")
     file_path = db.Column(db.String(512))
     public = db.Column(db.Boolean, default=False, nullable=False)
@@ -298,21 +295,11 @@ class Dataset(db.Model):
     )
     sample_id = db.Column(db.String(128), nullable=True)
     source_url = db.Column(db.String(512), nullable=True)
-    # dataset_type = db.Column(db.String(64), nullable=False) # Enum("region", "feature")
     upload_state = db.Column(
         db.String(64), nullable=False, default="new"
     )  # Enum('new', 'uploading', 'uploaded', 'upload_failed')
-    metadata_json = db.Column(db.JSON, nullable=True)
-
+    cell_type = db.Column(db.String(64), default="undefined")
     perturbation = db.Column(db.String(64), default="undefined")
-    cellCycleStage = db.Column(db.String(64), default="undefined")
-    valueType = db.Column(db.String(64), default="undefined")
-    method = db.Column(db.String(64), default="undefined")
-    normalization = db.Column(db.String(64), default="undefined")
-    derivationType = db.Column(db.String(64), default="undefined")
-    protein = db.Column(db.String(64), default="undefined")
-    directionality = db.Column(db.String(64), default="undefined")
-    available_binsizes = db.Column(db.String(500), default="undefined")
 
     # self relationships
     processing_features = db.relationship(
@@ -336,7 +323,10 @@ class Dataset(db.Model):
         secondaryjoin=dataset_completed_table.c.dataset_feature == id,
         backref="completed_regions",
     )
-
+    # relationship
+    assembly = db.Column(
+        db.Integer, db.ForeignKey("assembly.id", name="fk_dataset_assembly")
+    )
     intervals = db.relationship(
         "Intervals",
         back_populates="source_dataset",
