@@ -1,8 +1,6 @@
 """Pydantic models to validate integrity of Forms for the HiCognition API."""
-import re
-import json
 from typing import Any, Optional
-from pydantic import BaseModel, Field, validator, constr, AnyHttpUrl, Json
+from pydantic import BaseModel, Field, validator, constr, AnyHttpUrl
 from flask import current_app
 
 
@@ -17,22 +15,9 @@ class DatasetModel(BaseModel):
     Allows for additional fields using a metadata json.
     """
 
-    def __init__(self, **data: Any) -> None:
-        # temporary until metadata is resolved
-        metadata_json = json.loads(data.get("metadata_json", "{}"))
-        metadata_update_dict = {
-            key: value
-            for key, value in metadata_json.items()
-            if key in current_app.config["METADATA_KEYS"]
-        }
-        data.update(metadata_update_dict)
-        super().__init__(**data)
-
     class Config(BaseModel.Config):
         allow_population_by_field_name = True
         extra = "forbid"
-
-    # TODO add checks for correct metadata
 
     def __getitem__(self, item):
         if hasattr(self, item):
@@ -51,15 +36,8 @@ class DatasetPutModel(DatasetModel):
     )
     public: Optional[bool] = Field(alias="Public")
     description: Optional[constr(max_length=81)] = Field(alias="Description")
+    cell_type: Optional[constr(max_length=64)] = Field(alias="cellType")
     perturbation: Optional[constr(max_length=64)] = Field(alias="Perturbation")
-    cellCycleStage: Optional[constr(max_length=64)] = Field(alias="Cell cycle Stage")
-    method: Optional[constr(max_length=64)] = Field(alias="Method")
-    normalization: Optional[constr(max_length=64)] = Field(alias="Normalization")
-    derivationType: Optional[constr(max_length=64)] = Field(alias="DerivationType")
-    protein: Optional[constr(max_length=64)] = Field(alias="Protein")
-    directionality: Optional[constr(max_length=64)] = Field(alias="Directionality")
-    valueType: Optional[constr(max_length=64)] = Field(alias="ValueType")
-    metadata_json: Optional[Json[Any]]
 
 
 # pylint: disable=no-self-argument,no-self-use
@@ -81,21 +59,10 @@ class DatasetPostModel(DatasetModel):
     public: bool = Field(..., alias="Public")
     assembly: int = Field(..., alias="assembly")
     description: str = Field("No description provided", max_length=81, alias="Description")
-    # dataset_type: DatasetTypeEnum = Field(...)
-    # size_type: SizeTypeEnum = Field(alias="SizeType")
-    #processing_state: Optional[str] = Field(None)
     filetype: str = Field(..., max_length=64, alias="filetype")
     sizeType: str = Field(..., alias="SizeType")
-    metadata_json: Json[Any] = Field(default={})
-
+    cell_type: Optional[constr(max_length=64)] = Field('undefined', alias="cellType") 
     perturbation: Optional[constr(max_length=64)] = Field(alias="Perturbation")
-    cellCycleStage: Optional[constr(max_length=64)] = Field(alias="Cell cycle Stage")
-    valueType: Optional[constr(max_length=64)] = Field(alias="ValueType")
-    method: Optional[constr(max_length=64)] = Field('undefined',alias="Method")
-    normalization: Optional[constr(max_length=64)] = Field('undefined',alias="Normalization")
-    derivationType: Optional[constr(max_length=64)] = Field('undefined', alias="DerivationType")
-    protein: Optional[constr(max_length=64)] = Field('undefined', alias="Protein")
-    directionality: Optional[constr(max_length=64)] = Field('undefined', alias="Directionality")
 
     @validator("filetype")
     def check_filetype(cls, filetype, values, **kwargs):
@@ -129,13 +96,6 @@ class DatasetPostModel(DatasetModel):
         if is_region and not has_sizeType:
             raise ValueError(f"sizeType required for regions.")
         return None
-
-    # @validator("description")
-    # def parse_description(cls, description):
-    #     """Checks if description was provided provided in frontend, if not rewrites it."""
-    #     if not description or description == "null" or description == '':
-    #         description = "No description provided"
-    #     return description
 
 
 class FileDatasetPostModel(DatasetPostModel):

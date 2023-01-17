@@ -53,11 +53,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dataset_name": "test",
             "description": "test-description",
             "assembly": "1",
-            "cellCycleStage": "asynchronous",
+            "cell_type": "undefined",
             "perturbation": "No perturbation",
-            "ValueType": "Interaction",
-            "Method": "HiC",
-            "Normalization": "ICCF",
             "filetype": "cooler",
             "public": "false",
             "file": (open("tests/testfiles/test.mcool", "rb"), "test.mcool"),
@@ -74,12 +71,12 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         self.assertEqual(len(Dataset.query.all()), 1)
         dataset = Dataset.query.first()
         expected = {
-            "normalization": "ICCF",
             "dataset_name": "test",
             "processing_state": "new",
             "upload_state": "uploaded",
             "description": "test-description",
             "perturbation": "No perturbation",
+            "cell_type": 'undefined',
             "file_path": "./tmp_test/1_test.mcool",
             "assembly": 1,
             "public": False,
@@ -87,17 +84,13 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "failed_datasets": [],
             "processing_collections": [],
             "failed_collections": [],
-            "cellCycleStage": "asynchronous",
-            "valueType": "Interaction",
             "filetype": "cooler",
-            "method": "HiC",
-            "available_binsizes": '["5000000"]',
             "user_id": 1,
             "id": 1,
+            "sizeType": "undefined",
             "repository_name": None,
             "sample_id": None,
             "source_url": None,
-            "metadata_json": {}
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
@@ -116,14 +109,10 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         data = {
             "dataset_name": "test",
             "assembly": "1",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
+            "cell_type": 'undefined',
             "description": "test-description",
-            "ValueType": "ChromatinAssociation",
             "Protein": "CTCF",
             "public": "false",
-            "Method": "ChipSeq",
-            "Normalization": "RPM",
             "filetype": "bigwig",
             "file": (open("tests/testfiles/test.bw", "rb"), "test.bw"),
         }

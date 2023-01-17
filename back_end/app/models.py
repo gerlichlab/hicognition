@@ -576,7 +576,7 @@ class Dataset(db.Model):
         """Generates a JSON from the model"""
         json_dataset = {}
         for column in self.__class__.__table__.c.keys():
-            if getattr(self, column) != "undefined" and column not in ['created_at']:
+            if column not in ['created_at']:
                 json_dataset[column] = getattr(self, column)
 
         # add processing datasets
