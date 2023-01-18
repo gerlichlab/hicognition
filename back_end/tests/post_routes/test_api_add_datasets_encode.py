@@ -50,21 +50,14 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
         self.default_data = {
             "dataset_name": "test",
             "description": "test-description",
+            "perturbation": "undefined",
+            "cell_type": "undefined",
             "assembly": "1",
             "filetype": "bedfile",
             "public": "false",
             "sample_id": "4DNFIRCHWS8M",
             "repository_name": "testrepo",
             "sizeType": "point",
-            # "dataset_type": "region",
-            "metadata_json": json.dumps({
-                "Cell cycle Stage": "asynchronous",
-                "Perturbation": "No perturbation",
-                "ValueType": "Peak",
-                "Method": "ChipSeq",
-                "Size Type": "Point",
-                "Directionality": "+",
-            })
         }
 
     def test_repo_not_found(self):

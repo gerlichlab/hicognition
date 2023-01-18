@@ -27,14 +27,8 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # create field form mapping
         self.field_form_mapping = {
             "datasetName": "dataset_name",
-            "cellCycleStage": "cellCycleStage",
             "perturbation": "perturbation",
-            "ValueType": "valueType",
-            "Method": "method",
-            "Normalization": "normalization",
-            "DerivationType": "derivationType",
-            "Protein": "protein",
-            "Directionality": "directionality",
+            "cell_type": "cell_type",
             "public": "public",
         }
         # add token headers
@@ -101,12 +95,9 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # put datasets
         data = {
             "datasetName": "changedName",
-            "cellCycleStage": "changedCellCycleStage",
-            "perturbation": "hangedPerturbation",
-            "ValueType": "Interaction",
-            "public": "false",
-            "Method": "HiC",
-            "Normalization": "ICCF",
+            "description": "test",
+            "cell_type": "asdf",
+            "public": "false"
         }
         response = self.client.put(
             "/api/datasets/500/",
@@ -123,12 +114,9 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         db.session.commit()
         data = {
             "datasetName": "changedName",
-            "cellCycleStage": "changedCellCycleStage",
             "perturbation": "hangedPerturbation",
-            "ValueType": "Interaction",
+            "cell_type": "ChangedType",
             "public": "false",
-            "Method": "HiC",
-            "Normalization": "ICCF",
         }
         # put datasets
         response = self.client.put(
@@ -192,31 +180,6 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
     #     )
     #     self.assertEqual(response.status_code, 400)
 
-    def test_badform_incorrect_valuetype(self):
-        """Test 400 returned if no form is provided."""
-        # add datasets
-        db.session.add(self.owned_cooler_1)
-        db.session.commit()
-        # construct form
-        data = {
-            "datasetName": "test",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
-            "ValueType": "Interaction",
-            "Method": "HiC",
-            "public": "false",
-            "Normalization": "ICCF",
-            "assembly": 1,
-        }
-        # put datasets
-        response = self.client.put(
-            f"/api/datasets/{self.owned_cooler_1.id}/",
-            headers=self.token_headers,
-            data=data,
-            content_type="multipart/form-data",
-        )
-        self.assertEqual(response.status_code, 400)
-
     def test_badform_contains_assembly(self):
         """Test 400 returned if no form is provided."""
         # add datasets
@@ -238,12 +201,9 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # construct form
         data = {
             "datasetName": "test",
-            "cellCycleStage": "asynchronous",
+            "cell_type": "cellType",
             "perturbation": "No perturbation",
-            "ValueType": "Interaction",
             "public": "false",
-            "Method": "HiC",
-            "Normalization": "ICCF",
             "SizeType": "IEE",
         }
         # put datasets
@@ -263,12 +223,9 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # construct form
         data = {
             "datasetName": "changedName",
-            "cellCycleStage": "changedCellCycleStage",
+            "cell_type": "changedType",
             "perturbation": "hangedPerturbation",
-            "ValueType": "Interaction",
             "public": "false",
-            "Method": "HiC",
-            "Normalization": "ICCF",
         }
         # put datasets
         response = self.client.put(
@@ -290,9 +247,6 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
                     dataset.__getattribute__(self.field_form_mapping[field]),
                     data[field],
                 )
-        # check whether fields that should be undefined are undefined
-        for field in ["protein", "directionality", "derivationType"]:
-            self.assertEqual(dataset.__getattribute__(field), "undefined")
         # check whether assembly and filetype are unchanged
         self.assertEqual(dataset.assembly, 1)
         self.assertEqual(dataset.filetype, "cooler")
@@ -305,11 +259,9 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # construct form data
         data = {
             "datasetName": "test",
-            "cellCycleStage": "asynchronous",
+            "cell_type": "changedCellType",
             "perturbation": "No perturbation",
-            "ValueType": "Derived",
             "public": "false",
-            "Method": "HiC",
         }
         # put datasets
         response = self.client.put(
@@ -331,50 +283,10 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
                     dataset.__getattribute__(self.field_form_mapping[field]),
                     data[field],
                 )
-        # check whether fields that should be undefined are undefined
-        for field in ["protein", "directionality"]:
-            self.assertEqual(dataset.__getattribute__(field), "undefined")
         # check whether assembly and filetype are unchanged
         self.assertEqual(dataset.assembly, 1)
         self.assertEqual(dataset.filetype, "bedfile")
 
-    def test_modification_goes_through_bedfile_genome_annotation(self):
-        """Test whether correct combination of metadata causes database modifiction."""
-        # add datasets
-        db.session.add(self.bedfile_2)
-        db.session.commit()
-        # construct form data
-        data = {
-            "datasetName": "fdsa",
-            "ValueType": "GenomeAnnotation",
-            "Directionality": "No directionality",
-            "cellCycleStage": "none",
-            "public": "false",
-            "perturbation": "none",
-        }
-        # put datasets
-        response = self.client.put(
-            f"/api/datasets/{self.bedfile_2.id}/",
-            headers=self.token_headers,
-            data=data,
-            content_type="multipart/form-data",
-        )
-        self.assertEqual(response.status_code, 200)
-        # check whether modificaiton fields were modified
-        dataset = Dataset.query.get(self.bedfile_2.id)
-        for field in data.keys():
-            if field == "public":
-                self.assertEqual(
-                    dataset.__getattribute__(self.field_form_mapping[field]), False
-                )
-            else:
-                self.assertEqual(
-                    dataset.__getattribute__(self.field_form_mapping[field]),
-                    data[field],
-                )
-        # check whether assembly and filetype are unchanged
-        self.assertEqual(dataset.assembly, 1)
-        self.assertEqual(dataset.filetype, "bedfile")
 
     def test_public_flag_set_correctly(self):
         """Test if public flag is set correctly."""
@@ -384,9 +296,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # construct form data
         data = {
             "datasetName": "fdsa",
-            "ValueType": "GenomeAnnotation",
-            "Directionality": "No directionality",
-            "cellCycleStage": "none",
+            "cell_type": "changedCellType",
             "perturbation": "none",
             "public": "true",
         }
@@ -422,13 +332,9 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # construct form data
         data = {
             "datasetName": "test",
-            "cellCycleStage": "asynchronous",
+            "cell_type": "changedCellType",
             "perturbation": "No perturbation",
-            "ValueType": "ChromatinAssociation",
-            "Protein": "CTCF",
-            "Method": "ChipSeq",
-            "public": "false",
-            "Normalization": "RPM",
+            "public": "false"
         }
         # put datasets
         response = self.client.put(
@@ -450,9 +356,6 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
                     dataset.__getattribute__(self.field_form_mapping[field]),
                     data[field],
                 )
-        # check whether fields that should be undefined are undefined
-        for field in ["derivationType", "directionality"]:
-            self.assertEqual(dataset.__getattribute__(field), "undefined")
         # check whether assembly and filetype are unchanged
         self.assertEqual(dataset.assembly, 1)
         self.assertEqual(dataset.filetype, "bigwig")
