@@ -40,14 +40,11 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # add content-type
         self.token_headers["Content-Type"] = "multipart/form-data"
 
-    @patch("app.api.post_routes.parse_binsizes")
     @patch("app.models.User.launch_task")
-    def test_dataset_added_correctly_cooler(self, mock_launch, mock_parse_binsizes):
+    def test_dataset_added_correctly_cooler(self, mock_launch):
         """Tests whether a cooler dataset is added
         correctly to the Dataset table following
         a post request."""
-        # define return values
-        mock_parse_binsizes.return_value = [5000000]
         # construct form data
         data = {
             "dataset_name": "test",
@@ -110,8 +107,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dataset_name": "test",
             "assembly": "1",
             "cell_type": 'undefined',
+            "perturbation": "No perturbation",
             "description": "test-description",
-            "Protein": "CTCF",
             "public": "false",
             "filetype": "bigwig",
             "file": (open("tests/testfiles/test.bw", "rb"), "test.bw"),
@@ -128,15 +125,14 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         self.assertEqual(len(Dataset.query.all()), 1)
         dataset = Dataset.query.first()
         expected = {
-            "method": "ChipSeq",
             "id": 1,
             "user_id": 1,
-            "normalization": "RPM",
             "dataset_name": "test",
             "processing_state": "new",
             "upload_state": "uploaded",
             "description": "test-description",
             "perturbation": "No perturbation",
+            "cell_type": 'undefined',
             "file_path": "./tmp_test/1_test.bw",
             "processing_datasets": [],
             "failed_datasets": [],
@@ -144,14 +140,11 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "failed_collections": [],
             "assembly": 1,
             "public": False,
-            "cellCycleStage": "asynchronous",
-            "protein": "CTCF",
-            "valueType": "ChromatinAssociation",
             "filetype": "bigwig",
+            "sizeType": "undefined",
             "repository_name": None,
             "sample_id": None,
             "source_url": None,
-            "metadata_json": {}
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
@@ -171,15 +164,10 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         data = {
             "dataset_name": "test",
             "assembly": "1",
-            "cellCycleStage": "asynchronous",
             "perturbation": "No perturbation",
             "description": "test-description",
-            "ValueType": "ChromatinAssociation",
-            "processing_datasets": [],
-            "Protein": "CTCF",
+            "cell_type": 'undefined',
             "public": "false",
-            "Method": "ChipSeq",
-            "Normalization": "RPM",
             "filetype": "bigwig",
             "file": (open("tests/testfiles/test.bigwig", "rb"), "test.bigwig"),
         }
@@ -195,30 +183,26 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         self.assertEqual(len(Dataset.query.all()), 1)
         dataset = Dataset.query.first()
         expected = {
-            "method": "ChipSeq",
             "id": 1,
             "user_id": 1,
-            "normalization": "RPM",
             "dataset_name": "test",
-            "processing_state": "new",
-            "upload_state": "uploaded",
             "description": "test-description",
             "perturbation": "No perturbation",
             "file_path": "./tmp_test/1_test.bigwig",
+            "cell_type": 'undefined',
+            "upload_state": "uploaded",
+            "processing_state": "new",
             "processing_datasets": [],
             "failed_datasets": [],
             "processing_collections": [],
             "failed_collections": [],
+            "sizeType": "undefined",
             "assembly": 1,
             "public": False,
-            "cellCycleStage": "asynchronous",
-            "protein": "CTCF",
-            "valueType": "ChromatinAssociation",
             "filetype": "bigwig",
             "repository_name": None,
             "sample_id": None,
             "source_url": None,
-            "metadata_json": {}
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
@@ -229,27 +213,21 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         ) as actual_file:
             self.assertEqual(expected_file.read(), actual_file.read())
 
-    @patch("app.api.post_routes.parse_binsizes")
     @patch("app.models.User.launch_task")
     def test_dataset_added_correctly_cooler_wo_description(
-        self, mock_launch, mock_parse_binsizes
+        self, mock_launch
     ):
         """Tests whether a cooler dataset is added
         correctly to the Dataset table following
         a post request."""
-        # add return values
-        mock_parse_binsizes.return_value = [5000000]
         # construct form data
         data = {
             "dataset_name": "test",
             "assembly": "1",
-            "cellCycleStage": "asynchronous",
+            "cell_type": "undefined",
             "perturbation": "No perturbation",
-            "ValueType": "Interaction",
-            "Method": "HiC",
-            "public": "false",
-            "Normalization": "ICCF",
             "filetype": "cooler",
+            "public": "false",
             "file": (open("tests/testfiles/test.mcool", "rb"), "test.mcool"),
         }
         # dispatch post request
@@ -264,34 +242,28 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         self.assertEqual(len(Dataset.query.all()), 1)
         dataset = Dataset.query.first()
         expected = {
-            "normalization": "ICCF",
             "dataset_name": "test",
             "processing_state": "new",
             "upload_state": "uploaded",
             "description": "No description provided",
             "perturbation": "No perturbation",
+            "cell_type": 'undefined',
             "file_path": "./tmp_test/1_test.mcool",
+            "assembly": 1,
+            "public": False,
             "processing_datasets": [],
             "failed_datasets": [],
             "processing_collections": [],
             "failed_collections": [],
-            "assembly": 1,
-            "public": False,
-            "cellCycleStage": "asynchronous",
-            "valueType": "Interaction",
             "filetype": "cooler",
-            "method": "HiC",
-            "available_binsizes": '["5000000"]',
             "user_id": 1,
             "id": 1,
+            "sizeType": "undefined",
             "repository_name": None,
             "sample_id": None,
             "source_url": None,
-            "metadata_json": {}
         }
         self.assertEqual(expected, dataset.to_json())
-        # check whether binsizes have been added correctly -> test cooler contains single resolution with size 5 * 10**6
-        self.assertEqual(json.loads(dataset.available_binsizes), ["5000000"])
 
     @patch("app.models.User.launch_task")
     def test_dataset_added_correctly_bed(self, mock_launch):
@@ -303,11 +275,9 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
-            "cellCycleStage": "asynchronous",
             "perturbation": "No perturbation",
-            "ValueType": "Derived",
+            "cell_type": "undefined",
             "public": "false",
-            "Method": "HiC",
             "SizeType": "interval",
             "filetype": "bedfile",
             "file": (open("tests/testfiles/tad_boundaries.bed", "rb"), "test.bed"),
@@ -326,6 +296,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         expected = {
             "dataset_name": "test",
             "processing_state": "processing",
+            "cell_type": 'undefined',
             "upload_state": "uploaded",
             "description": "test-description",
             "sizeType": "interval",
@@ -337,16 +308,12 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "failed_collections": [],
             "assembly": 1,
             "public": False,
-            "cellCycleStage": "asynchronous",
-            "valueType": "Derived",
-            "filetype": "bedfile",
-            "method": "HiC",
             "user_id": 1,
+            "filetype": "bedfile",
             "id": 1,
             "repository_name": None,
             "sample_id": None,
             "source_url": None,
-            "metadata_json": {}
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
@@ -365,11 +332,9 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
-            "cellCycleStage": "asynchronous",
             "perturbation": "No perturbation",
-            "ValueType": "Derived",
+            "cell_type": "undefined",
             "public": "false",
-            "Method": "HiC",
             "SizeType": "interval",
             "filetype": "bedfile",
             "file": (open("tests/testfiles/test_small.bedpe", "rb"), "test_small.bedpe"),
@@ -391,6 +356,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "upload_state": "uploaded",
             "description": "test-description",
             "sizeType": "interval",
+            "cell_type": "undefined",
             "perturbation": "No perturbation",
             "file_path": "./tmp_test/1_test_small.bedpe",
             "processing_datasets": [],
@@ -399,16 +365,12 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "failed_collections": [],
             "assembly": 1,
             "public": False,
-            "cellCycleStage": "asynchronous",
-            "valueType": "Derived",
             "filetype": "bedfile",
-            "method": "HiC",
             "user_id": 1,
             "id": 1,
             "repository_name": None,
             "sample_id": None,
             "source_url": None,
-            "metadata_json": {}
         }
         self.assertEqual(expected, dataset.to_json())
         # test whether uploaded file exists
@@ -425,15 +387,12 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
-            "ValueType": "Derived",
+            "cell_type": "undefined",
+            "perturbation": "undefined",
             "public": "false",
-            "Method": "HiC",
             "SizeType": "interval",
             "filetype": "bad",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
-            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -453,15 +412,12 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
-            "cellCycleStage": "asynchronous",
             "perturbation": "No perturbation",
-            "ValueType": "Derived",
-            "Method": "HiC",
+            "cell_type": "undefined",
             "public": "false",
             "SizeType": "interval",
             "filetype": "bedfile",
-            "file": (io.BytesIO(b"abcdef"), "test.bed"),
-            "Directionality": "-",
+            "file": (open("tests/testfiles/tad_boundaries.bed", "rb"), "test.bed"),
         }
         # dispatch post request
         response = self.client.post(
@@ -486,15 +442,12 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         data = {
             "assembly": "1",
             "description": "test-description",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
-            "ValueType": "Derived",
+            "cell_type": "undefined",
+            "perturbation": "undefined",
             "public": "false",
-            "Method": "HiC",
             "SizeType": "interval",
-            "filetype": "bedfile",
+            "filetype": "bad",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
-            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -509,17 +462,14 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         """Tests whether form without file is rejected"""
         # construct form data
         data = {
-            "dataset_name": "IE",
+            "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
-            "ValueType": "Derived",
+            "cell_type": "undefined",
+            "perturbation": "undefined",
             "public": "false",
-            "Method": "HiC",
             "SizeType": "interval",
             "filetype": "bedfile",
-            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -537,15 +487,12 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
-            "ValueType": "Derived",
+            "cell_type": "undefined",
+            "perturbation": "undefined",
             "public": "false",
-            "Method": "HiC",
             "SizeType": "interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.mcool"),
-            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -561,16 +508,14 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # construct form data
         data = {
             "dataset_name": "test",
-            "description": "test-description",
             "assembly": "1",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
+            "description": "test-description",
+            "cell_type": "undefined",
+            "perturbation": "undefined",
             "public": "false",
-            "ValueType": "Interaction",
-            "Method": "HiC",
-            "Normalization": "ICCF",
+            "SizeType": "interval",
             "filetype": "cooler",
-            "file": (open("tests/testfiles/test.mcool", "rb"), "test.bed"),
+            "file": (io.BytesIO(b"abcdef"), "test.bed"),
         }
         # dispatch post request
         response = self.client.post(
@@ -588,15 +533,12 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
-            "ValueType": "Derived",
+            "cell_type": "undefined",
+            "perturbation": "undefined",
             "public": "false",
-            "Method": "HiC",
             "SizeType": "interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test"),
-            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -614,15 +556,12 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
-            "ValueType": "Derived",
-            "Method": "HiC",
+            "cell_type": "undefined",
+            "perturbation": "undefined",
             "public": "false",
             "SizeType": "interval",
             "filetype": "bedfile",
             "file": open("tests/testfiles/wrongly_formatted_bedfile.bed", "rb"),
-            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -649,14 +588,12 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # construct form data
         data = {
             "dataset_name": "test",
-            "description": "test-description",
             "assembly": "1",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
-            "ValueType": "Interaction",
+            "description": "test-description",
+            "cell_type": "undefined",
+            "perturbation": "undefined",
             "public": "false",
-            "Method": "HiC",
-            "Normalization": "ICCF",
+            "SizeType": "interval",
             "filetype": "cooler",
             "file": (open("tests/testfiles/bad_cooler.mcool", "rb"), "test.mcool"),
         }
@@ -687,15 +624,12 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
-            "ValueType": "Derived",
+            "cell_type": "undefined",
+            "perturbation": "undefined",
             "public": "true",
-            "Method": "HiC",
             "SizeType": "interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
-            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(
@@ -719,15 +653,12 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dataset_name": "test",
             "assembly": "1",
             "description": "test-description",
-            "cellCycleStage": "asynchronous",
-            "perturbation": "No perturbation",
-            "ValueType": "Derived",
+            "cell_type": "undefined",
+            "perturbation": "undefined",
             "public": "false",
-            "Method": "HiC",
             "SizeType": "interval",
             "filetype": "bedfile",
             "file": (io.BytesIO(b"abcdef"), "test.bed"),
-            "Directionality": "-",
         }
         # dispatch post request
         response = self.client.post(

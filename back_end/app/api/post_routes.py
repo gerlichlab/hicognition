@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from flask.json import jsonify
 
-from ..lib.utils import get_all_interval_ids, parse_binsizes
+from ..lib.utils import get_all_interval_ids
 from ..lib.format_checkers import FORMAT_CHECKERS
 from . import api
 from .. import db
