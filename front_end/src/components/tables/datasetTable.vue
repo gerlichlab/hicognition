@@ -85,66 +85,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Filters --->
-            <div
-                class="md-layout md-gutter md-alignment-center-left selection-field md-elevation-2"
-                style="max-height: 50px; overflow: visible"
-            >
-                <div class="md-layout-item md-size-10 small-vertical-margin">
-                    <md-button
-                        class="md-icon-button md-accent"
-                        @click="
-                            showFilters = !showFilters;
-                            showFields = false;
-                        "
-                    >
-                        <md-icon>filter_alt</md-icon>
-                    </md-button>
-                </div>
-                <div class="md-layout-item">
-                    <span class="md-caption md-accent">Filter</span>
-                </div>
-                <div
-                    class="md-layout-item md-layout md-gutter md-size-100 small-vertical-margin selection-field small-padding"
-                    v-if="showFilters"
-                    style="z-index: 500; max-height: 30vh; overflow: auto"
-                >
-                    <div class="md-layout-item md-layout md-gutter md-size-100">
-                        <div
-                            class="md-layout-item md-size-20 small-padding"
-                            v-for="(value, key) in filterFields"
-                            :key="key"
-                        >
-                            <md-menu
-                                md-direction="bottom-start"
-                                md-size="auto"
-                                md-align-trigger
-                                :mdCloseOnClick="false"
-                                :mdCloseOnSelect="false"
-                            >
-                                <md-button md-menu-trigger class="md-raised">{{
-                                    value
-                                }}</md-button>
-
-                                <md-menu-content
-                                    style="z-index: 500"
-                                    class="blue-background"
-                                >
-                                    <md-menu-item
-                                        v-for="option in getFieldOptions(value)"
-                                        :key="option"
-                                        @click="
-                                            setFilterSelection(value, option)
-                                        "
-                                        :class="getOptionClass(value, option)"
-                                        >{{ option }}</md-menu-item
-                                    >
-                                </md-menu-content>
-                            </md-menu>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <!-- Fields --->
             <div
                 class="md-layout md-gutter md-alignment-center-left selection-field md-elevation-2 small-vertical-margin"
@@ -378,15 +318,14 @@ export default {
         if (this.finishedDatasets) {
             selectedFields = [
                 "dataset_name",
-                "valueType",
+                "cell_type",
                 "perturbation",
-                "cellCycleStage",
                 "status"
             ];
         } else {
             selectedFields = [
                 "dataset_name",
-                "valueType",
+                "cell_type",
                 "perturbation",
                 "processing_datasets",
                 "processing_collections"
@@ -754,27 +693,12 @@ export default {
             }
         },
         possibleFields: function() {
-            const outputFields = {
+            let outputFields = {
                 dataset_name: "Name",
-                valueType: "ValueType",
+                cell_type: "Cell type",
+                description: "Description",
                 perturbation: "Perturbation",
-                cellCycleStage: "Cell cycle Stage"
             };
-            let fields = new Set();
-            // go through possible fields of this value type
-            for (let valueType of Object.keys(
-                this.datasetMetadataMapping[this.datasetType]["ValueType"]
-            )) {
-                Object.keys(
-                    this.datasetMetadataMapping[this.datasetType]["ValueType"][
-                        valueType
-                    ]
-                ).forEach(element => fields.add(element));
-            }
-            Array.from(fields.values()).forEach(
-                element =>
-                    (outputFields[fieldToPropertyMapping[element]] = element)
-            );
             // put in status if needed
             if (this.finishedDatasets) {
                 outputFields["status"] = "Status";
