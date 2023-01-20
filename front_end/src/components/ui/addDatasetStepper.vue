@@ -46,26 +46,6 @@
                 <step-3-bulk-dataset-form
                     :fileInformation="elements"
                     :fileTypeMapping="fileTypeMapping"
-                    @step-completion="
-                        handleStepCompletion($event, 'third', 'fourth')
-                    "
-                />
-                <md-button
-                    class="md-raised md-primary"
-                    @click="$emit('close-dialog')"
-                    >Close</md-button
-                >
-            </md-step>
-            <md-step
-                id="fourth"
-                md-label="Technical information"
-                :md-editable="false"
-                :md-done.sync="fourth"
-            >
-                <step-4-bulk-dataset-form
-                    :fileInformation="elements"
-                    :fileTypeMapping="fileTypeMapping"
-                    v-if="third"
                 />
                 <md-button
                     class="md-raised md-primary"
@@ -81,7 +61,6 @@
 import selectBulkDatasetForm from "../forms/selectBulkDatasetForm.vue";
 import step2BulkDatasetForm from "../forms/step2BulkDatasetForm.vue";
 import step3BulkDatasetForm from "../forms/step3BulkDatasetForm.vue";
-import step4BulkDatasetForm from "../forms/step4BulkDatasetForm.vue";
 
 export default {
     name: "dataset-stepper",
@@ -89,7 +68,6 @@ export default {
         selectBulkDatasetForm,
         step2BulkDatasetForm,
         step3BulkDatasetForm,
-        step4BulkDatasetForm
     },
     props: {
         fileTypeMapping: Object
@@ -99,7 +77,6 @@ export default {
         first: false,
         second: false,
         third: false,
-        fourth: false,
         selectedFiles: null,
         elements: undefined
     }),

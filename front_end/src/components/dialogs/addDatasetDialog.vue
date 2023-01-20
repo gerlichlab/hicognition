@@ -78,6 +78,7 @@
                         <addDatasetStepper
                             @close-dialog="$emit('close-dialog')"
                             :datasetType="datatype"
+                            :fileTypeMapping="fileTypeMapping"
                         >
                         </addDatasetStepper>
                     </md-tab>
@@ -114,6 +115,28 @@ export default {
                 return "Add genomic region";
             } else {
                 return "Add dataset";
+            }
+        },
+        fileTypeMapping: function () {
+            if (this.datatype == "feature") {
+                return {
+                    mcool: "cooler",
+                    bw: "bigwig",
+                    bigwig: "bigwig",
+                    bigWig: "bigwig",
+                };
+            } else if (this.datatype == "region") {
+                return {
+                    bed: "bedfile",
+                };
+            } else {
+                return {
+                    bed: "bedfile",
+                    mcool: "cooler",
+                    bw: "bigwig",
+                    bigwig: "bigwig",
+                    bigWig: "bigwig",
+                };
             }
         },
         showDialog: function() {

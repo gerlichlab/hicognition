@@ -29,48 +29,22 @@
                         </div>
 
                         <div class="md-layout-item md-size-25">
-                            <md-field
-                                :class="{
-                                    'md-invalid':
-                                        v.ValueType.$invalid &&
-                                        v.ValueType.$dirty
-                                }"
-                            >
-                                <label :for="`valueType-${element.id}`"
-                                    >Value Type</label
+                            <md-field>
+                                <label :for="`celltype-${element.id}`"
+                                    >Celltype</label
                                 >
-                                <md-select
-                                    :name="`valueType-${element.id}`"
-                                    :id="`valueType-${element.id}`"
-                                    v-model="element.ValueType"
-                                    required
+                                <md-input
+                                    :name="`celltype-${element.id}`"
+                                    :id="`celltype-${element.id}`"
+                                    v-model="element.cellType"
                                     :disabled="sending"
-                                >
-                                    <md-option
-                                        v-for="valueType in getValueTypes(
-                                            element.id
-                                        )"
-                                        :key="valueType"
-                                        :value="valueType"
-                                        >{{ valueType }}</md-option
-                                    >
-                                </md-select>
-                                <span
-                                    class="md-error"
-                                    v-if="!v.ValueType.required"
-                                    >A ValueType is required</span
-                                >
+                                    required
+                                />
                             </md-field>
                         </div>
 
                         <div class="md-layout-item md-size-25">
-                            <md-field
-                                :class="{
-                                    'md-invalid':
-                                        v.perturbation.$invalid &&
-                                        v.perturbation.$dirty
-                                }"
-                            >
+                            <md-field>
                                 <label :for="`perturbation-${element.id}`"
                                     >Perturbation</label
                                 >
@@ -81,38 +55,22 @@
                                     :disabled="sending"
                                     required
                                 />
-                                <span
-                                    class="md-error"
-                                    v-if="!v.perturbation.required"
-                                    >Perturbation information is required</span
-                                >
                             </md-field>
                         </div>
-
-                        <div class="md-layout-item md-size-25">
-                            <md-field
-                                :class="{
-                                    'md-invalid':
-                                        v.cellCycleStage.$invalid &&
-                                        v.cellCycleStage.$dirty
-                                }"
-                            >
-                                <label :for="`cellCycleStage-${element.id}`"
-                                    >Cell Cycle Stage</label
+                        <div class="md-layout-item md-size-10">
+                            <transition name="component-fade" mode="out-in">
+                                <md-icon
+                                    class="top-margin"
+                                    v-if="element.state == `finished`"
+                                    >done</md-icon
                                 >
-                                <md-input
-                                    :name="`cellCycleStage-${element.id}`"
-                                    :id="`cellCycleStage-${element.id}`"
-                                    v-model="element.cellCycleStage"
-                                    :disabled="sending"
-                                    required
-                                />
-                                <span
-                                    class="md-error"
-                                    v-if="!v.cellCycleStage.required"
-                                    >Cell cycle information is required</span
-                                >
-                            </md-field>
+                                <md-progress-spinner
+                                    :md-diameter="30"
+                                    md-mode="indeterminate"
+                                    class="top-margin"
+                                    v-if="element.state == 'processing'"
+                                ></md-progress-spinner>
+                            </transition>
                         </div>
                     </div>
                 </md-card-content>
@@ -121,17 +79,20 @@
                         type="submit"
                         class="md-primary"
                         :disabled="sending"
-                        >Continue</md-button
+                        >Submit</md-button
                     >
                 </md-card-actions>
             </md-card>
+            <md-snackbar :md-active.sync="datasetSaved"
+                >The Datasets were added successfully and are ready for
+                preprocessing!</md-snackbar
+            >
         </form>
     </div>
 </template>
 
 <script>
 import { validationMixin } from "vuelidate";
-import { required } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 export default {
@@ -151,58 +112,82 @@ export default {
     validations: {
         elements: {
             $each: {
-                perturbation: { required },
-                ValueType: { required },
-                cellCycleStage: { required }
+                perturbation: { },
+                cellType: { }
             }
         }
     },
     methods: {
-        getValueTypes: function(id) {
-            const filename = this.fileInformation[id].filename;
-            return Object.keys(
-                this.datasetMetadataMapping[this.getFileType(filename)][
-                    "ValueType"
-                ]
-            );
-        },
         getFileType: function(filename) {
             let fileEnding = filename.split(".").pop();
             return this.fileTypeMapping[fileEnding];
         },
         clearForm() {
             this.$v.$reset();
-            const numElements = this.elements.length;
-            this.elements = [];
-            for (let i = 0; i < numElements; i++) {
-                var tempObject = {
-                    datasetName: this.fileInformation[i].datasetName,
-                    id: i,
-                    perturbation: null,
-                    cellCycleStage: null,
-                    ValueType: null
-                };
-                this.elements.push(tempObject);
-            }
+            this.initializeFields()
         },
         saveDataset: async function() {
             this.sending = true; // show progress bar
-            // emit data
-            let information = {};
+            // switch all datasets to processing
             for (let element of this.elements) {
-                information[element.id] = Object.assign(
-                    this.fileInformation[element.id],
-                    element
-                );
+                element.state = "processing";
             }
-            this.$emit("step-completion", information);
+            // form
+            for (let element of this.elements) {
+                // construct form data
+                var formData = new FormData();
+                for (let key in element) {
+                    if (
+                        key !== "id" &&
+                        key !== "filename" &&
+                        key !== "file" &&
+                        key !== "state"
+                    ) {
+                        formData.append(key, element[key]);
+                    }
+                }
+                // add files
+                formData.append("file", element.file, element.file.name);
+                // add filetype
+                formData.append(
+                    "filetype",
+                    this.getFileType(element.file.name)
+                );
+                // send
+                await this.postData("datasets/", formData).then(response => {
+                    if (!response) {
+                        this.sending = false;
+                        return;
+                    }
+                });
+                // signal finished
+                element.state = "finished";
+            }
             this.clearForm();
             this.sending = false;
+            setTimeout(() => (this.datasetSaved = true), 200);
         },
         validateDataset() {
             this.$v.$touch();
             if (!this.$v.$invalid) {
                 this.saveDataset();
+            }
+        },
+        initializeFields() {
+            this.elements = [];
+            for (let id of Object.keys(this.fileInformation)) {
+                let tempObject = {
+                    id: id,
+                    datasetName: this.fileInformation[id].datasetName,
+                    assembly: this.fileInformation[id].assembly,
+                    file: this.fileInformation[id].file,
+                    public: this.fileInformation[id].public,
+                    sizeType: this.fileInformation[id].sizeType,
+                    perturbation: null,
+                    cellType: null,
+                    state: undefined
+                };
+                this.elements.push(tempObject);
             }
         }
     },
@@ -214,18 +199,9 @@ export default {
     watch: {
         fileInformation: function(val) {
             if (val) {
-                for (let id of Object.keys(this.fileInformation)) {
-                    var tempObject = {
-                        id: id,
-                        datasetName: this.fileInformation[id].datasetName,
-                        ValueType: null,
-                        perturbation: null,
-                        cellCycleStage: null
-                    };
-                    this.elements.push(tempObject);
+                    this.initializeFields()
                 }
             }
-        }
     }
 };
 </script>

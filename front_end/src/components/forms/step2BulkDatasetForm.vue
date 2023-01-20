@@ -20,7 +20,7 @@
                             </md-field>
                         </div>
 
-                        <div class="md-layout-item md-size-30">
+                        <div class="md-layout-item md-size-15">
                             <md-field
                                 :class="{
                                     'md-invalid':
@@ -89,6 +89,35 @@
                             </md-field>
                         </div>
 
+                        <div class="md-layout-item md-size-15" v-if="isRegion">
+                            <md-field 
+                                :class="{
+                                    'md-invalid':
+                                        v.sizeType.$invalid &&
+                                        v.sizeType.$dirty
+                                }"
+                            >
+                                <label :for="`sizeType-${element.id}`">SizeType</label>
+                                <md-select
+                                    :name="`sizeType-${element.id}`"
+                                    :id="`sizeType-${element.id}`"
+                                    v-model="element.sizeType"
+                                    :disabled="sending"
+                                    required
+                                >
+                                    <md-option value="Point">Point</md-option>
+                                    <md-option value="Interval">Interval</md-option>
+                                </md-select>
+                                <span
+                                    class="md-error"
+                                    v-if="!v.sizeType.required"
+                                    >A size type is required for regions</span
+                                >
+                            </md-field>
+                        </div>
+
+
+
                         <div class="md-layout-item md-size-10">
                             <md-checkbox
                                 v-model="element.public"
@@ -115,7 +144,7 @@
 
 <script>
 import { validationMixin } from "vuelidate";
-import { required, maxLength } from "vuelidate/lib/validators";
+import { required, requiredIf, maxLength } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 export default {
@@ -132,7 +161,19 @@ export default {
         elements: [],
         datasetMetadataMapping: undefined
     }),
-    computed: {},
+    computed: {
+        isRegion: function() {
+            if (!this.files){
+                return
+            }
+            for (let i = 0; i < this.files.length; i++) {
+                if (this.getFileType(this.files[i].name) == 'bedfile'){
+                    return true
+                }
+            }
+            return false
+        }
+    },
     validations: {
         elements: {
             $each: {
@@ -140,12 +181,21 @@ export default {
                     required,
                     maxLength: maxLength(30)
                 },
+                sizeType: {
+                    required: requiredIf(function (value, vam){
+                        return this.isRegion
+                })
+                },
                 assembly: { required },
                 public: {}
             }
         }
     },
     methods: {
+        getFileType: function(filename) {
+            let fileEnding = filename.split(".").pop();
+            return this.fileTypeMapping[fileEnding];
+        },
         fetchAssemblies() {
             this.fetchData("assemblies/").then(response => {
                 if (response) {
@@ -165,6 +215,7 @@ export default {
                     id: i,
                     datasetName: null,
                     assembly: null,
+                    sizeType: null,
                     filename: this.files[i].name,
                     file: this.files[i],
                     public: true
@@ -204,6 +255,7 @@ export default {
                         id: i,
                         datasetName: null,
                         assembly: null,
+                        sizeType: null,
                         filename: this.files[i].name,
                         file: this.files[i],
                         public: false
