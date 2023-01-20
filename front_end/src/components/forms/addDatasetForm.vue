@@ -163,14 +163,33 @@
                             />
                         </div>
                     </div>
-                    <!-- metadata -->
-                    <div v-if="componentValid">
-                        <md-divider />
-                        <md-list>
-                            <md-subheader>Dataset descriptions</md-subheader>
-                            <metadataField :fieldContent="fileTypes[selectedFileType]['metadata']" @data-changed="metadataChanged" />
-                        </md-list>
-                        <md-divider />
+                    <!-- perturbation -->
+                    <div class="md-layout md-gutter">
+                        <div class="md-layout-item md-small-size-50">
+                            <md-field>
+                                    <label for="perturbation">Perturbation</label>
+                                    <md-input
+                                        name="perturbation"
+                                        id="perturbation"
+                                        v-model="form.perturbation"
+                                        :disabled="sending"
+                                        maxlength="30"
+                                    />
+                            </md-field>
+                        </div>
+                        <!-- celltype -->
+                        <div class="md-layout-item md-small-size-50">
+                            <md-field>
+                                    <label for="celltype">Cell type</label>
+                                    <md-input
+                                        name="celltype"
+                                        id="celltype"
+                                        v-model="form.cellType"
+                                        :disabled="sending"
+                                        maxlength="30"
+                                    />
+                            </md-field>
+                        </div>
                     </div>
                     <!-- Short description field -->
                     <md-field :class="getValidationClass('description')">
@@ -219,7 +238,6 @@ import { apiMixin } from "../../mixins";
 import formFileInput from "./formFileInput";
 import formURLInput from "./formURLInput";
 import formRepositoryInput from "./formRepositoryInput";
-import metadataField from "./metadataField";
 
 export default {
     name: "AddDatasetForm",
@@ -230,8 +248,7 @@ export default {
     components: {
         formFileInput,
         formRepositoryInput,
-        formURLInput,
-        metadataField
+        formURLInput
     },
     data: () => ({
         form: {
@@ -241,6 +258,8 @@ export default {
             sizeType: null,
             file: null,
             description: null,
+            perturbation: null,
+            cellType: null,
             fileSource: "httpUpload"
         },
         fileTypes: null,
@@ -248,7 +267,6 @@ export default {
         sending: false,
         selectedFile: null,
         sourceURL: null,
-        metadata: {},
         assemblies: {},
         repositories: {}, // TODO sprint9
         repositoryMetadata: null,
@@ -269,6 +287,8 @@ export default {
                     minLength: minLength(3)
                 },
                 public: {},
+                cellType: {},
+                perturbation: {},
                 assembly: {
                     required
                 },
@@ -297,10 +317,6 @@ export default {
         }
     },
     methods: {
-        metadataChanged: function(key, value) {
-            console.log(key + " = " + value);
-            this.metadata[key] = value;
-        },
         updateComponentValidity: function(validity) {
             this.componentValid = validity;
         },
@@ -365,8 +381,9 @@ export default {
                 formData.append("sizeType", this.form["sizeType"]);
             }
             formData.append('description', this.form['description']);
+            formData.append('perturbation', this.form['perturbation']);
+            formData.append('cellType', this.form['cellType']);
             formData.append("filetype", this.selectedFileType);
-            formData.append("metadata_json", JSON.stringify(this.metadata));
 
             // Differentiate depending on chosen file source
             var postRoute = "";
