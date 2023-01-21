@@ -40,51 +40,6 @@ def clean_bedpe(input_file, output_file, chromosome_names=[]):
     
     bedpe_df.to_csv(output_file, sep="\t", index=False, header=None)
 
-# obsolute, not used, ambiguous naming, would expect to convert bed to bedpe, but apply window around points
-def convert_bed_to_bedpe(input_file, target_file, halfwindowsize, chromsize_path):
-    """Converts bedfile at inputFile to a bedpefile,
-    expanding the point of interest up- and downstream
-    by halfwindowsize basepairs.
-
-    Only intervals that fall within the bounds of
-    chromosomes are written out.
-    """
-    # load input_file
-    input_frame = pd.read_csv(input_file, sep="\t", header=None)
-    # handle case that positions are specified in two columns
-    if (
-        len(input_frame.columns) > 2
-    ):  # assuming second and third column hold position info
-        input_frame = input_frame.rename(columns={0: "chrom", 1: "start", 2: "end"})
-        input_frame.loc[:, "pos"] = (input_frame["start"] + input_frame["end"]) // 2
-        temp_frame = input_frame[["chrom", "pos"]]
-    else:  # assuming second column holds position info
-        input_frame = input_frame.rename(columns={0: "chrom", 1: "pos"})
-        temp_frame = input_frame
-    # stitch together output frame
-    left_pos = temp_frame["pos"] - halfwindowsize
-    right_pos = temp_frame["pos"] + halfwindowsize
-    half_frame = pd.DataFrame(
-        {"chrom": temp_frame["chrom"], "start1": left_pos, "end1": right_pos}
-    )
-    # filter by chromosome sizes
-    chrom_sizes = pd.read_csv(chromsize_path, sep="\t", header=None)
-    chrom_sizes.columns = ["chrom", "length"]
-    half_frame_chromo = pd.merge(half_frame, chrom_sizes, on="chrom")
-    # generate filter expression
-    retained_rows = (half_frame_chromo["start1"] > 0) & (
-        half_frame_chromo["end1"] < half_frame_chromo["length"]
-    )
-    # filter dataframe
-    filtered = half_frame_chromo.loc[retained_rows, :].drop(columns=["length"])
-    # select row_ids of the original bed-file that are retained
-    bed_row_index = np.arange(len(half_frame_chromo))[retained_rows]
-    # construct final dataframe and write it to file
-    final = pd.concat((filtered, filtered), axis=1)
-    # add bed_row_index as final column
-    final.loc[:, "bed_row_index"] = bed_row_index
-    final.to_csv(target_file, sep="\t", header=None, index=False)
-
 
 def clean_bed(input_file, output_file, chromosome_names=[]):
     """

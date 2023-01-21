@@ -128,7 +128,6 @@ def add_dataset():
         processing_state="new", upload_state="new", user_id=g.current_user.id
     )
     # fill with form data
-    # TODO check if everything is as expected in config!
     [setattr(new_entry, key, val) for key, val in data.__dict__.items()]
 
     # new_entry.add_fields_from_form(data)

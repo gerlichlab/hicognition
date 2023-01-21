@@ -6,15 +6,6 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-def _recursive_keys(metadata_dict: dict) -> set:
-    keys = set()
-    for key, value in metadata_dict.items():
-        keys.add(key)
-        if isinstance(value, dict):
-            keys.update(_recursive_keys(value))
-    return keys
-
-
 class Config:
     """Config class for hicognition server."""
 
