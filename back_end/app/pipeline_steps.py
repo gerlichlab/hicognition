@@ -78,6 +78,8 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
     intervals = Intervals.query.get(interval_id)
     # get path to interval regions
     regions_path = intervals.source_dataset.file_path
+    # get dimension
+    dimension = intervals.source_dataset.dimension
     # do pileup
     current_app.logger.debug(f"      {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Doing pileup...")
     # get windowsize
@@ -97,6 +99,7 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
             arms,
             pileup_type,
             collapse=False,
+            dimension=dimension
         )
     else:
         pileup_array = worker_funcs._do_pileup_variable_size(

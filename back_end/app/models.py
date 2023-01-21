@@ -561,6 +561,9 @@ class Dataset(db.Model):
                 "run bed preprocessing",
                 self.id,
             )
+            # set bedpe to 2d
+            if self.file_path.lower().endswith('bedpe'):
+                self.dimension = "2d"
             self.processing_state = "processing"
 
         # if filetype is cooler, store available binsizes

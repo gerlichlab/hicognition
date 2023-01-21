@@ -359,7 +359,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dataset_name": "test",
             "processing_state": "processing",
             "upload_state": "uploaded",
-            "dimension": "1d",
+            "dimension": "2d",
             "description": "test-description",
             "sizeType": "interval",
             "cell_type": "undefined",

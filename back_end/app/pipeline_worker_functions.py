@@ -4,7 +4,6 @@ changes"""
 import os
 import logging
 import uuid
-from isort import file
 import pandas as pd
 import numpy as np
 import umap
@@ -40,13 +39,20 @@ log = logging.getLogger("rq.worker")
 
 
 def _do_pileup_fixed_size(
-    cooler_dataset, window_size, binsize, regions_path, arms, pileup_type, collapse=True
+    cooler_dataset, window_size, binsize, regions_path, arms, pileup_type, collapse=True, dimension="1d"
 ):
     """do pileup with subsequent averaging for regions with a fixed size"""
-    # load regions and search for center
-    regions = pd.read_csv(regions_path, sep="\t", header=None)
-    regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
-    regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
+    # load regions and search for center, dependent on dimensions of region
+    if dimension == '1d':
+        regions = pd.read_csv(regions_path, sep="\t", header=None)
+        regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
+        regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
+    else:
+        regions = pd.read_csv(regions_path, sep="\t", header=None)
+        regions = regions.rename(columns={0: "chrom1", 1: "start1", 2: "end1",
+                                            3: "chrom2", 4:"start2", 5: "end2"})
+        regions.loc[:, "pos1"] = (regions["start1"] + regions["end1"]) // 2
+        regions.loc[:, "pos2"] = (regions["start2"] + regions["end2"]) // 2
     # open cooler and check whether resolution is defined, if not return empty array
     try:
         cooler_file = cooler.Cooler(
@@ -58,9 +64,19 @@ def _do_pileup_fixed_size(
             return np.full((output_shape, output_shape), np.nan)
         return np.full((output_shape, output_shape, len(regions)), np.nan)
     # assing regions to support
-    pileup_windows = HT.assign_regions(
-        window_size, int(binsize), regions["chrom"], regions["pos"], arms
-    )
+    if dimension == "1d":
+        pileup_windows = HT.assign_regions(
+            window_size, int(binsize), regions["chrom"], regions["pos"], arms
+        )
+    else:
+        pileup_windows = HT.assign_regions_2d(
+            window_size, int(binsize),
+            regions["chrom1"],
+            regions["pos1"],
+            regions["chrom2"],
+            regions["pos2"],
+            arms
+        )
     # create placeholder with nans
     good_indices = ~pileup_windows.region.isnull().values
     pileup_windows = pileup_windows.dropna()
