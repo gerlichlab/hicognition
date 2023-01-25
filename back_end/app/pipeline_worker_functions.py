@@ -130,12 +130,16 @@ def _do_pileup_fixed_size(
 
 
 def _do_pileup_variable_size(
-    cooler_dataset, binsize, regions_path, arms, pileup_type, collapse=True
+    cooler_dataset, binsize, regions_path, arms, pileup_type, collapse=True, dimension="1d"
 ):
     """do pileup with subsequent averaging for regions with a variable size"""
     # load regions
     regions = pd.read_csv(regions_path, sep="\t", header=None)
-    regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
+    if dimension == "1d":
+        regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
+    else:
+        regions = regions.rename(columns={0: "chrom1", 1: "start1", 2: "end1",
+                                            3: "chrom2", 4:"start2", 5: "end2"})
     # search for optimal binsize
     bin_number_expanded = interval_operations.get_bin_number_for_expanded_intervals(
         binsize, current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]

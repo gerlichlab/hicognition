@@ -103,7 +103,7 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
         )
     else:
         pileup_array = worker_funcs._do_pileup_variable_size(
-            cooler_dataset, binsize, regions_path, arms, pileup_type, collapse=False
+            cooler_dataset, binsize, regions_path, arms, pileup_type, collapse=False, dimension=dimension
         )
     embedding_results = worker_funcs._do_embedding_2d(pileup_array)
     # add result to database
