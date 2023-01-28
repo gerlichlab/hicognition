@@ -109,11 +109,12 @@ export var apiMixin = {
                         error.response.status == 401
                     ) {
                         // check whether this is a confirmation failure
-                        if (error.response.data.message.includes('Unconfirmed')) {
+                        if (error.response.data.message && error.response.data.message.includes('Unconfirmed')) {
                             this.$router.push("/resendEmail")
                         }else{
                             // Token problem, delete it and return to login
                             this.$store.commit("clearToken"); // FIXME currently token cleared when 403 is sent
+                            console.log("test reached");
                             this.$router.push("/login");
                         }
                     } else {
@@ -160,7 +161,7 @@ export var apiMixin = {
                         error.response.status == 401
                     ) {
                         // check whether this is a confirmation failure
-                        if (error.response.data.message == 'Unconfirmed') {
+                        if (error.response.data.message && error.response.data.message == 'Unconfirmed') {
                             this.$router.push("/resendEmail")
                         }else{
                             // Token problem, delete it and return to login
@@ -211,7 +212,7 @@ export var apiMixin = {
                         error.response.status == 401
                     ) {
                         // check whether this is a confirmation failure
-                        if (error.response.data.message == 'Unconfirmed') {
+                        if (error.response.data.message && error.response.data.message == 'Unconfirmed') {
                             this.$router.push("/resendEmail")
                         }else{
                             // Token problem, delete it and return to login
@@ -252,7 +253,7 @@ export var apiMixin = {
                         error.response.status == 401
                     ) {
                         // check whether this is a confirmation failure
-                        if (error.response.data.message == 'Unconfirmed') {
+                        if (error.response.data.message && error.response.data.message == 'Unconfirmed') {
                             this.$router.push("/resendEmail")
                         }else{
                             // Token problem, delete it and return to login
