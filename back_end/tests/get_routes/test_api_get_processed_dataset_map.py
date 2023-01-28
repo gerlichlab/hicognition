@@ -60,12 +60,6 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             processing_state="finished",
             sizeType="Interval",
         )
-        self.owned_datasets = [
-            self.owned_bedfile,
-            self.owned_coolerfile,
-            self.owned_bigwig,
-            self.owned_bedfile_interval,
-        ]
         self.not_owned_bigwig = self.create_dataset(
             id=5,
             user_id=2,
@@ -94,6 +88,20 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             dataset_name="testfile8",
             processing_state="finished",
         )
+        self.owned_bedfile2d = self.create_dataset(
+            id=10,
+            user_id=1,
+            filetype="bedfile",
+            dataset_name="testfile8",
+            processing_state="finished",
+            dimension="2d"
+        )
+        self.owned_datasets = [
+            self.owned_bedfile,
+            self.owned_coolerfile,
+            self.owned_bigwig,
+            self.owned_bedfile_interval
+        ]
         self.not_owned_datasets = [self.not_owned_bigwig, self.not_owned_cooler]
         # add bedfile with interval sizetype
         # create colledtions
@@ -111,6 +119,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             Intervals(id=3, dataset_id=1, windowsize=30000),
             Intervals(id=7, dataset_id=9),
         ]
+        self.intervals_2d = [Intervals(id=8, dataset_id=10, windowsize=100000)]
         self.intervals_not_owned_bedfile = [
             Intervals(id=4, dataset_id=2, windowsize=10000),
             Intervals(id=5, dataset_id=2, windowsize=20000),
@@ -153,7 +162,15 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             ),
             AverageIntervalData(
                 id=9, binsize=5, dataset_id=4, intervals_id=7, value_type="line"
+            )
+        ]
+        self.lineprofiles_2d = [
+            AverageIntervalData(
+                id=10, binsize=2000, dataset_id=4, intervals_id=8, value_type="line", region_side="left"
             ),
+            AverageIntervalData(
+                id=11, binsize=2000, dataset_id=4, intervals_id=8, value_type="line", region_side="right"
+            )
         ]
         # create stackup
         self.stackups = [
@@ -470,6 +487,53 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
+
+    def test_structure_of_mapping_w_intervals_w_lineprofiles_from_2d_regions(self):
+        """Test whether the structure of the returned object is correct for
+        bedfile of 2d regions"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add datasets
+        db.session.add_all(self.owned_datasets)
+        db.session.add(self.owned_bedfile2d)
+        db.session.add_all(self.not_owned_datasets)
+        db.session.add_all(self.intervals_owned_bedfile)
+        db.session.add_all(self.intervals_2d)
+        db.session.add_all(self.lineprofiles)
+        db.session.add_all(self.lineprofiles_2d)
+        db.session.commit()
+        # protected route
+        response = self.client.get(
+            "/api/datasets/10/processedDataMap/",
+            content_type="application/json",
+            headers=token_headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether response is correct
+        expected = {
+            "pileup": {},
+            "stackup": {},
+            "lola": {},
+            "lineprofile": {
+                "4": {
+                    "name": "testfile4",
+                    "data_ids": {
+                        "100000": {
+                            "2000": {
+                                "right": '11',
+                                "left": '10'
+                                }
+                            }
+                    },
+                },
+            },
+            "embedding1d": {},
+            "embedding2d": {},
+        }
+        self.assertEqual(response.json, expected)
+
 
     def test_structure_of_mapping_lineprofiles_variable_intervals(self):
         """Test whether the structure of the returned object is correct for

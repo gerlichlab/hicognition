@@ -294,6 +294,10 @@ def get_processed_data_mapping_of_dataset(dataset_id):
                 output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][
                     ivd.binsize
                 ][ivd.value_type] = str(ivd.id)
+            elif (isinstance(ivd, AverageIntervalData) or isinstance(ivd, IndividualIntervalData)) and ivd.region_side is not None:
+                output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][
+                    ivd.binsize
+                ][ivd.region_side] = str(ivd.id)
             elif (
                 isinstance(ivd, EmbeddingIntervalData)
                 and interval_datatype == "embedding1d"

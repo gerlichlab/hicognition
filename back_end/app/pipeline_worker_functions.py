@@ -221,8 +221,17 @@ def _do_pileup_variable_size(
         return output
 
 
-def _do_stackup_fixed_size(bigwig_filepath, regions, window_size, binsize):
-    regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
+def _do_stackup_fixed_size(bigwig_filepath, regions, window_size, binsize, region_side=None):
+    if region_side is None:
+        regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
+    elif region_side == 'left':
+        regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end",
+                                            3: "chrom2", 4:"start2", 5: "end2"})
+    elif region_side == 'right':
+        regions = regions.rename(columns={0: "chrom1", 1: "start1", 2: "end1",
+                                            3: "chrom", 4:"start", 5: "end"})
+    else:
+        raise ValueError(f"region_side parameter {region_side} not understood")
     regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
     # construct stackup-regions: positions - windowsize until position + windowsize
     stackup_regions = pd.DataFrame(
@@ -271,8 +280,17 @@ def _do_stackup_fixed_size(bigwig_filepath, regions, window_size, binsize):
     return target_array
 
 
-def _do_stackup_variable_size(bigwig_filepath, regions, binsize):
-    regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
+def _do_stackup_variable_size(bigwig_filepath, regions, binsize, region_side=None):
+    if region_side is None:
+        regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
+    elif region_side == 'left':
+        regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end",
+                                            3: "chrom2", 4:"start2", 5: "end2"})
+    elif region_side == 'right':
+        regions = regions.rename(columns={0: "chrom1", 1: "start1", 2: "end1",
+                                            3: "chrom", 4:"start", 5: "end"})
+    else:
+        raise ValueError(f"region_side parameter {region_side} not understood")
     stackup_regions = interval_operations.expand_regions(
         regions, current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]
     )
@@ -759,7 +777,7 @@ def _add_association_data_to_db(file_path, binsize, intervals_id, collection_id)
 
 
 def _add_stackup_db(
-    file_path, file_path_small, binsize, intervals_id, bigwig_dataset_id
+    file_path, file_path_small, binsize, intervals_id, bigwig_dataset_id, region_side=None
 ):
     """Adds stackup to database"""
     # check if old individual interval data exists and delete them
@@ -782,12 +800,13 @@ def _add_stackup_db(
             file_path_small=file_path_small,
             intervals_id=intervals_id,
             dataset_id=bigwig_dataset_id,
+            region_side=region_side
         )
         db.session.add(entry)
     db.session.commit()
 
 
-def _add_line_db(file_path, binsize, intervals_id, bigwig_dataset_id):
+def _add_line_db(file_path, binsize, intervals_id, bigwig_dataset_id, region_side=None):
     """Adds pileup region to database"""
     # check if old average interval data exists and delete them
     entry = AverageIntervalData.query.filter(
@@ -807,6 +826,7 @@ def _add_line_db(file_path, binsize, intervals_id, bigwig_dataset_id):
             intervals_id=intervals_id,
             dataset_id=bigwig_dataset_id,
             value_type="line",
+            region_side=region_side
         )
         db.session.add(entry)
     db.session.commit()

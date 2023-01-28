@@ -12,6 +12,7 @@ from . import db
 from .models import (
     Assembly,
     Dataset,
+    Intervals,
     IndividualIntervalData,
     Collection,
 )
@@ -124,8 +125,15 @@ def pipeline_stackup(dataset_id, intervals_id, binsize):
     """Start stackup pipeline for specified combination of
     dataset_id (bigwig file), binsize and intervals_id"""
     try:
-        pipeline_steps.stackup_pipeline_step(dataset_id, intervals_id, binsize)
-        pipeline_steps.set_task_progress(100)
+        # decide whether to dispatch the 2d or 1d version
+        if Intervals.query.get(intervals_id).source_dataset.dimension == '1d':
+            pipeline_steps.stackup_pipeline_step(dataset_id, intervals_id, binsize)
+            pipeline_steps.set_task_progress(100)
+        else:
+            pipeline_steps.stackup_pipeline_step(dataset_id, intervals_id, binsize, region_side="left")
+            pipeline_steps.set_task_progress(50)
+            pipeline_steps.stackup_pipeline_step(dataset_id, intervals_id, binsize, region_side="right")
+            pipeline_steps.set_task_progress(100)
         pipeline_steps.set_dataset_finished(dataset_id, intervals_id)
     except BaseException as err:
         pipeline_steps.set_dataset_failed(dataset_id, intervals_id)

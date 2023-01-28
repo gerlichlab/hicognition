@@ -148,11 +148,11 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
     current_app.logger.info(f"       {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Success!")
 
 
-def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize):
+def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize, region_side=None):
     """Performs stackup of bigwig dataset over the intervals provided with the indicated binsize.
     Stores result and adds it to database."""
     current_app.logger.info(
-        f"  Doing pileup on bigwig {bigwig_dataset_id} with intervals {intervals_id} on binsize {binsize}"
+        f"  Doing pileup on bigwig {bigwig_dataset_id} with intervals {intervals_id} on binsize {binsize} with region_side: {region_side}"
     )
     bigwig_dataset = Dataset.query.get(bigwig_dataset_id)
     intervals = Intervals.query.get(intervals_id)
@@ -168,17 +168,17 @@ def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize):
     current_app.logger.debug(f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Doing stackup...")
     if window_size is None:
         full_size_array = worker_funcs._do_stackup_variable_size(
-            bigwig_dataset.file_path, regions, binsize
+            bigwig_dataset.file_path, regions, binsize, region_side
         )
         downsampled_array = worker_funcs._do_stackup_variable_size(
-            bigwig_dataset.file_path, regions_small, binsize
+            bigwig_dataset.file_path, regions_small, binsize, region_side
         )
     else:
         full_size_array = worker_funcs._do_stackup_fixed_size(
-            bigwig_dataset.file_path, regions, window_size, binsize
+            bigwig_dataset.file_path, regions, window_size, binsize, region_side
         )
         downsampled_array = worker_funcs._do_stackup_fixed_size(
-            bigwig_dataset.file_path, regions_small, window_size, binsize
+            bigwig_dataset.file_path, regions_small, window_size, binsize, region_side
         )
     # save full length array to file
     current_app.logger.debug(f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Writing output...")
@@ -197,9 +197,9 @@ def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize):
     # add to database
     current_app.logger.debug(f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Adding database entry...")
     worker_funcs._add_stackup_db(
-        file_path, file_path_small, binsize, intervals.id, bigwig_dataset.id
+        file_path, file_path_small, binsize, intervals.id, bigwig_dataset.id, region_side
     )
-    worker_funcs._add_line_db(file_path_line, binsize, intervals.id, bigwig_dataset.id)
+    worker_funcs._add_line_db(file_path_line, binsize, intervals.id, bigwig_dataset.id, region_side)
     current_app.logger.info(f"       {bigwig_dataset_id}-{intervals_id}-{binsize} => Success!")
 
 
