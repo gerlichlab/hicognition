@@ -857,6 +857,7 @@ class BaseIntervalData(db.Model):
     )
     name = db.Column(db.String(512), index=True)
     file_path = db.Column(db.String(512), index=True)
+    region_side = db.Column(db.String(64), nullable=True) # whehter the data is associated with the left or right end of a 2d region dataset
     value_type = db.Column(db.String(64))
     binsize = db.Column(db.Integer)
     job_status = db.Column(db.String(64))  # , nullable=False) # success, fail, <job_id>
