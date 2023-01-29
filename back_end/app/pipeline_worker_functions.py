@@ -785,6 +785,7 @@ def _add_stackup_db(
         (IndividualIntervalData.binsize == int(binsize))
         & (IndividualIntervalData.intervals_id == intervals_id)
         & (IndividualIntervalData.dataset_id == bigwig_dataset_id)
+        & (IndividualIntervalData.region_side == region_side)
     ).first()
     if entry is not None:
         hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
@@ -813,6 +814,7 @@ def _add_line_db(file_path, binsize, intervals_id, bigwig_dataset_id, region_sid
         (AverageIntervalData.binsize == int(binsize))
         & (AverageIntervalData.intervals_id == intervals_id)
         & (AverageIntervalData.dataset_id == bigwig_dataset_id)
+        & (AverageIntervalData.region_side == region_side)
     ).first()
     if entry is not None:
         hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
