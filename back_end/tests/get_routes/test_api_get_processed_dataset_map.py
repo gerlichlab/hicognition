@@ -179,6 +179,10 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             IndividualIntervalData(id=3, binsize=2000, dataset_id=5, intervals_id=2),
             IndividualIntervalData(id=4, binsize=10, dataset_id=4, intervals_id=7),
         ]
+        self.stackups_2d = [
+            IndividualIntervalData(id=5, binsize=2000, dataset_id=5, intervals_id=8, region_side="left"),
+            IndividualIntervalData(id=6, binsize=2000, dataset_id=5, intervals_id=8, region_side="right"),
+        ]
         # create association data
         self.association_data = [
             AssociationIntervalData(
@@ -604,6 +608,53 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
+
+    def test_structure_of_mapping_w_intervals_2d_w_stackups(self):
+        """Test whether the structure of the returned object is correct for
+        2d bedfiles associated with stackups"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add datasets
+        db.session.add_all(self.owned_datasets)
+        db.session.add(self.owned_bedfile2d)
+        db.session.add_all(self.intervals_2d)
+        db.session.add_all(self.not_owned_datasets)
+        db.session.add_all(self.intervals_owned_bedfile)
+        db.session.add_all(self.stackups_2d)
+        db.session.commit()
+        # protected route
+        response = self.client.get(
+            "/api/datasets/10/processedDataMap/",
+            content_type="application/json",
+            headers=token_headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether response is correct
+        expected = {
+            "pileup": {},
+            "stackup": {
+                "5": {
+                    "name": "testfile5",
+                    "data_ids": {
+                            '100000':{
+                                "2000": {
+                                    "right": '6',
+                                    "left": '5'
+                                    }
+                            }
+                            }
+                },
+            },
+            "lineprofile": {},
+            "lola": {},
+            "embedding1d": {},
+            "embedding2d": {},
+        }
+        self.assertEqual(response.json, expected)
+
+
 
     def test_structure_of_mapping_stackups_variable_intervals(self):
         """Test whether the structure of the returned object is correct for
