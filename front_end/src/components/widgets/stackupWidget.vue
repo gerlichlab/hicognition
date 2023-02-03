@@ -61,7 +61,7 @@
                 </div>
                 <div class="md-layout-item md-size-5 toggle-paired-buttons">
                     <div v-if="isBedpeFile" class="no-padding-top md-icon-button">
-                        <md-button class="md-icon" :class="{'md-primary': pairedLeftSide}"  @click="togglePairedSides('left')">
+                        <md-button class="md-icon" :class="{'md-primary': selectedSide == 'left'}"  @click="togglePairedSides('left')">
                             <md-icon>looks_one</md-icon>
                             <md-tooltip md-direction="top" md-delay="300">
                                 Plot left support data
@@ -71,7 +71,7 @@
                 </div>
                 <div class="md-layout-item md-size-10 toggle-paired-buttons">
                     <div v-if="isBedpeFile" class="no-padding-top">
-                        <md-button class="md-icon md-mini" :class="{'md-primary': pairedRightSide}" @click="togglePairedSides('right')" style="margin-left: 8px">
+                        <md-button class="md-icon md-mini" :class="{'md-primary': selectedSide == 'right'}" @click="togglePairedSides('right')" style="margin-left: 8px">
                             <md-icon>looks_two</md-icon>
                         </md-button>
                             <md-tooltip md-direction="top" md-delay="300">
@@ -293,6 +293,9 @@ export default {
                 preselection
             );
         },
+        togglePairedSides: function(side) {
+            this.selectedSide = side
+        },
         registerSelectionEventHandlers: function() {
             EventBus.$on("dataset-selected", this.handleDataSelection);
             EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
@@ -461,9 +464,7 @@ export default {
                 valueScaleColor: this.valueScaleColor,
                 minHeatmapRange: this.minHeatmapRange,
                 maxHeatmapRange: this.maxHeatmapRange,
-                pairedLeftSide: this.pairedLeftSide,
-                pairedRightSide: this.pairedRightSide,
-                pairedSidesMutuallyExclusive: this.pairedSidesMutuallyExclusive,
+                selectedSide: this.selectedSide,
             };
         },
         prepareDeletionSortOrder: function() {
@@ -532,6 +533,7 @@ export default {
                 selectedDataset: undefined,
                 selectedBinsize: undefined,
                 intervalSize: collectionConfig["intervalSize"],
+                isBedpeFile: collectionConfig['isPairedEnd'],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
                 datasets:
@@ -565,9 +567,7 @@ export default {
                 tooltipOffsetTop: 0,
                 tooltipOffsetLeft: 0,
                 tooltipMessage: undefined,
-                pairedLeftSide: true,
-                pairedRightSide: false,
-                pairedSidesMutuallyExclusive: true,
+                selectedSide: 'left',
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -606,6 +606,7 @@ export default {
             );
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
+                isBedpeFile: collectionConfig['isPairedEnd'],
                 dragImage: undefined,
                 widgetData: widgetDataValues,
                 selectedSortOrder: widgetData["selectedSortOrder"],
@@ -644,9 +645,7 @@ export default {
                 tooltipOffsetTop: 0,
                 tooltipOffsetLeft: 0,
                 tooltipMessage: undefined,
-                pairedLeftSide: widgetData["pairedLeftSide"] !== undefined ? widgetData["pairedLeftSide"] : true,
-                pairedRightSide: widgetData["pairedRightSide"] !== undefined ? widgetData["pairedRightSide"] : false,
-                pairedSidesMutuallyExclusive: true,
+                selectedSide: widgetData["selectedSide"] !== undefined ? widgetData["selectedSide"] : 'left',
             };
         },
         getStackupData: async function(id) {
@@ -677,10 +676,13 @@ export default {
             // reset min and max colormap values
             this.resetColorScale();
             // fetch widget data
-            var stackup_id = this.binsizes[this.selectedBinsize];
+            if (this.isBedpeFile){
+                var stackup_id = this.binsizes[this.selectedBinsize][this.selectedSide];
+            }else{
+                var stackup_id = this.binsizes[this.selectedBinsize];
+            }
             this.widgetDataRef = stackup_id;
-            var data = await this.getStackupData(stackup_id);
-            this.widgetData = this.handleReceivedData(data);
+            this.widgetData = await this.getStackupData(stackup_id);
             // fetch metadata
             var response = await this.fetchData(
                 `individualIntervalData/${stackup_id}/metadatasmall`
@@ -849,6 +851,12 @@ export default {
             if (this.sortOrderRecipients > 0) {
                 this.broadcastSortOrderUpdate();
             }
+        },
+        selectedSide: async function() {
+            if (! this.selectedSide){
+                return
+            }
+            this.updateData()
         }
     },
     mounted: function() {
