@@ -231,7 +231,7 @@ def preprocess_dataset():
                         current_app.config["PIPELINE_QUEUES"][dataset.filetype]
                     ],
                     *current_app.config["PIPELINE_NAMES"][dataset.filetype],
-                    dataset.id,
+                    dataset_id=dataset.id,
                     intervals_id=interval_id,
                     binsize=binsize,
                 )
@@ -331,7 +331,7 @@ def preprocess_collections():
                     *current_app.config["PIPELINE_NAMES"]["collections"][
                         collection.kind
                     ],
-                    collection.id,
+                    collection_id=collection.id,
                     intervals_id=interval_id,
                     binsize=binsize,
                 )

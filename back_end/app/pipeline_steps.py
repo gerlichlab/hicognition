@@ -238,7 +238,7 @@ def embedding_1d_pipeline_step(collection_id, intervals_id, binsize, region_side
     """Performs embedding on each binsize-sized bin of the window specified in intervals_id using
     the features in collection_id"""
     current_app.logger.info(
-        f"Doing 1d-embedding with collection {collection_id} on intervals {intervals_id} with binsize {binsize}"
+        f"Doing 1d-embedding with collection {collection_id} on intervals {intervals_id} with binsize {binsize} with region_side: {region_side}"
     )
     # get intervals to decide whether fixed size or variable size
     intervals = Intervals.query.get(intervals_id)
