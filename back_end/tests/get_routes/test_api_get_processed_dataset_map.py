@@ -249,6 +249,26 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 cluster_number="small",
             ),
         ]
+        self.embedding_data_2d = [
+            EmbeddingIntervalData(
+                id=1,
+                binsize=10000,
+                collection_id=1,
+                intervals_id=8,
+                value_type="1d-embedding",
+                cluster_number="small",
+                region_side="left"
+            ),
+            EmbeddingIntervalData(
+                id=2,
+                binsize=10000,
+                collection_id=1,
+                intervals_id=8,
+                value_type="1d-embedding",
+                cluster_number="small",
+                region_side="right"
+            ),
+        ]
 
     def test_no_auth(self):
         """No authentication provided, response should be 401"""
@@ -815,6 +835,54 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     },
                 }
             },
+        }
+        self.assertEqual(response.json, expected)
+
+
+    def test_structure_of_mapping_w_intervals_w_embedding_data_2d(self):
+        """Test whether the structure of the returned object is correct for
+        2d bedfile associated with embedding data """
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add datasets
+        db.session.add(self.owned_bedfile2d)
+        db.session.add(self.owned_collection)
+        db.session.add_all(self.not_owned_datasets)
+        db.session.add_all(self.intervals_2d)
+        db.session.add_all(self.embedding_data_2d)
+        db.session.commit()
+        # protected route
+        response = self.client.get(
+            "/api/datasets/10/processedDataMap/",
+            content_type="application/json",
+            headers=token_headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether response is correct
+        expected = {
+            "pileup": {},
+            "stackup": {},
+            "lineprofile": {},
+            "lola": {},
+            "embedding1d": {
+                "1": {
+                    "name": "test_collection",
+                    "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                    "data_ids": {
+                        "100000": {
+                            "10000": {
+                                "small": {
+                                    "left": "1",
+                                    "right": "2"
+                                }
+                                }
+                            },
+                    },
+                }
+            },
+            "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
 

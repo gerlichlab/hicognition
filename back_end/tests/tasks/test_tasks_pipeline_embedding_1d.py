@@ -47,12 +47,16 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
         )
         db.session.add(self.hg19)
         db.session.commit()
-        # create bed dataset
+        # create bed dataset (1d and 2d)
         self.bed_file = self.create_dataset(
             id=1, user_id=1, filetype="bedfile", assembly=1, dataset_name="test"
         )
+        self.bed_file_2d = self.create_dataset(
+            id=5, user_id=1, filetype="bedfile", assembly=1, dataset_name="test2d", dimension="2d"
+        )
         # create intervals
         self.intervals_1 = Intervals(id=1, windowsize=100000, dataset_id=1)
+        self.intervals_2d = Intervals(id=2, windowsize=100000, dataset_id=5)
         # create feature datasets
         self.feature_1 = self.create_dataset(id=2, dataset_name="test", user_id=1, filetype="bigwig", assembly=1)
         self.feature_2 = self.create_dataset(id=3, dataset_name="test", user_id=1, filetype="bigwig", assembly=1)
@@ -64,7 +68,7 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
             kind="1d-features",
             name="test",
         )
-        # create stackups
+        # create stackups 1d
         self.ind_data_1 = IndividualIntervalData(
             id=1,
             dataset_id=self.feature_1.id,
@@ -123,6 +127,39 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
         # check whether perform embedding is called correctly
         mock_embedding.assert_called_with(
             self.collection_1.id, self.intervals_1.id, 20000
+        )
+
+    @patch("app.pipeline_steps.set_collection_finished")
+    @patch("app.pipeline_steps.set_task_progress")
+    @patch("app.pipeline_steps.stackup_pipeline_step")
+    @patch("app.pipeline_steps.embedding_1d_pipeline_step")
+    def test_stackups_triggered_if_they_dont_exist_2d(
+        self, mock_embedding, mock_stackup, mock_set_progress, mock_set_finished
+    ):
+        """Test if stackups are retriggered if they do not exist for a given parameters combination for 2d bedfile"""
+        # add data to database
+        db.session.add_all(
+            [
+                self.bed_file_2d,
+                self.intervals_2d,
+                self.feature_1,
+                self.feature_2,
+                self.feature_3,
+                self.collection_1
+            ]
+        )
+        # trigger embedding
+        pipeline_embedding_1d(self.collection_1.id, self.intervals_2d.id, 10000)
+        # assert that perform stackup was called with right parameters
+        for side in ["left", "right"]:
+            expected_calls = [
+                ((ds_id, self.intervals_2d.id, 10000), {"region_side":side}) for ds_id in [self.feature_1.id, self.feature_2.id, self.feature_3.id]
+            ]
+            for args,kwargs in expected_calls:
+                mock_stackup.assert_any_call(*args, **kwargs)
+            # check whether perform embedding is called correctly
+            mock_embedding.assert_any_call(
+                self.collection_1.id, self.intervals_2d.id, 10000, region_side=side
         )
 
     @patch("app.pipeline_steps.set_task_progress")
@@ -207,9 +244,11 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
         # add database entries
         # create bed dataset
         self.bed_file = self.create_dataset(id=1, dataset_name="test", user_id=1, filetype="bedfile")
+        self.bed_file_2d = self.create_dataset(id=5, dataset_name="test", user_id=1, filetype="bedfile", dimension="2d")
         # create intervals
         self.intervals_1 = Intervals(id=1, windowsize=100000, dataset_id=1)
         self.intervals_2 = Intervals(id=2, windowsize=None, dataset_id=1)
+        self.intervals_2d = Intervals(id=3, windowsize=100000, dataset_id=5)
         # create feature datasets
         self.feature_1 = self.create_dataset(id=2, dataset_name="test", user_id=1, filetype="bigwig")
         self.feature_2 = self.create_dataset(id=3, dataset_name="test", user_id=1, filetype="bigwig")
@@ -239,6 +278,30 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
             intervals_id=self.intervals_1.id,
             binsize=10000,
             file_path=data_path_3,
+        )
+        self.ind_data_4 = IndividualIntervalData(
+            id=4,
+            dataset_id=self.feature_1.id,
+            intervals_id=self.intervals_2d.id,
+            binsize=10000,
+            file_path=data_path_1,
+            region_side="left"
+        )
+        self.ind_data_5 = IndividualIntervalData(
+            id=5,
+            dataset_id=self.feature_2.id,
+            intervals_id=self.intervals_2d.id,
+            binsize=10000,
+            file_path=data_path_2,
+            region_side="left"
+        )
+        self.ind_data_6 = IndividualIntervalData(
+            id=6,
+            dataset_id=self.feature_3.id,
+            intervals_id=self.intervals_2d.id,
+            binsize=10000,
+            file_path=data_path_3,
+            region_side="left"
         )
 
     @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_variable_size")
@@ -306,6 +369,78 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
         self.assertEqual(embedding.value_type, "1d-embedding")
         self.assertEqual(embedding.collection_id, self.collection_1.id)
         self.assertEqual(embedding.intervals_id, self.intervals_1.id)
+
+    @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_variable_size")
+    @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_fixed_size")
+    def test_database_entry_added_correctly_2d(self, mock_fixed_size, mock_variable_size):
+        """Tests whether database entry is added correctly"""
+        # add return values
+        mock_fixed_size.return_value = {
+            "embedding": np.full((1, 1), 1),
+            "clusters": {
+                "large": {
+                    "cluster_ids": np.full((1, 1), 2),
+                    "average_values": np.full((1, 1), 3),
+                },
+                "small": {
+                    "cluster_ids": np.full((1, 1), 4),
+                    "average_values": np.full((1, 1), 5),
+                },
+            },
+            "features": np.full((1, 1), 6),
+        }
+        mock_variable_size.return_value = {
+            "embedding": np.full((1, 1), 1),
+            "clusters": {
+                "large": {
+                    "cluster_ids": np.full((1, 1), 2),
+                    "average_values": np.full((1, 1), 3),
+                },
+                "small": {
+                    "cluster_ids": np.full((1, 1), 4),
+                    "average_values": np.full((1, 1), 5),
+                },
+            },
+            "features": np.full((1, 1), 6),
+        }
+        # add data to database
+        db.session.add_all(
+            [
+                self.bed_file_2d,
+                self.intervals_2d,
+                self.feature_1,
+                self.feature_2,
+                self.feature_3,
+                self.collection_1,
+                self.ind_data_4,
+                self.ind_data_5,
+                self.ind_data_6,
+            ]
+        )
+        # test
+        # test
+        # test whether database entry has been added
+        for side in ['left', 'right']:
+            embedding_1d_pipeline_step(self.collection_1.id, self.intervals_2d.id, 10000, region_side=side)
+            embeddings = EmbeddingIntervalData.query.filter_by(region_side=side).all()
+            self.assertEqual(len(embeddings), 2)
+            self.assertEqual(
+                {"small", "large"}, set([emb.cluster_number for emb in embeddings])
+            )
+            # test whehter addition is correct
+            embedding = embeddings[0]
+            self.assertEqual(embedding.binsize, 10000)
+            self.assertEqual(embedding.value_type, "1d-embedding")
+            self.assertEqual(embedding.collection_id, self.collection_1.id)
+            self.assertEqual(embedding.intervals_id, self.intervals_2d.id)
+            self.assertEqual(embedding.region_side, side)
+            embedding = embeddings[1]
+            self.assertEqual(embedding.binsize, 10000)
+            self.assertEqual(embedding.value_type, "1d-embedding")
+            self.assertEqual(embedding.collection_id, self.collection_1.id)
+            self.assertEqual(embedding.intervals_id, self.intervals_2d.id)
+            self.assertEqual(embedding.region_side, side)
+
 
     @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_variable_size")
     @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_fixed_size")
@@ -497,7 +632,7 @@ class TestEmbedding1DWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
             )
             # dispatch call
             embedding_results = _do_embedding_1d_fixed_size(
-                self.collection_1.id, self.intervals_1.id, 10000
+                self.collection_1.id, self.intervals_1.id, 10000, region_side=None
             )
             # test whether feature frame used is correct
             expected_features = np.array(
@@ -604,7 +739,7 @@ class TestEmbedding1DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
             )
             # dispatch call
             embedding_results = _do_embedding_1d_variable_size(
-                self.collection_1.id, self.intervals_1.id, 10
+                self.collection_1.id, self.intervals_1.id, 10, region_side=None
             )
             # test whether feature frame used is correct
             expected_features = np.array(

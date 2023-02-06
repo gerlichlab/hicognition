@@ -452,7 +452,7 @@ def _do_enrichment_calculations_variable_size(collection_id, binsize, regions_pa
     return np.stack(results, axis=1)
 
 
-def _do_embedding_1d_fixed_size(collection_id, intervals_id, binsize):
+def _do_embedding_1d_fixed_size(collection_id, intervals_id, binsize, region_side):
     features = Collection.query.get(collection_id).datasets
     data = []
     for feature in features:
@@ -460,6 +460,7 @@ def _do_embedding_1d_fixed_size(collection_id, intervals_id, binsize):
             (IndividualIntervalData.dataset_id == feature.id)
             & (IndividualIntervalData.intervals_id == intervals_id)
             & (IndividualIntervalData.binsize == binsize)
+            & (IndividualIntervalData.region_side == region_side)
         ).first()
         temp = np.load(stackup.file_path)
         # load data and extract center column if data is point feature
@@ -508,7 +509,7 @@ def _do_embedding_1d_fixed_size(collection_id, intervals_id, binsize):
     }
 
 
-def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize):
+def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize, region_side):
     features = Collection.query.get(collection_id).datasets
     data = []
     for feature in features:
@@ -516,6 +517,7 @@ def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize):
             (IndividualIntervalData.dataset_id == feature.id)
             & (IndividualIntervalData.intervals_id == intervals_id)
             & (IndividualIntervalData.binsize == binsize)
+            & (IndividualIntervalData.region_side == region_side)
         ).first()
         temp = np.load(stackup.file_path)
         # Take area between the expanded regions
@@ -712,7 +714,7 @@ def _add_embedding_2d_to_db(
 
 
 def _add_embedding_1d_to_db(
-    filepaths, binsize, intervals_id, collection_id, cluster_number
+    filepaths, binsize, intervals_id, collection_id, cluster_number, region_side
 ):
     """Adds association data set to db"""
     # check if old association interval data exists and delete them
@@ -721,6 +723,7 @@ def _add_embedding_1d_to_db(
         & (EmbeddingIntervalData.intervals_id == intervals_id)
         & (EmbeddingIntervalData.collection_id == collection_id)
         & (EmbeddingIntervalData.cluster_number == cluster_number)
+        & (EmbeddingIntervalData.region_side == region_side)
     ).first()
     if entry is not None:
         hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
@@ -747,6 +750,7 @@ def _add_embedding_1d_to_db(
             collection_id=collection_id,
             value_type="1d-embedding",
             cluster_number=cluster_number,
+            region_side=region_side
         )
         db.session.add(entry)
     db.session.commit()

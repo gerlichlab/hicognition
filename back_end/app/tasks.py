@@ -30,9 +30,6 @@ log = logging.getLogger("rq.worker")
 
 notification_handler = NotificationHandler()
 
-# set basedir
-
-basedir = os.path.abspath(os.path.dirname(__file__))  # TODO unused
 
 # class WrongDatasetTypeError(Exception):
 #     """Thrown if task is called with wrong dataset type"""
@@ -160,18 +157,40 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
     # check whether stackups exist and perform stackup if not
     try:
         for source_dataset in Collection.query.get(collection_id).datasets:
-            stackup = IndividualIntervalData.query.filter(
-                (IndividualIntervalData.dataset_id == source_dataset.id)
-                & (IndividualIntervalData.intervals_id == intervals_id)
-                & (IndividualIntervalData.binsize == binsize)
-            ).first()
-            if stackup is None:
-                pipeline_steps.stackup_pipeline_step(
-                    source_dataset.id, intervals_id, binsize
-                )
+            if Intervals.query.get(intervals_id).source_dataset.dimension == '1d':
+                stackup = IndividualIntervalData.query.filter(
+                    (IndividualIntervalData.dataset_id == source_dataset.id)
+                    & (IndividualIntervalData.intervals_id == intervals_id)
+                    & (IndividualIntervalData.binsize == binsize)
+                ).first()
+                if stackup is None:
+                    pipeline_steps.stackup_pipeline_step(
+                        source_dataset.id, intervals_id, binsize
+                    )
+            else:
+                stackup = IndividualIntervalData.query.filter(
+                    (IndividualIntervalData.dataset_id == source_dataset.id)
+                    & (IndividualIntervalData.intervals_id == intervals_id)
+                    & (IndividualIntervalData.binsize == binsize)
+                    & (IndividualIntervalData.region_side == 'left')
+                ).first()
+                if stackup is None:
+                    # assume that if left does not exist, right also does not exist and vice versa
+                    pipeline_steps.stackup_pipeline_step(
+                        source_dataset.id, intervals_id, binsize, region_side="left"
+                    )
+                    pipeline_steps.stackup_pipeline_step(
+                        source_dataset.id, intervals_id, binsize, region_side="right"
+                    )
         # perform embedding
-        pipeline_steps.embedding_1d_pipeline_step(collection_id, intervals_id, binsize)
-        pipeline_steps.set_task_progress(100)
+        if Intervals.query.get(intervals_id).source_dataset.dimension == '1d':
+            pipeline_steps.embedding_1d_pipeline_step(collection_id, intervals_id, binsize)
+            pipeline_steps.set_task_progress(100)
+        else:
+            pipeline_steps.embedding_1d_pipeline_step(collection_id, intervals_id, binsize, region_side="left")
+            pipeline_steps.set_task_progress(50)
+            pipeline_steps.embedding_1d_pipeline_step(collection_id, intervals_id, binsize, region_side="right")
+            pipeline_steps.set_task_progress(50)
         pipeline_steps.set_collection_finished(collection_id, intervals_id)
     except BaseException as err:
         pipeline_steps.set_collection_failed(collection_id, intervals_id)

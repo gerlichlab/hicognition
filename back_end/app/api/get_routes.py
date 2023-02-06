@@ -302,9 +302,14 @@ def get_processed_data_mapping_of_dataset(dataset_id):
                 isinstance(ivd, EmbeddingIntervalData)
                 and interval_datatype == "embedding1d"
             ):
-                output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][
-                    ivd.binsize
-                ][ivd.cluster_number] = str(ivd.id)
+                if ivd.region_side is not None:
+                    output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][
+                        ivd.binsize
+                    ][ivd.cluster_number][ivd.region_side] = str(ivd.id)
+                else:
+                    output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][
+                        ivd.binsize
+                    ][ivd.cluster_number] = str(ivd.id)
             elif (
                 isinstance(ivd, EmbeddingIntervalData)
                 and interval_datatype == "embedding2d"

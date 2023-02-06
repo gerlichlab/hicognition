@@ -234,7 +234,7 @@ def enrichment_pipeline_step(collection_id, intervals_id, binsize):
     current_app.logger.info(f"      {collection_id}-{intervals_id}-{binsize} => Success!")
 
 
-def embedding_1d_pipeline_step(collection_id, intervals_id, binsize):
+def embedding_1d_pipeline_step(collection_id, intervals_id, binsize, region_side=None):
     """Performs embedding on each binsize-sized bin of the window specified in intervals_id using
     the features in collection_id"""
     current_app.logger.info(
@@ -244,11 +244,11 @@ def embedding_1d_pipeline_step(collection_id, intervals_id, binsize):
     intervals = Intervals.query.get(intervals_id)
     if intervals.windowsize is None:
         embedding_results = worker_funcs._do_embedding_1d_variable_size(
-            collection_id, intervals_id, binsize
+            collection_id, intervals_id, binsize, region_side=region_side
         )
     else:
         embedding_results = worker_funcs._do_embedding_1d_fixed_size(
-            collection_id, intervals_id, binsize
+            collection_id, intervals_id, binsize, region_side=region_side
         )
     # write output for embedding
     current_app.logger.debug(f"      {collection_id}-{intervals_id}-{binsize} => Writing output...")
@@ -287,7 +287,7 @@ def embedding_1d_pipeline_step(collection_id, intervals_id, binsize):
         }
         # add to database
         worker_funcs._add_embedding_1d_to_db(
-            filepaths, binsize, intervals.id, collection_id, size
+            filepaths, binsize, intervals.id, collection_id, size, region_side
         )
     current_app.logger.info(f"      {collection_id}-{intervals_id}-{binsize} => Success!")
 
