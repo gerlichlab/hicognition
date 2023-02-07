@@ -404,6 +404,11 @@ export default {
         },
         widgetDataID: function() {
             if (this.binsizes && this.selectedBinsize) {
+                if (this.isBedpeFile){
+                    return Number(
+                        this.binsizes[this.selectedBinsize][this.clusterNumber][this.selectedSide]
+                    );
+                }
                 return Number(
                     this.binsizes[this.selectedBinsize][this.clusterNumber]
                 );
@@ -940,9 +945,16 @@ export default {
             // fetch overlay if needed
             this.loading = true;
             if (this.overlay != "density") {
-                let selected_id = this.binsizes[this.selectedBinsize][
-                    this.clusterNumber
-                ];
+                let selected_id;
+                if (this.isBedpeFile){
+                    selected_id = this.binsizes[this.selectedBinsize][
+                        this.clusterNumber
+                    ][this.selectedSide];
+                }else{
+                    selected_id = this.binsizes[this.selectedBinsize][
+                        this.clusterNumber
+                    ];
+                }
                 this.overlayValues = await this.getOverlayData(
                     selected_id,
                     Number(this.overlay)
