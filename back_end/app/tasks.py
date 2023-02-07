@@ -190,7 +190,7 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
             pipeline_steps.embedding_1d_pipeline_step(collection_id, intervals_id, binsize, region_side="left")
             pipeline_steps.set_task_progress(50)
             pipeline_steps.embedding_1d_pipeline_step(collection_id, intervals_id, binsize, region_side="right")
-            pipeline_steps.set_task_progress(50)
+            pipeline_steps.set_task_progress(100)
         pipeline_steps.set_collection_finished(collection_id, intervals_id)
     except BaseException as err:
         pipeline_steps.set_collection_failed(collection_id, intervals_id)
