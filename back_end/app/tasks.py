@@ -142,8 +142,15 @@ def pipeline_lola(collection_id, intervals_id, binsize):
     """Starts lola enrichment calculation pipeline step for a specific
     collection_id, binsize and intervals_id"""
     try:
-        pipeline_steps.enrichment_pipeline_step(collection_id, intervals_id, binsize)
-        pipeline_steps.set_task_progress(100)
+        # decide whether to dispatch the 2d or 1d version
+        if Intervals.query.get(intervals_id).source_dataset.dimension == '1d':
+            pipeline_steps.enrichment_pipeline_step(collection_id, intervals_id, binsize)
+            pipeline_steps.set_task_progress(100)
+        else:
+            pipeline_steps.enrichment_pipeline_step(collection_id, intervals_id, binsize, region_side="left")
+            pipeline_steps.set_task_progress(50)
+            pipeline_steps.enrichment_pipeline_step(collection_id, intervals_id, binsize, region_side="right")
+            pipeline_steps.set_task_progress(100)
         pipeline_steps.set_collection_finished(collection_id, intervals_id)
     except BaseException as err:
         pipeline_steps.set_collection_failed(collection_id, intervals_id)

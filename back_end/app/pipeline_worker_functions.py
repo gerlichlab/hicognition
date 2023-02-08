@@ -323,14 +323,18 @@ def _do_stackup_variable_size(bigwig_filepath, regions, binsize, region_side=Non
 
 
 def _do_enrichment_calculations_fixed_size(
-    collection_id, window_size, binsize, regions_path
+    collection_id, window_size, binsize, regions_path, region_side
 ):
     """Lola enrichment calculations for fixed size regions"""
-    regions = (
-        pd.read_csv(regions_path, sep="\t", header=None)
-        .iloc[:, [0, 1, 2]]
-        .rename(columns={0: "chrom", 1: "start", 2: "end"})
-    )
+    regions = pd.read_csv(regions_path, sep="\t", header=None)
+    if region_side is None:
+        regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
+    elif region_side == 'left':
+        regions = regions[[0,1,2]].rename(columns={0: "chrom", 1: "start", 2: "end"})
+    elif region_side == 'right':
+        regions = regions[[3,4,5]].rename(columns={3: "chrom", 4:"start", 5: "end"})
+    else:
+        raise ValueError(f"region_side parameter {region_side} not understood")
     # make queries
     log.info("      Constructing queries...")
     # get chromosome sizes -> this will be the same for all datasets of the collection
@@ -387,13 +391,17 @@ def _do_enrichment_calculations_fixed_size(
     return np.stack(results, axis=1)
 
 
-def _do_enrichment_calculations_variable_size(collection_id, binsize, regions_path):
+def _do_enrichment_calculations_variable_size(collection_id, binsize, regions_path, region_side):
     """Lola enrichment calculations for variably size regions"""
-    regions = (
-        pd.read_csv(regions_path, sep="\t", header=None)
-        .iloc[:, [0, 1, 2]]
-        .rename(columns={0: "chrom", 1: "start", 2: "end"})
-    )
+    regions = pd.read_csv(regions_path, sep="\t", header=None)
+    if region_side is None:
+        regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
+    elif region_side == 'left':
+        regions = regions[[0,1,2]].rename(columns={0: "chrom", 1: "start", 2: "end"})
+    elif region_side == 'right':
+        regions = regions[[3,4,5]].rename(columns={3: "chrom", 4:"start", 5: "end"})
+    else:
+        raise ValueError(f"region_side parameter {region_side} not understood")
     # make queries
     log.info("      Constructing queries...")
     # get chromosome sizes -> this will be the same for all datasets of the collection
@@ -756,13 +764,14 @@ def _add_embedding_1d_to_db(
     db.session.commit()
 
 
-def _add_association_data_to_db(file_path, binsize, intervals_id, collection_id):
+def _add_association_data_to_db(file_path, binsize, intervals_id, collection_id, region_side):
     """Adds association data set to db"""
     # check if old association interval data exists and delete them
     entry = AssociationIntervalData.query.filter(
         (AssociationIntervalData.binsize == int(binsize))
         & (AssociationIntervalData.intervals_id == intervals_id)
         & (AssociationIntervalData.collection_id == collection_id)
+        & (AssociationIntervalData.region_side == region_side)
     ).first()
     if entry is not None:
         hicognition.io_helpers.remove_safely(entry.file_path, current_app.logger)
@@ -775,6 +784,7 @@ def _add_association_data_to_db(file_path, binsize, intervals_id, collection_id)
             file_path=file_path,
             intervals_id=intervals_id,
             collection_id=collection_id,
+            region_side=region_side
         )
         db.session.add(entry)
     db.session.commit()

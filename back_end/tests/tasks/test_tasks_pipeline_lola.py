@@ -42,9 +42,13 @@ class TestPipelineLola(LoginTestCase):
         db.session.commit()
         # add region
         self.bedfile = self.create_dataset(id=1, dataset_name="test", filetype="bedfile", user_id=1, assembly=1)
+        self.bedfile_2d = self.create_dataset(id=2, dataset_name="test", filetype="bedfile", user_id=1, assembly=1, dimension="2d")
         # add intervals
         self.intervals1 = Intervals(
             id=1, name="testRegion1", dataset_id=1, windowsize=200000
+        )
+        self.intervals_2d = Intervals(
+            id=2, name="testRegion1", dataset_id=2, windowsize=200000
         )
         # add collections
         self.collection = Collection(id=1)
@@ -108,6 +112,25 @@ class TestPipelineLola(LoginTestCase):
         self.assertEqual(self.bedfile.failed_collections, [self.collection])
         self.assertEqual(self.bedfile.processing_collections, [])
         assert mock_log.called
+
+    @patch("app.pipeline_steps.set_task_progress")
+    @patch("app.pipeline_steps.enrichment_pipeline_step")
+    def test_correct_step_called_2d_region(
+        self, mock_enrichment, mock_set_progress
+    ):
+        """tests whether dataset is set as faild if problem arises."""
+        db.session.add_all(
+            [self.bedfile_2d, self.collection, self.intervals_2d]
+        )
+        # call pipeline
+        pipeline_lola(self.collection.id, self.intervals_2d.id, 10000)
+        calls = [
+            [(self.collection.id, self.intervals_2d.id, 10000), {"region_side":side}] for side in ['left', 'right']
+        ]
+        for args, kwargs in calls:
+            mock_enrichment.assert_any_call(*args, **kwargs)
+        # test set task progress
+        mock_set_progress.assert_called_with(100)
 
 
 class EnrichmentSetupClass(LoginTestCase, TempDirTestCase):
@@ -305,6 +328,7 @@ class TestEnrichmentWorkerFunctionFixedSize(EnrichmentSetupClass):
             self.query_interval.windowsize,
             50000,
             self.query_interval.source_dataset.file_path,
+            region_side=None
         )
         expected = np.array(
             [
@@ -326,6 +350,7 @@ class TestEnrichmentWorkerFunctionFixedSize(EnrichmentSetupClass):
             self.tad_boundaries_interval.windowsize,
             50000,
             self.tad_boundaries_interval.source_dataset.file_path,
+            region_side=None
         )
 
 
@@ -341,7 +366,7 @@ class TestEnrichmentWorkerFunctionVariableSize(EnrichmentSetupClass):
         db.session.commit()
         # run enrichment analysis
         _do_enrichment_calculations_variable_size(
-            self.collection_2.id, 10, self.tad_interval.source_dataset.file_path
+            self.collection_2.id, 10, self.tad_interval.source_dataset.file_path, region_side=None
         )
 
 

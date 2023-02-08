@@ -203,10 +203,10 @@ def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize, region_side=
     current_app.logger.info(f"       {bigwig_dataset_id}-{intervals_id}-{binsize} => Success!")
 
 
-def enrichment_pipeline_step(collection_id, intervals_id, binsize):
+def enrichment_pipeline_step(collection_id, intervals_id, binsize, region_side=None):
     """Pipeline step to perform enrichment analysis"""
     current_app.logger.info(
-        f"Doing enrichment analysis with collection {collection_id} on intervals {intervals_id} with binsize {binsize}"
+        f"Doing enrichment analysis with collection {collection_id} on intervals {intervals_id} with binsize {binsize} with region_side: {region_side}"
     )
     # get query regions
     intervals = Intervals.query.get(intervals_id)
@@ -215,11 +215,11 @@ def enrichment_pipeline_step(collection_id, intervals_id, binsize):
     regions_path = intervals.source_dataset.file_path
     if window_size is None:
         stacked = worker_funcs._do_enrichment_calculations_variable_size(
-            collection_id, binsize, regions_path
+            collection_id, binsize, regions_path, region_side=region_side
         )
     else:
         stacked = worker_funcs._do_enrichment_calculations_fixed_size(
-            collection_id, window_size, binsize, regions_path
+            collection_id, window_size, binsize, regions_path, region_side=region_side
         )
     # write output
     current_app.logger.debug(f"      {collection_id}-{intervals_id}-{binsize} => Writing output...")
@@ -229,7 +229,7 @@ def enrichment_pipeline_step(collection_id, intervals_id, binsize):
     np.save(file_path, stacked)
     # add to database
     worker_funcs._add_association_data_to_db(
-        file_path, binsize, intervals_id, collection_id
+        file_path, binsize, intervals_id, collection_id, region_side=region_side
     )
     current_app.logger.info(f"      {collection_id}-{intervals_id}-{binsize} => Success!")
 
