@@ -25,7 +25,7 @@
                     </div>
                 </div>
                 <div
-                    class="md-layout-item md-size-60 padding-left padding-right"
+                    class="md-layout-item md-size-45 padding-left padding-right"
                 >
                     <md-menu
                         :md-offset-x="50"
@@ -55,7 +55,27 @@
                         </md-menu-content>
                     </md-menu>
                 </div>
-                <div class="md-layout-item md-size-10"></div>
+                <div class="md-layout-item md-size-5 toggle-paired-buttons">
+                    <div v-if="isBedpeFile" class="no-padding-top md-icon-button">
+                        <md-button class="md-icon" :class="{'md-primary': selectedSide == 'left'}"  @click="togglePairedSides('left')">
+                            <md-icon>looks_one</md-icon>
+                            <md-tooltip md-direction="top" md-delay="300">
+                                Plot left support data
+                            </md-tooltip>
+                        </md-button>
+                    </div>
+                </div>
+                <div class="md-layout-item md-size-10 toggle-paired-buttons">
+                    <div v-if="isBedpeFile" class="no-padding-top">
+                        <md-button class="md-icon md-mini" :class="{'md-primary': selectedSide == 'right'}" @click="togglePairedSides('right')" style="margin-left: 8px">
+                            <md-icon>looks_two</md-icon>
+                        </md-button>
+                            <md-tooltip md-direction="top" md-delay="300">
+                                Plot right support data
+                            </md-tooltip>
+                    </div>
+                </div>
+                <div class="md-layout-item md-size-10"/>
                 <div class="md-layout-item md-size-10">
                     <div class="no-padding-top padding-right">
                         <md-button
@@ -140,6 +160,9 @@ export default {
                 preselection
             );
         },
+        togglePairedSides: function(side) {
+            this.selectedSide = side
+        },
         registerSelectionEventHandlers: function() {
             EventBus.$on("collection-selected", this.handleDataSelection);
             EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
@@ -190,7 +213,8 @@ export default {
                 binsize: this.selectedBinsize,
                 widgetDataRef: this.widgetDataRef,
                 widgetType: "Lola",
-                selectedColumn: this.selectedColumn
+                selectedColumn: this.selectedColumn,
+                selectedSide: this.selectedSide,
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -201,13 +225,15 @@ export default {
                 selectedDataset: [],
                 selectedBinsize: undefined,
                 intervalSize: collectionData["intervalSize"],
+                isBedpeFile: collectionData['isPairedEnd'],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: {},
                 datasets: collectionData["datasetsForIntervalSize"]["lola"],
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
-                selectedColumn: undefined
+                selectedColumn: undefined,
+                selectedSide: 'left',
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -256,6 +282,7 @@ export default {
             }
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
+                isBedpeFile: collectionConfig['isPairedEnd'],
                 dragImage: undefined,
                 widgetData: widgetDataValues,
                 selectedDataset: widgetData["dataset"],
@@ -267,7 +294,8 @@ export default {
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
-                selectedColumn: widgetData["selectedColumn"]
+                selectedColumn: widgetData["selectedColumn"],
+                selectedSide: widgetData["selectedSide"] !== undefined ? widgetData["selectedSide"] : 'left',
             };
         },
         getLolaData: async function(id) {
@@ -299,7 +327,12 @@ export default {
         },
         updateData: async function() {
             // construct data ids to be fecthed
-            let selected_id = this.binsizes[this.selectedBinsize];
+            let selected_id;
+            if (this.isBedpeFile){
+                selected_id = this.binsizes[this.selectedBinsize][this.selectedSide];
+            }else{
+                selected_id = this.binsizes[this.selectedBinsize];
+            }
             // store widget data ref
             this.widgetDataRef = selected_id;
             // fetch data
@@ -402,6 +435,12 @@ export default {
                 return;
             }
             this.updateData();
+        },
+        selectedSide: async function() {
+            if (! this.selectedSide){
+                return
+            }
+            this.updateData()
         }
     },
     mounted: function() {
@@ -445,5 +484,9 @@ export default {
 }
 .md-field {
     min-height: 30px;
+}
+.toggle-paired-buttons {
+    padding-top: 8px;
+    padding-bottom:8px;
 }
 </style>
