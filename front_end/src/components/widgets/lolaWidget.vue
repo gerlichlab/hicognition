@@ -25,7 +25,7 @@
                     </div>
                 </div>
                 <div
-                    class="md-layout-item md-size-55 padding-left padding-right"
+                    class="md-layout-item md-size-60 padding-left padding-right"
                 >
                     <md-menu
                         :md-offset-x="50"
@@ -55,26 +55,7 @@
                         </md-menu-content>
                     </md-menu>
                 </div>
-                <div class="md-layout-item md-size-5 toggle-paired-buttons">
-                    <div v-if="isBedpeFile" class="no-padding-top md-icon-button">
-                        <md-button class="md-icon" :class="{'md-primary': pairedLeftSide}"  @click="togglePairedSides('left')">
-                            <md-icon>looks_one</md-icon>
-                            <md-tooltip md-direction="top" md-delay="300">
-                                Plot left support data
-                            </md-tooltip>
-                        </md-button>
-                    </div>
-                </div>
-                <div class="md-layout-item md-size-10 toggle-paired-buttons">
-                    <div v-if="isBedpeFile" class="no-padding-top">
-                        <md-button class="md-icon md-mini" :class="{'md-primary': pairedRightSide}" @click="togglePairedSides('right')" style="margin-left: 8px">
-                            <md-icon>looks_two</md-icon>
-                        </md-button>
-                            <md-tooltip md-direction="top" md-delay="300">
-                                Plot right support data
-                            </md-tooltip>
-                    </div>
-                </div>
+                <div class="md-layout-item md-size-10"></div>
                 <div class="md-layout-item md-size-10">
                     <div class="no-padding-top padding-right">
                         <md-button
@@ -119,7 +100,6 @@
 import associationPlot from "../visualizations/associationPlot";
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
 import EventBus from "../../eventBus";
-
 export default {
     name: "lolaWidget",
     mixins: [apiMixin, formattingMixin, widgetMixin],
@@ -210,10 +190,7 @@ export default {
                 binsize: this.selectedBinsize,
                 widgetDataRef: this.widgetDataRef,
                 widgetType: "Lola",
-                selectedColumn: this.selectedColumn,
-                pairedLeftSide: this.pairedLeftSide,
-                pairedRightSide: this.pairedRightSide,
-                pairedSidesMutuallyExclusive: this.pairedSidesMutuallyExclusive,
+                selectedColumn: this.selectedColumn
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -230,10 +207,7 @@ export default {
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
-                selectedColumn: undefined,
-                pairedLeftSide: true,
-                pairedRightSide: false,
-                pairedSidesMutuallyExclusive: true,
+                selectedColumn: undefined
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -293,10 +267,7 @@ export default {
                 showMenu: false,
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
-                selectedColumn: widgetData["selectedColumn"],
-                pairedLeftSide: widgetData["pairedLeftSide"] !== undefined ? widgetData["pairedLeftSide"] : true,
-                pairedRightSide: widgetData["pairedRightSide"] !== undefined ? widgetData["pairedRightSide"] : false,
-                pairedSidesMutuallyExclusive: widgetData["pairedSidesMutuallyExclusive"] !== undefined ? widgetData["pairedSidesMutuallyExclusive"] : true,
+                selectedColumn: widgetData["selectedColumn"]
             };
         },
         getLolaData: async function(id) {
@@ -333,7 +304,6 @@ export default {
             this.widgetDataRef = selected_id;
             // fetch data
             this.widgetData = await this.getLolaData(selected_id);
-            this.widgetData = this.handleReceivedData(this.widgetData);
             // blank selected column
             this.selectedColumn = undefined;
         }
@@ -447,47 +417,33 @@ export default {
 .bg {
     background-color: rgba(211, 211, 211, 0.2);
 }
-
 .toolbarheight {
     height: 40px;
 }
-
 .flex-container {
     display: flex;
     justify-content: center;
     align-items: center;
 }
-
 .no-padding-right {
     padding-right: 0px;
 }
-
 .padding-right {
     padding-right: 15px;
 }
-
 .padding-left {
     padding-left: 10px;
 }
-
 .padding-top {
     padding-top: 12px;
 }
-
 .no-padding-top {
     padding-top: 0px;
 }
-
 .smallMargin {
     margin: 2px;
 }
-
 .md-field {
     min-height: 30px;
-}
-
-.toggle-paired-buttons {
-    padding-top: 8px;
-    padding-bottom:8px;
 }
 </style>

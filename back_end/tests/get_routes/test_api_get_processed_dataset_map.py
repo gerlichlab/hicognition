@@ -196,6 +196,14 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             ),
             AssociationIntervalData(id=4, binsize=2, collection_id=1, intervals_id=7),
         ]
+        self.association_data_2d = [
+            AssociationIntervalData(
+                id=1, binsize=20000, collection_id=1, intervals_id=8, region_side='left'
+            ),
+            AssociationIntervalData(
+                id=2, binsize=20000, collection_id=1, intervals_id=8, region_side="right"
+            ),
+        ]
         # create embedding data
         self.embedding_data = [
             EmbeddingIntervalData(
@@ -742,6 +750,51 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "data_ids": {
                         "10000": {"10000": "1", "20000": "2"},
                         "20000": {"20000": "3"},
+                    },
+                }
+            },
+            "embedding1d": {},
+            "embedding2d": {},
+        }
+        self.assertEqual(response.json, expected)
+
+    def test_structure_of_mapping_w_intervals_w_association_data_2d(self):
+        """Test whether the structure of the returned object is correct for
+        bedfile associated with pileups"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)
+        # add datasets
+        db.session.add(self.owned_bedfile2d)
+        db.session.add(self.owned_collection)
+        db.session.add_all(self.not_owned_datasets)
+        db.session.add_all(self.intervals_2d)
+        db.session.add_all(self.association_data_2d)
+        db.session.commit()
+        # protected route
+        response = self.client.get(
+            "/api/datasets/10/processedDataMap/",
+            content_type="application/json",
+            headers=token_headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        # check whether response is correct
+        expected = {
+            "pileup": {},
+            "stackup": {},
+            "lineprofile": {},
+            "lola": {
+                "1": {
+                    "name": "test_collection",
+                    "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
+                    "data_ids": {
+                        "100000": {
+                            "20000": {
+                                "left": "1",
+                                "right": "2"
+                            },
+                        }
                     },
                 }
             },
