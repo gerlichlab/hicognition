@@ -160,6 +160,9 @@ class EnrichmentSetupClass(LoginTestCase, TempDirTestCase):
         self.query_dataset = self.create_dataset(
             id=1, dataset_name="test", user_id=1, file_path=pos_file, filetype="bedfile", assembly=1
         )
+        self.query_dataset_2d = self.create_dataset(
+            id=10, dataset_name="test", user_id=1, file_path=pos_file, filetype="bedfile", assembly=1, dimension="2d"
+        )
         self.target_dataset_1 = self.create_dataset(
             id=2, dataset_name="test", user_id=1, file_path=target_1_file, filetype="bedfile", assembly=1
         )
@@ -168,6 +171,7 @@ class EnrichmentSetupClass(LoginTestCase, TempDirTestCase):
         )
         # create intervals
         self.query_interval = Intervals(id=1, windowsize=100000, dataset_id=1)
+        self.query_interval_2d = Intervals(id=4, windowsize=100000, dataset_id=self.query_dataset_2d.id)
         # create collections
         self.collection_1 = Collection(
             id=1, datasets=[self.target_dataset_1, self.target_dataset_2]
@@ -210,6 +214,7 @@ class EnrichmentSetupClass(LoginTestCase, TempDirTestCase):
     def _create_groupings(self):
         self.datasets = [
             self.query_dataset,
+            self.query_dataset_2d,
             self.tad_boundaries,
             self.target_dataset_1,
             self.target_dataset_2,
@@ -218,6 +223,7 @@ class EnrichmentSetupClass(LoginTestCase, TempDirTestCase):
         ]
         self.intervals = [
             self.query_interval,
+            self.query_interval_2d,
             self.tad_boundaries_interval,
             self.tad_interval,
         ]
@@ -259,6 +265,24 @@ class TestEnrichmentPipelineStep(EnrichmentSetupClass):
         # check functions
         mock_variable_enrichment.assert_not_called()
         mock_fixed_enrichment.assert_called()
+
+    @patch("app.pipeline_steps.worker_funcs._do_enrichment_calculations_fixed_size")
+    @patch("app.pipeline_steps.worker_funcs._do_enrichment_calculations_variable_size")
+    def test_correct_worker_function_called_fixed_intervals_2d(
+        self, mock_variable_enrichment, mock_fixed_enrichment
+    ):
+        """Tests whether correct enrichment function is called for intervals with fixed size."""
+        # add everything needed to database
+        db.session.add_all(self.datasets)
+        db.session.add_all(self.intervals)
+        db.session.add_all(self.collections)
+        db.session.commit()
+        # run enrichment analysis
+        for side in ['left', 'right']:
+            enrichment_pipeline_step(self.collection_1.id, self.query_interval_2d.id, 50000, region_side=side)
+            # check functions
+            mock_variable_enrichment.assert_not_called()
+            mock_fixed_enrichment.assert_any_call(self.collection_1.id, 100000 ,50000, self.query_dataset_2d.file_path,region_side=side)
 
     @patch("app.pipeline_steps.worker_funcs._do_enrichment_calculations_fixed_size")
     @patch("app.pipeline_steps.worker_funcs._do_enrichment_calculations_variable_size")
