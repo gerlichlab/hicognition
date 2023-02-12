@@ -135,7 +135,8 @@ export default {
             let fileType;
             switch (this.fileType) {
                 case "regions":
-                    fileType = "bedfile";
+                    // indicate to only show 1d bedfiles
+                    fileType = "bedfile-1d";
                     break;
                 case "1d-features":
                     fileType = "bigwig";

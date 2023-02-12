@@ -5,7 +5,8 @@
             <md-content class="content">
                 <datasetTable
                     :datasets="datasets"
-                    :restrictedDatasetType="datasetType"
+                    :restrictedDatasetType="showedDatasetType"
+                    :block2d="block2d"
                     :singleSelection="singleSelection"
                     :showEmpty="showEmpty"
                     :preselection="preselection"
@@ -119,6 +120,19 @@ export default {
         },
         showDialog: function() {
             return this.dialog;
+        },
+        block2d: function(){
+            if (this.datasetType == 'bedfile-1d'){
+                return true
+            }
+            return false
+        },
+        showedDatasetType: function(){
+            if (this.datasetType == 'bedfile-1d'){
+                return 'bedfile'
+            }else{
+                return this.datasetType
+            }
         }
     }
 };

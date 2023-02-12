@@ -288,6 +288,10 @@ export default {
             type: Boolean,
             default: false
         },
+        block2d: {
+            type: Boolean,
+            default: false
+        },
         preselection: {
             type: Array,
             default: () => []
@@ -549,6 +553,15 @@ export default {
             });
         },
         filterDatasetsOnFields(datasets) {
+            if (this.block2d){
+                return datasets.filter(el => {
+                    return (
+                        el.filetype == this.datasetType &&
+                        el.assembly == this.selectedAssembly &&
+                        el.dimension != '2d'
+                    );
+                });  
+            }
             return datasets.filter(el => {
                 return (
                     el.filetype == this.datasetType &&
