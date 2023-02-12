@@ -552,6 +552,11 @@ def create_collection():
         return forbidden(
             "Some of the datasets associated with this collection are not owned!"
         )
+    # check whehter any of the dataseta are 2d
+    if any(dataset.dimension == '2d' for dataset in datasets):
+        return invalid(
+            "Some of the datasets associated with this collection are 2d!"
+        )  
     # create collection
     collection = Collection(user_id=g.current_user.id, name=name, kind=kind)
     # add datasets
