@@ -40,6 +40,22 @@
                 <div class="md-badge-content">
                     <md-button
                         class="md-icon-button no-margin"
+                        @click="$emit('showProcessingDrawer')"
+                    >
+                        <md-icon>timelapse</md-icon>
+                    </md-button>
+                    <div
+                        class="md-badge position-top-right md-dense yellow"
+                        v-show="numberProcessing > 0"
+                    >
+                        <span class="md-body-2">{{
+                            this.numberProcessing
+                        }}</span>
+                    </div>
+                </div>
+                <div class="md-badge-content">
+                    <md-button
+                        class="md-icon-button no-margin"
                         @click="$emit('showNotificationDrawer')"
                     >
                         <md-icon>notifications</md-icon>
@@ -104,7 +120,10 @@ export default {
         numberNotifications: function() {
             return this.notifications.length;
         },
-        ...mapGetters(["notifications", "userName"])
+        numberProcessing: function() {
+            return this.processingDatasets.length
+        },
+        ...mapGetters(["notifications", "userName", "processingDatasets"])
     },
     methods: {
         logout: function() {
@@ -113,6 +132,9 @@ export default {
             this.$globalFlags["serializeCompare"] = false;
             this.$store.commit("compare/clearAll");
             this.$router.push("/login");
+        },
+        showProcessingDatasets: function(){
+            return
         },
         handleNewNotification: function(event) {
             // check whether you are the issuing user
@@ -144,12 +166,16 @@ export default {
 }
 
 .red {
-    background-color: #e34234;
+    background-color: #D48D87;
+}
+
+.yellow {
+    background-color: #D4C187;
 }
 
 .position-top-right {
-    top: 0px;
-    right: 8px;
+    top: -2px;
+    right: 4px;
 }
 
 .no-margin {

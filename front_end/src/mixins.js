@@ -41,6 +41,11 @@ export var apiMixin = {
                 }
             });
         },
+        fetchAndStoreProcessingDatasets: function() {
+            this.fetchData("datasets/processing/").then(response => {
+                this.$store.commit("setProcessingDatasets", response.data)
+            })
+        },
         fetchAndStoreCollections: function() {
             // convenience method for fetching collections and storing them in vuex store
             this.fetchData("collections/").then(response => {

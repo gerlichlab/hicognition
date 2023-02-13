@@ -345,6 +345,8 @@ export default {
             this.postData("preprocess/datasets/", formData).then(response => {
                 if (response) {
                     this.datasetSaved = true;
+                    // update processing datasets
+                    this.fetchAndStoreProcessingDatasets()
                 }
                 this.sending = false;
                 this.clearForm();

@@ -334,6 +334,7 @@ export default {
                 response => {
                     if (response) {
                         this.datasetSaved = true;
+                        this.fetchAndStoreProcessingDatasets()
                     }
                     this.sending = false;
                     this.clearForm();
