@@ -128,6 +128,24 @@ def get_all_datasets():
     return jsonify([dfile.to_json() for dfile in all_available_datasets])
 
 
+@api.route("/datasets/processing/", methods=["GET"])
+@auth.login_required
+@check_confirmed
+def get_all_processing_datasets():
+    """Gets all available datasets for a given user."""
+    all_available_datasets = Dataset.query.filter(
+        (Dataset.user_id == g.current_user.id)
+        | (Dataset.public)
+        | (Dataset.id.in_(g.session_datasets))
+        | current_app.config["SHOWCASE"]
+    ).all()
+    # list processing datasets
+    processing_datasets = [
+        dataset for dataset in all_available_datasets if len(dataset.processing_features) != 0
+          or len(dataset.processing_collections) != 0
+    ]
+    return jsonify([dfile.to_json() for dfile in processing_datasets])
+
 @api.route("/datasets/<dtype>", methods=["GET"])
 @auth.login_required
 @check_confirmed
