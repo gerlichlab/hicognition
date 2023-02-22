@@ -505,7 +505,7 @@ class Dataset(db.Model):
         """Creates intervals that are in preprocessing_map, but
         do not exist for dataset"""
         if self.sizeType == "Interval":
-            return []
+            return [None]
         windowsizes = [
             windowsize
             for windowsize in preprocessing_map.keys()

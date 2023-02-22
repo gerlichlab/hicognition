@@ -689,11 +689,14 @@ def create_region_from_cluster_id(entry_id):
     # subset and write to file
     mask = pd.Series(cluster_ids).isin(new_region_ids).values
     subset = regions.iloc[mask, :]
-    filename = f"{new_entry.id}_subset_{bed_ds.dataset_name}"
+    ending = bed_ds.file_path.split(".")[-1]
+    filename = f"{new_entry.id}_subset_{bed_ds.dataset_name}.{ending}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     subset.to_csv(file_path, sep="\t", header=None, index=False)
     # add file_path to database entry
     new_entry.file_path = file_path
+    db.session.add(new_entry)
+    db.session.commit()
     # start preprocessing for bedfile
     g.current_user.launch_task(
         current_app.queues["short"],
