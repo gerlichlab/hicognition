@@ -14,7 +14,7 @@ def extraImages = [
 buildDockerImage([
     imageName: "hicognition",
     dockerContext: ".",
-    dockerFile: "back_end/Dockerfile_showcase",
+    dockerFile: "back_end/Dockerfile",
     pushRegistryNamespace: "gerlich",
     testCmd: null,
     containerImages: extraImages,
