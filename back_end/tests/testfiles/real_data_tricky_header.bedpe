@@ -1,0 +1,11 @@
+# Parameters =  -L 1 -u -m 1 -M 0 -s multovl -f BED
+# Input files = 2
+# Sor-G2_10619i_hs_p5_peaks.bed = track 1, region count = 24525
+# Sor-G2_8482i_hs_p5_peaks.bed = track 2, region count = 34498
+# Overlap count = 40515
+# Multiplicity counts = 1:6285 1,2:17865 2:16365
+chr1	10027	10525	chr1	10027	10525	2:MACS_peak_1:.:10027-10525	1	.
+chr1	237604	237907	chr1	237604	237907	1:MACS_peak_1:.:237623-237907|2:MACS_peak_2:.:237604-237903	2	.
+chr1	521435	521730	chr1	521435	521730	2:MACS_peak_3:.:521435-521730	1	.
+chr1	950640	951278	chr1	950640	951278	2:MACS_peak_4:.:950640-951278	1	.
+chr1	1057328	1057983	chr1	1057328	1057983	1:MACS_peak_2:.:1057328-1057871|2:MACS_peak_5:.:1057507-1057983	2	.

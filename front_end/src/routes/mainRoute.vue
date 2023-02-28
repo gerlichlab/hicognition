@@ -6,6 +6,7 @@
                 @add-session-click="showAddSessionDialog = true"
                 @my-sessions-click="showMySessionsDialog = true"
                 @showNotificationDrawer="notificationDrawerVisible = true"
+                @showProcessingDrawer="processingDrawerVisible = true"
             ></toolbar>
         </md-toolbar>
 
@@ -49,6 +50,13 @@
                     menuVisible = false;
                 "
             ></drawer>
+        </md-drawer>
+
+        <md-drawer
+            class="md-right notification-drawer"
+            :md-active.sync="processingDrawerVisible"
+        >
+            <processing-drawer />
         </md-drawer>
 
         <md-drawer
@@ -158,6 +166,7 @@
 import toolbar from "../components/ui/toolbar";
 import drawer from "../components/ui/drawer";
 import notificationDrawer from "../components/ui/notificationDrawer.vue";
+import processingDrawer from "../components/ui/processingDrawer.vue"
 import datasetDialog from "../components/dialogs/myDatasetDialog";
 import addDatasetDialog from "../components/dialogs/addDatasetDialog";
 import addMetadataDialog from "../components/dialogs/addMetadataDialog";
@@ -196,11 +205,13 @@ export default {
         assemblyDialog,
         modifyDatasetDialog,
         selectDatasetDialog,
-        selectCollectionDialog
+        selectCollectionDialog,
+        processingDrawer
     },
     data: () => ({
         menuVisible: false,
         notificationDrawerVisible: false,
+        processingDrawerVisible: false,
         showMyDatasetDialog: false,
         myDatasetDialogDatasetType: undefined,
         showAddRegionDialog: false,

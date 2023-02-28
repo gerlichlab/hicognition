@@ -128,7 +128,6 @@ def add_dataset():
         processing_state="new", upload_state="new", user_id=g.current_user.id
     )
     # fill with form data
-    # TODO check if everything is as expected in config!
     [setattr(new_entry, key, val) for key, val in data.__dict__.items()]
 
     # new_entry.add_fields_from_form(data)
@@ -232,7 +231,7 @@ def preprocess_dataset():
                         current_app.config["PIPELINE_QUEUES"][dataset.filetype]
                     ],
                     *current_app.config["PIPELINE_NAMES"][dataset.filetype],
-                    dataset.id,
+                    dataset_id=dataset.id,
                     intervals_id=interval_id,
                     binsize=binsize,
                 )
@@ -332,7 +331,7 @@ def preprocess_collections():
                     *current_app.config["PIPELINE_NAMES"]["collections"][
                         collection.kind
                     ],
-                    collection.id,
+                    collection_id=collection.id,
                     intervals_id=interval_id,
                     binsize=binsize,
                 )
@@ -553,6 +552,11 @@ def create_collection():
         return forbidden(
             "Some of the datasets associated with this collection are not owned!"
         )
+    # check whehter any of the dataseta are 2d
+    if any(dataset.dimension == '2d' for dataset in datasets):
+        return invalid(
+            "Some of the datasets associated with this collection are 2d!"
+        )  
     # create collection
     collection = Collection(user_id=g.current_user.id, name=name, kind=kind)
     # add datasets
@@ -685,11 +689,14 @@ def create_region_from_cluster_id(entry_id):
     # subset and write to file
     mask = pd.Series(cluster_ids).isin(new_region_ids).values
     subset = regions.iloc[mask, :]
-    filename = f"{new_entry.id}_subset_{bed_ds.dataset_name}"
+    ending = bed_ds.file_path.split(".")[-1]
+    filename = f"{new_entry.id}_subset_{bed_ds.dataset_name}.{ending}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     subset.to_csv(file_path, sep="\t", header=None, index=False)
     # add file_path to database entry
     new_entry.file_path = file_path
+    db.session.add(new_entry)
+    db.session.commit()
     # start preprocessing for bedfile
     g.current_user.launch_task(
         current_app.queues["short"],

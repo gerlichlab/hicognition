@@ -55,11 +55,9 @@
                         </md-menu-content>
                     </md-menu>
                 </div>
-                <div
-                    class="md-layout-item md-size-5 toggle-paired-buttons"
-                >
+                <div class="md-layout-item md-size-5 toggle-paired-buttons">
                     <div v-if="isBedpeFile" class="no-padding-top md-icon-button">
-                        <md-button class="md-icon" :class="{'md-primary': pairedLeftSide}"  @click="togglePairedSides('left')">
+                        <md-button class="md-icon" :class="{'md-primary': selectedSide == 'left'}"  @click="togglePairedSides('left')">
                             <md-icon>looks_one</md-icon>
                             <md-tooltip md-direction="top" md-delay="300">
                                 Plot left support data
@@ -67,11 +65,9 @@
                         </md-button>
                     </div>
                 </div>
-                <div
-                    class="md-layout-item md-size-10 toggle-paired-buttons"
-                >
+                <div class="md-layout-item md-size-10 toggle-paired-buttons">
                     <div v-if="isBedpeFile" class="no-padding-top">
-                        <md-button class="md-icon md-mini" :class="{'md-primary': pairedRightSide}" @click="togglePairedSides('right')" style="margin-left: 8px">
+                        <md-button class="md-icon md-mini" :class="{'md-primary': selectedSide == 'right'}" @click="togglePairedSides('right')" style="margin-left: 8px">
                             <md-icon>looks_two</md-icon>
                         </md-button>
                             <md-tooltip md-direction="top" md-delay="300">
@@ -255,7 +251,6 @@ import { rectBin, flatten } from "../../functions";
 import heatmap from "../visualizations/heatmap.vue";
 import EventBus from "../../eventBus";
 import tooltip from "../visualizations/barPlotTooltip.vue";
-
 export default {
     components: { heatmap, tooltip },
     name: "Embedding1D",
@@ -409,6 +404,11 @@ export default {
         },
         widgetDataID: function() {
             if (this.binsizes && this.selectedBinsize) {
+                if (this.isBedpeFile){
+                    return Number(
+                        this.binsizes[this.selectedBinsize][this.clusterNumber][this.selectedSide]
+                    );
+                }
                 return Number(
                     this.binsizes[this.selectedBinsize][this.clusterNumber]
                 );
@@ -440,6 +440,9 @@ export default {
                 "1d-features",
                 preselection
             );
+        },
+        togglePairedSides: function(side) {
+            this.selectedSide = side
         },
         registerSelectionEventHandlers: function() {
             EventBus.$on("collection-selected", this.handleDataSelection);
@@ -577,9 +580,7 @@ export default {
                 maxHeatmapRange: this.maxHeatmapRange,
                 clusterNumber: this.clusterNumber,
                 selectedCluster: this.selectedCluster,
-                pairedLeftSide: this.pairedLeftSide,
-                pairedRightSide: this.pairedRightSide,
-                pairedSidesMutuallyExclusive: this.pairedSidesMutuallyExclusive,
+                selectedSide: this.selectedSide,
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -590,6 +591,7 @@ export default {
                 selectedDataset: [],
                 selectedBinsize: undefined,
                 intervalSize: collectionData["intervalSize"],
+                isBedpeFile: collectionData['isPairedEnd'],
                 regionName: collectionData["regionName"],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: {},
@@ -613,9 +615,7 @@ export default {
                 tooltipOffsetLeft: 0,
                 selectMultiple: false,
                 clickedClusters: [],
-                pairedLeftSide: true,
-                pairedRightSide: false,
-                pairedSidesMutuallyExclusive: true,
+                selectedSide: 'left',
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -675,6 +675,7 @@ export default {
             }
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
+                isBedpeFile: collectionConfig['isPairedEnd'],
                 dragImage: undefined,
                 widgetData: widgetDataValues,
                 selectedDataset: widgetData["dataset"],
@@ -703,9 +704,7 @@ export default {
                 tooltipOffsetLeft: 0,
                 selectMultiple: false,
                 clickedClusters: [],
-                pairedLeftSide: widgetData["pairedLeftSide"] !== undefined ? widgetData["pairedLeftSide"] : true,
-                pairedRightSide: widgetData["pairedRightSide"] !== undefined ? widgetData["pairedRightSide"] : false,
-                pairedSidesMutuallyExclusive: true,
+                selectedSide: widgetData["selectedSide"] !== undefined ? widgetData["selectedSide"] : 'left',
             };
         },
         handleSliderChange: function(data) {
@@ -740,18 +739,16 @@ export default {
                     queryObject
                 )
             ) {
-                return this.handleReceivedData(this.$store.getters["compare/getWidgetDataEmbedding1d"](
+                return this.$store.getters["compare/getWidgetDataEmbedding1d"](
                     queryObject
-                ));
+                );
             }
             // overlay data does not exist, check whether request has been dispatched
             let url = `embeddingIntervalData/${id}/${index}/`;
             let requestData = this.$store.getters["compare/getRequest"](url);
-            let data;
             let response;
             if (requestData) {
                 response = await requestData;
-                data = this.handleReceivedData(response.data);
             } else {
                 // request has not been dispatched => put it in store
                 this.$store.commit("compare/setRequest", {
@@ -759,19 +756,18 @@ export default {
                     data: this.fetchData(url)
                 });
                 response = await this.$store.getters["compare/getRequest"](url);
-                data = this.handleReceivedData(response.data);
                 // save it in store -> only first request needs to persist it
                 var mutationObject = {
                     id: id,
                     overlayIndex: index,
-                    data: data
+                    data: response.data["data"]
                 };
                 this.$store.commit(
                     "compare/setWidgetDataEmbedding1d",
                     mutationObject
                 );
             }
-            return data;
+            return response.data["data"];
         },
         getEmbeddingData: async function(id) {
             // checks whether association data is in store and fetches it if it is not
@@ -783,9 +779,9 @@ export default {
                     queryObject
                 )
             ) {
-                return this.handleReceivedData(this.$store.getters["compare/getWidgetDataEmbedding1d"](
+                return this.$store.getters["compare/getWidgetDataEmbedding1d"](
                     queryObject
-                ));
+                );
             }
             // pileup does not exists in store, check whether request has been dispatched
             let url = `embeddingIntervalData/${id}/`;
@@ -810,19 +806,26 @@ export default {
                     mutationObject
                 );
             }
-            return this.handleReceivedData(response.data);
+            // return it
+            return response.data;
         },
         updateData: async function() {
             this.loading = true;
             // construct data ids to be fecthed
-            let selected_id = this.binsizes[this.selectedBinsize][
-                this.clusterNumber
-            ];
+            let selected_id;
+            if (this.isBedpeFile){
+                selected_id = this.binsizes[this.selectedBinsize][
+                    this.clusterNumber
+                ][this.selectedSide];
+            }else{
+                selected_id = this.binsizes[this.selectedBinsize][
+                    this.clusterNumber
+                ];
+            }
             // store widget data ref
             this.widgetDataRef = selected_id;
             // fetch data
-            var data = await this.getEmbeddingData(selected_id);
-            this.widgetData = data;
+            this.widgetData = await this.getEmbeddingData(selected_id);
             // fetch overlay if needed
             if (this.overlay != "density") {
                 this.overlayValues = await this.getOverlayData(
@@ -932,13 +935,26 @@ export default {
             }
             this.updateData();
         },
+        selectedSide: async function() {
+            if (! this.selectedSide){
+                return
+            }
+            this.updateData()
+        },
         overlay: async function() {
             // fetch overlay if needed
             this.loading = true;
             if (this.overlay != "density") {
-                let selected_id = this.binsizes[this.selectedBinsize][
-                    this.clusterNumber
-                ];
+                let selected_id;
+                if (this.isBedpeFile){
+                    selected_id = this.binsizes[this.selectedBinsize][
+                        this.clusterNumber
+                    ][this.selectedSide];
+                }else{
+                    selected_id = this.binsizes[this.selectedBinsize][
+                        this.clusterNumber
+                    ];
+                }
                 this.overlayValues = await this.getOverlayData(
                     selected_id,
                     Number(this.overlay)
@@ -968,45 +984,35 @@ export default {
 .bg {
     background-color: rgba(211, 211, 211, 0.2);
 }
-
 .toolbarheight {
     height: 40px;
 }
-
 .flex-container {
     display: flex;
     justify-content: center;
     align-items: center;
 }
-
 .no-padding-right {
     padding-right: 0px;
 }
-
 .padding-right {
     padding-right: 15px;
 }
-
 .padding-left {
     padding-left: 10px;
 }
-
 .padding-top {
     padding-top: 12px;
 }
-
 .no-padding-top {
     padding-top: 0px;
 }
-
 .smallMargin {
     margin: 2px;
 }
-
 .md-field {
     min-height: 30px;
 }
-
 .toggle-paired-buttons {
     padding-top: 8px;
     padding-bottom:8px;

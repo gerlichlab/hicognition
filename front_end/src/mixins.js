@@ -41,6 +41,11 @@ export var apiMixin = {
                 }
             });
         },
+        fetchAndStoreProcessingDatasets: function() {
+            this.fetchData("datasets/processing/").then(response => {
+                this.$store.commit("setProcessingDatasets", response.data)
+            })
+        },
         fetchAndStoreCollections: function() {
             // convenience method for fetching collections and storing them in vuex store
             this.fetchData("collections/").then(response => {
@@ -109,11 +114,12 @@ export var apiMixin = {
                         error.response.status == 401
                     ) {
                         // check whether this is a confirmation failure
-                        if (error.response.data.message.includes('Unconfirmed')) {
+                        if (error.response.data.message && error.response.data.message.includes('Unconfirmed')) {
                             this.$router.push("/resendEmail")
                         }else{
                             // Token problem, delete it and return to login
                             this.$store.commit("clearToken"); // FIXME currently token cleared when 403 is sent
+                            console.log("test reached");
                             this.$router.push("/login");
                         }
                     } else {
@@ -160,7 +166,7 @@ export var apiMixin = {
                         error.response.status == 401
                     ) {
                         // check whether this is a confirmation failure
-                        if (error.response.data.message == 'Unconfirmed') {
+                        if (error.response.data.message && error.response.data.message == 'Unconfirmed') {
                             this.$router.push("/resendEmail")
                         }else{
                             // Token problem, delete it and return to login
@@ -211,7 +217,7 @@ export var apiMixin = {
                         error.response.status == 401
                     ) {
                         // check whether this is a confirmation failure
-                        if (error.response.data.message == 'Unconfirmed') {
+                        if (error.response.data.message && error.response.data.message == 'Unconfirmed') {
                             this.$router.push("/resendEmail")
                         }else{
                             // Token problem, delete it and return to login
@@ -252,7 +258,7 @@ export var apiMixin = {
                         error.response.status == 401
                     ) {
                         // check whether this is a confirmation failure
-                        if (error.response.data.message == 'Unconfirmed') {
+                        if (error.response.data.message && error.response.data.message == 'Unconfirmed') {
                             this.$router.push("/resendEmail")
                         }else{
                             // Token problem, delete it and return to login
@@ -360,47 +366,9 @@ export var widgetMixin = {
         },
         isVariableSize: function() {
             return this.intervalSize == "variable";
-        },
-        isBedpeFile: function() {
-            return true; // TODO during dev, remove after
-
-            if (this.region) {
-                return this.region.file_path.toLowerCase().endsWith('bedpe');
-            } else {
-                return false;
-            }
-        },
+        }
     },
     methods: {
-        handleReceivedData: function(data) {
-            if (!this.isBedpeFile) {
-                return data;
-            } else {
-                let tmp_data = [];
-                if (this.pairedLeftSide) {
-                    tmp_data.push(data[0]);
-                } 
-                if (this.pairedRightSide) {
-                    tmp_data.push(data[1]);
-                }
-                if (this.pairedSidesMutuallyExclusive) {
-                    return tmp_data[0];
-                } else {
-                    return tmp_data;
-                }
-            }
-        },
-        togglePairedSides: function(side) {
-            if (side == 'left' || this.pairedSidesMutuallyExclusive) {
-                this.pairedLeftSide = !this.pairedLeftSide;
-            }
-            if (side == 'right' || this.pairedSidesMutuallyExclusive) {
-                this.pairedRightSide = !this.pairedRightSide;
-            }
-            if (this.binsizes !== undefined && Object.keys(this.binsizes).length > 0) {
-                this.updateData();
-            }
-        },
         blankWidget: function() {
             // removes all information that the user can set in case a certain region/dataset combination is not available
             this.widgetData = undefined;

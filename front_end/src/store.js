@@ -430,7 +430,8 @@ const store = new Vuex.Store({
         notifications: {
             read: [],
             new: []
-        }
+        },
+        processingDatasets: []
     },
     getters: {
         notificationSource: state => {
@@ -476,6 +477,9 @@ const store = new Vuex.Store({
         getDataset: state => id => {
             return state.datasets.filter(el => el.id === id)[0];
         },
+        processingDatasets: state => {
+            return state.processingDatasets  
+        },
         notifications: state => {
             return state.notifications.new.sort(
                 (a, b) => new Date(b.time) - new Date(a.time)
@@ -491,6 +495,9 @@ const store = new Vuex.Store({
             state.notificationSource = new EventSource(
                 process.env.NOTIFICATION_URL
             );
+        },
+        setProcessingDatasets(state, datasets) {
+            state.processingDatasets = datasets
         },
         addNewNotification(state, notification) {
             state.notifications.new.push(notification);

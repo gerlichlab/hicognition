@@ -78,6 +78,8 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
     intervals = Intervals.query.get(interval_id)
     # get path to interval regions
     regions_path = intervals.source_dataset.file_path
+    # get dimension
+    dimension = intervals.source_dataset.dimension
     # do pileup
     current_app.logger.debug(f"      {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Doing pileup...")
     # get windowsize
@@ -97,10 +99,11 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
             arms,
             pileup_type,
             collapse=False,
+            dimension=dimension
         )
     else:
         pileup_array = worker_funcs._do_pileup_variable_size(
-            cooler_dataset, binsize, regions_path, arms, pileup_type, collapse=False
+            cooler_dataset, binsize, regions_path, arms, pileup_type, collapse=False, dimension=dimension
         )
     embedding_results = worker_funcs._do_embedding_2d(pileup_array)
     # add result to database
@@ -145,11 +148,11 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
     current_app.logger.info(f"       {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Success!")
 
 
-def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize):
+def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize, region_side=None):
     """Performs stackup of bigwig dataset over the intervals provided with the indicated binsize.
     Stores result and adds it to database."""
     current_app.logger.info(
-        f"  Doing pileup on bigwig {bigwig_dataset_id} with intervals {intervals_id} on binsize {binsize}"
+        f"  Doing pileup on bigwig {bigwig_dataset_id} with intervals {intervals_id} on binsize {binsize} with region_side: {region_side}"
     )
     bigwig_dataset = Dataset.query.get(bigwig_dataset_id)
     intervals = Intervals.query.get(intervals_id)
@@ -165,17 +168,17 @@ def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize):
     current_app.logger.debug(f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Doing stackup...")
     if window_size is None:
         full_size_array = worker_funcs._do_stackup_variable_size(
-            bigwig_dataset.file_path, regions, binsize
+            bigwig_dataset.file_path, regions, binsize, region_side
         )
         downsampled_array = worker_funcs._do_stackup_variable_size(
-            bigwig_dataset.file_path, regions_small, binsize
+            bigwig_dataset.file_path, regions_small, binsize, region_side
         )
     else:
         full_size_array = worker_funcs._do_stackup_fixed_size(
-            bigwig_dataset.file_path, regions, window_size, binsize
+            bigwig_dataset.file_path, regions, window_size, binsize, region_side
         )
         downsampled_array = worker_funcs._do_stackup_fixed_size(
-            bigwig_dataset.file_path, regions_small, window_size, binsize
+            bigwig_dataset.file_path, regions_small, window_size, binsize, region_side
         )
     # save full length array to file
     current_app.logger.debug(f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Writing output...")
@@ -194,16 +197,16 @@ def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize):
     # add to database
     current_app.logger.debug(f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Adding database entry...")
     worker_funcs._add_stackup_db(
-        file_path, file_path_small, binsize, intervals.id, bigwig_dataset.id
+        file_path, file_path_small, binsize, intervals.id, bigwig_dataset.id, region_side
     )
-    worker_funcs._add_line_db(file_path_line, binsize, intervals.id, bigwig_dataset.id)
+    worker_funcs._add_line_db(file_path_line, binsize, intervals.id, bigwig_dataset.id, region_side)
     current_app.logger.info(f"       {bigwig_dataset_id}-{intervals_id}-{binsize} => Success!")
 
 
-def enrichment_pipeline_step(collection_id, intervals_id, binsize):
+def enrichment_pipeline_step(collection_id, intervals_id, binsize, region_side=None):
     """Pipeline step to perform enrichment analysis"""
     current_app.logger.info(
-        f"Doing enrichment analysis with collection {collection_id} on intervals {intervals_id} with binsize {binsize}"
+        f"Doing enrichment analysis with collection {collection_id} on intervals {intervals_id} with binsize {binsize} with region_side: {region_side}"
     )
     # get query regions
     intervals = Intervals.query.get(intervals_id)
@@ -212,11 +215,11 @@ def enrichment_pipeline_step(collection_id, intervals_id, binsize):
     regions_path = intervals.source_dataset.file_path
     if window_size is None:
         stacked = worker_funcs._do_enrichment_calculations_variable_size(
-            collection_id, binsize, regions_path
+            collection_id, binsize, regions_path, region_side=region_side
         )
     else:
         stacked = worker_funcs._do_enrichment_calculations_fixed_size(
-            collection_id, window_size, binsize, regions_path
+            collection_id, window_size, binsize, regions_path, region_side=region_side
         )
     # write output
     current_app.logger.debug(f"      {collection_id}-{intervals_id}-{binsize} => Writing output...")
@@ -226,26 +229,26 @@ def enrichment_pipeline_step(collection_id, intervals_id, binsize):
     np.save(file_path, stacked)
     # add to database
     worker_funcs._add_association_data_to_db(
-        file_path, binsize, intervals_id, collection_id
+        file_path, binsize, intervals_id, collection_id, region_side=region_side
     )
     current_app.logger.info(f"      {collection_id}-{intervals_id}-{binsize} => Success!")
 
 
-def embedding_1d_pipeline_step(collection_id, intervals_id, binsize):
+def embedding_1d_pipeline_step(collection_id, intervals_id, binsize, region_side=None):
     """Performs embedding on each binsize-sized bin of the window specified in intervals_id using
     the features in collection_id"""
     current_app.logger.info(
-        f"Doing 1d-embedding with collection {collection_id} on intervals {intervals_id} with binsize {binsize}"
+        f"Doing 1d-embedding with collection {collection_id} on intervals {intervals_id} with binsize {binsize} with region_side: {region_side}"
     )
     # get intervals to decide whether fixed size or variable size
     intervals = Intervals.query.get(intervals_id)
     if intervals.windowsize is None:
         embedding_results = worker_funcs._do_embedding_1d_variable_size(
-            collection_id, intervals_id, binsize
+            collection_id, intervals_id, binsize, region_side=region_side
         )
     else:
         embedding_results = worker_funcs._do_embedding_1d_fixed_size(
-            collection_id, intervals_id, binsize
+            collection_id, intervals_id, binsize, region_side=region_side
         )
     # write output for embedding
     current_app.logger.debug(f"      {collection_id}-{intervals_id}-{binsize} => Writing output...")
@@ -284,7 +287,7 @@ def embedding_1d_pipeline_step(collection_id, intervals_id, binsize):
         }
         # add to database
         worker_funcs._add_embedding_1d_to_db(
-            filepaths, binsize, intervals.id, collection_id, size
+            filepaths, binsize, intervals.id, collection_id, size, region_side
         )
     current_app.logger.info(f"      {collection_id}-{intervals_id}-{binsize} => Success!")
 

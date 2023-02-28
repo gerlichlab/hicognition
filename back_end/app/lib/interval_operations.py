@@ -65,11 +65,25 @@ def get_bin_number_for_expanded_intervals(binsize_perc, expansion_factor):
 
 def expand_regions(regions, expansion_factor):
     """Will expand regions by expansion factor left and right"""
-    size = regions["end"] - regions["start"]
+    if "chrom" in regions:
+        size = regions["end"] - regions["start"]
+        return pd.DataFrame(
+            {
+                "chrom": regions["chrom"],
+                "start": (regions["start"] - expansion_factor * size).astype(int),
+                "end": (regions["end"] + expansion_factor * size).astype(int),
+            }
+        )
+    size_1 = regions["end1"] - regions["start1"]
+    size_2 = regions["end2"] - regions["start2"]
     return pd.DataFrame(
-        {
-            "chrom": regions["chrom"],
-            "start": (regions["start"] - expansion_factor * size).astype(int),
-            "end": (regions["end"] + expansion_factor * size).astype(int),
-        }
-    )
+            {
+                "chrom1": regions["chrom1"],
+                "start1": (regions["start1"] - expansion_factor * size_1).astype(int),
+                "end1": (regions["end1"] + expansion_factor * size_1).astype(int),
+                "chrom2": regions["chrom2"],
+                "start2": (regions["start2"] - expansion_factor * size_2).astype(int),
+                "end2": (regions["end2"] + expansion_factor * size_2).astype(int),
+            }
+        )
+

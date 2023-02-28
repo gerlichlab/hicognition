@@ -276,6 +276,7 @@ class Dataset(db.Model):
     # fields
     id = db.Column(db.Integer, primary_key=True)
     dataset_name = db.Column(db.String(512), nullable=False)
+    dimension = db.Column(db.String(64), default="1d")
     description = db.Column(db.String(81), default="undefined")
     created_at = db.Column(
         db.DateTime,  default=datetime.datetime.utcnow
@@ -504,7 +505,7 @@ class Dataset(db.Model):
         """Creates intervals that are in preprocessing_map, but
         do not exist for dataset"""
         if self.sizeType == "Interval":
-            return []
+            return [None]
         windowsizes = [
             windowsize
             for windowsize in preprocessing_map.keys()
@@ -560,6 +561,9 @@ class Dataset(db.Model):
                 "run bed preprocessing",
                 self.id,
             )
+            # set bedpe to 2d
+            if self.file_path.lower().endswith('bedpe'):
+                self.dimension = "2d"
             self.processing_state = "processing"
 
         # if filetype is cooler, store available binsizes
@@ -853,6 +857,7 @@ class BaseIntervalData(db.Model):
     )
     name = db.Column(db.String(512), index=True)
     file_path = db.Column(db.String(512), index=True)
+    region_side = db.Column(db.String(64), nullable=True) # whehter the data is associated with the left or right end of a 2d region dataset
     value_type = db.Column(db.String(64))
     binsize = db.Column(db.Integer)
     job_status = db.Column(db.String(64))  # , nullable=False) # success, fail, <job_id>

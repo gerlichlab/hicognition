@@ -69,6 +69,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         dataset = Dataset.query.first()
         expected = {
             "dataset_name": "test",
+            "dimension": "1d",
             "processing_state": "new",
             "upload_state": "uploaded",
             "description": "test-description",
@@ -128,6 +129,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "id": 1,
             "user_id": 1,
             "dataset_name": "test",
+            "dimension": "1d",
             "processing_state": "new",
             "upload_state": "uploaded",
             "description": "test-description",
@@ -186,6 +188,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "id": 1,
             "user_id": 1,
             "dataset_name": "test",
+            "dimension": "1d",
             "description": "test-description",
             "perturbation": "No perturbation",
             "file_path": "./tmp_test/1_test.bigwig",
@@ -245,6 +248,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dataset_name": "test",
             "processing_state": "new",
             "upload_state": "uploaded",
+            "dimension": "1d",
             "description": "No description provided",
             "perturbation": "No perturbation",
             "cell_type": 'undefined',
@@ -295,6 +299,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         dataset = Dataset.query.first()
         expected = {
             "dataset_name": "test",
+            "dimension": "1d",
             "processing_state": "processing",
             "cell_type": 'undefined',
             "upload_state": "uploaded",
@@ -354,6 +359,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dataset_name": "test",
             "processing_state": "processing",
             "upload_state": "uploaded",
+            "dimension": "2d",
             "description": "test-description",
             "sizeType": "interval",
             "cell_type": "undefined",

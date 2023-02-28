@@ -136,7 +136,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
                     self.app.queues["long"],
                     "pipeline_lola",
                     "run lola pipeline",
-                    1,
+                    collection_id=1,
                     intervals_id=interval.id,
                     binsize=binsize,
                 )
@@ -177,7 +177,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
                     self.app.queues["long"],
                     "pipeline_lola",
                     "run lola pipeline",
-                    1,
+                    collection_id=1,
                     intervals_id=interval.id,
                     binsize=binsize,
                 )
@@ -243,7 +243,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
                     self.app.queues["medium"],
                     "pipeline_embedding_1d",
                     "run 1d embedding pipeline",
-                    3,
+                    collection_id=3,
                     intervals_id=interval.id,
                     binsize=binsize,
                 )

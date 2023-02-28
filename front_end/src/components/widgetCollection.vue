@@ -199,10 +199,9 @@ export default {
             return this.regions.filter(el => el.id == this.selectedRegionID)[0];
         },
         regionIsPairedEnd: function() {
-            //return true; // TODO during dev, remove after
 
             if (this.region) {
-                return this.region.file_path.toLowerCase().endsWith('bedpe');
+                return this.region.dimension == '2d'
             } else {
                 return false;
             }
@@ -498,6 +497,7 @@ export default {
                 id: this.id,
                 collectionConfig: {
                     regionID: this.selectedRegionID,
+                    isPairedEnd: this.regionIsPairedEnd,
                     regionName: this.regions.filter(
                         el => el.id == this.selectedRegionID
                     )[0].dataset_name,
@@ -654,6 +654,7 @@ export default {
                 id: this.id,
                 collectionConfig: {
                     regionID: undefined,
+                    isPairedEnd: false,
                     availableData: {
                         pileup: {},
                         lineprofile: {},

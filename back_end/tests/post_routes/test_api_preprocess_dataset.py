@@ -151,7 +151,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     self.app.queues["long"],
                     "pipeline_pileup",
                     "run pileup pipeline",
-                    1,
+                    dataset_id=1,
                     intervals_id=interval.id,
                     binsize=binsize,
                 )
@@ -192,7 +192,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     self.app.queues["long"],
                     "pipeline_pileup",
                     "run pileup pipeline",
-                    1,
+                    dataset_id=1,
                     intervals_id=interval.id,
                     binsize=binsize,
                 )
@@ -302,7 +302,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     self.app.queues["long"],
                     "pipeline_pileup",
                     "run pileup pipeline",
-                    5,
+                    dataset_id=5,
                     intervals_id=interval.id,
                     binsize=binsize,
                 )
@@ -341,7 +341,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     self.app.queues["medium"],
                     "pipeline_stackup",
                     "run stackup pipeline",
-                    6,
+                    dataset_id=6,
                     intervals_id=interval.id,
                     binsize=binsize,
                 )
@@ -425,7 +425,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                             current_app.config["PIPELINE_QUEUES"][dataset.filetype]
                         ],
                         *current_app.config["PIPELINE_NAMES"][dataset.filetype],
-                        dataset_id,
+                        dataset_id=dataset.id,
                         intervals_id=interval.id,
                         binsize=binsize,
                     )
@@ -473,7 +473,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                         self.app.queues["medium"],
                         "pipeline_stackup",
                         "run stackup pipeline",
-                        dataset_id,
+                        dataset_id=dataset_id,
                         intervals_id=interval.id,
                         binsize=binsize,
                     )

@@ -37,7 +37,10 @@ def get_optimal_binsize(regions, target_bin_number, processing_map):
     """given a dataframe of regions defined via (chrom, start, end) and a
     target bin number, decide which binsize to use for variable size pileup/enrichment analysis"""
     MAX_CHUNK_NUMBER = 250
-    sizes = regions["end"] - regions["start"]
+    if "chrom1" in regions:
+        sizes = regions["end1"] - regions["start1"]
+    else:
+        sizes = regions["end"] - regions["start"]
     max_size = np.percentile(sizes, 80)
     median_size = np.median(sizes)
     binsizes = sorted(

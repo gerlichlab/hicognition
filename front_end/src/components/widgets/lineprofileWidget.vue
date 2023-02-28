@@ -63,7 +63,7 @@
                     class="md-layout-item md-size-5 toggle-paired-buttons"
                 >
                     <div v-if="isBedpeFile" class="no-padding-top md-icon-button">
-                        <md-button class="md-icon" :class="{'md-primary': pairedLeftSide}"  @click="togglePairedSides('left')">
+                        <md-button class="md-icon" :class="{'md-primary': selectedSide == 'left'}"  @click="togglePairedSides('left')">
                             <md-icon>looks_one</md-icon>
                             <md-tooltip md-direction="top" md-delay="300">
                                 Plot left support data
@@ -75,7 +75,7 @@
                     class="md-layout-item md-size-10 toggle-paired-buttons"
                 >
                     <div v-if="isBedpeFile" class="no-padding-top">
-                        <md-button class="md-icon md-mini" :class="{'md-primary': pairedRightSide}" @click="togglePairedSides('right')" style="margin-left: 8px">
+                        <md-button class="md-icon md-mini" :class="{'md-primary': selectedSide == 'right'}" @click="togglePairedSides('right')" style="margin-left: 8px">
                             <md-icon>looks_two</md-icon>
                         </md-button>
                             <md-tooltip md-direction="top" md-delay="300">
@@ -218,9 +218,6 @@
                 :height="lineprofileHeight"
                 :lineprofileNames="lineProfileNames"
                 :lineprofileData="widgetData"
-                :paired="isBedpeFile"
-                :pairedLeft="pairedLeftSide"
-                :pairedRight="pairedRightSide"
                 :normalized="normalized"
                 :showInterval="isVariableSize"
                 :valueScaleColor="valueScaleColor"
@@ -306,6 +303,9 @@ export default {
             this.ignoreTarget = true;
             this.minHeatmapRange = this.minTarget = undefined;
             this.maxHeatmapRange = this.maxTarget = undefined;
+        },
+        togglePairedSides: function(side) {
+            this.selectedSide = side
         },
         setColorScale: function(data) {
             /* 
@@ -480,9 +480,7 @@ export default {
                 minTarget: this.minTarget,
                 maxTarget: this.maxTarget,
                 ignoreTarget: this.ignoreTarget,
-                pairedLeftSide: this.pairedLeftSide,
-                pairedRightSide: this.pairedRightSide,
-                pairedSidesMutuallyExclusive: this.pairedSidesMutuallyExclusive,
+                selectedSide: this.selectedSide,
             };
         },
         initializeForFirstTime: function(widgetData, collectionData) {
@@ -493,6 +491,7 @@ export default {
                 selectedDataset: [],
                 selectedBinsize: undefined,
                 intervalSize: collectionData["intervalSize"],
+                isBedpeFile: collectionData['isPairedEnd'],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: {},
                 datasets:
@@ -520,9 +519,7 @@ export default {
                 minTarget: undefined,
                 maxTarget: undefined,
                 ignoreTarget: true,
-                pairedLeftSide: true,
-                pairedRightSide: true,
-                pairedSidesMutuallyExclusive: false,
+                selectedSide: 'left',
             };
             // write properties to store
             var newObject = this.toStoreObject();
@@ -531,15 +528,23 @@ export default {
         },
         initializeFromStore: function(widgetData, collectionConfig) {
             var widgetDataValues;
+            let selectedSide = widgetData["selectedSide"] !== undefined ? widgetData["selectedSide"] : 'left';
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
                 var widgetDataRef = widgetData["widgetDataRef"];
                 var widgetDataValues = [];
                 for (var widget_data_id of widgetDataRef) {
-                    // deinfe store queries
-                    var payload = {
-                        id: widget_data_id
-                    };
+                    //
+                    if (collectionConfig['isPairedEnd']){
+                        var payload = {
+                            id: widget_data_id[selectedSide]
+                        };
+                    }else{
+                        // deinfe store queries
+                        var payload = {
+                            id: widget_data_id
+                        };
+                    }
                     // get widget data from store
                     var new_widgetDataValues = this.$store.getters[
                         "compare/getWidgetDataLineprofile"
@@ -560,6 +565,7 @@ export default {
             }
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
+                isBedpeFile: collectionConfig['isPairedEnd'],
                 dragImage: undefined,
                 widgetData: widgetDataValues,
                 selectedDataset: widgetData["dataset"],
@@ -618,9 +624,7 @@ export default {
                     widgetData["ignoreTarget"] !== undefined
                         ? widgetData["ignoreTarget"]
                         : true,
-                pairedLeftSide: widgetData["pairedLeftSide"] !== undefined ? widgetData["pairedLeftSide"] : true,
-                pairedRightSide: widgetData["pairedRightSide"] !== undefined ? widgetData["pairedRightSide"] : true,
-                pairedSidesMutuallyExclusive: widgetData["pairedSidesMutuallyExclusive"] !== undefined ? widgetData["pairedSidesMutuallyExclusive"] : false,
+                selectedSide: widgetData["selectedSide"] !== undefined ? widgetData["selectedSide"] : 'left',
             };
         },
         getlineprofileData: async function(id) {
@@ -659,22 +663,16 @@ export default {
             var lineData = [];
             var lineNames = [];
             for (let i = 0; i < selected_ids.length; i++) {
-                let data = await this.getlineprofileData(selected_ids[i]);
-                let name = this.datasets[this.selectedDataset[i]]["name"];
-
-                if (!this.isBedpeFile) {
-                    lineData.push(data);
-                    lineNames.push(name)
-                } else {
-                    if (this.pairedLeftSide) {
-                        lineData.push(data[0]);
-                        lineNames.push(`${name} (1)`);
-                    }
-                    if (this.pairedRightSide) {
-                        lineData.push(data[1]);
-                        lineNames.push(`${name} (2)`);
-                    }
+                let data_id;
+                if (this.isBedpeFile){
+                    data_id = selected_ids[i][this.selectedSide]
+                }else{
+                    data_id = selected_ids[i]
                 }
+                let data = await this.getlineprofileData(data_id);
+                let name = this.datasets[this.selectedDataset[i]]["name"];
+                lineData.push(data);
+                lineNames.push(name)
             }
 
             this.widgetData = lineData;
@@ -809,6 +807,12 @@ export default {
                 return;
             }
             this.updateData();
+        },
+        selectedSide: async function() {
+            if (! this.selectedSide){
+                return
+            }
+            this.updateData()
         }
     },
     mounted: function() {

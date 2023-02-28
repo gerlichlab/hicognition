@@ -73,7 +73,3 @@ To add datasets, you can use the `flask dataset add` command:
 > __Options:__
 >
 >  --help  Show this message and exit.
-
-{{% notice note %}}
-For bulk upload of data, you can also use our [hicognition cli tool](todo)! __TODO__
-{{% /notice %}}

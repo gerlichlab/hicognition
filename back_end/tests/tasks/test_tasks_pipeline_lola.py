@@ -42,9 +42,13 @@ class TestPipelineLola(LoginTestCase):
         db.session.commit()
         # add region
         self.bedfile = self.create_dataset(id=1, dataset_name="test", filetype="bedfile", user_id=1, assembly=1)
+        self.bedfile_2d = self.create_dataset(id=2, dataset_name="test", filetype="bedfile", user_id=1, assembly=1, dimension="2d")
         # add intervals
         self.intervals1 = Intervals(
             id=1, name="testRegion1", dataset_id=1, windowsize=200000
+        )
+        self.intervals_2d = Intervals(
+            id=2, name="testRegion1", dataset_id=2, windowsize=200000
         )
         # add collections
         self.collection = Collection(id=1)
@@ -109,6 +113,25 @@ class TestPipelineLola(LoginTestCase):
         self.assertEqual(self.bedfile.processing_collections, [])
         assert mock_log.called
 
+    @patch("app.pipeline_steps.set_task_progress")
+    @patch("app.pipeline_steps.enrichment_pipeline_step")
+    def test_correct_step_called_2d_region(
+        self, mock_enrichment, mock_set_progress
+    ):
+        """tests whether dataset is set as faild if problem arises."""
+        db.session.add_all(
+            [self.bedfile_2d, self.collection, self.intervals_2d]
+        )
+        # call pipeline
+        pipeline_lola(self.collection.id, self.intervals_2d.id, 10000)
+        calls = [
+            [(self.collection.id, self.intervals_2d.id, 10000), {"region_side":side}] for side in ['left', 'right']
+        ]
+        for args, kwargs in calls:
+            mock_enrichment.assert_any_call(*args, **kwargs)
+        # test set task progress
+        mock_set_progress.assert_called_with(100)
+
 
 class EnrichmentSetupClass(LoginTestCase, TempDirTestCase):
     """Class that contains shared data setup methods for the testclass
@@ -137,6 +160,9 @@ class EnrichmentSetupClass(LoginTestCase, TempDirTestCase):
         self.query_dataset = self.create_dataset(
             id=1, dataset_name="test", user_id=1, file_path=pos_file, filetype="bedfile", assembly=1
         )
+        self.query_dataset_2d = self.create_dataset(
+            id=10, dataset_name="test", user_id=1, file_path=pos_file, filetype="bedfile", assembly=1, dimension="2d"
+        )
         self.target_dataset_1 = self.create_dataset(
             id=2, dataset_name="test", user_id=1, file_path=target_1_file, filetype="bedfile", assembly=1
         )
@@ -145,6 +171,7 @@ class EnrichmentSetupClass(LoginTestCase, TempDirTestCase):
         )
         # create intervals
         self.query_interval = Intervals(id=1, windowsize=100000, dataset_id=1)
+        self.query_interval_2d = Intervals(id=4, windowsize=100000, dataset_id=self.query_dataset_2d.id)
         # create collections
         self.collection_1 = Collection(
             id=1, datasets=[self.target_dataset_1, self.target_dataset_2]
@@ -187,6 +214,7 @@ class EnrichmentSetupClass(LoginTestCase, TempDirTestCase):
     def _create_groupings(self):
         self.datasets = [
             self.query_dataset,
+            self.query_dataset_2d,
             self.tad_boundaries,
             self.target_dataset_1,
             self.target_dataset_2,
@@ -195,6 +223,7 @@ class EnrichmentSetupClass(LoginTestCase, TempDirTestCase):
         ]
         self.intervals = [
             self.query_interval,
+            self.query_interval_2d,
             self.tad_boundaries_interval,
             self.tad_interval,
         ]
@@ -236,6 +265,24 @@ class TestEnrichmentPipelineStep(EnrichmentSetupClass):
         # check functions
         mock_variable_enrichment.assert_not_called()
         mock_fixed_enrichment.assert_called()
+
+    @patch("app.pipeline_steps.worker_funcs._do_enrichment_calculations_fixed_size")
+    @patch("app.pipeline_steps.worker_funcs._do_enrichment_calculations_variable_size")
+    def test_correct_worker_function_called_fixed_intervals_2d(
+        self, mock_variable_enrichment, mock_fixed_enrichment
+    ):
+        """Tests whether correct enrichment function is called for intervals with fixed size."""
+        # add everything needed to database
+        db.session.add_all(self.datasets)
+        db.session.add_all(self.intervals)
+        db.session.add_all(self.collections)
+        db.session.commit()
+        # run enrichment analysis
+        for side in ['left', 'right']:
+            enrichment_pipeline_step(self.collection_1.id, self.query_interval_2d.id, 50000, region_side=side)
+            # check functions
+            mock_variable_enrichment.assert_not_called()
+            mock_fixed_enrichment.assert_any_call(self.collection_1.id, 100000 ,50000, self.query_dataset_2d.file_path,region_side=side)
 
     @patch("app.pipeline_steps.worker_funcs._do_enrichment_calculations_fixed_size")
     @patch("app.pipeline_steps.worker_funcs._do_enrichment_calculations_variable_size")
@@ -305,6 +352,7 @@ class TestEnrichmentWorkerFunctionFixedSize(EnrichmentSetupClass):
             self.query_interval.windowsize,
             50000,
             self.query_interval.source_dataset.file_path,
+            region_side=None
         )
         expected = np.array(
             [
@@ -326,6 +374,7 @@ class TestEnrichmentWorkerFunctionFixedSize(EnrichmentSetupClass):
             self.tad_boundaries_interval.windowsize,
             50000,
             self.tad_boundaries_interval.source_dataset.file_path,
+            region_side=None
         )
 
 
@@ -341,7 +390,7 @@ class TestEnrichmentWorkerFunctionVariableSize(EnrichmentSetupClass):
         db.session.commit()
         # run enrichment analysis
         _do_enrichment_calculations_variable_size(
-            self.collection_2.id, 10, self.tad_interval.source_dataset.file_path
+            self.collection_2.id, 10, self.tad_interval.source_dataset.file_path, region_side=None
         )
 
 

@@ -196,8 +196,14 @@ export default {
                             var widgetType = child_vals.widgetType;
                             switch (widgetType) {
                                 case "Lineprofile":
+                                    let refs;
+                                    if (child_vals['collectionConfig']['isPairedEnd']){
+                                        refs = child_vals.widgetDataRef.map((val) => val[child_vals.selectedSide])
+                                    }else{
+                                        refs = child_vals.widgetDataRef
+                                    }
                                     await this.fetchLineProfileData(
-                                        child_vals.widgetDataRef
+                                        refs
                                     );
                                     break;
                                 case "Pileup":
