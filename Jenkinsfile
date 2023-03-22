@@ -8,7 +8,7 @@ def towerJobs = [
 ]
 
 def extraImages = [
-  [imageName: "hicognition-nginx", dockerContext: ".", dockerFile: "nginx_demo/Dockerfile"]
+  [imageName: "master", dockerContext: ".", dockerFile: "back_end/Dockerfile"]
 ]
 
 buildDockerImage([
@@ -18,6 +18,6 @@ buildDockerImage([
     pushRegistryNamespace: "gerlich",
     testCmd: null,
     containerImages: extraImages,
-    pushBranches: ["master", "jenkins-test"],
+    pushBranches: ["master"],
     tower: towerJobs
 ])

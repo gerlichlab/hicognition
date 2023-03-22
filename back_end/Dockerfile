@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3:4.9.2
+FROM continuumio/miniconda3:4.12.0
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG C.UTF-8  
 ENV LC_ALL C.UTF-8
