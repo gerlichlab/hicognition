@@ -8,5 +8,5 @@ module.exports = merge(prodEnv, {
     STATIC_URL: '"http://localhost:5000/static/"',
     VERSION: "0.6",
     NOTIFICATION_URL: '"http://localhost:5000/stream"',
-    SHOWCASE: process.env.showcase,
+    ALLOW_PUBLIC_UPLOAD: process.env.ALLOW_PUBLIC_UPLOAD,
 });

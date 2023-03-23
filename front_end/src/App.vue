@@ -6,16 +6,10 @@
 
 <script>
 import router_default from "./router";
-import router_showcase from "./routerShowcase";
-
-// TODO: THis does not seem to work
-//var showcase_bool = process.env.SHOWCASE
-
-//const router = !showcase_bool ? router_default : router_showcase
 
 export default {
     name: "mainApp",
-    router: !process.env.SHOWCASE ? router_default : router_showcase
+    router: router_default
 };
 </script>
 

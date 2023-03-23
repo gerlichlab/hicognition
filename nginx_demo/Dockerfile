@@ -29,8 +29,6 @@ FROM node:14-buster as frontend-builder
 
 ADD ./front_end /front_end
 
-ENV showcase=true
-
 RUN cd /front_end && npm install && npm run build
 
 # copy everything into nginx container

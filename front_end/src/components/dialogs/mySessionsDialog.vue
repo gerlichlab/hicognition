@@ -39,16 +39,8 @@
                         <md-button
                             class="md-secondary md-raised md-accent"
                             @click="handleSessionDeletion"
-                            v-if="showRestore && !isDemo"
+                            v-if="showRestore"
                             >Delete</md-button
-                        >
-                        <md-button
-                            class="md-secondary md-raised md-accent"
-                            v-if="showRestore && isDemo"
-                            >Delete
-                            <md-tooltip md-direction="top"
-                                >Deactivated in demo mode</md-tooltip
-                            ></md-button
                         >
                     </div>
                     <div class="float-right">
@@ -108,8 +100,7 @@ export default {
             selected_session_object: null,
             selected_session_id: null,
             shareableUrl: null,
-            copySuccesful: false,
-            isDemo: process.env.SHOWCASE
+            copySuccesful: false
         };
     },
     components: {
@@ -161,17 +152,9 @@ export default {
                 `sessions/${this.selected_session_id}/sessionToken/`
             ).then(response => {
                 let sessionToken = response.data["session_token"];
-                let isDemo = process.env.SHOWCASE;
-                if (isDemo) {
                     var shareableUrl =
                         window.location.host +
-                        `/app/#/main/session?sessionToken=${sessionToken}&sessionID=${this.selected_session_id}`;
-                }
-                if (!isDemo) {
-                    shareableUrl =
-                        window.location.host +
                         `/#/main/session?sessionToken=${sessionToken}&sessionID=${this.selected_session_id}`;
-                }
 
                 this.shareableUrl = shareableUrl;
             });
