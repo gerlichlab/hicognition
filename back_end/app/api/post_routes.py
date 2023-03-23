@@ -52,6 +52,10 @@ def add_dataset_from_ENCODE():
     if not repository:
         return invalid(f"Repository {data.repository_name} not found.")
 
+    # check whether public is allowed
+    if not current_app.config['ALLOW_PUBLIC_UPLOAD'] and data.public:
+        return invalid(f"Public upload is not allowed!")
+
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
         processing_state="new", upload_state="new", user_id=g.current_user.id
@@ -86,6 +90,10 @@ def add_dataset_from_URL():
         data = URLDatasetPostModel(**request.form)
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
+
+    # check whether public is allowed
+    if not current_app.config['ALLOW_PUBLIC_UPLOAD'] and data.public:
+        return invalid(f"Public upload is not allowed!")
 
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
@@ -122,6 +130,10 @@ def add_dataset():
         )
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
+
+    # check whether public is allowed
+    if not current_app.config['ALLOW_PUBLIC_UPLOAD'] and data.public:
+        return invalid(f"Public upload is not allowed!")
 
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
