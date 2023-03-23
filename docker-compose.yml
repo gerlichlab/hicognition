@@ -23,6 +23,7 @@ services:
             - MAIL_PASSWORD=${MAIL_PASSWORD}
             - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
             - SECRET_SALT=${SECRET_SALT}
+            - ALLOW_PUBLIC_UPLOAD=${ALLOW_PUBLIC_UPLOAD}
         ports:
             # only map localhost-port
             - "5000:5000"
@@ -58,8 +59,6 @@ services:
     node:
         container_name: node-builder
         image: node:14-buster
-        environment:
-            - showcase=false
         volumes:
             - ${DIR_FRONT_END}:/front_end
         entrypoint: 
