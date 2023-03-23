@@ -218,7 +218,7 @@ export default {
                     sizeType: null,
                     filename: this.files[i].name,
                     file: this.files[i],
-                    public: true
+                    public: false
                 };
                 this.elements.push(tempObject);
             }

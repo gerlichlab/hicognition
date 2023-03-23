@@ -253,7 +253,7 @@ export default {
     data: () => ({
         form: {
             datasetName: null,
-            public: true,
+            public: false,
             assembly: null,
             sizeType: null,
             file: null,
@@ -354,7 +354,7 @@ export default {
             this.$v.$reset();
             for (let key of Object.keys(this.form)) {
                 if (key == "public") {
-                    this.form[key] = true;
+                    this.form[key] = false;
                 } else {
                     this.form[key] = null;
                 }
