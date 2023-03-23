@@ -39,6 +39,7 @@ services:
             - SECRET_SALT=${SECRET_SALT}
             - LOG_FILE_NAME=/logs/dev_application.logs
             - ERROR_LOG_FILE_NAME=/logs/dev_error.logs
+            - ALLOW_PUBLIC_UPLOAD=${ALLOW_PUBLIC_UPLOAD}
         ports:
             # only map localhost-port
             - "5000:5000"
