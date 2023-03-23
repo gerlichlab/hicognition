@@ -107,19 +107,6 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_no_authentication_required_showcase(self):
-        """Test 404 is returned if individualIntervalData does not exist."""
-        app_config = self.app.config.copy()
-        app_config["SHOWCASE"] = True
-        with patch("app.api.authentication.current_app.config") as mock_config:
-            mock_config.__getitem__.side_effect = app_config.__getitem__
-            # make request
-            response = self.client.get(
-                "/api/individualIntervalData/500/",
-                content_type="application/json",
-            )
-            self.assertEqual(response.status_code, 404)
-
     def test_individual_interval_data_does_not_exist(self):
         """Test 404 is returned if individualIntervalData does not exist."""
         # authenticate
@@ -210,34 +197,6 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
             "dtype": "float32",
         }
         self.assertEqual(response.json, expected)
-
-    def test_correct_data_returned_showcase(self):
-        """Correct data is returned from an owned individualIntervalData"""
-        app_config = self.app.config.copy()
-        app_config["SHOWCASE"] = True
-        with patch("app.api.authentication.current_app.config") as mock_config:
-            mock_config.__getitem__.side_effect = app_config.__getitem__
-            # add data
-            db.session.add_all(
-                [
-                    self.owned_bigwig,
-                    self.owned_bedfile,
-                    self.owned_intervals,
-                    self.ind_data_owned,
-                ]
-            )
-            db.session.commit()
-            # make request
-            response = self.client.get(
-                f"/api/individualIntervalData/{self.ind_data_owned.id}/",
-                content_type="application/json",
-            )
-            expected = {
-                "data": self.ind_data.flatten().tolist(),
-                "shape": list(self.ind_data.shape),
-                "dtype": "float32",
-            }
-            self.assertEqual(response.json, expected)
 
     def test_correct_data_returned_w_nan(self):
         """Correct data is returned from an owned individualIntervalData that contains nan"""

@@ -29,19 +29,6 @@ class TestGetAssemblies(LoginTestCase):
         response = self.client.get("/api/assemblies/", content_type="application/json")
         self.assertEqual(response.status_code, 401)
 
-    def test_no_auth_required_showcase(self):
-        """No authentication required showcase user"""
-        # protected route
-        app_config = self.app.config.copy()
-        app_config["SHOWCASE"] = True
-        with patch("app.api.authentication.current_app.config") as mock_config:
-            mock_config.__getitem__.side_effect = app_config.__getitem__
-            # dispatch call
-            response = self.client.get(
-                "/api/assemblies/", content_type="application/json"
-            )
-            self.assertEqual(response.status_code, 200)
-
     def test_right_assemblies_returned(self):
         """test whether correct assebmlies are returned."""
         # add things

@@ -34,22 +34,6 @@ class TestGetSessions(LoginTestCase):
         response = self.client.get("/api/sessions/", content_type="application/json")
         self.assertEqual(response.status_code, 401)
 
-    def test_no_auth_required_showcase_user(self):
-        """No authentication provided, response should be 401"""
-        app_config = self.app.config.copy()
-        app_config["SHOWCASE"] = True
-        with patch("app.api.authentication.current_app.config") as mock_config:
-            mock_config.__getitem__.side_effect = app_config.__getitem__
-            # add session data
-            db.session.add(self.session_user_1)
-            db.session.commit()
-            # protected route
-            response = self.client.get(
-                "/api/sessions/", content_type="application/json"
-            )
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json, [self.session_user_1.to_json()])
-
     def test_no_sessions_returns_empty(self):
         """No sessions exist, return value is empty"""
         # authenticate
@@ -137,22 +121,6 @@ class TestGetSessionWithID(LoginTestCase):
         # protected route
         response = self.client.get("/api/sessions/1/", content_type="application/json")
         self.assertEqual(response.status_code, 401)
-
-    def test_no_auth_required_showcase_user(self):
-        """No authentication provided, response should be 401"""
-        app_config = self.app.config.copy()
-        app_config["SHOWCASE"] = True
-        with patch("app.api.authentication.current_app.config") as mock_config:
-            mock_config.__getitem__.side_effect = app_config.__getitem__
-            # add session data
-            db.session.add(self.session_user_1)
-            db.session.commit()
-            # protected route
-            response = self.client.get(
-                "/api/sessions/1/", content_type="application/json"
-            )
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json, self.session_user_1.to_json())
 
     def test_session_does_not_exist(self):
         """No authentication provided, response should be 401"""
@@ -274,23 +242,6 @@ class TestGetSessionToken(LoginTestCase):
             headers=token_headers,
         )
         self.assertEqual(response.status_code, 404)
-
-    def test_no_auth_required_showcase_user(self):
-        """No authentication provided, response should be 401"""
-        app_config = self.app.config.copy()
-        app_config["SHOWCASE"] = True
-        with patch("app.api.authentication.current_app.config") as mock_config:
-            mock_config.__getitem__.side_effect = app_config.__getitem__
-            # add session data
-            db.session.add(self.session_user_1)
-            db.session.commit()
-            # protected route
-            response = self.client.get(
-                "/api/sessions/1/sessionToken/", content_type="application/json"
-            )
-            self.assertEqual(response.status_code, 200)
-            expected = Session.query.get(1).generate_session_token()
-            self.assertEqual(expected, response.json["session_token"])
 
     def test_correct_token_returned(self):
         # add session data

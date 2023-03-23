@@ -123,7 +123,6 @@ def get_all_datasets():
         (Dataset.user_id == g.current_user.id)
         | (Dataset.public)
         | (Dataset.id.in_(g.session_datasets))
-        | current_app.config["SHOWCASE"]
     ).all()
     return jsonify([dfile.to_json() for dfile in all_available_datasets])
 
@@ -137,7 +136,6 @@ def get_all_processing_datasets():
         (Dataset.user_id == g.current_user.id)
         | (Dataset.public)
         | (Dataset.id.in_(g.session_datasets))
-        | current_app.config["SHOWCASE"]
     ).all()
     # list processing datasets
     processing_datasets = [
@@ -361,7 +359,6 @@ def get_intervals():
             (Dataset.user_id == g.current_user.id)
             | (Dataset.public)
             | (Dataset.id.in_(g.session_datasets))
-            | current_app.config["SHOWCASE"]
         )
         .all()
     )
@@ -668,7 +665,7 @@ def get_stackup_metadata_small(entry_id):
 def get_all_sessions():
     """Gets all available sessions for a given user."""
     all_available_sessions = Session.query.filter(
-        (Session.user_id == g.current_user.id) | current_app.config["SHOWCASE"]
+        (Session.user_id == g.current_user.id)
     ).all()
     return jsonify([dfile.to_json() for dfile in all_available_sessions])
 
@@ -687,7 +684,6 @@ def get_session_data_with_id(session_id):
     if (
         (session.user_id != g.current_user.id)
         and (session.id != g.session_id)
-        and not current_app.config["SHOWCASE"]
     ):
         return forbidden(f"Session with id '{session_id}' is not owned!")
     return jsonify(session.to_json())
@@ -704,7 +700,7 @@ def get_session_token(session_id):
     if session is None:
         return not_found(f"Session with id '{session_id}' does not exist!")
     # check if session is owned
-    if (session.user_id != g.current_user.id) and not current_app.config["SHOWCASE"]:
+    if (session.user_id != g.current_user.id):
         return forbidden(f"Session with id '{session_id}' is not owned!")
     # create session token
     return jsonify(
@@ -721,7 +717,6 @@ def get_all_collections():
         (Collection.user_id == g.current_user.id)
         | Collection.public
         | (Collection.id.in_(g.session_collections))
-        | current_app.config["SHOWCASE"]
     ).all()
     update_processing_state(all_available_collections, db)
     return jsonify([dfile.to_json() for dfile in all_available_collections])

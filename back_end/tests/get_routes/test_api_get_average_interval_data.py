@@ -167,18 +167,6 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_no_auth_required_showcase(self):
-        """No authentication required showcase user"""
-        app_config = self.app.config.copy()
-        app_config["SHOWCASE"] = True
-        with patch("app.api.authentication.current_app.config") as mock_config:
-            mock_config.__getitem__.side_effect = app_config.__getitem__
-            # dispatch call
-            response = self.client.get(
-                "/api/averageIntervalData/1/", content_type="application/json"
-            )
-            self.assertEqual(response.status_code, 404)
-
     def test_average_interval_data_does_not_exist(self):
         """Test 404 is returned if averageIntervalData does not exist."""
         # authenticate
@@ -269,35 +257,6 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
             "dtype": "float32",
         }
         self.assertEqual(response.json, expected)
-
-    def test_correct_data_returned_showcase(self):
-        """Correct data is returned from an averageIntervalData
-        when user is showcase"""
-        app_config = self.app.config.copy()
-        app_config["SHOWCASE"] = True
-        with patch("app.api.authentication.current_app.config") as mock_config:
-            mock_config.__getitem__.side_effect = app_config.__getitem__
-            # add data
-            db.session.add_all(
-                [
-                    self.owned_cooler,
-                    self.owned_bedfile,
-                    self.owned_intervals,
-                    self.avg_data_owned,
-                ]
-            )
-            db.session.commit()
-            # make request
-            response = self.client.get(
-                f"/api/averageIntervalData/{self.avg_data_owned.id}/",
-                content_type="application/json",
-            )
-            expected = {
-                "data": self.test_data.flatten().tolist(),
-                "shape": list(self.test_data.shape),
-                "dtype": "float32",
-            }
-            self.assertEqual(response.json, expected)
 
     def test_correct_data_returned_with_nan(self):
         """Correct data is returned from an owned averageIntervalData
