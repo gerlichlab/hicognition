@@ -18,6 +18,6 @@ buildDockerImage([
     pushRegistryNamespace: "gerlich",
     testCmd: null,
     // containerImages: extraImages,
-    pushBranches: ["master", "production"],
+    pushBranches: ["master", "production", "production_jenkins"],
     tower: towerJobs
 ])
