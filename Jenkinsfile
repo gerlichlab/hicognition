@@ -7,17 +7,17 @@ def towerJobs = [
   'jenkins-test': [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: jenkins-test"],
 ]
 
-def extraImages = [
-  [imageName: "master", dockerContext: ".", dockerFile: "back_end/Dockerfile"]
-]
+//def extraImages = [
+//  [imageName: "master", dockerContext: ".", dockerFile: "back_end/Dockerfile"]
+//]
 
 buildDockerImage([
-    imageName: "hicognition",
-    dockerContext: ".",
+    imageName: "hicognition_backend",
+    dockerContext: "back_end",
     dockerFile: "back_end/Dockerfile",
     pushRegistryNamespace: "gerlich",
     testCmd: null,
-    containerImages: extraImages,
-    pushBranches: ["master"],
+    // containerImages: extraImages,
+    pushBranches: ["master", "production"],
     tower: towerJobs
 ])
