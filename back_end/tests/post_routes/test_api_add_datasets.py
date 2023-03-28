@@ -624,6 +624,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
     @patch("app.models.User.launch_task")
     def test_public_flag_set_correctly_if_true(self, mock_launch_task, mock_prep, mock_validate):
         """Tests whether form with file without ending is rejected."""
+        # mock config
+        self.app.config.update({'ALLOW_PUBLIC_UPLOAD': True})
         # construct form data
         data = {
             "dataset_name": "test",

@@ -1,4 +1,6 @@
 FROM continuumio/miniconda3:4.9.2
+ARG USER_ID
+ENV USER_ID $USER_ID
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG C.UTF-8  
 ENV LC_ALL C.UTF-8
@@ -11,6 +13,8 @@ RUN apt-get --allow-releaseinfo-change update &&\
 
 # Add yml file for conda environment
 ADD conda_env.yml /temp/install/
+
+RUN useradd --create-home --shell /bin/bash -u $USER_ID  hicognition_user
 
 # install packages
 RUN conda install mamba -n base -c conda-forge &&\
@@ -32,5 +36,13 @@ RUN rm -rf /temp/install
 COPY . /code
 
 WORKDIR /home
+
+# give user permissions
+
+RUN mkdir /data && mkdir /logs && chown $USER_ID:$USER_ID -R /opt/conda/ /temp /home /data /logs /code
+
+USER hicognition_user
+
+RUN conda init bash
 
 CMD ["/bin/bash"]

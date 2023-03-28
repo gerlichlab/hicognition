@@ -29,6 +29,8 @@ services:
             - "5000:5000"
         build:
             context: "./back_end"
+            args:
+                - USER_ID=${USER_ID}
         image: hicognition:latest
         entrypoint: "/bin/bash"
         command: -c "cd /code && ./boot_prod.sh"
@@ -99,6 +101,8 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+            args:
+                - USER_ID=${USER_ID}
         scale: 3
         image: hicognition:latest
         entrypoint: "/bin/bash"
@@ -131,6 +135,8 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+            args:
+                - USER_ID=${USER_ID}
         scale: 10
         image: hicognition:latest
         entrypoint: "/bin/bash"
@@ -163,6 +169,8 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+            args:
+                - USER_ID=${USER_ID}
         scale: 3
         image: hicognition:latest
         entrypoint: "/bin/bash"

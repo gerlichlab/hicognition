@@ -290,6 +290,8 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
 
     def test_public_flag_set_correctly(self):
         """Test if public flag is set correctly."""
+        # mock config
+        self.app.config.update({'ALLOW_PUBLIC_UPLOAD': True})
         # add datasets
         db.session.add(self.bedfile_2)
         db.session.commit()
