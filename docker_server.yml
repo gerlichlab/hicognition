@@ -1,0 +1,173 @@
+version: "3"
+
+services:
+    # flask-api server
+    hicognition:
+        container_name: flask-server
+        volumes:  
+            - ${LOG_DIR}:/logs/
+        environment:
+            - FLASK_DEBUG=1
+            - FLASK_APP=/code/hicognition_server.py
+            - DATABASE_URL=mysql+pymysql://hicognition:${MYSQL_PASSWORD}@mysql/hicognition
+            - SHOWCASE=1
+            - LOG_FILE_NAME=/logs/dev_application.logs
+            - ERROR_LOG_FILE_NAME=/logs/dev_error.logs
+        # might not work on my machine, but also not strictly required?
+        ports:
+            # only map localhost-port
+            - "5000:5000"
+        build:
+            context: "."
+            dockerfile: "./back_end/Dockerfile"
+        image: hicognition:server
+        depends_on:
+            - mysql
+        entrypoint: "/bin/bash"
+        command: -c "cd /code && ./boot_prod.sh"
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.3
+
+    # nginx server to serve front-end and redirect requests to flask-api
+    nginx:
+        container_name: hicognition-nginx
+        image: hicognition-nginx:server
+        build:
+            context: "./"
+            dockerfile: "./nginx_server/Dockerfile"
+        ports:
+            - "80:80"
+        environment:
+            - "HICOGNITION_UPSTREAM=flask-server:5000"
+        # map front-end files
+        depends_on:
+            - hicognition
+
+    redis-server:
+        container_name: redis-server
+        build:
+            context: "./redis"
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.5
+        ports:
+            - 6379:6379
+
+    redis-worker-long:
+        volumes:  
+            - ${DATA_DIR}:/code/temp/
+            - ${LOG_DIR}:/logs/
+        environment:
+            - FLASK_DEBUG=0
+            - FLASK_APP=/code/hicognition_server.py
+            - FLASK_CONFIG=production
+            - SECRET_KEY=${SECRET_KEY}
+            - DATABASE_URL=${DATABASE_URL}
+            - REDIS_URL=${REDIS_URL}
+            - UPLOAD_DIR=${UPLOAD_DIR}
+            - CHROM_SIZES=${CHROM_SIZES}
+            - CHROM_ARMS=${CHROM_ARMS}
+            - MAIL_SERVER=${MAIL_SERVER}
+            - MAIL_PORT=${MAIL_PORT}
+            - MAIL_USERNAME=${MAIL_USERNAME}
+            - MAIL_PASSWORD=${MAIL_PASSWORD}
+            - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+            - SECRET_SALT=${SECRET_SALT}
+        depends_on:
+                - redis-server
+        build:
+            context: "./back_end"
+        scale: 1
+        image: hicognition:latest
+        entrypoint: "/bin/bash"
+        networks:
+            - hicognition-net
+        # sleeps to wait for redis-server. TODO: make this check nicer!
+        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-long"
+
+    redis-worker-medium:
+        volumes:  
+            - ${DATA_DIR}:/code/temp/
+            - ${LOG_DIR}:/logs/
+        environment:
+            - FLASK_DEBUG=0
+            - FLASK_APP=/code/hicognition_server.py
+            - FLASK_CONFIG=production
+            - SECRET_KEY=${SECRET_KEY}
+            - DATABASE_URL=${DATABASE_URL}
+            - REDIS_URL=${REDIS_URL}
+            - UPLOAD_DIR=${UPLOAD_DIR}
+            - CHROM_SIZES=${CHROM_SIZES}
+            - CHROM_ARMS=${CHROM_ARMS}
+            - MAIL_SERVER=${MAIL_SERVER}
+            - MAIL_PORT=${MAIL_PORT}
+            - MAIL_USERNAME=${MAIL_USERNAME}
+            - MAIL_PASSWORD=${MAIL_PASSWORD}
+            - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+            - SECRET_SALT=${SECRET_SALT}
+        depends_on:
+                - redis-server
+        build:
+            context: "./back_end"
+        scale: 1
+        image: hicognition:server
+        entrypoint: "/bin/bash"
+        networks:
+            - hicognition-net
+        # sleeps to wait for redis-server. TODO: make this check nicer!
+        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-medium"
+
+    redis-worker-short:
+        volumes:  
+            - ${DATA_DIR}:/code/temp/
+            - ${LOG_DIR}:/logs/
+        environment:
+            - FLASK_DEBUG=0
+            - FLASK_APP=/code/hicognition_server.py
+            - FLASK_CONFIG=production
+            - SECRET_KEY=${SECRET_KEY}
+            - DATABASE_URL=${DATABASE_URL}
+            - REDIS_URL=${REDIS_URL}
+            - UPLOAD_DIR=${UPLOAD_DIR}
+            - CHROM_SIZES=${CHROM_SIZES}
+            - CHROM_ARMS=${CHROM_ARMS}
+            - MAIL_SERVER=${MAIL_SERVER}
+            - MAIL_PORT=${MAIL_PORT}
+            - MAIL_USERNAME=${MAIL_USERNAME}
+            - MAIL_PASSWORD=${MAIL_PASSWORD}
+            - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+            - SECRET_SALT=${SECRET_SALT}
+        depends_on:
+                - redis-server
+        build:
+            context: "./back_end"
+        scale: 1
+        image: hicognition:server
+        entrypoint: "/bin/bash"
+        networks:
+            - hicognition-net
+        # sleeps to wait for redis-server. TODO: make this check nicer!
+        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-short"
+
+    mysql:
+        container_name: mysql
+        ports:
+            # map port out for diagnostics
+            - "3306:3306"
+        environment:
+            - MYSQL_RANDOM_ROOT_PASSWORD=yes
+            - MYSQL_DATABASE=hicognition
+            - MYSQL_USER=hicognition
+            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        image: mysql/mysql-server:8.0
+        networks:
+            hicognition-net:
+                ipv4_address: 172.18.0.9
+
+networks:
+    hicognition-net:
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.18.0.0/16

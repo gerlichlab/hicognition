@@ -10,7 +10,7 @@ RUN apt-get --allow-releaseinfo-change update &&\
     apt-get clean
 
 # Add yml file for conda environment
-ADD conda_env.yml /temp/install/
+ADD ./back_end/conda_env.yml /temp/install/
 
 # install packages
 RUN conda install mamba -n base -c conda-forge &&\
