@@ -4,12 +4,15 @@
 def towerJobs = [
   tags:    [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: latest"],
   master: [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: master"],
+  'production': [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: production"],
   'jenkins-test': [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: jenkins-test"],
-]
+  'production_jenkins': [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: production_jenkins"],
+  ]
 
-//def extraImages = [
-//  [imageName: "master", dockerContext: ".", dockerFile: "back_end/Dockerfile"]
-//]
+// nginx image with static app content
+def extraImages = [
+  [imageName: "hicognition_nginx", dockerContext: ".", dockerFile: "nginx_server/Dockerfile"]
+]
 
 buildDockerImage([
     imageName: "hicognition_backend",
@@ -17,7 +20,7 @@ buildDockerImage([
     dockerFile: "back_end/Dockerfile",
     pushRegistryNamespace: "gerlich",
     testCmd: null,
-    // containerImages: extraImages,
+    containerImages: extraImages,
     pushBranches: ["master", "production", "production_jenkins"],
     tower: towerJobs
 ])
