@@ -124,7 +124,6 @@
             <!--Table--->
             <transition name="fade" mode="out-in">
                 <md-table
-                    style="max-height: 40vh"
                     v-if="selected.length != 0 && selectedFields.length != 0"
                 >
                     <md-table-row
@@ -324,6 +323,7 @@ export default {
                 "dataset_name",
                 "cell_type",
                 "perturbation",
+                "description",
                 "status"
             ];
         } else {
@@ -331,8 +331,8 @@ export default {
                 "dataset_name",
                 "cell_type",
                 "perturbation",
-                "processing_datasets",
-                "processing_collections"
+                "description",
+                "status"
             ];
         }
         return {
@@ -717,10 +717,6 @@ export default {
                 outputFields["status"] = "Status";
             }
             // put in processin gdatasets and processing collections
-            if (this.datasetType == "bedfile") {
-                outputFields["processing_datasets"] = "Processing";
-                outputFields["processing_collections"] = "Processing";
-            }
             return outputFields;
         },
         fields: function() {
@@ -853,6 +849,7 @@ export default {
 }
 .md-table {
     max-width: 90vw;
+    max-height: calc(70vh - 150px)
 }
 .md-table-cell {
     text-align: center;
