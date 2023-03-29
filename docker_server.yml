@@ -4,7 +4,8 @@ services:
     # flask-api server
     hicognition:
         container_name: flask-server
-        volumes:  
+        volumes:
+            - ${DATA_DIR}:/code/temp/  
             - ${LOG_DIR}:/logs/
         environment:
             - FLASK_DEBUG=0
@@ -22,7 +23,7 @@ services:
             - MAIL_PASSWORD=${MAIL_PASSWORD}
             - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
             - SECRET_SALT=${SECRET_SALT}
-        # might not work on my machine, but also not strictly required?
+            - ALLOW_PUBLIC_UPLOAD=${ALLOW_PUBLIC_UPLOAD}
         ports:
             # only map localhost-port
             - "5000:5000"
@@ -88,6 +89,8 @@ services:
                 - redis-server
         build:
             context: "./back_end/"
+            args:
+                - USER_ID=${USER_ID}
         scale: 1
         image: hicognition:latest
         entrypoint: "/bin/bash"
@@ -120,6 +123,8 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+            args:
+                - USER_ID=${USER_ID}
         scale: 1
         image: hicognition:server
         entrypoint: "/bin/bash"
@@ -152,6 +157,8 @@ services:
                 - redis-server
         build:
             context: "./back_end/"
+            args:
+                - USER_ID=${USER_ID}
         scale: 1
         image: hicognition:server
         entrypoint: "/bin/bash"
