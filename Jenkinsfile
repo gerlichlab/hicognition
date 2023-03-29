@@ -18,7 +18,7 @@ buildDockerImage([
     imageName: "hicognition_backend",
     dockerContext: "back_end",
     dockerFile: "back_end/Dockerfile",
-    buildExtraArgs: "USER_ID=${USER_ID}",
+    buildExtraArgs: "USER_ID",
     pushRegistryNamespace: "gerlich",
     testCmd: null,
     containerImages: extraImages,
