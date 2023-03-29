@@ -25,13 +25,8 @@
         </md-card-content>
         <md-card-actions v-if="showControls">
             <md-button @click="$emit('close-controls')">Close</md-button>
-            <md-button v-if="!showcase_bool" @click="showDialog = true"
+            <md-button @click="showDialog = true"
                 >Create Region</md-button
-            >
-            <md-button v-if="showcase_bool"
-                >Create Region<md-tooltip md-direction="top"
-                    >Deactivated in showcase mode</md-tooltip
-                ></md-button
             >
         </md-card-actions>
         <md-dialog-prompt
@@ -100,8 +95,7 @@ export default {
             minHeatmapTarget: undefined,
             maxHeatmapTarget: undefined,
             minHeatmapRangeTarget: undefined,
-            maxHeatmapRangeTarget: undefined,
-            showcase_bool: process.env.SHOWCASE
+            maxHeatmapRangeTarget: undefined
         };
     },
     computed: {

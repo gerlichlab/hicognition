@@ -1,5 +1,5 @@
 """API endpoints for hicognition"""
-from flask import g, request
+from flask import g, request, current_app
 from flask.json import jsonify
 
 from ..form_models import DatasetPutModel
@@ -14,7 +14,7 @@ from .errors import forbidden, invalid, not_found
 @auth.login_required
 @check_confirmed
 def modify_dataset(dataset_id):
-    """endpoint to add a new dataset"""
+    """endpoint to modify a dataset"""
 
     # def is_form_invalid(filetype):
     #     if not hasattr(request, "form"):
@@ -29,6 +29,10 @@ def modify_dataset(dataset_id):
         data = DatasetPutModel(**request.form)
     except ValueError as err:
         return invalid(f"Form is not valid: {str(err)}")
+
+    # check whether public is allowed
+    if not current_app.config['ALLOW_PUBLIC_UPLOAD'] and data.public:
+        return invalid(f"Public upload is not allowed!")
 
     # check whether dataset exists
     dataset = Dataset.query.get(dataset_id)

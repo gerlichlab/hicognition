@@ -15,23 +15,9 @@ from .. import db
 auth = HTTPBasicAuth()
 
 
-class ShowCaseUser:
-    def __init__(self):
-        self.id = None
-        self.is_anonymous = False
-        self.email_confirmed = True
-
-    def generate_auth_token(self, expiration):
-        return "ASDF"
-
-
 @auth.verify_password
 def verify_password(username_or_token, password):
     """Verifies the password of a user or if a valid token is used."""
-    if current_app.config["SHOWCASE"]:
-        g.current_user = ShowCaseUser()
-        g.token_used = False
-        return True
     if username_or_token == "":
         return False
     if password == "":

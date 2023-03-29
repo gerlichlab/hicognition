@@ -143,7 +143,7 @@ export default {
     data: () => ({
         form: {
             datasetName: null,
-            public: true,
+            public: false,
             description: null,
             cellType: null,
             perturbation: null

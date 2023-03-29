@@ -6,5 +6,5 @@ module.exports = {
     STATIC_URL: '"/static/"',
     VERSION: "0.6",
     NOTIFICATION_URL: '"/flask/stream"',
-    SHOWCASE: process.env.showcase,
+    ALLOW_PUBLIC_UPLOAD: process.env.ALLOW_PUBLIC_UPLOAD,
 };

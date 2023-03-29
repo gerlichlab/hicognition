@@ -290,6 +290,8 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
 
     def test_public_flag_set_correctly(self):
         """Test if public flag is set correctly."""
+        # mock config
+        self.app.config.update({'ALLOW_PUBLIC_UPLOAD': True})
         # add datasets
         db.session.add(self.bedfile_2)
         db.session.commit()
@@ -323,6 +325,29 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         # check whether assembly and filetype are unchanged
         self.assertEqual(dataset.assembly, 1)
         self.assertEqual(dataset.filetype, "bedfile")
+
+    def test_public_flag_denied_when_not_allowed(self):
+        """Test if public flag true is denied when it is not allowed."""
+        # mock config
+        self.app.config.update({'ALLOW_PUBLIC_UPLOAD': False})
+        # add datasets
+        db.session.add(self.bedfile_2)
+        db.session.commit()
+        # construct form data
+        data = {
+            "datasetName": "fdsa",
+            "cell_type": "changedCellType",
+            "perturbation": "none",
+            "public": "true",
+        }
+        # put datasets
+        response = self.client.put(
+            f"/api/datasets/{self.bedfile_2.id}/",
+            headers=self.token_headers,
+            data=data,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 400)
 
     def test_modification_goes_through_bigwig(self):
         """Test whether correct combination of metadata causes database modifiction."""

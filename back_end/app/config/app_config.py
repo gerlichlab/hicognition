@@ -6,11 +6,24 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
+def parse_boolean_flag(value, default):
+    # if value is None return default
+    if value is None:
+        return default
+    if value == '1':
+        return True
+    if value == 'TRUE':
+        return True
+    if value == 'true':
+        return True
+    return False
+
 class Config:
     """Config class for hicognition server."""
 
     SECRET_KEY = os.environ.get("SECRET_KEY") or "eieieiei"
     SECRET_SALT = os.environ.get("SECRET_SALT") or 'blblblbl'
+    ALLOW_PUBLIC_UPLOAD = parse_boolean_flag(os.environ.get("ALLOW_PUBLIC_UPLOAD"), default=False)
     DEBUG = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Log file
@@ -34,9 +47,6 @@ class Config:
     REDIS_URL = os.environ.get("REDIS_URL") or "redis://"
     TESTING = False
     END2END = False
-    SHOWCASE = (
-        bool(os.environ.get("SHOWCASE")) or False
-    )  # if there is anything in showcase this is true
 
     # External repositories
     REPOSITORIES = [
@@ -160,31 +170,6 @@ class Config:
             "dataset_type": ["region"],
             "file_ext": ["bed", "bedpe"],
         },
-        # "bedpe_file": {
-        #     "dataset_type": ["region"],
-        #     "file_ext": ["bedpe"],
-        #     "metadata": [
-        #         {"Cell cycle Stage": "freetext", "Perturbation": "freetext"},  # row 1
-        #         {  # row 2
-        #             "ValueType": {
-        #                 "Peak": {
-        #                     "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
-        #                     # "Size Type": ["Point", "Interval"],
-        #                     "Protein": "freetext",
-        #                     "Directionality": ["+", "-", "No directionality"],
-        #                 },
-        #                 "Genome Annotation": {
-        #                     # "Size Type": ["Point", "Interval"],
-        #                     "Directionality": ["+", "-", "No directionality"],
-        #                 },
-        #                 "Derived": {
-        #                     "Method": ["HiC", "Other Dataset"],
-        #                     # "Size Type": ["Point", "Interval"],
-        #                 },
-        #             }
-        #         },
-        #     ],
-        # },
         "bigwig": {
             "dataset_type": "feature",
             "file_ext": ["bw", "bigwig"],

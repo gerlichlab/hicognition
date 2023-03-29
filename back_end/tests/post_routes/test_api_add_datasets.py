@@ -1,10 +1,9 @@
 """Module with tests realted adding datasets."""
-import logging
 import os
 import io
-import json
 import unittest
 from unittest.mock import patch
+from unittest import mock
 from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
@@ -625,6 +624,8 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
     @patch("app.models.User.launch_task")
     def test_public_flag_set_correctly_if_true(self, mock_launch_task, mock_prep, mock_validate):
         """Tests whether form with file without ending is rejected."""
+        # mock config
+        self.app.config.update({'ALLOW_PUBLIC_UPLOAD': True})
         # construct form data
         data = {
             "dataset_name": "test",
@@ -648,6 +649,34 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # check if public flag is set correctly
         dataset = Dataset.query.get(1)
         self.assertTrue(dataset.public)
+
+    @patch("app.models.Dataset.validate_dataset")
+    @patch("app.models.Dataset.preprocess_dataset")
+    @patch("app.models.User.launch_task")
+    def test_public_dataset_denied_if_not_allowed(self, mock_launch_task, mock_prep, mock_validate):
+        """Tests whether form with file without ending is rejected."""
+        # mock config
+        self.app.config.update({'ALLOW_PUBLIC_UPLOAD': False})
+        # construct form data
+        data = {
+            "dataset_name": "test",
+            "assembly": "1",
+            "description": "test-description",
+            "cell_type": "undefined",
+            "perturbation": "undefined",
+            "public": "true",
+            "SizeType": "interval",
+            "filetype": "bedfile",
+            "file": (io.BytesIO(b"abcdef"), "test.bed"),
+        }
+        # dispatch post request
+        response = self.client.post(
+            "/api/datasets/",
+            data=data,
+            headers=self.token_headers,
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 400)
 
     @patch("app.models.Dataset.validate_dataset")
     @patch("app.models.Dataset.preprocess_dataset")

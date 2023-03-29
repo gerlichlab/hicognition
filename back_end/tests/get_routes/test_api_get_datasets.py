@@ -96,23 +96,6 @@ class TestGetDatasets(LoginTestCase):
         response = self.client.get("/api/datasets/", content_type="application/json")
         self.assertEqual(response.status_code, 401)
 
-    def test_no_auth_required_showcase(self):
-        """Test that there is no authentication required when server is in showcase mode"""
-        app_config = self.app.config.copy()
-        app_config["SHOWCASE"] = True
-        with patch("app.api.authentication.current_app.config") as mock_config:
-            mock_config.__getitem__.side_effect = app_config.__getitem__
-            # dispatch call
-            # add datasets
-            db.session.add_all(self.owned_coolers)
-            db.session.commit()
-            response = self.client.get(
-                "/api/datasets/", content_type="application/json"
-            )
-            self.assertEqual(response.status_code, 200)
-            expected = [dataset.to_json() for dataset in self.owned_coolers]
-            self.assertEqual(response.json, expected)
-
     def test_get_coolers(self):
         """Authenticated user gets cooler datasets."""
         # authenticate
@@ -215,26 +198,6 @@ class TestGetDatasets(LoginTestCase):
         # check response
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, [self.owned_bedfile.to_json()])
-
-    def test_show_case_user_gets_all_datasets(self):
-        """Tests whether showcase user gets all datasets"""
-        app_config = self.app.config.copy()
-        app_config["SHOWCASE"] = True
-        with patch("app.api.authentication.current_app.config") as mock_config:
-            mock_config.__getitem__.side_effect = app_config.__getitem__
-            # dispatch call
-            # add datasets
-            db.session.add_all(self.all_datasets)
-            db.session.commit()
-            response = self.client.get(
-                "/api/datasets/", content_type="application/json"
-            )
-            self.assertEqual(response.status_code, 200)
-            expected = [dataset.to_json() for dataset in self.all_datasets]
-            self.assertEqual(
-                sorted(response.json, key=lambda x: x["id"]),
-                sorted(expected, key=lambda x: x["id"]),
-            )
 
     def test_user_can_get_datasets_w_session_token(self):
         """Authenticated user can get datasets that they

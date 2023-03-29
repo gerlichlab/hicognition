@@ -10,9 +10,6 @@ services:
             - "8080:8080"
         volumes:
             - ${DIR_FRONT_END}:/front_end
-        environment:
-            #TODO: switch back to false
-            - showcase=false
         entrypoint: 
             - "/bin/bash"
         command: -c "cd /front_end && npm install && npm run dev"
@@ -39,11 +36,14 @@ services:
             - SECRET_SALT=${SECRET_SALT}
             - LOG_FILE_NAME=/logs/dev_application.logs
             - ERROR_LOG_FILE_NAME=/logs/dev_error.logs
+            - ALLOW_PUBLIC_UPLOAD=${ALLOW_PUBLIC_UPLOAD}
         ports:
             # only map localhost-port
             - "5000:5000"
         build:
             context: "./back_end"
+            args:
+                - USER_ID=${USER_ID}
         image: hicognition:latest
         entrypoint: "/bin/bash"
         networks:
@@ -86,6 +86,8 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+            args:
+                - USER_ID=${USER_ID}
         scale: 3
         image: hicognition:latest
         entrypoint: "/bin/bash"
@@ -118,6 +120,8 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+            args:
+                - USER_ID=${USER_ID}
         scale: 10
         image: hicognition:latest
         entrypoint: "/bin/bash"
@@ -150,6 +154,8 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+            args:
+                - USER_ID=${USER_ID}
         scale: 3
         image: hicognition:latest
         entrypoint: "/bin/bash"

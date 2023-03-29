@@ -44,8 +44,7 @@ def create_app(config_name):
 
     app.register_blueprint(api_blueprint, url_prefix="/api/")
     # register sse blueprint
-    if not app.config["SHOWCASE"]:
-        app.register_blueprint(sse, url_prefix="/stream")
+    app.register_blueprint(sse, url_prefix="/stream")
     # add mail handler
     mail.init_app(app)
     # add token handler
