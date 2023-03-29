@@ -477,6 +477,9 @@ const store = new Vuex.Store({
         getDataset: state => id => {
             return state.datasets.filter(el => el.id === id)[0];
         },
+        getCollection: state => id => {
+            return state.collections.filter(el => el.id === id)[0];
+        },
         processingDatasets: state => {
             return state.processingDatasets  
         },
