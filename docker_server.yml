@@ -28,6 +28,8 @@ services:
             - "5000:5000"
         build:
             context: "./back_end/"
+            args:
+                - USER_ID=${USER_ID}
         image: hicognition:server
         entrypoint: "/bin/bash"
         command: -c "cd /code && ./boot_prod.sh"
