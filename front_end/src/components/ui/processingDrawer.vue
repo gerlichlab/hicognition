@@ -18,9 +18,10 @@
 
                     <div class="md-list-item-text">
                         <span class="md-subheading"
-                            ><span class="md-title">Regions </span>{{ item.dataset_name }}</span
+                            ><span class="md-title">Dataset </span>{{ item.dataset_name }}</span
                         >
-                        <p>Processing...</p>
+                        <p  v-if="item.upload_state != 'new' && item.upload_state != 'uploading'">Processing...</p>
+                        <p v-else>Downloading...</p>
                     </div>
                     <md-list slot="md-expand">
                         <md-list-item class="md-inset" v-for="processing_feature in item.processing_datasets" :key="`f_${processing_feature}`">

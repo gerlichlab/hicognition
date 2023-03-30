@@ -22,29 +22,36 @@ class TestGetProcessingDatasets(LoginTestCase):
             id=1,
             user_id=1,
             filetype="bedfile",
-            dataset_name="testfile"
+            dataset_name="testfile",
+            upload_state="uploaded"
         )
         self.bedfile_processing_collections = self.create_dataset(
             id=2,
             user_id=1,
             filetype="bedfile",
-            dataset_name="testfile"
+            dataset_name="testfile",
+            upload_state="uploaded"
         )
         self.bedfile_finished = self.create_dataset(
             id=3,
             user_id=1,
             filetype="bedfile",
-            dataset_name="testfile"
+            dataset_name="testfile",
+            upload_state="uploaded"
         )
         self.bedfile_not_owned = self.create_dataset(
             id=4,
             user_id=1,
             filetype="bedfile",
-            dataset_name="testfile"
+            dataset_name="testfile",
+            upload_state="uploaded"
         )
         # add features
         self.features = [
-            self.create_dataset(id=i, user_id=1, filetype="bigwig", dataset_name=f"dataset_{i}") for i in range(5,7)
+            self.create_dataset(id=i, user_id=1, filetype="bigwig", dataset_name=f"dataset_{i}", upload_state="uploaded") for i in range(5,7)
+        ]
+        self.features_uploading = [
+            self.create_dataset(id=i, user_id=1, filetype="bigwig", dataset_name=f"dataset_{i}", upload_state='uploading') for i in range(7, 10)
         ]
         self.bedfile_processing_features.processing_features = self.features
         # add collections
@@ -97,3 +104,19 @@ class TestGetProcessingDatasets(LoginTestCase):
         # test
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.json[0]['id'], self.bedfile_processing_collections.id)
+
+    def test_uploading_datasets_returned(self):
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        # create token header
+        token_headers = self.get_token_header(token)       
+        # add datasets
+        db.session.add_all(self.features_uploading)
+        db.session.commit()
+        # dispatch call
+        response = self.client.get(
+            "/api/datasets/processing/", content_type="application/json", headers=token_headers
+        )
+        self.assertEqual(response.status_code, 200)
+        # test
+        self.assertEqual(len(response.json), 3)

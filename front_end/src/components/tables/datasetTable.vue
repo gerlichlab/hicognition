@@ -178,56 +178,27 @@
                             >
                             <div v-else-if="key == 'status'">
                                 <md-icon
-                                    v-if="finishedDatasets.includes(dataset.id)"
+                                    v-if="finishedDatasets !== undefined && finishedDatasets.includes(dataset.id)"
                                     >done</md-icon
                                 >
                                 <md-progress-spinner
                                     :md-diameter="30"
                                     md-mode="indeterminate"
                                     v-else-if="
-                                        processingDatasets.includes(dataset.id)
+                                        processingDatasets !== undefined && processingDatasets.includes(dataset.id)
                                     "
                                 ></md-progress-spinner>
                                 <md-icon
                                     v-else-if="
-                                        failedDatasets.includes(dataset.id)
+                                        failedDatasets !== undefined && failedDatasets.includes(dataset.id)
                                     "
                                     >error</md-icon
                                 >
+                                <md-icon v-else-if="dataset.upload_state == 'new' || dataset.upload_state == 'uploading'">
+                                    cloud_sync
+                                </md-icon>
                                 <md-icon v-else>cloud_done</md-icon>
                             </div>
-                            <span v-else-if="key == 'processing_datasets'">
-                                <md-button
-                                    class="md-secondary"
-                                    @click.prevent.stop="
-                                        showPreprocessingTable(
-                                            dataset.id,
-                                            dataset.processing_datasets,
-                                            dataset.failed_datasets
-                                        )
-                                    "
-                                    :disabled="blockProcessingDialog"
-                                    ><span class="md-caption">Features</span>
-                                    <br />
-                                    {{ dataset[key].length }}</md-button
-                                >
-                            </span>
-                            <span v-else>
-                                <md-button
-                                    class="md-secondary"
-                                    @click.prevent.stop="
-                                        showPreprocessingCollectionTable(
-                                            dataset.id,
-                                            dataset.processing_collections,
-                                            dataset.failed_collections
-                                        )
-                                    "
-                                    :disabled="blockProcessingDialog"
-                                    ><span class="md-caption">Collections</span>
-                                    <br />
-                                    {{ dataset[key].length }}</md-button
-                                >
-                            </span>
                         </md-table-cell>
                     </md-table-row>
                 </md-table>
@@ -331,8 +302,7 @@ export default {
                 "dataset_name",
                 "cell_type",
                 "perturbation",
-                "description",
-                "status"
+                "description"
             ];
         }
         return {
@@ -711,6 +681,7 @@ export default {
                 cell_type: "Cell type",
                 description: "Description",
                 perturbation: "Perturbation",
+                status: 'Status'
             };
             // put in status if needed
             if (this.finishedDatasets) {

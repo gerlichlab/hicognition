@@ -126,6 +126,7 @@ export default {
         this.fetchDatasets();
         this.fetchCollections();
         this.fetchDatasetMetadataMapping();
+        this.fetchAndStoreProcessingDatasets()
     },
     beforeDestroy: function() {
         if (this.$globalFlags["serializeCompare"]) {
