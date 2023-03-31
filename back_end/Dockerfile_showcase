@@ -16,7 +16,7 @@ ADD ./publication/showcase_data /showcase_data
 # download showcase data
 
 RUN cd /showcase_data &&\
-    curl -L --silent -o raw_data.tar.gz https://www.dropbox.com/s/6mmmqrwwy1x2dlt/raw_data.tar.gz?dl=0 &&\
+    curl -L --silent -o raw_data.tar.gz https://www.dropbox.com/s/70z2jzp0qrd0h7d/raw_data.tar.gz?dl=0 &&\
     tar -xf raw_data.tar.gz
 
 # Add yml file for conda environment
