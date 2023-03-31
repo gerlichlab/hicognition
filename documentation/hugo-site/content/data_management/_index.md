@@ -10,6 +10,9 @@ pre = "<b>4. </b>"
 
 HiCognition is an implementation of the [region-set focus approach](/concepts/region_set_focus/). One central aspect of the application is to allow the management of datasets, both representing genomic regions and features. For more complex analyses, HiCognition also implements managing collections of datasets.
 
+## [Upload](/data_management/uploading/)
+Learn the different ways to get your data into HiCognition.
+
 ## [Genomic regions](/data_management/regions/)
 This chapter describes genomic regions are the central element region-set focus approach in more detail.
 
