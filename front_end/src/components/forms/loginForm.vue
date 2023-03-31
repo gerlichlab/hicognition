@@ -34,7 +34,7 @@
                     <div class="md-layout-item">
                         <md-button
                             class="md-dense md-raised md-secondary"
-                            href="/docs"
+                            href="https://app.hicognition.com/docs/"
                             >Documentation</md-button
                         >
                     </div>
@@ -45,6 +45,7 @@
                                 >Register</md-button
                             >
                     </div>
+            <!--TODO fix doc ref-->
             </md-card-content>
         </md-card>
     </div>
