@@ -99,11 +99,17 @@
             <md-progress-bar md-mode="indeterminate" v-if="sending" />
             <!-- Buttons for user creation -->
             <md-card-actions>
-                <md-button
+                <!-- <md-button
                     type="submit"
                     class="md-primary"
                     :disabled="sending"
                     >Create user</md-button
+                > -->
+                <md-button
+                    class="md-primary"
+                    >Create user</md-button
+                ><md-tooltip md-direction="top"
+                >Public registration will be available soon!</md-tooltip
                 >
             </md-card-actions>
         </md-card>

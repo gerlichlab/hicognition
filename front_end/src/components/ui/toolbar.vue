@@ -32,7 +32,7 @@
                         class="md-icon-button no-margin"
                         @mouseenter="showDocumentationText = true"
                         @mouseleave="showDocumentationText = false"
-                        href="/docs"
+                        href="https://app.hicognition.com/docs/"
                     >
                         <md-icon>article</md-icon>
                     </md-button>

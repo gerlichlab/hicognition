@@ -30,7 +30,7 @@
                     </md-table-cell>
                     <md-table-cell>
                         <a
-                            href="/#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjoxfQ.nijHQkLPTI69r8AWNAWSo5I8nIJNYhj7WuTJnfhL2RnqPGtxaSDnr86vFgg22jnrh8pMPv2dVctIOKFPb3J-vA&sessionID=1"
+                            href="#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjoxfQ.nijHQkLPTI69r8AWNAWSo5I8nIJNYhj7WuTJnfhL2RnqPGtxaSDnr86vFgg22jnrh8pMPv2dVctIOKFPb3J-vA&sessionID=1"
                         >
                             (Figure 2a)
                         </a>
@@ -39,14 +39,14 @@
                 <md-table-row>
                     <md-table-cell>
                         <a
-                            href="main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjozfQ.8q7TZ79ky7Th63oMqhSN949YVOcAe-JHTOfnlbpEgyLY-9YqbUq2XnEP_AbsmfeU3ENiWh_mS7adCNqPpoHqUQ&sessionID=3"
+                            href="#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjozfQ.8q7TZ79ky7Th63oMqhSN949YVOcAe-JHTOfnlbpEgyLY-9YqbUq2XnEP_AbsmfeU3ENiWh_mS7adCNqPpoHqUQ&sessionID=3"
                         >
                             Explore average profiles and heterogeneity
                         </a>
                     </md-table-cell>
                     <md-table-cell>
                         <a
-                            href="/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjozfQ.8q7TZ79ky7Th63oMqhSN949YVOcAe-JHTOfnlbpEgyLY-9YqbUq2XnEP_AbsmfeU3ENiWh_mS7adCNqPpoHqUQ&sessionID=3"
+                            href="#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjozfQ.8q7TZ79ky7Th63oMqhSN949YVOcAe-JHTOfnlbpEgyLY-9YqbUq2XnEP_AbsmfeU3ENiWh_mS7adCNqPpoHqUQ&sessionID=3"
                         >
                             (Figure 2b)
                         </a>
@@ -55,14 +55,14 @@
                 <md-table-row>
                     <md-table-cell>
                         <a
-                            href="app.hicognition.com/#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo0fQ.1h6NS1UE78R2HNIovjkJ1xMt6J0I5pxAwyraqUH3Y-XJljFdqJh52FN3FN3zy3FazEBhTE8xRqaqJragMp2OUw&sessionID=4"
+                            href="#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo0fQ.1h6NS1UE78R2HNIovjkJ1xMt6J0I5pxAwyraqUH3Y-XJljFdqJh52FN3FN3zy3FazEBhTE8xRqaqJragMp2OUw&sessionID=4"
                         >
                             Explore average profiles
                         </a>
                     </md-table-cell>
                     <md-table-cell>
                         <a
-                            href="app.hicognition.com/#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo0fQ.1h6NS1UE78R2HNIovjkJ1xMt6J0I5pxAwyraqUH3Y-XJljFdqJh52FN3FN3zy3FazEBhTE8xRqaqJragMp2OUw&sessionID=4"
+                            href="#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo0fQ.1h6NS1UE78R2HNIovjkJ1xMt6J0I5pxAwyraqUH3Y-XJljFdqJh52FN3FN3zy3FazEBhTE8xRqaqJragMp2OUw&sessionID=4"
                         >
                             (Figure 2c-f)
                         </a>
@@ -71,14 +71,14 @@
                 <md-table-row>
                     <md-table-cell>
                         <a
-                            href="app.hicognition.com/#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo1fQ.-w8somIo9RoI28wOuWjYHKNjjlBTjkcFBy1gGsEy-Tts_Q1fU6fHhLRouI1L632tLiN4bxAgFXg4z8tlyRjqcQ&sessionID=5"
+                            href="#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo1fQ.-w8somIo9RoI28wOuWjYHKNjjlBTjkcFBy1gGsEy-Tts_Q1fU6fHhLRouI1L632tLiN4bxAgFXg4z8tlyRjqcQ&sessionID=5"
                         >
                             Exploring heterogeneity
                         </a>
                     </md-table-cell>
                     <md-table-cell>
                         <a
-                            href="app.hicognition.com/#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo1fQ.-w8somIo9RoI28wOuWjYHKNjjlBTjkcFBy1gGsEy-Tts_Q1fU6fHhLRouI1L632tLiN4bxAgFXg4z8tlyRjqcQ&sessionID=5"
+                            href="#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo1fQ.-w8somIo9RoI28wOuWjYHKNjjlBTjkcFBy1gGsEy-Tts_Q1fU6fHhLRouI1L632tLiN4bxAgFXg4z8tlyRjqcQ&sessionID=5"
                         >
                             (Figure 3a-b)
                         </a>
@@ -87,14 +87,14 @@
                 <md-table-row>
                     <md-table-cell>
                         <a
-                            href="app.hicognition.com/#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo2fQ.py_60nPfFnLx4bOpr1HBf-SmjQI5WtTRxgSyAw_sliYe8jodsdFdguTVLtLKy7sltb93X1ZHfbt3-150jyke4A&sessionID=6"
+                            href="#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo2fQ.py_60nPfFnLx4bOpr1HBf-SmjQI5WtTRxgSyAw_sliYe8jodsdFdguTVLtLKy7sltb93X1ZHfbt3-150jyke4A&sessionID=6"
                         >
                             Explore average profiles and associations
                         </a>
                     </md-table-cell>
                     <md-table-cell>
                         <a
-                            href="app.hicognition.com/#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo2fQ.py_60nPfFnLx4bOpr1HBf-SmjQI5WtTRxgSyAw_sliYe8jodsdFdguTVLtLKy7sltb93X1ZHfbt3-150jyke4A&sessionID=6"
+                            href="#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo2fQ.py_60nPfFnLx4bOpr1HBf-SmjQI5WtTRxgSyAw_sliYe8jodsdFdguTVLtLKy7sltb93X1ZHfbt3-150jyke4A&sessionID=6"
                         >
                             (Figure 3c-d)
                         </a>
@@ -103,14 +103,14 @@
                 <md-table-row>
                     <md-table-cell>
                         <a
-                            href="app.hicognition.com/#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo3fQ.7L7lDDSXuZqBDUtlRl6X6uSO9y5uru9BF6_JNOjtDsMNSEtolMA3tIWev9JVYWZ4ucZlWPgpkRthCSw4a7yeFg&sessionID=7"
+                            href="#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo3fQ.7L7lDDSXuZqBDUtlRl6X6uSO9y5uru9BF6_JNOjtDsMNSEtolMA3tIWev9JVYWZ4ucZlWPgpkRthCSw4a7yeFg&sessionID=7"
                         >
                             Validating associations in Figure 3c-d
                         </a>
                     </md-table-cell>
                     <md-table-cell>
                         <a
-                            href="app.hicognition.com/#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo3fQ.7L7lDDSXuZqBDUtlRl6X6uSO9y5uru9BF6_JNOjtDsMNSEtolMA3tIWev9JVYWZ4ucZlWPgpkRthCSw4a7yeFg&sessionID=7"
+                            href="#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjo3fQ.7L7lDDSXuZqBDUtlRl6X6uSO9y5uru9BF6_JNOjtDsMNSEtolMA3tIWev9JVYWZ4ucZlWPgpkRthCSw4a7yeFg&sessionID=7"
                         >
                             (Figure 3e-f)
                         </a>

@@ -122,17 +122,22 @@
                                         <md-option value="url">
                                             Import from URL
                                         </md-option>
+                                        <md-option value="url">
+                                            ENCODE
+                                        </md-option>
                                         <md-option
                                             v-for="repo in repositories"
                                             :key="repo.id"
+                                            
                                             :value="repo.name"
                                         >
-                                            {{ repo.name }}
+                                            {{ "4D Nucleome" }}
                                         </md-option>
                                     </md-select>
                                 </md-field>
                             </div>
                         </div>
+                        <!-- #TODO fix nicer the repo name -->
                         <!-- choose upload type based on file source -->
                         <!-- file field -->
                         <div class="md-layout-item md-small-size-100">
