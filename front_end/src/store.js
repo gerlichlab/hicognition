@@ -9,12 +9,12 @@ Vue.use(Vuex);
 
 const predefinedModule = {
     namespaced: true, // otherwise mutations are registered globally, this way mutations are available as "predefined/*"
-    state: function () {
+    state: function() {
         return {
             Intervals: null,
             averageIntervalData: null,
             individualIntervalData: null,
-            datasetSelection: null, // This is the user's dataset selection for the predefined card
+            datasetSelection: null // This is the user's dataset selection for the predefined card
         };
     },
     mutations: {
@@ -29,32 +29,32 @@ const predefinedModule = {
         },
         setDatasetSelection(state, selection) {
             state.datasetSelection = selection;
-        },
-    },
+        }
+    }
 };
 
 const compareModule = {
     namespaced: true, // otherwise mutations are registered globally, this way mutations are available as "compare/*"
-    state: function () {
+    state: function() {
         return {
             widgetCollections: {}, // collections of widgets that are currently displayed. Has structure {id: {children: {child_id: childProperties}}}
             widgetData: {}, // data that is displayed by the widgets, is referenced by widgetCollections -> separate for performance reasons
             used_datasets: new Map(), // ids of datasets used in this config with usage numbers
             used_collections: new Map(), // ids of collections used in this config with usage numbers
-            request_pool: new Map(), // map for requests that acts as semaphores for certain requests
+            request_pool: new Map() // map for requests that acts as semaphores for certain requests
         };
     },
     getters: {
-        getWidgetCollections: (state) => {
+        getWidgetCollections: state => {
             return state.widgetCollections;
         },
-        getUsedDatasets: (state) => {
+        getUsedDatasets: state => {
             return state.used_datasets;
         },
-        getUsedCollections: (state) => {
+        getUsedCollections: state => {
             return state.used_collections;
         },
-        getWidgetProperties: (state) => (payload) => {
+        getWidgetProperties: state => payload => {
             return Object.assign(
                 {},
                 state.widgetCollections[payload.parentID]["children"][
@@ -62,13 +62,13 @@ const compareModule = {
                 ]
             );
         },
-        getCollectionProperties: (state) => (collectionID) => {
+        getCollectionProperties: state => collectionID => {
             return Object.assign({}, state.widgetCollections[collectionID]);
         },
-        collectionExists: (state) => (id) => {
+        collectionExists: state => id => {
             return id in state.widgetCollections;
         },
-        getCollectionConfig: (state) => (collectionID) => {
+        getCollectionConfig: state => collectionID => {
             if (!"collectionConfig" in state.widgetCollections[collectionID]) {
                 return {};
             }
@@ -77,31 +77,31 @@ const compareModule = {
                 state.widgetCollections[collectionID]["collectionConfig"]
             );
         },
-        getWidgetDataPileup: (state) => (payload) => {
+        getWidgetDataPileup: state => payload => {
             if (!("pileup" in state.widgetData)) {
                 return undefined;
             }
             return state.widgetData["pileup"][payload.pileupType][payload.id];
         },
-        getWidgetDataStackup: (state) => (payload) => {
+        getWidgetDataStackup: state => payload => {
             if (!("stackup" in state.widgetData)) {
                 return undefined;
             }
             return state.widgetData["stackup"][payload.id];
         },
-        getWidgetDataLineprofile: (state) => (payload) => {
+        getWidgetDataLineprofile: state => payload => {
             if (!("lineprofile" in state.widgetData)) {
                 return undefined;
             }
             return state.widgetData["lineprofile"][payload.id];
         },
-        getWidgetDataLola: (state) => (payload) => {
+        getWidgetDataLola: state => payload => {
             if (!("lola" in state.widgetData)) {
                 return undefined;
             }
             return state.widgetData["lola"][payload.id];
         },
-        getWidgetDataEmbedding1d: (state) => (payload) => {
+        getWidgetDataEmbedding1d: state => payload => {
             if (!("embedding1d" in state.widgetData)) {
                 return undefined;
             }
@@ -113,7 +113,7 @@ const compareModule = {
             }
             return state.widgetData["embedding1d"][payload.id]["points"];
         },
-        getWidgetDataEmbedding2d: (state) => (payload) => {
+        getWidgetDataEmbedding2d: state => payload => {
             if (!("embedding2d" in state.widgetData)) {
                 return undefined;
             }
@@ -121,38 +121,38 @@ const compareModule = {
                 payload.id
             ];
         },
-        widgetExists: (state) => (payload) => {
+        widgetExists: state => payload => {
             // checks whether widget with id exists
             return (
                 payload.id in
                 state.widgetCollections[payload.parentID]["children"]
             );
         },
-        pileupExists: (state) => (payload) => {
+        pileupExists: state => payload => {
             if (!("pileup" in state.widgetData)) {
                 return false;
             }
             return payload.id in state.widgetData["pileup"][payload.pileupType];
         },
-        lineprofileExists: (state) => (payload) => {
+        lineprofileExists: state => payload => {
             if (!("lineprofile" in state.widgetData)) {
                 return false;
             }
             return payload.id in state.widgetData["lineprofile"];
         },
-        stackupExists: (state) => (payload) => {
+        stackupExists: state => payload => {
             if (!("stackup" in state.widgetData)) {
                 return false;
             }
             return payload.id in state.widgetData["stackup"];
         },
-        associationDataExists: (state) => (payload) => {
+        associationDataExists: state => payload => {
             if (!("lola" in state.widgetData)) {
                 return false;
             }
             return payload.id in state.widgetData["lola"];
         },
-        embedding1dDataExists: (state) => (payload) => {
+        embedding1dDataExists: state => payload => {
             if (!("embedding1d" in state.widgetData)) {
                 return false;
             }
@@ -168,7 +168,7 @@ const compareModule = {
             }
             return payload.id in state.widgetData["embedding1d"];
         },
-        embedding2dDataExists: (state) => (payload) => {
+        embedding2dDataExists: state => payload => {
             if (!("embedding2d" in state.widgetData)) {
                 return false;
             }
@@ -176,7 +176,7 @@ const compareModule = {
                 payload.id in state.widgetData["embedding2d"][payload.valueType]
             );
         },
-        getWidgetType: (state) => (payload) => {
+        getWidgetType: state => payload => {
             if (
                 payload.id in
                 state.widgetCollections[payload.parentID]["children"]
@@ -187,12 +187,12 @@ const compareModule = {
             }
             return undefined;
         },
-        getRequest: (state) => (url) => {
+        getRequest: state => url => {
             if (!state.request_pool.has(url)) {
                 return undefined;
             }
             return state.request_pool.get(url);
-        },
+        }
     },
     mutations: {
         setRequest(state, payload) {
@@ -261,13 +261,13 @@ const compareModule = {
         },
         createEmptyWidgetCollection(state, id) {
             Vue.set(state.widgetCollections, id, {
-                children: {},
+                children: {}
             });
         },
         setWidgetCollectionWithChild(state, payload) {
             // Vue.set is needed to preserve reactivity
             Vue.set(state.widgetCollections, payload.parentID, {
-                children: { [payload.id]: payload },
+                children: { [payload.id]: payload }
             });
         },
         setCollectionConfig(state, payload) {
@@ -305,7 +305,7 @@ const compareModule = {
                 // initialize pileup
                 state.widgetData["pileup"] = {
                     ICCF: {},
-                    ObsExp: {},
+                    ObsExp: {}
                 };
             }
             state.widgetData["pileup"][payload.pileupType][payload.id] =
@@ -342,7 +342,7 @@ const compareModule = {
                 if (!(payload.id in state.widgetData["embedding1d"])) {
                     state.widgetData["embedding1d"][payload.id] = {
                         overlays: {},
-                        points: undefined,
+                        points: undefined
                     };
                 }
                 state.widgetData["embedding1d"][payload.id]["overlays"][
@@ -355,7 +355,7 @@ const compareModule = {
                 } else {
                     state.widgetData["embedding1d"][payload.id] = {
                         overlays: {},
-                        points: payload.data,
+                        points: payload.data
                     };
                 }
             }
@@ -365,7 +365,7 @@ const compareModule = {
                 // initialize data
                 state.widgetData["embedding2d"] = {
                     ICCF: {},
-                    ObsExp: {},
+                    ObsExp: {}
                 };
             }
             if (payload.id in state.widgetData["embedding2d"]) {
@@ -376,6 +376,15 @@ const compareModule = {
                     payload.data;
             }
         },
+        // setWidgetType(state, payload) {
+        //     Vue.set(
+        //         state.widgetCollections[payload.parentID]["children"][
+        //             payload.id
+        //         ],
+        //         "widgetType",
+        //         payload.widgetType
+        //     );
+        // },
         setWidgetType(state, payload) {
             Vue.set(
                 state.widgetCollections[payload.parentID]["children"][
@@ -384,8 +393,8 @@ const compareModule = {
                 "widgetType",
                 payload.widgetType
             );
-        },
-    },
+        }
+    }
 };
 
 // create global store
@@ -397,13 +406,13 @@ const COLORPALETTE = [
     "#BA3B46",
     "#823021",
     "#B58D17",
-    "#125d98",
+    "#125d98"
 ];
 
 const store = new Vuex.Store({
     modules: {
         predefined: predefinedModule,
-        compare: compareModule,
+        compare: compareModule
     },
     state: {
         token: null,
@@ -412,6 +421,7 @@ const store = new Vuex.Store({
         user_name: null,
         resolutions: null,
         datasetMetadataMapping: null,
+        fileTypes: null,
         collections: null,
         datasets: null, // datasets are in the global store because they will be shared for all functionalities for a given user throughout a session
         usedSortOrders: Array(COLORPALETTE.length).fill(0), // flags for used numbers
@@ -419,14 +429,15 @@ const store = new Vuex.Store({
         notificationSource: null,
         notifications: {
             read: [],
-            new: [],
+            new: []
         },
+        processingDatasets: []
     },
     getters: {
-        notificationSource: (state) => {
+        notificationSource: state => {
             return state.notificationSource;
         },
-        getNextSortOrderColor: (state) => {
+        getNextSortOrderColor: state => {
             let nextEmptyIndex = state.usedSortOrders.indexOf(0);
             if (nextEmptyIndex == -1) {
                 return undefined;
@@ -434,7 +445,7 @@ const store = new Vuex.Store({
             var color = COLORPALETTE[nextEmptyIndex];
             return color;
         },
-        getNextValueScaleColor: (state) => {
+        getNextValueScaleColor: state => {
             let nextEmptyIndex = state.usedValueScales.indexOf(0);
             if (nextEmptyIndex == -1) {
                 return undefined;
@@ -442,32 +453,38 @@ const store = new Vuex.Store({
             var color = COLORPALETTE[nextEmptyIndex];
             return color;
         },
-        getResolutions: (state) => {
+        getResolutions: state => {
             return state.resolutions;
         },
-        getDatasetMetadataMapping: (state) => {
+        getDatasetMetadataMapping: state => {
             return state.datasetMetadataMapping;
         },
-        isTokenEmpty: (state) => {
+        getFileTypes: state => {
+            return state.fileTypes;
+        },
+        isTokenEmpty: state => {
             return state.token == null;
         },
-        sessionToken: (state) => {
+        sessionToken: state => {
             return state.sessionToken;
         },
-        getUserId: (state) => {
+        getUserId: state => {
             return state.user_id;
         },
-        userName: (state) => {
+        userName: state => {
             return state.user_name;
         },
-        getDataset: (state) => (id) => {
-            return state.datasets.filter((el) => el.id === id)[0];
+        getDataset: state => id => {
+            return state.datasets.filter(el => el.id === id)[0];
         },
-        notifications: (state) => {
+        processingDatasets: state => {
+            return state.processingDatasets  
+        },
+        notifications: state => {
             return state.notifications.new.sort(
                 (a, b) => new Date(b.time) - new Date(a.time)
             );
-        },
+        }
     },
     mutations: {
         releaseNotificationSource(state) {
@@ -479,15 +496,18 @@ const store = new Vuex.Store({
                 process.env.NOTIFICATION_URL
             );
         },
+        setProcessingDatasets(state, datasets) {
+            state.processingDatasets = datasets
+        },
         addNewNotification(state, notification) {
             state.notifications.new.push(notification);
         },
         setNotificationRead(state, id) {
             state.notifications.read.push(
-                state.notifications.new.filter((el) => el.id === id)
+                state.notifications.new.filter(el => el.id === id)
             );
             state.notifications.new = state.notifications.new.filter(
-                (el) => el.id !== id
+                el => el.id !== id
             );
         },
         clearNewNotifications(state, id) {
@@ -570,7 +590,10 @@ const store = new Vuex.Store({
         setDatasetMetadataMapping(state, mapping) {
             state.datasetMetadataMapping = mapping;
         },
-    },
+        setFileTypes(state, fileTypes) {
+            state.fileTypes = fileTypes;
+        }
+    }
 });
 
 export default store;

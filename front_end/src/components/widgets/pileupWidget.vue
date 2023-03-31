@@ -108,7 +108,7 @@
                                         @click="handleStartValueScaleShare"
                                         :disabled="
                                             valueScaleRecipient ||
-                                            this.valueScaleRecipients > 0
+                                                this.valueScaleRecipients > 0
                                         "
                                         ><span class="md-body-1"
                                             >Take value scale from</span
@@ -196,7 +196,7 @@ import {
     apiMixin,
     formattingMixin,
     widgetMixin,
-    valueScaleSharingMixin,
+    valueScaleSharingMixin
 } from "../../mixins";
 import valueInfoTooltip from "../visualizations/valueInfoTooltip.vue";
 
@@ -207,32 +207,32 @@ export default {
     mixins: [apiMixin, formattingMixin, widgetMixin, valueScaleSharingMixin],
     components: {
         heatmap,
-        valueInfoTooltip,
+        valueInfoTooltip
     },
     computed: {
-        colormap: function () {
+        colormap: function() {
             if (this.pileupType == "ICCF") {
                 return "fall";
             }
             return "blueWhiteRed";
         },
-        pileupType: function () {
+        pileupType: function() {
             if (this.isICCF) {
                 return "ICCF";
             } else {
                 return "ObsExp";
             }
         },
-        message: function () {
+        message: function() {
             return (
                 this.datasets[this.selectedDataset]["name"] +
                 " | binsize " +
                 this.getBinSizeFormat(this.selectedBinsize)
             );
-        },
+        }
     },
     methods: {
-        handleDragStart: function (e) {
+        handleDragStart: function(e) {
             /*
                 Needs to be overriden to remove tooltip
             */
@@ -259,7 +259,7 @@ export default {
                 this.width / 2
             );
         },
-        translateMouseToPosition: function (x, y, size) {
+        translateMouseToPosition: function(x, y, size) {
             let bin_width = size / this.widgetData[this.pileupType].shape[0];
             let x_bin = Math.round(x / bin_width);
             let y_bin = Math.round(y / bin_width);
@@ -318,12 +318,12 @@ export default {
                 xoffset
             )} | y: ${this.convertBasePairsToReadable(yoffset)}`;
         },
-        handleMouseEnterHeatmap: function (x, y, adjustedX, adjustedY) {
+        handleMouseEnterHeatmap: function(x, y, adjustedX, adjustedY) {
             this.showTooltip = true;
             this.tooltipOffsetLeft = adjustedX + 50;
             this.tooltipOffsetTop = adjustedY;
         },
-        handleMouseMoveHeatmap: function (x, y, adjustedX, adjustedY, size) {
+        handleMouseMoveHeatmap: function(x, y, adjustedX, adjustedY, size) {
             // only show tooltip if widget is not being dragged
             if (this.dragImage === undefined) {
                 this.showTooltip = true;
@@ -332,16 +332,16 @@ export default {
                 this.tooltipMessage = this.translateMouseToPosition(x, y, size);
             }
         },
-        handleMouseLeftHeatmap: function () {
+        handleMouseLeftHeatmap: function() {
             this.showTooltip = false;
         },
-        handleMouseLeftHeatmapContainer: function () {
+        handleMouseLeftHeatmapContainer: function() {
             this.showTooltip = false;
         },
-        startDatasetSelection: function () {
+        startDatasetSelection: function() {
             this.expectSelection = true;
             // get datasets from store
-            let datasets = this.$store.state.datasets.filter((el) =>
+            let datasets = this.$store.state.datasets.filter(el =>
                 Object.keys(this.datasets).includes(String(el.id))
             );
             let preselection = this.selectedDataset
@@ -354,27 +354,27 @@ export default {
                 preselection
             );
         },
-        registerSelectionEventHandlers: function () {
+        registerSelectionEventHandlers: function() {
             EventBus.$on("dataset-selected", this.handleDataSelection);
             EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function () {
+        removeSelectionEventHandlers: function() {
             EventBus.$off("dataset-selected", this.handleDataSelection);
             EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function (id) {
+        handleDataSelection: function(id) {
             if (this.expectSelection) {
                 this.selectedDataset = id;
                 this.expectSelection = false;
             }
         },
-        hanldeSelectionAbortion: function () {
+        hanldeSelectionAbortion: function() {
             this.expectSelection = false;
         },
-        handleBinsizeSelection: function (binsize) {
+        handleBinsizeSelection: function(binsize) {
             this.selectedBinsize = binsize;
         },
-        handleColormapMissmatch: function (colormap) {
+        handleColormapMissmatch: function(colormap) {
             this.reactToICCFSwitch = false;
             if (colormap == "fall") {
                 this.isICCF = true;
@@ -382,17 +382,17 @@ export default {
                 this.isICCF = false;
             }
         },
-        handleMouseEnter: function () {
+        handleMouseEnter: function() {
             if (this.allowValueScaleTargetSelection) {
                 this.showSelection = true;
             }
         },
-        handleMouseLeave: function () {
+        handleMouseLeave: function() {
             if (this.allowValueScaleTargetSelection) {
                 this.showSelection = false;
             }
         },
-        handleWidgetSelection: function () {
+        handleWidgetSelection: function() {
             if (this.allowValueScaleTargetSelection) {
                 if (this.valueScaleRecipients == 0) {
                     this.manageValueScaleColorUpdate();
@@ -411,11 +411,11 @@ export default {
                 this.showSelection = false;
             }
         },
-        handleSliderChange: function (data) {
+        handleSliderChange: function(data) {
             this.setColorScale(data);
             this.broadcastValueScaleUpdate();
         },
-        toStoreObject: function () {
+        toStoreObject: function() {
             // serialize object for storing its state in the store
             return {
                 // collection Data is needed if widget is dropped on new collection
@@ -442,10 +442,10 @@ export default {
                 valueScaleTargetID: this.valueScaleTargetID,
                 valueScaleColor: this.valueScaleColor,
                 minHeatmapRange: this.minHeatmapRange,
-                maxHeatmapRange: this.maxHeatmapRange,
+                maxHeatmapRange: this.maxHeatmapRange
             };
         },
-        handleWidgetDeletion: function () {
+        handleWidgetDeletion: function() {
             // needs to be separate to distinguish it from moving
             // emit events for sort-order update
             if (this.valueScaleRecipient) {
@@ -461,7 +461,7 @@ export default {
             }
             this.deleteWidget();
         },
-        deleteWidget: function () {
+        deleteWidget: function() {
             // release color
             if (this.valueScaleRecipients > 0) {
                 this.$store.commit(
@@ -472,7 +472,7 @@ export default {
             // delete widget from store
             var payload = {
                 parentID: this.collectionID,
-                id: this.id,
+                id: this.id
             };
             // delete widget from store
             this.$store.commit("compare/deleteWidget", payload);
@@ -482,7 +482,7 @@ export default {
                 this.selectedDataset
             );
         },
-        initializeForFirstTime: function (widgetData, collectionData) {
+        initializeForFirstTime: function(widgetData, collectionData) {
             var data = {
                 widgetDataRef: undefined,
                 dragImage: undefined,
@@ -514,14 +514,14 @@ export default {
                 showTooltip: false,
                 tooltipOffsetTop: 0,
                 tooltipOffsetLeft: 0,
-                tooltipMessage: undefined,
+                tooltipMessage: undefined
             };
             // write properties to store
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
             return data;
         },
-        initializeFromStore: function (widgetData, collectionConfig) {
+        initializeFromStore: function(widgetData, collectionConfig) {
             var widgetDataValues;
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
@@ -529,11 +529,11 @@ export default {
                 // deinfe store queries
                 var queryICCF = {
                     pileupType: "ICCF",
-                    id: widgetDataRef["ICCF"],
+                    id: widgetDataRef["ICCF"]
                 };
                 var queryObsExp = {
                     pileupType: "ObsExp",
-                    id: widgetDataRef["ObsExp"],
+                    id: widgetDataRef["ObsExp"]
                 };
                 // get widget data from store
                 widgetDataValues = {
@@ -542,7 +542,7 @@ export default {
                     ),
                     ObsExp: this.$store.getters["compare/getWidgetDataPileup"](
                         queryObsExp
-                    ),
+                    )
                 };
             } else {
                 widgetDataValues = undefined;
@@ -591,14 +591,14 @@ export default {
                 showTooltip: false,
                 tooltipOffsetTop: 0,
                 tooltipOffsetLeft: 0,
-                tooltipMessage: undefined,
+                tooltipMessage: undefined
             };
         },
-        getPileupData: async function (pileupType, id) {
+        getPileupData: async function(pileupType, id) {
             // checks whether pileup data is in store and fetches it if it is not
             var queryObject = {
                 pileupType: pileupType,
-                id: id,
+                id: id
             };
             if (this.$store.getters["compare/pileupExists"](queryObject)) {
                 return this.$store.getters["compare/getWidgetDataPileup"](
@@ -612,13 +612,13 @@ export default {
             var mutationObject = {
                 pileupType: pileupType,
                 id: id,
-                data: parsed,
+                data: parsed
             };
             this.$store.commit("compare/setWidgetDataPileup", mutationObject);
             // return it
             return parsed;
         },
-        updatedData: async function () {
+        updatedData: async function() {
             // triggers load and storing of both pileuptypes
             // reset min and max colormap values if not value scale recipient
             if (!this.valueScaleRecipient) {
@@ -630,24 +630,24 @@ export default {
             // store widget data ref
             this.widgetDataRef = {
                 ICCF: iccf_id,
-                ObsExp: obs_exp_id,
+                ObsExp: obs_exp_id
             };
             // get pileup iccf; update pileup data upon success
             var iccf_data = await this.getPileupData("ICCF", iccf_id);
             var obs_exp_data = await this.getPileupData("ObsExp", obs_exp_id);
             this.widgetData = {
                 ICCF: iccf_data,
-                ObsExp: obs_exp_data,
+                ObsExp: obs_exp_data
             };
             // broadcast value scale update
             this.broadcastValueScaleUpdate();
-        },
+        }
     },
     watch: {
         // watch for changes in store to be able to update intervals
         "$store.state.compare.widgetCollections": {
             deep: true,
-            handler: function (newValue) {
+            handler: function(newValue) {
                 // update availability object
                 this.datasets =
                     newValue[this.collectionID]["collectionConfig"][
@@ -657,9 +657,9 @@ export default {
                     newValue[this.collectionID]["collectionConfig"][
                         "intervalSize"
                     ];
-            },
+            }
         },
-        datasets: function (oldVal, newVal) {
+        datasets: function(oldVal, newVal) {
             if (
                 !newVal ||
                 !oldVal ||
@@ -675,10 +675,9 @@ export default {
                 this.blankWidget();
                 return;
             }
-            this.binsizes =
-                this.datasets[this.selectedDataset]["data_ids"][
-                    this.intervalSize
-                ];
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
             // check whether binsizes are defined
             if (this.binsizes === undefined) {
                 // not data exists, blank widget DAta
@@ -690,7 +689,7 @@ export default {
             );
             this.updatedData();
         },
-        intervalSize: function (newVal, oldVal) {
+        intervalSize: function(newVal, oldVal) {
             // if interval size changes, reload data
             if (
                 !newVal ||
@@ -701,10 +700,9 @@ export default {
                 this.reactToUpdate = true;
                 return;
             }
-            this.binsizes =
-                this.datasets[this.selectedDataset]["data_ids"][
-                    this.intervalSize
-                ];
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
             // check whether binsizes are defined
             if (this.binsizes === undefined) {
                 // not data exists, blank widget DAta
@@ -716,7 +714,7 @@ export default {
             );
             this.updatedData();
         },
-        selectedDataset: function (newVal, oldVal) {
+        selectedDataset: function(newVal, oldVal) {
             if (!this.selectedDataset) {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
@@ -726,10 +724,9 @@ export default {
                 (this.minHeatmap = undefined), (this.maxHeatmap = undefined);
             }
             // set binsizes from available datasets
-            this.binsizes =
-                this.datasets[this.selectedDataset]["data_ids"][
-                    this.intervalSize
-                ];
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
             // check whether binsizes are defined
             if (this.binsizes === undefined) {
                 // not data exists, blank widget DAta
@@ -746,28 +743,28 @@ export default {
             this.$store.commit("compare/decrement_usage_dataset", oldVal);
             this.$store.commit("compare/increment_usage_dataset", newVal);
         },
-        selectedBinsize: async function () {
+        selectedBinsize: async function() {
             if (!this.selectedBinsize) {
                 return;
             }
             this.updatedData();
         },
-        isICCF: function () {
+        isICCF: function() {
             // reset min and max when this changes
             if (this.reactToICCFSwitch) {
                 this.resetColorScale();
             } else {
                 this.reactToICCFSwitch = true;
             }
-        },
+        }
     },
-    mounted: function () {
+    mounted: function() {
         this.registerValueScaleEventHandlers();
         this.registerSelectionEventHandlers();
     },
-    beforeDestroy: function () {
+    beforeDestroy: function() {
         this.removeSelectionEventHandlers();
-    },
+    }
 };
 </script>
 

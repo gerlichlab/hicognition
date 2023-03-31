@@ -3,7 +3,7 @@ import os
 import unittest
 from unittest.mock import patch
 import numpy as np
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 # import sys
@@ -19,7 +19,7 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
     def setUp(self):
         super().setUp()
         # add owned cooler
-        self.owned_cooler = Dataset(
+        self.owned_cooler = self.create_dataset(
             id=1,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -27,7 +27,7 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
             user_id=1,
         )
         # add unowned cooler
-        self.unowned_cooler = Dataset(
+        self.unowned_cooler = self.create_dataset(
             id=2,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -35,7 +35,7 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
             user_id=2,
         )
         # add owned bedfile
-        self.owned_bedfile = Dataset(
+        self.owned_bedfile = self.create_dataset(
             id=3,
             dataset_name="test2",
             file_path="/test/path/2",
@@ -43,7 +43,7 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
             user_id=1,
         )
         # add unowned bedfile
-        self.unowned_bedfile = Dataset(
+        self.unowned_bedfile = self.create_dataset(
             id=4,
             dataset_name="test2",
             file_path="/test/path/2",
@@ -51,7 +51,7 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
             user_id=2,
         )
         # add unowned, public cooler
-        self.unowned_public_cooler = Dataset(
+        self.unowned_public_cooler = self.create_dataset(
             id=5,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -60,7 +60,7 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
             public=True,
         )
         # add unowned, public bedfile
-        self.unowned_public_bedfile = Dataset(
+        self.unowned_public_bedfile = self.create_dataset(
             id=6,
             dataset_name="test2",
             file_path="/test/path/2",
@@ -174,9 +174,10 @@ class TestGetAverageIntervalData(LoginTestCase, TempDirTestCase):
         with patch("app.api.authentication.current_app.config") as mock_config:
             mock_config.__getitem__.side_effect = app_config.__getitem__
             # dispatch call
-            response = self.client.get("/api/averageIntervalData/1/", content_type="application/json")
+            response = self.client.get(
+                "/api/averageIntervalData/1/", content_type="application/json"
+            )
             self.assertEqual(response.status_code, 404)
-
 
     def test_average_interval_data_does_not_exist(self):
         """Test 404 is returned if averageIntervalData does not exist."""

@@ -29,7 +29,7 @@
                     </div>
                 </div>
                 <div
-                    class="md-layout-item md-size-60 padding-left padding-right"
+                    class="md-layout-item md-size-45 padding-left padding-right"
                 >
                     <md-menu
                         :md-offset-x="50"
@@ -59,7 +59,26 @@
                         </md-menu-content>
                     </md-menu>
                 </div>
-
+                <div class="md-layout-item md-size-5 toggle-paired-buttons">
+                    <div v-if="isBedpeFile" class="no-padding-top md-icon-button">
+                        <md-button class="md-icon" :class="{'md-primary': selectedSide == 'left'}"  @click="togglePairedSides('left')">
+                            <md-icon>looks_one</md-icon>
+                            <md-tooltip md-direction="top" md-delay="300">
+                                Plot left support data
+                            </md-tooltip>
+                        </md-button>
+                    </div>
+                </div>
+                <div class="md-layout-item md-size-10 toggle-paired-buttons">
+                    <div v-if="isBedpeFile" class="no-padding-top">
+                        <md-button class="md-icon md-mini" :class="{'md-primary': selectedSide == 'right'}" @click="togglePairedSides('right')" style="margin-left: 8px">
+                            <md-icon>looks_two</md-icon>
+                        </md-button>
+                            <md-tooltip md-direction="top" md-delay="300">
+                                Plot right support data
+                            </md-tooltip>
+                    </div>
+                </div>
                 <div class="md-layout-item md-size-10">
                     <md-menu
                         md-size="small"
@@ -119,7 +138,7 @@
                                         @click="handleStartSortOrderShare"
                                         :disabled="
                                             sortOrderRecipient ||
-                                            this.sortOrderRecipients > 0
+                                                this.sortOrderRecipients > 0
                                         "
                                         ><span class="md-body-1"
                                             >Take sort order from</span
@@ -137,7 +156,7 @@
                                         @click="handleStartValueScaleShare"
                                         :disabled="
                                             valueScaleRecipient ||
-                                            this.valueScaleRecipients > 0
+                                                this.valueScaleRecipients > 0
                                         "
                                         ><span class="md-body-1"
                                             >Take value scale from</span
@@ -224,7 +243,7 @@ import {
     formattingMixin,
     widgetMixin,
     sortOrderMixin,
-    valueScaleSharingMixin,
+    valueScaleSharingMixin
 } from "../../mixins";
 import EventBus from "../../eventBus";
 import * as seedrandom from "seedrandom";
@@ -239,29 +258,29 @@ export default {
         formattingMixin,
         widgetMixin,
         valueScaleSharingMixin,
-        sortOrderMixin,
+        sortOrderMixin
     ],
     components: {
         heatmap,
-        valueInfoTooltip,
+        valueInfoTooltip
     },
     computed: {
-        message: function () {
+        message: function() {
             return (
                 this.datasets[this.selectedDataset]["name"] +
                 " | binsize " +
                 this.getBinSizeFormat(this.selectedBinsize)
             );
         },
-        colormap: function () {
+        colormap: function() {
             return "red";
-        },
+        }
     },
     methods: {
-        startDatasetSelection: function () {
+        startDatasetSelection: function() {
             this.expectSelection = true;
             // get datasets from store
-            let datasets = this.$store.state.datasets.filter((el) =>
+            let datasets = this.$store.state.datasets.filter(el =>
                 Object.keys(this.datasets).includes(String(el.id))
             );
             let preselection = this.selectedDataset
@@ -274,27 +293,30 @@ export default {
                 preselection
             );
         },
-        registerSelectionEventHandlers: function () {
+        togglePairedSides: function(side) {
+            this.selectedSide = side
+        },
+        registerSelectionEventHandlers: function() {
             EventBus.$on("dataset-selected", this.handleDataSelection);
             EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function () {
+        removeSelectionEventHandlers: function() {
             EventBus.$off("dataset-selected", this.handleDataSelection);
             EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function (id) {
+        handleDataSelection: function(id) {
             if (this.expectSelection) {
                 this.selectedDataset = id;
                 this.expectSelection = false;
             }
         },
-        hanldeSelectionAbortion: function () {
+        hanldeSelectionAbortion: function() {
             this.expectSelection = false;
         },
-        handleBinsizeSelection: function (binsize) {
+        handleBinsizeSelection: function(binsize) {
             this.selectedBinsize = binsize;
         },
-        handleMouseEnter: function () {
+        handleMouseEnter: function() {
             if (
                 this.allowSortOrderTargetSelection ||
                 this.allowValueScaleTargetSelection
@@ -302,7 +324,7 @@ export default {
                 this.showSelection = true;
             }
         },
-        handleMouseLeave: function () {
+        handleMouseLeave: function() {
             if (
                 this.allowSortOrderTargetSelection ||
                 this.allowValueScaleTargetSelection
@@ -310,12 +332,12 @@ export default {
                 this.showSelection = false;
             }
         },
-        handleMouseEnterHeatmap: function (x, y, adjustedX, adjustedY) {
+        handleMouseEnterHeatmap: function(x, y, adjustedX, adjustedY) {
             this.showTooltip = true;
             this.tooltipOffsetLeft = adjustedX + 50;
             this.tooltipOffsetTop = adjustedY;
         },
-        translateMouseToPosition: function (x, y, size) {
+        translateMouseToPosition: function(x, y, size) {
             let bin_width = size / this.widgetData.shape[1];
             let x_bin = Math.round(x / bin_width);
             let xoffset;
@@ -350,7 +372,7 @@ export default {
             }
             return `${this.convertBasePairsToReadable(xoffset)}`;
         },
-        handleMouseMoveHeatmap: function (x, y, adjustedX, adjustedY, size) {
+        handleMouseMoveHeatmap: function(x, y, adjustedX, adjustedY, size) {
             // only show tooltip if widget is not being dragged
             if (this.dragImage === undefined) {
                 this.showTooltip = true;
@@ -359,13 +381,13 @@ export default {
                 this.tooltipMessage = this.translateMouseToPosition(x, y, size);
             }
         },
-        handleMouseLeftHeatmap: function () {
+        handleMouseLeftHeatmap: function() {
             this.showTooltip = false;
         },
-        handleMouseLeftHeatmapContainer: function () {
+        handleMouseLeftHeatmapContainer: function() {
             this.showTooltip = false;
         },
-        handleWidgetSortOrderSelection: function () {
+        handleWidgetSortOrderSelection: function() {
             if (this.sortOrderRecipients == 0) {
                 this.manageColorUpdate();
             }
@@ -379,7 +401,7 @@ export default {
             this.sortOrderRecipients += 1;
             this.showSelection = false;
         },
-        handleWidgetValueScaleSelection: function () {
+        handleWidgetValueScaleSelection: function() {
             if (this.valueScaleRecipients == 0) {
                 this.manageValueScaleColorUpdate();
             }
@@ -396,18 +418,18 @@ export default {
             this.valueScaleRecipients += 1;
             this.showSelection = false;
         },
-        handleWidgetSelection: function () {
+        handleWidgetSelection: function() {
             if (this.allowSortOrderTargetSelection) {
                 this.handleWidgetSortOrderSelection();
             } else if (this.allowValueScaleTargetSelection) {
                 this.handleWidgetValueScaleSelection();
             }
         },
-        handleSliderChange: function (data) {
+        handleSliderChange: function(data) {
             this.setColorScale(data);
             this.broadcastValueScaleUpdate();
         },
-        toStoreObject: function () {
+        toStoreObject: function() {
             // serialize object for storing its state in the store
             return {
                 // collection Data is needed if widget is dropped on new collection
@@ -442,9 +464,10 @@ export default {
                 valueScaleColor: this.valueScaleColor,
                 minHeatmapRange: this.minHeatmapRange,
                 maxHeatmapRange: this.maxHeatmapRange,
+                selectedSide: this.selectedSide,
             };
         },
-        prepareDeletionSortOrder: function () {
+        prepareDeletionSortOrder: function() {
             if (this.sortOrderRecipient) {
                 // client handling
                 this.handleStopSortOrderShare();
@@ -454,7 +477,7 @@ export default {
                 this.$store.commit("releaseColorUsage", this.sortOrderColor);
             }
         },
-        prepareDeletionValueScale: function () {
+        prepareDeletionValueScale: function() {
             if (this.valueScaleRecipient) {
                 // client handling
                 this.handleStopValueScaleShare();
@@ -467,14 +490,14 @@ export default {
                 );
             }
         },
-        handleWidgetDeletion: function () {
+        handleWidgetDeletion: function() {
             // needs to be separate to distinguish it from moving
             // emit events for sort-order update
             this.prepareDeletionSortOrder();
             this.prepareDeletionValueScale();
             this.deleteWidget();
         },
-        deleteWidget: function () {
+        deleteWidget: function() {
             // release color
             if (this.sortOrderRecipients > 0) {
                 this.$store.commit("releaseColorUsage", this.sortOrderColor);
@@ -488,7 +511,7 @@ export default {
             // delete widget from store
             var payload = {
                 parentID: this.collectionID,
-                id: this.id,
+                id: this.id
             };
             // delete widget from store
             this.$store.commit("compare/deleteWidget", payload);
@@ -498,7 +521,7 @@ export default {
                 this.selectedDataset
             );
         },
-        initializeForFirstTime: function (widgetData, collectionConfig) {
+        initializeForFirstTime: function(widgetData, collectionConfig) {
             let sortOrderDefault =
                 collectionConfig["intervalSize"] == "variable"
                     ? "region"
@@ -510,6 +533,7 @@ export default {
                 selectedDataset: undefined,
                 selectedBinsize: undefined,
                 intervalSize: collectionConfig["intervalSize"],
+                isBedpeFile: collectionConfig['isPairedEnd'],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: [],
                 datasets:
@@ -543,26 +567,26 @@ export default {
                 tooltipOffsetTop: 0,
                 tooltipOffsetLeft: 0,
                 tooltipMessage: undefined,
+                selectedSide: 'left',
             };
             // write properties to store
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
             return data;
         },
-        initializeFromStore: function (widgetData, collectionConfig) {
+        initializeFromStore: function(widgetData, collectionConfig) {
             var widgetDataValues;
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
                 var widgetDataRef = widgetData["widgetDataRef"];
                 // deinfe store queries
                 var querydata = {
-                    id: widgetDataRef,
+                    id: widgetDataRef
                 };
                 // get widget data from store
-                widgetDataValues =
-                    this.$store.getters["compare/getWidgetDataStackup"](
-                        querydata
-                    );
+                widgetDataValues = this.$store.getters[
+                    "compare/getWidgetDataStackup"
+                ](querydata);
             } else {
                 widgetDataValues = undefined;
             }
@@ -582,6 +606,7 @@ export default {
             );
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
+                isBedpeFile: collectionConfig['isPairedEnd'],
                 dragImage: undefined,
                 widgetData: widgetDataValues,
                 selectedSortOrder: widgetData["selectedSortOrder"],
@@ -620,12 +645,13 @@ export default {
                 tooltipOffsetTop: 0,
                 tooltipOffsetLeft: 0,
                 tooltipMessage: undefined,
+                selectedSide: widgetData["selectedSide"] !== undefined ? widgetData["selectedSide"] : 'left',
             };
         },
-        getStackupData: async function (id) {
+        getStackupData: async function(id) {
             // checks whether pileup data is in store and fetches it if it is not
             var queryObject = {
-                id: id,
+                id: id
             };
             if (this.$store.getters["compare/stackupExists"](queryObject)) {
                 return this.$store.getters["compare/getWidgetDataStackup"](
@@ -640,20 +666,23 @@ export default {
             // save it in store
             var mutationObject = {
                 id: id,
-                data: piling_data,
+                data: piling_data
             };
             this.$store.commit("compare/setWidgetDataStackup", mutationObject);
             // return it
             return piling_data;
         },
-        updateData: async function () {
+        updateData: async function() {
             // reset min and max colormap values
             this.resetColorScale();
             // fetch widget data
-            var stackup_id = this.binsizes[this.selectedBinsize];
+            if (this.isBedpeFile){
+                var stackup_id = this.binsizes[this.selectedBinsize][this.selectedSide];
+            }else{
+                var stackup_id = this.binsizes[this.selectedBinsize];
+            }
             this.widgetDataRef = stackup_id;
-            var data = await this.getStackupData(stackup_id);
-            this.widgetData = data;
+            this.widgetData = await this.getStackupData(stackup_id);
             // fetch metadata
             var response = await this.fetchData(
                 `individualIntervalData/${stackup_id}/metadatasmall`
@@ -677,20 +706,20 @@ export default {
             // add random sort order
             seedrandom("I am a random seed!");
             let randArray = [];
-            for (let index = 0; index < data.shape[0]; index++) {
+            for (let index = 0; index < this.widgetData.shape[0]; index++) {
                 randArray.push(Math.random());
             }
             this.sortorders["random"] = randArray;
             // emit sort order update event
             this.broadcastSortOrderUpdate();
             this.broadcastValueScaleUpdate();
-        },
+        }
     },
     watch: {
         // watch for changes in store to be able to update intervals
         "$store.state.compare.widgetCollections": {
             deep: true,
-            handler: function (newValue, oldValue) {
+            handler: function(newValue, oldValue) {
                 // update availability object
                 this.datasets =
                     newValue[this.collectionID]["collectionConfig"][
@@ -717,9 +746,9 @@ export default {
                 ) {
                     this.selectedSortOrder = "center column";
                 }
-            },
+            }
         },
-        datasets: function (newVal, oldVal) {
+        datasets: function(newVal, oldVal) {
             if (
                 !newVal ||
                 !oldVal ||
@@ -735,10 +764,9 @@ export default {
                 this.blankWidget();
                 return;
             }
-            this.binsizes =
-                this.datasets[this.selectedDataset]["data_ids"][
-                    this.intervalSize
-                ];
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
             // check whether binsizes are defined
             if (this.binsizes === undefined) {
                 // not data exists, blank widget DAta
@@ -750,7 +778,7 @@ export default {
             );
             this.updateData();
         },
-        intervalSize: function (newVal, oldVal) {
+        intervalSize: function(newVal, oldVal) {
             // if interval size changes, reload data
             if (
                 !newVal ||
@@ -762,10 +790,9 @@ export default {
                 this.reactToUpdate = true;
                 return;
             }
-            this.binsizes =
-                this.datasets[this.selectedDataset]["data_ids"][
-                    this.intervalSize
-                ];
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
             // check whether binsizes are defined
             if (this.binsizes === undefined) {
                 // not data exists, blank widget DAta
@@ -777,7 +804,7 @@ export default {
             );
             this.updateData();
         },
-        selectedDataset: function (newVal, oldVal) {
+        selectedDataset: function(newVal, oldVal) {
             if (!this.selectedDataset) {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
@@ -787,10 +814,9 @@ export default {
                 (this.minHeatmap = undefined), (this.maxHeatmap = undefined);
             }
             // set binsizes and add default
-            this.binsizes =
-                this.datasets[this.selectedDataset]["data_ids"][
-                    this.intervalSize
-                ];
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
             // check whether binsizes are defined
             if (this.binsizes === undefined) {
                 // not data exists, blank widget DAta
@@ -808,33 +834,39 @@ export default {
             this.$store.commit("compare/decrement_usage_dataset", oldVal);
             this.$store.commit("compare/increment_usage_dataset", newVal);
         },
-        selectedBinsize: async function () {
+        selectedBinsize: async function() {
             if (!this.selectedBinsize) {
                 return;
             }
             this.updateData();
         },
-        isAscending: function () {
+        isAscending: function() {
             // check if selected sort order changes if widget is a sort order donor
             if (this.sortOrderRecipients > 0) {
                 this.broadcastSortOrderUpdate();
             }
         },
-        selectedSortOrder: function (val) {
+        selectedSortOrder: function(val) {
             // check if selected sort order changes if widget is a sort order donor
             if (this.sortOrderRecipients > 0) {
                 this.broadcastSortOrderUpdate();
             }
         },
+        selectedSide: async function() {
+            if (! this.selectedSide){
+                return
+            }
+            this.updateData()
+        }
     },
-    mounted: function () {
+    mounted: function() {
         this.registerSortOrderEventHandlers();
         this.registerValueScaleEventHandlers();
         this.registerSelectionEventHandlers();
     },
-    beforeDestroy: function () {
+    beforeDestroy: function() {
         this.removeSelectionEventHandlers();
-    },
+    }
 };
 </script>
 
@@ -879,5 +911,10 @@ export default {
 
 .md-field {
     min-height: 30px;
+}
+
+.toggle-paired-buttons {
+    padding-top: 8px;
+    padding-bottom:8px;
 }
 </style>

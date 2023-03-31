@@ -17,29 +17,29 @@ export default {
         colormap: String,
         borderColor: String,
         borderStyle: String,
-        allowValueScaleChange: Boolean,
+        allowValueScaleChange: Boolean
     },
-    data: function () {
+    data: function() {
         return {
             svg: undefined,
             id: Math.round(Math.random() * 100000),
             width: undefined,
-            height: undefined,
+            height: undefined
         };
     },
     computed: {
-        margin: function () {
+        margin: function() {
             return {
                 top: this.height * 0.05,
                 right: this.width * 0.15,
                 bottom: this.height * 0.05,
-                left: this.width * 0.65,
+                left: this.width * 0.65
             };
         },
-        colorBarDivID: function () {
+        colorBarDivID: function() {
             return `colorBar${this.id}`;
         },
-        colorBarDivStyle: function () {
+        colorBarDivStyle: function() {
             let borderStyle = this.borderStyle ? this.borderStyle : "solid";
             return {
                 width: "100%",
@@ -47,34 +47,34 @@ export default {
                 "box-sizing": "border-box",
                 "border-style": `none none none ${borderStyle}`,
                 "border-width": "3px",
-                "border-color": this.borderColor ? this.borderColor : "white",
+                "border-color": this.borderColor ? this.borderColor : "white"
             };
         },
-        plotWidth: function () {
+        plotWidth: function() {
             return this.width - this.margin.left - this.margin.right;
         },
-        plotHeight: function () {
+        plotHeight: function() {
             return this.height - this.margin.top - this.margin.bottom;
         },
-        colorScale: function () {
+        colorScale: function() {
             return getScale(
                 this.sliderPositionMin,
                 this.sliderPositionMax,
                 this.colormap
             );
-        },
+        }
     },
     methods: {
-        getParentWidth: function () {
+        getParentWidth: function() {
             return document.getElementById(this.colorBarDivID).parentNode
                 .offsetWidth;
         },
-        getParentHeight: function () {
+        getParentHeight: function() {
             return document.getElementById(this.colorBarDivID).parentNode
                 .offsetHeight;
         },
-        dragStopEventHandler: function (event) {},
-        createChart: function () {
+        dragStopEventHandler: function(event) {},
+        createChart: function() {
             d3.select(`#${this.colorBarDivID}Svg`).remove();
             this.svg = d3
                 .select(`#${this.colorBarDivID}`)
@@ -100,7 +100,7 @@ export default {
             // attach colorbar
             this.attachColorbar();
         },
-        colorbar: function (scale, width, height, scale_start, scale_end) {
+        colorbar: function(scale, width, height, scale_start, scale_end) {
             let scale_domain = scale.domain();
             let initialMin = scale_domain[0];
             let initialMax = scale_domain[scale_domain.length - 1];
@@ -111,7 +111,7 @@ export default {
             var barThickness = width;
             var barRange = height;
 
-            let colorbar = (context) => {
+            let colorbar = context => {
                 var dL = 1;
                 var nBars = Math.floor(barRange / dL);
                 var barData = [];
@@ -132,11 +132,11 @@ export default {
                     .enter()
                     .append("rect")
                     .attr("x", 0)
-                    .attr("y", (d) => d)
+                    .attr("y", d => d)
                     .attr("width", barThickness)
                     .attr("height", trueDL)
                     .style("stroke-width", "0px")
-                    .style("fill", function (d) {
+                    .style("fill", function(d) {
                         if (
                             interScale(d) < initialMin ||
                             interScale(d) > initialMax
@@ -148,7 +148,7 @@ export default {
 
                 if (this.allowValueScaleChange) {
                     // needs to be defined here because if it is a vue methods this gets everridden; store
-                    let dragEventHandler = function (event) {
+                    let dragEventHandler = function(event) {
                         // check whether y position is allowed
                         if (event.y > 0 && event.y < barRange) {
                             // adjust y position
@@ -156,7 +156,7 @@ export default {
                         }
                     };
                     let component = this;
-                    let dragStopEventHandler = function (event) {
+                    let dragStopEventHandler = function(event) {
                         // add boundaries for trying to drag further
                         let y_value = event.y;
                         if (y_value < 0) {
@@ -170,24 +170,24 @@ export default {
                             if (event_value < component.sliderPositionMin) {
                                 component.$emit("slider-change", [
                                     event_value,
-                                    component.sliderPositionMin,
+                                    component.sliderPositionMin
                                 ]);
                             } else {
                                 component.$emit("slider-change", [
                                     component.sliderPositionMin,
-                                    event_value,
+                                    event_value
                                 ]);
                             }
                         } else {
                             if (event_value > component.sliderPositionMax) {
                                 component.$emit("slider-change", [
                                     component.sliderPositionMax,
-                                    event_value,
+                                    event_value
                                 ]);
                             } else {
                                 component.$emit("slider-change", [
                                     event_value,
-                                    component.sliderPositionMax,
+                                    component.sliderPositionMax
                                 ]);
                             }
                         }
@@ -204,7 +204,7 @@ export default {
                         .append("rect")
                         .attr("id", "lower")
                         .attr("x", 0)
-                        .attr("y", (d) => linearScale(d))
+                        .attr("y", d => linearScale(d))
                         .attr("width", barThickness + this.width * 0.1)
                         .attr("height", this.width * 0.1)
                         .style("fill", "black")
@@ -217,7 +217,7 @@ export default {
                         .append("rect")
                         .attr("id", "upper")
                         .attr("x", 0)
-                        .attr("y", (d) => linearScale(d))
+                        .attr("y", d => linearScale(d))
                         .attr("width", barThickness + this.width * 0.1)
                         .attr("height", this.width * 0.1)
                         .style("fill", "black")
@@ -233,7 +233,7 @@ export default {
 
             return colorbar;
         },
-        attachColorbar: function () {
+        attachColorbar: function() {
             var cb = this.colorbar(
                 this.colorScale,
                 this.plotWidth,
@@ -242,38 +242,38 @@ export default {
                 this.sliderMax
             );
             this.svg.call(cb);
-        },
+        }
     },
-    mounted: function () {
+    mounted: function() {
         this.height = this.getParentHeight();
         this.width = this.getParentWidth();
         this.createChart();
     },
     watch: {
-        allowValueScaleChange: function () {
+        allowValueScaleChange: function() {
             this.createChart();
         },
-        colormap: function () {
+        colormap: function() {
             this.createChart();
         },
-        sliderMax: function () {
+        sliderMax: function() {
             this.createChart();
         },
-        sliderMin: function () {
+        sliderMin: function() {
             this.createChart();
         },
-        sliderPositionMin: function () {
+        sliderPositionMin: function() {
             this.createChart();
         },
-        sliderPositionMax: function () {
+        sliderPositionMax: function() {
             this.createChart();
         },
-        heatMapWidth: function () {
+        heatMapWidth: function() {
             this.height = this.getParentHeight();
             this.width = this.getParentWidth();
             this.createChart();
-        },
-    },
+        }
+    }
 };
 </script>
 

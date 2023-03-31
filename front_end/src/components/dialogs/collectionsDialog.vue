@@ -79,41 +79,41 @@ import EventBus from "../../eventBus";
 export default {
     name: "collectionsDialog",
     mixins: [apiMixin],
-    data: function () {
+    data: function() {
         return {
             showDelete: false,
             collections: [],
             selection: [],
             clickedDelete: false,
             datasetsDeleted: false,
-            isDemo: process.env.SHOWCASE,
+            isDemo: process.env.SHOWCASE
         };
     },
     components: {
-        collectionTable,
+        collectionTable
     },
     props: {
-        dialog: Boolean,
+        dialog: Boolean
     },
     computed: {
-        showDialog: function () {
+        showDialog: function() {
             return this.dialog;
         },
-        showControls: function () {
+        showControls: function() {
             return this.selection.length !== 0;
         },
-        notProcessing: function () {
+        notProcessing: function() {
             return this.collections.every(
-                (el) => el.processing_for_regions.length === 0
+                el => el.processing_for_regions.length === 0
             );
-        },
+        }
     },
     methods: {
-        handleSelectionChange: function (selection) {
+        handleSelectionChange: function(selection) {
             this.selection = selection;
         },
         fetchCollections() {
-            this.fetchData("collections/").then((response) => {
+            this.fetchData("collections/").then(response => {
                 if (response) {
                     // update displayed datasets
                     this.collections = response.data;
@@ -121,21 +121,21 @@ export default {
                 }
             });
         },
-        handleDelete: function () {
+        handleDelete: function() {
             this.deleteData(`collections/${this.selection[0]}/`).then(
-                (response) => {
+                response => {
                     this.fetchCollections();
                 }
             );
-        },
+        }
     },
     watch: {
-        showDialog: function (val) {
+        showDialog: function(val) {
             if (val) {
                 this.fetchCollections();
             }
-        },
-    },
+        }
+    }
 };
 </script>
 

@@ -2,11 +2,16 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_sse import sse
+from flask_mail import Mail
 import rq
 from redis import Redis
-from .config import config
+from .logging_utils import create_logging_config
+from .config.app_config import config
+from .confirmation import ConfirmationHandler
 
 db = SQLAlchemy()
+mail = Mail()
+confirmation_handler = ConfirmationHandler(mail_client=mail)
 
 # create sse request handler
 
@@ -23,6 +28,8 @@ def create_app(config_name):
     """factory to create app."""
     app = Flask(__name__)
     app.config.from_object(config[config_name])
+    create_logging_config(config[config_name])
+    # init db
     db.init_app(app)
     # add redis queue
     app.redis = Redis.from_url(app.config["REDIS_URL"])
@@ -39,4 +46,8 @@ def create_app(config_name):
     # register sse blueprint
     if not app.config["SHOWCASE"]:
         app.register_blueprint(sse, url_prefix="/stream")
+    # add mail handler
+    mail.init_app(app)
+    # add token handler
+    confirmation_handler.init_app(app)
     return app

@@ -20,24 +20,34 @@ This will open the preprocessing dialogue:
 
 
 
-Here, you first need to select for which region you want to start preprocessing. To do this, click on the `Select region` button. This will open up the [dataset management table](/data_management/regions/#viewing) and allow you to select a genomic region:
+Here, you first need to select for which region you want to start preprocessing.
+To do this, click on the `Select region` button.
+This will open up the [dataset management table](/data_management/regions/#viewing) and allow you to select a genomic region:
 
 
 <img src="/select_dataset_preprocessing.png" class="three-quarter-width">
 
 
-Once you select the region, the `Select Features`/`Select Collections` button becomes available. If you click on it, this will again open either the dataset management table or the [collection management table](/data_management/collections/#managing-collections). Here, you can then select which features/collections should be preprocessed. Once you hit `Select`, the dialogue disappears, and you can hit the `Submit Job` button, which will cause preprocessing to be started.
+Once you select the region, features/collections can be selected using the `Select Features`/`Select Collections` button.
+This will open the dataset management table, respectively the [collection management table](/data_management/collections/#managing-collections).
+Here, you can then select which features/collections should be preprocessed.
+Pressing `Submit Job` will queue the preprocessing tasks.
 
 <img src="/preprocessing_both_things_selected.png" class="three-quarter-width">
 
 
 {{% notice note %}}
-Currently, there is a one-to-one mapping between preprocessing tasks and types of datasets. E.g., there is only one possible task for a 2D feature. Therefore, the preprocessing dialogue does not require the selection of the task type. In the future, this might change, and the dialogue will become more complex.
+Currently, there is a one-to-one mapping between preprocessing tasks and types of datasets.
+E.g., there is only one possible task for a 2D feature.
+Therefore, the preprocessing dialogue does not require the selection of the task type.
+In the future, this might change, and the dialogue will become more complex.
 {{% /notice %}}
 
 ## Check tasks
 
-Once your tasks are running, you can check their progress via the [dataset management table](/data_management/regions/#viewing). If you open up the table, you can see two fields that are called `Processing Features` and `Processing Collections`. These indicate at a glance how many genomic features and feature collections are being processed for a given genomic region set. If you click on the columns, you can sort the table by this field and quickly see which datasets are processing:
+Once your tasks are submitted, you can check their progress via the [dataset management table](/data_management/regions/#viewing).
+The fields `Processing Features` and `Processing Collections` indicate how many genomic features/feature collections are being processed for a given genomic region set.
+Clicking the column headers sorts the table by these fields:
 
 <img src="/processing_datasets_table.png" class="three-quarter-width">
 
@@ -55,10 +65,12 @@ This table shows an additional status column that indicates whether a feature is
 | <img src="/progress_spinner.png" style="margin: auto">       | This icon means that this particular feature is currently processing                    |
 | <img src="/tick.png"  style="margin: auto">       | This icon means that this particular feature has finished processing and is available |
 | <img src="/upload_cload.png"  style="margin: auto">      | This icon means that the feature has been uploaded and is available, but has not been preprocessed                            |
+<!-- icons are not clear for somebody who has not read the manual -->
 
 ## Notifications
 
-When your preprocessing jobs finish, you will receive notifications. These are visible at the right side of the top toolbar:
+When your preprocessing jobs finish, you will receive notifications.
+These are visible at the right side of the top toolbar:
 
 <img src="/notification_icon.png" class="half-width">
 
@@ -70,5 +82,6 @@ If you click on the envelope symbol, you can acknowledge the notifications and m
 
 
 {{% notice note %}}
-We don't persist notifications in the database, so notifications are only visible in one viewing session. So, if you reload the browser or log out, the notifications will not be visible anymore.
+We don't persist notifications in the database, so notifications are only visible in one viewing session.
+So, if you reload the browser or log out, the notifications will not be visible anymore.
 {{% /notice %}}

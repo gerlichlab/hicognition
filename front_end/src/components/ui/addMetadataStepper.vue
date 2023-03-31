@@ -60,7 +60,7 @@ export default {
         firstStepError: null,
         blockSecondStep: true,
         fields: [],
-        metadataID: null,
+        metadataID: null
     }),
     methods: {
         setDone(id, index) {
@@ -90,8 +90,8 @@ export default {
         },
         clearError() {
             this.firstStepError = null;
-        },
-    },
+        }
+    }
 };
 </script>
 

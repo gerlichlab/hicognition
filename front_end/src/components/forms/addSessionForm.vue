@@ -65,22 +65,22 @@ export default {
     name: "AddSessionForm",
     mixins: [validationMixin, apiMixin],
     props: {
-        serializing: Boolean,
+        serializing: Boolean
     },
     data: () => ({
         form: {
-            sessionName: null,
+            sessionName: null
         },
         datasetSaved: false,
-        sending: false,
+        sending: false
     }),
     validations: {
         // validators for the form
         form: {
             sessionName: {
-                required,
-            },
-        },
+                required
+            }
+        }
     },
     methods: {
         getValidationClass(fieldName) {
@@ -89,7 +89,7 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty,
+                    "md-invalid": field.$invalid && field.$dirty
                 };
             }
         },
@@ -117,8 +117,9 @@ export default {
                 used_dataset_array = Array.from(used_datasets.keys());
             }
             // construct array from used collections map
-            var used_collections =
-                this.$store.getters["compare/getUsedCollections"];
+            var used_collections = this.$store.getters[
+                "compare/getUsedCollections"
+            ];
             var used_collections_array;
             if (used_collections.size == 0) {
                 used_collections_array = [];
@@ -136,7 +137,7 @@ export default {
                 JSON.stringify(used_collections_array)
             );
             // API call including upload is made in the background
-            this.postData("sessions/", formData).then((response) => {
+            this.postData("sessions/", formData).then(response => {
                 if (response) {
                     this.datasetSaved = true;
                     this.sending = false;
@@ -153,8 +154,8 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        },
-    },
+        }
+    }
 };
 </script>
 

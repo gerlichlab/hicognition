@@ -1,25 +1,29 @@
 """DELETE API endpoints for hicognition"""
 from flask.json import jsonify
 from flask import g, current_app
-import hicognition
+from .. import lib as hicognition
 from . import api
 from .. import db
 from ..models import Assembly, Collection, Dataset, Session
-from .authentication import auth
+from .authentication import auth, check_confirmed
 from .errors import forbidden, invalid, not_found
 
 
 @api.route("/datasets/<dataset_id>/", methods=["DELETE"])
 @auth.login_required
+@check_confirmed
 def delete_dataset_handler(dataset_id):
     """Deletes"""
     # check if data set exists
     dataset = Dataset.query.get(dataset_id)
     if dataset is None:
         return not_found(f"Dataset id {dataset_id} does not exist!")
-    # check if data set can be accessed
-    if dataset.is_deletion_denied(g):
+    # check if data set can be accessed and deleted
+    if dataset.user_id != g.current_user.id:
         return forbidden(f"Dataset with id {dataset_id} is not owned by user!")
+    if dataset.upload_state == "uploading":
+        return invalid(f"Dataset with id {dataset_id} is currently being uploaded!")
+
     # check if data set is processing
     if (len(dataset.processing_features) != 0) or (
         len(dataset.processing_regions) != 0
@@ -48,6 +52,7 @@ def delete_dataset_handler(dataset_id):
 
 @api.route("/sessions/<session_id>/", methods=["DELETE"])
 @auth.login_required
+@check_confirmed
 def delete_session_handler(session_id):
     """Deletes Session."""
     # check if data set exists
@@ -67,6 +72,7 @@ def delete_session_handler(session_id):
 
 @api.route("/collections/<collection_id>/", methods=["DELETE"])
 @auth.login_required
+@check_confirmed
 def delete_collection_handler(collection_id):
     """Deletes Collection."""
     # check if data set exists
@@ -87,6 +93,7 @@ def delete_collection_handler(collection_id):
 
 @api.route("/assemblies/<assembly_id>/", methods=["DELETE"])
 @auth.login_required
+@check_confirmed
 def delete_assembly_handler(assembly_id):
     """Deletes assemblies. Assemblies can only be deleted if no datasets are associated.."""
     # check if assembly exists

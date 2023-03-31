@@ -54,7 +54,7 @@
 import { validationMixin } from "vuelidate";
 import { required } from "vuelidate/lib/validators";
 
-const correctFileType = function (value) {
+const correctFileType = function(value) {
     /* 
         validator for correct fileype. Note that this is the vue component in this example
     */
@@ -76,23 +76,23 @@ export default {
     name: "selectBulkDatasetForm",
     mixins: [validationMixin],
     props: {
-        fileTypeMapping: Object,
+        fileTypeMapping: Object
     },
     data: () => ({
         form: {
-            files: null,
+            files: null
         },
         datasetSaved: false,
         sending: false,
-        selectedFiles: null,
+        selectedFiles: null
     }),
     validations: {
         form: {
             files: {
                 required,
-                correctFiletype: correctFileType,
-            },
-        },
+                correctFiletype: correctFileType
+            }
+        }
     },
     methods: {
         getValidationClass(fieldName) {
@@ -101,7 +101,7 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty,
+                    "md-invalid": field.$invalid && field.$dirty
                 };
             }
         },
@@ -126,8 +126,8 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        },
-    },
+        }
+    }
 };
 </script>
 

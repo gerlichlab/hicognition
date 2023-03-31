@@ -5,7 +5,7 @@ import json
 import unittest
 from unittest.mock import patch
 import numpy as np
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 # import sys
@@ -24,9 +24,9 @@ class TestGetEmbeddingIntervalDataFeatures(LoginTestCase, TempDirTestCase):
         # add unowned collection
         self.unowned_collection = Collection(id=2, user_id=2)
         # add owned bedfile
-        self.owned_bedfile = Dataset(id=3, filetype="bedfile", user_id=1)
+        self.owned_bedfile = self.create_dataset(id=3, dataset_name="test3", filetype="bedfile", user_id=1)
         # add unowned bedfile
-        self.unowned_bedfile = Dataset(id=4, filetype="bedfile", user_id=2)
+        self.unowned_bedfile = self.create_dataset(id=4, dataset_name="test4", filetype="bedfile", user_id=2)
         # add intervals for owned bedfile
         self.owned_intervals = Intervals(
             id=1, dataset_id=self.owned_bedfile.id, windowsize=200000
@@ -80,7 +80,9 @@ class TestGetEmbeddingIntervalDataFeatures(LoginTestCase, TempDirTestCase):
         with patch("app.api.authentication.current_app.config") as mock_config:
             mock_config.__getitem__.side_effect = app_config.__getitem__
             # dispatch call
-            response = self.client.get("/api/embeddingIntervalData/500/0/", content_type="application/json")
+            response = self.client.get(
+                "/api/embeddingIntervalData/500/0/", content_type="application/json"
+            )
             self.assertEqual(response.status_code, 404)
 
     def test_embedding_interval_data_does_not_exist(self):

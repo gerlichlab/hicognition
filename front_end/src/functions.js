@@ -82,10 +82,10 @@ export function max_array_along_rows(array, shape) {
         }
     }
     // clean -Infinity
-    return output.map((elem) => (elem == -Infinity ? undefined : elem));
+    return output.map(elem => (elem == -Infinity ? undefined : elem));
 }
 
-export function select_3d_along_first_axis(array, shape, index) {
+export function select_3d_along_first_axis(array, shape, indices) {
     /*
         selects entries from 3d array along first axis
     */
@@ -93,18 +93,24 @@ export function select_3d_along_first_axis(array, shape, index) {
     if (
         array.length == 0 ||
         shape.length != 3 ||
-        array.length != shape[0] * shape[1] * shape[2]
+        array.length != shape[0] * shape[1] * shape[2] ||
+        indices === undefined
     ) {
         return undefined;
     }
     let [example_number, row_number, col_number] = shape;
-    // check col_index
-    if (index == undefined || index < 0 || index >= example_number) {
-        return undefined;
-    }
     // select
     let example_size = row_number * col_number;
-    return array.slice(example_size * index, example_size * (index + 1));
+    let output = [];
+    for (let index of indices){
+        // check indices
+        if (index == undefined || index < 0 || index >= example_number) {
+            return undefined;
+        }
+        let temp = array.slice(example_size * index, example_size * (index + 1))
+        output.push(...temp)
+    }
+    return output;
 }
 
 export function select_column(array, shape, col_index) {
@@ -177,6 +183,28 @@ export function select_row(array, shape, row_index) {
     return array.slice(col_number * row_index, col_number * (row_index + 1));
 }
 
+export function select_rows(array, shape, row_indices) {
+    /*
+        returns all values in rows in row_indices as a flattened array
+        together with the resulting shape
+    */
+    if (row_indices === undefined){
+        return undefined
+    }
+    // extract rows
+    let output = [];
+    for (let index of row_indices) {
+        let temp = select_row(array, shape, index);
+        if (temp === undefined) {
+            return undefined;
+        }
+        output.push(...temp);
+    }
+    return { result: output, shape: [row_indices.length, shape[1]] };
+}
+
+
+
 export function mean_along_columns(array, shape) {
     /*
         Takes a flattened array with shape and calculates mean along columns
@@ -201,6 +229,32 @@ export function mean_along_columns(array, shape) {
     }
     return output;
 }
+
+export function mean_along_rows(array, shape) {
+    /*
+        Takes a flattened array with shape and calculates mean along columns
+    */
+    // check array
+    if (
+        array.length == 0 ||
+        shape.length != 2 ||
+        array.length != shape[0] * shape[1]
+    ) {
+        return undefined;
+    }
+    let [row_number, col_number] = shape;
+    // calculate mean
+    let output = [];
+    for (let col_index = 0; col_index < col_number; col_index++) {
+        let sum = 0;
+        for (let row_index = 0; row_index < row_number; row_index++) {
+            sum += array[row_index * col_number + col_index];
+        }
+        output.push(sum / row_number);
+    }
+    return output;
+}
+
 
 export function min_array(array) {
     /*
@@ -258,14 +312,14 @@ export function normalizeLineProfile(lineProfile) {
     let max_value = max_array(lineProfile);
     let min_value = min_array(lineProfile);
     if (max_value - min_value < FLOATDIFFERENCE) {
-        return lineProfile.map((val) => {
+        return lineProfile.map(val => {
             if (val && isFinite(val)) {
                 return 1;
             }
             return undefined;
         });
     }
-    return lineProfile.map((val) => {
+    return lineProfile.map(val => {
         if (val && isFinite(val)) {
             return (val - min_value) / (max_value - min_value);
         }
@@ -280,7 +334,7 @@ export function getPercentile(array, p) {
     if (p < 0 || p > 100) {
         return undefined;
     }
-    let cleaned_array = array.filter((val) => {
+    let cleaned_array = array.filter(val => {
         return isFinite(val) && val != null;
     });
     let sorted_array = cleaned_array.sort((a, b) => a - b);
@@ -295,7 +349,7 @@ export function getPerMilRank(array, p) {
     if (p < 0 || p > 1000) {
         return undefined;
     }
-    let cleaned_array = array.filter((val) => {
+    let cleaned_array = array.filter(val => {
         return isFinite(val) && val != null;
     });
     let sorted_array = cleaned_array.sort((a, b) => a - b);
@@ -331,7 +385,7 @@ export function getBoundaries(x_vals, y_vals) {
         minX: minX,
         maxX: maxX,
         minY: minY,
-        maxY: maxY,
+        maxY: maxY
     };
 }
 
@@ -497,7 +551,7 @@ export function searchByName(items, term) {
   helper to search table fields by name for datasetTable
   */
     if (term) {
-        var filtered_items = items.filter((item) => {
+        var filtered_items = items.filter(item => {
             return toLower(item.dataset_name).includes(toLower(term));
         });
         return filtered_items;

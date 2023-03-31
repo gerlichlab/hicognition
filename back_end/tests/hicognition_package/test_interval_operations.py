@@ -2,7 +2,7 @@
 import unittest
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from hicognition import interval_operations
+from app.lib import interval_operations
 
 
 class TestChunkIntervals(unittest.TestCase):

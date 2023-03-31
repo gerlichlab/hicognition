@@ -50,13 +50,13 @@ export default {
     name: "CreateCollectionDialog",
     components: { addCollectionForm },
     props: {
-        dialog: Boolean,
+        dialog: Boolean
     },
     computed: {
-        showDialog: function () {
+        showDialog: function() {
             return this.dialog;
-        },
-    },
+        }
+    }
 };
 </script>
 

@@ -21,9 +21,6 @@ from .models import (
     collections_preprocessing_table,
 )
 
-# get logger
-log = logging.getLogger("rq.worker")
-
 # set up notification handler
 
 notification_handler = NotificationHandler()
@@ -31,27 +28,28 @@ notification_handler = NotificationHandler()
 
 def bed_preprocess_pipeline_step(dataset_id, windowsize):
     """
-    Performs bedpe preprocessing pipeline step:
-    * Convert bed to bedpe
+    Performs preprocessing pipeline step for bed and bedpe:
     * Create downsampled indices
     * add Intervals dataset entry
     """
-    log.info(f"  Generating Intervals: {dataset_id} with {windowsize}")
+    current_app.logger.info(f"  Generating Intervals: {dataset_id} with {windowsize}")
     # get database object
     dataset = Dataset.query.get(dataset_id)
+
+    # read bed(pe) file
     bed_path = dataset.file_path
-    bed = pd.read_csv(bed_path, sep="\t", header=None)
+    bed_bedpe = pd.read_csv(bed_path, sep="\t", header=None)
     index_file = os.path.join(
         current_app.config["UPLOAD_DIR"], bed_path.split(os.sep)[-1] + "_indices.npy"
     )
-    if len(bed) < current_app.config["STACKUP_THRESHOLD"]:
+    if len(bed_bedpe) < current_app.config["STACKUP_THRESHOLD"]:
         # if there are less rows than the stackup theshold, index file are the indices of this file
-        sub_sample_index = np.arange(len(bed))
+        sub_sample_index = np.arange(len(bed_bedpe))
     else:
         # set random seed
         np.random.seed(42)
         # subsample
-        all_indices = np.arange(len(bed))
+        all_indices = np.arange(len(bed_bedpe))
         sub_sample_index = np.random.choice(
             all_indices, current_app.config["STACKUP_THRESHOLD"], replace=False
         )
@@ -73,22 +71,24 @@ def bed_preprocess_pipeline_step(dataset_id, windowsize):
 def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_type):
     """Performs pileup [either ICCF or Obs/Exp; parameter passed to pileup_type] of cooler_dataset on
     intervals with resolution binsize."""
-    log.info(
-        f"  Doing pileup on cooler {cooler_dataset_id} with intervals { interval_id} on binsize {binsize}"
+    current_app.logger.info(
+        f"  Doing pileup on cooler {cooler_dataset_id} with intervals { interval_id} on binsize {binsize} with {pileup_type}"
     )
     cooler_dataset = Dataset.query.get(cooler_dataset_id)
     intervals = Intervals.query.get(interval_id)
     # get path to interval regions
     regions_path = intervals.source_dataset.file_path
+    # get dimension
+    dimension = intervals.source_dataset.dimension
     # do pileup
-    log.info("      Doing pileup...")
+    current_app.logger.debug(f"      {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Doing pileup...")
     # get windowsize
     window_size = intervals.windowsize
     if window_size is not None:
         # check whether windowsize is divisible by binsize
         if window_size % int(binsize) != 0:
-            log.warn(
-                "      ########### Windowsize and binsize do not match! ##############"
+            current_app.logger.warn(
+                f"      {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => ########### Windowsize and binsize do not match! ##############"
             )
             return
         pileup_array = worker_funcs._do_pileup_fixed_size(
@@ -99,19 +99,20 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
             arms,
             pileup_type,
             collapse=False,
+            dimension=dimension
         )
     else:
         pileup_array = worker_funcs._do_pileup_variable_size(
-            cooler_dataset, binsize, regions_path, arms, pileup_type, collapse=False
+            cooler_dataset, binsize, regions_path, arms, pileup_type, collapse=False, dimension=dimension
         )
     embedding_results = worker_funcs._do_embedding_2d(pileup_array)
     # add result to database
-    log.info("      Writing output...")
+    current_app.logger.debug(f"      {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Writing output...")
     file_name = uuid.uuid4().hex + ".npy"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
     np.save(file_path, np.nanmean(pileup_array, axis=2))
     # add this to database
-    log.info("      Adding database entry for pileup...")
+    current_app.logger.debug(f"      {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Adding database entry for pileup...")
     worker_funcs._add_pileup_db(
         file_path, binsize, intervals.id, cooler_dataset.id, pileup_type
     )
@@ -144,14 +145,14 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
         worker_funcs._add_embedding_2d_to_db(
             filepaths, binsize, intervals.id, cooler_dataset.id, pileup_type, size
         )
-    log.info("      Success!")
+    current_app.logger.info(f"       {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Success!")
 
 
-def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize):
+def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize, region_side=None):
     """Performs stackup of bigwig dataset over the intervals provided with the indicated binsize.
     Stores result and adds it to database."""
-    log.info(
-        f"  Doing pileup on bigwig {bigwig_dataset_id} with intervals {intervals_id} on binsize {binsize}"
+    current_app.logger.info(
+        f"  Doing pileup on bigwig {bigwig_dataset_id} with intervals {intervals_id} on binsize {binsize} with region_side: {region_side}"
     )
     bigwig_dataset = Dataset.query.get(bigwig_dataset_id)
     intervals = Intervals.query.get(intervals_id)
@@ -160,27 +161,27 @@ def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize):
     # get windowsize
     window_size = intervals.windowsize
     # load bedfile
-    log.info("      Loading regions...")
+    current_app.logger.debug(f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Loading regions...")
     regions = pd.read_csv(file_path, sep="\t", header=None)
     sub_sample_index = np.load(intervals.file_path_sub_sample_index)
     regions_small = regions.iloc[sub_sample_index, :]
-    log.info("      Doing stackup...")
+    current_app.logger.debug(f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Doing stackup...")
     if window_size is None:
         full_size_array = worker_funcs._do_stackup_variable_size(
-            bigwig_dataset.file_path, regions, binsize
+            bigwig_dataset.file_path, regions, binsize, region_side
         )
         downsampled_array = worker_funcs._do_stackup_variable_size(
-            bigwig_dataset.file_path, regions_small, binsize
+            bigwig_dataset.file_path, regions_small, binsize, region_side
         )
     else:
         full_size_array = worker_funcs._do_stackup_fixed_size(
-            bigwig_dataset.file_path, regions, window_size, binsize
+            bigwig_dataset.file_path, regions, window_size, binsize, region_side
         )
         downsampled_array = worker_funcs._do_stackup_fixed_size(
-            bigwig_dataset.file_path, regions_small, window_size, binsize
+            bigwig_dataset.file_path, regions_small, window_size, binsize, region_side
         )
     # save full length array to file
-    log.info("      Writing output...")
+    current_app.logger.debug(f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Writing output...")
     file_uuid = uuid.uuid4().hex
     file_name = file_uuid + ".npy"
     file_name_line = file_uuid + "_line.npy"
@@ -194,18 +195,18 @@ def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize):
     file_path_small = os.path.join(current_app.config["UPLOAD_DIR"], file_name_small)
     np.save(file_path_small, downsampled_array)
     # add to database
-    log.info("      Adding database entry...")
+    current_app.logger.debug(f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Adding database entry...")
     worker_funcs._add_stackup_db(
-        file_path, file_path_small, binsize, intervals.id, bigwig_dataset.id
+        file_path, file_path_small, binsize, intervals.id, bigwig_dataset.id, region_side
     )
-    worker_funcs._add_line_db(file_path_line, binsize, intervals.id, bigwig_dataset.id)
-    log.info("      Success!")
+    worker_funcs._add_line_db(file_path_line, binsize, intervals.id, bigwig_dataset.id, region_side)
+    current_app.logger.info(f"       {bigwig_dataset_id}-{intervals_id}-{binsize} => Success!")
 
 
-def enrichment_pipeline_step(collection_id, intervals_id, binsize):
+def enrichment_pipeline_step(collection_id, intervals_id, binsize, region_side=None):
     """Pipeline step to perform enrichment analysis"""
-    log.info(
-        f"Doing enrichment analysis with collection {collection_id} on intervals {intervals_id} with binsize {binsize}"
+    current_app.logger.info(
+        f"Doing enrichment analysis with collection {collection_id} on intervals {intervals_id} with binsize {binsize} with region_side: {region_side}"
     )
     # get query regions
     intervals = Intervals.query.get(intervals_id)
@@ -214,39 +215,43 @@ def enrichment_pipeline_step(collection_id, intervals_id, binsize):
     regions_path = intervals.source_dataset.file_path
     if window_size is None:
         stacked = worker_funcs._do_enrichment_calculations_variable_size(
-            collection_id, binsize, regions_path
+            collection_id, binsize, regions_path, region_side=region_side
         )
     else:
         stacked = worker_funcs._do_enrichment_calculations_fixed_size(
-            collection_id, window_size, binsize, regions_path
+            collection_id, window_size, binsize, regions_path, region_side=region_side
         )
     # write output
-    log.info("      Writing output...")
+    current_app.logger.debug(f"      {collection_id}-{intervals_id}-{binsize} => Writing output...")
     file_path = os.path.join(
         current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + ".npy"
     )
     np.save(file_path, stacked)
     # add to database
     worker_funcs._add_association_data_to_db(
-        file_path, binsize, intervals_id, collection_id
+        file_path, binsize, intervals_id, collection_id, region_side=region_side
     )
+    current_app.logger.info(f"      {collection_id}-{intervals_id}-{binsize} => Success!")
 
 
-def embedding_1d_pipeline_step(collection_id, intervals_id, binsize):
+def embedding_1d_pipeline_step(collection_id, intervals_id, binsize, region_side=None):
     """Performs embedding on each binsize-sized bin of the window specified in intervals_id using
     the features in collection_id"""
+    current_app.logger.info(
+        f"Doing 1d-embedding with collection {collection_id} on intervals {intervals_id} with binsize {binsize} with region_side: {region_side}"
+    )
     # get intervals to decide whether fixed size or variable size
     intervals = Intervals.query.get(intervals_id)
     if intervals.windowsize is None:
         embedding_results = worker_funcs._do_embedding_1d_variable_size(
-            collection_id, intervals_id, binsize
+            collection_id, intervals_id, binsize, region_side=region_side
         )
     else:
         embedding_results = worker_funcs._do_embedding_1d_fixed_size(
-            collection_id, intervals_id, binsize
+            collection_id, intervals_id, binsize, region_side=region_side
         )
     # write output for embedding
-    log.info("      Writing output...")
+    current_app.logger.debug(f"      {collection_id}-{intervals_id}-{binsize} => Writing output...")
     file_path_embedding = os.path.join(
         current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + "_embedding.npy"
     )
@@ -282,9 +287,9 @@ def embedding_1d_pipeline_step(collection_id, intervals_id, binsize):
         }
         # add to database
         worker_funcs._add_embedding_1d_to_db(
-            filepaths, binsize, intervals.id, collection_id, size
+            filepaths, binsize, intervals.id, collection_id, size, region_side
         )
-    log.info("      Success!")
+    current_app.logger.info(f"      {collection_id}-{intervals_id}-{binsize} => Success!")
 
 
 def set_dataset_finished(dataset_id, intervals_id):
@@ -312,7 +317,7 @@ def set_dataset_finished(dataset_id, intervals_id):
         db.session.commit()
         # signal completion
         dataset = Dataset.query.get(dataset_id)
-        log.info("      Signalling reached")
+        current_app.logger.debug("      Signalling reached")
         notification_handler.signal_processing_update(
             {
                 "data_type": dataset.filetype,
@@ -337,17 +342,17 @@ def set_task_progress(progress):
         job.meta["progress"] = progress
         job.save_meta()
         task = Task.query.get(job.get_id())
-        if progress >= 100 and (task is not None):
+        if progress >= 100 and (task is not None):  # CRITICAL run condition!
             task.complete = True
             db.session.commit()
 
 
 def set_dataset_failed(dataset_id, intervals_id):
     """Adds feature dataset associated with dataset_id to failed datasets of region ds associated with intervals_id"""
-    log.error("      Preprocessing failed")
+    current_app.logger.error("      Preprocessing failed")
     feature = Dataset.query.get(dataset_id)
     region = Intervals.query.get(intervals_id).source_dataset
-    log.error(
+    current_app.logger.error(
         f"      Region: {region} with processing features {region.processing_features} and dataset {feature}"
     )
     # remove feature from preprocessing list
@@ -370,7 +375,7 @@ def set_dataset_failed(dataset_id, intervals_id):
         db.session.commit()
         # signal failure
         dataset = Dataset.query.get(dataset_id)
-        log.info("      Signalling reached")
+        current_app.logger.debug("      Signalling reached")
         notification_handler.signal_processing_update(
             {
                 "data_type": dataset.filetype,
@@ -387,16 +392,16 @@ def set_dataset_failed(dataset_id, intervals_id):
             }
         )
     except BaseException as err:
-        log.error(err, exc_info=True)
-    log.error("      Setting for fail finished")
+        current_app.logger.error(err, exc_info=True)
+    current_app.logger.error("      Setting for fail finished")
 
 
 def set_collection_failed(collection_id, intervals_id):
     """Adds collection with collection_id to failed collections of region ds associated with intervals"""
-    log.error("      Set for fail")
+    current_app.logger.error("      Set for fail")
     collection = Collection.query.get(collection_id)
     region = Intervals.query.get(intervals_id).source_dataset
-    log.error(
+    current_app.logger.error(
         f"      Region: {region} with processing collections {region.processing_collections} and collection {collection}"
     )
     # remove feature from preprocessing list
@@ -433,8 +438,8 @@ def set_collection_failed(collection_id, intervals_id):
             }
         )
     except BaseException as err:
-        log.error(err, exc_info=True)
-    log.error("      Setting for fail finished")
+        current_app.logger.error(err, exc_info=True)
+    current_app.logger.error("      Setting for fail finished")
 
 
 def set_collection_finished(collection_id, intervals_id):

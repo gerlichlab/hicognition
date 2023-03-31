@@ -21,10 +21,13 @@ services:
         volumes:  
             - ${HICOGNITION_DIR}:/code
             - ${SHOWCASE_DIR}:/showcase_data/
+            - ${LOG_DIR}:/logs/
         environment:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
+            - LOG_FILE_NAME=/logs/dev_application.logs
+            - ERROR_LOG_FILE_NAME=/logs/dev_error.logs
             - SHOWCASE=True
         ports:
             # only map localhost-port

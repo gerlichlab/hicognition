@@ -50,7 +50,7 @@
                             value="bigwig"
                             :disabled="
                                 !allowDatasetTypeSelection &&
-                                !allowFeatureSelection
+                                    !allowFeatureSelection
                             "
                             >1D-feature</md-radio
                         >
@@ -59,7 +59,7 @@
                             value="cooler"
                             :disabled="
                                 !allowDatasetTypeSelection &&
-                                !allowFeatureSelection
+                                    !allowFeatureSelection
                             "
                             >2D-feature</md-radio
                         >
@@ -82,66 +82,6 @@
                                 >Match Case</md-tooltip
                             >
                         </md-button>
-                    </div>
-                </div>
-            </div>
-            <!-- Filters --->
-            <div
-                class="md-layout md-gutter md-alignment-center-left selection-field md-elevation-2"
-                style="max-height: 50px; overflow: visible"
-            >
-                <div class="md-layout-item md-size-10 small-vertical-margin">
-                    <md-button
-                        class="md-icon-button md-accent"
-                        @click="
-                            showFilters = !showFilters;
-                            showFields = false;
-                        "
-                    >
-                        <md-icon>filter_alt</md-icon>
-                    </md-button>
-                </div>
-                <div class="md-layout-item">
-                    <span class="md-caption md-accent">Filter</span>
-                </div>
-                <div
-                    class="md-layout-item md-layout md-gutter md-size-100 small-vertical-margin selection-field small-padding"
-                    v-if="showFilters"
-                    style="z-index: 500; max-height: 30vh; overflow: auto"
-                >
-                    <div class="md-layout-item md-layout md-gutter md-size-100">
-                        <div
-                            class="md-layout-item md-size-20 small-padding"
-                            v-for="(value, key) in filterFields"
-                            :key="key"
-                        >
-                            <md-menu
-                                md-direction="bottom-start"
-                                md-size="auto"
-                                md-align-trigger
-                                :mdCloseOnClick="false"
-                                :mdCloseOnSelect="false"
-                            >
-                                <md-button md-menu-trigger class="md-raised">{{
-                                    value
-                                }}</md-button>
-
-                                <md-menu-content
-                                    style="z-index: 500"
-                                    class="blue-background"
-                                >
-                                    <md-menu-item
-                                        v-for="option in getFieldOptions(value)"
-                                        :key="option"
-                                        @click="
-                                            setFilterSelection(value, option)
-                                        "
-                                        :class="getOptionClass(value, option)"
-                                        >{{ option }}</md-menu-item
-                                    >
-                                </md-menu-content>
-                            </md-menu>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -232,7 +172,7 @@
                                     ![
                                         'status',
                                         'processing_datasets',
-                                        'processing_collections',
+                                        'processing_collections'
                                     ].includes(key)
                                 "
                                 >{{ dataset[key] }}</span
@@ -294,8 +234,8 @@
                 </md-table>
                 <div
                     v-else-if="
-                        (datasets.length == 0 || assemblies === undefined) &&
-                        !this.showEmpty
+                        (datasets === undefined || assemblies === undefined) &&
+                            !this.showEmpty
                     "
                     class="wait-spinner-container"
                 >
@@ -311,7 +251,9 @@
                     v-else
                     md-label="No datasets found"
                     style="flexgrow: true"
-                    :md-description="`No datasets found for this query. Try a different search term or create a new dataset.`"
+                    :md-description="
+                        `No datasets found for this query. Try a different search term or create a new dataset.`
+                    "
                 >
                 </md-empty-state>
             </transition>
@@ -329,7 +271,7 @@ const fieldToPropertyMapping = {
     Normalization: "normalization",
     DerivationType: "derivationType",
     Protein: "protein",
-    Directionality: "directionality",
+    Directionality: "directionality"
 };
 
 export default {
@@ -340,54 +282,57 @@ export default {
         restrictedDatasetType: String,
         singleSelection: {
             type: Boolean,
-            default: false,
+            default: false
         },
         showEmpty: {
             type: Boolean,
-            default: false,
+            default: false
+        },
+        block2d: {
+            type: Boolean,
+            default: false
         },
         preselection: {
             type: Array,
-            default: () => [],
+            default: () => []
         },
         assembly: {
             type: Number,
-            default: undefined,
+            default: undefined
         },
         finishedDatasets: {
             type: Array,
-            default: undefined,
+            default: undefined
         },
         processingDatasets: {
             type: Array,
-            default: undefined,
+            default: undefined
         },
         failedDatasets: {
             type: Array,
-            default: undefined,
+            default: undefined
         },
         blockProcessingDialog: {
             type: Boolean,
-            default: false,
-        },
+            default: false
+        }
     },
-    data: function () {
+    data: function() {
         let selectedFields;
         if (this.finishedDatasets) {
             selectedFields = [
                 "dataset_name",
-                "valueType",
+                "cell_type",
                 "perturbation",
-                "cellCycleStage",
-                "status",
+                "status"
             ];
         } else {
             selectedFields = [
                 "dataset_name",
-                "valueType",
+                "cell_type",
                 "perturbation",
                 "processing_datasets",
-                "processing_collections",
+                "processing_collections"
             ];
         }
         return {
@@ -407,14 +352,14 @@ export default {
             showFields: false,
             datasetType: "bedfile",
             blockAssemblyBlanking: true,
-            filterFieldMaxLength: {},
+            filterFieldMaxLength: {}
         };
     },
     methods: {
         isFilterFieldDirty(name) {
             // checks whether a filter field has been moved from its max selection value
             let selectedCount = this.filterSelection
-                .map((val) => {
+                .map(val => {
                     if (val.split("-")[0] == name) {
                         return 1;
                     }
@@ -428,11 +373,11 @@ export default {
             return true;
         },
         showPreprocessingTable(id, processing_datasets, failed_datasets) {
-            this.fetchPreprocessData(id).then((response) => {
-                let bigwigIDs = Object.keys(response.data["lineprofile"]).map(
-                    (el) => Number(el)
-                );
-                let coolerIDs = Object.keys(response.data["pileup"]).map((el) =>
+            this.fetchPreprocessData(id).then(response => {
+                let bigwigIDs = Object.keys(
+                    response.data["lineprofile"]
+                ).map(el => Number(el));
+                let coolerIDs = Object.keys(response.data["pileup"]).map(el =>
                     Number(el)
                 );
                 let finished = bigwigIDs.concat(coolerIDs);
@@ -455,16 +400,16 @@ export default {
             processing_collections,
             failed_collections
         ) {
-            this.fetchPreprocessData(id).then((response) => {
-                let lolaIDs = Object.keys(response.data["lola"]).map((el) =>
+            this.fetchPreprocessData(id).then(response => {
+                let lolaIDs = Object.keys(response.data["lola"]).map(el =>
                     Number(el)
                 );
                 let embedding1dIDs = Object.keys(
                     response.data["embedding1d"]
-                ).map((el) => Number(el));
+                ).map(el => Number(el));
                 let embedding2dIDs = Object.keys(
                     response.data["embedding2d"]
-                ).map((el) => Number(el));
+                ).map(el => Number(el));
                 let finished = lolaIDs.concat(embedding1dIDs, embedding2dIDs);
                 // get collections from store
                 let collections = this.$store.state.collections;
@@ -482,7 +427,7 @@ export default {
                 );
             });
         },
-        fetchPreprocessData: function (regionID) {
+        fetchPreprocessData: function(regionID) {
             // get availability object
             return this.fetchData(`datasets/${regionID}/processedDataMap/`);
         },
@@ -514,7 +459,7 @@ export default {
             }
             return "arrow_upward";
         },
-        sortByValue: function (fieldName) {
+        sortByValue: function(fieldName) {
             if (this.sortBy == fieldName && this.sortOrder == "ascending") {
                 this.sortOrder = "descending";
             } else {
@@ -522,13 +467,13 @@ export default {
             }
             this.sortBy = fieldName;
         },
-        getTableRowClass: function (id) {
+        getTableRowClass: function(id) {
             if (this.selectedIds.includes(id)) {
                 return "blue-background";
             }
             return "";
         },
-        handleTableRowClicked: function (id) {
+        handleTableRowClicked: function(id) {
             if (this.singleSelection) {
                 if (this.selectedIds.includes(id)) {
                     this.selectedIds = [];
@@ -542,14 +487,14 @@ export default {
             }
             this.$emit("selection-changed", this.selectedIds);
         },
-        getOptionClass: function (field, value) {
+        getOptionClass: function(field, value) {
             let filterString = `${field}-${value}`;
             if (this.filterSelection.includes(filterString)) {
                 return "blue-background";
             }
             return "";
         },
-        setFilterSelection: function (field, value) {
+        setFilterSelection: function(field, value) {
             let filterString = `${field}-${value}`;
             if (this.filterSelection.includes(filterString)) {
                 this.filterSelection.splice(
@@ -560,7 +505,7 @@ export default {
                 this.filterSelection.push(filterString);
             }
         },
-        getFieldOptions: function (field) {
+        getFieldOptions: function(field) {
             if (field == "ValueType") {
                 return Object.keys(
                     this.datasetMetadataMapping[this.datasetType]["ValueType"]
@@ -574,9 +519,7 @@ export default {
                 this.datasetMetadataMapping[this.datasetType]["ValueType"]
             )) {
                 if (field in options) {
-                    options[field].forEach((element) =>
-                        fieldValues.add(element)
-                    );
+                    options[field].forEach(element => fieldValues.add(element));
                 }
             }
             if (fieldValues.size == 0) {
@@ -584,7 +527,7 @@ export default {
             }
             return Array.from(fieldValues);
         },
-        isSelectionDisabled: function (item) {
+        isSelectionDisabled: function(item) {
             if (this.anyProcessing) {
                 return true;
             }
@@ -596,7 +539,7 @@ export default {
             return true;
         },
         fetchAssemblies() {
-            this.fetchData("assemblies/").then((response) => {
+            this.fetchData("assemblies/").then(response => {
                 if (response) {
                     this.assemblies = response.data;
                     if (this.assembly) {
@@ -610,7 +553,16 @@ export default {
             });
         },
         filterDatasetsOnFields(datasets) {
-            return datasets.filter((el) => {
+            if (this.block2d){
+                return datasets.filter(el => {
+                    return (
+                        el.filetype == this.datasetType &&
+                        el.assembly == this.selectedAssembly &&
+                        el.dimension != '2d'
+                    );
+                });  
+            }
+            return datasets.filter(el => {
                 return (
                     el.filetype == this.datasetType &&
                     el.assembly == this.selectedAssembly
@@ -618,31 +570,32 @@ export default {
             });
         },
         filterDatasetsOnMetadata(datasets) {
-            return datasets.filter((el) => {
-                let output = true;
-                let atLeastOne = false;
-                for (let [key, value] of Object.entries(this.filterFields)) {
-                    if (!el[key]) {
-                        // this is needed to only remove datasets without field if filtering on this field is switched on
-                        if (this.isFilterFieldDirty(value)) {
-                            return false;
-                        }
-                        continue;
-                    }
-                    let filterString = `${value}-${el[key]}`;
-                    atLeastOne = true;
-                    if (!this.filterSelection.includes(filterString)) {
-                        output = false;
-                    }
-                }
-                return output && atLeastOne;
-            });
+            return datasets;
+            // return datasets.filter(el => { // TODO this fails
+            //     let output = true;
+            //     let atLeastOne = false;
+            //     for (let [key, value] of Object.entries(this.filterFields)) {
+            //         if (!el[key]) {
+            //             // this is needed to only remove datasets without field if filtering on this field is switched on
+            //             if (this.isFilterFieldDirty(value)) {
+            //                 return false;
+            //             }
+            //             continue;
+            //         }
+            //         let filterString = `${value}-${el[key]}`;
+            //         atLeastOne = true;
+            //         if (!this.filterSelection.includes(filterString)) {
+            //             output = false;
+            //         }
+            //     }
+            //     return output && atLeastOne;
+            // });
         },
         filterDatasetsOnSearchTerm(datasets) {
             if (this.searchTerm === "") {
                 return datasets;
             }
-            return datasets.filter((el) => {
+            return datasets.filter(el => {
                 var included = false;
                 for (let key of Object.keys(this.fields)) {
                     if (typeof el[key] == "string") {
@@ -717,7 +670,7 @@ export default {
             this.filterFieldMaxLength = {};
             for (let [key, value] of Object.entries(this.possibleFields)) {
                 if (this.getFieldOptions(value)) {
-                    this.getFieldOptions(value).map((option) => {
+                    this.getFieldOptions(value).map(option => {
                         let filterString = `${value}-${option}`;
                         if (value in this.filterFieldMaxLength) {
                             this.filterFieldMaxLength[value] += 1;
@@ -730,50 +683,35 @@ export default {
                 }
             }
             this.filterFields = fields;
-        },
+        }
     },
     computed: {
-        allowDatasetTypeSelection: function () {
+        allowDatasetTypeSelection: function() {
             if (this.restrictedDatasetType) {
                 return false;
             }
             return true;
         },
-        allowFeatureSelection: function () {
+        allowFeatureSelection: function() {
             if (this.restrictedDatasetType === "features") {
                 return true;
             }
             return false;
         },
-        caseButtonClass: function () {
+        caseButtonClass: function() {
             if (this.matchCase) {
                 return "md-icon-button md-accent md-raised large-top-margin";
             } else {
                 return "md-icon-button large-top-margin";
             }
         },
-        possibleFields: function () {
-            const outputFields = {
+        possibleFields: function() {
+            let outputFields = {
                 dataset_name: "Name",
-                valueType: "ValueType",
+                cell_type: "Cell type",
+                description: "Description",
                 perturbation: "Perturbation",
-                cellCycleStage: "Cell cycle Stage",
             };
-            let fields = new Set();
-            // go through possible fields of this value type
-            for (let valueType of Object.keys(
-                this.datasetMetadataMapping[this.datasetType]["ValueType"]
-            )) {
-                Object.keys(
-                    this.datasetMetadataMapping[this.datasetType]["ValueType"][
-                        valueType
-                    ]
-                ).forEach((element) => fields.add(element));
-            }
-            Array.from(fields.values()).forEach(
-                (element) =>
-                    (outputFields[fieldToPropertyMapping[element]] = element)
-            );
             // put in status if needed
             if (this.finishedDatasets) {
                 outputFields["status"] = "Status";
@@ -785,7 +723,7 @@ export default {
             }
             return outputFields;
         },
-        fields: function () {
+        fields: function() {
             const outputFields = {};
             for (let [key, value] of Object.entries(this.possibleFields)) {
                 if (this.selectedFields.includes(key)) {
@@ -794,35 +732,37 @@ export default {
             }
             return outputFields;
         },
-        selected: function () {
+        selected: function() {
             if (this.datasets) {
                 // if filters run reset selection
                 let fieldFiltered = this.filterDatasetsOnFields(this.datasets);
-                let metadataFiltered =
-                    this.filterDatasetsOnMetadata(fieldFiltered);
-                let filteredOnSearchTerm =
-                    this.filterDatasetsOnSearchTerm(metadataFiltered);
+                let metadataFiltered = this.filterDatasetsOnMetadata(
+                    fieldFiltered
+                );
+                let filteredOnSearchTerm = this.filterDatasetsOnSearchTerm(
+                    metadataFiltered
+                );
                 return this.sortDatasets(filteredOnSearchTerm);
             }
             return [];
-        },
+        }
     },
     watch: {
-        datasetType: function () {
+        datasetType: function() {
             this.createFilterFields();
             this.searchTerm = "";
             this.selectedIds = JSON.parse(JSON.stringify(this.preselection));
             this.$emit("selection-changed", this.selectedIds);
         },
-        searchTerm: function () {
+        searchTerm: function() {
             this.selectedIds = JSON.parse(JSON.stringify(this.preselection));
             this.$emit("selection-changed", this.selectedIds);
         },
-        filterFields: function () {
+        filterFields: function() {
             this.selectedIds = JSON.parse(JSON.stringify(this.preselection));
             this.$emit("selection-changed", this.selectedIds);
         },
-        selectedAssembly: function () {
+        selectedAssembly: function() {
             if (this.blockAssemblyBlanking) {
                 this.selectedIds = JSON.parse(
                     JSON.stringify(this.preselection)
@@ -833,14 +773,15 @@ export default {
             this.$emit("selection-changed", this.selectedIds);
             this.blockAssemblyBlanking = false;
         },
-        datasets: function () {
+        datasets: function() {
             this.selectedIds = JSON.parse(JSON.stringify(this.preselection));
             this.$emit("selection-changed", this.selectedIds);
-        },
+        }
     },
-    created: function () {
-        this.datasetMetadataMapping =
-            this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
+    created: function() {
+        this.datasetMetadataMapping = this.$store.getters[
+            "getDatasetMetadataMapping"
+        ]["DatasetType"];
         this.assemblies = this.fetchAssemblies();
         if (this.restrictedDatasetType) {
             if (this.restrictedDatasetType === "features") {
@@ -851,7 +792,7 @@ export default {
         }
         this.createFilterFields();
         this.selectedIds = JSON.parse(JSON.stringify(this.preselection));
-    },
+    }
 };
 </script>
 

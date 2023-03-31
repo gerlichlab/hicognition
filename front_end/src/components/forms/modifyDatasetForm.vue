@@ -50,22 +50,15 @@
                         </div>
                     </div>
                     <!-- metadata -->
-                    <div v-if="showMetadata">
                         <md-divider />
                         <md-list>
                             <md-subheader>Dataset descriptions</md-subheader>
                             <md-list-item>
                                 <div class="md-layout md-gutter">
                                     <div
-                                        class="md-layout-item md-small-size-100"
+                                        class="md-layout-item md-small-size-50"
                                     >
-                                        <md-field
-                                            :class="
-                                                getValidationClass(
-                                                    'perturbation'
-                                                )
-                                            "
-                                        >
+                                        <md-field>
                                             <label for="perturbation"
                                                 >Perturbation</label
                                             >
@@ -74,48 +67,22 @@
                                                 id="perturbation"
                                                 v-model="form.perturbation"
                                                 :disabled="sending"
-                                                required
                                             />
-                                            <span
-                                                class="md-error"
-                                                v-if="
-                                                    !$v.form.perturbation
-                                                        .required
-                                                "
-                                                >Perturbation information is
-                                                required</span
-                                            >
                                         </md-field>
                                     </div>
                                     <div
-                                        class="md-layout-item md-small-size-100"
+                                        class="md-layout-item md-small-size-50"
                                     >
-                                        <md-field
-                                            :class="
-                                                getValidationClass(
-                                                    'cellCycleStage'
-                                                )
-                                            "
-                                        >
-                                            <label for="perturbation"
-                                                >Cell cycle Stage</label
+                                        <md-field>
+                                            <label for="cell_type"
+                                                >Cell type</label
                                             >
                                             <md-input
-                                                name="cellcycleStage"
-                                                id="cellcycleStage"
-                                                v-model="form.cellCycleStage"
+                                                name="cell_type"
+                                                id="cell_type"
+                                                v-model="form.cellType"
                                                 :disabled="sending"
-                                                required
                                             />
-                                            <span
-                                                class="md-error"
-                                                v-if="
-                                                    !$v.form.cellCycleStage
-                                                        .required
-                                                "
-                                                >Cell cycle stage is
-                                                required</span
-                                            >
                                         </md-field>
                                     </div>
                                 </div>
@@ -125,96 +92,22 @@
                                     <div
                                         class="md-layout-item md-small-size-100"
                                     >
-                                        <md-field
-                                            :class="
-                                                getValidationClass('valueType')
-                                            "
-                                        >
-                                            <label for="valueType"
-                                                >Value Type</label
+                                        <md-field>
+                                            <label for="description"
+                                                >description</label
                                             >
-                                            <md-select
-                                                name="valueType"
-                                                id="valueType"
-                                                v-model="form.ValueType"
-                                                required
-                                                :disabled="sending"
-                                            >
-                                                <md-option
-                                                    v-for="valueType in valueTypes"
-                                                    :key="valueType"
-                                                    :value="valueType"
-                                                    >{{ valueType }}</md-option
-                                                >
-                                            </md-select>
-                                            <span
-                                                class="md-error"
-                                                v-if="
-                                                    !$v.form.ValueType.required
-                                                "
-                                                >A ValueType is required</span
-                                            >
-                                        </md-field>
-                                    </div>
-                                </div>
-                            </md-list-item>
-                            <md-list-item>
-                                <div
-                                    class="md-layout md-gutter"
-                                    v-if="valueTypeSelected"
-                                >
-                                    <div
-                                        class="md-layout-item md-small-size-100"
-                                        v-for="field in valueTypeFields"
-                                        :key="field"
-                                    >
-                                        <md-field
-                                            :class="getValidationClass(field)"
-                                        >
-                                            <label for="valueType">{{
-                                                field
-                                            }}</label>
-
-                                            <md-select
-                                                :name="field"
-                                                :id="field"
-                                                v-model="form[field]"
-                                                required
-                                                :disabled="sending"
-                                                v-if="
-                                                    fieldOptions[field] !=
-                                                    'freetext'
-                                                "
-                                            >
-                                                <md-option
-                                                    v-for="option in fieldOptions[
-                                                        field
-                                                    ]"
-                                                    :key="option"
-                                                    :value="option"
-                                                    >{{ option }}</md-option
-                                                >
-                                            </md-select>
                                             <md-input
-                                                :name="field"
-                                                :id="field"
-                                                v-model="form[field]"
+                                                name="description"
+                                                id="description"
+                                                v-model="form.description"
                                                 :disabled="sending"
-                                                required
-                                                v-else
                                             />
-                                            <span
-                                                class="md-error"
-                                                v-if="!$v.form[field].required"
-                                                >{{ field }} is required</span
-                                            >
                                         </md-field>
                                     </div>
                                 </div>
                             </md-list-item>
                         </md-list>
                         <md-divider />
-                    </div>
                 </md-card-content>
                 <!-- Progress bar -->
                 <md-progress-bar md-mode="indeterminate" v-if="sending" />
@@ -245,28 +138,22 @@ export default {
     name: "AddDatasetForm",
     mixins: [validationMixin, apiMixin],
     props: {
-        datasetID: Number,
+        datasetID: Number
     },
     data: () => ({
         form: {
             datasetName: null,
             public: true,
-            ValueType: null,
-            Normalization: null,
-            Method: null,
-            SizeType: null,
-            Directionality: null,
-            DerivationType: null,
-            Protein: null,
-            cellCycleStage: null,
-            perturbation: null,
+            description: null,
+            cellType: null,
+            perturbation: null
         },
         datasetMetadataMapping: null,
         dataset: undefined,
         datasetSaved: false,
         sending: false,
         selectedFile: null,
-        assemblies: {},
+        assemblies: {}
     }),
     validations() {
         // validators for the form
@@ -274,87 +161,23 @@ export default {
             form: {
                 datasetName: {
                     required,
-                    minLength: minLength(3),
+                    minLength: minLength(3)
                 },
                 public: {},
                 ValueType: {
-                    required,
                 },
                 cellCycleStage: {
-                    required,
                 },
                 perturbation: {
-                    required,
-                },
-            },
-        };
-        if (this.valueTypeSelected) {
-            for (let key of Object.keys(
-                this.datasetMetadataMapping[this.selectedFileType]["ValueType"][
-                    this.form.ValueType
-                ]
-            ).filter((el) => el != "SizeType")) {
-                outputObject["form"][key] = { required };
+                }
             }
-        }
+        };
         return outputObject;
     },
     computed: {
-        selectedFileType: function () {
-            if (!this.dataset) {
-                return undefined;
-            }
-            return this.dataset.filetype;
-        },
-        valueTypeFields: function () {
-            if (this.valueTypeSelected && this.selectedFileType) {
-                return Object.keys(
-                    this.datasetMetadataMapping[this.selectedFileType][
-                        "ValueType"
-                    ][this.form.ValueType]
-                ).filter((el) => el !== "SizeType");
-            }
-            return [];
-        },
-        fieldOptions: function () {
-            if (this.valueTypeSelected && this.selectedFileType) {
-                return this.datasetMetadataMapping[this.selectedFileType][
-                    "ValueType"
-                ][this.form.ValueType];
-            }
-            return undefined;
-        },
-        valueTypeSelected: function () {
-            if (this.form.ValueType && this.selectedFileType) {
-                return true;
-            }
-            return false;
-        },
-        valueTypes: function () {
-            if (this.selectedFileType) {
-                let valueTypes = Object.keys(
-                    this.datasetMetadataMapping[this.selectedFileType][
-                        "ValueType"
-                    ]
-                );
-                // if there is only one value type, select it
-                if (valueTypes.length == 1) {
-                    this.$set(this.form, "ValueType", valueTypes[0]);
-                }
-                return valueTypes;
-            }
-            return undefined;
-        },
-        showMetadata: function () {
-            // whether to show metadata fields
-            if (this.selectedFileType) {
-                return true;
-            }
-            return false;
-        },
     },
     methods: {
-        getDatasetFromStore: function () {
+        getDatasetFromStore: function() {
             this.dataset = this.$store.getters["getDataset"](this.datasetID);
         },
         getValidationClass(fieldName) {
@@ -363,19 +186,19 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty,
+                    "md-invalid": field.$invalid && field.$dirty
                 };
             }
         },
         fetchDatasets() {
-            this.fetchData("datasets/").then((response) => {
+            this.fetchData("datasets/").then(response => {
                 // success, store datasets
                 if (response) {
                     this.$store.commit("setDatasets", response.data);
                 }
             });
         },
-        saveDataset: function () {
+        saveDataset: function() {
             this.sending = true; // show progress bar
             // construct form data
             var formData = new FormData();
@@ -387,7 +210,7 @@ export default {
             }
             // API call including upload is made in the background
             this.putData(`datasets/${this.dataset.id}/`, formData).then(
-                async (response) => {
+                async response => {
                     this.sending = false;
                     if (response) {
                         // if error happend, global error handler will eat the response
@@ -398,18 +221,13 @@ export default {
                 }
             );
         },
-        populateFormWithData: function () {
+        populateFormWithData: function() {
             const fieldMapping = {
                 dataset_name: "datasetName",
-                valueType: "ValueType",
-                cellCycleStage: "cellCycleStage",
                 perturbation: "perturbation",
-                method: "Method",
-                directionality: "Directionality",
-                protein: "Protein",
-                derivationType: "DerivationType",
-                normalization: "Normalization",
-                public: "public",
+                description: "description",
+                cellType: "cell_type",
+                public: "public"
             };
             for (let [key, value] of Object.entries(fieldMapping)) {
                 if (value in this.form && this.dataset[key] !== undefined) {
@@ -422,15 +240,16 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        },
+        }
     },
-    mounted: function () {
-        this.datasetMetadataMapping =
-            this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
+    mounted: function() {
+        this.datasetMetadataMapping = this.$store.getters[
+            "getDatasetMetadataMapping"
+        ]["DatasetType"];
         this.getDatasetFromStore();
         // populate form with data
         this.populateFormWithData();
-    },
+    }
 };
 </script>
 

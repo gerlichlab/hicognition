@@ -1,7 +1,7 @@
 """Module with tests realted adding and managing collections."""
 
 import unittest
-from hicognition.test_helpers import LoginTestCase
+from tests.test_utils.test_helpers import LoginTestCase
 
 # add path to import app
 # import sys
@@ -16,10 +16,11 @@ class TestAddCollection(LoginTestCase):
     def setUp(self):
         super().setUp()
         # add datasets
-        self.empty_owned_dataset_1 = Dataset(id=1, user_id=1)
-        self.empty_owned_dataset_2 = Dataset(id=2, user_id=1)
+        self.empty_owned_dataset_1 = self.create_dataset(id=1, dataset_name="test", user_id=1)
+        self.empty_owned_dataset_2 = self.create_dataset(id=2, dataset_name="test", user_id=1)
         self.owned_datasets = [self.empty_owned_dataset_1, self.empty_owned_dataset_2]
-        self.empty_unowned_dataset = Dataset(id=1, user_id=2)
+        self.empty_unowned_dataset = self.create_dataset(id=1, dataset_name="test", user_id=2)
+        self.dataset_2d = self.create_dataset(id=3, dataset_name="test", user_id=1, dimension="2d")
 
     def test_access_denied_without_token(self):
         """Tests whether post request results in 401 error
@@ -125,6 +126,24 @@ class TestAddCollection(LoginTestCase):
             data=data,
         )
         self.assertEqual(response.status_code, 403)
+
+    def test_collection_w_2d_dataset_rejected(self):
+        """Test whether collections that contain a 2d dataset are refected"""
+        # authenticate
+        token = self.add_and_authenticate("test", "asdf")
+        token_headers = self.get_token_header(token)
+        # add dataset
+        db.session.add_all([self.empty_owned_dataset_1, self.dataset_2d])
+        db.session.commit()
+        data = {"name": "test-collection", "used_datasets": "[1,3]", "kind": "regions"}
+        # dispatch post request
+        response = self.client.post(
+            "/api/collections/",
+            content_type="multipart/form-data",
+            headers=token_headers,
+            data=data,
+        )
+        self.assertEqual(response.status_code, 400)
 
     def test_collection_w_existing_datasets_added_correctly(self):
         """Test whether post request to add a collection with multiple datasets is

@@ -15,7 +15,7 @@ import router_showcase from "./routerShowcase";
 
 export default {
     name: "mainApp",
-    router: !process.env.SHOWCASE ? router_default : router_showcase,
+    router: !process.env.SHOWCASE ? router_default : router_showcase
 };
 </script>
 

@@ -10,7 +10,22 @@ class Config:
     """Config class for hicognition server."""
 
     SECRET_KEY = os.environ.get("SECRET_KEY") or "eieieiei"
+    SECRET_SALT = os.environ.get("SECRET_SALT") or 'blblblbl'
+    DEBUG = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Log file
+    LOG_FILE = os.environ.get("LOG_FILE_NAME") or '/logs/application.logs'
+    ERROR_LOG_FILE = os.environ.get("ERROR_LOG_FILE_NAME") or '/logs/error.logs'
+    # mail settings
+    MAIL_SERVER = os.environ.get('MAIL_SERVER')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT', '465'))
+    MAIL_USE_TLS = False
+    MAIL_USE_SSL = True
+    # gmail authentication
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    # mail accounts
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER')
     UPLOAD_DIR = os.environ.get("UPLOAD_DIR") or os.path.join(basedir, "temp")
     CHROM_SIZES = os.environ.get("CHROM_SIZES") or os.path.join(
         basedir, "data/hg19.chrom.sizes"
@@ -19,7 +34,20 @@ class Config:
     REDIS_URL = os.environ.get("REDIS_URL") or "redis://"
     TESTING = False
     END2END = False
-    SHOWCASE = bool(os.environ.get("SHOWCASE")) or False # if there is anything in showcase this is true
+    SHOWCASE = (
+        bool(os.environ.get("SHOWCASE")) or False
+    )  # if there is anything in showcase this is true
+
+    # External repositories
+    REPOSITORIES = [
+        {
+            "name": "4dn",
+            "url": "https://data.4dnucleome.org/{href}",
+            "file_url": "https://data.4dnucleome.org/files-processed/{id}",
+            "auth_required": False,
+        }
+    ]
+
     # allowed binsizes for given windowsizes of regions
     PREPROCESSING_MAP = {
         50000: {
@@ -126,6 +154,48 @@ class Config:
     }
     CLUSTER_NUMBER_LARGE = 20
     CLUSTER_NUMBER_SMALL = 10
+
+    FILETYPES = {
+        "bedfile": {
+            "dataset_type": ["region"],
+            "file_ext": ["bed", "bedpe"],
+        },
+        # "bedpe_file": {
+        #     "dataset_type": ["region"],
+        #     "file_ext": ["bedpe"],
+        #     "metadata": [
+        #         {"Cell cycle Stage": "freetext", "Perturbation": "freetext"},  # row 1
+        #         {  # row 2
+        #             "ValueType": {
+        #                 "Peak": {
+        #                     "Method": ["ChipSeq", "CutAndRun", "CutAndTag"],
+        #                     # "Size Type": ["Point", "Interval"],
+        #                     "Protein": "freetext",
+        #                     "Directionality": ["+", "-", "No directionality"],
+        #                 },
+        #                 "Genome Annotation": {
+        #                     # "Size Type": ["Point", "Interval"],
+        #                     "Directionality": ["+", "-", "No directionality"],
+        #                 },
+        #                 "Derived": {
+        #                     "Method": ["HiC", "Other Dataset"],
+        #                     # "Size Type": ["Point", "Interval"],
+        #                 },
+        #             }
+        #         },
+        #     ],
+        # },
+        "bigwig": {
+            "dataset_type": "feature",
+            "file_ext": ["bw", "bigwig"],
+        },
+        "cooler": {
+            "dataset_type": "feature",
+            "file_ext": ["mcool"],
+        },
+    }
+
+    # FIXME: REMOVE this and route
     # dataset-option mapping -> puts different optionvalues for dataset into relation
     DATASET_OPTION_MAPPING = {
         "supported_file_endings": {
@@ -202,6 +272,7 @@ class TestingConfig(Config):
     """Config class for testing server."""
 
     TESTING = True
+    DEBUG = True
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     UPLOAD_DIR = "./tmp_test"
     STACKUP_THRESHOLD = 10  # Threshold of when stackup is downsampled
@@ -211,6 +282,7 @@ class End2EndConfig(DevelopmentConfig):
     """Extension of the development config class."""
 
     END2END = True
+    DEBUG = True
 
 
 class ProductionConfig(Config):

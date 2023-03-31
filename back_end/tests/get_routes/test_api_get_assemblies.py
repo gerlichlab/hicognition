@@ -1,7 +1,7 @@
 """Test getting genome assemblies."""
 import unittest
 from unittest.mock import patch
-from hicognition.test_helpers import LoginTestCase
+from tests.test_utils.test_helpers import LoginTestCase
 
 # add path to import app
 # import sys
@@ -37,7 +37,9 @@ class TestGetAssemblies(LoginTestCase):
         with patch("app.api.authentication.current_app.config") as mock_config:
             mock_config.__getitem__.side_effect = app_config.__getitem__
             # dispatch call
-            response = self.client.get("/api/assemblies/", content_type="application/json")
+            response = self.client.get(
+                "/api/assemblies/", content_type="application/json"
+            )
             self.assertEqual(response.status_code, 200)
 
     def test_right_assemblies_returned(self):

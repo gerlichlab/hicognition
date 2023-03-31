@@ -70,13 +70,14 @@
                         >
                             <addDatasetForm
                                 @close-dialog="$emit('close-dialog')"
-                                :fileTypeMapping="fileTypeMapping"
+                                :datasetType="datatype"
                             ></addDatasetForm>
                         </div>
                     </md-tab>
                     <md-tab id="tab-bulk" md-label="Bulk">
                         <addDatasetStepper
                             @close-dialog="$emit('close-dialog')"
+                            :datasetType="datatype"
                             :fileTypeMapping="fileTypeMapping"
                         >
                         </addDatasetStepper>
@@ -90,19 +91,24 @@
 <script>
 import addDatasetForm from "../forms/addDatasetForm";
 import addDatasetStepper from "../ui/addDatasetStepper.vue";
+import { apiMixin } from "../../mixins";
 
 export default {
     name: "AddDatasetDialog",
     components: {
         addDatasetForm,
-        addDatasetStepper,
+        addDatasetStepper
     },
+    mixins: [apiMixin],
     props: {
         dialog: Boolean,
-        datatype: String,
+        datatype: String // region or feature
     },
+    data: () => ({
+        fileTypes: null
+    }),
     computed: {
-        welcomeMessage: function () {
+        welcomeMessage: function() {
             if (this.datatype == "feature") {
                 return "Add genomic feature";
             } else if (this.datatype == "region") {
@@ -133,10 +139,10 @@ export default {
                 };
             }
         },
-        showDialog: function () {
+        showDialog: function() {
             return this.dialog;
         },
-    },
+    }
 };
 </script>
 

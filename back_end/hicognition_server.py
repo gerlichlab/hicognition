@@ -1,6 +1,7 @@
 """Start hicognition server."""
 import os
 import atexit
+import logging
 
 # import json
 from getpass import getpass
@@ -13,20 +14,22 @@ from app.background_tasks import (
     add_app_context,
     send_keep_alive_message,
 )
-from app.models import (
-    User,
-    Dataset,
-    Intervals,
-    Task,
-    AverageIntervalData,
-    BedFileMetadata,
-    Session,
-    Collection,
-    EmbeddingIntervalData,
-    AssociationIntervalData,
-    Organism,
-    Assembly,
-)
+from app.models import *
+
+# (
+#     User,
+#     Dataset,
+#     Intervals,
+#     Task,
+#     AverageIntervalData,
+#     BedFileMetadata,
+#     Session,
+#     Collection,
+#     EmbeddingIntervalData,
+#     AssociationIntervalData,
+#     Organism,
+#     Assembly,
+# )
 from flask_migrate import Migrate
 from flask.cli import AppGroup
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -60,7 +63,8 @@ def create_user(name, password):
         user = User.query.filter(User.username == name).first()
     else:
         # otherwise make a new one
-        user = User(username=name)
+        # and confirm email, email address stays empty form manual created users
+        user = User(username=name, email_confirmed = True)
     # prompt for password if not defined
     if password is None:
         password = getpass(f"Enter password for {name}: ")
@@ -160,6 +164,8 @@ def make_shell_context():
         "AssociationIntervalData": AssociationIntervalData,
         "Organism": Organism,
         "Assembly": Assembly,
+        "Repository": Repository,
+        "RepositoryAuth": RepositoryAuth,
     }
 
 

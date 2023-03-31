@@ -4,7 +4,7 @@ from unittest.mock import patch
 import os
 import json
 import pandas as pd
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 # import sys
@@ -20,7 +20,7 @@ class TestGetIntervals(LoginTestCase):
     def setUp(self):
         super().setUp()
         # add owned dataset
-        self.owned_dataset = Dataset(
+        self.owned_dataset = self.create_dataset(
             id=1,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -28,7 +28,7 @@ class TestGetIntervals(LoginTestCase):
             user_id=1,
         )
         # add unowned dataset
-        self.unowned_dataset = Dataset(
+        self.unowned_dataset = self.create_dataset(
             id=2,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -36,7 +36,7 @@ class TestGetIntervals(LoginTestCase):
             user_id=2,
         )
         # add public dataset
-        self.unowned_public_dataset = Dataset(
+        self.unowned_public_dataset = self.create_dataset(
             id=3,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -90,9 +90,14 @@ class TestGetIntervals(LoginTestCase):
             db.session.add_all(self.owned_dataset_intervals)
             db.session.commit()
             # protected route
-            response = self.client.get("/api/intervals/", content_type="application/json")
+            response = self.client.get(
+                "/api/intervals/", content_type="application/json"
+            )
             self.assertEqual(response.status_code, 200)
-            expected = [self.owned_intervals_1.to_json(), self.owned_intervals_2.to_json()]
+            expected = [
+                self.owned_intervals_1.to_json(),
+                self.owned_intervals_2.to_json(),
+            ]
             self.assertEqual(response.json, expected)
 
     def test_correct_intervals_single_dataset(self):
@@ -184,7 +189,7 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
     def setUp(self):
         super().setUp()
         # add owned dataset
-        self.owned_dataset = Dataset(
+        self.owned_dataset = self.create_dataset(
             id=1,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -192,7 +197,7 @@ class TestGetIntervalMetadata(LoginTestCase, TempDirTestCase):
             user_id=1,
         )
         # add unowned dataset
-        self.unowned_dataset = Dataset(
+        self.unowned_dataset = self.create_dataset(
             id=2,
             dataset_name="test1",
             file_path="/test/path/1",

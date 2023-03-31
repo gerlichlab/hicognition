@@ -102,44 +102,44 @@ import EventBus from "../../eventBus";
 export default {
     name: "MySessionsDialog",
     mixins: [apiMixin],
-    data: function () {
+    data: function() {
         return {
             showRestore: false,
             selected_session_object: null,
             selected_session_id: null,
             shareableUrl: null,
             copySuccesful: false,
-            isDemo: process.env.SHOWCASE,
+            isDemo: process.env.SHOWCASE
         };
     },
     components: {
-        sessionsTable,
+        sessionsTable
     },
     props: {
-        dialog: Boolean,
+        dialog: Boolean
     },
     computed: {
-        showDialog: function () {
+        showDialog: function() {
             return this.dialog;
         },
-        showShareableUrl: function () {
+        showShareableUrl: function() {
             if (this.selected_session_object && this.shareableUrl) {
                 return true;
             }
             return false;
-        },
+        }
     },
     watch: {
-        selected_session_object: function (newVal, oldVal) {
+        selected_session_object: function(newVal, oldVal) {
             if (newVal != oldVal) {
                 // blank url
                 this.shareableUrl = null;
                 this.copySuccesful = false;
             }
-        },
+        }
     },
     methods: {
-        copyToClipboard: function () {
+        copyToClipboard: function() {
             try {
                 this.$refs["urlInput"].$el.focus();
                 this.$refs["urlInput"].$el.select();
@@ -149,25 +149,25 @@ export default {
                 console.log("Copying did not work...");
             }
         },
-        handleSessionDeletion: function () {
+        handleSessionDeletion: function() {
             this.deleteData(`sessions/${this.selected_session_id}/`).then(
-                (response) => {
+                response => {
                     EventBus.$emit("fetch-sessions");
                 }
             );
         },
-        handleUrlgeneration: function () {
+        handleUrlgeneration: function() {
             this.fetchData(
                 `sessions/${this.selected_session_id}/sessionToken/`
-            ).then((response) => {
+            ).then(response => {
                 let sessionToken = response.data["session_token"];
                 let isDemo = process.env.SHOWCASE;
-                if (isDemo){
+                if (isDemo) {
                     var shareableUrl =
                         window.location.host +
                         `/app/#/main/session?sessionToken=${sessionToken}&sessionID=${this.selected_session_id}`;
                 }
-                if (!isDemo){
+                if (!isDemo) {
                     shareableUrl =
                         window.location.host +
                         `/#/main/session?sessionToken=${sessionToken}&sessionID=${this.selected_session_id}`;
@@ -176,7 +176,7 @@ export default {
                 this.shareableUrl = shareableUrl;
             });
         },
-        handleSessionRestoration: async function () {
+        handleSessionRestoration: async function() {
             // fetch and store session token -> this is needed in case unowned datasets are in session
             let response = await this.fetchData(
                 `sessions/${this.selected_session_id}/sessionToken/`
@@ -196,8 +196,14 @@ export default {
                             var widgetType = child_vals.widgetType;
                             switch (widgetType) {
                                 case "Lineprofile":
+                                    let refs;
+                                    if (child_vals['collectionConfig']['isPairedEnd']){
+                                        refs = child_vals.widgetDataRef.map((val) => val[child_vals.selectedSide])
+                                    }else{
+                                        refs = child_vals.widgetDataRef
+                                    }
                                     await this.fetchLineProfileData(
-                                        child_vals.widgetDataRef
+                                        refs
                                     );
                                     break;
                                 case "Pileup":
@@ -237,12 +243,12 @@ export default {
             this.shareableUrl = null;
             this.$emit("close-dialog");
         },
-        handleSelectionAvailable: function (session_object, session_id) {
+        handleSelectionAvailable: function(session_object, session_id) {
             (this.showRestore = true),
                 (this.selected_session_object = session_object),
                 (this.selected_session_id = session_id);
         },
-        fetchLineProfileData: async function (ids) {
+        fetchLineProfileData: async function(ids) {
             for (let id of ids) {
                 // checks whether lineprofile data is in store and does not fetch it if it is there
                 if (this.$store.getters["compare/lineprofileExists"](id)) {
@@ -255,7 +261,7 @@ export default {
                 // save it in store
                 var mutationObject = {
                     id: id,
-                    data: parsed,
+                    data: parsed
                 };
                 this.$store.commit(
                     "compare/setWidgetDataLineprofile",
@@ -263,10 +269,10 @@ export default {
                 );
             }
         },
-        fetchStackupData: async function (id) {
+        fetchStackupData: async function(id) {
             // checks whether pileup data is in store and fetches it if it is not
             var queryObject = {
-                id: id,
+                id: id
             };
             if (this.$store.getters["compare/stackupExists"](queryObject)) {
                 return;
@@ -279,14 +285,14 @@ export default {
             // save it in store
             var mutationObject = {
                 id: id,
-                data: piling_data,
+                data: piling_data
             };
             this.$store.commit("compare/setWidgetDataStackup", mutationObject);
         },
-        fetchAssociationData: async function (id) {
+        fetchAssociationData: async function(id) {
             // checks whether association data is in store and fetches it if it is not
             var queryObject = {
-                id: id,
+                id: id
             };
             if (
                 this.$store.getters["compare/associationDataExists"](
@@ -303,13 +309,13 @@ export default {
             // save it in store
             var mutationObject = {
                 id: id,
-                data: piling_data,
+                data: piling_data
             };
             this.$store.commit("compare/setWidgetDataLola", mutationObject);
         },
-        fetchEmbeddingPoints: async function (id) {
+        fetchEmbeddingPoints: async function(id) {
             var queryObject = {
-                id: id,
+                id: id
             };
             if (
                 !this.$store.getters["compare/embedding1dDataExists"](
@@ -318,14 +324,15 @@ export default {
             ) {
                 // points do not exist in store, check whether request for them has been dispatched
                 let url = `embeddingIntervalData/${id}/`;
-                let requestData =
-                    this.$store.getters["compare/getRequest"](url);
+                let requestData = this.$store.getters["compare/getRequest"](
+                    url
+                );
                 let response;
                 if (!requestData) {
                     // request has not been dispatched => put it in store
                     this.$store.commit("compare/setRequest", {
                         url: url,
-                        data: this.fetchData(url),
+                        data: this.fetchData(url)
                     });
                     response = await this.$store.getters["compare/getRequest"](
                         url
@@ -333,7 +340,7 @@ export default {
                     // save it in store
                     var mutationObject = {
                         id: id,
-                        data: response.data,
+                        data: response.data
                     };
                     this.$store.commit(
                         "compare/setWidgetDataEmbedding1d",
@@ -342,11 +349,11 @@ export default {
                 }
             }
         },
-        fetchEmbeddingOverlays: async function (id, overlayIndex) {
+        fetchEmbeddingOverlays: async function(id, overlayIndex) {
             if (overlayIndex != "density") {
                 var queryObject = {
                     id: id,
-                    overlayIndex: overlayIndex,
+                    overlayIndex: overlayIndex
                 };
                 if (
                     this.$store.getters["compare/embedding1dDataExists"](
@@ -359,14 +366,15 @@ export default {
                 }
                 // overlay data does not exist, check whether request has been dispatched
                 let url = `embeddingIntervalData/${id}/${overlayIndex}/`;
-                let requestData =
-                    this.$store.getters["compare/getRequest"](url);
+                let requestData = this.$store.getters["compare/getRequest"](
+                    url
+                );
                 let response;
                 if (!requestData) {
                     // request has not been dispatched => put it in store
                     this.$store.commit("compare/setRequest", {
                         url: url,
-                        data: this.fetchData(url),
+                        data: this.fetchData(url)
                     });
                     response = await this.$store.getters["compare/getRequest"](
                         url
@@ -375,7 +383,7 @@ export default {
                     var mutationObject = {
                         id: id,
                         overlayIndex: overlayIndex,
-                        data: response.data["data"],
+                        data: response.data["data"]
                     };
                     this.$store.commit(
                         "compare/setWidgetDataEmbedding1d",
@@ -384,16 +392,16 @@ export default {
                 }
             }
         },
-        fetchEmbeddingData: async function (id, overlayIndex) {
+        fetchEmbeddingData: async function(id, overlayIndex) {
             await this.fetchEmbeddingPoints(id);
             await this.fetchEmbeddingOverlays(id, overlayIndex);
         },
-        fetchPileupData: async function (dataRef) {
+        fetchPileupData: async function(dataRef) {
             for (let [pileupType, id] of Object.entries(dataRef)) {
                 // checks whether pileup data is in store and fetches it if it is not
                 var queryObject = {
                     pileupType: pileupType,
-                    id: id,
+                    id: id
                 };
                 if (this.$store.getters["compare/pileupExists"](queryObject)) {
                     return;
@@ -407,7 +415,7 @@ export default {
                 var mutationObject = {
                     pileupType: pileupType,
                     id: id,
-                    data: parsed,
+                    data: parsed
                 };
                 this.$store.commit(
                     "compare/setWidgetDataPileup",
@@ -415,10 +423,10 @@ export default {
                 );
             }
         },
-        handleSelectionUnAvailable: function () {
+        handleSelectionUnAvailable: function() {
             (this.showRestore = false), (this.selected_session_object = null);
-        },
-    },
+        }
+    }
 };
 </script>
 

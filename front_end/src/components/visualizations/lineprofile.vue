@@ -34,30 +34,30 @@ export default {
         showInterval: {
             //  whehter to show interval start and end on x axis
             type: Boolean,
-            default: false,
-        },
+            default: false
+        }
     },
-    data: function () {
+    data: function() {
         return {
             svg: undefined,
             xScale: undefined,
             yScale: undefined,
             focus: undefined,
-            colorMapping: new Map(),
+            colorMapping: new Map()
         };
     },
     computed: {
-        margin: function () {
+        margin: function() {
             return {
                 top: this.height * 0.01,
                 bottom: this.showInterval
                     ? this.height * 0.03
                     : this.height * 0.01,
                 left: this.width * 0.14,
-                right: this.width * 0.1,
+                right: this.width * 0.1
             };
         },
-        divStyle: function () {
+        divStyle: function() {
             let borderStyle = this.valueScaleBorder
                 ? this.valueScaleBorder
                 : "solid";
@@ -69,10 +69,10 @@ export default {
                 "border-width": "3px",
                 "border-color": this.valueScaleColor
                     ? this.valueScaleColor
-                    : "white",
+                    : "white"
             };
         },
-        intervalStartBin: function () {
+        intervalStartBin: function() {
             if (this.lineData && this.lineData.length != 0) {
                 let intervalSize = Math.round(
                     this.lineData[0].data.length / (1 + 2 * EXPANSION_FACTOR)
@@ -81,7 +81,7 @@ export default {
             }
             return undefined;
         },
-        intervalEndBin: function () {
+        intervalEndBin: function() {
             if (this.lineData && this.lineData.length != 0) {
                 let intervalSize = Math.round(
                     this.lineData[0].data.length / (1 + 2 * EXPANSION_FACTOR)
@@ -92,59 +92,59 @@ export default {
             }
             return undefined;
         },
-        fontSize: function () {
+        fontSize: function() {
             let additionalSize = Math.floor((this.width - 350) / 50);
             let fontSize = 10 + additionalSize * 2;
             return `${fontSize}px`;
         },
-        strokeWidth: function () {
+        strokeWidth: function() {
             let additionalSize = Math.floor((this.width - 350) / 50);
             return 2 + 0.5 * additionalSize;
         },
-        lineprofileDivID: function () {
+        lineprofileDivID: function() {
             // ID for the div containing the lineprofile
             return "lineprofile_" + this.lineprofileID;
         },
-        plotWidth: function () {
+        plotWidth: function() {
             return this.width - this.margin.left - this.margin.right;
         },
-        plotHeight: function () {
+        plotHeight: function() {
             return this.height - this.margin.top - this.margin.bottom;
         },
-        lineData: function () {
+        lineData: function() {
             if (this.normalized) {
-                return this.lineprofileData.map((elem) => {
+                return this.lineprofileData.map(elem => {
                     return {
                         data: normalizeLineProfile(elem.data),
                         shape: elem.shape,
-                        dtype: elem.dtype,
+                        dtype: elem.dtype
                     };
                 });
             }
             return this.lineprofileData;
         },
-        lineNames: function () {
+        lineNames: function() {
             return this.lineprofileNames;
-        },
+        }
     },
     methods: {
-        getValueFromIndex: function (val_index, val_name) {
+        getValueFromIndex: function(val_index, val_name) {
             let val_array_index = this.lineprofileNames.indexOf(val_name);
             return this.lineData[val_array_index]["data"][val_index];
         },
-        formatValue: function (value) {
+        formatValue: function(value) {
             if (!this.normalized) {
                 return value.toExponential(2);
             }
             return Math.round(value * 100) / 100;
         },
-        getValueFormat: function (val) {
+        getValueFormat: function(val) {
             if (!this.normalized) {
                 return val.toExponential(2);
             }
             return val;
         },
-        getXaxisFormat: function (val) {
+        getXaxisFormat: function(val) {
             if (val == this.intervalStartBin) {
                 return "Start";
             }
@@ -153,25 +153,25 @@ export default {
             }
             return undefined;
         },
-        formatLabel: function (label) {
+        formatLabel: function(label) {
             if (label.length > 10) {
                 return label.slice(0, 10) + "...";
             }
             return label;
         },
-        xAxisGenerator: function (args) {
+        xAxisGenerator: function(args) {
             return d3
                 .axisBottom(this.xScale)
-                .tickFormat((val) => this.getXaxisFormat(val))
+                .tickFormat(val => this.getXaxisFormat(val))
                 .tickValues([this.intervalStartBin, this.intervalEndBin])(args);
         },
-        yAxisGenerator: function (args) {
+        yAxisGenerator: function(args) {
             return d3
                 .axisLeft(this.yScale)
-                .tickFormat((val) => this.getValueFormat(val))
+                .tickFormat(val => this.getValueFormat(val))
                 .ticks(5)(args);
         },
-        lineGenerator: function (args) {
+        lineGenerator: function(args) {
             return d3
                 .line()
                 .x((d, i) => {
@@ -181,7 +181,7 @@ export default {
                     return this.yScale(d);
                 })(args);
         },
-        handleMouseMove: function (event) {
+        handleMouseMove: function(event) {
             let focus = this.svg.selectAll(".focus");
             let index = Math.floor(this.xScale.invert(d3.pointer(event)[0]));
             focus
@@ -190,9 +190,7 @@ export default {
             // update circles
             focus
                 .selectAll(".hoverCircle")
-                .attr("cy", (e) =>
-                    this.yScale(this.getValueFromIndex(index, e))
-                )
+                .attr("cy", e => this.yScale(this.getValueFromIndex(index, e)))
                 .attr("cx", this.xScale(index));
             // update text
             focus
@@ -205,7 +203,7 @@ export default {
                         this.plotHeight / 2.5 +
                         ")"
                 )
-                .text((e) => {
+                .text(e => {
                     return `${this.formatValue(
                         this.getValueFromIndex(index, e)
                     )} | ${this.formatLabel(e)}`;
@@ -221,7 +219,7 @@ export default {
                       .attr("text-anchor", "start")
                       .attr("dx", 10);
         },
-        createHoverObjects: function () {
+        createHoverObjects: function() {
             // create overlay
             this.svg
                 .append("rect")
@@ -252,7 +250,7 @@ export default {
                 .enter()
                 .append("text")
                 .attr("class", "lineHoverText")
-                .style("fill", (d) => {
+                .style("fill", d => {
                     return this.colorMapping.get(d);
                 })
                 .attr("text-anchor", "start")
@@ -267,7 +265,7 @@ export default {
                 .enter()
                 .append("circle")
                 .attr("class", "hoverCircle")
-                .style("fill", (d) => {
+                .style("fill", d => {
                     return this.colorMapping.get(d);
                 })
                 .attr("r", this.strokeWidth * 3)
@@ -275,16 +273,16 @@ export default {
             // register handlers on top level group
             this.svg
                 .selectAll(".overlayRect")
-                .on("mouseover", function () {
+                .on("mouseover", function() {
                     focus.style("display", null);
                 })
                 .on("mousemove", this.handleMouseMove);
             // mouseleave is on the group of data -> otherwise moving on rect will trigger mouseleave continuously
-            this.svg.on("mouseleave", function () {
+            this.svg.on("mouseleave", function() {
                 focus.style("display", "none");
             });
         },
-        createValueBoundaries: function () {
+        createValueBoundaries: function() {
             var minX = 0;
             var maxX = undefined;
             var minY = undefined;
@@ -309,17 +307,17 @@ export default {
                     minX: minX,
                     maxX: maxX,
                     minY: this.minValueRange,
-                    maxY: this.maxValueRange,
+                    maxY: this.maxValueRange
                 };
             }
             return {
                 minX: minX,
                 maxX: maxX,
                 minY: minY,
-                maxY: maxY,
+                maxY: maxY
             };
         },
-        createScales: function () {
+        createScales: function() {
             let { minX, maxX, minY, maxY } = this.createValueBoundaries();
             this.xScale = d3
                 .scaleLinear()
@@ -330,7 +328,7 @@ export default {
                 .domain([minY - 0.05 * (maxY - minY), maxY])
                 .range([this.plotHeight, 0]);
         },
-        createSVG: function () {
+        createSVG: function() {
             d3.select(`#${this.lineprofileDivID}Svg`).remove();
             this.svg = d3
                 .select(`#${this.lineprofileDivID}`)
@@ -349,7 +347,7 @@ export default {
                         ")"
                 );
         },
-        createAxes: function () {
+        createAxes: function() {
             this.svg
                 .append("g")
                 .attr("class", "y axis")
@@ -364,7 +362,7 @@ export default {
             }
             this.svg.selectAll("text").style("font-size", this.fontSize);
         },
-        addDataLine: function (single_data, color_index) {
+        addDataLine: function(single_data, color_index) {
             this.svg
                 .append("path")
                 .attr("d", this.lineGenerator(single_data.data))
@@ -376,7 +374,7 @@ export default {
                 d3.schemeDark2[color_index]
             );
         },
-        drawLinechart: function () {
+        drawLinechart: function() {
             this.createSVG();
             this.createScales();
             // add data
@@ -389,31 +387,31 @@ export default {
             this.createAxes();
             // add hover objects
             this.createHoverObjects();
-        },
+        }
     },
-    mounted: function () {
+    mounted: function() {
         this.drawLinechart();
     },
     watch: {
-        height: function () {
+        height: function() {
             this.drawLinechart();
         },
-        width: function () {
+        width: function() {
             this.drawLinechart();
         },
-        minValueRange: function () {
+        minValueRange: function() {
             this.drawLinechart();
         },
-        maxValueRange: function () {
+        maxValueRange: function() {
             this.drawLinechart();
         },
         lineData: {
             deep: true,
             handler() {
                 this.drawLinechart();
-            },
-        },
-    },
+            }
+        }
+    }
 };
 </script>
 

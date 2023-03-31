@@ -40,6 +40,22 @@
                 <div class="md-badge-content">
                     <md-button
                         class="md-icon-button no-margin"
+                        @click="$emit('showProcessingDrawer')"
+                    >
+                        <md-icon>timelapse</md-icon>
+                    </md-button>
+                    <div
+                        class="md-badge position-top-right md-dense yellow"
+                        v-show="numberProcessing > 0"
+                    >
+                        <span class="md-body-2">{{
+                            this.numberProcessing
+                        }}</span>
+                    </div>
+                </div>
+                <div class="md-badge-content">
+                    <md-button
+                        class="md-icon-button no-margin"
                         @click="$emit('showNotificationDrawer')"
                     >
                         <md-icon>notifications</md-icon>
@@ -65,7 +81,9 @@
                                 >Deactivated in demo mode</md-tooltip
                             >Save Session</md-menu-item
                         >
-                        <md-menu-item v-if="!isDemo" @click="$emit('add-session-click')"
+                        <md-menu-item
+                            v-if="!isDemo"
+                            @click="$emit('add-session-click')"
                             >Save Session</md-menu-item
                         >
                         <md-menu-item @click="$emit('my-sessions-click')"
@@ -91,48 +109,54 @@ import { mapGetters } from "vuex";
 
 export default {
     name: "toolbar",
-    data: function () {
+    data: function() {
         return {
             appversion: process.env.VERSION,
             showDocumentationText: false,
-            isDemo: process.env.SHOWCASE,
+            isDemo: process.env.SHOWCASE
         };
     },
     computed: {
-        numberNotifications: function () {
+        numberNotifications: function() {
             return this.notifications.length;
         },
-        ...mapGetters(["notifications", "userName"]),
+        numberProcessing: function() {
+            return this.processingDatasets.length
+        },
+        ...mapGetters(["notifications", "userName", "processingDatasets"])
     },
     methods: {
-        logout: function () {
+        logout: function() {
             this.$store.commit("clearToken");
             this.$store.commit("clearSessionToken");
             this.$globalFlags["serializeCompare"] = false;
             this.$store.commit("compare/clearAll");
             this.$router.push("/login");
         },
-        handleNewNotification: function (event) {
+        showProcessingDatasets: function(){
+            return
+        },
+        handleNewNotification: function(event) {
             // check whether you are the issuing user
             let data = JSON.parse(event.data);
             if (data.owner == this.$store.getters.getUserId) {
                 this.$store.commit("addNewNotification", data);
             }
-        },
+        }
     },
-    mounted: function () {
+    mounted: function() {
         // attach event listener
         this.$store.state.notificationSource.addEventListener(
             "notification",
             this.handleNewNotification
         );
     },
-    beforeDestroy: function () {
+    beforeDestroy: function() {
         this.$store.state.notificationSource.removeEventListener(
             "notification",
             this.handleNewNotification
         );
-    },
+    }
 };
 </script>
 
@@ -142,12 +166,16 @@ export default {
 }
 
 .red {
-    background-color: #e34234;
+    background-color: #D48D87;
+}
+
+.yellow {
+    background-color: #D4C187;
 }
 
 .position-top-right {
-    top: 0px;
-    right: 8px;
+    top: -2px;
+    right: 4px;
 }
 
 .no-margin {
