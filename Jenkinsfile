@@ -4,7 +4,7 @@
 def towerJobs = [
   tags:    [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: latest"],
   master: [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: master"],
-  'jenkins-test': [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: jenkins-test"],
+  'jenkins-test': [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: homepage"],
 ]
 
 def extraImages = [
@@ -18,6 +18,6 @@ buildDockerImage([
     pushRegistryNamespace: "gerlich",
     testCmd: null,
     containerImages: extraImages,
-    pushBranches: ["master", "jenkins-test"],
+    pushBranches: ["master", "jenkins-test", "homepage"],
     tower: towerJobs
 ])
