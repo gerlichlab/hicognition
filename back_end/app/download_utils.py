@@ -222,7 +222,7 @@ def download_url(dataset: Dataset, upload_dir: str, file_ext: str, md5sum: str =
     """
 
     # forbid mcool for now (sept2022)
-    if file_ext.lower() in ["mcool", "cool"]:
+    if file_ext.lower() in ["cool"]:
         raise FiletypeNotSupportedException(
             "External import of cooler files not supported yet."
         )

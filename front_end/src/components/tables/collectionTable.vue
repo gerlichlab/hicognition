@@ -107,7 +107,6 @@
         <!--Table--->
         <transition name="fade" mode="out-in">
             <md-table
-                style="max-height: 40vh"
                 v-if="selected.length != 0 && selectedFields.length != 0"
             >
                 <md-table-row
@@ -619,6 +618,7 @@ export default {
 }
 .md-table {
     max-width: 90vw;
+    max-height: calc(70vh - 150px)
 }
 .md-table-cell {
     text-align: center;

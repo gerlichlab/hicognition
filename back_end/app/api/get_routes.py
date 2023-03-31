@@ -143,6 +143,7 @@ def get_all_processing_datasets():
     processing_datasets = [
         dataset for dataset in all_available_datasets if len(dataset.processing_features) != 0
           or len(dataset.processing_collections) != 0
+          or dataset.upload_state in ['new', 'uploading']
     ]
     return jsonify([dfile.to_json() for dfile in processing_datasets])
 
