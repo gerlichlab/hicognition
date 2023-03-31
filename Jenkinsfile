@@ -14,7 +14,6 @@ buildDockerImage([
     dockerFile: "nginx_demo/Dockerfile",
     pushRegistryNamespace: "gerlich",
     testCmd: null,
-    containerImages: extraImages,
     pushBranches: ["master", "jenkins-test", "homepage"],
     tower: towerJobs
 ])
