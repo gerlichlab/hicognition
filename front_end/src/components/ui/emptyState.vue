@@ -1,7 +1,6 @@
 <template>
     <div>
         <md-empty-state
-            v-if="isDemo"
             md-icon="input"
             md-label="Explore the power of HiCognition"
             md-description=""
@@ -9,10 +8,7 @@
             style="width:50%; "
         >
             <p style="text-align: justify;">
-                This is a Demo version of HiCognition. We deactivated the
-                preprocessing features. However, you can find in the
-                Documentation how to run the fully functional HiCognition in a
-                few steps locally.
+                This is the public version of HiCognition. The aim is getting you started as fast as possible.
             </p>
             <p style="text-align: justify;">
                 We have prepared a couple of datasets for you and preprocessed
@@ -27,14 +23,14 @@
                 <md-table-row>
                     <md-table-cell>
                         <a
-                            href="/app/#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjoxMjN9.bFeRnrclEo651eFjLhlvmYi8fSTHYncW7qB1mCX6fT8DC2RVDyIhS7HpWFa4kmEH6101pyY0oLkOgiwZ_Ossmw&sessionID=123"
+                            href="app.hicognition.com/#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjoxfQ.nijHQkLPTI69r8AWNAWSo5I8nIJNYhj7WuTJnfhL2RnqPGtxaSDnr86vFgg22jnrh8pMPv2dVctIOKFPb3J-vA&sessionID=1"
                         >
                             Explore average profiles
                         </a>
                     </md-table-cell>
                     <md-table-cell>
                         <a
-                            href="/app/#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjoxMjN9.bFeRnrclEo651eFjLhlvmYi8fSTHYncW7qB1mCX6fT8DC2RVDyIhS7HpWFa4kmEH6101pyY0oLkOgiwZ_Ossmw&sessionID=123"
+                            href="app.hicognition.com/#/main/session?sessionToken=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjoxfQ.nijHQkLPTI69r8AWNAWSo5I8nIJNYhj7WuTJnfhL2RnqPGtxaSDnr86vFgg22jnrh8pMPv2dVctIOKFPb3J-vA&sessionID=1"
                         >
                             (Figure 2a)
                         </a>
@@ -106,9 +102,7 @@
                 </md-table-row>
             </md-table>
             <p style="text-align: justify;">
-                If you want to explore datasets on your own, the region-sets:
-                <i>'SMC3 Stag1 only'</i>, <i>SMC3 Stag2 only'</i>, or
-                <i>'pc_genes_forward_tss'</i> are good places to start.
+                If you want to explore datasets on your own, use the data form the manuscript, upload your own data or click on the plus at the bottom right to start creating a visualization.
             </p>
             <!-- md-icon="../../static/logo.svg" -->
             <!-- <img v-bind:src="'../../static/logo.svg'"> -->
@@ -121,7 +115,7 @@ export default {
     name: "EmptyStateBasic",
     data: function() {
         return {
-            isDemo: process.env.SHOWCASE
+            //isDemo: process.env.SHOWCASE
         };
     }
 };
