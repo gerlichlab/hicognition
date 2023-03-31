@@ -4,7 +4,8 @@
 def towerJobs = [
   tags:    [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: latest"],
   master: [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: master"],
-  'jenkins-test': [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: homepage"],
+  'homepage': [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: homepage"],
+  'jenkins-test': [jobName:"App Hicognition Demo", jobTags: "reload", extraVars: "app_generic_container_tag: jenkins-test"],
 ]
 
 def extraImages = [
