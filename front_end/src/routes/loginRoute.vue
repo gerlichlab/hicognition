@@ -1,13 +1,13 @@
 <template>
-    <md-app md-waterfall md-mode="fixed-last">
-        <md-app-toolbar class="md-large md-dense md-primary">
-            <loginToolbar></loginToolbar>
-        </md-app-toolbar>
+  <div class="fill-viewport-height flex-box">
+    <b-navbar toggleable="lg" type="dark" variant="primary" class="sticky-top">
+      <login-toolbar></login-toolbar>
+    </b-navbar>
 
-        <md-app-content>
-            <loginForm></loginForm>
-        </md-app-content>
-    </md-app>
+    <b-container class="d-flex justify-content-center align-items-center fill-remaining-height">
+      <login-form></login-form>
+    </b-container>
+  </div>
 </template>
 
 <script>
@@ -15,31 +15,33 @@ import loginToolbar from "../components/ui/loginToolbar";
 import loginForm from "../components/forms/loginForm";
 
 export default {
-    name: "Login",
-    components: {
-        loginToolbar,
-        loginForm
-    },
-    mounted: function() {
-        // check if token is there and push to main route
-        if (!this.$store.getters.isTokenEmpty) {
-            this.$router.push("/main/compare");
-        }
+  name: "Login",
+  components: {
+    loginToolbar,
+    loginForm,
+  },
+  mounted: function () {
+    // check if token is there and push to main route
+    if (!this.$store.getters.isTokenEmpty) {
+      this.$router.push("/main/compare");
     }
+  },
 };
 </script>
 
 <style scoped>
-.halfwidth {
-    width: 20vw;
-    height: 35v;
+
+.fill-viewport-height {
+  height: 100vh;
 }
 
-.center {
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+.flex-box {
+  display: flex;
+  flex-direction: column;
 }
+
+.fill-remaining-height {
+  flex-grow: 1;
+}
+
 </style>

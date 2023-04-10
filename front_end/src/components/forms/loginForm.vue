@@ -1,70 +1,46 @@
 <template>
-    <div>
-        <md-card md-with-hover class="halfwidth center">
-            <md-card-header>
-                <div class="md-title">Login</div>
-            </md-card-header>
-
-            <md-card-content>
-                <md-field md-clearable>
-                    <label>Username</label>
-                    <md-input v-model="username"></md-input>
-                </md-field>
-
-                <md-field>
-                    <label>Password</label>
-                    <md-input v-model="password" type="password"></md-input>
-                </md-field>
-                <md-button
-                    class="md-dense md-raised md-primary"
-                    @click="handleSubmit"
-                    >Submit</md-button
-                >
-                <div v-if="showError" class="red floatright">
+<b-container>
+    <b-row fluid class="flex-grow-1 d-flex align-items-center justify-content-center">
+        <b-col></b-col>
+        <b-col  md="6" lg="4" cols="5">
+            <b-card no-body>
+                <b-card-header>
+                    <h4 class="mb-0">Login</h4>
+                </b-card-header>
+                <b-card-body>
+                    <b-form-group label="Username">
+                    <b-form-input v-model="username"></b-form-input>
+                    </b-form-group>
+                    <b-form-group label="Password">
+                    <b-form-input v-model="password" type="password"></b-form-input>
+                    </b-form-group>
+                    <b-button variant="primary" class="mr-3" @click="handleSubmit">Login</b-button>
+                    <b-button variant="secondary" @click="$router.push('register/')">Register</b-button>
+                    <div v-if="showError" class="text-danger float-right">
                     Wrong Credentials!
-                </div>
-            </md-card-content>
-        </md-card>
-        <md-card md-with-hover class="halfwidth">
-            <md-card-header class='md-primary'>
-                <div class="md-title">New here?</div>
-                <div class="md-subhead">Check out our documentation and register</div>
-            </md-card-header>
-            <md-card-content class="md-layout">
-                    <div class="md-layout-item">
-                        <md-button
-                            class="md-dense md-raised md-secondary"
-                            href="https://app.hicognition.com/docs/"
-                            >Documentation</md-button
-                        >
                     </div>
-                    <div class="md-layout-item">
-                            <md-button
-                                class="md-dense md-raised md-secondary"
-                                @click="$router.push('register/')"
-                                >Register</md-button
-                            >
-                    </div>
-            <!--TODO fix doc ref-->
-            </md-card-content>
-        </md-card>
-    </div>
+                </b-card-body>
+            </b-card>
+        </b-col>
+        <b-col></b-col>
+    </b-row>
+</b-container>
 </template>
 
 <script>
 import { apiMixin } from "../../mixins";
 
 export default {
-    name: "LoginForm",
-    mixins: [apiMixin],
-    data: function() {
-        return {
-            username: "",
-            password: "",
-            showError: false
-        };
-    },
-    methods: {
+  name: "LoginForm",
+  mixins: [apiMixin],
+  data: function () {
+    return {
+      username: "",
+      password: "",
+      showError: false,
+    };
+  },
+  methods: {
         handleSubmit: function() {
             if (this.password.length > 0) {
                 this.fetchAndStoreToken(this.username, this.password)
@@ -84,29 +60,27 @@ export default {
                     });
             }
         }
-    }
+  },
 };
 </script>
 
 <style scoped>
-.halfwidth {
-    width: 20vw;
-    height: 35v;
+
+.min-width-card {
+  min-width: 300px;
 }
 
-.center {
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+.full-screen {
+  width: 100vw;
+  height: 100vh;
 }
 
-.red {
-    color: red;
+.float-right {
+  float: right;
 }
 
-.floatright {
-    float: right;
+.fill-remaining-space {
+  flex: 1 1
 }
+
 </style>

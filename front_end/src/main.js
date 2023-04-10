@@ -3,8 +3,11 @@ import VueRouter from "vue-router";
 import App from "./App";
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 
+
+// TODO: add custom css with hicognition colors
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
+import "./themes/bootstrap-custom.scss";
 
 // Make BootstrapVue available throughout your project
 Vue.use(BootstrapVue)

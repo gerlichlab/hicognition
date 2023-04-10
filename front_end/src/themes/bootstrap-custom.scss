@@ -1,0 +1,8 @@
+// src/custom.scss
+
+// Override default variables
+$primary: #87b4d4;
+$secondary: #264d69;
+
+// Import Bootstrap SCSS source
+@import "~bootstrap/scss/bootstrap";
