@@ -3,24 +3,33 @@
     <b-row fluid class="flex-grow-1 d-flex align-items-center justify-content-center">
         <b-col></b-col>
         <b-col  md="6" lg="4" cols="5">
+          <b-form @submit="handleSubmit">
             <b-card no-body>
                 <b-card-header>
                     <h4 class="mb-0">Login</h4>
                 </b-card-header>
                 <b-card-body>
-                    <b-form-group label="Username">
-                    <b-form-input v-model="username"></b-form-input>
+                    <b-form-group label="Username" label-for='username' :invalid-feedback="invalidFeedback">
+                      <b-form-input id='username' v-model="username" :state="validationState" required></b-form-input>
                     </b-form-group>
-                    <b-form-group label="Password">
-                    <b-form-input v-model="password" type="password"></b-form-input>
+                    <b-form-group label="Password" :invalid-feedback="invalidFeedback">
+                    <b-form-input v-model="password" type="password" :state="validationState" required></b-form-input>
                     </b-form-group>
-                    <b-button variant="primary" class="mr-3" @click="handleSubmit">Login</b-button>
-                    <b-button variant="secondary" @click="$router.push('register/')">Register</b-button>
-                    <div v-if="showError" class="text-danger float-right">
-                    Wrong Credentials!
-                    </div>
                 </b-card-body>
+
+
+                <b-card-footer>
+                    <b-row align-h="between" align-v="center">
+                      <b-col cols="4">
+                          <b-button variant="primary" class="mr-3" type='submit'>Login</b-button>
+                      </b-col>
+                      <b-col cols="4">
+                        <b-link variant="outline-dark" @click="$router.push('register/')">Register</b-link>
+                      </b-col>
+                    </b-row>
+                </b-card-footer>
             </b-card>
+          </b-form>
         </b-col>
         <b-col></b-col>
     </b-row>
@@ -39,6 +48,20 @@ export default {
       password: "",
       showError: false,
     };
+  },
+  computed: {
+    invalidFeedback: function () {
+      if (this.showError) {
+        return "Invalid username or password";
+      }
+      return "";
+    },
+    validationState: function () {
+      if (this.showError) {
+        return false;
+      }
+      return null;
+    },
   },
   methods: {
         handleSubmit: function() {

@@ -1,131 +1,89 @@
 <template>
-    <div>
-    <form
-            novalidate
-            class="md-layout"
-            @submit.prevent="validateDataset"
-            enctype="multipart/form-data"
-            v-if="!datasetSaved"
-    >
-        <md-card md-with-hover class="halfwidth center">
-            <md-card-header>
-                <div class="md-title">Register</div>
-            </md-card-header>
+<b-container>
+    <b-row fluid class="flex-grow-1 d-flex align-items-center justify-content-center">
+        <b-col  md="6" lg="4" cols="5">
+        <b-form @submit="validateDataset">
+        <b-card class="registration-card" no-body>
+            <b-card-header>
+                    <h4 class="mb-0">Register</h4>
+            </b-card-header>
 
-            <md-card-content>
-                <!-- Username -->
-                <md-field :class="getValidationClass('userName')">
-                    <label for="userName">Username</label>
-                    <md-input
-                        name="userName"
-                        id="userName"
-                        v-model="form.userName"
-                        :disabled="sending"
-                        required
-                    />
-                    <span
-                        class="md-error"
-                        v-if="!$v.form.userName.required"
-                        >A username is required!</span
-                    >
-                    <span
-                        class="md-error"
-                        v-if="!$v.form.userName.minLength || !$v.form.userName.maxLength"
-                        >Username needs to be within 3 and 80 characters</span
-                    >
-                </md-field>
-                <!-- Username -->
-                <md-field :class="getValidationClass('emailAddress')">
-                    <label for="emailAddress">Email address</label>
-                    <md-input
-                        name="emailAddress"
-                        id="emailAddress"
-                        v-model="form.emailAddress"
-                        :disabled="sending"
-                        required
-                    />
-                    <span
-                        class="md-error"
-                        v-if="!$v.form.emailAddress.required"
-                        >An email-address is required!</span
-                    >
-                                        <span
-                        class="md-error"
-                        v-if="!$v.form.emailAddress.email"
-                        >Not a valid format</span
-                    >
-                </md-field>
-                <!-- Password 1 -->
-                <md-field :class="getValidationClass('password1')">
-                    <label for="password1">Password</label>
-                    <md-input
-                        name="password1"
-                        id="password1"
-                        v-model="form.password1"
-                        :disabled="sending"
-                        type="password"
-                        required
-                    />
-                    <span
-                        class="md-error"
-                        v-if="!$v.form.password1.required"
-                        >A password is required!</span
-                    >
-                </md-field>
-                <!-- Password 2 -->
-                <md-field :class="getValidationClass('password2')">
-                    <label for="password2">Confirm password</label>
-                    <md-input
-                        name="password2"
-                        id="password2"
-                        v-model="form.password2"
-                        :disabled="sending"
-                        type="password"
-                        required
-                    />
-                    <span
-                        class="md-error"
-                        v-if="!$v.form.password2.required"
-                        >You need to confirm your passowrd</span
-                    >
-                    <span
-                        class="md-error"
-                        v-if="!$v.form.password2.sameAsFirst && $v.form.password2.required"
-                        >Passwords need to be equal</span
-                    >
-                </md-field>
-            </md-card-content> 
-            <!-- Progress bar -->
-            <md-progress-bar md-mode="indeterminate" v-if="sending" />
-            <!-- Buttons for user creation -->
-            <md-card-actions>
-                <!-- <md-button
-                    type="submit"
-                    class="md-primary"
-                    :disabled="sending"
-                    >Create user</md-button
-                > -->
-                <md-button
-                    class="md-primary"
-                    >Create user</md-button
-                ><md-tooltip md-direction="top"
-                >Public registration will be available soon!</md-tooltip
-                >
-            </md-card-actions>
-        </md-card>
-        <!-- Submission notification -->
-        <md-snackbar :md-active.sync="datasetSaved"
-            >Registration was successful. Confirm your email to start exploring!</md-snackbar
-        >
-    </form>
-    <md-empty-state
-        md-icon="devices_other"
-        md-label="Confirm your email"
-        md-description="After you have confirmed your E-mail you can start exploring!"
-        v-else>
-        <md-button @click="$router.push('/login')" class="md-primary md-raised">Login</md-button>
-    </md-empty-state>
-    </div>
+            <b-card-body>
+            <!-- Username -->
+            <b-form-group
+                label="Username"
+                label-for="userName"
+                :state="getValidationState('userName')"
+                invalid-feedback="Username needs to be within 3 and 80 characters"
+            >
+                <b-form-input
+                id="userName"
+                v-model="form.userName"
+                :state="getValidationState('userName')"
+                ></b-form-input>
+            </b-form-group>
+            <!-- Email Address -->
+            <b-form-group
+                label="Email address"
+                label-for="emailAddress"
+                :state="getValidationState('emailAddress')"
+                invalid-feedback="Not a valid format"
+            >
+                <b-form-input
+                id="emailAddress"
+                v-model="form.emailAddress"
+                :state="getValidationState('emailAddress')"
+                ></b-form-input>
+            </b-form-group>
+            <!-- Password 1 -->
+            <b-form-group
+                label="Password"
+                label-for="password1"
+                :state="getValidationState('password1')"
+                invalid-feedback="At least 5 characters!"
+            >
+                <b-form-input
+                id="password2"
+                v-model="form.password1"
+                :state="getValidationState('password1')"
+                type="password"
+                ></b-form-input>
+            </b-form-group>
+            <!-- Password 2 -->
+            <b-form-group
+                label="Confirm password"
+                label-for="password2"
+                :state="getValidationState('password2')"
+                invalid-feedback="Passwords need to be equal"
+            >
+                <b-form-input
+                id="password2"
+                v-model="form.password2"
+                :state="getValidationState('password2')"
+                type="password"
+                ></b-form-input>
+            </b-form-group>
+            </b-card-body>
+
+            <b-card-footer>
+            <b-button type="submit" variant="primary">Create user</b-button>
+            <b-tooltip target="create-user" triggers="hover" placement="top">
+                Public registration will be available soon!
+            </b-tooltip>
+            </b-card-footer>
+        </b-card>
+        </b-form>
+        </b-col>
+    </b-row>
+    <b-row fluid class="flex-grow-1 d-flex align-items-center justify-content-center">
+        <b-col  md="6" lg="4" cols="5">
+            <b-alert  v-if="datasetSaved" variant="success" show>
+            Registration was successful!
+            <b-button @click="$router.push('/login')" variant="primary" class="ml-2">Login</b-button>
+            </b-alert>
+        </b-col>
+    </b-row>
+</b-container>
 </template>
 
 <script>
@@ -190,15 +148,13 @@ export default {
                     });
             }
         },
-        getValidationClass(fieldName) {
-            // matrial validation class for form field;
+        getValidationState(fieldName) {
+            // assigns validation state to form fields
             const field = this.$v.form[fieldName];
-
             if (field) {
-                return {
-                    "md-invalid": field.$invalid && field.$dirty
-                };
+                return (field.$invalid && field.$dirty) ? false: null
             }
+            return null;
         },
         saveDataset() {
             this.sending = true; // show progress bar
@@ -230,6 +186,7 @@ export default {
         },
         validateDataset() {
             this.$v.$touch();
+            console.log("triggered")
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
@@ -238,33 +195,11 @@ export default {
 };
 </script>
 
+
 <style scoped>
-.md-progress-bar {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
+.registration-card {
+  min-width: 200px;
+  margin: auto;
 }
 
-
-.halfwidth {
-    width: 20vw;
-    height: 35v;
-}
-
-.center {
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.red {
-    color: red;
-}
-
-.floatright {
-    float: right;
-}
 </style>
