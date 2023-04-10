@@ -1,6 +1,5 @@
 <template>
-    <div class="page-container md-layout-column">
-        <md-toolbar class="md-dense md-primary small-padding">
+  <div class="fill-viewport-height flex-box">
             <toolbar
                 @drawer-clicked="menuVisible = !menuVisible"
                 @add-session-click="showAddSessionDialog = true"
@@ -8,9 +7,8 @@
                 @showNotificationDrawer="notificationDrawerVisible = true"
                 @showProcessingDrawer="processingDrawerVisible = true"
             ></toolbar>
-        </md-toolbar>
 
-        <md-drawer :md-active.sync="menuVisible">
+        <b-sidebar :visible="menuVisible" id="menu" title="Data management" shadow>
             <drawer
                 @mydataset-click="handleShowMyDatasetDialog"
                 @add-region-click="
@@ -50,24 +48,18 @@
                     menuVisible = false;
                 "
             ></drawer>
-        </md-drawer>
+        </b-sidebar>
 
-        <md-drawer
-            class="md-right notification-drawer"
-            :md-active.sync="processingDrawerVisible"
-        >
+        <b-sidebar id="processing-drawer" title="Processing drawer" right shadow :visible="processingDrawerVisible">
             <processing-drawer />
-        </md-drawer>
+        </b-sidebar>
 
-        <md-drawer
-            class="md-right notification-drawer"
-            :md-active.sync="notificationDrawerVisible"
-        >
+        <b-sidebar id="notification-drawer" title="Notification drawer" right shadow :visible="notificationDrawerVisible">
             <notification-drawer />
-        </md-drawer>
+        </b-sidebar>
 
-        <md-content>
-            <router-view></router-view>
+    <b-container class="d-flex justify-content-center align-items-center fill-remaining-height">
+                    <router-view></router-view>
             <!-- <md-empty-state>
                 <empty-state-basic>
                 </empty-state-basic>
@@ -158,7 +150,7 @@
                 :reactToSelection="reactToSelectionCollections"
                 @close-dialog="showSelectCollectionDialog = false"
             />
-        </md-content>
+    </b-container>
     </div>
 </template>
 
@@ -341,25 +333,8 @@ export default {
 </script>
 
 <style scoped>
-.page-container {
-    height: 100vh;
-    background-color: #fff;
-    overflow-x: hidden;
-    position: relative;
-    border: 1px solid rgba(#000, 0.12);
-}
 
-.md-content {
-    padding: 16px;
-    background-color: transparent;
-}
-
-.small-padding {
-    padding: 0 16px;
-}
-
-.notification-drawer {
-    width: 600px;
-    max-width: calc(100vw - 125px);
+.fill-viewport-height {
+  height: 100vh;
 }
 </style>

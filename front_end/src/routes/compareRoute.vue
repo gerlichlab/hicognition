@@ -7,9 +7,6 @@
             :key="item.id"
             :id="item.id"
         />
-        <div v-if="!collections[0]">
-            <empty-state-basic> </empty-state-basic>
-        </div>
         <div class="bottom-right">
             <md-button class="md-fab md-primary" @click="addCollection">
                 <md-icon>add</md-icon>

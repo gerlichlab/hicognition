@@ -1,107 +1,47 @@
 <template>
-    <div>
-        <!-- span window horizontal is needed to position logout on the right -->
-        <div class="md-toolbar-row span-window-horizontal">
-            <div class="md-toolbar-section-start">
-                <md-button
-                    class="md-icon-button"
-                    @click="$emit('drawer-clicked')"
-                >
-                    <md-icon>menu</md-icon>
-                </md-button>
-                <span v-if="isDemo" class="md-title">Demo &nbsp</span>
-                <span v-if="!isDemo" class="md-title"
-                    >{{ userName }} @ &nbsp</span
-                >
-                <span class="md-headline">HiCognition {{ appversion }}</span>
-            </div>
+  <div>
+    <b-navbar toggleable="lg" variant="primary" class="sticky-top">
+    <b-navbar-nav>
+        <b-nav-item>
+            <b-button @click="$emit('drawer-clicked')">
+            <b-icon icon="list"></b-icon>
+            </b-button>
+        </b-nav-item>
+        <b-nav-text >
+            <b-button variant="outline-secondary" disabled>
+                <span v-if="isDemo" >Demo &nbsp</span>
+                <span v-if="!isDemo" >{{ userName }} @ &nbsp</span>
+                <span>HiCognition {{ appversion }}</span>
+            </b-button>
+        </b-nav-text>
+    </b-navbar-nav>
 
-            <div class="md-toolbar-section-end">
-                <div class="md-badge-content">
-                    <transition name="slide-fade">
-                        <span
-                            class="md-title"
-                            style="padding: 8px; color: #264d69"
-                            v-if="showDocumentationText"
-                            >Documentation</span
-                        >
-                    </transition>
-                </div>
-                <div class="md-badge-content">
-                    <md-button
-                        class="md-icon-button no-margin"
-                        @mouseenter="showDocumentationText = true"
-                        @mouseleave="showDocumentationText = false"
-                        href="https://app.hicognition.com/docs/"
-                    >
-                        <md-icon>article</md-icon>
-                    </md-button>
-                </div>
-                <div class="md-badge-content">
-                    <md-button
-                        class="md-icon-button no-margin"
-                        @click="$emit('showProcessingDrawer')"
-                    >
-                        <md-icon>timelapse</md-icon>
-                    </md-button>
-                    <div
-                        class="md-badge position-top-right md-dense yellow"
-                        v-show="numberProcessing > 0"
-                    >
-                        <span class="md-body-2">{{
-                            this.numberProcessing
-                        }}</span>
-                    </div>
-                </div>
-                <div class="md-badge-content">
-                    <md-button
-                        class="md-icon-button no-margin"
-                        @click="$emit('showNotificationDrawer')"
-                    >
-                        <md-icon>notifications</md-icon>
-                    </md-button>
-                    <div
-                        class="md-badge position-top-right md-dense red"
-                        v-show="numberNotifications > 0"
-                    >
-                        <span class="md-body-2">{{
-                            this.numberNotifications
-                        }}</span>
-                    </div>
-                </div>
+      <b-navbar-nav class="ml-auto">
 
-                <md-menu md-size="medium" md-align-trigger>
-                    <md-button md-menu-trigger class="md-icon-button">
-                        <md-icon>more_vert</md-icon>
-                    </md-button>
+        <b-nav-item @click="$emit('showProcessingDrawer')">
+          <b-icon icon="clock-fill"></b-icon>
+          <b-badge v-if="numberProcessing > 0" variant="warning" class="position-top-right">{{ numberProcessing }}</b-badge>
+        </b-nav-item>
 
-                    <md-menu-content>
-                        <md-menu-item v-if="isDemo"
-                            ><md-tooltip md-direction="top"
-                                >Deactivated in demo mode</md-tooltip
-                            >Save Session</md-menu-item
-                        >
-                        <md-menu-item
-                            v-if="!isDemo"
-                            @click="$emit('add-session-click')"
-                            >Save Session</md-menu-item
-                        >
-                        <md-menu-item @click="$emit('my-sessions-click')"
-                            >My Sessions</md-menu-item
-                        >
-                        <md-menu-item v-if="!isDemo" @click="logout"
-                            >Logout</md-menu-item
-                        >
-                        <md-menu-item v-if="isDemo"
-                            ><md-tooltip md-direction="top"
-                                >No users in demo mode</md-tooltip
-                            >Logout</md-menu-item
-                        >
-                    </md-menu-content>
-                </md-menu>
-            </div>
-        </div>
-    </div>
+        <b-nav-item @click="$emit('showNotificationDrawer')">
+          <b-icon icon="bell-fill"></b-icon>
+          <b-badge v-if="numberNotifications > 0" variant="danger" class="position-top-right">{{ numberNotifications }}</b-badge>
+        </b-nav-item>
+
+        <b-nav-item-dropdown right>
+          <template #button-content>
+            <b-icon icon="gear-fill"></b-icon>
+          </template>
+          <b-dropdown-item href="https://app.hicognition.com/docs/" target="_blank">Documentation</b-dropdown-item> 
+          <b-dropdown-item v-if="!isDemo" @click="$emit('add-session-click')">Save Session</b-dropdown-item>
+          <b-dropdown-item disabled v-if="isDemo">Save Session</b-dropdown-item>
+          <b-dropdown-item @click="$emit('my-sessions-click')">My Sessions</b-dropdown-item>
+          <b-dropdown-item v-if="!isDemo" @click="logout">Logout</b-dropdown-item>
+          <b-dropdown-item disabled v-if="isDemo">Logout</b-dropdown-item>
+        </b-nav-item-dropdown>
+      </b-navbar-nav>
+    </b-navbar>
+  </div>
 </template>
 
 <script>
@@ -161,42 +101,5 @@ export default {
 </script>
 
 <style>
-.span-window-horizontal {
-    width: 97vw !important;
-}
 
-.red {
-    background-color: #D48D87;
-}
-
-.yellow {
-    background-color: #D4C187;
-}
-
-.position-top-right {
-    top: -2px;
-    right: 4px;
-}
-
-.no-margin {
-    margin: 0px;
-}
-
-/*
-  Enter and leave animations can use different
-  durations and timing functions.
-*/
-.slide-fade-enter-active {
-    transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
-}
-
-.slide-fade-leave-active {
-    transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-    transform: translateX(20px);
-    opacity: 0;
-}
 </style>
