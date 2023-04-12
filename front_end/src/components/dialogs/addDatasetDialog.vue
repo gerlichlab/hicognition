@@ -1,90 +1,37 @@
 <template>
     <div>
-        <md-dialog :md-active.sync="showDialog">
-            <md-dialog-title
-                >{{ welcomeMessage }}
-
-                <md-icon
-                    >info
-
-                    <md-tooltip md-direction="right">
-                        <div>
-                            <span class="md-title"
-                                >Information about addition of data</span
-                            >
-                        </div>
-                        <div class="mainText">
-                            <p>
-                                <span class="md-subheading">
-                                    Datasets can either be genomic intervals or
-                                    genomic features. Genomic intervals can be
-                                    added int form of bedfiles and genomic
-                                    features can be added either in the form of
-                                    cooler files (.mcool) or bigwig files.
-                                </span>
-                            </p>
-                            <br />
-                            <p>
-                                <span class="md-subheading">
-                                    The added files need to conform to certain
-                                    formatting standards to ensure
-                                    compatibility. For bedfiles, the first three
-                                    columns need to be
-                                    <b>(chrom, start, end)</b> and specify the
-                                    chromosome, start-position and end-position
-                                    of a feature. In addition, chromosomes need
-                                    to be in the hg19 genome and not be any of
-                                    the small contigs (only chr${specifier} is
-                                    accepted, where specified is either a number
-                                    from 1 to 22 or one of X or Y).
-                                </span>
-                            </p>
-                            <br />
-                            <p>
-                                <span class="md-subheading">
-                                    For mcooler files, the following resolutions
-                                    need to be available:
-                                    <b
-                                        >[1000, 2000, 5000, 10000,20000,50000,
-                                        100000, 200000]</b
-                                    >. For bigwig files, no formatting
-                                    requirement is enforced other than one
-                                    should be able to open them with pybbi. Note
-                                    however that if a binsize is not availalbe,
-                                    the respective plot will not show any data.
-                                </span>
-                            </p>
-                        </div>
-                    </md-tooltip>
-                </md-icon>
-            </md-dialog-title>
-            <md-dialog-content>
-                <md-tabs class="md-primary">
-                    <md-tab id="tab-single" md-label="Single">
-                        <div
-                            style="
-                                overflow: auto;
-                                max-height: 600px;
-                                padding: 10px;
-                            "
-                        >
-                            <addDatasetForm
-                                @close-dialog="$emit('close-dialog')"
-                                :datasetType="datatype"
-                            ></addDatasetForm>
-                        </div>
-                    </md-tab>
-                    <md-tab id="tab-bulk" md-label="Bulk">
-                        <addDatasetStepper
+        <b-modal
+            v-model="showDialog"
+            size="xl"
+            modal-class="modal-90vh"
+            scrollable
+            centered
+        >
+            <template v-slot:modal-title>
+                {{ welcomeMessage }}
+            </template>
+            <b-tabs content-class="mt-3">
+                <b-tab title="Single">
+                        <add-dataset-form
                             @close-dialog="$emit('close-dialog')"
                             :datasetType="datatype"
-                            :fileTypeMapping="fileTypeMapping"
-                        >
-                        </addDatasetStepper>
-                    </md-tab>
-                </md-tabs>
-            </md-dialog-content>
-        </md-dialog>
+                            ref="addDatasetForm"
+                        ></add-dataset-form>
+                </b-tab>
+                <b-tab title="Bulk">
+                    <add-dataset-stepper
+                        @close-dialog="$emit('close-dialog')"
+                        :datasetType="datatype"
+                        :fileTypeMapping="fileTypeMapping"
+                    >
+                    </add-dataset-stepper>
+                </b-tab>
+            </b-tabs>
+            <template v-slot:modal-footer>
+                <b-button @click="$emit('close-dialog')">Close</b-button>
+                <b-button @click="handleSubmit">Submit</b-button>
+            </template>
+        </b-modal>
     </div>
 </template>
 
@@ -105,8 +52,13 @@ export default {
         datatype: String // region or feature
     },
     data: () => ({
-        fileTypes: null
+        fileTypes: null,
     }),
+    methods: {
+        handleSubmit() {
+            this.$refs.addDatasetForm.validateDataset();
+        }
+    },
     computed: {
         welcomeMessage: function() {
             if (this.datatype == "feature") {
@@ -117,17 +69,17 @@ export default {
                 return "Add dataset";
             }
         },
-        fileTypeMapping: function () {
+        fileTypeMapping: function() {
             if (this.datatype == "feature") {
                 return {
                     mcool: "cooler",
                     bw: "bigwig",
                     bigwig: "bigwig",
-                    bigWig: "bigwig",
+                    bigWig: "bigwig"
                 };
             } else if (this.datatype == "region") {
                 return {
-                    bed: "bedfile",
+                    bed: "bedfile"
                 };
             } else {
                 return {
@@ -135,24 +87,23 @@ export default {
                     mcool: "cooler",
                     bw: "bigwig",
                     bigwig: "bigwig",
-                    bigWig: "bigwig",
+                    bigWig: "bigwig"
                 };
             }
         },
-        showDialog: function() {
-            return this.dialog;
-        },
+        showDialog: {
+            get() {
+                return this.dialog;
+            },
+            set(value) {
+                this.$emit('close-dialog');
+            }
+        }
     }
 };
 </script>
 
 <style lang="scss" scoped>
-.md-dialog-content {
-    padding: 0px;
-    min-width: 60vw;
-    min-height: 60vh;
-}
-
 .mainText {
     display: block;
     width: 5vw;
@@ -163,11 +114,7 @@ export default {
     white-space: normal;
 }
 
-.md-tooltip {
-    height: auto;
-}
-
-.md-dialog-actions {
-    display: inline;
+.modal-90vh {
+    max-height: 90vh;
 }
 </style>

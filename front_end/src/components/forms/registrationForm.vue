@@ -1,9 +1,9 @@
 <template>
-<b-container>
+<b-container class="container">
     <b-row fluid class="flex-grow-1 d-flex align-items-center justify-content-center">
         <b-col  md="6" lg="4" cols="5">
         <b-form @submit="validateDataset">
-        <b-card class="registration-card" no-body>
+        <b-card no-body>
             <b-card-header>
                     <h4 class="mb-0">Register</h4>
             </b-card-header>
@@ -197,9 +197,7 @@ export default {
 
 
 <style scoped>
-.registration-card {
-  min-width: 200px;
-  margin: auto;
+.container {
+  overflow: visible !important;
 }
-
 </style>

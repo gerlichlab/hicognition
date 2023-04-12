@@ -58,7 +58,7 @@
             <notification-drawer />
         </b-sidebar>
 
-    <b-container class="d-flex justify-content-center align-items-center fill-remaining-height">
+    <b-container class="d-flex justify-content-center align-items-center fill-remaining-height no-padding" fluid>
                     <router-view></router-view>
             <!-- <md-empty-state>
                 <empty-state-basic>
@@ -337,4 +337,9 @@ export default {
 .fill-viewport-height {
   height: 100vh;
 }
+
+.no-padding {
+  padding: 0px;
+}
+
 </style>

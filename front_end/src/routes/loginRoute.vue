@@ -1,6 +1,6 @@
 <template>
   <div class="fill-viewport-height flex-box">
-    <b-navbar toggleable="lg" type="dark" variant="primary" class="sticky-top">
+    <b-navbar toggleable="lg" variant="primary" class="sticky-top">
       <login-toolbar></login-toolbar>
     </b-navbar>
 

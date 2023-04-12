@@ -1,18 +1,16 @@
 <template>
   <div>
-    <b-navbar toggleable="lg" variant="primary" class="sticky-top">
+    <b-navbar toggleable="lg" variant="primary" class="sticky-top" pills>
     <b-navbar-nav>
-        <b-nav-item>
-            <b-button @click="$emit('drawer-clicked')">
-            <b-icon icon="list"></b-icon>
+        <b-nav-form>
+            <b-button size="sm">
+                <b-icon icon="list" @click="$emit('drawer-clicked')"></b-icon>
             </b-button>
-        </b-nav-item>
-        <b-nav-text >
-            <b-button variant="outline-secondary" disabled>
+        </b-nav-form>
+        <b-nav-text style="padding-left: 10px;">
                 <span v-if="isDemo" >Demo &nbsp</span>
-                <span v-if="!isDemo" >{{ userName }} @ &nbsp</span>
+                <span v-if="!isDemo" >{{ userName }} @ </span>
                 <span>HiCognition {{ appversion }}</span>
-            </b-button>
         </b-nav-text>
     </b-navbar-nav>
 

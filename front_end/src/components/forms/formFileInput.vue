@@ -1,34 +1,26 @@
 <template>
-    <div class="md-layout-item md-small-size-100">
-        <md-field :class="validationClass">
-            <!--:class="getValidationClass('file')">-->
-            <label for="file">File</label>
-            <md-file
-                id="file"
-                name="file"
-                v-model="form.file"
-                @md-change="handleFileChange"
-                :accept="acceptedFileTypes"
-                required
-            />
-            <span class="md-error" v-if="!$v.form.file.required"
-                >A file is required</span
-            >
-            <span class="md-error" v-else-if="!$v.form.file.validateFiletype">
-                Wrong filetype!
-            </span>
-        </md-field>
-    </div>
+    <b-form-group
+      :state="getValidationState('file')"
+      label="File"
+      label-for="file"
+      invalid-feedback="A file is required."
+    >
+      <b-form-file
+        id="file"
+        name="file"
+        v-model="form.file"
+        @change="handleFileChange"
+        :accept="acceptedFileTypes"
+        required
+      ></b-form-file>
+    </b-form-group>
 </template>
+
 
 <script>
 import { validationMixin } from "vuelidate";
 import {
-    required,
-    minLength,
-    maxLength,
-    requiredIf,
-    url
+    required
 } from "vuelidate/lib/validators";
 
 export default {
@@ -89,16 +81,21 @@ export default {
             this.fileExt = nameSplit[nameSplit.length - 1];
             this.$emit("input-changed", event[0], this.fileExt);
             console.log("input-changed, " + event[0] + ", " + this.fileExt);
-        }
+        },
+        getValidationState(fieldName) {
+            // assigns validation state to form fields
+            const field = this.$v.form[fieldName];
+            if (field) {
+                return (field.$invalid && field.$dirty) ? false: null
+            }
+            return null;
+        },
     },
     computed: {
         acceptedFileTypes: function() {
             // TODO sprint9
             // build accept parameter for file chooser, e.g. ".bed,.mcool,.bw"
             return "." + Object.keys(this.fileTypeMapping).join(",.");
-        },
-        validationClass: function() {
-            return { "md-invalid": this.$v.$dirty && this.$v.$invalid };
         }
     }
 };
