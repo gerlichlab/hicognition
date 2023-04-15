@@ -1,114 +1,99 @@
 <template>
-    <div>
-        <md-steppers :md-active-step.sync="active" md-linear>
-            <md-step
-                id="first"
-                md-label="Select files"
-                :md-editable="false"
-                :md-done.sync="first"
-            >
-                <selectBulkDatasetForm
-                    :fileTypeMapping="fileTypeMapping"
-                    @files-selected="handleFileSelectionSuccessful"
-                ></selectBulkDatasetForm>
-                <md-button
-                    class="md-raised md-primary"
-                    @click="$emit('close-dialog')"
-                    >Close</md-button
-                >
-            </md-step>
+    <b-container>
+      <b-form @submit.prevent="validateDataset">
+          <b-row
+                v-for="(step, index) in steps"
+                  :key="index"
+                  class="mb-3"
+          
+          >
+            <b-col>
+              <b-list-group>
+                <b-list-group-item>
+                      <b-button
+                        v-b-toggle="'collapse-' + index"
+                        variant="info"
+                        class="margin"
+                      >
+                        {{ step.label }}: {{ step.description }}
+                      </b-button>
 
-            <md-step
-                id="second"
-                md-label="Name and genome"
-                :md-editable="false"
-                :md-done.sync="second"
-            >
-                <step2BulkDatasetForm
-                    :fileTypeMapping="fileTypeMapping"
-                    :files="selectedFiles"
-                    @step-completion="
-                        handleStepCompletion($event, 'second', 'third')
-                    "
-                />
-                <md-button
-                    class="md-raised md-primary"
-                    @click="$emit('close-dialog')"
-                    >Close</md-button
-                >
-            </md-step>
-            <md-step
-                id="third"
-                md-label="Conditions"
-                :md-editable="false"
-                :md-done.sync="third"
-            >
-                <step-3-bulk-dataset-form
-                    :fileInformation="elements"
-                    :fileTypeMapping="fileTypeMapping"
-                />
-                <md-button
-                    class="md-raised md-primary"
-                    @click="$emit('close-dialog')"
-                    >Close</md-button
-                >
-            </md-step>
-        </md-steppers>
-    </div>
+
+                    <b-collapse :id="'collapse-' + index" accordion="my-accordion">
+                        <component
+                          :is="step.component"
+                          :files="files"
+                          :fileInformation="fileInformation"
+                          :fileTypeMapping="fileTypeMapping"
+                          @step-completion="updateData"
+                        ></component>
+                    </b-collapse>
+                </b-list-group-item>
+              </b-list-group>
+            </b-col>
+          </b-row>
+      </b-form>
+    </b-container>
 </template>
 
+
 <script>
-import selectBulkDatasetForm from "../forms/selectBulkDatasetForm.vue";
-import step2BulkDatasetForm from "../forms/step2BulkDatasetForm.vue";
+import step1FileUpload from "../forms/step1FileUpload.vue";
+import step2DatasetInfo from "../forms/step2DatasetInfo.vue";
 import step3BulkDatasetForm from "../forms/step3BulkDatasetForm.vue";
 
 export default {
-    name: "dataset-stepper",
-    components: {
-        selectBulkDatasetForm,
-        step2BulkDatasetForm,
-        step3BulkDatasetForm,
-    },
+  components: {
+    step1FileUpload,
+    step2DatasetInfo,
+    step3BulkDatasetForm,
+  },
     props: {
         fileTypeMapping: Object
     },
-    data: () => ({
-        active: "first",
-        first: false,
-        second: false,
-        third: false,
-        selectedFiles: null,
-        elements: undefined
-    }),
-    methods: {
-        handleFileSelectionSuccessful: function(files) {
-            this.selectedFiles = files;
-            this.first = true;
-            this.setDone("first", "second");
+  data() {
+    return {
+      steps: [
+        {
+          label: "Step 1",
+          description: "Select files to upload",
+          component: "step1FileUpload",
         },
-        handleStepCompletion: function(elements, currentStep, nextStep) {
-            if (!this.elements) {
-                this.elements = elements;
-            } else {
-                for (let [id, value] of Object.entries(elements)) {
-                    this.elements[id] = value;
-                }
-            }
-            this.setDone(currentStep, nextStep);
+        {
+          label: "Step 2",
+          description: "Add basic information",
+          component: "step2DatasetInfo",
         },
-        setDone(id, index) {
-            this[id] = true;
-
-            if (index) {
-                this.active = index;
-            }
-        }
-    }
+        {
+          label: "Step 3",
+          description: "Add metadata",
+          component: "step3BulkDatasetForm",
+        },
+      ],
+      files: [],
+      fileInformation: [],
+    };
+  },
+  methods: {
+    updateData(stepData) {
+        console.log(stepData)
+      // Process step data
+      if (stepData.files) {
+        this.files = stepData.files;
+      }
+      if (stepData.fileInformation) {
+        this.fileInformation = stepData.fileInformation;
+      }
+    },
+    validateDataset() {
+      // Perform validation and submit the dataset
+    },
+  },
 };
 </script>
 
-<style lang="scss" scoped>
-.md-stepper {
-    padding: 16px 0px;
+<style scoped>
+.margin {
+  margin-bottom: 10px;
 }
 </style>
