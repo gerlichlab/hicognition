@@ -3,16 +3,21 @@
       :state="getValidationState('file')"
       label="File"
       label-for="file"
-      invalid-feedback="A file is required."
     >
       <b-form-file
         id="file"
         name="file"
         v-model="form.file"
-        @change="handleFileChange"
         :accept="acceptedFileTypes"
+        :state="getValidationState('file')"
         required
       ></b-form-file>
+    <b-form-invalid-feedback v-if="!$v.form.file.required">
+      A file is required.
+    </b-form-invalid-feedback>
+    <b-form-invalid-feedback v-if="!$v.form.file.validFileType">
+      Filetype is invalid.
+    </b-form-invalid-feedback>
     </b-form-group>
 </template>
 
@@ -47,8 +52,8 @@ export default {
     },
     methods: {
         validFiletype(event) {
-            if (event.target) {
-                event = event.target.files[0].name;
+            if (this.form.file) {
+                event = this.form.file.name;
             }
 
             if (!(typeof event === "string" || event instanceof String)) {
@@ -59,14 +64,13 @@ export default {
             let fileEnding = namearray[namearray.length - 1];
             return fileEnding in this.fileTypeMapping;
         },
-        handleFileChange(event) {
+        handleFileChange() {
             // check validity of form
             this.$v.$touch();
             if (!this.$v.$dirty) {
                 // should not be dirty, as this method called on change anyway
                 return;
             }
-
             // emit validity value
             this.componentValid = this.$v.$dirty && !this.$v.$invalid;
             this.$emit("update-component-validity", this.componentValid);
@@ -75,20 +79,15 @@ export default {
             if (!this.componentValid) {
                 return;
             }
-
             // emit file + extension
-            var nameSplit = event[0]["name"].split(".");
+            var nameSplit =this.form.file["name"].split(".");
             this.fileExt = nameSplit[nameSplit.length - 1];
-            this.$emit("input-changed", event[0], this.fileExt);
-            console.log("input-changed, " + event[0] + ", " + this.fileExt);
+            this.$emit("input-changed", this.form.file, this.fileExt);
+            console.log("input-changed, " + this.form.file + ", " + this.fileExt);
         },
-        getValidationState(fieldName) {
+        getValidationState() {
             // assigns validation state to form fields
-            const field = this.$v.form[fieldName];
-            if (field) {
-                return (field.$invalid && field.$dirty) ? false: null
-            }
-            return null;
+            return (this.$v.$invalid && this.$v.$dirty) ? false: null
         },
     },
     computed: {
@@ -96,6 +95,15 @@ export default {
             // TODO sprint9
             // build accept parameter for file chooser, e.g. ".bed,.mcool,.bw"
             return "." + Object.keys(this.fileTypeMapping).join(",.");
+        }
+    },
+    watch: {
+        "form.file": {
+            handler: function() {
+                // this is needed because the change event of the input field is not triggered before form.file updates
+                this.handleFileChange();
+            },
+            deep: true
         }
     }
 };

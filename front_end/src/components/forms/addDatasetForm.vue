@@ -1,4 +1,5 @@
 <template>
+        <b-overlay :show="sending">
             <b-card>
                 <b-card-body>
                     <b-row>
@@ -209,12 +210,8 @@
                         ></b-form-textarea>
                     </b-form-group>
                 </b-card-body>
-                <b-toast
-                v-if="datasetSaved"
-                :title="snackbarMessage"
-                auto-hide-delay="5000"
-            ></b-toast>
             </b-card>
+        </b-overlay>
 </template>
 
 <script>
@@ -222,14 +219,13 @@ import { validationMixin } from "vuelidate";
 import {
     required,
     requiredIf,
-    requiredUnless,
     minLength,
     maxLength
 } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 import formFileInput from "./formFileInput";
-import formURLInput from "./formURLInput";
+import formUrlInput from "./formURLInput";
 import formRepositoryInput from "./formRepositoryInput";
 
 export default {
@@ -241,7 +237,7 @@ export default {
     components: {
         formFileInput,
         formRepositoryInput,
-        formURLInput
+        formUrlInput
     },
     data: () => ({
         form: {
@@ -269,7 +265,7 @@ export default {
         fileType: null,
         selectedFile: null,
         componentValid: false,
-        snackbarMessage: null
+        snackbarMessage: null,
     }),
     validations() {
         // validators for the form
@@ -285,11 +281,6 @@ export default {
                 assembly: {
                     required
                 },
-                file: {
-                    requiredIf: requiredUnless(function() {
-                        return this.sourceURL != null || this.sourceID != null;
-                    })
-                },
                 description: {
                     maxLength: maxLength(80)
                 },
@@ -298,16 +289,6 @@ export default {
                         return this.datasetType == "region";
                     })
                 }
-            },
-            sourceURL: {
-                requiredIf: requiredUnless(function() {
-                    return this.selectedFile != null || this.sampleID != null;
-                })
-            },
-            sampleID: {
-                requiredIf: requiredUnless(function() {
-                    return this.selectedFile != null || this.sourceURL != null;
-                })
             },
         };
         return outputObject;
@@ -325,6 +306,14 @@ export default {
         }
     },
     methods: {
+        toast(title, message) {
+        this.$bvToast.toast(message, {
+          title: title,
+          toaster: 'b-toaster-top-right',
+          solid: true,
+          appendToast: true
+        })
+      },
         updateComponentValidity: function(validity) {
             this.componentValid = validity;
         },
@@ -427,7 +416,9 @@ export default {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
                     this.fetchAndStoreDatasets(); // apiMixin
+                    this.toast('Success', this.snackbarMessage)
                 }
+                this.$emit("dataset-saved-finished")
             });
         },
         validateDataset() {

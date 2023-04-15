@@ -1,40 +1,27 @@
 <template>
-    <div class="md-layout-item md-layout md-gutter">
-        <div class="md-layout-item md-small-size-100">
-            <md-field :class="validationSampleID()">
-                <label for="sampleID">Sample-ID</label>
-                <md-input
-                    name="sampleID"
-                    id="sampleID"
-                    v-model="form.sampleID"
-                    required
-                    @change="fetchSampleMetadata"
-                />
-                <span class="md-error" v-if="!$v.form.sampleID.required"
-                    >Sample ID is required</span
-                >
-                <span class="md-error" v-else-if="!$v.form.sampleID.minLength"
-                    >Sample ID is too short</span
-                >
-                <span class="md-error" v-else-if="!$v.form.sampleID.sampleFound"
-                    >No entry found for this sample ID</span
-                >
-                <!-- TODO this triggers when file type is not right?! -->
-                <span
-                    class="md-error"
-                    v-else-if="!$v.form.sampleID.accessAllowed"
-                    >Repository declined request (auth required)</span
-                >
-                <span
-                    class="md-error"
-                    v-else-if="!$v.form.sampleID.fileTypeValid"
-                    >Sample file type ({{ fileExt }}) is not allowed. Allowed:
-                    {{ acceptedFileTypes }}</span
-                >
-            </md-field>
-        </div>
-    </div>
+  <b-form-group label="Sample ID">
+    <b-form-input
+      id="sampleID"
+      v-model="form.sampleID"
+      @change="fetchSampleMetadata"
+      :state="validationState"
+      required
+    />
+    <b-form-invalid-feedback v-if="!$v.form.sampleID.minLength">
+      Sample ID must be at least 4 characters.
+    </b-form-invalid-feedback>
+    <b-form-invalid-feedback v-if="!$v.form.sampleID.sampleFound">
+      Sample not found.
+    </b-form-invalid-feedback>
+    <b-form-invalid-feedback v-if="!$v.form.sampleID.accessAllowed">
+      Access denied.
+    </b-form-invalid-feedback>
+    <b-form-invalid-feedback v-if="!$v.form.sampleID.fileTypeValid">
+      Invalid file type.
+    </b-form-invalid-feedback>
+  </b-form-group>
 </template>
+
 <script>
 import { validationMixin } from "vuelidate";
 import { required, minLength } from "vuelidate/lib/validators";
@@ -172,18 +159,14 @@ export default {
             this.componentValid = false;
             this.$emit("update-component-validity", this.componentValid);
             console.log("update-component-validity, " + this.componentValid);
-        },
-        validationSampleID: function() {
-            return {
-                "md-invalid":
-                    this.$v.form.sampleID.$dirty &&
-                    this.$v.form.sampleID.$invalid
-            };
         }
     },
     computed: {
         acceptedFileTypes: function() {
             return "" + Object.keys(this.fileTypeMapping).join(", ");
+        },
+          validationState() {
+            return this.$v.form.sampleID.$dirty ? !this.$v.form.sampleID.$invalid : null;
         }
     }
 };

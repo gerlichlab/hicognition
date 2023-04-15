@@ -1,49 +1,50 @@
 <template>
-    <div class="md-layout-item md-layout md-gutter">
-        <div class="md-layout-item md-small-size-100">
-            <md-field :class="validationSourceURL">
-                <label for="sourceURL">URL</label>
-                <md-input
-                    name="sourceURL"
-                    id="sourceURL"
-                    v-model="form.sourceURL"
-                    required
-                    @change="inputURLChanged"
-                />
-                <span class="md-error" v-if="!$v.form.sourceURL.url"
-                    >URL invalid! {{ urlErrorMsg }}</span
-                >
-                <span class="md-error" v-if="!$v.form.sourceURL.required"
-                    >URL required!</span
-                >
-            </md-field>
-        </div>
-        <div class="md-layout-item md-small-size-100">
-            <md-field :class="validationFileType">
-                <label for="fileType">File type</label>
-                <md-select
-                    id="fileType"
-                    name="fileType"
-                    v-model="form.fileType"
-                    required
-                    @md-selected="inputFileTypeChanged"
-                >
-                    <md-option
-                        v-for="fileType in fileTypes"
-                        :key="fileType"
-                        :value="fileType"
-                    >
-                        {{ fileType }}
-                    </md-option>
-                </md-select>
-
-                <span class="md-error" v-if="!$v.form.fileType.url"
-                    >Filetype is required</span
-                >
-            </md-field>
-        </div>
-    </div>
+  <b-form-row>
+    <b-col>
+      <b-form-group label="URL">
+        <b-form-input
+          id="sourceURL"
+          v-model="form.sourceURL"
+          @change="inputURLChanged"
+          :state="validationSourceURL"
+          required
+        />
+        <b-form-invalid-feedback v-if="!$v.form.sourceURL.url">
+          URL invalid! {{ urlErrorMsg }}
+        </b-form-invalid-feedback>
+        <b-form-invalid-feedback v-if="!$v.form.sourceURL.required">
+          URL required!
+        </b-form-invalid-feedback>
+      </b-form-group>
+    </b-col>
+    <b-col>
+      <b-form-group label="File type">
+        <b-form-select
+          id="fileType"
+          v-model="form.fileType"
+          @change="inputFileTypeChanged"
+          :state="validationFileType"
+          required
+        >
+          <b-form-select-option disabled value="">
+            Choose file type
+          </b-form-select-option>
+          <b-form-select-option
+            v-for="fileType in fileTypes"
+            :key="fileType"
+            :value="fileType"
+          >
+            {{ fileType }}
+          </b-form-select-option>
+        </b-form-select>
+        <b-form-invalid-feedback v-if="!$v.form.fileType.required">
+          Filetype is required
+        </b-form-invalid-feedback>
+      </b-form-group>
+    </b-col>
+  </b-form-row>
 </template>
+
 <script>
 import { validationMixin } from "vuelidate";
 import { required, url } from "vuelidate/lib/validators";
@@ -140,18 +141,10 @@ export default {
             return fileTypes;
         },
         validationSourceURL: function() {
-            return {
-                "md-invalid":
-                    this.$v.form.sourceURL.$dirty &&
-                    this.$v.form.sourceURL.$invalid
-            };
+                return this.$v.form.sourceURL.$dirty ? !this.$v.form.sourceURL.$invalid : null;
         },
         validationFileType: function() {
-            return {
-                "md-invalid":
-                    this.$v.form.fileType.$dirty &&
-                    this.$v.form.fileType.$invalid
-            };
+            return this.$v.form.fileType.$dirty ? !this.$v.form.fileType.$invalid : null;
         },
         urlErrorMsg: function() {
             let url = this.form.sourceURL.toLowerCase();

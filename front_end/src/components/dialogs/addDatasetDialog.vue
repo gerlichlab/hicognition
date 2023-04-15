@@ -14,6 +14,7 @@
                 <b-tab title="Single">
                         <add-dataset-form
                             @close-dialog="$emit('close-dialog')"
+                            @dataset-saved-finished="allowSubmit = true;"
                             :datasetType="datatype"
                             ref="addDatasetForm"
                         ></add-dataset-form>
@@ -29,7 +30,7 @@
             </b-tabs>
             <template v-slot:modal-footer>
                 <b-button @click="$emit('close-dialog')">Close</b-button>
-                <b-button @click="handleSubmit">Submit</b-button>
+                <b-button @click="handleSubmit" :disabled="!allowSubmit">Submit</b-button>
             </template>
         </b-modal>
     </div>
@@ -53,9 +54,11 @@ export default {
     },
     data: () => ({
         fileTypes: null,
+        allowSubmit: true
     }),
     methods: {
         handleSubmit() {
+            this.allowSubmit = false;
             this.$refs.addDatasetForm.validateDataset();
         }
     },
