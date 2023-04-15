@@ -169,7 +169,11 @@ export default {
                         sizeType: null,
                         filename: this.files[i].name,
                         file: this.files[i],
-                        public: false
+                        public: false,
+                        perturbation: null,
+                        cellType: null,
+                        state: undefined,
+                        description: undefined
                     };
                     this.elements.push(tempObject);
                 }

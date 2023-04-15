@@ -17,8 +17,6 @@
                       >
                         {{ step.label }}: {{ step.description }}
                       </b-button>
-
-
                     <b-collapse :id="'collapse-' + index" accordion="my-accordion">
                         <component
                           :is="step.component"
@@ -58,16 +56,19 @@ export default {
           label: "Step 1",
           description: "Select files to upload",
           component: "step1FileUpload",
+          validationState: false
         },
         {
           label: "Step 2",
           description: "Add basic information",
           component: "step2DatasetInfo",
+          validationState: false
         },
         {
           label: "Step 3",
           description: "Add metadata",
           component: "step3BulkDatasetForm",
+          validationState: false
         },
       ],
       files: [],
@@ -87,6 +88,36 @@ export default {
     },
     validateDataset() {
       // Perform validation and submit the dataset
+    },
+    saveDataset: async function () {
+      // Add any additional processing before sending the data
+      for (let element of this.elements) {
+        // Construct form data
+        var formData = new FormData();
+        for (let key in element) {
+          if (
+            key !== "id" &&
+            key !== "filename" &&
+            key !== "file" &&
+            key !== "state"
+          ) {
+            formData.append(key, element[key]);
+          }
+        }
+        // Add files
+        formData.append("file", element.file, element.file.name);
+        // Add filetype
+        formData.append("filetype", this.getFileType(element.file.name));
+        // Send the data
+        await this.postData("datasets/", formData).then((response) => {
+          if (!response) {
+            this.sending = false;
+            return;
+          }
+        });
+      }
+      this.clearForm();
+      setTimeout(() => (this.datasetSaved = true), 200);
     },
   },
 };

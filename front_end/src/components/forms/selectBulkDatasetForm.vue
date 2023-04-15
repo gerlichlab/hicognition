@@ -58,18 +58,16 @@ const correctFileType = function(value) {
     /* 
         validator for correct fileype. Note that this is the vue component in this example
     */
-    // string check is needed because event is first passed into the validator, followed by filename string, which is checked
-    if (typeof value === "string" || value instanceof String) {
-        for (let fileName of value.split(",")) {
-            let splitFileName = fileName.split(".");
-            let fileEnding = splitFileName[splitFileName.length - 1];
-            if (!(fileEnding in this.fileTypeMapping)) {
-                return false;
-            }
+   return true
+    for (file of value) {
+        let fileName = file.name;
+        let splitFileName = fileName.split(".");
+        let fileEnding = splitFileName[splitFileName.length - 1];
+        if (!(fileEnding in this.fileTypeMapping)) {
+            return false;
         }
-        return true;
     }
-    return false;
+    return true
 };
 
 export default {
