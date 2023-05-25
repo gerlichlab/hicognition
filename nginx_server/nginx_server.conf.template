@@ -1,0 +1,38 @@
+server {
+    # listen on port 80 (http)
+    client_max_body_size 50000M;
+    listen 80;
+    server_name _;
+
+    # serve front-end
+    location / {
+        root /front_end/dist/;
+        index index.html;
+    }
+
+    location /static {
+        alias /front_end/dist/static/;
+    }
+
+    # forward API requests to the flask server
+    location /flask/ {
+        # note that http://flask-server refers to the ip adress of the flask api server within the docker network
+        proxy_pass http://${HICOGNITION_UPSTREAM}/; # the trailing slash will cause /flask/ to be stripped from the request uri
+        proxy_connect_timeout 24h;
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_hide_header WWW-Authenticate; # will stop browser from doing a pop-up when 401 response is sent
+    }
+
+    location /favicon.ico {
+        alias /docs/public/images/favicon.png;
+    }
+
+    # serve docs
+    location /docs {
+        alias /docs/public/;
+        index index.html;
+    }
+}

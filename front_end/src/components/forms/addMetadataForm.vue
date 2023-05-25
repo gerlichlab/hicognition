@@ -35,7 +35,7 @@
                                     style="color: red"
                                     v-if="
                                         !$v.form.datasetID.required &&
-                                        $v.form.datasetID.$dirty
+                                            $v.form.datasetID.$dirty
                                     "
                                     >Regions are required</span
                                 >
@@ -121,48 +121,48 @@ export default {
         form: {
             datasetID: null,
             file: null,
-            separator: null,
+            separator: null
         },
         availableBedFiles: [],
         separators: [
             { name: "Comma", value: "," },
             { name: "Semicolon", value: ";" },
-            { name: "Tab", value: "tab" },
+            { name: "Tab", value: "tab" }
         ],
         datasetSaved: false,
         sending: false,
         selectedFile: null,
-        expectSelection: false,
+        expectSelection: false
     }),
     validations: {
         // validators for the form
         form: {
             datasetID: {
-                required,
+                required
             },
             file: {
-                required,
+                required
             },
             separator: {
-                required,
-            },
-        },
+                required
+            }
+        }
     },
     computed: {
-        regionName: function () {
+        regionName: function() {
             if (this.form.datasetID) {
                 return this.availableBedFiles.filter(
-                    (el) => el.id === this.form.datasetID
+                    el => el.id === this.form.datasetID
                 )[0].dataset_name;
             }
             return undefined;
         },
-        bedFilesAvailable: function () {
+        bedFilesAvailable: function() {
             return this.availableBedFiles.length != 0;
-        },
+        }
     },
     methods: {
-        startDatasetSelection: function () {
+        startDatasetSelection: function() {
             this.expectSelection = true;
             let preselection = this.form.datasetID ? [this.form.datasetID] : [];
             EventBus.$emit(
@@ -172,28 +172,28 @@ export default {
                 preselection
             );
         },
-        registerSelectionEventHandlers: function () {
+        registerSelectionEventHandlers: function() {
             EventBus.$on("dataset-selected", this.handleDataSelection);
             EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function () {
+        removeSelectionEventHandlers: function() {
             EventBus.$off("dataset-selected", this.handleDataSelection);
             EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function (id) {
+        handleDataSelection: function(id) {
             console.log("IE");
             if (this.expectSelection) {
                 this.form.datasetID = id;
                 this.expectSelection = false;
             }
         },
-        hanldeSelectionAbortion: function () {
+        hanldeSelectionAbortion: function() {
             this.expectSelection = false;
         },
-        getDatasets: function () {
+        getDatasets: function() {
             // fetches available datasets (cooler and bedfiles) from server
             this.availableBedFiles = this.$store.state.datasets.filter(
-                (element) => element.filetype == "bedfile"
+                element => element.filetype == "bedfile"
             );
         },
         getValidationClass(fieldName) {
@@ -202,7 +202,7 @@ export default {
 
             if (field) {
                 return {
-                    "md-invalid": field.$invalid && field.$dirty,
+                    "md-invalid": field.$invalid && field.$dirty
                 };
             }
         },
@@ -233,7 +233,7 @@ export default {
                 }
             }
             // API call including upload is made in the background
-            this.postData("bedFileMetadata/", formData).then((response) => {
+            this.postData("bedFileMetadata/", formData).then(response => {
                 if ("ValidationError" in response.data) {
                     this.$emit("form-error", "Rownumber is not compatible!");
                     this.sending = false;
@@ -258,15 +258,15 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        },
+        }
     },
-    created: function () {
+    created: function() {
         this.getDatasets();
         this.registerSelectionEventHandlers();
     },
-    beforeDestroy: function () {
+    beforeDestroy: function() {
         this.removeSelectionEventHandlers();
-    },
+    }
 };
 </script>
 

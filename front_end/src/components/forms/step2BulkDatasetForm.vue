@@ -20,12 +20,11 @@
                             </md-field>
                         </div>
 
-                        <div class="md-layout-item md-size-30">
+                        <div class="md-layout-item md-size-15">
                             <md-field
                                 :class="{
                                     'md-invalid':
-                                        v.assembly.$invalid &&
-                                        v.assembly.$dirty,
+                                        v.assembly.$invalid && v.assembly.$dirty
                                 }"
                             >
                                 <label :for="`assembly-${element.id}`"
@@ -65,7 +64,7 @@
                                 :class="{
                                     'md-invalid':
                                         v.datasetName.$invalid &&
-                                        v.datasetName.$dirty,
+                                        v.datasetName.$dirty
                                 }"
                             >
                                 <label :for="`name-${element.id}`">Name</label>
@@ -89,6 +88,35 @@
                                 >
                             </md-field>
                         </div>
+
+                        <div class="md-layout-item md-size-15" v-if="isRegion">
+                            <md-field 
+                                :class="{
+                                    'md-invalid':
+                                        v.sizeType.$invalid &&
+                                        v.sizeType.$dirty
+                                }"
+                            >
+                                <label :for="`sizeType-${element.id}`">SizeType</label>
+                                <md-select
+                                    :name="`sizeType-${element.id}`"
+                                    :id="`sizeType-${element.id}`"
+                                    v-model="element.sizeType"
+                                    :disabled="sending"
+                                    required
+                                >
+                                    <md-option value="Point">Point</md-option>
+                                    <md-option value="Interval">Interval</md-option>
+                                </md-select>
+                                <span
+                                    class="md-error"
+                                    v-if="!v.sizeType.required"
+                                    >A size type is required for regions</span
+                                >
+                            </md-field>
+                        </div>
+
+
 
                         <div class="md-layout-item md-size-10">
                             <md-checkbox
@@ -116,7 +144,7 @@
 
 <script>
 import { validationMixin } from "vuelidate";
-import { required, maxLength } from "vuelidate/lib/validators";
+import { required, requiredIf, maxLength } from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 export default {
@@ -124,37 +152,58 @@ export default {
     mixins: [validationMixin, apiMixin],
     props: {
         files: FileList,
-        fileTypeMapping: Object,
+        fileTypeMapping: Object
     },
     data: () => ({
         datasetSaved: false,
         sending: false,
         assemblies: {},
         elements: [],
-        datasetMetadataMapping: undefined,
+        datasetMetadataMapping: undefined
     }),
-    computed: {},
+    computed: {
+        isRegion: function() {
+            if (!this.files){
+                return
+            }
+            for (let i = 0; i < this.files.length; i++) {
+                if (this.getFileType(this.files[i].name) == 'bedfile'){
+                    return true
+                }
+            }
+            return false
+        }
+    },
     validations: {
         elements: {
             $each: {
                 datasetName: {
                     required,
-                    maxLength: maxLength(30),
+                    maxLength: maxLength(30)
+                },
+                sizeType: {
+                    required: requiredIf(function (value, vam){
+                        return this.isRegion
+                })
                 },
                 assembly: { required },
-                public: {},
-            },
-        },
+                public: {}
+            }
+        }
     },
     methods: {
+        getFileType: function(filename) {
+            let fileEnding = filename.split(".").pop();
+            return this.fileTypeMapping[fileEnding];
+        },
         fetchAssemblies() {
-            this.fetchData("assemblies/").then((response) => {
+            this.fetchData("assemblies/").then(response => {
                 if (response) {
                     this.assemblies = response.data;
                 }
             });
         },
-        getFileType: function (filename) {
+        getFileType: function(filename) {
             let fileEnding = filename.split(".").pop();
             return this.fileTypeMapping[fileEnding];
         },
@@ -166,14 +215,15 @@ export default {
                     id: i,
                     datasetName: null,
                     assembly: null,
+                    sizeType: null,
                     filename: this.files[i].name,
                     file: this.files[i],
-                    public: true,
+                    public: true
                 };
                 this.elements.push(tempObject);
             }
         },
-        saveDataset: async function () {
+        saveDataset: async function() {
             this.sending = true; // show progress bar
             // emit data
             let information = {};
@@ -189,30 +239,32 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
-        },
+        }
     },
-    mounted: function () {
+    mounted: function() {
         this.assemblies = this.fetchAssemblies();
-        this.datasetMetadataMapping =
-            this.$store.getters["getDatasetMetadataMapping"]["DatasetType"];
+        this.datasetMetadataMapping = this.$store.getters[
+            "getDatasetMetadataMapping"
+        ]["DatasetType"];
     },
     watch: {
-        files: function (val) {
+        files: function(val) {
             if (val) {
                 for (let i = 0; i < this.files.length; i++) {
                     var tempObject = {
                         id: i,
                         datasetName: null,
                         assembly: null,
+                        sizeType: null,
                         filename: this.files[i].name,
                         file: this.files[i],
-                        public: false,
+                        public: false
                     };
                     this.elements.push(tempObject);
                 }
             }
-        },
-    },
+        }
+    }
 };
 </script>
 

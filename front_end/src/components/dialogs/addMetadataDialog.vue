@@ -35,23 +35,23 @@ import addMetadataStepper from "../ui/addMetadataStepper";
 export default {
     name: "AddMetaDataDialog",
     components: {
-        addMetadataStepper,
+        addMetadataStepper
     },
     props: {
-        dialog: Boolean,
+        dialog: Boolean
     },
     computed: {
         showDialog: {
-            set: function (value) {
+            set: function(value) {
                 if (!value) {
                     this.$emit("close-dialog");
                 }
             },
-            get: function () {
+            get: function() {
                 return this.dialog;
-            },
-        },
-    },
+            }
+        }
+    }
 };
 </script>
 

@@ -3,8 +3,8 @@ import unittest
 from unittest.mock import patch
 import pandas as pd
 import numpy as np
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
-from hicognition import interval_operations
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
+from app.lib import interval_operations
 
 # add path to import app
 # import sys
@@ -35,11 +35,13 @@ class TestPipelineStackup(LoginTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # make datasets
-        self.bedfile = Dataset(id=1, filetype="bedfile")
-        self.bigwigfile = Dataset(id=2, filetype="bigwig")
+        self.bedfile = self.create_dataset(id=1, user_id=1, assembly=1, dataset_name="test", filetype="bedfile", dimension="1d")
+        self.bigwigfile = self.create_dataset(id=2, user_id=1, assembly=1, dataset_name="test", filetype="bigwig")
+        self.bedfile2d = self.create_dataset(id=3, user_id=1, assembly=1, dataset_name="test", filetype="bedfile", dimension="2d")
         # make intervals
         self.intervals1 = Intervals(id=1, dataset_id=1)
         self.intervals2 = Intervals(id=1, dataset_id=1)
+        self.intervals3 = Intervals(id=3, dataset_id=3)
         # make tasks
         self.finished_task1 = Task(
             id="test1", dataset_id=2, intervals_id=1, complete=True
@@ -47,6 +49,47 @@ class TestPipelineStackup(LoginTestCase):
         self.unfinished_task1 = Task(
             id="test1", dataset_id=2, intervals_id=1, complete=False
         )
+        self.unfinished_task2 = Task(
+            id="test1", dataset_id=2, intervals_id=3, complete=False
+        )
+
+    @patch("app.pipeline_steps.set_task_progress")
+    @patch("app.pipeline_steps.stackup_pipeline_step")
+    def test_1d_sequence_called_with_1d_dataset(
+        self, mock_stackup, mock_set_progress
+    ):
+        """tests whether dataset state is left unchanged if it is not the last task for
+        this dataset/intervals combination."""
+        # set up database
+        self.bedfile.processing_features = [self.bigwigfile]
+        db.session.add_all(
+            [self.bedfile, self.bigwigfile, self.intervals1, self.unfinished_task1]
+        )
+        # call pipeline
+        pipeline_stackup(2, 1, 10000)
+        # check whether processing has finished
+        self.assertEqual(1, mock_stackup.call_count)
+        self.assertTrue('region_side' not in mock_stackup.call_args[0])
+
+    @patch("app.pipeline_steps.set_task_progress")
+    @patch("app.pipeline_steps.stackup_pipeline_step")
+    def test_2d_sequence_called_with_2d_dataset(
+        self, mock_stackup, mock_set_progress
+    ):
+        """tests whether dataset state is left unchanged if it is not the last task for
+        this dataset/intervals combination."""
+        # set up database
+        self.bedfile.processing_features = [self.bigwigfile]
+        db.session.add_all(
+            [self.bedfile2d, self.bigwigfile, self.intervals3,self.unfinished_task2]
+        )
+        # call pipeline
+        pipeline_stackup(2, 3, 10000)
+        # check whether processing has finished
+        self.assertEqual(2, mock_stackup.call_count)
+        self.assertEqual(mock_stackup.call_args_list[0][1]['region_side'], 'left')
+        self.assertEqual(mock_stackup.call_args_list[1][1]['region_side'], 'right')
+
 
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.stackup_pipeline_step")
@@ -80,7 +123,7 @@ class TestPipelineStackup(LoginTestCase):
         # check whether processing has finished
         self.assertEqual(len(self.bedfile.processing_features), 0)
 
-    @patch("app.pipeline_steps.log.error")
+    @patch("app.pipeline_steps.current_app.logger.error")
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.stackup_pipeline_step")
     def test_dataset_set_failed_if_failed(
@@ -110,14 +153,14 @@ class TestStackupPipelineStep(LoginTestCase, TempDirTestCase):
         # call setUp of LoginTestCase to initialize app
         super().setUp()
         # add dataset
-        self.dataset = Dataset(
+        self.dataset = self.create_dataset(
             dataset_name="test3",
             file_path="/test/path/test3.bw",
             filetype="bigwig",
             processing_state="finished",
             user_id=1,
         )
-        self.dataset2 = Dataset(
+        self.dataset2 = self.create_dataset(
             dataset_name="test4",
             file_path="./tests/testfiles/test.bw",
             filetype="bigwig",
@@ -188,14 +231,14 @@ class TestStackupWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
         # call setUp of LoginTestCase to initialize app
         super().setUp()
         # add dataset
-        self.dataset = Dataset(
+        self.dataset = self.create_dataset(
             dataset_name="test3",
             file_path="/test/path/test3.bw",
             filetype="bigwig",
             processing_state="finished",
             user_id=1,
         )
-        self.dataset2 = Dataset(
+        self.dataset2 = self.create_dataset(
             dataset_name="test4",
             file_path="./tests/testfiles/test.bw",
             filetype="bigwig",
@@ -222,6 +265,48 @@ class TestStackupWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
             chroms=["chr1", "chr1"],
             starts=[-199500, -198500],
             ends=[200500, 201500],
+            bins=BIN_NUMBER,
+            missing=np.nan,
+        )
+
+    @patch("app.pipeline_worker_functions.bbi.chromsizes")
+    @patch("app.pipeline_worker_functions.bbi.stackup")
+    def test_bbi_called_correctly_2d_left(self, mock_stackup, mock_chromsizes):
+        """Tests whether bbi is called with correct parameters"""
+        BIN_NUMBER = 40
+        mock_chromsizes.return_value = {"chr1": "test"}
+        mock_stackup.return_value = np.empty((2, BIN_NUMBER))
+        regions = pd.DataFrame({0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000], 
+                                3: ["chr2", "chr2"], 3: [4000, 5000], 4: [6000, 7000]})
+        # dispatch call
+        _do_stackup_fixed_size(self.dataset.file_path, regions, 200000, 10000, region_side="left")
+        # check whether stackup was called correctly
+        mock_stackup.assert_called_with(
+            self.dataset.file_path,
+            chroms=["chr1", "chr1"],
+            starts=[-199500, -198500],
+            ends=[200500, 201500],
+            bins=BIN_NUMBER,
+            missing=np.nan,
+        )
+
+    @patch("app.pipeline_worker_functions.bbi.chromsizes")
+    @patch("app.pipeline_worker_functions.bbi.stackup")
+    def test_bbi_called_correctly_2d_right(self, mock_stackup, mock_chromsizes):
+        """Tests whether bbi is called with correct parameters"""
+        BIN_NUMBER = 40
+        mock_chromsizes.return_value = {"chr2": "test"}
+        mock_stackup.return_value = np.empty((2, BIN_NUMBER))
+        regions = pd.DataFrame({0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000], 
+                                3: ["chr2", "chr2"], 4: [4000, 5000], 5: [6000, 7000]})
+        # dispatch call
+        _do_stackup_fixed_size(self.dataset.file_path, regions, 200000, 10000, region_side="right")
+        # check whether stackup was called correctly
+        mock_stackup.assert_called_with(
+            self.dataset.file_path,
+            chroms=["chr2", "chr2"],
+            starts=[-195000, -194000],
+            ends=[205000, 206000],
             bins=BIN_NUMBER,
             missing=np.nan,
         )
@@ -267,14 +352,14 @@ class TestStackupWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
         # call setUp of LoginTestCase to initialize app
         super().setUp()
         # add dataset
-        self.dataset = Dataset(
+        self.dataset = self.create_dataset(
             dataset_name="test3",
             file_path="/test/path/test3.bw",
             filetype="bigwig",
             processing_state="finished",
             user_id=1,
         )
-        self.dataset2 = Dataset(
+        self.dataset2 = self.create_dataset(
             dataset_name="test4",
             file_path="./tests/testfiles/test.bw",
             filetype="bigwig",

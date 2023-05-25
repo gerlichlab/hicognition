@@ -1,13 +1,13 @@
 """Tests for /api/collections/ route to list collections."""
 import unittest
 from unittest.mock import patch
-from hicognition.test_helpers import LoginTestCase
+from tests.test_utils.test_helpers import LoginTestCase
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
-from app.models import Collection, Dataset, Session
+from app.models import Collection, Dataset, Session, Assembly
 
 
 class TestGetCollections(LoginTestCase):
@@ -15,9 +15,12 @@ class TestGetCollections(LoginTestCase):
 
     def setUp(self):
         super().setUp()
+        
+        self.add_default_assembly(add_and_commit=True)
         # define datasets
-        self.owned_dataset_1 = Dataset(dataset_name="test1")
-        self.owned_dataset_2 = Dataset(dataset_name="test2")
+        #import pdb;pdb.set_trace()
+        self.owned_dataset_1 = self.create_dataset(dataset_name="test1", user_id=1, assembly=1)
+        self.owned_dataset_2 = self.create_dataset(dataset_name="test2", user_id=1, assembly=1)
         # define collections
         self.collection_user_1 = Collection(
             user_id=1,

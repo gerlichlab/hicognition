@@ -68,10 +68,10 @@ export default {
         selected: undefined,
         assemblies: [],
         clickedDelete: false,
-        datasetsDeleted: false,
+        datasetsDeleted: false
     }),
     methods: {
-        isSelectionDisabled: function (item) {
+        isSelectionDisabled: function(item) {
             // check if assembly is owned
             var user_id = this.$store.getters.getUserId;
             if (user_id != item.user_id) {
@@ -82,14 +82,14 @@ export default {
             }
             return false;
         },
-        deleteClicked: function () {
+        deleteClicked: function() {
             this.clickedDelete = true;
         },
         onSelect(item) {
             this.selected = item;
         },
         fetchAssemblies() {
-            this.fetchData("assemblies/").then((response) => {
+            this.fetchData("assemblies/").then(response => {
                 if (response) {
                     // update displayed assemblies
                     let assemblies = [];
@@ -102,24 +102,24 @@ export default {
                     this.assemblies = assemblies;
                 }
             });
-        },
+        }
     },
     watch: {
-        selected: function (val) {
+        selected: function(val) {
             if (val != undefined) {
                 this.$emit("selection-available", this.selected.id);
             } else {
                 this.$emit("selection-unavailable");
             }
-        },
+        }
     },
-    created: function () {
+    created: function() {
         EventBus.$on("fetch-assemblies", this.fetchAssemblies);
         this.fetchAssemblies();
     },
-    beforeDestroy: function () {
+    beforeDestroy: function() {
         EventBus.$off("fetch-assemblies");
-    },
+    }
 };
 </script>
 

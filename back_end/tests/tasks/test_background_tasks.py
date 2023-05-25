@@ -1,7 +1,7 @@
 """Module with the tests for the background cleanup tasks."""
 import unittest
 from unittest.mock import MagicMock, patch
-from hicognition.test_helpers import LoginTestCase
+from tests.test_utils.test_helpers import LoginTestCase
 
 # add path to import app
 # import sys
@@ -83,8 +83,8 @@ class TestCleanupFailedTasks(LoginTestCase):
         self.failed_task_dataset = Task(id="wJob4", dataset_id=2, intervals_id=1)
         self.failed_task_collection = Task(id="wJob4", collection_id=1, intervals_id=1)
         # add datasets, collections and intervals
-        self.bed = Dataset(id=1, filetype="bedfile")
-        self.cooler = Dataset(id=2, filetype="coolerfile")
+        self.bed = self.create_dataset(id=1, user_id=1, dataset_name="test", filetype="bedfile")
+        self.cooler = self.create_dataset(id=2, user_id=1, dataset_name="test", filetype="coolerfile")
         self.collection = Collection(
             id=1,
         )
@@ -126,7 +126,7 @@ class TestCleanupFailedTasks(LoginTestCase):
         self.assertEqual(2, len(Task.query.all()))
         self.assertTrue("wJob3" not in [task.id for task in Task.query.all()])
 
-    @patch("app.pipeline_steps.log.error")
+    @patch("app.pipeline_steps.current_app.logger.error")
     def test_update_failed_dataset(self, mock_error):
         """Tests whether setting a dataset failed works"""
         # add stuff to database
@@ -143,7 +143,7 @@ class TestCleanupFailedTasks(LoginTestCase):
         coolerfile = Dataset.query.get(2)
         self.assertEqual(bedfile.failed_features[0], coolerfile)
 
-    @patch("app.pipeline_steps.log.error")
+    @patch("app.pipeline_steps.current_app.logger.error")
     def test_update_failed_collection(self, mock_error):
         """Tests whether setting a collection failed works"""
         # add stuff to database

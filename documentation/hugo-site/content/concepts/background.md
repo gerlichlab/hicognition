@@ -35,4 +35,4 @@ Last but not least, a well-established principle that any visual system should f
 
 ## HiCognition can help solve these problems
 
-In order to overcome this problem, we conceptualized the [region-set focus approach](/concept/region_set_focus/) and implemented it in HiCognition.
+In order to overcome this problem, we conceptualized the [region-set focus approach](/concepts/region_set_focus/) and implemented it in HiCognition.

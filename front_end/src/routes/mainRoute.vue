@@ -6,6 +6,7 @@
                 @add-session-click="showAddSessionDialog = true"
                 @my-sessions-click="showMySessionsDialog = true"
                 @showNotificationDrawer="notificationDrawerVisible = true"
+                @showProcessingDrawer="processingDrawerVisible = true"
             ></toolbar>
         </md-toolbar>
 
@@ -53,6 +54,13 @@
 
         <md-drawer
             class="md-right notification-drawer"
+            :md-active.sync="processingDrawerVisible"
+        >
+            <processing-drawer />
+        </md-drawer>
+
+        <md-drawer
+            class="md-right notification-drawer"
             :md-active.sync="notificationDrawerVisible"
         >
             <notification-drawer />
@@ -67,12 +75,12 @@
             <addDatasetDialog
                 :dialog="showAddRegionDialog"
                 @close-dialog="showAddRegionDialog = false"
-                datatype="region"
+                :datatype="`region`"
             ></addDatasetDialog>
             <addDatasetDialog
                 :dialog="showAddFeatureDialog"
                 @close-dialog="showAddFeatureDialog = false"
-                datatype="feature"
+                :datatype="`feature`"
             ></addDatasetDialog>
             <addMetadataDialog
                 :dialog="showAddMetadataDialog"
@@ -158,6 +166,7 @@
 import toolbar from "../components/ui/toolbar";
 import drawer from "../components/ui/drawer";
 import notificationDrawer from "../components/ui/notificationDrawer.vue";
+import processingDrawer from "../components/ui/processingDrawer.vue"
 import datasetDialog from "../components/dialogs/myDatasetDialog";
 import addDatasetDialog from "../components/dialogs/addDatasetDialog";
 import addMetadataDialog from "../components/dialogs/addMetadataDialog";
@@ -197,10 +206,12 @@ export default {
         modifyDatasetDialog,
         selectDatasetDialog,
         selectCollectionDialog,
+        processingDrawer
     },
     data: () => ({
         menuVisible: false,
         notificationDrawerVisible: false,
+        processingDrawerVisible: false,
         showMyDatasetDialog: false,
         myDatasetDialogDatasetType: undefined,
         showAddRegionDialog: false,
@@ -235,26 +246,26 @@ export default {
         finishedCollections: undefined,
         processingCollections: undefined,
         failedCollections: undefined,
-        reactToSelectionCollections: undefined,
+        reactToSelectionCollections: undefined
     }),
     methods: {
-        handleShowMyDatasetDialog: function (datasetType) {
+        handleShowMyDatasetDialog: function(datasetType) {
             this.showMyDatasetDialog = true;
             this.menuVisible = false;
             this.myDatasetDialogDatasetType = datasetType;
         },
-        registerDatasetSelectionHandlers: function () {
+        registerDatasetSelectionHandlers: function() {
             // modification listener
             EventBus.$on("show-modify-dialog", this.handleShowModifyDialog);
             // selection listener
             EventBus.$on("show-select-dialog", this.handleShowSelectDialog);
         },
-        handleShowModifyDialog: function (id) {
+        handleShowModifyDialog: function(id) {
             this.modifyId = id;
             this.showModifyDialog = true;
             this.showMyDatasetDialog = false;
         },
-        handleShowSelectDialog: function (
+        handleShowSelectDialog: function(
             datasets,
             datasetType,
             preselection,
@@ -276,26 +287,26 @@ export default {
             this.selectDatasetType = datasetType;
             this.showSelectDialog = true;
         },
-        removeDatasetSelectionEventHandlers: function () {
+        removeDatasetSelectionEventHandlers: function() {
             // modification listener
             EventBus.$off("show-modify-dialog", this.handleShowModifyDialog);
             // selection listener
             EventBus.$off("show-select-dialog", this.handleShowSelectDialog);
         },
-        registerCollectionSelectionHandlers: function () {
+        registerCollectionSelectionHandlers: function() {
             // selection listener
             EventBus.$on(
                 "show-select-collection-dialog",
                 this.handleShowSelectCollectionDialog
             );
         },
-        removeCollectionSelectionHandlers: function () {
+        removeCollectionSelectionHandlers: function() {
             EventBus.$off(
                 "show-select-collection-dialog",
                 this.handleShowSelectCollectionDialog
             );
         },
-        handleShowSelectCollectionDialog: function (
+        handleShowSelectCollectionDialog: function(
             collections,
             datasetType,
             preselection,
@@ -316,16 +327,16 @@ export default {
             this.selectCollections = collections;
             this.selectDatasetTypeCollections = datasetType;
             this.showSelectCollectionDialog = true;
-        },
+        }
     },
-    mounted: function () {
+    mounted: function() {
         this.registerDatasetSelectionHandlers();
         this.registerCollectionSelectionHandlers();
     },
-    beforeDestroy: function () {
+    beforeDestroy: function() {
         this.removeDatasetSelectionEventHandlers();
         this.removeCollectionSelectionHandlers();
-    },
+    }
 };
 </script>
 

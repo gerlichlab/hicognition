@@ -3,7 +3,7 @@ import VueRouter from "vue-router";
 import App from "./App";
 
 Vue.config.productionTip = false;
-Vue.config.errorHandler = function (err, vm, info) {
+Vue.config.errorHandler = function(err, vm, info) {
     /*
     This eats the select error from vue-matrial input select dropdowns
   */
@@ -42,7 +42,7 @@ if (localStorage.getItem("hicognition-token")) {
 // define global flags
 
 Vue.prototype.$globalFlags = {
-    serializeCompare: true, // whether compare view should be serialized to store before it is destroeyd -> needs to happen upon front-end routing, but not upon logout
+    serializeCompare: true // whether compare view should be serialized to store before it is destroeyd -> needs to happen upon front-end routing, but not upon logout
 };
 
 // instantiate vue app
@@ -51,14 +51,14 @@ new Vue({
     el: "#app",
     store,
     components: {
-        App,
+        App
     },
-    created: function () {
+    created: function() {
         // create event source for notifications -> doing it once limits the number of open connections to server
         store.commit("createNotificationSource");
     },
-    beforeDestroy: function () {
+    beforeDestroy: function() {
         store.commit("releaseNotificationSource");
     },
-    template: "<App/>",
+    template: "<App/>"
 });

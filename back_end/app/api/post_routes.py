@@ -2,19 +2,19 @@
 import os
 import json
 import pandas as pd
-import cooler
 import numpy as np
 from werkzeug.utils import secure_filename
 from flask import g, request, current_app
 from flask.json import jsonify
 
-# from hicognition.utils import get_all_interval_ids, parse_binsizes
-from hicognition.utils import parse_description, get_all_interval_ids, parse_binsizes
-from hicognition.format_checkers import FORMAT_CHECKERS
+from ..lib.utils import get_all_interval_ids
+from ..lib.format_checkers import FORMAT_CHECKERS
 from . import api
 from .. import db
+
 from ..models import (
     Assembly,
+    Repository,
     Dataset,
     BedFileMetadata,
     Organism,
@@ -24,96 +24,138 @@ from ..models import (
     EmbeddingIntervalData,
 )
 from ..form_models import (
-    DatasetPostModel,
+    FileDatasetPostModel,
+    URLDatasetPostModel,
+    ENCODEDatasetPostModel,
 )
-from .authentication import auth
+from .authentication import auth, check_confirmed
 from .. import pipeline_steps
 from .errors import forbidden, invalid, not_found
 
 
-@api.route("/datasets/", methods=["POST"])
+@api.route("/datasets/encode/", methods=["POST"])
 @auth.login_required
-def add_dataset():
-    """endpoint to add a new dataset"""
-
-    def is_form_invalid():
-        if not hasattr(request, "form"):
-            return True
-        # check whether fileObject is there
-        if len(request.files) == 0:
-            return True
-        return False
-
-    current_user = g.current_user
-    # check form
-    if is_form_invalid():
+@check_confirmed
+def add_dataset_from_ENCODE():
+    """Endpoint to add dataset directly from an ENCODE repository.
+    Will call new redis worker to download file and notify user when finished."""
+    if not hasattr(request, "form") or len(request.files) > 0:
         return invalid("Form is not valid!")
-    # get data from form
+
+    # validate data
     try:
-        data = DatasetPostModel(**request.form, filename=request.files["file"].filename)
+        data = ENCODEDatasetPostModel(**request.form)
+    except ValueError as err:
+        return invalid(f"Form is not valid: {str(err)}")
+
+    repository = db.session.query(Repository).get(data.repository_name)
+    if not repository:
+        return invalid(f"Repository {data.repository_name} not found.")
+
+    # add data to Database -> in order to get id for filename
+    new_entry = Dataset(
+        processing_state="new", upload_state="new", user_id=g.current_user.id
+    )
+    # fill with form data
+    [setattr(new_entry, key, val) for key, val in data.__dict__.items()]
+
+    db.session.add(new_entry)
+    db.session.commit()
+
+    g.current_user.launch_task(
+        current_app.queues["short"],
+        "download_dataset_file",
+        "run dataset download from repo",
+        new_entry.id,
+    )
+    return jsonify({"message": "success! File is being downloaded."})
+
+
+@api.route("/datasets/URL/", methods=["POST"])
+@auth.login_required
+@check_confirmed
+def add_dataset_from_URL():
+    """Endpoint to add dataset with file provided by URL.
+    Will call new redis worker to download file and notify user when finished."""
+
+    if not hasattr(request, "form") or len(request.files) > 0:
+        return invalid("Form is not valid!")
+
+    # validate data
+    try:
+        data = URLDatasetPostModel(**request.form)
     except ValueError as err:
         return invalid(f'"Form is not valid: {str(err)}')
 
-    file_object = request.files["file"]
-    # check whether description is there
-    description = parse_description(data)
-    # check whether dataset should be public
-    set_public = "public" in data and data["public"] == True
     # add data to Database -> in order to get id for filename
     new_entry = Dataset(
-        dataset_name=data.dataset_name,
-        description=description,
-        public=set_public,
-        processing_state="uploading",
-        filetype=data.filetype,
-        user_id=current_user.id,
+        processing_state="new", upload_state="new", user_id=g.current_user.id
     )
-    new_entry.add_fields_from_form(data)
+    # fill with form data
+    [setattr(new_entry, key, val) for key, val in data.__dict__.items()]
+
+    # new_entry.add_fields_from_form(data)
     db.session.add(new_entry)
     db.session.commit()
+
+    g.current_user.launch_task(
+        current_app.queues["short"],
+        "download_dataset_file",
+        "run dataset download from repo",
+        new_entry.id,
+    )
+    return jsonify({"message": "success! File is being downloaded."})
+
+
+@api.route("/datasets/", methods=["POST"])
+@auth.login_required
+@check_confirmed
+def add_dataset():
+    """endpoint to add a new dataset"""
+
+    if not hasattr(request, "form") or len(request.files) == 0:
+        return invalid("Form is not valid!")
+
+    try:
+        data = FileDatasetPostModel(
+            **request.form, filename=request.files["file"].filename
+        )
+    except ValueError as err:
+        return invalid(f'"Form is not valid: {str(err)}')
+
+    # add data to Database -> in order to get id for filename
+    new_entry = Dataset(
+        processing_state="new", upload_state="new", user_id=g.current_user.id
+    )
+    # fill with form data
+    [setattr(new_entry, key, val) for key, val in data.__dict__.items()]
+
+    # new_entry.add_fields_from_form(data)
+    db.session.add(new_entry)
+    db.session.commit()
+
     # save file in upload directory with database_id as prefix
+    file_object = request.files["file"]
     filename = f"{new_entry.id}_{secure_filename(file_object.filename)}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     file_object.save(file_path)
-    assembly = Assembly.query.get(data.assembly)
-    # check format -> this cannot be done in form checker since file needs to be available
-    chromosome_names = set(pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0])
-    needed_resolutions = parse_binsizes(
-        current_app.config["PREPROCESSING_MAP"], "cooler"
-    )
-    if not FORMAT_CHECKERS[request.form["filetype"]](
-        file_path, chromosome_names, needed_resolutions
-    ):
-        db.session.delete(new_entry)
-        db.session.commit()
-        os.remove(file_path)
-        return invalid("Wrong dataformat or wrong chromosome names!")
-    # add file_path to database entry
     new_entry.file_path = file_path
-    new_entry.processing_state = "uploaded"
-    db.session.add(new_entry)
-    # start preprocessing of bedfile, the other filetypes do not need preprocessing
-    if data.filetype == "bedfile":
-        current_user.launch_task(
-            current_app.queues["short"],
-            "pipeline_bed",
-            "run bed preprocessing",
-            new_entry.id,
-        )
-        new_entry.processing_state = "processing"
-    # if filetype is cooler, store available binsizes
-    if data.filetype == "cooler":
-        binsizes = [
-            resolution.split("/")[2]
-            for resolution in cooler.fileops.list_coolers(file_path)
-        ]
-        new_entry.available_binsizes = json.dumps(binsizes)
+    new_entry.upload_state = "uploaded"
+
+    # validate dataset and delete if not valid
+    if not new_entry.validate_dataset(delete=True):
+        return invalid("Wrong dataformat or wrong chromosome names!")
+
+    new_entry.preprocess_dataset()
     db.session.commit()
-    return jsonify({"message": "success! Preprocessing triggered."})
+    return jsonify(
+        {"message": "success! File is handed in for preprocessing."}
+    )  # TODO preprocessing ambiguous
 
 
 @api.route("/preprocess/datasets/", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def preprocess_dataset():
     """Starts preprocessing pipeline
     for datasets specified in the request body"""
@@ -189,7 +231,7 @@ def preprocess_dataset():
                         current_app.config["PIPELINE_QUEUES"][dataset.filetype]
                     ],
                     *current_app.config["PIPELINE_NAMES"][dataset.filetype],
-                    dataset.id,
+                    dataset_id=dataset.id,
                     intervals_id=interval_id,
                     binsize=binsize,
                 )
@@ -206,6 +248,7 @@ def preprocess_dataset():
 
 @api.route("/preprocess/collections/", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def preprocess_collections():
     """Starts preprocessing pipeline
     for collections specified in the request body"""
@@ -279,7 +322,7 @@ def preprocess_collections():
             continue
         for binsize in preprocessing_map[windowsize]["collections"][collection.kind]:
             for collection in collections:
-                current_user.launch_collection_task(
+                current_user.launch_task(
                     current_app.queues[
                         current_app.config["PIPELINE_QUEUES"]["collections"][
                             collection.kind
@@ -288,7 +331,7 @@ def preprocess_collections():
                     *current_app.config["PIPELINE_NAMES"]["collections"][
                         collection.kind
                     ],
-                    collection.id,
+                    collection_id=collection.id,
                     intervals_id=interval_id,
                     binsize=binsize,
                 )
@@ -303,8 +346,9 @@ def preprocess_collections():
     return jsonify({"message": "success! Preprocessing triggered."})
 
 
-@api.route("/bedFileMetadata/", methods=["POST"])
+@api.route("/bedFileMetadata/", methods=["POST"])  # TODO bedpe
 @auth.login_required
+@check_confirmed
 def add_bedfile_metadata():
     """Add metadata file to metadata table.
     If uploaded metadatafile has different row-number than original bedfile ->
@@ -374,8 +418,9 @@ def add_bedfile_metadata():
     )
 
 
-@api.route("/bedFileMetadata/<metadata_id>/setFields", methods=["POST"])
+@api.route("/bedFileMetadata/<metadata_id>/setFields", methods=["POST"])  # TODO bedpe
 @auth.login_required
+@check_confirmed
 def add_bedfile_metadata_fields(metadata_id):
     """Add relevant metadatafields of the corresponding metadatafile."""
 
@@ -411,6 +456,7 @@ def add_bedfile_metadata_fields(metadata_id):
 
 @api.route("/sessions/", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def create_session():
     """Creates a session with name."""
 
@@ -475,6 +521,7 @@ def create_session():
 
 @api.route("/collections/", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def create_collection():
     """Creates a dataset collection"""
 
@@ -505,6 +552,11 @@ def create_collection():
         return forbidden(
             "Some of the datasets associated with this collection are not owned!"
         )
+    # check whehter any of the dataseta are 2d
+    if any(dataset.dimension == '2d' for dataset in datasets):
+        return invalid(
+            "Some of the datasets associated with this collection are 2d!"
+        )  
     # create collection
     collection = Collection(user_id=g.current_user.id, name=name, kind=kind)
     # add datasets
@@ -516,6 +568,7 @@ def create_collection():
 
 @api.route("/assemblies/", methods=["POST"])
 @auth.login_required
+@check_confirmed
 def create_assembly():
     """Creates a genome assembly."""
 
@@ -576,10 +629,11 @@ def create_assembly():
     return jsonify({"message": "success! Assembly added."})
 
 
-@api.route("/embeddingIntervalData/<entry_id>/<cluster_id>/create/", methods=["POST"])
+@api.route("/embeddingIntervalData/<entry_id>/createRegion/", methods=["POST"])
 @auth.login_required
-def create_region_from_cluster_id(entry_id, cluster_id):
-    """Creates new region for cluster_id at entry_id"""
+@check_confirmed
+def create_region_from_cluster_id(entry_id):
+    """Creates new region for cluster_ids at entry_id"""
 
     def is_form_invalid():
         if not hasattr(request, "form"):
@@ -587,7 +641,7 @@ def create_region_from_cluster_id(entry_id, cluster_id):
         if len(request.form) == 0:
             return True
         # check attributes
-        if sorted(request.form.keys()) != ["name"]:
+        if sorted(request.form.keys()) != ['cluster_ids',"name"]:
             return True
         return False
 
@@ -611,38 +665,38 @@ def create_region_from_cluster_id(entry_id, cluster_id):
         return invalid("Form is not valid!")
     # get data from form
     form_data = request.form
+    new_region_ids = set([int(cluster_id) for cluster_id in json.loads(form_data['cluster_ids'])])
     # check whetehr thumbnails exist
     if embedding_data.cluster_id_path is None:
         return not_found("ClusterIDs do not exist")
     # load cluster ids
     cluster_ids = np.load(embedding_data.cluster_id_path).astype(int)
-    # check whether cluster id is inside
+    # check whether new ids exist
     unique_ids = set(cluster_ids.astype(int))
-    if int(cluster_id) not in unique_ids:
-        return not_found("Cluster id does not exist!")
+    if (new_region_ids & unique_ids) != new_region_ids:
+        return not_found(f"Some cluster ids do not exist: {new_region_ids | unique_ids}")
     # load regions
     regions = pd.read_csv(bed_ds.file_path, sep="\t", header=None)
     # create new dataset
-    new_entry = Dataset(
+    new_entry = bed_ds.copy(
         dataset_name=form_data["name"],
-        description=bed_ds.description,
-        public=False,  # derived regions are private by default - you can choose to make them public
+        public=False,
         processing_state="uploading",
-        filetype="bedfile",
         user_id=g.current_user.id,
     )
-    # add fields
-    new_entry.add_fields_from_dataset(bed_ds)
     db.session.add(new_entry)
     db.session.commit()
     # subset and write to file
-    mask = cluster_ids == int(cluster_id)
+    mask = pd.Series(cluster_ids).isin(new_region_ids).values
     subset = regions.iloc[mask, :]
-    filename = f"{new_entry.id}_subset_{bed_ds.dataset_name}"
+    ending = bed_ds.file_path.split(".")[-1]
+    filename = f"{new_entry.id}_subset_{bed_ds.dataset_name}.{ending}"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], filename)
     subset.to_csv(file_path, sep="\t", header=None, index=False)
     # add file_path to database entry
     new_entry.file_path = file_path
+    db.session.add(new_entry)
+    db.session.commit()
     # start preprocessing for bedfile
     g.current_user.launch_task(
         current_app.queues["short"],

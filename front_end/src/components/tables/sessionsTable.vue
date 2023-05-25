@@ -26,7 +26,9 @@
             <!-- Empty state for table -->
             <md-table-empty-state
                 md-label="No sessions found"
-                :md-description="`No sessions found for this query. Try a different search term or create a new session.`"
+                :md-description="
+                    `No sessions found for this query. Try a different search term or create a new session.`
+                "
             >
             </md-table-empty-state>
             <!-- Definition of how table should look -->
@@ -62,13 +64,13 @@ export default {
         selected: undefined,
         sessions: [],
         clickedDelete: false,
-        datasetsDeleted: false,
+        datasetsDeleted: false
     }),
     methods: {
-        deleteClicked: function () {
+        deleteClicked: function() {
             this.clickedDelete = true;
         },
-        handleDelete: async function () {
+        handleDelete: async function() {
             // TODO: implement!
             return;
         },
@@ -76,16 +78,16 @@ export default {
             this.selected = item;
         },
         fetchSessions() {
-            this.fetchData("sessions/").then((response) => {
+            this.fetchData("sessions/").then(response => {
                 if (response) {
                     // update displayed datasets
                     this.sessions = response.data;
                 }
             });
-        },
+        }
     },
     watch: {
-        selected: function (val) {
+        selected: function(val) {
             if (val != undefined) {
                 this.$emit(
                     "selection-available",
@@ -95,15 +97,15 @@ export default {
             } else {
                 this.$emit("selection-unavailable");
             }
-        },
+        }
     },
-    created: function () {
+    created: function() {
         EventBus.$on("fetch-sessions", this.fetchSessions);
         this.fetchSessions();
     },
-    beforeDestroy: function () {
+    beforeDestroy: function() {
         EventBus.$off("fetch-sessions");
-    },
+    }
 };
 </script>
 

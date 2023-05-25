@@ -25,6 +25,29 @@
                 </div>
             </md-card-content>
         </md-card>
+        <md-card md-with-hover class="halfwidth">
+            <md-card-header class='md-primary'>
+                <div class="md-title">New here?</div>
+                <div class="md-subhead">Check out our documentation and register</div>
+            </md-card-header>
+            <md-card-content class="md-layout">
+                    <div class="md-layout-item">
+                        <md-button
+                            class="md-dense md-raised md-secondary"
+                            href="https://app.hicognition.com/docs/"
+                            >Documentation</md-button
+                        >
+                    </div>
+                    <div class="md-layout-item">
+                            <md-button
+                                class="md-dense md-raised md-secondary"
+                                @click="$router.push('register/')"
+                                >Register</md-button
+                            >
+                    </div>
+            <!--TODO fix doc ref-->
+            </md-card-content>
+        </md-card>
     </div>
 </template>
 
@@ -34,15 +57,15 @@ import { apiMixin } from "../../mixins";
 export default {
     name: "LoginForm",
     mixins: [apiMixin],
-    data: function () {
+    data: function() {
         return {
             username: "",
             password: "",
-            showError: false,
+            showError: false
         };
     },
     methods: {
-        handleSubmit: function () {
+        handleSubmit: function() {
             if (this.password.length > 0) {
                 this.fetchAndStoreToken(this.username, this.password)
                     .then(() => {
@@ -54,14 +77,14 @@ export default {
                             this.$router.push("/main/compare");
                         }
                     })
-                    .catch((error) => {
+                    .catch(error => {
                         // something went wrong
                         console.log(error);
                         this.showError = true;
                     });
             }
-        },
-    },
+        }
+    }
 };
 </script>
 

@@ -1,14 +1,14 @@
 <template>
     <md-card
         :style="tooltipStyle"
-        v-show="showTooltip && clusterID !== undefined"
+        v-show="showTooltip && clusterIDs.length !== 0"
     >
         <div class="md-layout-item md-size-100 blue-background">
             <span class="md-caption padding-left">{{ dataInfo }}</span>
         </div>
         <md-card-content class="no-padding">
             <embedding-distribution
-                v-if="clusterID !== undefined"
+                v-if="clusterIDs.length !== 0"
                 :rawData="selectedDistribution"
                 :width="width"
                 :height="plotSize"
@@ -45,7 +45,7 @@
 
 <script>
 import { apiMixin } from "../../mixins";
-import { select_row } from "../../functions";
+import { select_rows, mean_along_rows } from "../../functions";
 import embeddingDistribution from "../visualizations/embeddingDistribution.vue";
 
 export default {
@@ -61,14 +61,14 @@ export default {
         showControls: Boolean,
         tooltipOffsetLeft: Number,
         tooltipOffsetTop: Number,
-        clusterID: Number,
+        clusterIDs: Array,
         embeddingID: Number,
         collectionName: String,
         regionName: String,
         datasetNames: Array,
-        clusterCounts: Map,
+        clusterCounts: Map
     },
-    data: function () {
+    data: function() {
         return {
             tooltipStyle: {
                 position: "absolute",
@@ -77,46 +77,56 @@ export default {
                 left: "0px",
                 "z-index": "10",
                 width: `${this.width}px`,
-                height: `${this.height}px`,
+                height: `${this.height}px`
             },
             showDialog: false,
-            newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterID}`,
+            newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterIDs}`,
             datasetSaved: false,
-            showcase_bool: process.env.SHOWCASE,
+            showcase_bool: process.env.SHOWCASE
         };
     },
     computed: {
-        totalRegions: function () {
+        totalRegions: function() {
             let sum = 0;
             for (let [key, value] of this.clusterCounts) {
                 sum += value;
             }
             return sum;
         },
-        dataInfo: function () {
+        selectedCounts: function(){
+            let sum = 0;
+            for (let [key, value] of this.clusterCounts) {
+                if (this.clusterIDs.includes(key)){
+                    sum += value;
+                }
+            }
+            return sum;
+        },
+        dataInfo: function() {
             if (
                 this.clusterCounts !== undefined &&
-                this.clusterCounts.get(this.clusterID) !== undefined
+               this.selectedCounts !== undefined
             ) {
-                return `Cluster: ${this.clusterID} | ${this.clusterCounts.get(
-                    this.clusterID
-                )}/${this.totalRegions} Regions`;
+                return `Cluster: ${this.clusterIDs} | ${this.selectedCounts} 
+                            /${this.totalRegions} Regions`;
             }
-            return `Cluster: ${this.clusterID}`;
+            return `Cluster: ${this.clusterIDs}`;
         },
-        plotSize: function () {
+        plotSize: function() {
             return this.width * 0.8;
         },
-        selectedDistribution: function () {
-            if (this.clusterID !== undefined) {
-                return select_row(
+        selectedDistribution: function() {
+            if (this.clusterIDs.length != 0) {
+                let selected_rows = select_rows(
                     this.averageValues.data,
                     this.averageValues.shape,
-                    this.clusterID
+                    this.clusterIDs
                 );
+                // reduce selection along rows
+                return mean_along_rows(selected_rows.result, selected_rows.shape)
             }
         },
-        minValue: function () {
+        minValue: function() {
             // computes minimum value of data passed
             let minVal = Infinity;
             for (let elem of this.averageValues.data) {
@@ -126,7 +136,7 @@ export default {
             }
             return minVal;
         },
-        maxValue: function () {
+        maxValue: function() {
             // computes maximum value of data passed
             let maxVal = -Infinity;
             for (let elem of this.averageValues.data) {
@@ -135,10 +145,10 @@ export default {
                 }
             }
             return maxVal;
-        },
+        }
     },
     methods: {
-        handleSubmission: function () {
+        handleSubmission: function() {
             // check whether there is a name
             if (this.newRegionName.length === 0) {
                 console.log("no region name provided");
@@ -147,11 +157,12 @@ export default {
             // create form
             let formData = new FormData();
             formData.append("name", this.newRegionName);
+            formData.append("cluster_ids", JSON.stringify(this.clusterIDs))
             // do api call
             this.postData(
-                `embeddingIntervalData/${this.embeddingID}/${this.clusterID}/create/`,
+                `embeddingIntervalData/${this.embeddingID}/createRegion/`,
                 formData
-            ).then((response) => {
+            ).then(response => {
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
@@ -159,28 +170,28 @@ export default {
                     this.fetchAndStoreDatasets();
                 }
             });
-        },
+        }
     },
     watch: {
-        tooltipOffsetLeft: function (val) {
+        tooltipOffsetLeft: function(val) {
             this.tooltipStyle["left"] = `${val}px`;
         },
-        tooltipOffsetTop: function (val) {
+        tooltipOffsetTop: function(val) {
             this.tooltipStyle["top"] = `${val}px`;
         },
-        height: function (val) {
+        height: function(val) {
             this.tooltipStyle["height"] = `${val}px`;
         },
-        width: function (val) {
+        width: function(val) {
             this.tooltipStyle["width"] = `${val}px`;
         },
-        showControls: function (val) {
-            this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterID}`;
+        showControls: function(val) {
+            this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterIDs}`;
             if (!val) {
                 this.tooltipStyle["height"] = `${this.height}px`;
             }
-        },
-    },
+        }
+    }
 };
 </script>
 

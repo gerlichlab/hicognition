@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 import pandas as pd
 from flask.globals import current_app
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 # import sys
@@ -29,35 +29,35 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
             current_app.config["UPLOAD_DIR"] + "/test.bed", index=False, sep="\t"
         )
         # create datasets
-        dataset1 = Dataset(
+        dataset1 = self.create_dataset(
             id=1,
             dataset_name="test1",
             file_path="/test/path/1",
             filetype="cooler",
             user_id=1,
         )
-        dataset2 = Dataset(
+        dataset2 = self.create_dataset(
             id=2,
             dataset_name="test2",
             file_path="/test/path/2",
             filetype="cooler",
             user_id=1,
         )
-        dataset3 = Dataset(
+        dataset3 = self.create_dataset(
             id=3,
             dataset_name="test3",
             file_path="/test/path/3",
             filetype="bedfile",
             user_id=2,
         )
-        dataset4 = Dataset(
+        dataset4 = self.create_dataset(
             id=4,
             dataset_name="test4",
             file_path=current_app.config["UPLOAD_DIR"] + "/test.bed",
             filetype="bedfile",
             user_id=1,
         )
-        dataset5 = Dataset(
+        dataset5 = self.create_dataset(
             id=5,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -65,14 +65,14 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
             user_id=2,
             public=True,
         )
-        dataset6 = Dataset(
+        dataset6 = self.create_dataset(
             id=6,
             dataset_name="test1",
             file_path="/test/path/1",
             filetype="bigwig",
             user_id=1,
         )
-        dataset7 = Dataset(
+        dataset7 = self.create_dataset(
             id=7,
             dataset_name="test1",
             file_path="/test/path/1",
@@ -151,7 +151,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     self.app.queues["long"],
                     "pipeline_pileup",
                     "run pileup pipeline",
-                    1,
+                    dataset_id=1,
                     intervals_id=interval.id,
                     binsize=binsize,
                 )
@@ -192,7 +192,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     self.app.queues["long"],
                     "pipeline_pileup",
                     "run pileup pipeline",
-                    1,
+                    dataset_id=1,
                     intervals_id=interval.id,
                     binsize=binsize,
                 )
@@ -302,7 +302,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     self.app.queues["long"],
                     "pipeline_pileup",
                     "run pileup pipeline",
-                    5,
+                    dataset_id=5,
                     intervals_id=interval.id,
                     binsize=binsize,
                 )
@@ -341,7 +341,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                     self.app.queues["medium"],
                     "pipeline_stackup",
                     "run stackup pipeline",
-                    6,
+                    dataset_id=6,
                     intervals_id=interval.id,
                     binsize=binsize,
                 )
@@ -425,7 +425,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                             current_app.config["PIPELINE_QUEUES"][dataset.filetype]
                         ],
                         *current_app.config["PIPELINE_NAMES"][dataset.filetype],
-                        dataset_id,
+                        dataset_id=dataset.id,
                         intervals_id=interval.id,
                         binsize=binsize,
                     )
@@ -473,7 +473,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                         self.app.queues["medium"],
                         "pipeline_stackup",
                         "run stackup pipeline",
-                        dataset_id,
+                        dataset_id=dataset_id,
                         intervals_id=interval.id,
                         binsize=binsize,
                     )

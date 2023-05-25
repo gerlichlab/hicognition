@@ -46,11 +46,11 @@ import EventBus from "../../eventBus";
 export default {
     name: "selectCollectionDialog",
     components: {
-        collectionTable,
+        collectionTable
     },
-    data: function () {
+    data: function() {
         return {
-            selection: [],
+            selection: []
         };
     },
     props: {
@@ -59,35 +59,35 @@ export default {
         datasetType: String,
         reactToSelection: {
             type: Boolean,
-            default: true,
+            default: true
         },
         singleSelection: {
             type: Boolean,
-            default: true,
+            default: true
         },
         preselection: Array,
         assembly: {
             type: Number,
-            default: undefined,
+            default: undefined
         },
         finishedCollections: {
             type: Array,
-            default: undefined,
+            default: undefined
         },
         processingCollections: {
             type: Array,
-            default: undefined,
+            default: undefined
         },
         failedCollections: {
             type: Array,
-            default: undefined,
-        },
+            default: undefined
+        }
     },
     methods: {
-        handleSelectionChange: function (selection) {
+        handleSelectionChange: function(selection) {
             this.selection = selection;
         },
-        handleSelect: function () {
+        handleSelect: function() {
             if (this.singleSelection) {
                 EventBus.$emit("collection-selected", this.selection[0]);
             } else {
@@ -95,45 +95,45 @@ export default {
             }
             this.$emit("close-dialog");
         },
-        handleClose: function () {
+        handleClose: function() {
             this.$emit("close-dialog");
             EventBus.$emit("selection-aborted");
             this.selection = [];
-        },
+        }
     },
     computed: {
-        title: function () {
+        title: function() {
             if (this.reactToSelection) {
                 return "Collections";
             }
             return "Available Collections";
         },
-        showEmpty: function () {
+        showEmpty: function() {
             if (!this.collections) {
                 return undefined;
             }
             return this.collections.length == 0;
         },
-        showControls: function () {
+        showControls: function() {
             return this.selection.length !== 0;
         },
-        showDialog: function () {
+        showDialog: function() {
             return this.dialog;
-        },
-    },
+        }
+    }
 };
 </script>
 
 <style lang="scss" scoped>
 .md-dialog /deep/.md-dialog-container {
-    max-width: 70vw;
-    min-width: 70vw;
-    min-height: 70vh;
+    max-width: 90vw;
+    min-width: 90vw;
+    min-height: 90vh;
 }
 
 @media only screen and (min-width: 2400px) {
     .md-dialog /deep/.md-dialog-container {
-        max-width: 60vw;
+        max-width: 90vw;
         min-width: 50vw;
         min-height: 50vh;
     }

@@ -1,7 +1,7 @@
 """Tests the formatcheckers in the hicognition library"""
 import unittest
-from hicognition.test_helpers import TempDirTestCase
-from hicognition import format_checkers
+from tests.test_utils.test_helpers import TempDirTestCase
+from app.lib import format_checkers
 
 
 class TestIsBedFileCorrectlyFormatted(TempDirTestCase):

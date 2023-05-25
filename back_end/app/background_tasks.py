@@ -27,7 +27,7 @@ def cleanup_empty_tasks():
         if task.get_rq_job() is None:
             deletion_number += 1
             db.session.delete(task)
-    current_app.logger.info(
+    current_app.logger.debug(
         f"Background process deleted {deletion_number} detached tasks"
     )
     db.session.commit()
@@ -56,7 +56,7 @@ def cleanup_failed_tasks():
                     set_dataset_failed(task.dataset_id, task.intervals_id)
                 # delete tasks
                 db.session.delete(task)
-    current_app.logger.info(
+    current_app.logger.debug(
         f"Background process deleted {deletion_number} failed tasks"
     )
     db.session.commit()

@@ -70,7 +70,7 @@ export default {
         showControls: Boolean,
         tooltipOffsetLeft: Number,
         tooltipOffsetTop: Number,
-        clusterID: Number,
+        clusterIDs: Array,
         embeddingID: Number,
         datasetName: String,
         regionName: String,
@@ -81,9 +81,9 @@ export default {
         minHeatmapAllRange: Number,
         isVariableSize: Boolean,
         clusterCounts: Map,
-        intervalSize: String,
+        intervalSize: String
     },
-    data: function () {
+    data: function() {
         return {
             tooltipStyle: {
                 position: "absolute",
@@ -92,82 +92,81 @@ export default {
                 left: "0px",
                 "z-index": "10",
                 width: `${this.width}px`,
-                height: `${this.height}px`,
+                height: `${this.height}px`
             },
             showDialog: false,
-            newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterID}`,
+            newRegionName: `${this.regionName} | ${this.datasetName}: cluster ${this.clusterIDs}`,
             datasetSaved: false,
             minHeatmapTarget: undefined,
             maxHeatmapTarget: undefined,
             minHeatmapRangeTarget: undefined,
             maxHeatmapRangeTarget: undefined,
-            showcase_bool: process.env.SHOWCASE,
+            showcase_bool: process.env.SHOWCASE
         };
     },
     computed: {
-        totalRegions: function () {
+        totalRegions: function() {
             let sum = 0;
             for (let [key, value] of this.clusterCounts) {
                 sum += value;
             }
             return sum;
         },
-        dataInfo: function () {
+        selectedCounts: function(){
+            let sum = 0;
+            for (let [key, value] of this.clusterCounts) {
+                if (this.clusterIDs.includes(key)){
+                    sum += value;
+                }
+            }
+            return sum;
+        },
+        dataInfo: function() {
             if (
                 this.clusterCounts !== undefined &&
-                this.clusterCounts.get(this.clusterID) !== undefined
+               this.selectedCounts !== undefined
             ) {
-                return `Cluster: ${this.clusterID} | ${this.clusterCounts.get(
-                    this.clusterID
-                )}/${this.totalRegions} Regions`;
+                return `Cluster: ${this.clusterIDs} | ${this.selectedCounts} 
+                            /${this.totalRegions} Regions`;
             }
-            return `Cluster: ${this.clusterID}`;
+            return `Cluster: ${this.clusterIDs}`;
         },
-        distributionSize: function () {
+        distributionSize: function() {
             return 100;
         },
-        minHeatmap: function () {
+        minHeatmap: function() {
             if (this.minHeatmapTarget) {
                 return this.minHeatmapTarget;
             }
             return this.minHeatmapAll;
         },
-        maxHeatmap: function () {
+        maxHeatmap: function() {
             if (this.maxHeatmapTarget) {
                 return this.maxHeatmapTarget;
             }
             return this.maxHeatmapAll;
         },
-        minHeatmapRange: function () {
+        minHeatmapRange: function() {
             if (this.minHeatmapAllRange) {
                 return this.minHeatmapAllRange;
             }
             return this.minHeatmapRangeTarget;
         },
-        maxHeatmapRange: function () {
+        maxHeatmapRange: function() {
             if (this.maxHeatmapRangeTarget) {
                 return this.maxHeatmapRangeTarget;
             }
             return this.maxHeatmapAllRange;
         },
-        heatmapSize: function () {
+        heatmapSize: function() {
             return this.width * 0.8;
-        },
-        selectedDistribution: function () {
-            if (this.clusterID !== undefined) {
-                return select_row(
-                    this.distributionData.data,
-                    this.distributionData.shape,
-                    this.clusterID
-                );
-            }
-        },
+        }
     },
     methods: {
-        handleSliderChange: function (data) {
+        handleSliderChange: function(data) {
             this.setColorScale(data);
         },
-        setColorScale: function (data) {
+        setColorScale: function(data) {
             /* 
                 sets colorScale based on data array
                 containing minPos, maxPos, minRange, maxRange
@@ -177,7 +176,7 @@ export default {
             this.minHeatmapRangeTarget = data[2];
             this.maxHeatmapRangeTarget = data[3];
         },
-        resetColorScale: function () {
+        resetColorScale: function() {
             /*
                 resets colorscale to undefined
             */
@@ -186,7 +185,7 @@ export default {
             this.minHeatmapRangeTarget = undefined;
             this.maxHeatmapRangeTarget = undefined;
         },
-        handleSubmission: function () {
+        handleSubmission: function() {
             // check whether there is a name
             if (this.newRegionName.length === 0) {
                 console.log("no region name provided");
@@ -195,11 +194,12 @@ export default {
             // create form
             let formData = new FormData();
             formData.append("name", this.newRegionName);
+            formData.append("cluster_ids", JSON.stringify(this.clusterIDs))
             // do api call
             this.postData(
-                `embeddingIntervalData/${this.embeddingID}/${this.clusterID}/create/`,
+                `embeddingIntervalData/${this.embeddingID}/createRegion/`,
                 formData
-            ).then((response) => {
+            ).then(response => {
                 if (response) {
                     // if error happend, global error handler will eat the response
                     this.datasetSaved = true;
@@ -207,31 +207,31 @@ export default {
                     this.fetchAndStoreDatasets();
                 }
             });
-        },
+        }
     },
     watch: {
-        tooltipOffsetLeft: function (val) {
+        tooltipOffsetLeft: function(val) {
             this.tooltipStyle["left"] = `${val}px`;
         },
-        tooltipOffsetTop: function (val) {
+        tooltipOffsetTop: function(val) {
             this.tooltipStyle["top"] = `${val}px`;
         },
-        height: function (val) {
+        height: function(val) {
             this.tooltipStyle["height"] = `${val}px`;
         },
-        width: function (val) {
+        width: function(val) {
             this.tooltipStyle["width"] = `${val}px`;
         },
-        showControls: function (val) {
-            this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterID}`;
+        showControls: function(val) {
+            this.newRegionName = `${this.regionName}-${this.datasetName}: cluster ${this.clusterIDs}`;
             if (!val) {
                 this.tooltipStyle["height"] = `${this.height}px`;
             }
         },
-        thumbnail: function () {
+        thumbnail: function() {
             this.resetColorScale();
-        },
-    },
+        }
+    }
 };
 </script>
 

@@ -15,7 +15,7 @@ This document contains a description of the architecture of HiCognition, which c
 
 ### Docker network
 
-All the docker containers that work together in the back-end are coordinated by docker-compose (see [docker-compose file](https://github.com/gerlichlab/HiCognition_flask/blob/master/docker-compose.yml)) and reside within a docker-network called `hicognition-net`, to facilitate networking between them. The docker containers that are used are the following:
+All the docker containers that work together in the back-end are coordinated by docker-compose (see [docker-compose file](https://github.com/gerlichlab/hicognition/blob/master/back_end/docker-compose.yml)) and reside within a docker-network called `hicognition-net`, to facilitate networking between them. The docker containers that are used are the following:
 
 - `hicognition` - Container that harbors the flask-server
 - `mysql` - contains Mysql database
@@ -60,7 +60,7 @@ Interactions with the database are managed by [FLASK-SQLAlchemy](https://flask-s
 
 #### Database model
 
-Details are [here](https://github.com/gerlichlab/HiCognition_flask/blob/master/app/models.py), this is an overview drawn using https://dbdiagram.io/home:
+Details are [here](https://github.com/gerlichlab/hicognition/blob/master/back_end/app/models.py), this is an overview drawn using https://dbdiagram.io/home:
 
 ![DB-model](/Hicognition_db.png)
 
@@ -73,7 +73,7 @@ The flask-server and the Redis-worker need access to a shared filesystem since a
 
 Resource heavy and long tasks are offloaded to a [redis-queue](https://python-rq.org/) that consists of a Redis-server and one or more Redis-workers. The Redis-server accepts task items and manages to distribute them to the Redis-workers. The Redis-server runs in a docker container that is derived from `redis:6-alpine` with a custom config-file. The Redis-workers use the same docker-container as the flask-server as they need access to most modules the server needs.
 
-All tasks that the queue can run are defined in [tasks.py](https://github.com/gerlichlab/HiCognition_flask/blob/master/back_end/app/tasks.py).
+All tasks that the queue can run are defined in [tasks.py](https://github.com/gerlichlab/hicognition/blob/master/back_end/back_end/app/tasks.py).
 
 Tasks are launched using an instance-method of `User` called `User.launch_task` that accepts the name of the task, a short description as well as the dataset_id of the dataset being processed. This method enqueues the job and adds the `Task` table entry to the current database session.
 

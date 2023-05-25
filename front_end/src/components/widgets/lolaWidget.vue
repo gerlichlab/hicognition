@@ -25,7 +25,7 @@
                     </div>
                 </div>
                 <div
-                    class="md-layout-item md-size-60 padding-left padding-right"
+                    class="md-layout-item md-size-45 padding-left padding-right"
                 >
                     <md-menu
                         :md-offset-x="50"
@@ -55,7 +55,27 @@
                         </md-menu-content>
                     </md-menu>
                 </div>
-                <div class="md-layout-item md-size-10"></div>
+                <div class="md-layout-item md-size-5 toggle-paired-buttons">
+                    <div v-if="isBedpeFile" class="no-padding-top md-icon-button">
+                        <md-button class="md-icon" :class="{'md-primary': selectedSide == 'left'}"  @click="togglePairedSides('left')">
+                            <md-icon>looks_one</md-icon>
+                            <md-tooltip md-direction="top" md-delay="300">
+                                Plot left support data
+                            </md-tooltip>
+                        </md-button>
+                    </div>
+                </div>
+                <div class="md-layout-item md-size-10 toggle-paired-buttons">
+                    <div v-if="isBedpeFile" class="no-padding-top">
+                        <md-button class="md-icon md-mini" :class="{'md-primary': selectedSide == 'right'}" @click="togglePairedSides('right')" style="margin-left: 8px">
+                            <md-icon>looks_two</md-icon>
+                        </md-button>
+                            <md-tooltip md-direction="top" md-delay="300">
+                                Plot right support data
+                            </md-tooltip>
+                    </div>
+                </div>
+                <div class="md-layout-item md-size-10"/>
                 <div class="md-layout-item md-size-10">
                     <div class="no-padding-top padding-right">
                         <md-button
@@ -100,35 +120,34 @@
 import associationPlot from "../visualizations/associationPlot";
 import { apiMixin, formattingMixin, widgetMixin } from "../../mixins";
 import EventBus from "../../eventBus";
-
 export default {
     name: "lolaWidget",
     mixins: [apiMixin, formattingMixin, widgetMixin],
     components: {
-        associationPlot,
+        associationPlot
     },
     computed: {
-        message: function () {
+        message: function() {
             return (
                 this.datasets[this.selectedDataset]["name"] +
                 " | binsize " +
                 this.getBinSizeFormat(this.selectedBinsize)
             );
         },
-        datasetNames: function () {
+        datasetNames: function() {
             return this.datasets[this.selectedDataset][
                 "collection_dataset_names"
             ];
         },
-        visualizationWidth: function () {
+        visualizationWidth: function() {
             return Math.round(this.width * 0.9);
-        },
+        }
     },
     methods: {
-        startDatasetSelection: function () {
+        startDatasetSelection: function() {
             this.expectSelection = true;
             // get collections from store
-            let collections = this.$store.state.collections.filter((el) =>
+            let collections = this.$store.state.collections.filter(el =>
                 Object.keys(this.datasets).includes(String(el.id))
             );
             let preselection = this.selectedDataset
@@ -141,40 +160,43 @@ export default {
                 preselection
             );
         },
-        registerSelectionEventHandlers: function () {
+        togglePairedSides: function(side) {
+            this.selectedSide = side
+        },
+        registerSelectionEventHandlers: function() {
             EventBus.$on("collection-selected", this.handleDataSelection);
             EventBus.$on("selection-aborted", this.hanldeSelectionAbortion);
         },
-        removeSelectionEventHandlers: function () {
+        removeSelectionEventHandlers: function() {
             EventBus.$off("collection-selected", this.handleDataSelection);
             EventBus.$off("selection-aborted", this.hanldeSelectionAbortion);
         },
-        handleDataSelection: function (id) {
+        handleDataSelection: function(id) {
             if (this.expectSelection) {
                 this.selectedDataset = id;
                 this.expectSelection = false;
             }
         },
-        hanldeSelectionAbortion: function () {
+        hanldeSelectionAbortion: function() {
             this.expectSelection = false;
         },
-        handleLocationChange: function (index) {
+        handleLocationChange: function(index) {
             this.selectedColumn = index;
         },
-        blankWidget: function () {
+        blankWidget: function() {
             // removes all information that the user can set in case a certain region/dataset combination is not available
             this.widgetData = undefined;
             this.selectedDataset = [];
             this.selectedBinsize = undefined;
             this.widgetDataRef = undefined;
         },
-        handleDatasetSelection: function (id) {
+        handleDatasetSelection: function(id) {
             this.selectedDataset = id;
         },
-        handleBinsizeSelection: function (binsize) {
+        handleBinsizeSelection: function(binsize) {
             this.selectedBinsize = binsize;
         },
-        toStoreObject: function () {
+        toStoreObject: function() {
             // serialize object for storing its state in the store
             return {
                 // collection Data is needed if widget is dropped on new collection
@@ -192,9 +214,10 @@ export default {
                 widgetDataRef: this.widgetDataRef,
                 widgetType: "Lola",
                 selectedColumn: this.selectedColumn,
+                selectedSide: this.selectedSide,
             };
         },
-        initializeForFirstTime: function (widgetData, collectionData) {
+        initializeForFirstTime: function(widgetData, collectionData) {
             var data = {
                 widgetDataRef: undefined,
                 dragImage: undefined,
@@ -202,6 +225,7 @@ export default {
                 selectedDataset: [],
                 selectedBinsize: undefined,
                 intervalSize: collectionData["intervalSize"],
+                isBedpeFile: collectionData['isPairedEnd'],
                 emptyClass: ["smallMargin", "empty"],
                 binsizes: {},
                 datasets: collectionData["datasetsForIntervalSize"]["lola"],
@@ -209,20 +233,21 @@ export default {
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
                 selectedColumn: undefined,
+                selectedSide: 'left',
             };
             // write properties to store
             var newObject = this.toStoreObject();
             this.$store.commit("compare/setWidget", newObject);
             return data;
         },
-        deleteWidget: function () {
+        deleteWidget: function() {
             /*
                 Needs to be overriden because decrement mutation is different from mixin
             */
             // delete widget from store
             var payload = {
                 parentID: this.collectionID,
-                id: this.id,
+                id: this.id
             };
             // delete widget from store
             this.$store.commit("compare/deleteWidget", payload);
@@ -232,17 +257,18 @@ export default {
                 this.selectedDataset
             );
         },
-        initializeFromStore: function (widgetData, collectionConfig) {
+        initializeFromStore: function(widgetData, collectionConfig) {
             var widgetDataValues;
             if (widgetData["widgetDataRef"]) {
                 // check if widgetDataRef is defined -> if so, widgetdata is in store
                 // deinfe store queries
                 var payload = {
-                    id: widgetData["widgetDataRef"],
+                    id: widgetData["widgetDataRef"]
                 };
                 // get widget data from store
-                var widgetDataValues =
-                    this.$store.getters["compare/getWidgetDataLola"](payload);
+                var widgetDataValues = this.$store.getters[
+                    "compare/getWidgetDataLola"
+                ](payload);
             } else {
                 widgetDataValues = undefined;
             }
@@ -256,6 +282,7 @@ export default {
             }
             return {
                 widgetDataRef: widgetData["widgetDataRef"],
+                isBedpeFile: collectionConfig['isPairedEnd'],
                 dragImage: undefined,
                 widgetData: widgetDataValues,
                 selectedDataset: widgetData["dataset"],
@@ -268,12 +295,13 @@ export default {
                 showDatasetSelection: false,
                 showBinSizeSelection: false,
                 selectedColumn: widgetData["selectedColumn"],
+                selectedSide: widgetData["selectedSide"] !== undefined ? widgetData["selectedSide"] : 'left',
             };
         },
-        getLolaData: async function (id) {
+        getLolaData: async function(id) {
             // checks whether association data is in store and fetches it if it is not
             var queryObject = {
-                id: id,
+                id: id
             };
             if (
                 this.$store.getters["compare/associationDataExists"](
@@ -291,28 +319,33 @@ export default {
             // save it in store
             var mutationObject = {
                 id: id,
-                data: response.data,
+                data: response.data
             };
             this.$store.commit("compare/setWidgetDataLola", mutationObject);
             // return it
             return response.data;
         },
-        updateData: async function () {
+        updateData: async function() {
             // construct data ids to be fecthed
-            let selected_id = this.binsizes[this.selectedBinsize];
+            let selected_id;
+            if (this.isBedpeFile){
+                selected_id = this.binsizes[this.selectedBinsize][this.selectedSide];
+            }else{
+                selected_id = this.binsizes[this.selectedBinsize];
+            }
             // store widget data ref
             this.widgetDataRef = selected_id;
             // fetch data
             this.widgetData = await this.getLolaData(selected_id);
             // blank selected column
             this.selectedColumn = undefined;
-        },
+        }
     },
     watch: {
         // watch for changes in store to be able to update intervals
         "$store.state.compare.widgetCollections": {
             deep: true,
-            handler: function (newValue) {
+            handler: function(newValue) {
                 // update availability object
                 this.datasets =
                     newValue[this.collectionID]["collectionConfig"][
@@ -322,9 +355,9 @@ export default {
                     newValue[this.collectionID]["collectionConfig"][
                         "intervalSize"
                     ];
-            },
+            }
         },
-        datasets: function (newVal, oldVal) {
+        datasets: function(newVal, oldVal) {
             if (
                 !newVal ||
                 !oldVal ||
@@ -338,10 +371,9 @@ export default {
                 this.blankWidget();
                 return;
             }
-            this.binsizes =
-                this.datasets[this.selectedDataset]["data_ids"][
-                    this.intervalSize
-                ];
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
             // check whether binsizes are defined
             if (this.binsizes === undefined) {
                 // not data exists, blank widget DAta
@@ -353,15 +385,14 @@ export default {
             );
             this.updateData();
         },
-        intervalSize: function (newVal, oldVal) {
+        intervalSize: function(newVal, oldVal) {
             // if interval size changes, reload data
             if (!newVal || !oldVal || this.selectedDataset.length == 0) {
                 return;
             }
-            this.binsizes =
-                this.datasets[this.selectedDataset]["data_ids"][
-                    this.intervalSize
-                ];
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
             // check whether binsizes are defined
             if (this.binsizes === undefined) {
                 // not data exists, blank widget DAta
@@ -373,16 +404,15 @@ export default {
             );
             this.updateData();
         },
-        selectedDataset: async function (newVal, oldVal) {
+        selectedDataset: async function(newVal, oldVal) {
             if (!this.selectedDataset || this.selectedDataset.length == 0) {
                 // do not dispatch call if there is no id --> can happend when reset
                 return;
             }
             // set binsizes and add default
-            this.binsizes =
-                this.datasets[this.selectedDataset]["data_ids"][
-                    this.intervalSize
-                ];
+            this.binsizes = this.datasets[this.selectedDataset]["data_ids"][
+                this.intervalSize
+            ];
             // check whether binsizes are defined
             if (this.binsizes === undefined) {
                 // not data exists, blank widget DAta
@@ -400,19 +430,25 @@ export default {
             this.$store.commit("compare/decrement_usage_collections", oldVal);
             this.$store.commit("compare/increment_usage_collections", newVal);
         },
-        selectedBinsize: async function () {
+        selectedBinsize: async function() {
             if (!this.selectedBinsize) {
                 return;
             }
             this.updateData();
         },
+        selectedSide: async function() {
+            if (! this.selectedSide){
+                return
+            }
+            this.updateData()
+        }
     },
-    mounted: function () {
+    mounted: function() {
         this.registerSelectionEventHandlers();
     },
-    beforeDestroy: function () {
+    beforeDestroy: function() {
         this.removeSelectionEventHandlers();
-    },
+    }
 };
 </script>
 
@@ -420,42 +456,37 @@ export default {
 .bg {
     background-color: rgba(211, 211, 211, 0.2);
 }
-
 .toolbarheight {
     height: 40px;
 }
-
 .flex-container {
     display: flex;
     justify-content: center;
     align-items: center;
 }
-
 .no-padding-right {
     padding-right: 0px;
 }
-
 .padding-right {
     padding-right: 15px;
 }
-
 .padding-left {
     padding-left: 10px;
 }
-
 .padding-top {
     padding-top: 12px;
 }
-
 .no-padding-top {
     padding-top: 0px;
 }
-
 .smallMargin {
     margin: 2px;
 }
-
 .md-field {
     min-height: 30px;
+}
+.toggle-paired-buttons {
+    padding-top: 8px;
+    padding-bottom:8px;
 }
 </style>

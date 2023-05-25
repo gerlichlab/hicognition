@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import patch
 import pandas as pd
 import numpy as np
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 # sys.path.append("./")
@@ -31,7 +31,7 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # add dataset
-        self.dataset_point = Dataset(
+        self.dataset_point = self.create_dataset(
             dataset_name="test3",
             file_path="/test/path/test3.bed",
             filetype="bedfile",
@@ -40,7 +40,7 @@ class TestPipelineBed(LoginTestCase, TempDirTestCase):
             assembly=1,
             sizeType="Point",
         )
-        self.dataset_interval = Dataset(
+        self.dataset_interval = self.create_dataset(
             dataset_name="test4",
             file_path="/test/path/test4.bed",
             filetype="bedfile",
@@ -127,7 +127,7 @@ class TestBedPreprocessPipelineStep(LoginTestCase, TempDirTestCase):
         # add content-type
         token_headers["Content-Type"] = "multipart/form-data"
         # add dataset
-        self.dataset = Dataset(
+        self.dataset = self.create_dataset(
             dataset_name="test3",
             file_path="/test/path/test3.bed",
             filetype="bedfile",
@@ -136,7 +136,7 @@ class TestBedPreprocessPipelineStep(LoginTestCase, TempDirTestCase):
             assembly=1,
             sizeType="Point",
         )
-        self.dataset_interval = Dataset(
+        self.dataset_interval = self.create_dataset(
             dataset_name="test4",
             file_path="/test/path/test4.bed",
             filetype="bedfile",

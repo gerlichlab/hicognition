@@ -8,6 +8,7 @@ services:
             - ${DATA_DIR}:/code/temp/
         environment:
             - FLASK_DEBUG=0
+            - FLASK_CONFIG=production
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
             - SECRET_KEY=${SECRET_KEY}
@@ -15,6 +16,12 @@ services:
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
+            - MAIL_SERVER=${MAIL_SERVER}
+            - MAIL_PORT=${MAIL_PORT}
+            - MAIL_USERNAME=${MAIL_USERNAME}
+            - MAIL_PASSWORD=${MAIL_PASSWORD}
+            - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+            - SECRET_SALT=${SECRET_SALT}
         ports:
             # only map localhost-port
             - "5000:5000"
@@ -71,15 +78,23 @@ services:
     redis-worker-long:
         volumes:  
             - ${DATA_DIR}:/code/temp/
+            - ${LOG_DIR}:/logs/
         environment:
-            - FLASK_DEBUG=1
+            - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
+            - FLASK_CONFIG=production
             - SECRET_KEY=${SECRET_KEY}
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
+            - MAIL_SERVER=${MAIL_SERVER}
+            - MAIL_PORT=${MAIL_PORT}
+            - MAIL_USERNAME=${MAIL_USERNAME}
+            - MAIL_PASSWORD=${MAIL_PASSWORD}
+            - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+            - SECRET_SALT=${SECRET_SALT}
         depends_on:
                 - redis-server
         build:
@@ -95,15 +110,23 @@ services:
     redis-worker-medium:
         volumes:  
             - ${DATA_DIR}:/code/temp/
+            - ${LOG_DIR}:/logs/
         environment:
-            - FLASK_DEBUG=1
+            - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
+            - FLASK_CONFIG=production
             - SECRET_KEY=${SECRET_KEY}
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
+            - MAIL_SERVER=${MAIL_SERVER}
+            - MAIL_PORT=${MAIL_PORT}
+            - MAIL_USERNAME=${MAIL_USERNAME}
+            - MAIL_PASSWORD=${MAIL_PASSWORD}
+            - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+            - SECRET_SALT=${SECRET_SALT}
         depends_on:
                 - redis-server
         build:
@@ -119,15 +142,23 @@ services:
     redis-worker-short:
         volumes:  
             - ${DATA_DIR}:/code/temp/
+            - ${LOG_DIR}:/logs/
         environment:
-            - FLASK_DEBUG=1
+            - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
+            - FLASK_CONFIG=production
             - SECRET_KEY=${SECRET_KEY}
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
+            - MAIL_SERVER=${MAIL_SERVER}
+            - MAIL_PORT=${MAIL_PORT}
+            - MAIL_USERNAME=${MAIL_USERNAME}
+            - MAIL_PASSWORD=${MAIL_PASSWORD}
+            - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+            - SECRET_SALT=${SECRET_SALT}
         depends_on:
                 - redis-server
         build:

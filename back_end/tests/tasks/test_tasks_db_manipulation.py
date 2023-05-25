@@ -1,6 +1,6 @@
 """Tests for db manipulation of tasks"""
 import unittest
-from hicognition.test_helpers import LoginTestCase
+from tests.test_utils.test_helpers import LoginTestCase
 from app.pipeline_worker_functions import (
     _add_embedding_2d_to_db,
     _add_embedding_1d_to_db,
@@ -121,6 +121,7 @@ class TestAddEmbedding1DToDB(LoginTestCase):
             intervals_id=1,
             collection_id=1,
             cluster_number=10,
+            region_side=None
         )
         self.assertEqual(len(EmbeddingIntervalData.query.all()), 1)
         entry = EmbeddingIntervalData.query.first()
@@ -145,6 +146,7 @@ class TestAddEmbedding1DToDB(LoginTestCase):
             intervals_id=1,
             collection_id=1,
             cluster_number=10,
+            region_side=None
         )
         first_id = EmbeddingIntervalData.query.first().id
         # add second entry
@@ -154,6 +156,7 @@ class TestAddEmbedding1DToDB(LoginTestCase):
             intervals_id=1,
             collection_id=1,
             cluster_number=10,
+            region_side=None
         )
         self.assertEqual(len(EmbeddingIntervalData.query.all()), 1)
         entry = EmbeddingIntervalData.query.first()
@@ -176,7 +179,7 @@ class TestAddAssociationDataToDB(LoginTestCase):
     def test_add_new_entry_if_no_conflict(self):
         """Tests whether a new entry is added if there is
         no entry in db that satisfies the parameter constraints."""
-        _add_association_data_to_db("test/path", 10000, 1, 1)
+        _add_association_data_to_db("test/path", 10000, 1, 1, region_side=None)
         self.assertEqual(len(AssociationIntervalData.query.all()), 1)
         entry = AssociationIntervalData.query.first()
         self.assertEqual(entry.binsize, 10000)
@@ -188,10 +191,10 @@ class TestAddAssociationDataToDB(LoginTestCase):
         """Tests whether a new entry is added if there is
         no entry in db that satisfies the parameter constraints."""
         # add first entry
-        _add_association_data_to_db("test/path", 10000, 1, 1)
+        _add_association_data_to_db("test/path", 10000, 1, 1, region_side=None)
         first_id = AssociationIntervalData.query.first().id
         # add second entry
-        _add_association_data_to_db("test/path2", 10000, 1, 1)
+        _add_association_data_to_db("test/path2", 10000, 1, 1, region_side=None)
         self.assertEqual(len(AssociationIntervalData.query.all()), 1)
         entry = AssociationIntervalData.query.first()
         self.assertEqual(first_id, entry.id)

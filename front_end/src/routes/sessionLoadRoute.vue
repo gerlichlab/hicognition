@@ -24,15 +24,15 @@ import { apiMixin } from "../mixins";
 export default {
     name: "sessionLoad",
     mixins: [apiMixin],
-    data: function () {
+    data: function() {
         return {
             sessionToken: null,
             sessionID: null,
-            showLoad: false,
+            showLoad: false
         };
     },
     methods: {
-        parseQueryString: function () {
+        parseQueryString: function() {
             let queryObject = this.$route.query;
             if ("sessionToken" in queryObject && "sessionID" in queryObject) {
                 this.sessionToken = queryObject["sessionToken"];
@@ -42,11 +42,11 @@ export default {
                 this.loadData();
             }
         },
-        fetchDatasets: async function () {
+        fetchDatasets: async function() {
             var response = await this.fetchData("datasets/");
             this.$store.commit("setDatasets", response.data);
         },
-        loadData: async function () {
+        loadData: async function() {
             // get session data
             var response = await this.fetchData(`sessions/${this.sessionID}/`);
             if (!response) {
@@ -62,8 +62,14 @@ export default {
                             var widgetType = child_vals.widgetType;
                             switch (widgetType) {
                                 case "Lineprofile":
+                                    let refs;
+                                    if (child_vals['collectionConfig']['isPairedEnd']){
+                                        refs = child_vals.widgetDataRef.map((val) => val[child_vals.selectedSide])
+                                    }else{
+                                        refs = child_vals.widgetDataRef
+                                    }
                                     await this.fetchLineProfileData(
-                                        child_vals.widgetDataRef
+                                        refs
                                     );
                                     break;
                                 case "Pileup":
@@ -100,7 +106,7 @@ export default {
                 this.$router.push("/main/compare");
             }, 1000);
         },
-        fetchLineProfileData: async function (ids) {
+        fetchLineProfileData: async function(ids) {
             for (let id of ids) {
                 // checks whether lineprofile data is in store and does not fetch it if it is there
                 if (this.$store.getters["compare/lineprofileExists"](id)) {
@@ -113,7 +119,7 @@ export default {
                 // save it in store
                 var mutationObject = {
                     id: id,
-                    data: parsed,
+                    data: parsed
                 };
                 this.$store.commit(
                     "compare/setWidgetDataLineprofile",
@@ -121,10 +127,10 @@ export default {
                 );
             }
         },
-        fetchStackupData: async function (id) {
+        fetchStackupData: async function(id) {
             // checks whether pileup data is in store and fetches it if it is not
             var queryObject = {
-                id: id,
+                id: id
             };
             if (this.$store.getters["compare/stackupExists"](queryObject)) {
                 return;
@@ -137,14 +143,14 @@ export default {
             // save it in store
             var mutationObject = {
                 id: id,
-                data: piling_data,
+                data: piling_data
             };
             this.$store.commit("compare/setWidgetDataStackup", mutationObject);
         },
-        fetchAssociationData: async function (id) {
+        fetchAssociationData: async function(id) {
             // checks whether association data is in store and fetches it if it is not
             var queryObject = {
-                id: id,
+                id: id
             };
             if (
                 this.$store.getters["compare/associationDataExists"](
@@ -161,13 +167,13 @@ export default {
             // save it in store
             var mutationObject = {
                 id: id,
-                data: piling_data,
+                data: piling_data
             };
             this.$store.commit("compare/setWidgetDataLola", mutationObject);
         },
-        fetchEmbeddingPoints: async function (id) {
+        fetchEmbeddingPoints: async function(id) {
             var queryObject = {
-                id: id,
+                id: id
             };
             if (
                 !this.$store.getters["compare/embedding1dDataExists"](
@@ -176,14 +182,15 @@ export default {
             ) {
                 // points do not exist in store, check whether request for them has been dispatched
                 let url = `embeddingIntervalData/${id}/`;
-                let requestData =
-                    this.$store.getters["compare/getRequest"](url);
+                let requestData = this.$store.getters["compare/getRequest"](
+                    url
+                );
                 let response;
                 if (!requestData) {
                     // request has not been dispatched => put it in store
                     this.$store.commit("compare/setRequest", {
                         url: url,
-                        data: this.fetchData(url),
+                        data: this.fetchData(url)
                     });
                     response = await this.$store.getters["compare/getRequest"](
                         url
@@ -191,7 +198,7 @@ export default {
                     // save it in store
                     var mutationObject = {
                         id: id,
-                        data: response.data,
+                        data: response.data
                     };
                     this.$store.commit(
                         "compare/setWidgetDataEmbedding1d",
@@ -200,11 +207,11 @@ export default {
                 }
             }
         },
-        fetchEmbeddingOverlays: async function (id, overlayIndex) {
+        fetchEmbeddingOverlays: async function(id, overlayIndex) {
             if (overlayIndex != "density") {
                 var queryObject = {
                     id: id,
-                    overlayIndex: overlayIndex,
+                    overlayIndex: overlayIndex
                 };
                 if (
                     this.$store.getters["compare/embedding1dDataExists"](
@@ -217,14 +224,15 @@ export default {
                 }
                 // overlay data does not exist, check whether request has been dispatched
                 let url = `embeddingIntervalData/${id}/${overlayIndex}/`;
-                let requestData =
-                    this.$store.getters["compare/getRequest"](url);
+                let requestData = this.$store.getters["compare/getRequest"](
+                    url
+                );
                 let response;
                 if (!requestData) {
                     // request has not been dispatched => put it in store
                     this.$store.commit("compare/setRequest", {
                         url: url,
-                        data: this.fetchData(url),
+                        data: this.fetchData(url)
                     });
                     response = await this.$store.getters["compare/getRequest"](
                         url
@@ -233,7 +241,7 @@ export default {
                     var mutationObject = {
                         id: id,
                         overlayIndex: overlayIndex,
-                        data: response.data["data"],
+                        data: response.data["data"]
                     };
                     this.$store.commit(
                         "compare/setWidgetDataEmbedding1d",
@@ -242,16 +250,16 @@ export default {
                 }
             }
         },
-        fetchEmbeddingData: async function (id, overlayIndex) {
+        fetchEmbeddingData: async function(id, overlayIndex) {
             await this.fetchEmbeddingPoints(id);
             await this.fetchEmbeddingOverlays(id, overlayIndex);
         },
-        fetchPileupData: async function (dataRef) {
+        fetchPileupData: async function(dataRef) {
             for (let [pileupType, id] of Object.entries(dataRef)) {
                 // checks whether pileup data is in store and fetches it if it is not
                 var queryObject = {
                     pileupType: pileupType,
-                    id: id,
+                    id: id
                 };
                 if (this.$store.getters["compare/pileupExists"](queryObject)) {
                     return;
@@ -265,18 +273,18 @@ export default {
                 var mutationObject = {
                     pileupType: pileupType,
                     id: id,
-                    data: parsed,
+                    data: parsed
                 };
                 this.$store.commit(
                     "compare/setWidgetDataPileup",
                     mutationObject
                 );
             }
-        },
+        }
     },
-    created: function () {
+    created: function() {
         this.parseQueryString();
-    },
+    }
 };
 </script>
 

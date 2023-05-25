@@ -1,10 +1,15 @@
 """ Authenticating credentials of a request and dealing with the tokens. """
+from functools import wraps
 from flask import g, request, current_app
 from flask.json import jsonify
 from flask_httpauth import HTTPBasicAuth
+from sqlalchemy.exc import IntegrityError
 from . import api
 from . import errors
+from ..form_models import UserRegistrationModel
 from ..models import User, Session
+from .. import confirmation_handler
+from .. import db
 
 
 auth = HTTPBasicAuth()
@@ -14,6 +19,7 @@ class ShowCaseUser:
     def __init__(self):
         self.id = None
         self.is_anonymous = False
+        self.email_confirmed = True
 
     def generate_auth_token(self, expiration):
         return "ASDF"
@@ -58,6 +64,78 @@ def get_token():
             "user_name": user_name,
         }
     )
+
+
+@api.route('/register/', methods=['POST'])
+def register():
+    if not hasattr(request, "form"):
+        return errors.invalid("Request does not contain a form!")
+    # get data from form
+    try:
+        data = UserRegistrationModel(**request.form)
+    except ValueError as err:
+        return errors.invalid(f'Form is not valid: {str(err)}')
+    except Exception as err:
+        return errors.internal_server_error(
+            err,
+            "Registration could not be performed: There was a server-side problem. Error has been logged.",
+        )
+    # create user
+    try:
+        user = User(username=data.user_name, email=data.email_address)
+        user.set_password(data.password)
+        db.session.add(user)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return errors.invalid('User with this name or email address already exists!')
+    # send confirmation email
+    try:
+        confirmation_handler.send_confirmation_mail(request.base_url.split("/api/register/")[0], data.email_address)
+    except BaseException as e:
+        current_app.logger.info('Confirmation sending failed!')
+        current_app.logger.error(e)
+        return errors.internal_server_error(e, "Sending mail failed!")
+    return jsonify({"message": "Registration successful"})
+
+@api.route('/resend/', methods=['GET'])
+@auth.login_required
+def resend_confirmation_mail():
+    # send confirmation email
+    try:
+        confirmation_handler.send_confirmation_mail(request.base_url.split("/api/resend/")[0], g.current_user.email)
+    except BaseException as e:
+        current_app.logger.info('Confirmation sending failed!')
+        current_app.logger.error(e)
+        return errors.internal_server_error(e, "Sending mail failed!")
+    return jsonify({"message": "Registration mail resend successfully"})
+
+
+@api.route('/confirmation/<token>/', methods=['GET'])
+@auth.login_required
+def confirm_email(token):
+    # check if token is ok
+    email = confirmation_handler.confirm_token(token)
+    if not email:
+        return errors.forbidden("Unconfirmed: Token wrong or expired.")
+    # check if email matches
+    if not (g.current_user.email == email):
+        return errors.forbidden("Unconfirmed: Wrong email address.")
+    # set confirmation state
+    g.current_user.email_confirmed = True
+    db.session.add(g.current_user)
+    db.session.commit()
+    return jsonify({"message": "Confirmation successful!"})
+
+
+def check_confirmed(func):
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        if g.current_user.email_confirmed is not True:
+            return errors.forbidden("Unconfirmed")
+        return func(*args, **kwargs)
+
+    return decorated_function
 
 
 @api.before_request

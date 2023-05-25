@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, PropertyMock
 import pandas as pd
 from pandas.testing import assert_frame_equal
 import numpy as np
-from hicognition.test_helpers import LoginTestCase, TempDirTestCase
-from hicognition.utils import get_optimal_binsize
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
+from app.lib.utils import get_optimal_binsize
 
 # add path to import app
 # import sys
@@ -40,8 +40,8 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # add dataset
-        self.bedfile = Dataset(id=1, filetype="bedfile", user_id=1, assembly=1)
-        self.coolerfile = Dataset(id=2, filetype="cooler", user_id=1, assembly=1)
+        self.bedfile = self.create_dataset(id=1, dataset_name="test", filetype="bedfile", user_id=1, assembly=1)
+        self.coolerfile = self.create_dataset(id=2, dataset_name="test", filetype="cooler", user_id=1, assembly=1)
         # add intervals
         self.intervals1 = Intervals(
             id=1, name="testRegion1", dataset_id=1, windowsize=200000
@@ -138,7 +138,7 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         # check whether processing has finished
         self.assertEqual(self.bedfile.processing_features, [])
 
-    @patch("app.pipeline_steps.log.error")
+    @patch("app.pipeline_steps.current_app.logger.error")
     @patch("app.pipeline_steps.pd.read_csv")
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.pileup_pipeline_step")
@@ -178,15 +178,15 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # add dataset
-        self.dataset = Dataset(
+        self.dataset = self.create_dataset(
             dataset_name="test3",
             file_path="/test/path/test3.mcool",
-            filetype="cooler",
+            filetype="bedfile",
             processing_state="finished",
             user_id=1,
             assembly=1,
         )
-        self.dataset2 = Dataset(
+        self.dataset2 = self.create_dataset(
             dataset_name="test4",
             file_path="/test/path/test4.mcool",
             filetype="cooler",
@@ -194,15 +194,29 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
             user_id=1,
             assembly=1,
         )
+        self.dataset3 = self.create_dataset(
+            dataset_name="test4",
+            file_path="/test/path/test4.mcool",
+            filetype="bedfile",
+            processing_state="finished",
+            user_id=1,
+            assembly=1,
+            dimension="2d"
+        )
         # add intervals
         self.intervals1 = Intervals(name="testRegion1", dataset_id=1, windowsize=200000)
         self.intervals2 = Intervals(name="testRegion2", dataset_id=1, windowsize=300000)
         self.intervals3 = Intervals(name="testRegion2", dataset_id=1, windowsize=None)
+        self.intervals4 = Intervals(name="testRegion3", dataset_id=3, windowsize=200000)
+        self.intervals5 = Intervals(name="testRegion3", dataset_id=3, windowsize=None)
         db.session.add(self.dataset)
         db.session.add(self.dataset2)
+        db.session.add(self.dataset3)
         db.session.add(self.intervals1)
         db.session.add(self.intervals2)
         db.session.add(self.intervals3)
+        db.session.add(self.intervals4)
+        db.session.add(self.intervals5)
         db.session.commit()
 
     @patch("app.pipeline_steps.worker_funcs._do_pileup_fixed_size")
@@ -225,6 +239,27 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
 
     @patch("app.pipeline_steps.worker_funcs._do_pileup_fixed_size")
     @patch("app.pipeline_steps.worker_funcs._do_pileup_variable_size")
+    def test_correct_pileup_worker_function_used_point_feature_2d(
+        self, mock_pileup_variable_size, mock_pileup_fixed_size
+    ):
+        """Tests whether correct worker function for pileup is used
+        when intervals has fixed windowsizes and the underlying regions dataset is 2d"""
+        # add return values
+        mock_pileup_fixed_size.return_value = np.full((2, 2, 2), np.nan)
+        # dispatch call
+        dataset_id = 3
+        intervals_id = 4
+        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
+        pileup_pipeline_step(dataset_id, intervals_id, 10000, arms, "ICCF")
+        # check whether pileup with fixed size was called and with variable size was not called
+        mock_pileup_fixed_size.assert_called_once()
+        # check whether the pileup function was called with the 2d parameter
+        self.assertEqual(mock_pileup_fixed_size.call_args[1]['dimension'], '2d')
+        mock_pileup_variable_size.assert_not_called()
+
+
+    @patch("app.pipeline_steps.worker_funcs._do_pileup_fixed_size")
+    @patch("app.pipeline_steps.worker_funcs._do_pileup_variable_size")
     def test_correct_pileup_worker_function_used_interval_feature(
         self, mock_pileup_variable_size, mock_pileup_fixed_size
     ):
@@ -240,6 +275,27 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
         # check whether pileup with fixed size was called and with variable size was not called
         mock_pileup_variable_size.assert_called_once()
         mock_pileup_fixed_size.assert_not_called()
+
+    @patch("app.pipeline_steps.worker_funcs._do_pileup_fixed_size")
+    @patch("app.pipeline_steps.worker_funcs._do_pileup_variable_size")
+    def test_correct_pileup_worker_function_used_interval_feature_2d(
+        self, mock_pileup_variable_size, mock_pileup_fixed_size
+    ):
+        """Tests whether correct worker function for pileup is used
+        when intervals has variable windowsizes and underlying dataset is 2-dimensional"""
+        # add return values
+        mock_pileup_variable_size.return_value = np.full((2, 2, 2), np.nan)
+        # dispatch call
+        dataset_id = 1
+        intervals_id = 5
+        arms = pd.read_csv(self.app.config["CHROM_ARMS"])
+        pileup_pipeline_step(dataset_id, intervals_id, 10000, arms, "ICCF")
+        # check whether pileup with fixed size was called and with variable size was not called
+        mock_pileup_variable_size.assert_called_once()
+        # check whether the pileup function was called with the 2d parameter
+        self.assertEqual(mock_pileup_variable_size.call_args[1]['dimension'], '2d')
+        mock_pileup_fixed_size.assert_not_called()
+
 
     @patch("app.pipeline_steps.uuid.uuid4")
     @patch("app.pipeline_steps.worker_funcs._add_embedding_2d_to_db")
@@ -322,7 +378,7 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # add dataset
-        self.cooler = Dataset(
+        self.cooler = self.create_dataset(
             dataset_name="test3",
             file_path="./tests/testfiles/test.mcool",
             filetype="cooler",
@@ -555,7 +611,7 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # add dataset
-        self.cooler = Dataset(
+        self.cooler = self.create_dataset(
             dataset_name="test3",
             file_path="./tests/testfiles/test.mcool",
             filetype="cooler",
@@ -855,6 +911,17 @@ class TestGetOptimalBinsize(LoginTestCase):
         self.assertEqual(
             get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
             10000,
+        )
+
+    def test_correct_binsize_2d_region(self):
+        """tests correct handling of small regions with rare lare regions"""
+        regions = pd.read_csv(
+            "tests/testfiles/4kloops.bedpe", sep="\t", header=None
+        ).rename(columns={0: "chrom1", 1: "start1", 2: "end1",
+                                            3: "chrom2", 4:"start2", 5: "end2"})
+        self.assertEqual(
+            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            None,
         )
 
     def test_correct_binsize_tads_low_number_target_bins(self):

@@ -35,7 +35,7 @@ export default {
     name: "associationPlot",
     components: {
         enrichmentDistribution,
-        enrichmentRanks,
+        enrichmentRanks
     },
     props: {
         plotData: Object,
@@ -44,10 +44,10 @@ export default {
         collectionNames: Array,
         intervalSize: Number,
         selectedColumn: Number,
-        binsize: Number,
+        binsize: Number
     },
     computed: {
-        intervalStartBin: function () {
+        intervalStartBin: function() {
             if (this.plotData) {
                 let intervalSize = Math.round(
                     this.plotData["shape"][1] / (1 + 2 * EXPANSION_FACTOR)
@@ -56,19 +56,19 @@ export default {
             }
             return undefined;
         },
-        rankPlotHeight: function () {
+        rankPlotHeight: function() {
             return this.height * 0.7;
         },
-        distributionPlotHeight: function () {
+        distributionPlotHeight: function() {
             return this.height * 0.3;
         },
-        enrichmentData: function () {
+        enrichmentData: function() {
             return max_array_along_rows(
                 this.plotData["data"],
                 this.plotData["shape"]
             );
         },
-        currentColumn: function () {
+        currentColumn: function() {
             if (this.selectedColumn === undefined) {
                 if (!isNaN(this.intervalSize)) {
                     return Math.floor(this.plotData["shape"][1] / 2);
@@ -78,19 +78,19 @@ export default {
                 return this.selectedColumn;
             }
         },
-        rankData: function () {
+        rankData: function() {
             return select_column(
                 this.plotData["data"],
                 this.plotData["shape"],
                 this.currentColumn
             );
-        },
+        }
     },
     methods: {
-        transmitEvent: function (index) {
+        transmitEvent: function(index) {
             this.$emit("barclick", index);
-        },
-    },
+        }
+    }
 };
 </script>
 

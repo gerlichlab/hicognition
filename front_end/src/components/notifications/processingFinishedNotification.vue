@@ -26,12 +26,12 @@
 export default {
     name: "processingFinishedNotification",
     props: {
-        item: Object,
+        item: Object
     },
     methods: {
-        handleSetNotificatonRead: function (id) {
+        handleSetNotificatonRead: function(id) {
             this.$store.commit("setNotificationRead", id);
-        },
-    },
+        }
+    }
 };
 </script>

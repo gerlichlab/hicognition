@@ -10,6 +10,7 @@
             @drop="handleDrop"
         >
             <div @mouseleave="hideSelection = true" class="fill-height">
+                <!-- add icon -->
                 <div v-if="hideSelection" class="fill-height">
                     <div
                         class="md-layout md-gutter md-alignment-center-center fill-height no-margin"
@@ -22,9 +23,10 @@
                         </md-button>
                     </div>
                 </div>
+                <!-- present list of diagram options when add is hovered over -->
                 <div
-                    class="md-layout md-gutter md-alignment-center-center fill-height no-margin"
                     v-else
+                    class="md-layout md-gutter md-alignment-center-center fill-height no-margin"
                 >
                     <div class="list">
                         <md-list :md-expand-single="true">
@@ -33,13 +35,13 @@
                                 <md-list slot="md-expand">
                                     <md-list-item
                                         class="md-inset"
-                                        @click="setPileup"
+                                        @click="setWidget('Pileup')"
                                         :disabled="!selectionOptions.pileup"
                                         >Average 2D</md-list-item
                                     >
                                     <md-list-item
                                         class="md-inset"
-                                        @click="setLineprofile"
+                                        @click="setWidget('Lineprofile')"
                                         :disabled="
                                             !selectionOptions.lineprofile
                                         "
@@ -55,7 +57,7 @@
                                 <md-list slot="md-expand">
                                     <md-list-item
                                         class="md-inset"
-                                        @click="setStackup"
+                                        @click="setWidget('Stackup')"
                                         :disabled="
                                             !selectionOptions.lineprofile
                                         "
@@ -63,7 +65,7 @@
                                     >
                                     <md-list-item
                                         class="md-inset"
-                                        @click="setEmbedding1d"
+                                        @click="setWidget('Embedding1D')"
                                         :disabled="
                                             !selectionOptions.embedding1d
                                         "
@@ -71,7 +73,7 @@
                                     >
                                     <md-list-item
                                         class="md-inset"
-                                        @click="setEmbedding2d"
+                                        @click="setWidget('Embedding2D')"
                                         :disabled="
                                             !selectionOptions.embedding2d
                                         "
@@ -87,7 +89,7 @@
                                 <md-list slot="md-expand">
                                     <md-list-item
                                         class="md-inset"
-                                        @click="setLola"
+                                        @click="setWidget('Lola')"
                                         :disabled="!selectionOptions.lola"
                                         >Lola</md-list-item
                                     >
@@ -177,18 +179,16 @@ export default {
         lineprofileWidget,
         lolaWidget,
         embedding1dWidget,
-        embedding2dWidget,
+        embedding2dWidget
     },
-    data: function () {
+    data: function() {
         // get widget type from store
         var widgetType;
         if (!this.empty) {
-            var queryObject = {
+            widgetType = this.$store.getters["compare/getWidgetType"]({
                 parentID: this.collectionID,
-                id: this.id,
-            };
-            widgetType =
-                this.$store.getters["compare/getWidgetType"](queryObject);
+                id: this.id
+            });
         } else {
             widgetType = undefined;
         }
@@ -196,7 +196,7 @@ export default {
             widgetType: widgetType,
             selectedType: undefined,
             containerClasses: ["md-elevation-0", "small-margin"],
-            hideSelection: true,
+            hideSelection: true
         };
     },
     props: {
@@ -207,27 +207,27 @@ export default {
         collectionID: Number,
         rowIndex: Number,
         colIndex: Number,
-        selectionOptions: Object,
+        selectionOptions: Object
     },
     methods: {
-        handleExpandClick: function (event, key) {
+        handleExpandClick: function(event, key) {
             console.log(event);
             if (!selectionOptions[key]) {
             }
         },
-        handleMouseOverSelectionButton: function () {
+        handleMouseOverSelectionButton: function() {
             this.hideSelection = false;
             setTimeout(() => {
                 this.hideSelection = true;
             }, 1000);
         },
-        handleDragEnter: function (e) {
+        handleDragEnter: function(e) {
             this.containerClasses.push("dark-background");
         },
-        handleDragLeave: function (e) {
+        handleDragLeave: function(e) {
             this.containerClasses.pop();
         },
-        handleDrop: function (event) {
+        handleDrop: function(event) {
             var sourceWidgetID = event.dataTransfer.getData("widget-id");
             var sourceColletionID = event.dataTransfer.getData("collection-id");
             this.containerClasses.pop();
@@ -239,159 +239,53 @@ export default {
                 this.colIndex
             );
         },
-        widgetIDExists: function () {
-            // checks whether widget id exists
-            var queryObject = {
-                id: this.id,
-                parentID: this.collectionID,
-            };
-            return this.$store.getters["compare/widgetExists"](queryObject);
-        },
-        initializeWidgetFromEmpty: function () {
-            // if state is selected for an empty widget, initializes it for the first time
-            var payload = {
-                id: this.id,
-                rowIndex: this.rowIndex,
-                colIndex: this.colIndex,
-                parentID: this.collectionID,
-            };
-            // update changed data in store
-            this.$store.commit("compare/setWidget", payload);
-        },
-        setPileup: function () {
-            // check if allowed
-            if (!this.selectionOptions.pileup) {
-                return;
-            }
+        setWidget: function(widgetType) {
             // check if widget is in store
-            if (!this.widgetIDExists()) {
-                this.initializeWidgetFromEmpty();
-            }
-            // set widgetType in store
-            var mutationObject = {
-                parentID: this.collectionID,
+            var idExists = this.$store.getters["compare/widgetExists"]({
                 id: this.id,
-                widgetType: "Pileup",
-            };
-            this.$store.commit("compare/setWidgetType", mutationObject);
+                parentID: this.collectionID
+            });
+            if (!idExists) {
+                // initialize widget
+                this.$store.commit("compare/setWidget", {
+                    id: this.id,
+                    rowIndex: this.rowIndex,
+                    colIndex: this.colIndex,
+                    parentID: this.collectionID
+                });
+            }
             // set widget Type in this container
-            this.widgetType = "Pileup";
+            this.widgetType = widgetType;
+            // set it in store
+            this.$store.commit(
+                "compare/setWidgetType",
+                {
+                    parentID: this.collectionID,
+                    id: this.id,
+                    widgetType: widgetType
+                }
+            );
         },
-        setStackup: function () {
-            // check if allowed
-            if (!this.selectionOptions.lineprofile) {
-                return;
-            }
-            // check if widget is in store
-            if (!this.widgetIDExists()) {
-                this.initializeWidgetFromEmpty();
-            }
-            // set widgetType in store
-            var mutationObject = {
-                parentID: this.collectionID,
-                id: this.id,
-                widgetType: "Stackup",
-            };
-            this.$store.commit("compare/setWidgetType", mutationObject);
-            // set widget Type in this container
-            this.widgetType = "Stackup";
-        },
-        setLineprofile: function () {
-            // check if allowed
-            if (!this.selectionOptions.lineprofile) {
-                return;
-            }
-            // check if widget is in store
-            if (!this.widgetIDExists()) {
-                this.initializeWidgetFromEmpty();
-            }
-            // set widgetType in store
-            var mutationObject = {
-                parentID: this.collectionID,
-                id: this.id,
-                widgetType: "Lineprofile",
-            };
-            this.$store.commit("compare/setWidgetType", mutationObject);
-            // set widget Type in this container
-            this.widgetType = "Lineprofile";
-        },
-        setLola: function () {
-            // check if allowed
-            if (!this.selectionOptions.lola) {
-                return;
-            }
-            // check if widget is in store
-            if (!this.widgetIDExists()) {
-                this.initializeWidgetFromEmpty();
-            }
-            // set widgetType in store
-            var mutationObject = {
-                parentID: this.collectionID,
-                id: this.id,
-                widgetType: "Lola",
-            };
-            this.$store.commit("compare/setWidgetType", mutationObject);
-            // set widget Type in this container
-            this.widgetType = "Lola";
-        },
-        setEmbedding1d: function () {
-            // check if allowed
-            if (!this.selectionOptions.embedding1d) {
-                return;
-            }
-            // check if widget is in store
-            if (!this.widgetIDExists()) {
-                this.initializeWidgetFromEmpty();
-            }
-            // set widgetType in store
-            var mutationObject = {
-                parentID: this.collectionID,
-                id: this.id,
-                widgetType: "Embedding1D",
-            };
-            this.$store.commit("compare/setWidgetType", mutationObject);
-            // set widget Type in this container
-            this.widgetType = "Embedding1D";
-        },
-        setEmbedding2d: function () {
-            // check if allowed
-            if (!this.selectionOptions.embedding2d) {
-                return;
-            }
-            // check if widget is in store
-            if (!this.widgetIDExists()) {
-                this.initializeWidgetFromEmpty();
-            }
-            // set widgetType in store
-            var mutationObject = {
-                parentID: this.collectionID,
-                id: this.id,
-                widgetType: "Embedding2D",
-            };
-            this.$store.commit("compare/setWidgetType", mutationObject);
-            // set widget Type in this container
-            this.widgetType = "Embedding2D";
-        },
-        propagateDrop: function () {
+        propagateDrop: function() {
             // propagates widgetDrop up to widgetCollection
             // Vue events are not automatically passed on to parents https://stackoverflow.com/questions/43559561/how-to-propagate-a-vue-js-event-up-the-components-chain
             this.$emit("widgetDrop", ...arguments);
-        },
+        }
     },
     computed: {
-        cssStyle: function () {
+        cssStyle: function() {
             return {
                 height: `${this.height}px`,
-                width: `${this.width}px`,
+                width: `${this.width}px`
             };
         },
-        noWidgetType: function () {
+        noWidgetType: function() {
             if (this.widgetType) {
                 return false;
             }
             return true;
-        },
-    },
+        }
+    }
 };
 </script>
 
