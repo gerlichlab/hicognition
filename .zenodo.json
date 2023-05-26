@@ -1,0 +1,38 @@
+{
+    "description": "This is the code for app.hicognition.com submitted with the final version of the manuscript.", 
+    "license": "other-open", 
+    "title": "gerlichlab/hicognition: version-0.7", 
+    "version": "v0.7", 
+    "upload_type": "software", 
+    "publication_date": "2023-05-26", 
+    "creators": [
+        {
+            "affiliation": "IMBA - Institute of Molecular Biotechnology of the OeAW", 
+            "name": "Michael Mitter"
+        }, 
+        {
+            "affiliation": "IMBA - Institute of Molecular Biotechnology of the OeAW", 
+            "name": "Christoph C. H. Langer"
+        }, 
+        {
+            "name": "Ulrich Aschl"
+        }, 
+        {
+            "affiliation": "Vienna BioCenter", 
+            "name": "Erich Birngruber"
+        }
+    ], 
+    "access_right": "open", 
+    "related_identifiers": [
+        {
+            "scheme": "url", 
+            "identifier": "https://github.com/gerlichlab/hicognition/tree/v0.7", 
+            "relation": "isSupplementTo"
+        }, 
+        {
+            "scheme": "doi", 
+            "identifier": "10.5281/zenodo.7972857", 
+            "relation": "isVersionOf"
+        }
+    ]
+}
