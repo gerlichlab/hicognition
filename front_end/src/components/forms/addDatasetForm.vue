@@ -122,7 +122,7 @@
                                         <md-option value="url">
                                             Import from URL
                                         </md-option>
-                                        <md-option value="url">
+                                        <md-option value="encode">
                                             ENCODE
                                         </md-option>
                                         <md-option
@@ -151,6 +151,14 @@
                             />
                             <formURLInput
                                 v-else-if="form.fileSource === 'url'"
+                                :fileTypeMapping="fileTypeExtensions"
+                                @input-changed="urlInputChanged"
+                                @update-component-validity="
+                                    updateComponentValidity
+                                "
+                            />
+                            <formURLEncode
+                                v-else-if="form.fileSource === 'encode'"
                                 :fileTypeMapping="fileTypeExtensions"
                                 @input-changed="urlInputChanged"
                                 @update-component-validity="
@@ -242,6 +250,7 @@ import { apiMixin } from "../../mixins";
 
 import formFileInput from "./formFileInput";
 import formURLInput from "./formURLInput";
+import formURLEncode from "./formURLEncode";
 import formRepositoryInput from "./formRepositoryInput";
 
 export default {
@@ -253,7 +262,8 @@ export default {
     components: {
         formFileInput,
         formRepositoryInput,
-        formURLInput
+        formURLInput,
+        formURLEncode
     },
     data: () => ({
         form: {

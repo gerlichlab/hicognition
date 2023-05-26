@@ -1,5 +1,8 @@
 <template>
     <div class="md-layout-item md-layout md-gutter">
+        <a href="https://data.4dnucleome.org/browse/" target="_blank">
+            <md-icon>manage_search</md-icon>
+        </a>
         <div class="md-layout-item md-small-size-100">
             <md-field :class="validationSampleID()">
                 <label for="sampleID">Sample-ID</label>
