@@ -1,5 +1,5 @@
 # HiCognition: A visual exploration and hypothesis testing tool for 3D genomics
-
+[![DOI](https://zenodo.org/badge/276093619.svg)](https://zenodo.org/badge/latestdoi/276093619)
 [![Python code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black "Black: The Uncompromising Code Formatter")
 [![Javascript Style Guide: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier-vscode "Prettier: An Opinionated Code Formatter")
 ![Build and push image](https://github.com/gerlichlab/HiCognition/actions/workflows/build_and_push_image.yml/badge.svg)
