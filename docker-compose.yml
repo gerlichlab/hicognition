@@ -6,6 +6,7 @@ services:
         container_name: flask-server
         volumes:
             - ${DATA_DIR}:/code/temp/
+            - ${LOG_DIR}:/logs/
         environment:
             - FLASK_DEBUG=0
             - FLASK_CONFIG=production
