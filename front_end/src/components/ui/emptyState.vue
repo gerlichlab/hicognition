@@ -6,6 +6,7 @@
             md-description=""
             class="test"
             style="width:50%; "
+            v-if="isLocal"
         >
             <p style="text-align: justify;">
                 This is the public version of HiCognition. The aim is getting you started as fast as possible.
@@ -131,6 +132,7 @@ export default {
     name: "EmptyStateBasic",
     data: function() {
         return {
+            isLocal: process.env.LOCAL_INSTALL
             //isDemo: process.env.SHOWCASE
         };
     }

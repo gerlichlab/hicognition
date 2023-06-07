@@ -81,6 +81,7 @@ services:
             - ${DATA_DIR}:/code/temp/
             - ${LOG_DIR}:/logs/
         environment:
+            - LOCAL_INSTALL=1
             - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
             - FLASK_CONFIG=production
