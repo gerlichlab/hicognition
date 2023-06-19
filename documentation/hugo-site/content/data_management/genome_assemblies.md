@@ -40,6 +40,17 @@ chr1    125200000   249250621
 
 Here, the two arms are written in separate rows with the same chromosome name as an identifier.
 
+## How to create chromosome sizes and chromosome arms?
+All you need is pandas and [bioframe](https://bioframe.readthedocs.io/). 
+
+We fetch chromosome sizes and centromeres with bioframe directly from the UCSC database, then we calculate the arms.
+```
+chromsizes = bioframe.fetch_chromsizes("hg38")
+centromeres = bioframe.fetch_centromeres("hg38")
+arms = bioframe.make_chromarms(chromsizes, centromeres)
+```
+Two detailed examples of creating these files can be found as a notebook in the [HiCogntion repository](https://github.com/gerlichlab/hicognition/blob/homepage/publication/scripts/create_assembly_files.ipynb).
+
 ## Managing genome assemblies
 
 You can view your genome assemblies by clicking the `Show Genomes` button in the data management drawer:
