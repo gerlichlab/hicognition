@@ -49,7 +49,7 @@ chromsizes = bioframe.fetch_chromsizes("hg38")
 centromeres = bioframe.fetch_centromeres("hg38")
 arms = bioframe.make_chromarms(chromsizes, centromeres)
 ```
-Two detailed examples of creating these files can be found as notebooks in the [HiCogntion repository](https://github.com/gerlichlab/hicognition/blob/homepage/publication/scripts/create_assembly_files.ipynb).
+Two detailed examples of creating these files can be found as a notebook in the [HiCogntion repository](https://github.com/gerlichlab/hicognition/blob/homepage/publication/scripts/create_assembly_files.ipynb).
 
 ## Managing genome assemblies
 
