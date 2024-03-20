@@ -28,7 +28,7 @@
                             </md-field>
                         </div>
 
-                        <div class="md-layout-item md-size-25">
+                        <div class="md-layout-item md-size-15">
                             <md-field>
                                 <label :for="`celltype-${element.id}`"
                                     >Celltype</label
@@ -38,12 +38,12 @@
                                     :id="`celltype-${element.id}`"
                                     v-model="element.cellType"
                                     :disabled="sending"
-                                    required
+                                    maxlength="60"
                                 />
                             </md-field>
                         </div>
 
-                        <div class="md-layout-item md-size-25">
+                        <div class="md-layout-item md-size-15">
                             <md-field>
                                 <label :for="`perturbation-${element.id}`"
                                     >Perturbation</label
@@ -53,7 +53,21 @@
                                     :id="`perturbation-${element.id}`"
                                     v-model="element.perturbation"
                                     :disabled="sending"
-                                    required
+                                    maxlength="60"
+                                />
+                            </md-field>
+                        </div>
+                        <div class="md-layout-item md-size-25">
+                            <md-field>
+                                <label :for="`description-${element.id}`"
+                                    >Description</label
+                                >
+                                <md-input
+                                    :name="`description-${element.id}`"
+                                    :id="`description-${element.id}`"
+                                    v-model="element.description"
+                                    :disabled="sending"
+                                    maxlength="80"
                                 />
                             </md-field>
                         </div>
@@ -94,6 +108,9 @@
 <script>
 import { validationMixin } from "vuelidate";
 import { apiMixin } from "../../mixins";
+import {
+    maxLength,required,
+} from "vuelidate/lib/validators";
 
 export default {
     name: "step3BulkDatasetForm",
@@ -112,8 +129,15 @@ export default {
     validations: {
         elements: {
             $each: {
-                perturbation: { },
-                cellType: { }
+                perturbation: {
+                    maxLength: maxLength(63)
+                },
+                cellType: { 
+                    maxLength: maxLength(63)
+                },
+                description: { 
+                    maxLength: maxLength(80)
+                }
             }
         }
     },
@@ -183,8 +207,10 @@ export default {
                     file: this.fileInformation[id].file,
                     public: this.fileInformation[id].public,
                     sizeType: this.fileInformation[id].sizeType,
+                    sample_id: this.fileInformation[id].sample_id,
                     perturbation: null,
                     cellType: null,
+                    description:null,
                     state: undefined
                 };
                 this.elements.push(tempObject);

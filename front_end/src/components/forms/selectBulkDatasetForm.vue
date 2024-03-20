@@ -18,6 +18,7 @@
                                     v-model="form.files"
                                     :disabled="sending"
                                     @change="handleFileChange"
+                                    :accept="acceptedFileTypes"
                                     required
                                     multiple
                                 />
@@ -126,6 +127,13 @@ export default {
             if (!this.$v.$invalid) {
                 this.saveDataset();
             }
+        }
+    },
+    computed: {
+        acceptedFileTypes: function() {
+            // TODO sprint9
+            // build accept parameter for file chooser, e.g. ".bed,.mcool,.bw"
+            return "." + Object.keys(this.fileTypeMapping).join(",.");
         }
     }
 };

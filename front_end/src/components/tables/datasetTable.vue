@@ -289,21 +289,46 @@ export default {
     },
     data: function() {
         let selectedFields;
-        if (this.finishedDatasets) {
-            selectedFields = [
-                "dataset_name",
-                "cell_type",
-                "perturbation",
-                "description",
-                "status"
-            ];
+        if(this.restrictedDatasetType === "bedfile"){
+            if (this.finishedDatasets) {
+                selectedFields = [
+                    "dataset_name",
+                    "sample_id",
+                    "cell_type",
+                    "perturbation",
+                    "description",
+                    "sizeType",
+                    "status"
+                ];
+            } else {
+                selectedFields = [
+                    "dataset_name",
+                    "sample_id",
+                    "cell_type",
+                    "perturbation",
+                    "description",
+                    "sizeType"
+                ];
+            }
         } else {
-            selectedFields = [
-                "dataset_name",
-                "cell_type",
-                "perturbation",
-                "description"
-            ];
+            if (this.finishedDatasets) {
+                selectedFields = [
+                    "dataset_name",
+                    "sample_id",
+                    "cell_type",
+                    "perturbation",
+                    "description",
+                    "status"
+                ];
+            } else {
+                selectedFields = [
+                    "dataset_name",
+                    "sample_id",
+                    "cell_type",
+                    "perturbation",
+                    "description"
+                ];
+            } 
         }
         return {
             assemblies: undefined,
@@ -480,9 +505,6 @@ export default {
                 return Object.keys(
                     this.datasetMetadataMapping[this.datasetType]["ValueType"]
                 );
-            }
-            if (field == "Protein") {
-                return undefined;
             }
             let fieldValues = new Set();
             for (let options of Object.values(
@@ -678,11 +700,16 @@ export default {
         possibleFields: function() {
             let outputFields = {
                 dataset_name: "Name",
+                sample_id: "Sample ID",
                 cell_type: "Cell type",
                 description: "Description",
                 perturbation: "Perturbation",
                 status: 'Status'
             };
+            if(this.restrictedDatasetType === "bedfile") {
+                outputFields["sizeType"] = 'Type';
+            };
+            //datasetType
             // put in status if needed
             if (this.finishedDatasets) {
                 outputFields["status"] = "Status";

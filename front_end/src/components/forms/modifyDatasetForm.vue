@@ -37,6 +37,21 @@
                                 >
                             </md-field>
                         </div>
+                        <div
+                            class="md-layout-item md-small-size-50"
+                        >
+                            <md-field>
+                                <label for="sample_id"
+                                    >Sample ID</label
+                                >
+                                <md-input
+                                    name="sample_id"
+                                    id="sample_id"
+                                    v-model="form.sample_id"
+                                    :disabled="sending"
+                                />
+                            </md-field>
+                        </div>
                     </div>
                     <!-- Second row -->
                     <div class="md-layout md-gutter">
@@ -74,12 +89,12 @@
                                         class="md-layout-item md-small-size-50"
                                     >
                                         <md-field>
-                                            <label for="cell_type"
+                                            <label for="cellType"
                                                 >Cell type</label
                                             >
                                             <md-input
-                                                name="cell_type"
-                                                id="cell_type"
+                                                name="cellType"
+                                                id="cellType"
                                                 v-model="form.cellType"
                                                 :disabled="sending"
                                             />
@@ -166,8 +181,6 @@ export default {
                 public: {},
                 ValueType: {
                 },
-                cellCycleStage: {
-                },
                 perturbation: {
                 }
             }
@@ -226,7 +239,8 @@ export default {
                 dataset_name: "datasetName",
                 perturbation: "perturbation",
                 description: "description",
-                cellType: "cell_type",
+                cell_type: "cellType",
+                sample_id: "sample_id",
                 public: "public"
             };
             for (let [key, value] of Object.entries(fieldMapping)) {

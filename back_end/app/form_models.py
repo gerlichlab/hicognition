@@ -38,6 +38,7 @@ class DatasetPutModel(DatasetModel):
     description: Optional[constr(max_length=81)] = Field(alias="Description")
     cell_type: Optional[constr(max_length=64)] = Field(alias="cellType")
     perturbation: Optional[constr(max_length=64)] = Field(alias="Perturbation")
+    sample_id: Optional[constr(max_length=128)] = Field(alias="sample_id")
 
 
 # pylint: disable=no-self-argument,no-self-use
@@ -63,6 +64,7 @@ class DatasetPostModel(DatasetModel):
     sizeType: str = Field(..., alias="SizeType")
     cell_type: Optional[constr(max_length=64)] = Field('undefined', alias="cellType") 
     perturbation: Optional[constr(max_length=64)] = Field(alias="Perturbation")
+    sample_id: Optional[constr(max_length=128)] = Field(alias="sample_id")
 
     @validator("filetype")
     def check_filetype(cls, filetype, values, **kwargs):

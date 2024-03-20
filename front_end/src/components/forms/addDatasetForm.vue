@@ -140,40 +140,63 @@
                         <!-- #TODO fix nicer the repo name -->
                         <!-- choose upload type based on file source -->
                         <!-- file field -->
-                        <div class="md-layout-item md-small-size-100">
-                            <formFileInput
-                                v-if="form.fileSource === 'httpUpload'"
-                                :fileTypeMapping="fileTypeExtensions"
-                                @input-changed="fileInputChanged"
-                                @update-component-validity="
-                                    updateComponentValidity
-                                "
-                            />
-                            <formURLInput
-                                v-else-if="form.fileSource === 'url'"
-                                :fileTypeMapping="fileTypeExtensions"
-                                @input-changed="urlInputChanged"
-                                @update-component-validity="
-                                    updateComponentValidity
-                                "
-                            />
-                            <formURLEncode
-                                v-else-if="form.fileSource === 'encode'"
-                                :fileTypeMapping="fileTypeExtensions"
-                                @input-changed="urlInputChanged"
-                                @update-component-validity="
-                                    updateComponentValidity
-                                "
-                            />
-                            <formRepositoryInput
-                                v-else
-                                :fileTypeMapping="fileTypeExtensions"
-                                :repository="repositories[form.fileSource]['name']"
-                                @input-changed="repositoryInputChanged"
-                                @update-component-validity="
-                                    updateComponentValidity
-                                "
-                            />
+                        <div class="md-layout-item md-layout md-gutter">
+                            <div :class="{ 'md-layout-item-md-small-size-80': form.fileSource === 'httpUpload', 'md-layout-item-md-small-size-100': form.fileSource !== 'httpUpload' }">
+                            <!-- <div class="md-layout-item md-small-size-100"> -->
+                                <formFileInput
+                                    v-if="form.fileSource === 'httpUpload'"
+                                    :fileTypeMapping="fileTypeExtensions"
+                                    @input-changed="fileInputChanged"
+                                    @update-component-validity="
+                                        updateComponentValidity
+                                    "
+                                />
+                                <formURLInput
+                                    v-else-if="form.fileSource === 'url'"
+                                    :fileTypeMapping="fileTypeExtensions"
+                                    @input-changed="urlInputChanged"
+                                    @update-component-validity="
+                                        updateComponentValidity
+                                    "
+                                />
+                                <formURLEncode
+                                    v-else-if="form.fileSource === 'encode'"
+                                    :fileTypeMapping="fileTypeExtensions"
+                                    @input-changed="urlInputChanged"
+                                    @update-component-validity="
+                                        updateComponentValidity
+                                    "
+                                />
+                                <formRepositoryInput
+                                    v-else
+                                    :fileTypeMapping="fileTypeExtensions"
+                                    :repository="repositories[form.fileSource]['name']"
+                                    @input-changed="repositoryInputChanged"
+                                    @update-component-validity="
+                                        updateComponentValidity
+                                    "
+                                />
+                            </div>
+                            <div class="md-layout-item md-small-size-20" v-if="form.fileSource === 'httpUpload'">
+                                    <md-field
+                                        :class="getValidationClass('sample_id')"
+                                    >
+                                        <label for="sample_id">Sample ID</label>
+                                        <md-input
+                                            name="sample_id"
+                                            id="sample_id"
+                                            v-model="form.sample_id"
+                                            :disabled="sending"
+                                            maxlength="128"
+                                            required
+                                        />
+                                        <span
+                                            class="md-error"
+                                            v-if="!$v.form.datasetName.required"
+                                            >A Sample ID name is required</span
+                                        >
+                                    </md-field>
+                            </div>
                         </div>
                     </div>
                     <!-- perturbation -->
@@ -186,7 +209,7 @@
                                         id="perturbation"
                                         v-model="form.perturbation"
                                         :disabled="sending"
-                                        maxlength="30"
+                                        maxlength="60"
                                     />
                             </md-field>
                         </div>
@@ -199,7 +222,7 @@
                                         id="celltype"
                                         v-model="form.cellType"
                                         :disabled="sending"
-                                        maxlength="30"
+                                        maxlength="60"
                                     />
                             </md-field>
                         </div>
@@ -275,7 +298,8 @@ export default {
             description: null,
             perturbation: null,
             cellType: null,
-            fileSource: "httpUpload"
+            fileSource: "httpUpload",
+            sample_id:null
         },
         fileTypes: null,
         datasetSaved: false,
@@ -314,6 +338,8 @@ export default {
                     required: requiredIf(function() {
                         return this.datasetType == 'region'
                     })
+                },
+                sample_id: {
                 }
             }
         };
@@ -404,6 +430,7 @@ export default {
             var postRoute = "";
             if (this.form.fileSource == "httpUpload") {
                 formData.append("file",this.selectedFile,this.selectedFile.name);
+                formData.append("sample_id", this.form['sample_id']);
                 postRoute = "datasets/";
                 this.snackbarMessage =
                     "The Dataset was added successfully and is ready for preprocessing!";

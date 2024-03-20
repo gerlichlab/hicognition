@@ -14,7 +14,7 @@
                         :set="(v = $v.elements.$each[element.id])"
                         :key="element.id"
                     >
-                        <div class="md-layout-item md-size-30">
+                        <div class="md-layout-item md-size-25">
                             <md-field style="overflow-x: auto">
                                 {{ element.filename }}
                             </md-field>
@@ -59,7 +59,7 @@
                             </md-field>
                         </div>
 
-                        <div class="md-layout-item md-size-30">
+                        <div class="md-layout-item md-size-25">
                             <md-field
                                 :class="{
                                     'md-invalid':
@@ -85,6 +85,33 @@
                                     class="md-error"
                                     v-if="!v.datasetName.maxLength"
                                     >Maximum length exceeded</span
+                                >
+                            </md-field>
+                        </div>
+                        
+                        <div class="md-layout-item md-size-10">
+                            <md-field
+                                :class="{
+                                        'md-invalid':
+                                            v.sample_id.$invalid &&
+                                            v.sample_id.$dirty
+                                    }"
+                            >
+                                <label :for="`sample_id-${element.id}`"
+                                    >Sample ID</label
+                                >
+                                <md-input
+                                    :name="`sample_id-${element.id}`"
+                                    :id="`sample_id-${element.id}`"
+                                    v-model="element.sample_id"
+                                    :disabled="sending"
+                                    maxlength="128"
+                                    required
+                                />
+                                <span
+                                    class="md-error"
+                                    v-if="!v.sample_id.required"
+                                    >A sample ID is required</span
                                 >
                             </md-field>
                         </div>
@@ -116,8 +143,6 @@
                             </md-field>
                         </div>
 
-
-
                         <div class="md-layout-item md-size-10">
                             <md-checkbox
                                 v-model="element.public"
@@ -144,7 +169,7 @@
 
 <script>
 import { validationMixin } from "vuelidate";
-import { required, requiredIf, maxLength } from "vuelidate/lib/validators";
+import { required, requiredIf, maxLength, minLength} from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 export default {
@@ -179,12 +204,18 @@ export default {
             $each: {
                 datasetName: {
                     required,
+                    minLength: minLength(3),
                     maxLength: maxLength(30)
                 },
                 sizeType: {
                     required: requiredIf(function (value, vam){
                         return this.isRegion
                 })
+                },
+                sample_id: {
+                    required,
+                    minLength: minLength(3),
+                    maxLength: maxLength(128)
                 },
                 assembly: { required },
                 public: {}
@@ -214,6 +245,7 @@ export default {
                 var tempObject = {
                     id: i,
                     datasetName: null,
+                    sample_id: null,
                     assembly: null,
                     sizeType: null,
                     filename: this.files[i].name,
@@ -254,6 +286,7 @@ export default {
                     var tempObject = {
                         id: i,
                         datasetName: null,
+                        sample_id: null,
                         assembly: null,
                         sizeType: null,
                         filename: this.files[i].name,
