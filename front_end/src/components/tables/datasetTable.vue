@@ -178,23 +178,37 @@
                             >
                             <div v-else-if="key == 'status'">
                                 <md-icon
-                                    v-if="finishedDatasets !== undefined && finishedDatasets.includes(dataset.id)"
+                                    v-if="
+                                        finishedDatasets !== undefined &&
+                                            finishedDatasets.includes(
+                                                dataset.id
+                                            )
+                                    "
                                     >done</md-icon
                                 >
                                 <md-progress-spinner
                                     :md-diameter="30"
                                     md-mode="indeterminate"
                                     v-else-if="
-                                        processingDatasets !== undefined && processingDatasets.includes(dataset.id)
+                                        processingDatasets !== undefined &&
+                                            processingDatasets.includes(
+                                                dataset.id
+                                            )
                                     "
                                 ></md-progress-spinner>
                                 <md-icon
                                     v-else-if="
-                                        failedDatasets !== undefined && failedDatasets.includes(dataset.id)
+                                        failedDatasets !== undefined &&
+                                            failedDatasets.includes(dataset.id)
                                     "
                                     >error</md-icon
                                 >
-                                <md-icon v-else-if="dataset.upload_state == 'new' || dataset.upload_state == 'uploading'">
+                                <md-icon
+                                    v-else-if="
+                                        dataset.upload_state == 'new' ||
+                                            dataset.upload_state == 'uploading'
+                                    "
+                                >
                                     cloud_sync
                                 </md-icon>
                                 <md-icon v-else>cloud_done</md-icon>
@@ -289,7 +303,7 @@ export default {
     },
     data: function() {
         let selectedFields;
-        if(this.restrictedDatasetType === "bedfile"){
+        if (this.restrictedDatasetType === "bedfile") {
             if (this.finishedDatasets) {
                 selectedFields = [
                     "dataset_name",
@@ -328,7 +342,7 @@ export default {
                     "perturbation",
                     "description"
                 ];
-            } 
+            }
         }
         return {
             assemblies: undefined,
@@ -545,14 +559,14 @@ export default {
             });
         },
         filterDatasetsOnFields(datasets) {
-            if (this.block2d){
+            if (this.block2d) {
                 return datasets.filter(el => {
                     return (
                         el.filetype == this.datasetType &&
                         el.assembly == this.selectedAssembly &&
-                        el.dimension != '2d'
+                        el.dimension != "2d"
                     );
-                });  
+                });
             }
             return datasets.filter(el => {
                 return (
@@ -704,11 +718,11 @@ export default {
                 cell_type: "Cell type",
                 description: "Description",
                 perturbation: "Perturbation",
-                status: 'Status'
+                status: "Status"
             };
-            if(this.restrictedDatasetType === "bedfile") {
-                outputFields["sizeType"] = 'Type';
-            };
+            if (this.restrictedDatasetType === "bedfile") {
+                outputFields["sizeType"] = "Type";
+            }
             //datasetType
             // put in status if needed
             if (this.finishedDatasets) {
@@ -847,7 +861,7 @@ export default {
 }
 .md-table {
     max-width: 90vw;
-    max-height: calc(70vh - 150px)
+    max-height: calc(70vh - 150px);
 }
 .md-table-cell {
     text-align: center;

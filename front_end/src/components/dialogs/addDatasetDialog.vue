@@ -117,17 +117,17 @@ export default {
                 return "Add dataset";
             }
         },
-        fileTypeMapping: function () {
+        fileTypeMapping: function() {
             if (this.datatype == "feature") {
                 return {
                     mcool: "cooler",
                     bw: "bigwig",
                     bigwig: "bigwig",
-                    bigWig: "bigwig",
+                    bigWig: "bigwig"
                 };
             } else if (this.datatype == "region") {
                 return {
-                    bed: "bedfile",
+                    bed: "bedfile"
                 };
             } else {
                 return {
@@ -135,13 +135,13 @@ export default {
                     mcool: "cooler",
                     bw: "bigwig",
                     bigwig: "bigwig",
-                    bigWig: "bigwig",
+                    bigWig: "bigwig"
                 };
             }
         },
         showDialog: function() {
             return this.dialog;
-        },
+        }
     }
 };
 </script>

@@ -257,14 +257,11 @@ export default {
             // set widget Type in this container
             this.widgetType = widgetType;
             // set it in store
-            this.$store.commit(
-                "compare/setWidgetType",
-                {
-                    parentID: this.collectionID,
-                    id: this.id,
-                    widgetType: widgetType
-                }
-            );
+            this.$store.commit("compare/setWidgetType", {
+                parentID: this.collectionID,
+                id: this.id,
+                widgetType: widgetType
+            });
         },
         propagateDrop: function() {
             // propagates widgetDrop up to widgetCollection

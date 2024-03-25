@@ -108,9 +108,7 @@
 <script>
 import { validationMixin } from "vuelidate";
 import { apiMixin } from "../../mixins";
-import {
-    maxLength,required,
-} from "vuelidate/lib/validators";
+import { maxLength, required } from "vuelidate/lib/validators";
 
 export default {
     name: "step3BulkDatasetForm",
@@ -132,10 +130,10 @@ export default {
                 perturbation: {
                     maxLength: maxLength(63)
                 },
-                cellType: { 
+                cellType: {
                     maxLength: maxLength(63)
                 },
-                description: { 
+                description: {
                     maxLength: maxLength(80)
                 }
             }
@@ -148,7 +146,7 @@ export default {
         },
         clearForm() {
             this.$v.$reset();
-            this.initializeFields()
+            this.initializeFields();
         },
         saveDataset: async function() {
             this.sending = true; // show progress bar
@@ -210,7 +208,7 @@ export default {
                     sample_id: this.fileInformation[id].sample_id,
                     perturbation: null,
                     cellType: null,
-                    description:null,
+                    description: null,
                     state: undefined
                 };
                 this.elements.push(tempObject);
@@ -225,9 +223,9 @@ export default {
     watch: {
         fileInformation: function(val) {
             if (val) {
-                    this.initializeFields()
-                }
+                this.initializeFields();
             }
+        }
     }
 };
 </script>

@@ -13,32 +13,54 @@
         </md-toolbar>
 
         <md-list v-if="processingDatasets.length != 0">
-                <md-list-item v-for="item in processingDatasets" :key="item.id" md-expand>
-                    <md-icon class="md-primary">timelapse</md-icon>
+            <md-list-item
+                v-for="item in processingDatasets"
+                :key="item.id"
+                md-expand
+            >
+                <md-icon class="md-primary">timelapse</md-icon>
 
-                    <div class="md-list-item-text">
+                <div class="md-list-item-text">
+                    <span class="md-subheading"
+                        ><span class="md-title">Dataset </span
+                        >{{ item.dataset_name }}</span
+                    >
+                    <p
+                        v-if="
+                            item.upload_state != 'new' &&
+                                item.upload_state != 'uploading'
+                        "
+                    >
+                        Processing...
+                    </p>
+                    <p v-else>Downloading...</p>
+                </div>
+                <md-list slot="md-expand">
+                    <md-list-item
+                        class="md-inset"
+                        v-for="processing_feature in item.processing_datasets"
+                        :key="`f_${processing_feature}`"
+                    >
                         <span class="md-subheading"
-                            ><span class="md-title">Dataset </span>{{ item.dataset_name }}</span
+                            ><span class="md-title">Feature </span
+                            >{{ get_name_of_dataset(processing_feature) }}</span
                         >
-                        <p  v-if="item.upload_state != 'new' && item.upload_state != 'uploading'">Processing...</p>
-                        <p v-else>Downloading...</p>
-                    </div>
-                    <md-list slot="md-expand">
-                        <md-list-item class="md-inset" v-for="processing_feature in item.processing_datasets" :key="`f_${processing_feature}`">
-                            <span class="md-subheading"
-                                ><span class="md-title">Feature </span
-                                >{{ get_name_of_dataset(processing_feature) }}</span
-                            >
-                        </md-list-item>
-                        <md-list-item class="md-inset" v-for="processing_collection in item.processing_collections" :key="`c_${processing_collection}`">
-                            <span class="md-subheading"
-                                ><span class="md-title">Collection </span
-                                >{{ get_name_of_collection(processing_collection) }}</span
-                            >
-                        </md-list-item>
-                    </md-list>
-                </md-list-item>
-                <md-divider></md-divider>
+                    </md-list-item>
+                    <md-list-item
+                        class="md-inset"
+                        v-for="processing_collection in item.processing_collections"
+                        :key="`c_${processing_collection}`"
+                    >
+                        <span class="md-subheading"
+                            ><span class="md-title">Collection </span
+                            >{{
+                                get_name_of_collection(processing_collection)
+                            }}</span
+                        >
+                    </md-list-item>
+                </md-list>
+            </md-list-item>
+            <md-divider></md-divider>
         </md-list>
         <md-empty-state
             class="md-primary"
@@ -58,20 +80,19 @@ import { apiMixin } from "../../mixins";
 export default {
     name: "processingDrawer",
     mixins: [apiMixin],
-    components: {
-    },
+    components: {},
     computed: {
         ...mapGetters(["processingDatasets"])
     },
     methods: {
         loadProcessingDatasets: function() {
-            this.fetchAndStoreProcessingDatasets()
+            this.fetchAndStoreProcessingDatasets();
         },
         get_name_of_dataset: function(id) {
-            return this.$store.getters['getDataset'](id).dataset_name
+            return this.$store.getters["getDataset"](id).dataset_name;
         },
         get_name_of_collection: function(id) {
-            return this.$store.getters['getCollection'](id).name
+            return this.$store.getters["getCollection"](id).name;
         }
     },
     mounted: function() {

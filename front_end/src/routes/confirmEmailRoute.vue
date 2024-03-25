@@ -1,5 +1,4 @@
 <template>
-
     <md-app md-waterfall md-mode="fixed-last">
         <md-app-toolbar class="md-large md-dense md-primary">
             <loginToolbar></loginToolbar>
@@ -25,9 +24,7 @@
             </div>
         </md-app-content>
     </md-app>
-
 </template>
-
 
 <script>
 import loginToolbar from "../components/ui/loginToolbar";
@@ -43,7 +40,7 @@ export default {
         return {
             showLoad: true,
             confirmationToken: null
-        }
+        };
     },
     methods: {
         parseQueryString: function() {
@@ -51,21 +48,25 @@ export default {
             if ("emailToken" in queryObject) {
                 this.confirmationToken = queryObject["emailToken"];
                 this.confirmEmail();
-            }else{
-                this.showLoad = false
+            } else {
+                this.showLoad = false;
             }
         },
         confirmEmail: function() {
-            this.fetchData(`confirmation/${this.confirmationToken}/`).then(response => {
-                if (response) {
-                    // success
-                    setTimeout(() => this.$router.push("/main/compare"), 1000)
-                }else{
-                    this.showLoad = false
+            this.fetchData(`confirmation/${this.confirmationToken}/`).then(
+                response => {
+                    if (response) {
+                        // success
+                        setTimeout(
+                            () => this.$router.push("/main/compare"),
+                            1000
+                        );
+                    } else {
+                        this.showLoad = false;
+                    }
                 }
-            })
+            );
         }
-
     },
     created: function() {
         this.parseQueryString();

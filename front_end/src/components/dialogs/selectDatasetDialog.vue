@@ -121,17 +121,17 @@ export default {
         showDialog: function() {
             return this.dialog;
         },
-        block2d: function(){
-            if (this.datasetType == 'bedfile-1d'){
-                return true
+        block2d: function() {
+            if (this.datasetType == "bedfile-1d") {
+                return true;
             }
-            return false
+            return false;
         },
-        showedDatasetType: function(){
-            if (this.datasetType == 'bedfile-1d'){
-                return 'bedfile'
-            }else{
-                return this.datasetType
+        showedDatasetType: function() {
+            if (this.datasetType == "bedfile-1d") {
+                return "bedfile";
+            } else {
+                return this.datasetType;
             }
         }
     }

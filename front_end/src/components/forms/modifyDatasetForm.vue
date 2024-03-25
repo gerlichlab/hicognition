@@ -37,13 +37,9 @@
                                 >
                             </md-field>
                         </div>
-                        <div
-                            class="md-layout-item md-small-size-50"
-                        >
+                        <div class="md-layout-item md-small-size-50">
                             <md-field>
-                                <label for="sample_id"
-                                    >Sample ID</label
-                                >
+                                <label for="sample_id">Sample ID</label>
                                 <md-input
                                     name="sample_id"
                                     id="sample_id"
@@ -65,64 +61,56 @@
                         </div>
                     </div>
                     <!-- metadata -->
-                        <md-divider />
-                        <md-list>
-                            <md-subheader>Dataset descriptions</md-subheader>
-                            <md-list-item>
-                                <div class="md-layout md-gutter">
-                                    <div
-                                        class="md-layout-item md-small-size-50"
-                                    >
-                                        <md-field>
-                                            <label for="perturbation"
-                                                >Perturbation</label
-                                            >
-                                            <md-input
-                                                name="perturbation"
-                                                id="perturbation"
-                                                v-model="form.perturbation"
-                                                :disabled="sending"
-                                            />
-                                        </md-field>
-                                    </div>
-                                    <div
-                                        class="md-layout-item md-small-size-50"
-                                    >
-                                        <md-field>
-                                            <label for="cellType"
-                                                >Cell type</label
-                                            >
-                                            <md-input
-                                                name="cellType"
-                                                id="cellType"
-                                                v-model="form.cellType"
-                                                :disabled="sending"
-                                            />
-                                        </md-field>
-                                    </div>
+                    <md-divider />
+                    <md-list>
+                        <md-subheader>Dataset descriptions</md-subheader>
+                        <md-list-item>
+                            <div class="md-layout md-gutter">
+                                <div class="md-layout-item md-small-size-50">
+                                    <md-field>
+                                        <label for="perturbation"
+                                            >Perturbation</label
+                                        >
+                                        <md-input
+                                            name="perturbation"
+                                            id="perturbation"
+                                            v-model="form.perturbation"
+                                            :disabled="sending"
+                                        />
+                                    </md-field>
                                 </div>
-                            </md-list-item>
-                            <md-list-item>
-                                <div class="md-layout md-gutter">
-                                    <div
-                                        class="md-layout-item md-small-size-100"
-                                    >
-                                        <md-field>
-                                            <label for="description"
-                                                >description</label
-                                            >
-                                            <md-input
-                                                name="description"
-                                                id="description"
-                                                v-model="form.description"
-                                                :disabled="sending"
-                                            />
-                                        </md-field>
-                                    </div>
+                                <div class="md-layout-item md-small-size-50">
+                                    <md-field>
+                                        <label for="cellType">Cell type</label>
+                                        <md-input
+                                            name="cellType"
+                                            id="cellType"
+                                            v-model="form.cellType"
+                                            :disabled="sending"
+                                        />
+                                    </md-field>
                                 </div>
-                            </md-list-item>
-                        </md-list>
-                        <md-divider />
+                            </div>
+                        </md-list-item>
+                        <md-list-item>
+                            <div class="md-layout md-gutter">
+                                <div class="md-layout-item md-small-size-100">
+                                    <md-field>
+                                        <label for="description"
+                                            >description</label
+                                        >
+                                        <md-input
+                                            name="description"
+                                            id="description"
+                                            v-model="form.description"
+                                            :disabled="sending"
+                                        />
+                                    </md-field>
+                                </div>
+                            </div>
+                        </md-list-item>
+                    </md-list>
+                    <md-divider />
                 </md-card-content>
                 <!-- Progress bar -->
                 <md-progress-bar md-mode="indeterminate" v-if="sending" />
@@ -179,16 +167,13 @@ export default {
                     minLength: minLength(3)
                 },
                 public: {},
-                ValueType: {
-                },
-                perturbation: {
-                }
+                ValueType: {},
+                perturbation: {}
             }
         };
         return outputObject;
     },
-    computed: {
-    },
+    computed: {},
     methods: {
         getDatasetFromStore: function() {
             this.dataset = this.$store.getters["getDataset"](this.datasetID);

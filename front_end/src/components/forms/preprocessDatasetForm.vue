@@ -346,7 +346,7 @@ export default {
                 if (response) {
                     this.datasetSaved = true;
                     // update processing datasets
-                    this.fetchAndStoreProcessingDatasets()
+                    this.fetchAndStoreProcessingDatasets();
                 }
                 this.sending = false;
                 this.clearForm();

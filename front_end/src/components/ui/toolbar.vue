@@ -121,7 +121,7 @@ export default {
             return this.notifications.length;
         },
         numberProcessing: function() {
-            return this.processingDatasets.length
+            return this.processingDatasets.length;
         },
         ...mapGetters(["notifications", "userName", "processingDatasets"])
     },
@@ -133,8 +133,8 @@ export default {
             this.$store.commit("compare/clearAll");
             this.$router.push("/login");
         },
-        showProcessingDatasets: function(){
-            return
+        showProcessingDatasets: function() {
+            return;
         },
         handleNewNotification: function(event) {
             // check whether you are the issuing user
@@ -166,11 +166,11 @@ export default {
 }
 
 .red {
-    background-color: #D48D87;
+    background-color: #d48d87;
 }
 
 .yellow {
-    background-color: #D4C187;
+    background-color: #d4c187;
 }
 
 .position-top-right {

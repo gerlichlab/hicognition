@@ -68,10 +68,7 @@ export default {
         fetchFileTypes: function() {
             this.fetchData("filetypes/").then(response => {
                 if (response) {
-                    this.$store.commit(
-                        "setFileTypes",
-                        response.data
-                    )
+                    this.$store.commit("setFileTypes", response.data);
                 }
             });
         },
@@ -126,7 +123,7 @@ export default {
         this.fetchDatasets();
         this.fetchCollections();
         this.fetchDatasetMetadataMapping();
-        this.fetchAndStoreProcessingDatasets()
+        this.fetchAndStoreProcessingDatasets();
     },
     beforeDestroy: function() {
         if (this.$globalFlags["serializeCompare"]) {

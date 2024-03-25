@@ -67,7 +67,7 @@ export default {
     components: {
         selectBulkDatasetForm,
         step2BulkDatasetForm,
-        step3BulkDatasetForm,
+        step3BulkDatasetForm
     },
     props: {
         fileTypeMapping: Object

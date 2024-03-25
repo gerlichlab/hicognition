@@ -88,14 +88,14 @@
                                 >
                             </md-field>
                         </div>
-                        
+
                         <div class="md-layout-item md-size-10">
                             <md-field
                                 :class="{
-                                        'md-invalid':
-                                            v.sample_id.$invalid &&
-                                            v.sample_id.$dirty
-                                    }"
+                                    'md-invalid':
+                                        v.sample_id.$invalid &&
+                                        v.sample_id.$dirty
+                                }"
                             >
                                 <label :for="`sample_id-${element.id}`"
                                     >Sample ID</label
@@ -117,14 +117,15 @@
                         </div>
 
                         <div class="md-layout-item md-size-15" v-if="isRegion">
-                            <md-field 
+                            <md-field
                                 :class="{
                                     'md-invalid':
-                                        v.sizeType.$invalid &&
-                                        v.sizeType.$dirty
+                                        v.sizeType.$invalid && v.sizeType.$dirty
                                 }"
                             >
-                                <label :for="`sizeType-${element.id}`">SizeType</label>
+                                <label :for="`sizeType-${element.id}`"
+                                    >SizeType</label
+                                >
                                 <md-select
                                     :name="`sizeType-${element.id}`"
                                     :id="`sizeType-${element.id}`"
@@ -133,7 +134,9 @@
                                     required
                                 >
                                     <md-option value="Point">Point</md-option>
-                                    <md-option value="Interval">Interval</md-option>
+                                    <md-option value="Interval"
+                                        >Interval</md-option
+                                    >
                                 </md-select>
                                 <span
                                     class="md-error"
@@ -169,7 +172,12 @@
 
 <script>
 import { validationMixin } from "vuelidate";
-import { required, requiredIf, maxLength, minLength} from "vuelidate/lib/validators";
+import {
+    required,
+    requiredIf,
+    maxLength,
+    minLength
+} from "vuelidate/lib/validators";
 import { apiMixin } from "../../mixins";
 
 export default {
@@ -188,15 +196,15 @@ export default {
     }),
     computed: {
         isRegion: function() {
-            if (!this.files){
-                return
+            if (!this.files) {
+                return;
             }
             for (let i = 0; i < this.files.length; i++) {
-                if (this.getFileType(this.files[i].name) == 'bedfile'){
-                    return true
+                if (this.getFileType(this.files[i].name) == "bedfile") {
+                    return true;
                 }
             }
-            return false
+            return false;
         }
     },
     validations: {
@@ -208,9 +216,9 @@ export default {
                     maxLength: maxLength(30)
                 },
                 sizeType: {
-                    required: requiredIf(function (value, vam){
-                        return this.isRegion
-                })
+                    required: requiredIf(function(value, vam) {
+                        return this.isRegion;
+                    })
                 },
                 sample_id: {
                     required,

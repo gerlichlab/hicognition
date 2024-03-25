@@ -1,6 +1,9 @@
 <template>
     <div class="md-layout-item md-layout md-gutter">
-        <a href="https://www.encodeproject.org/search/?type=Experiment" target="_blank">
+        <a
+            href="https://www.encodeproject.org/search/?type=Experiment"
+            target="_blank"
+        >
             <md-icon>manage_search</md-icon>
         </a>
         <div class="md-layout-item md-small-size-100">

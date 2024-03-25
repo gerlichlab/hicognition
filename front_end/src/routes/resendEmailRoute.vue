@@ -10,10 +10,14 @@
                 md-label="Confirm your email"
                 md-description="After you have confirmed your E-mail you can start exploring!"
                 v-if="!showSend"
-                >
+            >
                 <div>
-                    <md-button @click="resendEmail" class="md-primary md-raised">Resend Email</md-button>
-                    <md-button  @click="logout" class="md-secondary md-raised">Logout</md-button>
+                    <md-button @click="resendEmail" class="md-primary md-raised"
+                        >Resend Email</md-button
+                    >
+                    <md-button @click="logout" class="md-secondary md-raised"
+                        >Logout</md-button
+                    >
                 </div>
             </md-empty-state>
             <div class="spinner-container" v-else>
@@ -31,9 +35,7 @@
                 </div>
             </div>
         </md-app-content>
-        <md-snackbar :md-active.sync="showSnackbar"
-            >Email sent!</md-snackbar
-        >
+        <md-snackbar :md-active.sync="showSnackbar">Email sent!</md-snackbar>
     </md-app>
 </template>
 
@@ -51,7 +53,7 @@ export default {
         return {
             showSnackbar: false,
             showSend: false
-        }
+        };
     },
     methods: {
         logout: function() {
@@ -62,21 +64,20 @@ export default {
             this.$router.push("/login");
         },
         resendEmail: function() {
-            this.showSend = true
+            this.showSend = true;
             this.fetchData("resend/").then(response => {
                 // success, store datasets
                 if (response) {
-                    this.showSnackbar = true
-                    this.showSend = false
-                    setTimeout(() => this.logout(), 1000)
-                }else{
-                    this.logout()
+                    this.showSnackbar = true;
+                    this.showSend = false;
+                    setTimeout(() => this.logout(), 1000);
+                } else {
+                    this.logout();
                 }
             });
         }
     },
-    mounted: function() {
-    }
+    mounted: function() {}
 };
 </script>
 

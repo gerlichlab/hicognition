@@ -20,8 +20,7 @@ export default {
         loginToolbar,
         registrationForm
     },
-    mounted: function() {
-    }
+    mounted: function() {}
 };
 </script>
 

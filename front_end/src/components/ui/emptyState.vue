@@ -9,7 +9,8 @@
             v-if="isLocal"
         >
             <p style="text-align: justify;">
-                This is the public version of HiCognition. The aim is getting you started as fast as possible.
+                This is the public version of HiCognition. The aim is getting
+                you started as fast as possible.
             </p>
             <p style="text-align: justify;">
                 We have prepared a couple of datasets for you and preprocessed
@@ -119,7 +120,9 @@
                 </md-table-row>
             </md-table>
             <p style="text-align: justify;">
-                If you want to explore datasets on your own, use the data form the manuscript, upload your own data or click on the plus at the bottom right to start creating a visualization.
+                If you want to explore datasets on your own, use the data form
+                the manuscript, upload your own data or click on the plus at the
+                bottom right to start creating a visualization.
             </p>
             <!-- md-icon="../../static/logo.svg" -->
             <!-- <img v-bind:src="'../../static/logo.svg'"> -->

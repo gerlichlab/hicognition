@@ -199,9 +199,8 @@ export default {
             return this.regions.filter(el => el.id == this.selectedRegionID)[0];
         },
         regionIsPairedEnd: function() {
-
             if (this.region) {
-                return this.region.dimension == '2d'
+                return this.region.dimension == "2d";
             } else {
                 return false;
             }
