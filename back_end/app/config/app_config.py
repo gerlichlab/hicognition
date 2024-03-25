@@ -50,17 +50,41 @@ class Config:
 
     # allowed binsizes for given windowsizes of regions
     PREPROCESSING_MAP = {
+        10000: {
+            "cooler": [1000],
+            "bigwig": [100, 500],
+            "collections": {
+                "regions": [1000],
+                "1d-features": [100, 500],
+            },
+        },
+        20000: {
+            "cooler": [1000],
+            "bigwig": [200, 500, 1000],
+            "collections": {
+                "regions": [1000],
+                "1d-features": [2000, 5000, 10000],
+            },
+        },
         50000: {
-            "cooler": [5000],
-            "bigwig": [1000, 2000],
+            "cooler": [1000],
+            "bigwig": [500, 1000, 2000],
+            "collections": {
+                "regions": [2000],
+                "1d-features": [1000, 5000],
+            },
+        },
+        50000: {
+            "cooler": [1000, 5000],
+            "bigwig": [500, 1000, 2000],
             "collections": {
                 "regions": [2000],
                 "1d-features": [1000, 2000],
             },
         },
         100000: {
-            "cooler": [5000],
-            "bigwig": [2000, 5000, 10000],
+            "cooler": [1000, 5000],
+            "bigwig": [1000, 2000, 5000, 10000],
             "collections": {
                 "regions": [5000],
                 "1d-features": [2000, 5000, 10000],
@@ -68,7 +92,7 @@ class Config:
         },
         400000: {
             "cooler": [10000],
-            "bigwig": [5000, 10000, 20000],
+            "bigwig": [2000, 5000, 10000, 20000],
             "collections": {
                 "regions": [10000, 20000],
                 "1d-features": [5000, 10000, 20000],
@@ -76,7 +100,7 @@ class Config:
         },
         1000000: {
             "cooler": [20000],
-            "bigwig": [20000, 50000, 100000],
+            "bigwig": [10000, 20000, 50000, 100000],
             "collections": {
                 "regions": [20000, 50000],
                 "1d-features": [20000, 50000, 100000],
@@ -84,7 +108,7 @@ class Config:
         },
         2000000: {
             "cooler": [50000],
-            "bigwig": [50000, 100000, 200000],
+            "bigwig": [20000, 50000, 100000, 200000],
             "collections": {
                 "regions": [50000, 100000, 200000],
                 "1d-features": [50000, 100000, 200000],
@@ -115,7 +139,7 @@ class Config:
             },
         },
         50000: {
-            "cooler": [2000],
+            "cooler": [1000],
             "bigwig": [1000, 2000],
             "collections": {
                 "regions": [2000],
