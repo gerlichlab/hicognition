@@ -12,6 +12,7 @@ sys.path.append("./")
 from app import create_app, db
 from app.models import User, Organism, Dataset, Assembly
 
+
 class TempDirTestCase(unittest.TestCase):
     """Will create a temporary directory in the current working
     directory once before all tests are run that is available via
@@ -51,34 +52,43 @@ class LoginTestCase(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    def create_dataset(self, add_and_commit: bool = False, user_id: int=None, assembly_id: int = None, id: int = None,  **key_value_pairs: dict) -> Dataset:
+    def create_dataset(
+        self,
+        add_and_commit: bool = False,
+        user_id: int = None,
+        assembly_id: int = None,
+        id: int = None,
+        **key_value_pairs: dict
+    ) -> Dataset:
         dataset = self.create_default_dataset(user_id, assembly_id, id=id)
         # fill with data
         [dataset.__setattr__(key, value) for key, value in key_value_pairs.items()]
-        
+
         if add_and_commit:
             db.session.add(dataset)
             db.session.commit()
-        
+
         return dataset
 
-    def create_default_dataset(self, user_id: int=None, assembly: int=None, id: int = None) -> Dataset:
+    def create_default_dataset(
+        self, user_id: int = None, assembly: int = None, id: int = None
+    ) -> Dataset:
         if id is None:
             id = self.dataset_id_index
             self.dataset_id_index += 1
-            
+
         return Dataset(
-            id = id,
-            user_id = user_id,
-            assembly = assembly,
-            dataset_name = 'test',
-            filetype = 'bedfile',
-            public = False,
-            upload_state = 'new',
-            processing_state = 'new'
+            id=id,
+            user_id=user_id,
+            assembly=assembly,
+            dataset_name="test",
+            filetype="bedfile",
+            public=False,
+            upload_state="new",
+            processing_state="new",
         )
-        
-    def add_default_assembly(self, add_and_commit: bool=False):
+
+    def add_default_assembly(self, add_and_commit: bool = False):
         self.hg19 = Assembly(
             id=1,
             name="hg19",

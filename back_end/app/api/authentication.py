@@ -66,7 +66,7 @@ def get_token():
     )
 
 
-@api.route('/register/', methods=['POST'])
+@api.route("/register/", methods=["POST"])
 def register():
     if not hasattr(request, "form"):
         return errors.invalid("Request does not contain a form!")
@@ -74,7 +74,7 @@ def register():
     try:
         data = UserRegistrationModel(**request.form)
     except ValueError as err:
-        return errors.invalid(f'Form is not valid: {str(err)}')
+        return errors.invalid(f"Form is not valid: {str(err)}")
     except Exception as err:
         return errors.internal_server_error(
             err,
@@ -88,30 +88,35 @@ def register():
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-        return errors.invalid('User with this name or email address already exists!')
+        return errors.invalid("User with this name or email address already exists!")
     # send confirmation email
     try:
-        confirmation_handler.send_confirmation_mail(request.base_url.split("/api/register/")[0], data.email_address)
+        confirmation_handler.send_confirmation_mail(
+            request.base_url.split("/api/register/")[0], data.email_address
+        )
     except BaseException as e:
-        current_app.logger.info('Confirmation sending failed!')
+        current_app.logger.info("Confirmation sending failed!")
         current_app.logger.error(e)
         return errors.internal_server_error(e, "Sending mail failed!")
     return jsonify({"message": "Registration successful"})
 
-@api.route('/resend/', methods=['GET'])
+
+@api.route("/resend/", methods=["GET"])
 @auth.login_required
 def resend_confirmation_mail():
     # send confirmation email
     try:
-        confirmation_handler.send_confirmation_mail(request.base_url.split("/api/resend/")[0], g.current_user.email)
+        confirmation_handler.send_confirmation_mail(
+            request.base_url.split("/api/resend/")[0], g.current_user.email
+        )
     except BaseException as e:
-        current_app.logger.info('Confirmation sending failed!')
+        current_app.logger.info("Confirmation sending failed!")
         current_app.logger.error(e)
         return errors.internal_server_error(e, "Sending mail failed!")
     return jsonify({"message": "Registration mail resend successfully"})
 
 
-@api.route('/confirmation/<token>/', methods=['GET'])
+@api.route("/confirmation/<token>/", methods=["GET"])
 @auth.login_required
 def confirm_email(token):
     # check if token is ok

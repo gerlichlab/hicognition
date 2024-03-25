@@ -6,7 +6,7 @@ from flask import current_app
 
 class UserRegistrationModel(BaseModel):
     user_name: constr(min_length=3, max_length=81) = Field(..., alias="userName")
-    email_address: str = Field(..., alias='emailAddress') # TODO: validate email
+    email_address: str = Field(..., alias="emailAddress")  # TODO: validate email
     password: constr(min_length=5) = Field(..., alias="password1")
 
 
@@ -50,7 +50,7 @@ class DatasetPostModel(DatasetModel):
         data = {
             key: value
             for key, value in data.items()
-            if value is not None and value.strip() != "" and value != 'null'
+            if value is not None and value.strip() != "" and value != "null"
         }
         if "sizeType" not in data and "SizeType" not in data:
             data["sizeType"] = ""
@@ -59,10 +59,12 @@ class DatasetPostModel(DatasetModel):
     dataset_name: constr(min_length=3, max_length=81) = Field(..., alias="datasetName")
     public: bool = Field(..., alias="Public")
     assembly: int = Field(..., alias="assembly")
-    description: str = Field("No description provided", max_length=81, alias="Description")
+    description: str = Field(
+        "No description provided", max_length=81, alias="Description"
+    )
     filetype: str = Field(..., max_length=64, alias="filetype")
     sizeType: str = Field(..., alias="SizeType")
-    cell_type: Optional[constr(max_length=64)] = Field('undefined', alias="cellType") 
+    cell_type: Optional[constr(max_length=64)] = Field("undefined", alias="cellType")
     perturbation: Optional[constr(max_length=64)] = Field(alias="Perturbation")
     sample_id: Optional[constr(max_length=128)] = Field(alias="sample_id")
 

@@ -20,7 +20,9 @@ def get_all_interval_ids(region_datasets):
     """Returns ids of all intervals associated with list or region datasets."""
     interval_ids = []
     for region_dataset in region_datasets:
-        interval_ids.extend([entry.id for entry in region_dataset.intervals]) # .all()])
+        interval_ids.extend(
+            [entry.id for entry in region_dataset.intervals]
+        )  # .all()])
     return interval_ids
 
 
@@ -35,7 +37,8 @@ def parse_binsizes(map, filetype):
 
 def get_optimal_binsize(regions, target_bin_number, processing_map):
     """given a dataframe of regions defined via (chrom, start, end) and a
-    target bin number, decide which binsize to use for variable size pileup/enrichment analysis"""
+    target bin number, decide which binsize to use for variable size pileup/enrichment analysis
+    """
     MAX_CHUNK_NUMBER = 250
     if "chrom1" in regions:
         sizes = regions["end1"] - regions["start1"]

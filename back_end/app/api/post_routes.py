@@ -553,10 +553,8 @@ def create_collection():
             "Some of the datasets associated with this collection are not owned!"
         )
     # check whehter any of the dataseta are 2d
-    if any(dataset.dimension == '2d' for dataset in datasets):
-        return invalid(
-            "Some of the datasets associated with this collection are 2d!"
-        )  
+    if any(dataset.dimension == "2d" for dataset in datasets):
+        return invalid("Some of the datasets associated with this collection are 2d!")
     # create collection
     collection = Collection(user_id=g.current_user.id, name=name, kind=kind)
     # add datasets
@@ -641,7 +639,7 @@ def create_region_from_cluster_id(entry_id):
         if len(request.form) == 0:
             return True
         # check attributes
-        if sorted(request.form.keys()) != ['cluster_ids',"name"]:
+        if sorted(request.form.keys()) != ["cluster_ids", "name"]:
             return True
         return False
 
@@ -665,7 +663,9 @@ def create_region_from_cluster_id(entry_id):
         return invalid("Form is not valid!")
     # get data from form
     form_data = request.form
-    new_region_ids = set([int(cluster_id) for cluster_id in json.loads(form_data['cluster_ids'])])
+    new_region_ids = set(
+        [int(cluster_id) for cluster_id in json.loads(form_data["cluster_ids"])]
+    )
     # check whetehr thumbnails exist
     if embedding_data.cluster_id_path is None:
         return not_found("ClusterIDs do not exist")
@@ -674,7 +674,9 @@ def create_region_from_cluster_id(entry_id):
     # check whether new ids exist
     unique_ids = set(cluster_ids.astype(int))
     if (new_region_ids & unique_ids) != new_region_ids:
-        return not_found(f"Some cluster ids do not exist: {new_region_ids | unique_ids}")
+        return not_found(
+            f"Some cluster ids do not exist: {new_region_ids | unique_ids}"
+        )
     # load regions
     regions = pd.read_csv(bed_ds.file_path, sep="\t", header=None)
     # create new dataset

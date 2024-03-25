@@ -39,18 +39,33 @@ log = logging.getLogger("rq.worker")
 
 
 def _do_pileup_fixed_size(
-    cooler_dataset, window_size, binsize, regions_path, arms, pileup_type, collapse=True, dimension="1d"
+    cooler_dataset,
+    window_size,
+    binsize,
+    regions_path,
+    arms,
+    pileup_type,
+    collapse=True,
+    dimension="1d",
 ):
     """do pileup with subsequent averaging for regions with a fixed size"""
     # load regions and search for center, dependent on dimensions of region
-    if dimension == '1d':
+    if dimension == "1d":
         regions = pd.read_csv(regions_path, sep="\t", header=None)
         regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
         regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
     else:
         regions = pd.read_csv(regions_path, sep="\t", header=None)
-        regions = regions.rename(columns={0: "chrom1", 1: "start1", 2: "end1",
-                                            3: "chrom2", 4:"start2", 5: "end2"})
+        regions = regions.rename(
+            columns={
+                0: "chrom1",
+                1: "start1",
+                2: "end1",
+                3: "chrom2",
+                4: "start2",
+                5: "end2",
+            }
+        )
         regions.loc[:, "pos1"] = (regions["start1"] + regions["end1"]) // 2
         regions.loc[:, "pos2"] = (regions["start2"] + regions["end2"]) // 2
     # open cooler and check whether resolution is defined, if not return empty array
@@ -70,12 +85,13 @@ def _do_pileup_fixed_size(
         )
     else:
         pileup_windows = HT.assign_regions_2d(
-            window_size, int(binsize),
+            window_size,
+            int(binsize),
             regions["chrom1"],
             regions["pos1"],
             regions["chrom2"],
             regions["pos2"],
-            arms
+            arms,
         )
     # create placeholder with nans
     good_indices = ~pileup_windows.region.isnull().values
@@ -130,7 +146,13 @@ def _do_pileup_fixed_size(
 
 
 def _do_pileup_variable_size(
-    cooler_dataset, binsize, regions_path, arms, pileup_type, collapse=True, dimension="1d"
+    cooler_dataset,
+    binsize,
+    regions_path,
+    arms,
+    pileup_type,
+    collapse=True,
+    dimension="1d",
 ):
     """do pileup with subsequent averaging for regions with a variable size"""
     # load regions
@@ -138,8 +160,16 @@ def _do_pileup_variable_size(
     if dimension == "1d":
         regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
     else:
-        regions = regions.rename(columns={0: "chrom1", 1: "start1", 2: "end1",
-                                            3: "chrom2", 4:"start2", 5: "end2"})
+        regions = regions.rename(
+            columns={
+                0: "chrom1",
+                1: "start1",
+                2: "end1",
+                3: "chrom2",
+                4: "start2",
+                5: "end2",
+            }
+        )
     # search for optimal binsize
     bin_number_expanded = interval_operations.get_bin_number_for_expanded_intervals(
         binsize, current_app.config["VARIABLE_SIZE_EXPANSION_FACTOR"]
@@ -221,15 +251,33 @@ def _do_pileup_variable_size(
         return output
 
 
-def _do_stackup_fixed_size(bigwig_filepath, regions, window_size, binsize, region_side=None):
+def _do_stackup_fixed_size(
+    bigwig_filepath, regions, window_size, binsize, region_side=None
+):
     if region_side is None:
         regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
-    elif region_side == 'left':
-        regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end",
-                                            3: "chrom2", 4:"start2", 5: "end2"})
-    elif region_side == 'right':
-        regions = regions.rename(columns={0: "chrom1", 1: "start1", 2: "end1",
-                                            3: "chrom", 4:"start", 5: "end"})
+    elif region_side == "left":
+        regions = regions.rename(
+            columns={
+                0: "chrom",
+                1: "start",
+                2: "end",
+                3: "chrom2",
+                4: "start2",
+                5: "end2",
+            }
+        )
+    elif region_side == "right":
+        regions = regions.rename(
+            columns={
+                0: "chrom1",
+                1: "start1",
+                2: "end1",
+                3: "chrom",
+                4: "start",
+                5: "end",
+            }
+        )
     else:
         raise ValueError(f"region_side parameter {region_side} not understood")
     regions.loc[:, "pos"] = (regions["start"] + regions["end"]) // 2
@@ -283,12 +331,28 @@ def _do_stackup_fixed_size(bigwig_filepath, regions, window_size, binsize, regio
 def _do_stackup_variable_size(bigwig_filepath, regions, binsize, region_side=None):
     if region_side is None:
         regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
-    elif region_side == 'left':
-        regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end",
-                                            3: "chrom2", 4:"start2", 5: "end2"})
-    elif region_side == 'right':
-        regions = regions.rename(columns={0: "chrom1", 1: "start1", 2: "end1",
-                                            3: "chrom", 4:"start", 5: "end"})
+    elif region_side == "left":
+        regions = regions.rename(
+            columns={
+                0: "chrom",
+                1: "start",
+                2: "end",
+                3: "chrom2",
+                4: "start2",
+                5: "end2",
+            }
+        )
+    elif region_side == "right":
+        regions = regions.rename(
+            columns={
+                0: "chrom1",
+                1: "start1",
+                2: "end1",
+                3: "chrom",
+                4: "start",
+                5: "end",
+            }
+        )
     else:
         raise ValueError(f"region_side parameter {region_side} not understood")
     stackup_regions = interval_operations.expand_regions(
@@ -329,10 +393,10 @@ def _do_enrichment_calculations_fixed_size(
     regions = pd.read_csv(regions_path, sep="\t", header=None)
     if region_side is None:
         regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
-    elif region_side == 'left':
-        regions = regions[[0,1,2]].rename(columns={0: "chrom", 1: "start", 2: "end"})
-    elif region_side == 'right':
-        regions = regions[[3,4,5]].rename(columns={3: "chrom", 4:"start", 5: "end"})
+    elif region_side == "left":
+        regions = regions[[0, 1, 2]].rename(columns={0: "chrom", 1: "start", 2: "end"})
+    elif region_side == "right":
+        regions = regions[[3, 4, 5]].rename(columns={3: "chrom", 4: "start", 5: "end"})
     else:
         raise ValueError(f"region_side parameter {region_side} not understood")
     # make queries
@@ -391,15 +455,17 @@ def _do_enrichment_calculations_fixed_size(
     return np.stack(results, axis=1)
 
 
-def _do_enrichment_calculations_variable_size(collection_id, binsize, regions_path, region_side):
+def _do_enrichment_calculations_variable_size(
+    collection_id, binsize, regions_path, region_side
+):
     """Lola enrichment calculations for variably size regions"""
     regions = pd.read_csv(regions_path, sep="\t", header=None)
     if region_side is None:
         regions = regions.rename(columns={0: "chrom", 1: "start", 2: "end"})
-    elif region_side == 'left':
-        regions = regions[[0,1,2]].rename(columns={0: "chrom", 1: "start", 2: "end"})
-    elif region_side == 'right':
-        regions = regions[[3,4,5]].rename(columns={3: "chrom", 4:"start", 5: "end"})
+    elif region_side == "left":
+        regions = regions[[0, 1, 2]].rename(columns={0: "chrom", 1: "start", 2: "end"})
+    elif region_side == "right":
+        regions = regions[[3, 4, 5]].rename(columns={3: "chrom", 4: "start", 5: "end"})
     else:
         raise ValueError(f"region_side parameter {region_side} not understood")
     # make queries
@@ -758,13 +824,15 @@ def _add_embedding_1d_to_db(
             collection_id=collection_id,
             value_type="1d-embedding",
             cluster_number=cluster_number,
-            region_side=region_side
+            region_side=region_side,
         )
         db.session.add(entry)
     db.session.commit()
 
 
-def _add_association_data_to_db(file_path, binsize, intervals_id, collection_id, region_side):
+def _add_association_data_to_db(
+    file_path, binsize, intervals_id, collection_id, region_side
+):
     """Adds association data set to db"""
     # check if old association interval data exists and delete them
     entry = AssociationIntervalData.query.filter(
@@ -784,14 +852,19 @@ def _add_association_data_to_db(file_path, binsize, intervals_id, collection_id,
             file_path=file_path,
             intervals_id=intervals_id,
             collection_id=collection_id,
-            region_side=region_side
+            region_side=region_side,
         )
         db.session.add(entry)
     db.session.commit()
 
 
 def _add_stackup_db(
-    file_path, file_path_small, binsize, intervals_id, bigwig_dataset_id, region_side=None
+    file_path,
+    file_path_small,
+    binsize,
+    intervals_id,
+    bigwig_dataset_id,
+    region_side=None,
 ):
     """Adds stackup to database"""
     # check if old individual interval data exists and delete them
@@ -815,7 +888,7 @@ def _add_stackup_db(
             file_path_small=file_path_small,
             intervals_id=intervals_id,
             dataset_id=bigwig_dataset_id,
-            region_side=region_side
+            region_side=region_side,
         )
         db.session.add(entry)
     db.session.commit()
@@ -842,7 +915,7 @@ def _add_line_db(file_path, binsize, intervals_id, bigwig_dataset_id, region_sid
             intervals_id=intervals_id,
             dataset_id=bigwig_dataset_id,
             value_type="line",
-            region_side=region_side
+            region_side=region_side,
         )
         db.session.add(entry)
     db.session.commit()

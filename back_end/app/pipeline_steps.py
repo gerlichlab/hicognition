@@ -81,7 +81,9 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
     # get dimension
     dimension = intervals.source_dataset.dimension
     # do pileup
-    current_app.logger.debug(f"      {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Doing pileup...")
+    current_app.logger.debug(
+        f"      {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Doing pileup..."
+    )
     # get windowsize
     window_size = intervals.windowsize
     if window_size is not None:
@@ -99,20 +101,30 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
             arms,
             pileup_type,
             collapse=False,
-            dimension=dimension
+            dimension=dimension,
         )
     else:
         pileup_array = worker_funcs._do_pileup_variable_size(
-            cooler_dataset, binsize, regions_path, arms, pileup_type, collapse=False, dimension=dimension
+            cooler_dataset,
+            binsize,
+            regions_path,
+            arms,
+            pileup_type,
+            collapse=False,
+            dimension=dimension,
         )
     embedding_results = worker_funcs._do_embedding_2d(pileup_array)
     # add result to database
-    current_app.logger.debug(f"      {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Writing output...")
+    current_app.logger.debug(
+        f"      {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Writing output..."
+    )
     file_name = uuid.uuid4().hex + ".npy"
     file_path = os.path.join(current_app.config["UPLOAD_DIR"], file_name)
     np.save(file_path, np.nanmean(pileup_array, axis=2))
     # add this to database
-    current_app.logger.debug(f"      {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Adding database entry for pileup...")
+    current_app.logger.debug(
+        f"      {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Adding database entry for pileup..."
+    )
     worker_funcs._add_pileup_db(
         file_path, binsize, intervals.id, cooler_dataset.id, pileup_type
     )
@@ -145,7 +157,9 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
         worker_funcs._add_embedding_2d_to_db(
             filepaths, binsize, intervals.id, cooler_dataset.id, pileup_type, size
         )
-    current_app.logger.info(f"       {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Success!")
+    current_app.logger.info(
+        f"       {cooler_dataset_id}-{interval_id}-{binsize}|{pileup_type} => Success!"
+    )
 
 
 def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize, region_side=None):
@@ -161,11 +175,15 @@ def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize, region_side=
     # get windowsize
     window_size = intervals.windowsize
     # load bedfile
-    current_app.logger.debug(f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Loading regions...")
+    current_app.logger.debug(
+        f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Loading regions..."
+    )
     regions = pd.read_csv(file_path, sep="\t", header=None)
     sub_sample_index = np.load(intervals.file_path_sub_sample_index)
     regions_small = regions.iloc[sub_sample_index, :]
-    current_app.logger.debug(f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Doing stackup...")
+    current_app.logger.debug(
+        f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Doing stackup..."
+    )
     if window_size is None:
         full_size_array = worker_funcs._do_stackup_variable_size(
             bigwig_dataset.file_path, regions, binsize, region_side
@@ -181,7 +199,9 @@ def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize, region_side=
             bigwig_dataset.file_path, regions_small, window_size, binsize, region_side
         )
     # save full length array to file
-    current_app.logger.debug(f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Writing output...")
+    current_app.logger.debug(
+        f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Writing output..."
+    )
     file_uuid = uuid.uuid4().hex
     file_name = file_uuid + ".npy"
     file_name_line = file_uuid + "_line.npy"
@@ -195,12 +215,23 @@ def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize, region_side=
     file_path_small = os.path.join(current_app.config["UPLOAD_DIR"], file_name_small)
     np.save(file_path_small, downsampled_array)
     # add to database
-    current_app.logger.debug(f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Adding database entry...")
-    worker_funcs._add_stackup_db(
-        file_path, file_path_small, binsize, intervals.id, bigwig_dataset.id, region_side
+    current_app.logger.debug(
+        f"      {bigwig_dataset_id}-{intervals_id}-{binsize} => Adding database entry..."
     )
-    worker_funcs._add_line_db(file_path_line, binsize, intervals.id, bigwig_dataset.id, region_side)
-    current_app.logger.info(f"       {bigwig_dataset_id}-{intervals_id}-{binsize} => Success!")
+    worker_funcs._add_stackup_db(
+        file_path,
+        file_path_small,
+        binsize,
+        intervals.id,
+        bigwig_dataset.id,
+        region_side,
+    )
+    worker_funcs._add_line_db(
+        file_path_line, binsize, intervals.id, bigwig_dataset.id, region_side
+    )
+    current_app.logger.info(
+        f"       {bigwig_dataset_id}-{intervals_id}-{binsize} => Success!"
+    )
 
 
 def enrichment_pipeline_step(collection_id, intervals_id, binsize, region_side=None):
@@ -222,7 +253,9 @@ def enrichment_pipeline_step(collection_id, intervals_id, binsize, region_side=N
             collection_id, window_size, binsize, regions_path, region_side=region_side
         )
     # write output
-    current_app.logger.debug(f"      {collection_id}-{intervals_id}-{binsize} => Writing output...")
+    current_app.logger.debug(
+        f"      {collection_id}-{intervals_id}-{binsize} => Writing output..."
+    )
     file_path = os.path.join(
         current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + ".npy"
     )
@@ -231,7 +264,9 @@ def enrichment_pipeline_step(collection_id, intervals_id, binsize, region_side=N
     worker_funcs._add_association_data_to_db(
         file_path, binsize, intervals_id, collection_id, region_side=region_side
     )
-    current_app.logger.info(f"      {collection_id}-{intervals_id}-{binsize} => Success!")
+    current_app.logger.info(
+        f"      {collection_id}-{intervals_id}-{binsize} => Success!"
+    )
 
 
 def embedding_1d_pipeline_step(collection_id, intervals_id, binsize, region_side=None):
@@ -251,7 +286,9 @@ def embedding_1d_pipeline_step(collection_id, intervals_id, binsize, region_side
             collection_id, intervals_id, binsize, region_side=region_side
         )
     # write output for embedding
-    current_app.logger.debug(f"      {collection_id}-{intervals_id}-{binsize} => Writing output...")
+    current_app.logger.debug(
+        f"      {collection_id}-{intervals_id}-{binsize} => Writing output..."
+    )
     file_path_embedding = os.path.join(
         current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + "_embedding.npy"
     )
@@ -289,7 +326,9 @@ def embedding_1d_pipeline_step(collection_id, intervals_id, binsize, region_side
         worker_funcs._add_embedding_1d_to_db(
             filepaths, binsize, intervals.id, collection_id, size, region_side
         )
-    current_app.logger.info(f"      {collection_id}-{intervals_id}-{binsize} => Success!")
+    current_app.logger.info(
+        f"      {collection_id}-{intervals_id}-{binsize} => Success!"
+    )
 
 
 def set_dataset_finished(dataset_id, intervals_id):

@@ -125,9 +125,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
     email_confirmed = db.Column(db.Boolean, default=False)
-    created_at = db.Column(
-        db.DateTime,  default=datetime.datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     datasets = db.relationship(
         "Dataset", backref="owner", lazy="dynamic", cascade="all, delete-orphan"
     )
@@ -163,7 +161,16 @@ class User(db.Model, UserMixin):
 
     # TODO continue working on this
     # TODO move to Task class, have started on this already but commented out
-    def launch_task(self, queue, func, description, dataset_id=None, collection_id=None, *args, **kwargs):
+    def launch_task(
+        self,
+        queue,
+        func,
+        description,
+        dataset_id=None,
+        collection_id=None,
+        *args,
+        **kwargs,
+    ):
         """adds task to queue"""
         if dataset_id:
             args = [dataset_id, *args]
@@ -173,6 +180,7 @@ class User(db.Model, UserMixin):
         # check if func is name of function in tasks.py, then import those
         if isinstance(func, str):
             import app.tasks
+
             func = app.tasks.__getattr__(func)
 
         rq_job = queue.enqueue(
@@ -278,9 +286,7 @@ class Dataset(db.Model):
     dataset_name = db.Column(db.String(512), nullable=False)
     dimension = db.Column(db.String(64), default="1d")
     description = db.Column(db.String(81), default="undefined")
-    created_at = db.Column(
-        db.DateTime,  default=datetime.datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     sizeType = db.Column(db.String(64), default="undefined")
     file_path = db.Column(db.String(512))
     public = db.Column(db.Boolean, default=False, nullable=False)
@@ -552,7 +558,7 @@ class Dataset(db.Model):
         """Invokes preprocessing of dataset."""
 
         # start preprocessing of bedfile, the other filetypes do not need preprocessing
-        if self.filetype in ["bedfile"]:#, "bedpe_file"]:
+        if self.filetype in ["bedfile"]:  # , "bedpe_file"]:
             import app.tasks
 
             self.user.launch_task(  #  TODO current user or dataset owner user?
@@ -562,7 +568,7 @@ class Dataset(db.Model):
                 self.id,
             )
             # set bedpe to 2d
-            if self.file_path.lower().endswith('bedpe'):
+            if self.file_path.lower().endswith("bedpe"):
                 self.dimension = "2d"
             self.processing_state = "processing"
 
@@ -580,7 +586,7 @@ class Dataset(db.Model):
         """Generates a JSON from the model"""
         json_dataset = {}
         for column in self.__class__.__table__.c.keys():
-            if column not in ['created_at']:
+            if column not in ["created_at"]:
                 json_dataset[column] = getattr(self, column)
 
         # add processing datasets
@@ -610,9 +616,7 @@ class Collection(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(1024))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    created_at = db.Column(
-        db.DateTime,  default=datetime.datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     public = db.Column(db.Boolean, default=False)
     kind = db.Column(
         db.String(256)
@@ -742,9 +746,7 @@ class Organism(db.Model):
     """Organism table for genome assembly"""
 
     id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(
-        db.DateTime,  default=datetime.datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     name = db.Column(db.String(512))
     assemblies = db.relationship(
         "Assembly",
@@ -762,9 +764,7 @@ class Assembly(db.Model):
     """Genome assembly database model"""
 
     id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(
-        db.DateTime,  default=datetime.datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     name = db.Column(db.String(512))
     chrom_sizes = db.Column(db.String(512), index=True)
     chrom_arms = db.Column(db.String(512), index=True)
@@ -782,9 +782,7 @@ class Intervals(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     dataset_id = db.Column(db.Integer, db.ForeignKey("dataset.id", ondelete="CASCADE"))
-    created_at = db.Column(
-        db.DateTime,  default=datetime.datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     name = db.Column(db.String(512), index=True)
     file_path_sub_sample_index = db.Column(db.String(512), index=True)
     windowsize = db.Column(db.Integer, index=True)
@@ -852,12 +850,12 @@ class BaseIntervalData(db.Model):
 
     __abstract__ = True
     id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(
-        db.DateTime,  default=datetime.datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     name = db.Column(db.String(512), index=True)
     file_path = db.Column(db.String(512), index=True)
-    region_side = db.Column(db.String(64), nullable=True) # whehter the data is associated with the left or right end of a 2d region dataset
+    region_side = db.Column(
+        db.String(64), nullable=True
+    )  # whehter the data is associated with the left or right end of a 2d region dataset
     value_type = db.Column(db.String(64))
     binsize = db.Column(db.Integer)
     job_status = db.Column(db.String(64))  # , nullable=False) # success, fail, <job_id>
@@ -929,9 +927,7 @@ class IndividualIntervalData(BaseIntervalData):
     E.g. for bigwig stack-ups or displaying snipped Hi-C matrices."""
 
     id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(
-        db.DateTime,  default=datetime.datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     file_path_small = db.Column(
         db.String(128), index=True
     )  # location of downsampled file
@@ -958,9 +954,7 @@ class AssociationIntervalData(BaseIntervalData):
     Continuous values enrichment."""
 
     id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(
-        db.DateTime,  default=datetime.datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     collection_id = db.Column(
         db.Integer,
         db.ForeignKey(
@@ -986,9 +980,7 @@ class EmbeddingIntervalData(BaseIntervalData):
     on chip-seq data, 2d-embeddings based on Hi-C data."""
 
     id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(
-        db.DateTime,  default=datetime.datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     file_path_feature_values = db.Column(db.String(512), index=True)
     thumbnail_path = db.Column(db.String(512), index=True)
     cluster_id_path = db.Column(db.String(512), index=True)
@@ -1031,9 +1023,7 @@ class Task(db.Model):
     """Models the tasks dispatched to the redis queue."""
 
     id = db.Column(db.String(36), primary_key=True)
-    created_at = db.Column(
-        db.DateTime,  default=datetime.datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     name = db.Column(db.String(512), index=True)
     description = db.Column(db.String(512))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
@@ -1172,9 +1162,7 @@ class BedFileMetadata(db.Model):
     """Models the associated with a bedfile"""
 
     id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(
-        db.DateTime, default=datetime.datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     name = db.Column(db.String(512))
     file_path = db.Column(db.String(512))
     metadata_fields = db.Column(db.String(1024))

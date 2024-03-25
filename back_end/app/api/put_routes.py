@@ -49,7 +49,6 @@ def modify_dataset(dataset_id):
     # )
     [
         setattr(dataset, key, value)
-        
         for key, value in data.__dict__.items()
         if value is not None and key != "metadata_json"
     ]  # FIXME put routes still give old names, metadata fields are wrong!
@@ -61,7 +60,7 @@ def modify_dataset(dataset_id):
 
 # @api.route("/user/<id>", methods=["POST"])
 # @auth.login_required
-#@check_confirmed
+# @check_confirmed
 # def modify_user(user_id):
 #     # which side should i start implementing from?
 #     # 1. model

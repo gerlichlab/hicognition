@@ -77,13 +77,12 @@ def expand_regions(regions, expansion_factor):
     size_1 = regions["end1"] - regions["start1"]
     size_2 = regions["end2"] - regions["start2"]
     return pd.DataFrame(
-            {
-                "chrom1": regions["chrom1"],
-                "start1": (regions["start1"] - expansion_factor * size_1).astype(int),
-                "end1": (regions["end1"] + expansion_factor * size_1).astype(int),
-                "chrom2": regions["chrom2"],
-                "start2": (regions["start2"] - expansion_factor * size_2).astype(int),
-                "end2": (regions["end2"] + expansion_factor * size_2).astype(int),
-            }
-        )
-
+        {
+            "chrom1": regions["chrom1"],
+            "start1": (regions["start1"] - expansion_factor * size_1).astype(int),
+            "end1": (regions["end1"] + expansion_factor * size_1).astype(int),
+            "chrom2": regions["chrom2"],
+            "start2": (regions["start2"] - expansion_factor * size_2).astype(int),
+            "end2": (regions["end2"] + expansion_factor * size_2).astype(int),
+        }
+    )

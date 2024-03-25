@@ -34,6 +34,7 @@ notification_handler = NotificationHandler()
 # class WrongDatasetTypeError(Exception):
 #     """Thrown if task is called with wrong dataset type"""
 
+
 # hacked way to access functions by string as seen here:
 # https://stackoverflow.com/questions/2447353/getattr-on-a-module
 def __getattr__(name: str) -> Any:
@@ -68,7 +69,9 @@ def pipeline_bed(dataset_id):
             for size in current_app.config["PREPROCESSING_MAP"].keys()
             if size != "variable"
         ]
-    current_app.logger.info(f"Bed pipeline started for {dataset_id} with {window_sizes}")
+    current_app.logger.info(
+        f"Bed pipeline started for {dataset_id} with {window_sizes}"
+    )
     # bed-file preprocessing: sorting, clodius, uploading to higlass
     file_path = dataset.file_path
     # clean dataset
@@ -80,9 +83,9 @@ def pipeline_bed(dataset_id):
     )
     file_path_cleaned = os.path.join(dir_path, file_name_cleaned)
 
-    if dataset.file_path.lower().endswith('bed'):
+    if dataset.file_path.lower().endswith("bed"):
         io_helpers.clean_bed(file_path, file_path_cleaned)
-    elif dataset.file_path.lower().endswith('bedpe'):
+    elif dataset.file_path.lower().endswith("bedpe"):
         io_helpers.clean_bedpe(file_path, file_path_cleaned)
     # set cleaned_file_name as file_name
     dataset.file_path = file_path_cleaned
@@ -123,13 +126,17 @@ def pipeline_stackup(dataset_id, intervals_id, binsize):
     dataset_id (bigwig file), binsize and intervals_id"""
     try:
         # decide whether to dispatch the 2d or 1d version
-        if Intervals.query.get(intervals_id).source_dataset.dimension == '1d':
+        if Intervals.query.get(intervals_id).source_dataset.dimension == "1d":
             pipeline_steps.stackup_pipeline_step(dataset_id, intervals_id, binsize)
             pipeline_steps.set_task_progress(100)
         else:
-            pipeline_steps.stackup_pipeline_step(dataset_id, intervals_id, binsize, region_side="left")
+            pipeline_steps.stackup_pipeline_step(
+                dataset_id, intervals_id, binsize, region_side="left"
+            )
             pipeline_steps.set_task_progress(50)
-            pipeline_steps.stackup_pipeline_step(dataset_id, intervals_id, binsize, region_side="right")
+            pipeline_steps.stackup_pipeline_step(
+                dataset_id, intervals_id, binsize, region_side="right"
+            )
             pipeline_steps.set_task_progress(100)
         pipeline_steps.set_dataset_finished(dataset_id, intervals_id)
     except BaseException as err:
@@ -143,13 +150,19 @@ def pipeline_lola(collection_id, intervals_id, binsize):
     collection_id, binsize and intervals_id"""
     try:
         # decide whether to dispatch the 2d or 1d version
-        if Intervals.query.get(intervals_id).source_dataset.dimension == '1d':
-            pipeline_steps.enrichment_pipeline_step(collection_id, intervals_id, binsize)
+        if Intervals.query.get(intervals_id).source_dataset.dimension == "1d":
+            pipeline_steps.enrichment_pipeline_step(
+                collection_id, intervals_id, binsize
+            )
             pipeline_steps.set_task_progress(100)
         else:
-            pipeline_steps.enrichment_pipeline_step(collection_id, intervals_id, binsize, region_side="left")
+            pipeline_steps.enrichment_pipeline_step(
+                collection_id, intervals_id, binsize, region_side="left"
+            )
             pipeline_steps.set_task_progress(50)
-            pipeline_steps.enrichment_pipeline_step(collection_id, intervals_id, binsize, region_side="right")
+            pipeline_steps.enrichment_pipeline_step(
+                collection_id, intervals_id, binsize, region_side="right"
+            )
             pipeline_steps.set_task_progress(100)
         pipeline_steps.set_collection_finished(collection_id, intervals_id)
     except BaseException as err:
@@ -164,7 +177,7 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
     # check whether stackups exist and perform stackup if not
     try:
         for source_dataset in Collection.query.get(collection_id).datasets:
-            if Intervals.query.get(intervals_id).source_dataset.dimension == '1d':
+            if Intervals.query.get(intervals_id).source_dataset.dimension == "1d":
                 stackup = IndividualIntervalData.query.filter(
                     (IndividualIntervalData.dataset_id == source_dataset.id)
                     & (IndividualIntervalData.intervals_id == intervals_id)
@@ -179,7 +192,7 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
                     (IndividualIntervalData.dataset_id == source_dataset.id)
                     & (IndividualIntervalData.intervals_id == intervals_id)
                     & (IndividualIntervalData.binsize == binsize)
-                    & (IndividualIntervalData.region_side == 'left')
+                    & (IndividualIntervalData.region_side == "left")
                 ).first()
                 if stackup is None:
                     # assume that if left does not exist, right also does not exist and vice versa
@@ -190,13 +203,19 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
                         source_dataset.id, intervals_id, binsize, region_side="right"
                     )
         # perform embedding
-        if Intervals.query.get(intervals_id).source_dataset.dimension == '1d':
-            pipeline_steps.embedding_1d_pipeline_step(collection_id, intervals_id, binsize)
+        if Intervals.query.get(intervals_id).source_dataset.dimension == "1d":
+            pipeline_steps.embedding_1d_pipeline_step(
+                collection_id, intervals_id, binsize
+            )
             pipeline_steps.set_task_progress(100)
         else:
-            pipeline_steps.embedding_1d_pipeline_step(collection_id, intervals_id, binsize, region_side="left")
+            pipeline_steps.embedding_1d_pipeline_step(
+                collection_id, intervals_id, binsize, region_side="left"
+            )
             pipeline_steps.set_task_progress(50)
-            pipeline_steps.embedding_1d_pipeline_step(collection_id, intervals_id, binsize, region_side="right")
+            pipeline_steps.embedding_1d_pipeline_step(
+                collection_id, intervals_id, binsize, region_side="right"
+            )
             pipeline_steps.set_task_progress(100)
         pipeline_steps.set_collection_finished(collection_id, intervals_id)
     except BaseException as err:
@@ -217,7 +236,9 @@ def download_dataset_file(dataset_id: int):
 
     # check whether either url or sample id are provided:
     if not ((dataset.sample_id and dataset.repository_name) or dataset.source_url):
-        current_app.logger.info(f"No sample_id, repo_name or source_url provided for {dataset_id}")
+        current_app.logger.info(
+            f"No sample_id, repo_name or source_url provided for {dataset_id}"
+        )
         _handle_error(
             dataset,
             f"Neither sample id + repository, nor file URL have been provided dataset {dataset_id}",

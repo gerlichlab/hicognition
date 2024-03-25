@@ -21,5 +21,5 @@ else:
         authentication,
         initialization,
         put_routes,
-        request_logger
+        request_logger,
     )

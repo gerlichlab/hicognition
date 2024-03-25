@@ -10,22 +10,22 @@ class Config:
     """Config class for hicognition server."""
 
     SECRET_KEY = os.environ.get("SECRET_KEY") or "eieieiei"
-    SECRET_SALT = os.environ.get("SECRET_SALT") or 'blblblbl'
+    SECRET_SALT = os.environ.get("SECRET_SALT") or "blblblbl"
     DEBUG = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Log file
-    LOG_FILE = os.environ.get("LOG_FILE_NAME") or '/logs/application.logs'
-    ERROR_LOG_FILE = os.environ.get("ERROR_LOG_FILE_NAME") or '/logs/error.logs'
+    LOG_FILE = os.environ.get("LOG_FILE_NAME") or "/logs/application.logs"
+    ERROR_LOG_FILE = os.environ.get("ERROR_LOG_FILE_NAME") or "/logs/error.logs"
     # mail settings
-    MAIL_SERVER = os.environ.get('MAIL_SERVER')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT', '465'))
+    MAIL_SERVER = os.environ.get("MAIL_SERVER")
+    MAIL_PORT = int(os.environ.get("MAIL_PORT", "465"))
     MAIL_USE_TLS = False
     MAIL_USE_SSL = True
     # gmail authentication
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     # mail accounts
-    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER')
+    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
     UPLOAD_DIR = os.environ.get("UPLOAD_DIR") or os.path.join(basedir, "temp")
     CHROM_SIZES = os.environ.get("CHROM_SIZES") or os.path.join(
         basedir, "data/hg19.chrom.sizes"
@@ -50,6 +50,30 @@ class Config:
 
     # allowed binsizes for given windowsizes of regions
     PREPROCESSING_MAP = {
+        1000: {
+            "cooler": [],
+            "bigwig": [100, 500],
+            "collections": {
+                "regions": [1000],
+                "1d-features": [100, 500],
+            },
+        },
+        2000: {
+            "cooler": [],
+            "bigwig": [100, 500],
+            "collections": {
+                "regions": [1000],
+                "1d-features": [100, 500],
+            },
+        },
+        5000: {
+            "cooler": [],
+            "bigwig": [100, 500],
+            "collections": {
+                "regions": [1000],
+                "1d-features": [100, 500],
+            },
+        },
         10000: {
             "cooler": [1000],
             "bigwig": [100, 500],

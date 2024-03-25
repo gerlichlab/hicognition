@@ -56,7 +56,7 @@ def test_protected():
 
 # @api.route("/resolutions/", methods=["GET"])
 # @auth.login_required
-#@check_confirmed
+# @check_confirmed
 # def get_resolutions():
 #     """Gets available combinations of windowsizes and binsizes
 #     from config file"""
@@ -141,11 +141,14 @@ def get_all_processing_datasets():
     ).all()
     # list processing datasets
     processing_datasets = [
-        dataset for dataset in all_available_datasets if len(dataset.processing_features) != 0
-          or len(dataset.processing_collections) != 0
-          or dataset.upload_state in ['new', 'uploading']
+        dataset
+        for dataset in all_available_datasets
+        if len(dataset.processing_features) != 0
+        or len(dataset.processing_collections) != 0
+        or dataset.upload_state in ["new", "uploading"]
     ]
     return jsonify([dfile.to_json() for dfile in processing_datasets])
+
 
 @api.route("/datasets/<dtype>", methods=["GET"])
 @auth.login_required
@@ -273,8 +276,8 @@ def get_processed_data_mapping_of_dataset(dataset_id):
         windows_size = (
             "variable" if dataset.sizeType == "Interval" else interval.windowsize
         )
-        for ivd in interval.interval_data: 
-            if ( # TODO i don't like this
+        for ivd in interval.interval_data:
+            if (  # TODO i don't like this
                 (ivd.feature in ivd.source_intervals.source_dataset.processing_features)
                 or (ivd.feature in ivd.source_intervals.source_dataset.failed_features)
                 or (
@@ -313,7 +316,10 @@ def get_processed_data_mapping_of_dataset(dataset_id):
                 output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][
                     ivd.binsize
                 ][ivd.value_type] = str(ivd.id)
-            elif (isinstance(ivd, AverageIntervalData) or isinstance(ivd, IndividualIntervalData)) and ivd.region_side is not None:
+            elif (
+                isinstance(ivd, AverageIntervalData)
+                or isinstance(ivd, IndividualIntervalData)
+            ) and ivd.region_side is not None:
                 output[interval_datatype][ivd.feature.id]["data_ids"][windows_size][
                     ivd.binsize
                 ][ivd.region_side] = str(ivd.id)
