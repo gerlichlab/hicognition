@@ -5,6 +5,7 @@ services:
     hicognition:
         container_name: flask-server
         volumes:
+            - ${HICOGNITION_DIR}:/code
             - ${DATA_DIR}:/code/temp/
             - ${LOG_DIR}:/logs/
         environment:
@@ -77,7 +78,8 @@ services:
             - 6379:6379
 
     redis-worker-long:
-        volumes:  
+        volumes: 
+            - ${HICOGNITION_DIR}:/code 
             - ${DATA_DIR}:/code/temp/
             - ${LOG_DIR}:/logs/
         environment:
@@ -110,7 +112,8 @@ services:
         command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-long"
 
     redis-worker-medium:
-        volumes:  
+        volumes: 
+            - ${HICOGNITION_DIR}:/code 
             - ${DATA_DIR}:/code/temp/
             - ${LOG_DIR}:/logs/
         environment:
@@ -142,7 +145,8 @@ services:
         command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-medium"
 
     redis-worker-short:
-        volumes:  
+        volumes:
+            - ${HICOGNITION_DIR}:/code 
             - ${DATA_DIR}:/code/temp/
             - ${LOG_DIR}:/logs/
         environment:
