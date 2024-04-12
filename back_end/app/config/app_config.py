@@ -302,9 +302,9 @@ class Config:
     }
     STACKUP_THRESHOLD = 500  # Threshold of when stackup is downsampled
     OBS_EXP_PROCESSES = (
-        5  # Number of processes/worker to calculate obs/exp matrix of pileups
+        10  # Number of processes/worker to calculate obs/exp matrix of pileups
     )
-    PILEUP_PROCESSES = 2  # Number of processes/worker to do pileups
+    PILEUP_PROCESSES = 5  # Number of processes/worker to do pileups
 
 
 class DevelopmentConfig(Config):

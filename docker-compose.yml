@@ -103,7 +103,7 @@ services:
                 - redis-server
         build:
             context: "./back_end"
-        scale: 3
+        scale: 5
         image: hicognition:latest
         entrypoint: "/bin/bash"
         networks:
@@ -169,7 +169,7 @@ services:
                 - redis-server
         build:
             context: "./back_end"
-        scale: 3
+        scale: 5
         image: hicognition:latest
         entrypoint: "/bin/bash"
         networks:

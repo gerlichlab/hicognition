@@ -107,9 +107,16 @@ def _do_pileup_fixed_size(
             # binsize exists
             expected = pd.read_csv(obs_exp_entry.filepath)
         else:
-            expected = HT.get_expected(
-                cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
-            )
+            try:
+                expected = HT.get_expected(
+                    cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
+                )
+            # Catches KeyError: 'Balancing weight {weight_name} not found!'
+            except KeyError:
+                output_shape = (2 * window_size) // binsize
+                if collapse:
+                    return np.full((output_shape, output_shape), np.nan)
+                return np.full((output_shape, output_shape, len(regions)), np.nan)
             file_path = os.path.join(
                 current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + ".csv"
             )
@@ -127,12 +134,19 @@ def _do_pileup_fixed_size(
             collapse=collapse,
         )
     else:
-        pileup_array = HT.do_pileup_iccf(
-            cooler_file,
-            pileup_windows,
-            proc=current_app.config["PILEUP_PROCESSES"],
-            collapse=collapse,
-        )
+        try:
+            pileup_array = HT.do_pileup_iccf(
+                cooler_file,
+                pileup_windows,
+                proc=current_app.config["PILEUP_PROCESSES"],
+                collapse=collapse,
+            )
+        # catches ValueError: No column 'bins/weight'found
+        except ValueError:
+            output_shape = (2 * window_size) // binsize
+            if collapse:
+                return np.full((output_shape, output_shape), np.nan)
+            return np.full((output_shape, output_shape, len(regions)), np.nan)
     # put togehter output if collapse is false
     # DEBUG TODO
     if collapse is False:
@@ -687,7 +701,38 @@ def _do_embedding_2d(data):
     # calculate embedding
     log.info("      Running embedding...")
     embedder = umap.UMAP(random_state=42)
-    embedding = embedder.fit_transform(image_features)
+    try:
+        embedding = embedder.fit_transform(image_features)
+    except:
+        # TODO: fix nicer
+        log.info("      Embedding failed!")
+        return {
+            "embedding": np.full((len(data), 2), np.nan),
+            "clusters": {
+                "large": {
+                    "cluster_ids": np.full((len(data)), np.nan),
+                    "thumbnails": np.full(
+                        (
+                            current_app.config["CLUSTER_NUMBER_LARGE"],
+                            data[0].shape[0],
+                            data[0].shape[1],
+                        ),
+                        np.nan,
+                    ),
+                },
+                "small": {
+                    "cluster_ids": np.full((len(data)), np.nan),
+                    "thumbnails": np.full(
+                        (
+                            current_app.config["CLUSTER_NUMBER_SMALL"],
+                            data[0].shape[0],
+                            data[0].shape[1],
+                        ),
+                        np.nan,
+                    ),
+                },
+            },
+        }
     #  kmeans clustering
     log.info("      Running clustering large...")
     kmeans_large = KMeans(
