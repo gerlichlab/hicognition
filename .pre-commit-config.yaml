@@ -1,0 +1,21 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      # the reference results and the synthetic coolers in back_end/tests/testfiles/reference
+      # are a few MB each
+      - id: check-added-large-files
+        args: ["--maxkb=10000"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Keep in step with the ruff version CI installs (.github/workflows/ci.yml): a split here
+    # means a file one formatter accepts the other rewrites. Configured in
+    # back_end/pyproject.toml. The linter reports without fixing, so no hook removes a line
+    # unseen: `ruff check --fix <file>` does that. The formatter rewrites the files.
+    rev: v0.17.3
+    hooks:
+      - id: ruff-check
+      - id: ruff-format

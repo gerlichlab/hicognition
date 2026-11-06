@@ -1,0 +1,24 @@
+# The backend's tool configuration. The project and its locked dependencies join it when the
+# backend image is rebuilt (#36).
+
+[tool.ruff]
+# 88 characters, ruff's default, as in looptrace and the repositories behind it. The target is
+# the Python of the backend image, until #36 moves it.
+target-version = "py38"
+# written by Alembic
+extend-exclude = ["migrations"]
+
+[tool.ruff.lint]
+# As in looptrace: pycodestyle errors, Pyflakes, warnings, I for the order of imports (in ruff's
+# default order), C90 for complexity checks, and TD003 for an issue on every TODO, as
+# "# TODO (#123): ...".
+select = ["E", "F", "W", "I", "C90", "TD003"]
+ignore = [
+    "E501",  # Line length is ruff format's, which leaves what it cannot wrap.
+    # TEMPORARY: the complexity check is off, since 8 functions exceed its limit of 10. Turning
+    # it on means refactoring them, a noqa for each, or a higher max-complexity; then this
+    # line goes.
+    "C901",
+    # TEMPORARY: 24 TODOs predate this check. Each needs an issue, or goes; then this line goes.
+    "TD003",
+]

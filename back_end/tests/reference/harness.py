@@ -180,7 +180,7 @@ def compute(work_dir, input_dir=INPUT_FILES):
             """Runs a step; an exception it raises is kept as a result, with the work directory left out."""
             try:
                 step(*args, **kwargs)
-            except Exception as error:  # pylint: disable=broad-except
+            except Exception as error:
                 db.session.rollback()
                 message = str(error).replace(work_dir, "<work_dir>")
                 results["error/" + "/".join(str(part) for part in key)] = type(error).__name__ + ": " + message
