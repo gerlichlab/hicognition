@@ -223,13 +223,13 @@ All python code must pass:
 
 ## Linting and formatting guidelines
 
-We will use [black](https://github.com/psf/black) for code formatting and [pylama](https://github.com/klen/pylama) and [pyright](https://github.com/microsoft/pyright) for linting and (sort of) static type checking. We will however not add type hints to our code.
+[ruff](https://docs.astral.sh/ruff/) formats and lints the backend, configured in `back_end/pyproject.toml`; CI runs `ruff format --check` and `ruff check` on every push and pull request. With [pre-commit](https://pre-commit.com/) installed, `pre-commit install` in the repository makes it run on every commit. ruff and pre-commit are in the backend's `lint` dependency group: `poetry install --with lint` in `back_end/`.
 
 [Google python style guide](https://google.github.io/styleguide/pyguide.html)
 
-### Black integration into VSCode
+### ruff in VSCode
 
-Install black via `pip install black` and set it as your python formatting provider in VSCode (see [here](https://medium.com/@marcobelo/setting-up-python-black-on-visual-studio-code-5318eba4cd00) for details). Then, you can use the `Format document` command in VSCode to format a file. Black does not support selection formatting.
+The [ruff extension](https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff) formats and lints with the repository's configuration.
 
 ## Language convention
 We will use american english spelling conventions.

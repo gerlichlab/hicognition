@@ -49,8 +49,10 @@ python tests/get_routes/test_api_auth.py
 ```
 
 {{% notice note %}}
-If you change any code inside the `hicognition` package during development, you either need to rebuild the container or install the package in the running container using `pip install .`
+The code is mounted into the container, so the tests see your changes. After a change to `back_end/pyproject.toml` or `back_end/poetry.lock`, rebuild the image.
 {{% /notice %}}
+
+`tests/reference` compares a run of every preprocessing step with stored results; it takes a few minutes. If a change moves results on purpose, `python -m tests.reference.make_reference` writes new ones, and the changelog says why they moved.
 
 
 ## Frontend tests
