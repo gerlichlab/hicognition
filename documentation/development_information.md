@@ -96,7 +96,7 @@ The tables are used to store the following information:
 
 ### Queue
 
-Resource heavy and long tasks are offloaded to a [redis-queue](https://python-rq.org/) that consists of a redis-server and one or more redis-workers. The redis-server accepts task items and manages distributing them to the redis-workers. The redis-server runs in a docker container that is derived from `redis:6-alpine` with a custom config-file. The redis-workers use the same docker-container as the flask-server as they need access to most modules the server needs.
+Resource heavy and long tasks are offloaded to a [redis-queue](https://python-rq.org/) that consists of a redis-server and one or more redis-workers. The redis-server accepts task items and manages distributing them to the redis-workers. The redis-server runs [Valkey](https://valkey.io/), the open-source fork of Redis, in a docker container that is derived from `valkey/valkey:9.1.3-alpine` with a custom config-file (`redis/redis.conf`). The redis-workers use the same docker-container as the flask-server as they need access to most modules the server needs.
 
 All tasks that the queue can run are defined in [tasks.py](https://github.com/gerlichlab/hicognition/blob/master/back_end/back_end/app/tasks.py).
 

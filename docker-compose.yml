@@ -78,14 +78,15 @@ services:
             - "/bin/bash"
         command: -c "cd /front_end && npm install && npm run build"
 
-    # not published on the host, reachable only from containers on hicognition-net;
+    # Valkey (redis/Dockerfile); not published on the host, reachable only from containers on
+    # hicognition-net;
     # REDIS_URL must contain the password: redis://:<REDIS_PASSWORD>@redis-server:6379/0
     redis-server:
         <<: *service-defaults
         container_name: redis-server
         build:
             context: "./redis"
-        command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--requirepass", "${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}"]
+        command: ["valkey-server", "/usr/local/etc/valkey/valkey.conf", "--requirepass", "${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}"]
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.5

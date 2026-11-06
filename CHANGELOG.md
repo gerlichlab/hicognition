@@ -20,10 +20,11 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
   * **The expected of an arm that ends inside a bin is slightly lower:** cooltools 0.7 leaves the pixels touching that bin out of the balanced sum, but not out of the count of valid pixels. With hg19's arms that happens only at 20 kb, for 9 short arms, by 0.02–0.05%. `count.sum`, which HiCognition doesn't use, now leaves out bins without balancing weights.
   * The reference results are now those of the new libraries; v0.8.0's are in the commit that added them.
 * **Login and session tokens keep their format,** although itsdangerous 2.1 removed the serializers that wrote them (`app/lib/tokens.py`). Links to shared sessions keep working, and nobody is logged out.
+* **Valkey 9.1 replaces Redis 6 for rq's queues and the notifications** ([#36](https://github.com/gerlichlab/hicognition/issues/36)). Valkey is the BSD-licensed fork of Redis 7.2, maintained under the Linux Foundation; Redis itself left the BSD license with 7.4. It reads `redis/redis.conf` unchanged, apart from the pid file, which the server, running in the foreground as the unprivileged `valkey` user, needs no more. The service keeps its name `redis-server`, so `REDIS_URL` and `REDIS_PASSWORD` stay as they are.
 * **New passwords are hashed with PBKDF2-SHA256 at 1,000,000 iterations,** Werkzeug 3's setting for it. Werkzeug 3's default, scrypt, writes hashes longer than the database column; existing hashes still verify.
 
 ### Changed (documentation)
-* The developer documentation names ruff and pre-commit in place of black, pylama and pyright, and the testing page the reference results.
+* The developer documentation names ruff and pre-commit in place of black, pylama and pyright, Valkey in place of Redis 6, and the testing page the reference results.
 
 ### Removed
 * **conda, and the packages nothing imported** ([#36](https://github.com/gerlichlab/hicognition/issues/36)): matplotlib, seaborn, statsmodels, pairtools, pybedtools, pysam, pyensembl, pyarrow, flask-cors, pyhumps, PyJWT, the Flask-Babel, Flask-Bootstrap, Flask-Moment and Flask-WTF extensions, black, pylama and pylint. The image no longer installs anything from GitHub.

@@ -71,7 +71,7 @@ The flask-server and the Redis-worker need access to a shared filesystem since a
 
 ### Queue
 
-Resource heavy and long tasks are offloaded to a [redis-queue](https://python-rq.org/) that consists of a Redis-server and one or more Redis-workers. The Redis-server accepts task items and manages to distribute them to the Redis-workers. The Redis-server runs in a docker container that is derived from `redis:6-alpine` with a custom config-file. The Redis-workers use the same docker-container as the flask-server as they need access to most modules the server needs.
+Resource heavy and long tasks are offloaded to a [redis-queue](https://python-rq.org/) that consists of a Redis-server and one or more Redis-workers. The Redis-server accepts task items and manages to distribute them to the Redis-workers. The Redis-server runs [Valkey](https://valkey.io/), the open-source fork of Redis, in a docker container that is derived from `valkey/valkey:9.1.3-alpine` with a custom config-file (`redis/redis.conf`). The Redis-workers use the same docker-container as the flask-server as they need access to most modules the server needs.
 
 All tasks that the queue can run are defined in [tasks.py](https://github.com/gerlichlab/hicognition/blob/master/back_end/back_end/app/tasks.py).
 
