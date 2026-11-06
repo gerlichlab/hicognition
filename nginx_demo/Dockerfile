@@ -1,5 +1,5 @@
 # Resolve learn submodule
-FROM ubuntu:20.04 as theme-resolver
+FROM ubuntu:24.04 AS theme-resolver
 
 # Install git
 
@@ -34,7 +34,8 @@ ENV showcase=true
 RUN cd /front_end && npm install && npm run build
 
 # copy everything into nginx container
-FROM nginx
+# nginx's stable line, pinned so that a build repeats
+FROM nginx:1.30.6
 
 # copy hugo files
 COPY --from=hugo-builder /docs/public/ /docs/public/

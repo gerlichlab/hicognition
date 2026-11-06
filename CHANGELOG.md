@@ -25,6 +25,7 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
   * **On its first start, 8.4 upgrades an 8.0 data directory in place, and that can't be undone.** Take a dump with `mysql/backup_db.sh` before switching; a dump of either version restores into both. Tested from 8.0.27 with a filled database: the data, logins, tokens and migrations are unchanged, and jobs run.
   * **`mysql/mysql.cnf` follows the image's own file.** `host-cache-size=0` replaces `skip-host-cache`, which 8.4 no longer knows, and errors go to `docker logs mysql` instead of a file inside the container.
   * `MYSQL_ROOT_HOST=localhost` keeps root reachable only from inside the container, as the old image set it up.
+* **nginx is pinned to 1.30.6, its stable release,** in the three nginx Dockerfiles, which took whatever `nginx` was newest when they were built. The stage that fetches the docs theme for the server and demo images runs on Ubuntu 24.04 instead of 20.04.
 * **New passwords are hashed with PBKDF2-SHA256 at 1,000,000 iterations,** Werkzeug 3's setting for it. Werkzeug 3's default, scrypt, writes hashes longer than the database column; existing hashes still verify.
 
 ### Changed (documentation)
