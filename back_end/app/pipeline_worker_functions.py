@@ -11,10 +11,8 @@ import bioframe as bf
 import cooler
 import numpy as np
 import pandas as pd
-import pylola
 import umap
 from flask.globals import current_app
-from ngs import HiCTools as HT
 from skimage.transform import resize
 from sklearn.cluster import KMeans
 from sklearn.impute import SimpleImputer
@@ -22,7 +20,8 @@ from sklearn.preprocessing import StandardScaler
 
 from . import db
 from . import lib as hicognition
-from .lib import feature_extraction, interval_operations, io_helpers
+from .lib import feature_extraction, interval_operations, io_helpers, lola
+from .lib import hic_tools as HT
 from .lib.utils import get_optimal_binsize
 from .models import (
     Assembly,
@@ -463,7 +462,7 @@ def _do_enrichment_calculations_fixed_size(
     # perform enrichment analysis
     log.info("      Run enrichment analysis...")
     results = [
-        pylola.run_lola(query, filtered_target_list, universe, processes=4)[
+        lola.run_lola(query, filtered_target_list, universe, processes=4)[
             "odds_ratio"
         ].values
         for query in filtered_queries
@@ -534,7 +533,7 @@ def _do_enrichment_calculations_variable_size(
     # perform enrichment analysis
     log.info("      Run enrichment analysis...")
     results = [
-        pylola.run_lola(query, filtered_target_list, universe, processes=4)[
+        lola.run_lola(query, filtered_target_list, universe, processes=4)[
             "odds_ratio"
         ].values
         for query in filtered_queries

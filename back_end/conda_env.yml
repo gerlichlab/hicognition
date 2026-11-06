@@ -105,3 +105,8 @@ dependencies:
       - pybbi
       - opencv-python-headless
       - pyhumps
+      # what ngs v0.3b and pylola pinned; their code is in app/lib/ now
+      - cooltools==0.4.0
+      - bioframe==0.2.0
+      - pandas==1.2.4
+      - scipy==1.5.2

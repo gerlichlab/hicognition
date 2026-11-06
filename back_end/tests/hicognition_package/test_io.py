@@ -313,7 +313,7 @@ class TestSortBed(TempDirTestCase):
         # compare
         assert_frame_equal(expected, result)
 
-    @patch("hicognition.io_helpers.logging.warning")
+    @patch("app.lib.io_helpers.logging.warning")
     def test_small_data_w_bad_chromos(self, mock_logging):
         """tests sorting of a small test dataset with chromosomes
         that comply to chr${int} as well as chrX and chrY"""

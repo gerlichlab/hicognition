@@ -12,6 +12,8 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
 ### Changed
 * **ruff lints and formats the backend in place of black, pylama and pylint, and CI runs on every push to master and every pull request** (ruff 0.17.3, as in looptrace): the lint, the backend tests with the reference comparison, and the frontend tests. Before, every workflow ran only when started by hand, and the backend tests pulled an image with the version in `back_end/VERSION`, which Docker Hub doesn't have. pre-commit runs ruff on every commit.
 
+* **The pileup, expected and LOLA code of `ngs` and `pylola` is part of HiCognition now,** in `back_end/app/lib/` (`hic_tools.py`, `snipping.py`, `lola.py`), with their tests and their MIT notices ([#36](https://github.com/gerlichlab/hicognition/issues/36)). It moved unchanged, apart from formatting. The backend image no longer installs `ngs` v0.3b, `pylola` or `hicognition_lib` from GitHub. Nothing imported `hicognition_lib`. The functions of `ngs` that HiCognition doesn't call stayed behind, and with them its only use of `pairtools`. The versions `ngs` and `pylola` pinned (cooltools 0.4.0, bioframe 0.2.0, pandas 1.2.4, scipy 1.5.2) are in `conda_env.yml` now.
+
 ### Fixed
 * **The default paths of the chromosome sizes and arms, the upload folder and the development databases point into `back_end/` again.** Since the configuration file moved into `back_end/app/config/`, they pointed there, where none of these files are. It went unnoticed because deployments set the paths in `.env`, but the backend tests failed without them.
 
