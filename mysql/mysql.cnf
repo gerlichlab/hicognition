@@ -1,5 +1,7 @@
+# Replaces the /etc/my.cnf of the mysql:8.4 image; the settings below the comments are that
+# file's, apart from bind-address. Errors go to the container's log (docker logs mysql).
 # For advice on how to change settings please see
-# http://dev.mysql.com/doc/refman/5.7/en/server-configuration-defaults.html
+# https://dev.mysql.com/doc/refman/8.4/en/server-configuration-defaults.html
 
 [mysqld]
 #
@@ -18,15 +20,13 @@
 # sort_buffer_size = 2M
 # read_rnd_buffer_size = 2M
 bind-address=0.0.0.0
-skip-host-cache
+host-cache-size=0
 skip-name-resolve
 datadir=/var/lib/mysql
-socket=/tmp/mysql.sock
+socket=/var/run/mysqld/mysqld.sock
 secure-file-priv=/var/lib/mysql-files
 user=mysql
-
-# Disabling symbolic-links is recommended to prevent assorted security risks
-symbolic-links=0
-
-log-error=/var/log/mysqld.log
 pid-file=/var/run/mysqld/mysqld.pid
+
+[client]
+socket=/var/run/mysqld/mysqld.sock

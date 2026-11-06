@@ -21,6 +21,10 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
   * The reference results are now those of the new libraries; v0.8.0's are in the commit that added them.
 * **Login and session tokens keep their format,** although itsdangerous 2.1 removed the serializers that wrote them (`app/lib/tokens.py`). Links to shared sessions keep working, and nobody is logged out.
 * **Valkey 9.1 replaces Redis 6 for rq's queues and the notifications** ([#36](https://github.com/gerlichlab/hicognition/issues/36)). Valkey is the BSD-licensed fork of Redis 7.2, maintained under the Linux Foundation; Redis itself left the BSD license with 7.4. It reads `redis/redis.conf` unchanged, apart from the pid file, which the server, running in the foreground as the unprivileged `valkey` user, needs no more. The service keeps its name `redis-server`, so `REDIS_URL` and `REDIS_PASSWORD` stay as they are.
+* **MySQL 8.4 LTS replaces MySQL 8.0** ([#36](https://github.com/gerlichlab/hicognition/issues/36)): the official `mysql:8.4.13` image, in place of `mysql/mysql-server:8.0`, which Oracle no longer updates. MySQL 8.0 reached end of life in April 2026.
+  * **On its first start, 8.4 upgrades an 8.0 data directory in place, and that can't be undone.** Take a dump with `mysql/backup_db.sh` before switching; a dump of either version restores into both. Tested from 8.0.27 with a filled database: the data, logins, tokens and migrations are unchanged, and jobs run.
+  * **`mysql/mysql.cnf` follows the image's own file.** `host-cache-size=0` replaces `skip-host-cache`, which 8.4 no longer knows, and errors go to `docker logs mysql` instead of a file inside the container.
+  * `MYSQL_ROOT_HOST=localhost` keeps root reachable only from inside the container, as the old image set it up.
 * **New passwords are hashed with PBKDF2-SHA256 at 1,000,000 iterations,** Werkzeug 3's setting for it. Werkzeug 3's default, scrypt, writes hashes longer than the database column; existing hashes still verify.
 
 ### Changed (documentation)
