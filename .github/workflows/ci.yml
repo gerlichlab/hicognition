@@ -28,14 +28,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      # TEMPORARY: the backend image can't be rebuilt (#36), so the tests run in the newest one
-      # on Docker Hub, from 2022. Its library versions differ slightly from those that computed
-      # the reference results (back_end/tests/testfiles/reference/expected/versions.txt), within
-      # the comparison's tolerances. This step builds the image once #36 makes that possible.
+      # the image docker-compose.yml runs, from back_end/poetry.lock
+      - name: Build the backend image
+        run: docker build -t hicognition:ci back_end
       - name: Run the backend tests and the reference comparison
         run: >
           docker run --rm -v "$PWD/back_end":/code -w /code -e HOME=/tmp
-          gerlichlab/hicognition:v0.65
+          hicognition:ci
           bash -c "mkdir -p /logs && python -m pytest tests -q -p no:cacheprovider"
 
   frontend:
