@@ -9,6 +9,9 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
 ### Added
 * **Reference results of every preprocessing step, and a test that compares a new run with them by value** ([#36](https://github.com/gerlichlab/hicognition/issues/36)). A small synthetic genome in `back_end/tests/testfiles/reference/` goes through the BED pipeline and every pileup, stackup, enrichment and embedding step, at v0.8.0's window and bin sizes. It has two coolers, three BigWigs and six region files, written by `tests/reference/make_inputs.py`. The results that the lab instance's v0.8.0 image computed are stored beside it, with the versions of the libraries. `tests/reference/test_reference.py` runs the steps again and compares, which takes about 5 minutes. The reference includes what today's code gets wrong, such as the BEDPE pileups that fail ([#38](https://github.com/gerlichlab/hicognition/issues/38)), so a fix shows up as a difference to explain.
 
+### Changed
+* **ruff lints and formats the backend in place of black, pylama and pylint, and CI runs on every push to master and every pull request** (ruff 0.17.3, as in looptrace): the lint, the backend tests with the reference comparison, and the frontend tests. Before, every workflow ran only when started by hand, and the backend tests pulled an image with the version in `back_end/VERSION`, which Docker Hub doesn't have. pre-commit runs ruff on every commit.
+
 ### Fixed
 * **The default paths of the chromosome sizes and arms, the upload folder and the development databases point into `back_end/` again.** Since the configuration file moved into `back_end/app/config/`, they pointed there, where none of these files are. It went unnoticed because deployments set the paths in `.env`, but the backend tests failed without them.
 
