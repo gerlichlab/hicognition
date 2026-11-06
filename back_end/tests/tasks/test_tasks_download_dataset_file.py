@@ -40,7 +40,7 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         self.assertTrue(mock_error.called)
 
     @patch("app.tasks._handle_error")
-    @patch("app.models.Dataset.query.get")
+    @patch("app.tasks.db.session.get")
     def test_invalid_inputs(self, mock_get_dataset, mock_error):
         test_cases = {
             "none": {},
@@ -70,7 +70,7 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
     @patch("app.models.Dataset.validate_dataset")
     @patch("app.download_utils.download_url")
     @patch("app.download_utils.download_encode")
-    @patch("app.models.Dataset.query.get")
+    @patch("app.tasks.db.session.get")
     def test_valid_inputs(
         self,
         mock_get_dataset,

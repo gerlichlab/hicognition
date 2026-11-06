@@ -428,7 +428,7 @@ class TestAddMetadataFields(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether fields were added correctly
-        metadata = BedFileMetadata.query.get(1)
+        metadata = db.session.get(BedFileMetadata, 1)
         actual = metadata.metadata_fields
         expected = json.dumps(["size", "start"])
         self.assertEqual(actual, expected)

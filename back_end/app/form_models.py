@@ -1,9 +1,42 @@
 """Pydantic models to validate integrity of Forms for the HiCognition API."""
 
-from typing import Any, Optional
+from typing import Annotated, Any, Optional
 
 from flask import current_app
-from pydantic import AnyHttpUrl, BaseModel, Field, constr, validator
+from pydantic import (
+    AfterValidator,
+    AnyHttpUrl,
+    BaseModel,
+    ConfigDict,
+    Field,
+    TypeAdapter,
+    ValidationInfo,
+    constr,
+    field_validator,
+)
+
+
+def _http_url(url: str) -> str:
+    """Checks that url is an HTTP(S) URL and keeps it as it was given: pydantic 2's AnyHttpUrl
+    would return a URL object, and normalise it, where pydantic 1's was the string."""
+    TypeAdapter(AnyHttpUrl).validate_python(url)
+    return url
+
+
+HttpUrl = Annotated[str, AfterValidator(_http_url)]
+
+
+def _check_filetype(filetype: str) -> str:
+    allowed_file_types = current_app.config["FILETYPES"]
+    if not filetype:
+        raise ValueError(
+            f"Filetype is required! Supported: {allowed_file_types.keys()}."
+        )
+    if filetype not in allowed_file_types:
+        raise ValueError(
+            f"Unsupported filetype! We do not support following filetype: {filetype}. Supported: {allowed_file_types.keys()}."
+        )
+    return filetype
 
 
 class UserRegistrationModel(BaseModel):
@@ -17,9 +50,7 @@ class DatasetModel(BaseModel):
     Allows for additional fields using a metadata json.
     """
 
-    class Config(BaseModel.Config):
-        allow_population_by_field_name = True
-        extra = "forbid"
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
     def __getitem__(self, item):
         if hasattr(self, item):
@@ -34,20 +65,19 @@ class DatasetPutModel(DatasetModel):
     """Is a model of the dataset modify form."""
 
     dataset_name: Optional[constr(min_length=3, max_length=81)] = Field(
-        alias="datasetName"
+        None, alias="datasetName"
     )
-    public: Optional[bool] = Field(alias="Public")
-    description: Optional[constr(max_length=81)] = Field(alias="Description")
-    cell_type: Optional[constr(max_length=64)] = Field(alias="cellType")
-    perturbation: Optional[constr(max_length=64)] = Field(alias="Perturbation")
-    sample_id: Optional[constr(max_length=128)] = Field(alias="sample_id")
+    public: Optional[bool] = Field(None, alias="Public")
+    description: Optional[constr(max_length=81)] = Field(None, alias="Description")
+    cell_type: Optional[constr(max_length=64)] = Field(None, alias="cellType")
+    perturbation: Optional[constr(max_length=64)] = Field(None, alias="Perturbation")
+    sample_id: Optional[constr(max_length=128)] = Field(None, alias="sample_id")
 
 
-# pylint: disable=no-self-argument,no-self-use
 class DatasetPostModel(DatasetModel):
     """Is a model of the dataset upload form."""
 
-    def __init__(__pydantic_self__, **data: Any) -> None:
+    def __init__(self, /, **data: Any) -> None:
         # remove empty fields
         data = {
             key: value
@@ -67,24 +97,18 @@ class DatasetPostModel(DatasetModel):
     filetype: str = Field(..., max_length=64, alias="filetype")
     sizeType: str = Field(..., alias="SizeType")
     cell_type: Optional[constr(max_length=64)] = Field("undefined", alias="cellType")
-    perturbation: Optional[constr(max_length=64)] = Field(alias="Perturbation")
-    sample_id: Optional[constr(max_length=128)] = Field(alias="sample_id")
+    perturbation: Optional[constr(max_length=64)] = Field(None, alias="Perturbation")
+    sample_id: Optional[constr(max_length=128)] = Field(None, alias="sample_id")
 
-    @validator("filetype")
-    def check_filetype(cls, filetype, values, **kwargs):
-        allowed_file_types = current_app.config["FILETYPES"]
-        if not filetype:
-            raise ValueError(
-                f"Filetype is required! Supported: {allowed_file_types.keys()}."
-            )
-        if filetype not in allowed_file_types:
-            raise ValueError(
-                f"Unsupported filetype! We do not support following filetype: {filetype}. Supported: {allowed_file_types.keys()}."
-            )
-        return filetype
+    @field_validator("filetype")
+    @classmethod
+    def check_filetype(cls, filetype):
+        return _check_filetype(filetype)
 
-    @validator("sizeType")
-    def check_sizeType(cls, sizeType, values, **kwargs):
+    @field_validator("sizeType")
+    @classmethod
+    def check_sizeType(cls, sizeType, info: ValidationInfo):
+        values = info.data
         if "filetype" not in values:
             raise ValueError("File type is missing.")
 
@@ -109,9 +133,11 @@ class FileDatasetPostModel(DatasetPostModel):
 
     filename: constr(max_length=200) = Field(...)
 
-    @validator("filename")
-    def check_filename(cls, filename, values, **kwargs):
+    @field_validator("filename")
+    @classmethod
+    def check_filename(cls, filename, info: ValidationInfo):
         """Checks if file is correct, removes gz from compressed files"""
+        values = info.data
         if "filetype" not in values:
             raise ValueError("Invalid filename! File type is missing.")
 
@@ -137,7 +163,7 @@ class FileDatasetPostModel(DatasetPostModel):
 class URLDatasetPostModel(DatasetPostModel):
     """model of dataset with an URL"""
 
-    source_url: AnyHttpUrl = Field(...)
+    source_url: HttpUrl = Field(...)
 
 
 class ENCODEDatasetPostModel(DatasetPostModel):
@@ -146,11 +172,12 @@ class ENCODEDatasetPostModel(DatasetPostModel):
     sample_id: constr(max_length=128, min_length=3) = Field(...)
     repository_name: constr(max_length=128) = Field(...)
 
-    @validator("filetype")
-    def check_filetype(cls, filetype, values, **kwargs):
+    @field_validator("filetype")
+    @classmethod
+    def check_filetype(cls, filetype):
         # temporary file_type check
         if filetype.lower() in ["cool", "cooler", "mcool"]:
             raise ValueError(
                 f"Extern import of files with filetype '{filetype}' not yet supported"
             )
-        return super().check_filetype(filetype, values, **kwargs)
+        return _check_filetype(filetype)

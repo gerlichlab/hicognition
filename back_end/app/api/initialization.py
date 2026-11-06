@@ -1,6 +1,7 @@
 """Helpers to populate database"""
 
 import json
+import threading
 from pathlib import Path
 
 import pandas as pd
@@ -83,36 +84,36 @@ def add_showcase_data():
     ind = pd.read_csv("/showcase_data/database_state/individual_interval_data.csv")
     assoc = pd.read_csv("/showcase_data/database_state/association_interval_data.csv")
     # add data
-    datasets.to_sql("dataset", db.get_engine(), if_exists="append", index=False)
-    intervals.to_sql("intervals", db.get_engine(), if_exists="append", index=False)
-    collections.to_sql("collection", db.get_engine(), if_exists="append", index=False)
+    datasets.to_sql("dataset", db.engine, if_exists="append", index=False)
+    intervals.to_sql("intervals", db.engine, if_exists="append", index=False)
+    collections.to_sql("collection", db.engine, if_exists="append", index=False)
     collection_assoc_table.to_sql(
         "dataset_collection_assoc_table",
-        db.get_engine(),
+        db.engine,
         if_exists="append",
         index=False,
     )
-    session_frame.to_sql("session", db.get_engine(), if_exists="append", index=False)
+    session_frame.to_sql("session", db.engine, if_exists="append", index=False)
     session_coll.to_sql(
         "session_collection_assoc_table",
-        db.get_engine(),
+        db.engine,
         if_exists="append",
         index=False,
     )
     session_data.to_sql(
-        "session_dataset_assoc_table", db.get_engine(), if_exists="append", index=False
+        "session_dataset_assoc_table", db.engine, if_exists="append", index=False
     )
     change_file_paths_to_showcase(avg).to_sql(
-        "average_interval_data", db.get_engine(), if_exists="append", index=False
+        "average_interval_data", db.engine, if_exists="append", index=False
     )
     change_file_paths_to_showcase(emb).to_sql(
-        "embedding_interval_data", db.get_engine(), if_exists="append", index=False
+        "embedding_interval_data", db.engine, if_exists="append", index=False
     )
     change_file_paths_to_showcase(ind).to_sql(
-        "individual_interval_data", db.get_engine(), if_exists="append", index=False
+        "individual_interval_data", db.engine, if_exists="append", index=False
     )
     change_file_paths_to_showcase(assoc).to_sql(
-        "association_interval_data", db.get_engine(), if_exists="append", index=False
+        "association_interval_data", db.engine, if_exists="append", index=False
     )
 
 
@@ -182,7 +183,22 @@ def create_test_user(name, password):
     db.session.commit()
 
 
-@api.before_app_first_request
+# Flask 2.3 removed before_first_request; each app initialises on its first request, once
+_initialization_lock = threading.Lock()
+
+
+@api.before_app_request
+def init_database_on_first_request():
+    """Populates the database before the first request an app serves."""
+    app = current_app._get_current_object()
+    if app.extensions.get("hicognition_database_initialized"):
+        return
+    with _initialization_lock:
+        if not app.extensions.get("hicognition_database_initialized"):
+            init_database()
+            app.extensions["hicognition_database_initialized"] = True
+
+
 def init_database():
     """Populate database"""
     if not current_app.config["TESTING"]:

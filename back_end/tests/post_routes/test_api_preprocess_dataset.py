@@ -145,7 +145,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # check whether pipeline has been called with right parameters
         intervals = [1, 2, 3, 4, 5]
         for interval_id in intervals:
-            interval = Intervals.query.get(interval_id)
+            interval = db.session.get(Intervals, interval_id)
             for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize][
                 "cooler"
             ]:
@@ -186,7 +186,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # check whether pipeline has been called with right parameters
         intervals = [2, 6, 7]
         for interval_id in intervals:
-            interval = Intervals.query.get(interval_id)
+            interval = db.session.get(Intervals, interval_id)
             for binsize in current_app.config["PREPROCESSING_MAP_SMALL_WINDOWSIZES"][
                 interval.windowsize
             ]["cooler"]:
@@ -296,7 +296,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # check whether pipeline has been called with right parameters
         intervals = [1, 2, 3, 4, 5]
         for interval_id in intervals:
-            interval = Intervals.query.get(interval_id)
+            interval = db.session.get(Intervals, interval_id)
             for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize][
                 "cooler"
             ]:
@@ -335,7 +335,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         # check whether pipeline has been called with right parameters
         intervals = [1, 2, 3, 4, 5]
         for interval_id in intervals:
-            interval = Intervals.query.get(interval_id)
+            interval = db.session.get(Intervals, interval_id)
             for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize][
                 "bigwig"
             ]:
@@ -416,9 +416,9 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         intervals = [1]
         datasets = [2, 6]
         for interval_id in intervals:
-            interval = Intervals.query.get(interval_id)
+            interval = db.session.get(Intervals, interval_id)
             for dataset_id in datasets:
-                dataset = Dataset.query.get(dataset_id)
+                dataset = db.session.get(Dataset, dataset_id)
                 for binsize in current_app.config["PREPROCESSING_MAP"][
                     interval.windowsize
                 ][dataset.filetype]:
@@ -432,7 +432,7 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
                         binsize=binsize,
                     )
         # check whether processing datasets where added correctly
-        region_dataset = Dataset.query.get(4)
+        region_dataset = db.session.get(Dataset, 4)
         feature_datasets = Dataset.query.filter(Dataset.id.in_([2, 6])).all()
         self.assertEqual(region_dataset.processing_features, feature_datasets)
 
@@ -465,9 +465,9 @@ class TestPreprocessDataset(LoginTestCase, TempDirTestCase):
         intervals = [1, 2, 4, 5]
         datasets = [6, 7]
         for interval_id in intervals:
-            interval = Intervals.query.get(interval_id)
+            interval = db.session.get(Intervals, interval_id)
             for dataset_id in datasets:
-                dataset = Dataset.query.get(dataset_id)
+                dataset = db.session.get(Dataset, dataset_id)
                 for binsize in current_app.config["PREPROCESSING_MAP"][
                     interval.windowsize
                 ][dataset.filetype]:

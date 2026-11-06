@@ -202,7 +202,8 @@ class TestDownloadFile(ConcurrentTempDirTest):
             download_utils.download_file("hurrthisisnoturl")
         with self.assertRaises(requests.exceptions.ConnectionError):
             download_utils.download_file("http://hurrdurthisisadomain.fakedomain")
-        with self.assertRaises(requests.exceptions.MissingSchema):
+        # requests rejects the space in the host before it looks for a scheme
+        with self.assertRaises(requests.exceptions.InvalidURL):
             download_utils.download_file("a slkd .at")
 
 
@@ -238,7 +239,8 @@ class TestDownloadENCODEMetadata(ConcurrentTempDirTest):
             download_utils.download_ENCODE_metadata(
                 self.repository, "http://hurrdurthisisadomain.fakedomain"
             )
-        with self.assertRaises(requests.exceptions.MissingSchema):
+        # requests rejects the space in the host before it looks for a scheme
+        with self.assertRaises(requests.exceptions.InvalidURL):
             download_utils.download_ENCODE_metadata(self.repository, "a slkd .at")
 
 

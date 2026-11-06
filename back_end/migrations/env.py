@@ -22,9 +22,11 @@ logger = logging.getLogger('alembic.env')
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 from flask import current_app
+# SQLAlchemy 2 hides the password when a URL becomes a string; Alembic needs it
 config.set_main_option(
     'sqlalchemy.url',
-    str(current_app.extensions['migrate'].db.engine.url).replace('%', '%%'))
+    current_app.extensions['migrate'].db.engine.url.render_as_string(
+        hide_password=False).replace('%', '%%'))
 target_metadata = current_app.extensions['migrate'].db.metadata
 
 # other values from the config, defined by the needs of env.py,

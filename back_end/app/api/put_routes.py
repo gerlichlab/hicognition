@@ -32,7 +32,7 @@ def modify_dataset(dataset_id):
         return invalid(f"Form is not valid: {str(err)}")
 
     # check whether dataset exists
-    dataset = Dataset.query.get(dataset_id)
+    dataset = db.session.get(Dataset, dataset_id)
     # check whether dataset exists
     if dataset is None:
         return not_found(f"Dataset with id '{dataset_id}' does not exist!")

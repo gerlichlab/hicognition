@@ -172,7 +172,7 @@ class TestAddCollection(LoginTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, {"collection_id": "1"})
-        collection = Collection.query.get(1)
+        collection = db.session.get(Collection, 1)
         self.assertTrue(collection is not None)
         self.assertEqual(collection.datasets, self.owned_datasets)
 

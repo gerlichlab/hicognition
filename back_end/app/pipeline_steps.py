@@ -36,7 +36,7 @@ def bed_preprocess_pipeline_step(dataset_id, windowsize):
     """
     current_app.logger.info(f"  Generating Intervals: {dataset_id} with {windowsize}")
     # get database object
-    dataset = Dataset.query.get(dataset_id)
+    dataset = db.session.get(Dataset, dataset_id)
 
     # read bed(pe) file
     bed_path = dataset.file_path
@@ -76,8 +76,8 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
     current_app.logger.info(
         f"  Doing pileup on cooler {cooler_dataset_id} with intervals {interval_id} on binsize {binsize} with {pileup_type}"
     )
-    cooler_dataset = Dataset.query.get(cooler_dataset_id)
-    intervals = Intervals.query.get(interval_id)
+    cooler_dataset = db.session.get(Dataset, cooler_dataset_id)
+    intervals = db.session.get(Intervals, interval_id)
     # get path to interval regions
     regions_path = intervals.source_dataset.file_path
     # get dimension
@@ -170,8 +170,8 @@ def stackup_pipeline_step(bigwig_dataset_id, intervals_id, binsize, region_side=
     current_app.logger.info(
         f"  Doing pileup on bigwig {bigwig_dataset_id} with intervals {intervals_id} on binsize {binsize} with region_side: {region_side}"
     )
-    bigwig_dataset = Dataset.query.get(bigwig_dataset_id)
-    intervals = Intervals.query.get(intervals_id)
+    bigwig_dataset = db.session.get(Dataset, bigwig_dataset_id)
+    intervals = db.session.get(Intervals, intervals_id)
     # get path to dataset
     file_path = intervals.source_dataset.file_path
     # get windowsize
@@ -242,7 +242,7 @@ def enrichment_pipeline_step(collection_id, intervals_id, binsize, region_side=N
         f"Doing enrichment analysis with collection {collection_id} on intervals {intervals_id} with binsize {binsize} with region_side: {region_side}"
     )
     # get query regions
-    intervals = Intervals.query.get(intervals_id)
+    intervals = db.session.get(Intervals, intervals_id)
     file_path = intervals.source_dataset.file_path
     window_size = intervals.windowsize
     regions_path = intervals.source_dataset.file_path
@@ -278,7 +278,7 @@ def embedding_1d_pipeline_step(collection_id, intervals_id, binsize, region_side
         f"Doing 1d-embedding with collection {collection_id} on intervals {intervals_id} with binsize {binsize} with region_side: {region_side}"
     )
     # get intervals to decide whether fixed size or variable size
-    intervals = Intervals.query.get(intervals_id)
+    intervals = db.session.get(Intervals, intervals_id)
     if intervals.windowsize is None:
         embedding_results = worker_funcs._do_embedding_1d_variable_size(
             collection_id, intervals_id, binsize, region_side=region_side
@@ -335,7 +335,7 @@ def embedding_1d_pipeline_step(collection_id, intervals_id, binsize, region_side
 
 def set_dataset_finished(dataset_id, intervals_id):
     """removes dataset from region associated with intervals_id if no other task is associated with it."""
-    region = Intervals.query.get(intervals_id).source_dataset
+    region = db.session.get(Intervals, intervals_id).source_dataset
     associated_tasks = (
         Task.query.join(Intervals)
         .join(Dataset)
@@ -357,7 +357,7 @@ def set_dataset_finished(dataset_id, intervals_id):
         db.session.execute(stmt)
         db.session.commit()
         # signal completion
-        dataset = Dataset.query.get(dataset_id)
+        dataset = db.session.get(Dataset, dataset_id)
         current_app.logger.debug("      Signalling reached")
         notification_handler.signal_processing_update(
             {
@@ -366,7 +366,7 @@ def set_dataset_finished(dataset_id, intervals_id):
                 "processing_type": current_app.config["PIPELINE_NAMES"][
                     dataset.filetype
                 ][0],
-                "owner": Task.query.get(get_current_job().get_id()).user_id,
+                "owner": db.session.get(Task, get_current_job().get_id()).user_id,
                 "region_id": region.id,
                 "region_name": region.dataset_name,
                 "time": datetime.now(),
@@ -382,7 +382,7 @@ def set_task_progress(progress):
     if job:
         job.meta["progress"] = progress
         job.save_meta()
-        task = Task.query.get(job.get_id())
+        task = db.session.get(Task, job.get_id())
         if progress >= 100 and (task is not None):  # CRITICAL run condition!
             task.complete = True
             db.session.commit()
@@ -391,8 +391,8 @@ def set_task_progress(progress):
 def set_dataset_failed(dataset_id, intervals_id):
     """Adds feature dataset associated with dataset_id to failed datasets of region ds associated with intervals_id"""
     current_app.logger.error("      Preprocessing failed")
-    feature = Dataset.query.get(dataset_id)
-    region = Intervals.query.get(intervals_id).source_dataset
+    feature = db.session.get(Dataset, dataset_id)
+    region = db.session.get(Intervals, intervals_id).source_dataset
     current_app.logger.error(
         f"      Region: {region} with processing features {region.processing_features} and dataset {feature}"
     )
@@ -415,7 +415,7 @@ def set_dataset_failed(dataset_id, intervals_id):
         db.session.execute(stmt)
         db.session.commit()
         # signal failure
-        dataset = Dataset.query.get(dataset_id)
+        dataset = db.session.get(Dataset, dataset_id)
         current_app.logger.debug("      Signalling reached")
         notification_handler.signal_processing_update(
             {
@@ -424,7 +424,7 @@ def set_dataset_failed(dataset_id, intervals_id):
                 "processing_type": current_app.config["PIPELINE_NAMES"][
                     dataset.filetype
                 ][0],
-                "owner": Task.query.get(get_current_job().get_id()).user_id,
+                "owner": db.session.get(Task, get_current_job().get_id()).user_id,
                 "region_id": region.id,
                 "region_name": region.dataset_name,
                 "time": datetime.now(),
@@ -440,8 +440,8 @@ def set_dataset_failed(dataset_id, intervals_id):
 def set_collection_failed(collection_id, intervals_id):
     """Adds collection with collection_id to failed collections of region ds associated with intervals"""
     current_app.logger.error("      Set for fail")
-    collection = Collection.query.get(collection_id)
-    region = Intervals.query.get(intervals_id).source_dataset
+    collection = db.session.get(Collection, collection_id)
+    region = db.session.get(Intervals, intervals_id).source_dataset
     current_app.logger.error(
         f"      Region: {region} with processing collections {region.processing_collections} and collection {collection}"
     )
@@ -470,7 +470,7 @@ def set_collection_failed(collection_id, intervals_id):
                 "processing_type": current_app.config["PIPELINE_NAMES"]["collections"][
                     collection.kind
                 ][0],
-                "owner": Task.query.get(get_current_job().get_id()).user_id,
+                "owner": db.session.get(Task, get_current_job().get_id()).user_id,
                 "region_id": region.id,
                 "region_name": region.dataset_name,
                 "time": datetime.now(),
@@ -485,7 +485,7 @@ def set_collection_failed(collection_id, intervals_id):
 
 def set_collection_finished(collection_id, intervals_id):
     """removes dataset from region associated with intervals_id if no other task is associated with it."""
-    region = Intervals.query.get(intervals_id).source_dataset
+    region = db.session.get(Intervals, intervals_id).source_dataset
     associated_tasks = (
         Task.query.join(Intervals)
         .join(Dataset)
@@ -507,13 +507,13 @@ def set_collection_finished(collection_id, intervals_id):
         db.session.execute(stmt)
         db.session.commit()
         # signal completion
-        collection = Collection.query.get(collection_id)
+        collection = db.session.get(Collection, collection_id)
         # get owner of task
         if get_current_job() is None:
             owner = 0
             job_id = "undefined"
         else:
-            owner = Task.query.get(get_current_job().get_id()).user_id
+            owner = db.session.get(Task, get_current_job().get_id()).user_id
             job_id = get_current_job().get_id()
         # send notification
         notification_handler.signal_processing_update(

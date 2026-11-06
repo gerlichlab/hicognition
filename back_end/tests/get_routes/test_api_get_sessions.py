@@ -290,7 +290,7 @@ class TestGetSessionToken(LoginTestCase):
                 "/api/sessions/1/sessionToken/", content_type="application/json"
             )
             self.assertEqual(response.status_code, 200)
-            expected = Session.query.get(1).generate_session_token()
+            expected = db.session.get(Session, 1).generate_session_token()
             self.assertEqual(expected, response.json["session_token"])
 
     def test_correct_token_returned(self):
@@ -307,7 +307,7 @@ class TestGetSessionToken(LoginTestCase):
             headers=token_headers,
         )
         # get session token
-        expected = Session.query.get(1).generate_session_token()
+        expected = db.session.get(Session, 1).generate_session_token()
         self.assertEqual(expected, response.json["session_token"])
 
 

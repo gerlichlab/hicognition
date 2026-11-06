@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, validate_arguments
+from pydantic import BaseModel, validate_call
 
 from . import sse
 
@@ -30,10 +30,10 @@ class NotificationHandler:
     """Class that manages sending notifications
     through pydantic guarded notification data model"""
 
-    @validate_arguments
+    @validate_call
     def signal_processing_update(self, data: ProcessingFinishedNotification):
         """Sends the update for the preprocessing status."""
-        sse.publish(data.dict(), type="notification")
+        sse.publish(data.model_dump(), type="notification")
 
     def send_notification_general(self, data: dict):
         """Sends a general message"""

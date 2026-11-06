@@ -49,7 +49,7 @@ class TestSetProcessingState(LoginTestCase):
         db.session.add(new_task)
         db.session.commit()
         # set processing state
-        dataset = Dataset.query.get(1)
+        dataset = db.session.get(Dataset, 1)
         dataset.set_processing_state(db)
         # get datasets
         self.assertEqual(dataset.processing_state, "processing")
@@ -60,7 +60,7 @@ class TestSetProcessingState(LoginTestCase):
         # add new datasets
         self.add_test_datasets("processing")
         # set processing state
-        dataset = Dataset.query.get(1)
+        dataset = db.session.get(Dataset, 1)
         dataset.set_processing_state(db)
         self.assertEqual(dataset.processing_state, "finished")
 
@@ -70,7 +70,7 @@ class TestSetProcessingState(LoginTestCase):
         # add new datasets
         self.add_test_datasets("uploading")
         # set processing state
-        dataset = Dataset.query.get(1)
+        dataset = db.session.get(Dataset, 1)
         dataset.set_processing_state(db)
         self.assertEqual(dataset.processing_state, "uploading")
 
@@ -84,6 +84,6 @@ class TestSetProcessingState(LoginTestCase):
         db.session.add(new_task)
         db.session.commit()
         # set processing state
-        dataset = Dataset.query.get(1)
+        dataset = db.session.get(Dataset, 1)
         dataset.set_processing_state(db)
         self.assertEqual(dataset.processing_state, "uploading")

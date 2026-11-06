@@ -37,7 +37,7 @@ class TestSetProcessingState(LoginTestCase):
         db.session.add(new_task)
         db.session.commit()
         # set processing state
-        collection = Collection.query.get(1)
+        collection = db.session.get(Collection, 1)
         collection.set_processing_state(db)
         # get datasets
         self.assertEqual(collection.processing_state, "processing")
@@ -48,7 +48,7 @@ class TestSetProcessingState(LoginTestCase):
         # add new datasets
         self.add_test_collection("processing")
         # set processing state
-        collection = Collection.query.get(1)
+        collection = db.session.get(Collection, 1)
         collection.set_processing_state(db)
         self.assertEqual(collection.processing_state, "finished")
 

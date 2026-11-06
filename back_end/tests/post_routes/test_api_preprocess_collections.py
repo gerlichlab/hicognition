@@ -145,7 +145,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         # check whether pipeline has been called with right parameters
         intervals = [1, 2, 3, 4, 5]
         for interval_id in intervals:
-            interval = Intervals.query.get(interval_id)
+            interval = db.session.get(Intervals, interval_id)
             for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize][
                 "collections"
             ]["regions"]:
@@ -186,7 +186,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         # check whether pipeline has been called with right parameters
         intervals = [2, 6, 7]
         for interval_id in intervals:
-            interval = Intervals.query.get(interval_id)
+            interval = db.session.get(Intervals, interval_id)
             for binsize in current_app.config["PREPROCESSING_MAP_SMALL_WINDOWSIZES"][
                 interval.windowsize
             ]["collections"]["regions"]:
@@ -252,7 +252,7 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
         # check whether pipeline has been called with right parameters
         intervals = [1, 2, 3, 4, 5]
         for interval_id in intervals:
-            interval = Intervals.query.get(interval_id)
+            interval = db.session.get(Intervals, interval_id)
             for binsize in current_app.config["PREPROCESSING_MAP"][interval.windowsize][
                 "collections"
             ]["1d-features"]:

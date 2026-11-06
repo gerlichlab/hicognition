@@ -15,13 +15,12 @@ import redis
 import rq
 from flask.globals import current_app
 from flask_login import UserMixin
-from itsdangerous import JSONWebSignatureSerializer
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import declared_attr
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from . import db
 from . import lib as hicognition
+from .lib import tokens
 from .lib.format_checkers import FORMAT_CHECKERS
 from .lib.utils import parse_binsizes
 
@@ -156,8 +155,9 @@ class User(db.Model, UserMixin):
 
     def generate_auth_token(self, expiration):
         """generates authentication token"""
-        serializer = Serializer(current_app.config["SECRET_KEY"], expires_in=expiration)
-        return serializer.dumps({"id": self.id}).decode("utf-8")
+        return tokens.dumps(
+            {"id": self.id}, current_app.config["SECRET_KEY"], expires_in=expiration
+        )
 
     # TODO continue working on this
     # TODO move to Task class, have started on this already but commented out
@@ -210,12 +210,11 @@ class User(db.Model, UserMixin):
     @staticmethod
     def verify_auth_token(token):
         """verify the user token"""
-        serializer = Serializer(current_app.config["SECRET_KEY"])
         try:
-            data = serializer.loads(token)
-        except Exception:
+            data = tokens.loads(token, current_app.config["SECRET_KEY"], timed=True)
+        except tokens.BadToken:
             return None
-        return User.query.get(data["id"])
+        return db.session.get(User, data["id"])
 
     def __repr__(self):
         """Format print output."""
@@ -392,7 +391,7 @@ class Dataset(db.Model):
         "Task", backref="dataset", lazy="dynamic", cascade="all, delete-orphan"
     )
     repository = db.relationship("Repository")
-    user = db.relationship("User")
+    user = db.relationship("User", overlaps="owner,datasets")
 
     def get_tasks_in_progress(self):
         """Gets the tasks in progress for the dataset."""
@@ -536,7 +535,7 @@ class Dataset(db.Model):
         Returns:
             bool: file validity
         """
-        assembly = Assembly.query.get(self.assembly)
+        assembly = db.session.get(Assembly, self.assembly)
         chromosome_names = set(
             pd.read_csv(assembly.chrom_sizes, header=None, sep="\t")[0]
         )
@@ -622,11 +621,19 @@ class Collection(db.Model):
         db.String(256)
     )  # What kind of datasets are collected (regions, 1d-features, 2d-features)
     tasks = db.relationship("Task", backref="collection", lazy="dynamic")
-    datasets = db.relationship("Dataset", secondary=dataset_collection_assoc_table)
-    processing_for_datasets = db.relationship(
-        "Dataset", secondary=collections_preprocessing_table
+    # overlaps: these relationships write the same foreign keys as their reverse ones, without
+    # being linked to them, as they did with SQLAlchemy 1.3; SQLAlchemy 2 wants that declared
+    datasets = db.relationship(
+        "Dataset", secondary=dataset_collection_assoc_table, overlaps="collections"
     )
-    failed_for_datasets = db.relationship("Dataset", secondary=collections_failed_table)
+    processing_for_datasets = db.relationship(
+        "Dataset",
+        secondary=collections_preprocessing_table,
+        overlaps="processing_collections",
+    )
+    failed_for_datasets = db.relationship(
+        "Dataset", secondary=collections_failed_table, overlaps="failed_collections"
+    )
     sessions = db.relationship("Session", secondary=session_collection_assoc_table)
 
     associationData = db.relationship(
@@ -795,17 +802,26 @@ class Intervals(db.Model):
     @classmethod
     def __declare_last__(cls):
         # cls.interval_data = db.relationship("BaseIntervalData", backref="interval",)
+        # overlaps: as for the relationships of Collection
         cls.average_interval_data = db.relationship(
-            "AverageIntervalData", cascade="all, delete-orphan"
+            "AverageIntervalData",
+            cascade="all, delete-orphan",
+            overlaps="source_intervals",
         )
         cls.individual_interval_data = db.relationship(
-            "IndividualIntervalData", cascade="all, delete-orphan"
+            "IndividualIntervalData",
+            cascade="all, delete-orphan",
+            overlaps="source_intervals",
         )
         cls.association_interval_data = db.relationship(
-            "AssociationIntervalData", cascade="all, delete-orphan"
+            "AssociationIntervalData",
+            cascade="all, delete-orphan",
+            overlaps="source_intervals",
         )
         cls.embedding_interval_data = db.relationship(
-            "EmbeddingIntervalData", cascade="all, delete-orphan"
+            "EmbeddingIntervalData",
+            cascade="all, delete-orphan",
+            overlaps="source_intervals",
         )
 
     @property
@@ -940,7 +956,9 @@ class IndividualIntervalData(BaseIntervalData):
 
     @classmethod
     def __declare_last__(cls):
-        cls.source_dataset = db.relationship("Dataset")
+        cls.source_dataset = db.relationship(
+            "Dataset", overlaps="individualIntervalData"
+        )
         cls.feature = cls.source_dataset
 
     @property
@@ -1187,25 +1205,26 @@ class Session(db.Model):
         db.DateTime, nullable=False, default=datetime.datetime.utcnow
     )
     session_type = db.Column(db.String(100))
-    datasets = db.relationship("Dataset", secondary=session_dataset_assoc_table)
+    # overlaps: as for the relationships of Collection
+    datasets = db.relationship(
+        "Dataset", secondary=session_dataset_assoc_table, overlaps="sessions"
+    )
     collections = db.relationship(
-        "Collection", secondary=session_collection_assoc_table
+        "Collection", secondary=session_collection_assoc_table, overlaps="sessions"
     )
 
     def generate_session_token(self):
         """Generates session token"""
-        serializer = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
-        return serializer.dumps({"session_id": self.id}).decode("utf-8")
+        return tokens.dumps({"session_id": self.id}, current_app.config["SECRET_KEY"])
 
     @staticmethod
     def verify_auth_token(token):
         """Verifies the session token"""
-        serializer = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
         try:
-            data = serializer.loads(token)
-        except Exception:
+            data = tokens.loads(token, current_app.config["SECRET_KEY"])
+        except tokens.BadToken:
             return None
-        return Session.query.get(data["session_id"])
+        return db.session.get(Session, data["session_id"])
 
     def to_json(self):
         """Formats json output."""

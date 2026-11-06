@@ -187,7 +187,7 @@ def get_datasets(dtype: str = ""):
 @check_confirmed
 def get_name_of_dataset(dataset_id):
     """Returns the name for a given dataset, if the user owns the requested dataset."""
-    dataset = Dataset.query.get(dataset_id)
+    dataset = db.session.get(Dataset, dataset_id)
     # check whether dataset exists
     if dataset is None:
         return not_found(f"Dataset with id '{dataset_id}' does not exist!")
@@ -204,7 +204,7 @@ def get_name_of_dataset(dataset_id):
 @check_confirmed
 def get_dataset_file(dataset_id):
     """Returns the bedFile associate with a region dataset"""
-    dataset = Dataset.query.get(dataset_id)
+    dataset = db.session.get(Dataset, dataset_id)
     # check whether dataset exists
     if dataset is None:
         return not_found(f"Dataset with id '{dataset_id}' does not exist!")
@@ -253,7 +253,7 @@ def get_processed_data_mapping_of_dataset(dataset_id):
     and which id in the target table corresponds to which interval and binsize
     combintaion.
     """
-    dataset = Dataset.query.get(dataset_id)
+    dataset = db.session.get(Dataset, dataset_id)
     # check whether dataset exists
     if dataset is None:
         return not_found(f"Dataset with id '{dataset_id}' does not exist!")
@@ -383,7 +383,7 @@ def get_intervals():
 @check_confirmed
 def get_interval_metadata(interval_id):
     """returns available metadata for given intervals."""
-    interval = Intervals.query.get(interval_id)
+    interval = db.session.get(Intervals, interval_id)
     if interval is None:
         return not_found(f"Intervals with id {interval_id} do not exist!")
     # check if associated dataset is owned
@@ -422,10 +422,10 @@ def get_pileup_data(entry_id):
     """returns pileup data for the specified pileup id if it exists and
     access is allowed."""
     # Check for existence
-    if AverageIntervalData.query.get(entry_id) is None:
+    if db.session.get(AverageIntervalData, entry_id) is None:
         return not_found("Pileup does not exist!")
     # Check whether datasets are owned
-    pileup = AverageIntervalData.query.get(entry_id)
+    pileup = db.session.get(AverageIntervalData, entry_id)
     cooler_ds = pileup.source_dataset
     bed_ds = pileup.source_intervals.source_dataset
     if cooler_ds.is_access_denied(g) or bed_ds.is_access_denied(g):
@@ -450,10 +450,10 @@ def get_association_data(entry_id):
     """returns data for the specified association data id if it exists and
     access is allowed."""
     # Check for existence
-    if AssociationIntervalData.query.get(entry_id) is None:
+    if db.session.get(AssociationIntervalData, entry_id) is None:
         return not_found("Association data does not exist!")
     # Check whether datasets are owned
-    association_data = AssociationIntervalData.query.get(entry_id)
+    association_data = db.session.get(AssociationIntervalData, entry_id)
     collection = association_data.source_collection
     bed_ds = association_data.source_intervals.source_dataset
     if collection.is_access_denied(g) or bed_ds.is_access_denied(g):
@@ -476,10 +476,10 @@ def get_embedding_data(entry_id):
     """returns data for the specified embedding data id if it exists and
     access is allowed."""
     # Check for existence
-    if EmbeddingIntervalData.query.get(entry_id) is None:
+    if db.session.get(EmbeddingIntervalData, entry_id) is None:
         return not_found("Embedding data does not exist!")
     # Check whether datasets are 1d or 2d
-    embedding_data = EmbeddingIntervalData.query.get(entry_id)
+    embedding_data = db.session.get(EmbeddingIntervalData, entry_id)
     if embedding_data.value_type == "2d-embedding":
         # Check whether datasets are owned
         feature_dataset = embedding_data.source_dataset
@@ -570,10 +570,10 @@ def get_embedding_data(entry_id):
 def get_embedding_feature(entry_id, feature_index):
     """Gets feature vector with feature_index for entry_id"""
     # Check for existence
-    if EmbeddingIntervalData.query.get(entry_id) is None:
+    if db.session.get(EmbeddingIntervalData, entry_id) is None:
         return not_found("Embedding data does not exist!")
     # Check whether datasets are owned
-    embedding_data = EmbeddingIntervalData.query.get(entry_id)
+    embedding_data = db.session.get(EmbeddingIntervalData, entry_id)
     collection = embedding_data.source_collection
     bed_ds = embedding_data.source_intervals.source_dataset
     if collection.is_access_denied(g) or bed_ds.is_access_denied(g):
@@ -601,9 +601,9 @@ def get_stackup_data(entry_id):
     """returns stackup data for the specified stackup id if it exists and
     access is allowed."""
     # Check for existence
-    if IndividualIntervalData.query.get(entry_id) is None:
+    if db.session.get(IndividualIntervalData, entry_id) is None:
         return not_found("Stackup does not exist!")
-    stackup = IndividualIntervalData.query.get(entry_id)
+    stackup = db.session.get(IndividualIntervalData, entry_id)
     bigwig_ds = stackup.source_dataset
     bed_ds = stackup.source_intervals.source_dataset
     if bigwig_ds.is_access_denied(g) or bed_ds.is_access_denied(g):
@@ -630,12 +630,12 @@ def get_stackup_metadata_small(entry_id):
     Note: stackups use the original dataset, so subsetting on interval indices
     is not required."""
     # Check for existence
-    if IndividualIntervalData.query.get(entry_id) is None:
+    if db.session.get(IndividualIntervalData, entry_id) is None:
         return not_found("Stackup does not exist!")
-    stackup = IndividualIntervalData.query.get(entry_id)
+    stackup = db.session.get(IndividualIntervalData, entry_id)
     # get downsample index from associated intervals
-    down_sample_index = Intervals.query.get(
-        stackup.intervals_id
+    down_sample_index = db.session.get(
+        Intervals, stackup.intervals_id
     ).file_path_sub_sample_index
     bigwig_ds = stackup.source_dataset
     bed_ds = stackup.source_intervals.source_dataset
@@ -689,7 +689,7 @@ def get_all_sessions():
 def get_session_data_with_id(session_id):
     """Returns session data with given id"""
     # check whether session with id exists
-    session = Session.query.get(session_id)
+    session = db.session.get(Session, session_id)
     # check whether dataset exists
     if session is None:
         return not_found(f"Session with id '{session_id}' does not exist!")
@@ -709,7 +709,7 @@ def get_session_data_with_id(session_id):
 def get_session_token(session_id):
     """Returns session token for a given session."""
     # check whether session with id exists
-    session = Session.query.get(session_id)
+    session = db.session.get(Session, session_id)
     # check whether dataset exists
     if session is None:
         return not_found(f"Session with id '{session_id}' does not exist!")

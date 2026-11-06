@@ -237,7 +237,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether modificaiton fields were modified
-        dataset = Dataset.query.get(self.owned_cooler_1.id)
+        dataset = db.session.get(Dataset, self.owned_cooler_1.id)
         for field in data.keys():
             if field == "public":
                 self.assertEqual(
@@ -273,7 +273,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether modificaiton fields were modified
-        dataset = Dataset.query.get(self.bedfile_1.id)
+        dataset = db.session.get(Dataset, self.bedfile_1.id)
         for field in data.keys():
             if field == "public":
                 self.assertEqual(
@@ -309,7 +309,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether modificaiton fields were modified
-        dataset = Dataset.query.get(self.bedfile_2.id)
+        dataset = db.session.get(Dataset, self.bedfile_2.id)
         for field in data.keys():
             if field == "public":
                 self.assertEqual(
@@ -345,7 +345,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check whether modificaiton fields were modified
-        dataset = Dataset.query.get(self.bigwig_1.id)
+        dataset = db.session.get(Dataset, self.bigwig_1.id)
         for field in data.keys():
             if field == "public":
                 self.assertEqual(

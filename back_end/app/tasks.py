@@ -60,7 +60,7 @@ def pipeline_bed(dataset_id):
     Output-folder is not needed for this since the file_path
     of Dataset entry contains it.
     """
-    dataset = Dataset.query.get(dataset_id)
+    dataset = db.session.get(Dataset, dataset_id)
     if dataset.sizeType == "Interval":
         window_sizes = ["variable"]
     else:
@@ -105,7 +105,9 @@ def pipeline_pileup(dataset_id, intervals_id, binsize):
     dataset_id (cooler_file), binsize and intervals_id"""
     try:
         chromosome_arms = pd.read_csv(
-            Assembly.query.get(Dataset.query.get(dataset_id).assembly).chrom_arms
+            db.session.get(
+                Assembly, db.session.get(Dataset, dataset_id).assembly
+            ).chrom_arms
         )
         pipeline_steps.pileup_pipeline_step(
             dataset_id, intervals_id, binsize, chromosome_arms, "ICCF"
@@ -126,7 +128,7 @@ def pipeline_stackup(dataset_id, intervals_id, binsize):
     dataset_id (bigwig file), binsize and intervals_id"""
     try:
         # decide whether to dispatch the 2d or 1d version
-        if Intervals.query.get(intervals_id).source_dataset.dimension == "1d":
+        if db.session.get(Intervals, intervals_id).source_dataset.dimension == "1d":
             pipeline_steps.stackup_pipeline_step(dataset_id, intervals_id, binsize)
             pipeline_steps.set_task_progress(100)
         else:
@@ -150,7 +152,7 @@ def pipeline_lola(collection_id, intervals_id, binsize):
     collection_id, binsize and intervals_id"""
     try:
         # decide whether to dispatch the 2d or 1d version
-        if Intervals.query.get(intervals_id).source_dataset.dimension == "1d":
+        if db.session.get(Intervals, intervals_id).source_dataset.dimension == "1d":
             pipeline_steps.enrichment_pipeline_step(
                 collection_id, intervals_id, binsize
             )
@@ -176,8 +178,8 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
     1-dimensional features per regions (e.g. bigwig tracks)"""
     # check whether stackups exist and perform stackup if not
     try:
-        for source_dataset in Collection.query.get(collection_id).datasets:
-            if Intervals.query.get(intervals_id).source_dataset.dimension == "1d":
+        for source_dataset in db.session.get(Collection, collection_id).datasets:
+            if db.session.get(Intervals, intervals_id).source_dataset.dimension == "1d":
                 stackup = IndividualIntervalData.query.filter(
                     (IndividualIntervalData.dataset_id == source_dataset.id)
                     & (IndividualIntervalData.intervals_id == intervals_id)
@@ -203,7 +205,7 @@ def pipeline_embedding_1d(collection_id, intervals_id, binsize):
                         source_dataset.id, intervals_id, binsize, region_side="right"
                     )
         # perform embedding
-        if Intervals.query.get(intervals_id).source_dataset.dimension == "1d":
+        if db.session.get(Intervals, intervals_id).source_dataset.dimension == "1d":
             pipeline_steps.embedding_1d_pipeline_step(
                 collection_id, intervals_id, binsize
             )
@@ -228,7 +230,7 @@ def download_dataset_file(dataset_id: int):
     Downloads dataset file from web and validates + 'preprocesses' it.
     """
 
-    dataset = Dataset.query.get(dataset_id)
+    dataset = db.session.get(Dataset, dataset_id)
     if not dataset:
         current_app.logger.info(f"Dataset {dataset_id} not found")
         _handle_error(dataset, f"Dataset with id {dataset_id} was not found.")

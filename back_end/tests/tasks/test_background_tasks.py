@@ -30,9 +30,21 @@ class TestEmptyJobDeletion(LoginTestCase):
         self.task_w_job2 = Task(id="wJob2")
         self.task_wo_job = Task(id="woJob1")
         self.task_wo_job2 = Task(id="woJob2")
-        # monkey patch get_rq_job
-        self.task_w_job.get_rq_job = lambda: "I am a rq-job"
-        self.task_w_job2.get_rq_job = lambda: "I am a rq job"
+        # The cleanup runs in an app context of its own, whose session loads the tasks anew,
+        # so get_rq_job is patched on the class, with the job each task id has
+        jobs = {
+            "wJob1": "I am a rq-job",
+            "wJob2": "I am a rq job",
+            "woJob1": None,
+            "woJob2": None,
+        }
+        patcher = patch(
+            "app.models.Task.get_rq_job",
+            autospec=True,
+            side_effect=lambda task: jobs[task.id],
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     @patch("app.background_tasks.current_app.logger")
     def test_deletes_nothing_if_jobs_running(self, mock_log):
@@ -66,8 +78,8 @@ class TestEmptyJobDeletion(LoginTestCase):
         add_app_context(self.app)(cleanup_empty_tasks)()
         # check whether Tasks are still there
         self.assertEqual(2, len(Task.query.all()))
-        self.assertEqual("wJob1", Task.query.get("wJob1").id)
-        self.assertEqual("wJob2", Task.query.get("wJob2").id)
+        self.assertEqual("wJob1", db.session.get(Task, "wJob1").id)
+        self.assertEqual("wJob2", db.session.get(Task, "wJob2").id)
 
 
 class TestCleanupFailedTasks(LoginTestCase):
@@ -99,12 +111,21 @@ class TestCleanupFailedTasks(LoginTestCase):
         completion_sayer.get_status.return_value = "complete"
         failed_sayer = MagicMock()
         failed_sayer.get_status.return_value = "failed"
-        # monkey patch
-        self.detached_task.get_rq_job = lambda: None
-        self.completed_task.get_rq_job = lambda: completion_sayer
-        self.failed_task_no_associations.get_rq_job = lambda: failed_sayer
-        self.failed_task_dataset.get_rq_job = lambda: failed_sayer
-        self.failed_task_collection.get_rq_job = lambda: failed_sayer
+        # The cleanup runs in an app context of its own, whose session loads the tasks anew,
+        # so get_rq_job is patched on the class, with the job each task id has
+        jobs = {
+            "wJob1": None,
+            "wJob2": completion_sayer,
+            "wJob3": failed_sayer,
+            "wJob4": failed_sayer,
+        }
+        patcher = patch(
+            "app.models.Task.get_rq_job",
+            autospec=True,
+            side_effect=lambda task: jobs[task.id],
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     def test_good_tasks_not_touched(self):
         """Tests whether tasks that are not failed are not deleted"""
@@ -144,8 +165,8 @@ class TestCleanupFailedTasks(LoginTestCase):
         # check whether task has been removed
         self.assertEqual(0, len(Task.query.all()))
         # check whether dataset has been set failed
-        bedfile = Dataset.query.get(1)
-        coolerfile = Dataset.query.get(2)
+        bedfile = db.session.get(Dataset, 1)
+        coolerfile = db.session.get(Dataset, 2)
         self.assertEqual(bedfile.failed_features[0], coolerfile)
 
     @patch("app.pipeline_steps.current_app.logger.error")
@@ -161,8 +182,8 @@ class TestCleanupFailedTasks(LoginTestCase):
         # check whether task has been removed
         self.assertEqual(0, len(Task.query.all()))
         # check whether dataset has been set failed
-        bedfile = Dataset.query.get(1)
-        collection = Collection.query.get(1)
+        bedfile = db.session.get(Dataset, 1)
+        collection = db.session.get(Collection, 1)
         self.assertEqual(bedfile.failed_collections[0], collection)
 
 

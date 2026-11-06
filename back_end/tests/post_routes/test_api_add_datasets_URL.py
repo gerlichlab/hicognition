@@ -102,7 +102,7 @@ class TestAddDataSetsURL(LoginTestCase, TempDirTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue("success" in response.get_json()["message"])
         self.assertEqual(len(Dataset.query.all()), 1)
-        self.assertEqual(Dataset.query.get(1).upload_state, "new")
+        self.assertEqual(db.session.get(Dataset, 1).upload_state, "new")
         self.assertTrue(mock_launch.called)
 
 

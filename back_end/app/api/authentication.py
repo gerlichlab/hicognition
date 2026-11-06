@@ -52,10 +52,10 @@ def get_token():
     """Returns a token for a logged-in user."""
     if g.current_user.is_anonymous or g.token_used:
         return errors.forbidden("Invalid credentials")
-    if User.query.get(g.current_user.id) is None:
+    if db.session.get(User, g.current_user.id) is None:
         user_name = "Anonymous"
     else:
-        user_name = User.query.get(g.current_user.id).username
+        user_name = db.session.get(User, g.current_user.id).username
     return jsonify(
         {
             "token": g.current_user.generate_auth_token(expiration=3600 * 24),

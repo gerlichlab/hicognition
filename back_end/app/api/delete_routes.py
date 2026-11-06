@@ -17,7 +17,7 @@ from .errors import forbidden, invalid, not_found
 def delete_dataset_handler(dataset_id):
     """Deletes"""
     # check if data set exists
-    dataset = Dataset.query.get(dataset_id)
+    dataset = db.session.get(Dataset, dataset_id)
     if dataset is None:
         return not_found(f"Dataset id {dataset_id} does not exist!")
     # check if data set can be accessed and deleted
@@ -58,7 +58,7 @@ def delete_dataset_handler(dataset_id):
 def delete_session_handler(session_id):
     """Deletes Session."""
     # check if data set exists
-    session = Session.query.get(session_id)
+    session = db.session.get(Session, session_id)
     if session is None:
         return not_found(f"Session with id {session_id} does not exist!")
     # check if data set can be accessed
@@ -78,7 +78,7 @@ def delete_session_handler(session_id):
 def delete_collection_handler(collection_id):
     """Deletes Collection."""
     # check if data set exists
-    collection = Collection.query.get(collection_id)
+    collection = db.session.get(Collection, collection_id)
     if collection is None:
         return not_found(f"Collection with id {collection_id} does not exist!")
     # check if data set can be accessed
@@ -99,7 +99,7 @@ def delete_collection_handler(collection_id):
 def delete_assembly_handler(assembly_id):
     """Deletes assemblies. Assemblies can only be deleted if no datasets are associated.."""
     # check if assembly exists
-    assembly = Assembly.query.get(assembly_id)
+    assembly = db.session.get(Assembly, assembly_id)
     if assembly is None:
         return not_found(f"Assembly with id {assembly_id} does not exist!")
     # check if data set can be accessed

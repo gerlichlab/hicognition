@@ -184,14 +184,16 @@ def preprocess_dataset():
     # assign preprocessing map
     preprocessing_map = current_app.config[preprocessing_map_type]
     # check whether datasets exist
-    feature_datasets = [Dataset.query.get(feature_id) for feature_id in dataset_ids]
+    feature_datasets = [
+        db.session.get(Dataset, feature_id) for feature_id in dataset_ids
+    ]
     if any(entry is None for entry in feature_datasets):
         return not_found("Dataset does not exist!")
     if any(entry.is_access_denied(g) for entry in feature_datasets):
         return forbidden("Dataset is not owned by logged in user!")
     # check whether region datasets exists
     region_datasets = [
-        Dataset.query.get(region_id) for region_id in region_datasets_ids
+        db.session.get(Dataset, region_id) for region_id in region_datasets_ids
     ]
     if any(entry is None for entry in region_datasets):
         return not_found("Region dataset does not exist!")
@@ -218,7 +220,7 @@ def preprocess_dataset():
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
     for interval_id in interval_ids:
-        windowsize = Intervals.query.get(interval_id).windowsize
+        windowsize = db.session.get(Intervals, interval_id).windowsize
         if windowsize is None:
             windowsize = "variable"
         # check whether windowsize is in preprocessing map
@@ -236,11 +238,11 @@ def preprocess_dataset():
                     binsize=binsize,
                 )
                 if (
-                    Intervals.query.get(interval_id).source_dataset
+                    db.session.get(Intervals, interval_id).source_dataset
                     not in dataset.processing_regions
                 ):
                     dataset.processing_regions.append(
-                        Intervals.query.get(interval_id).source_dataset
+                        db.session.get(Intervals, interval_id).source_dataset
                     )
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
@@ -278,7 +280,7 @@ def preprocess_collections():
     preprocessing_map = current_app.config[preprocessing_map_type]
     # check whether collection exists
     collections = [
-        Collection.query.get(collection_id) for collection_id in collection_ids
+        db.session.get(Collection, collection_id) for collection_id in collection_ids
     ]
     if any(entry is None for entry in collections):
         return not_found("Collection does not exist!")
@@ -286,7 +288,7 @@ def preprocess_collections():
         return forbidden("Collection is not owned by logged in user!")
     # check whether region datasets exists
     region_datasets = [
-        Dataset.query.get(region_id) for region_id in region_datasets_ids
+        db.session.get(Dataset, region_id) for region_id in region_datasets_ids
     ]
     if any(entry is None for entry in region_datasets):
         return not_found("Region dataset does not exist!")
@@ -314,7 +316,7 @@ def preprocess_collections():
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
     for interval_id in interval_ids:
-        windowsize = Intervals.query.get(interval_id).windowsize
+        windowsize = db.session.get(Intervals, interval_id).windowsize
         if windowsize is None:
             windowsize = "variable"
         # check whether windowsize is in preprocessing map
@@ -336,11 +338,11 @@ def preprocess_collections():
                     binsize=binsize,
                 )
                 if (
-                    Intervals.query.get(interval_id).source_dataset
+                    db.session.get(Intervals, interval_id).source_dataset
                     not in collection.processing_for_datasets
                 ):
                     collection.processing_for_datasets.append(
-                        Intervals.query.get(interval_id).source_dataset
+                        db.session.get(Intervals, interval_id).source_dataset
                     )
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
@@ -382,12 +384,12 @@ def add_bedfile_metadata():
     file_object = request.files["file"]
     dataset_id = json.loads(data["datasetID"])
     # check whether dataset exists and user is allowed to access
-    if Dataset.query.get(dataset_id) is None:
+    if db.session.get(Dataset, dataset_id) is None:
         return not_found("Dataset does not exist!")
-    if Dataset.query.get(dataset_id).is_access_denied(g):
+    if db.session.get(Dataset, dataset_id).is_access_denied(g):
         return forbidden("Dataset is not owned by logged in user!")
     # check whether row-number is correct
-    dataset = Dataset.query.get(dataset_id)
+    dataset = db.session.get(Dataset, dataset_id)
     dataset_file = pd.read_csv(
         dataset.file_path, sep="\t", header=None
     )  # during upload process, the header of bedfiles is removed
@@ -439,12 +441,14 @@ def add_bedfile_metadata_fields(metadata_id):
     data = request.form
     field_map = json.loads(data["fields"])
     # check whether dataset exists and user is allowed to access
-    if BedFileMetadata.query.get(metadata_id) is None:
+    if db.session.get(BedFileMetadata, metadata_id) is None:
         return not_found("Metadataset does not exist!")
-    if BedFileMetadata.query.get(metadata_id).associated_dataset.is_access_denied(g):
+    if db.session.get(BedFileMetadata, metadata_id).associated_dataset.is_access_denied(
+        g
+    ):
         return forbidden("Associated dataset is not owned by logged in user!")
     # check whether field_names are correct
-    metadata = BedFileMetadata.query.get(metadata_id)
+    metadata = db.session.get(BedFileMetadata, metadata_id)
     metadata_file = pd.read_csv(metadata.file_path)
     if not all(key in metadata_file.columns for key in field_map):
         return invalid("Field names not understood!")
@@ -487,7 +491,7 @@ def create_session():
     used_datasets = json.loads(data["used_datasets"])
     used_collections = json.loads(data["used_collections"])
     # check whether datasets exist
-    datasets = [Dataset.query.get(dataset_id) for dataset_id in used_datasets]
+    datasets = [db.session.get(Dataset, dataset_id) for dataset_id in used_datasets]
     if any(dataset is None for dataset in datasets):
         return invalid("Some of the datasets in used_datasets do not exist!")
     # check whether dataset is owned or session token is valid
@@ -497,7 +501,7 @@ def create_session():
         )
     # check whether collections exist
     collections = [
-        Collection.query.get(collection_id) for collection_id in used_collections
+        db.session.get(Collection, collection_id) for collection_id in used_collections
     ]
     if any(collection is None for collection in collections):
         return invalid("Some of the collections in used_collections do not exist!")
@@ -544,7 +548,7 @@ def create_collection():
     used_datasets = json.loads(data["used_datasets"])
     kind = data["kind"]
     # check whether datasets exist
-    datasets = [Dataset.query.get(dataset_id) for dataset_id in used_datasets]
+    datasets = [db.session.get(Dataset, dataset_id) for dataset_id in used_datasets]
     if any(dataset is None for dataset in datasets):
         return invalid("Some of the datasets in used_datasets do not exist!")
     # check whether dataset is owned or session token is valid
@@ -582,7 +586,7 @@ def create_assembly():
         if sorted(request.form.keys()) != ["name", "organism"]:
             return True
         # check whether organism exists
-        if Organism.query.get(int(request.form["organism"])) is None:
+        if db.session.get(Organism, int(request.form["organism"])) is None:
             return True
         return False
 
@@ -644,10 +648,10 @@ def create_region_from_cluster_id(entry_id):
         return False
 
     # Check for existence
-    if EmbeddingIntervalData.query.get(entry_id) is None:
+    if db.session.get(EmbeddingIntervalData, entry_id) is None:
         return not_found("Embedding data does not exist!")
     # Check whether datasets are owned
-    embedding_data = EmbeddingIntervalData.query.get(entry_id)
+    embedding_data = db.session.get(EmbeddingIntervalData, entry_id)
     # Check whehter dataset/collections are owned
     if embedding_data.value_type == "1d-embedding":
         features = embedding_data.source_collection

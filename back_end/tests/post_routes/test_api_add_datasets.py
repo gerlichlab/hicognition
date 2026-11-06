@@ -152,9 +152,10 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # test whether uploaded file exists
         self.assertTrue(os.path.exists(dataset.file_path))
         # test whether uploaded file is equal to expected file
-        with open("tests/testfiles/test.bw", "rb") as expected_file, open(
-            dataset.file_path, "rb"
-        ) as actual_file:
+        with (
+            open("tests/testfiles/test.bw", "rb") as expected_file,
+            open(dataset.file_path, "rb") as actual_file,
+        ):
             self.assertEqual(expected_file.read(), actual_file.read())
 
     @patch("app.models.User.launch_task")
@@ -211,9 +212,10 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # test whether uploaded file exists
         self.assertTrue(os.path.exists(dataset.file_path))
         # test whether uploaded file is equal to expected file
-        with open("tests/testfiles/test.bw", "rb") as expected_file, open(
-            dataset.file_path, "rb"
-        ) as actual_file:
+        with (
+            open("tests/testfiles/test.bw", "rb") as expected_file,
+            open(dataset.file_path, "rb") as actual_file,
+        ):
             self.assertEqual(expected_file.read(), actual_file.read())
 
     @patch("app.models.User.launch_task")
@@ -322,9 +324,10 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # test whether uploaded file exists
         self.assertTrue(os.path.exists(dataset.file_path))
         # test whether uploaded file is equal to expected file
-        with open(dataset.file_path, "rb") as actual_file, open(
-            "tests/testfiles/tad_boundaries.bed", "rb"
-        ) as expected_file:
+        with (
+            open(dataset.file_path, "rb") as actual_file,
+            open("tests/testfiles/tad_boundaries.bed", "rb") as expected_file,
+        ):
             self.assertEqual(expected_file.read(), actual_file.read())
 
     @patch("app.models.User.launch_task")
@@ -385,9 +388,10 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # test whether uploaded file exists
         self.assertTrue(os.path.exists(dataset.file_path))
         # test whether uploaded file is equal to expected file
-        with open(dataset.file_path, "rb") as actual_file, open(
-            "tests/testfiles/test_small.bedpe", "rb"
-        ) as expected_file:
+        with (
+            open(dataset.file_path, "rb") as actual_file,
+            open("tests/testfiles/test_small.bedpe", "rb") as expected_file,
+        ):
             self.assertEqual(expected_file.read(), actual_file.read())
 
     @patch("app.models.User.launch_task")
@@ -654,7 +658,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check if public flag is set correctly
-        dataset = Dataset.query.get(1)
+        dataset = db.session.get(Dataset, 1)
         self.assertTrue(dataset.public)
 
     @patch("app.models.Dataset.validate_dataset")
@@ -685,7 +689,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         )
         self.assertEqual(response.status_code, 200)
         # check if public flag is set correctly
-        dataset = Dataset.query.get(1)
+        dataset = db.session.get(Dataset, 1)
         self.assertFalse(dataset.public)
 
 
