@@ -311,7 +311,7 @@ def _handle_error(dataset: Dataset, msg: str):
 def _send_notification(dataset: Dataset, msg: str, status: str = "success"):
     notification_handler.send_notification_general(
         {
-            "id": -1 if get_current_job() is None else get_current_job().get_id(),
+            "id": -1 if get_current_job() is None else get_current_job().id,
             "dataset_name": dataset.dataset_name,
             "time": datetime.now(),
             "notification_type": "upload_notification",

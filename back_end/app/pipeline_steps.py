@@ -366,12 +366,12 @@ def set_dataset_finished(dataset_id, intervals_id):
                 "processing_type": current_app.config["PIPELINE_NAMES"][
                     dataset.filetype
                 ][0],
-                "owner": db.session.get(Task, get_current_job().get_id()).user_id,
+                "owner": db.session.get(Task, get_current_job().id).user_id,
                 "region_id": region.id,
                 "region_name": region.dataset_name,
                 "time": datetime.now(),
                 "notification_type": "processing_finished",
-                "id": get_current_job().get_id(),
+                "id": get_current_job().id,
             }
         )
 
@@ -382,7 +382,7 @@ def set_task_progress(progress):
     if job:
         job.meta["progress"] = progress
         job.save_meta()
-        task = db.session.get(Task, job.get_id())
+        task = db.session.get(Task, job.id)
         if progress >= 100 and (task is not None):  # CRITICAL run condition!
             task.complete = True
             db.session.commit()
@@ -424,12 +424,12 @@ def set_dataset_failed(dataset_id, intervals_id):
                 "processing_type": current_app.config["PIPELINE_NAMES"][
                     dataset.filetype
                 ][0],
-                "owner": db.session.get(Task, get_current_job().get_id()).user_id,
+                "owner": db.session.get(Task, get_current_job().id).user_id,
                 "region_id": region.id,
                 "region_name": region.dataset_name,
                 "time": datetime.now(),
                 "notification_type": "processing_failed",
-                "id": get_current_job().get_id(),
+                "id": get_current_job().id,
             }
         )
     except BaseException as err:
@@ -470,12 +470,12 @@ def set_collection_failed(collection_id, intervals_id):
                 "processing_type": current_app.config["PIPELINE_NAMES"]["collections"][
                     collection.kind
                 ][0],
-                "owner": db.session.get(Task, get_current_job().get_id()).user_id,
+                "owner": db.session.get(Task, get_current_job().id).user_id,
                 "region_id": region.id,
                 "region_name": region.dataset_name,
                 "time": datetime.now(),
                 "notification_type": "processing_failed",
-                "id": get_current_job().get_id(),
+                "id": get_current_job().id,
             }
         )
     except BaseException as err:
@@ -513,8 +513,8 @@ def set_collection_finished(collection_id, intervals_id):
             owner = 0
             job_id = "undefined"
         else:
-            owner = db.session.get(Task, get_current_job().get_id()).user_id
-            job_id = get_current_job().get_id()
+            owner = db.session.get(Task, get_current_job().id).user_id
+            job_id = get_current_job().id
         # send notification
         notification_handler.signal_processing_update(
             {

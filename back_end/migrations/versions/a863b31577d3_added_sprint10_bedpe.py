@@ -36,7 +36,7 @@ def upgrade():
     )
     op.drop_table('user__data_repository__credentials')
     # change foreign key constraint
-    op.drop_constraint('dataset_ibfk_3', 'dataset', type="foreignkey")
+    op.drop_constraint('dataset_ibfk_3', 'dataset', type_="foreignkey")
     op.drop_table('data_repository')
     op.add_column('association_interval_data', sa.Column('job_status', sa.String(length=64), nullable=True))
     op.drop_constraint('association_interval_data_ibfk_1', 'association_interval_data', type_='foreignkey')

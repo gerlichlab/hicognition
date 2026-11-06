@@ -147,7 +147,9 @@ class User(db.Model, UserMixin):
 
     def set_password(self, password):
         """set password helper."""
-        self.password_hash = generate_password_hash(password)
+        # PBKDF2, as before Werkzeug 3: its default, scrypt, writes hashes longer than the
+        # column's 128 characters
+        self.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
 
     def check_password(self, password):
         """check password helper."""
@@ -188,7 +190,7 @@ class User(db.Model, UserMixin):
         )
 
         task = Task(
-            id=rq_job.get_id(),
+            id=rq_job.id,
             name=func,
             description=description,
             user_id=self.id,
