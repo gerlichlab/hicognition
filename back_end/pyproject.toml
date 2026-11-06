@@ -1,10 +1,79 @@
-# The backend's tool configuration. The project and its locked dependencies join it when the
-# backend image is rebuilt (#36).
+[tool.poetry]
+name = "hicognition"
+version = "0.8.0"
+description = "The backend of HiCognition: the API, and the workers that preprocess genomic data"
+authors = ["Michael Mitter", "Christoph C. H. Langer", "Ulrich Aschl", "Erich Birngruber"]
+license = "MIT"
+repository = "https://github.com/gerlichlab/hicognition"
+# The backend runs from its directory (/code in the image), so it's not installed as a package.
+package-mode = false
+
+[tool.poetry.dependencies]
+# One release behind the newest, 3.14: pybbi 0.4.2 has no wheels for it yet.
+python = ">= 3.13, < 3.14"
+# preprocessing
+bioframe = "^0.8.0"
+cooler = "^0.12.1"
+# its newest release, from July 2024, ships only source code; the image builds it
+cooltools = "^0.7.1"
+h5py = "^3.16.0"
+multiprocess = "^0.70.19"
+numba = "^0.68.1"
+numpy = "^2.5.4"
+opencv-python-headless = "^5.0.0"
+# Below 3: cooltools 0.7.1, the newest release, indexes Series by position
+# (region1_coords[0] in its snippers), which pandas 3 refuses.
+pandas = "^2.3.3"
+pybbi = "^0.4.2"
+scikit-image = "^0.26.0"
+scikit-learn = "^1.9.1"
+scipy = "^1.18.1"
+umap-learn = "^0.5.12"
+# the API, the queues and the database
+alembic = "^1.20.1"
+apscheduler = "^3.11.3"
+click = "^8.5.1"
+flask = "^3.1.3"
+flask-httpauth = "^4.8.1"
+flask-login = "^0.6.3"
+flask-mail = "^0.10.0"
+flask-migrate = "^4.1.0"
+flask-sqlalchemy = "^3.1.1"
+# no release since 2021; it publishes the notifications through Redis
+flask-sse = "^1.0.0"
+gevent = "^26.9.0"
+gunicorn = "^26.2.0"
+itsdangerous = "^2.2.0"
+pydantic = "^2.14.3"
+# rsa: MySQL 8 authenticates with caching_sha2_password
+pymysql = { version = "^1.2.3", extras = ["rsa"] }
+redis = "^8.1.0"
+requests = "^2.34.2"
+rq = "^3.0.0"
+sqlalchemy = "^2.1.8"
+werkzeug = "^3.1.9"
+
+# installed in the image, which also runs the tests
+[tool.poetry.group.test.dependencies]
+pytest = "^9.2.0"
+
+# not in the image
+[tool.poetry.group.lint]
+optional = true
+
+[tool.poetry.group.lint.dependencies]
+pre-commit = "^4.7.0"
+# the version .pre-commit-config.yaml and CI pin, so that they format alike
+ruff = "==0.17.3"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 # 88 characters, ruff's default, as in looptrace and the repositories behind it. The target is
-# the Python of the backend image, until #36 moves it.
-target-version = "py38"
+# the Python the backend image runs.
+target-version = "py313"
 # written by Alembic
 extend-exclude = ["migrations"]
 

@@ -1,30 +1,34 @@
-FROM continuumio/miniconda3:22.11.1
-ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG C.UTF-8  
-ENV LC_ALL C.UTF-8
+# One release behind the newest Python: pybbi has no wheels for 3.14 yet (pyproject.toml).
+FROM python:3.13-slim-trixie
 
-# Update and create base image
-RUN apt-get --allow-releaseinfo-change update &&\
-    apt-get update -y &&\
-    apt-get install -y gcc g++ make libz-dev &&\
-    apt-get clean
+# The dependencies go into /opt/venv, which comes first on PATH: /code, where docker-compose
+# mounts the checkout, would hide them.
+ENV LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_ROOT_USER_ACTION=ignore \
+    POETRY_VIRTUALENVS_CREATE=false \
+    VIRTUAL_ENV=/opt/venv \
+    PATH=/opt/venv/bin:$PATH
 
-# Add yml file for conda environment
-ADD conda_env.yml /temp/install/
+# cooltools ships only source code, which the dependencies' installation compiles
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# install packages
-RUN conda install mamba -n base -c conda-forge &&\
-    mamba env update -n base --f /temp/install/conda_env.yml &&\
-    mamba list > software_versions_conda.txt
+# The Poetry that writes poetry.lock, in a venv of its own: poetry sync removes whatever
+# the lock doesn't list from the environment it installs into.
+RUN python -m venv /opt/poetry && /opt/poetry/bin/pip install poetry==2.5.1 \
+    && python -m venv /opt/venv
 
-# clean up install
+WORKDIR /code
+COPY pyproject.toml poetry.lock ./
+# the runtime dependencies and pytest, as locked; ruff and pre-commit stay out
+RUN /opt/poetry/bin/poetry sync --no-root --with test
 
-RUN rm -rf /temp/install
-
-# add code directory so production code is packaged
-
+# the code, so that the image runs without the checkout mounted
 COPY . /code
-
-WORKDIR /home
 
 CMD ["/bin/bash"]
