@@ -415,7 +415,10 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
             {0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000]}
         )
         mock_read_csv.return_value = test_df_interval
-        mock_cooler.return_value = "mock_cooler"
+        # a balanced cooler: the pileup checks for the weights before it computes the expected
+        balanced_cooler = MagicMock()
+        balanced_cooler.bins.return_value.columns = ["chrom", "start", "end", "weight"]
+        mock_cooler.return_value = balanced_cooler
         returned_regions = MagicMock()
         mock_assign_regions.return_value = returned_regions
         mock_get_expected.return_value = pd.DataFrame()
