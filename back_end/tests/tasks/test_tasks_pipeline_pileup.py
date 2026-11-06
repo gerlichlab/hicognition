@@ -1,9 +1,11 @@
 """Module with the tests for the pileup creation realted tasks."""
 
+import io
 import os
 import unittest
 from unittest.mock import MagicMock, PropertyMock, patch
 
+import cooler
 import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal
@@ -12,6 +14,7 @@ from pandas.testing import assert_frame_equal
 # import sys
 # sys.path.append("./")
 from app import db
+from app.lib.hic_tools import get_expected
 from app.lib.utils import get_optimal_binsize
 from app.models import Assembly, Intervals, ObsExp, Task
 from app.pipeline_steps import pileup_pipeline_step
@@ -594,7 +597,12 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset.dataset_id, self.cooler.id)
         self.assertEqual(dataset.binsize, 5000000)
         # load datset
-        expected = pd.read_csv(os.path.join("./tests/testfiles", "expected.csv"))
+        # The cache holds what get_expected computes, written as CSV. Its values are the
+        # reference results' business (tests/reference): this test checks the caching.
+        clr = cooler.Cooler(self.cooler.file_path + "::/resolutions/5000000")
+        expected = pd.read_csv(
+            io.StringIO(get_expected(clr, arms, proc=1).to_csv(index=False))
+        )
         calculated = pd.read_csv(dataset.filepath)
         assert_frame_equal(expected, calculated)
 
@@ -846,7 +854,12 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset.dataset_id, self.cooler.id)
         self.assertEqual(dataset.binsize, 5000000)
         # load dataset
-        expected = pd.read_csv(os.path.join("./tests/testfiles", "expected.csv"))
+        # The cache holds what get_expected computes, written as CSV. Its values are the
+        # reference results' business (tests/reference): this test checks the caching.
+        clr = cooler.Cooler(self.cooler.file_path + "::/resolutions/5000000")
+        expected = pd.read_csv(
+            io.StringIO(get_expected(clr, arms, proc=1).to_csv(index=False))
+        )
         calculated = pd.read_csv(dataset.filepath)
         assert_frame_equal(expected, calculated)
 

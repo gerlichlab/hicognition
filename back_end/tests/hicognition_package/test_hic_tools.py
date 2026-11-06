@@ -43,7 +43,10 @@ class TestGetExpected(unittest.TestCase):
         check.loc[:, "region"] = check.apply(
             lambda x: f"{x['chrom']}:{x['start']}-{x['end']}", axis=1
         )
-        check_final = check.drop(columns=["chrom", "start", "end"])[result.columns]
+        # cooltools 0.7's layout (region1, region2, dist), as for tables stored with 0.4
+        check_final = HT.expected_table(check.drop(columns=["chrom", "start", "end"]))[
+            result.columns
+        ]
         assert_frame_equal(result, check_final)
 
     def test_synthetic_data_mult_chroms(self):
@@ -64,7 +67,10 @@ class TestGetExpected(unittest.TestCase):
         check.loc[:, "region"] = check.apply(
             lambda x: f"{x['chrom']}:{x['start']}-{x['end']}", axis=1
         )
-        check_final = check.drop(columns=["chrom", "start", "end"])[result.columns]
+        # cooltools 0.7's layout (region1, region2, dist), as for tables stored with 0.4
+        check_final = HT.expected_table(check.drop(columns=["chrom", "start", "end"]))[
+            result.columns
+        ]
         assert_frame_equal(result, check_final)
 
 
@@ -132,7 +138,7 @@ class TestAssignRegions(unittest.TestCase):
         )
         expected = pd.read_csv(
             "tests/testfiles/ngs/regions_close_to_support_boundary_result.tsv",
-            delim_whitespace=True,
+            sep=r"\s+",
         )
         assert_series_equal(result["region"], expected["region"])
 

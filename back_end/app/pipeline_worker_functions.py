@@ -109,16 +109,15 @@ def _do_pileup_fixed_size(
             # binsize exists
             expected = pd.read_csv(obs_exp_entry.filepath)
         else:
-            try:
-                expected = HT.get_expected(
-                    cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
-                )
-            # Catches KeyError: 'Balancing weight {weight_name} not found!'
-            except KeyError:
+            # without balancing weights at this resolution, there is no expected
+            if "weight" not in cooler_file.bins().columns:
                 output_shape = (2 * window_size) // binsize
                 if collapse:
                     return np.full((output_shape, output_shape), np.nan)
                 return np.full((output_shape, output_shape, len(regions)), np.nan)
+            expected = HT.get_expected(
+                cooler_file, arms, proc=current_app.config["OBS_EXP_PROCESSES"]
+            )
             file_path = os.path.join(
                 current_app.config["UPLOAD_DIR"], uuid.uuid4().hex + ".csv"
             )
@@ -255,7 +254,7 @@ def _do_pileup_variable_size(
             resized_arrays.append(empty)
     stacked = np.stack(resized_arrays, axis=2)
     # fill in bad indices
-    assigned_regions = HT._assign_supports(pileup_regions, bf.parse_regions(arms))
+    assigned_regions = HT._assign_supports(pileup_regions, HT.regions_view(arms))
     good_indices = ~assigned_regions.region.isnull().values
     pileup_shape = stacked[..., 0].shape[0]
     output = np.empty((pileup_shape, pileup_shape, len(regions)))
@@ -418,12 +417,12 @@ def _do_enrichment_calculations_fixed_size(
     # make queries
     log.info("      Constructing queries...")
     # get chromosome sizes -> this will be the same for all datasets of the collection
-    assembly = Assembly.query.get(
-        Collection.query.get(collection_id).datasets[0].assembly
+    assembly = db.session.get(
+        Assembly, db.session.get(Collection, collection_id).datasets[0].assembly
     )
     chromsizes = io_helpers.load_chromsizes(assembly.chrom_sizes)
     chromsizes_regions = pd.DataFrame(
-        {"chrom": chromsizes.index, "start": 0, "end": chromsizes}
+        {"chrom": chromsizes.index, "start": 0, "end": chromsizes.to_numpy()}
     )
     # filter based on whether the original regions are in chromosomes
     filtered = (
@@ -442,7 +441,7 @@ def _do_enrichment_calculations_fixed_size(
     ]
     # get target datasets
     log.info("      Calculate target list...")
-    collection = Collection.query.get(collection_id)
+    collection = db.session.get(Collection, collection_id)
     target_list = [
         pd.read_csv(target.file_path, sep="\t", header=None)
         .iloc[:, [0, 1, 2]]
@@ -487,12 +486,12 @@ def _do_enrichment_calculations_variable_size(
     # make queries
     log.info("      Constructing queries...")
     # get chromosome sizes -> this will be the same for all datasets of the collection
-    assembly = Assembly.query.get(
-        Collection.query.get(collection_id).datasets[0].assembly
+    assembly = db.session.get(
+        Assembly, db.session.get(Collection, collection_id).datasets[0].assembly
     )
     chromsizes = io_helpers.load_chromsizes(assembly.chrom_sizes)
     chromsizes_regions = pd.DataFrame(
-        {"chrom": chromsizes.index, "start": 0, "end": chromsizes}
+        {"chrom": chromsizes.index, "start": 0, "end": chromsizes.to_numpy()}
     )
     # filter based on whether the original regions are in chromosomes
     filtered = (
@@ -513,7 +512,7 @@ def _do_enrichment_calculations_variable_size(
     ]
     # get target datasets
     log.info("      Calculate target list...")
-    collection = Collection.query.get(collection_id)
+    collection = db.session.get(Collection, collection_id)
     target_list = [
         pd.read_csv(target.file_path, sep="\t", header=None)
         .iloc[:, [0, 1, 2]]
@@ -543,7 +542,7 @@ def _do_enrichment_calculations_variable_size(
 
 
 def _do_embedding_1d_fixed_size(collection_id, intervals_id, binsize, region_side):
-    features = Collection.query.get(collection_id).datasets
+    features = db.session.get(Collection, collection_id).datasets
     data = []
     for feature in features:
         stackup = IndividualIntervalData.query.filter(
@@ -566,7 +565,10 @@ def _do_embedding_1d_fixed_size(collection_id, intervals_id, binsize, region_sid
     # do clustering and extract values
     log.info("      Running clustering large...")
     kmeans_large = KMeans(
-        n_clusters=current_app.config["CLUSTER_NUMBER_LARGE"], random_state=0
+        n_clusters=current_app.config["CLUSTER_NUMBER_LARGE"],
+        random_state=0,
+        # the default before scikit-learn 1.4, which runs one initialisation
+        n_init=10,
     ).fit(embedding)
     cluster_ids_large = kmeans_large.labels_
     log.info("      Generating average values large...")
@@ -576,7 +578,10 @@ def _do_embedding_1d_fixed_size(collection_id, intervals_id, binsize, region_sid
     )
     log.info("      Running clustering small...")
     kmeans_large = KMeans(
-        n_clusters=current_app.config["CLUSTER_NUMBER_SMALL"], random_state=0
+        n_clusters=current_app.config["CLUSTER_NUMBER_SMALL"],
+        random_state=0,
+        # the default before scikit-learn 1.4, which runs one initialisation
+        n_init=10,
     ).fit(embedding)
     cluster_ids_small = kmeans_large.labels_
     log.info("      Generating average values small...")
@@ -600,7 +605,7 @@ def _do_embedding_1d_fixed_size(collection_id, intervals_id, binsize, region_sid
 
 
 def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize, region_side):
-    features = Collection.query.get(collection_id).datasets
+    features = db.session.get(Collection, collection_id).datasets
     data = []
     for feature in features:
         stackup = IndividualIntervalData.query.filter(
@@ -628,7 +633,10 @@ def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize, region_
     # do clustering and extract values
     log.info("      Running clustering large...")
     kmeans_large = KMeans(
-        n_clusters=current_app.config["CLUSTER_NUMBER_LARGE"], random_state=0
+        n_clusters=current_app.config["CLUSTER_NUMBER_LARGE"],
+        random_state=0,
+        # the default before scikit-learn 1.4, which runs one initialisation
+        n_init=10,
     ).fit(embedding)
     cluster_ids_large = kmeans_large.labels_
     log.info("      Generating average values large...")
@@ -638,7 +646,10 @@ def _do_embedding_1d_variable_size(collection_id, intervals_id, binsize, region_
     )
     log.info("      Running clustering small...")
     kmeans_large = KMeans(
-        n_clusters=current_app.config["CLUSTER_NUMBER_SMALL"], random_state=0
+        n_clusters=current_app.config["CLUSTER_NUMBER_SMALL"],
+        random_state=0,
+        # the default before scikit-learn 1.4, which runs one initialisation
+        n_init=10,
     ).fit(embedding)
     cluster_ids_small = kmeans_large.labels_
     log.info("      Generating average values small...")
@@ -738,7 +749,10 @@ def _do_embedding_2d(data):
     #  kmeans clustering
     log.info("      Running clustering large...")
     kmeans_large = KMeans(
-        n_clusters=current_app.config["CLUSTER_NUMBER_LARGE"], random_state=0
+        n_clusters=current_app.config["CLUSTER_NUMBER_LARGE"],
+        random_state=0,
+        # the default before scikit-learn 1.4, which runs one initialisation
+        n_init=10,
     ).fit(embedding)
     cluster_ids_large = kmeans_large.labels_
     # create thumbnails for each cluster
@@ -759,7 +773,10 @@ def _do_embedding_2d(data):
     #  kmeans clustering
     log.info("      Running clustering small...")
     kmeans_small = KMeans(
-        n_clusters=current_app.config["CLUSTER_NUMBER_SMALL"], random_state=0
+        n_clusters=current_app.config["CLUSTER_NUMBER_SMALL"],
+        random_state=0,
+        # the default before scikit-learn 1.4, which runs one initialisation
+        n_init=10,
     ).fit(embedding)
     cluster_ids_small = kmeans_small.labels_
     # create thumbnails for each cluster
