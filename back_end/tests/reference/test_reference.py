@@ -1,9 +1,12 @@
 """Compares a fresh run of every preprocessing step with the reference results.
 
-The reference was computed by make_reference.py in the image the lab's instance ran at v0.8.0;
-versions.txt beside it lists the libraries. The comparison is by value:
+The reference was computed by make_reference.py in the backend image; versions.txt beside it
+lists the libraries. The first reference came from the image the lab's instance ran at v0.8.0,
+in the commit that added this test; the changelog says how results moved since. The comparison
+is by value:
 
-- Cleaned region files, and the errors steps raise, are compared as text.
+- Cleaned region files are compared as text, and the errors steps raise by their type: the
+  messages are the libraries', and change with their versions.
 - Every array has the same shape, its NaNs in the same places, and values within RTOL and ATOL.
 - Cluster labels are compared by how well the clusterings agree (adjusted Rand index), since
   a clustering that only numbers its clusters differently is the same clustering.
@@ -76,7 +79,11 @@ class TestReferenceResults(unittest.TestCase):
     def test_cleaned_files_and_errors(self):
         for key, text in self.expected_text.items():
             with self.subTest(key=key):
-                self.assertEqual(self.results.get(key), text)
+                if key.startswith("error/"):
+                    actual = self.results.get(key, "")
+                    self.assertEqual(actual.split(":")[0], text.split(":")[0])
+                else:
+                    self.assertEqual(self.results.get(key), text)
 
     def test_shapes(self):
         for key, shape in self.expected_shapes.items():
