@@ -1,18 +1,19 @@
 """Module with tests realted adding and managing metadata."""
 
-import os
-import json
 import io
+import json
+import os
 import unittest
+
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # import sys
 # add path to import app
 # sys.path.append("./")
 from app import db
-from app.models import Dataset, BedFileMetadata
+from app.models import BedFileMetadata
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestAddMetadata(LoginTestCase, TempDirTestCase):

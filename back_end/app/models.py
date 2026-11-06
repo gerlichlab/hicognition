@@ -2,28 +2,28 @@
 # TODO refactor to allow database to not know about flask-server or similar
 # TODO task launcher: why put it into the user class?
 
+import datetime
+import json
 import os
 from abc import abstractmethod
-import datetime
 from enum import Enum
-import json
+from itertools import chain
+
+import cooler
 import pandas as pd
+import redis
+import rq
 from flask.globals import current_app
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
-from itsdangerous import URLSafeTimedSerializer
-from sqlalchemy.ext.declarative import declared_attr
-import rq
-import redis
-import cooler
-from itertools import chain
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import JSONWebSignatureSerializer
-from . import lib as hicognition
-from .lib.utils import parse_binsizes
-from .lib.format_checkers import FORMAT_CHECKERS
-from . import db
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from sqlalchemy.ext.declarative import declared_attr
+from werkzeug.security import check_password_hash, generate_password_hash
 
+from . import db
+from . import lib as hicognition
+from .lib.format_checkers import FORMAT_CHECKERS
+from .lib.utils import parse_binsizes
 
 # define association tables
 
@@ -213,7 +213,7 @@ class User(db.Model, UserMixin):
         serializer = Serializer(current_app.config["SECRET_KEY"])
         try:
             data = serializer.loads(token)
-        except:
+        except Exception:
             return None
         return User.query.get(data["id"])
 
@@ -1203,7 +1203,7 @@ class Session(db.Model):
         serializer = JSONWebSignatureSerializer(current_app.config["SECRET_KEY"])
         try:
             data = serializer.loads(token)
-        except:
+        except Exception:
             return None
         return Session.query.get(data["session_id"])
 

@@ -1,17 +1,17 @@
 """Test getting genome assemblies."""
 
-import unittest
 import json
+import unittest
 from unittest.mock import patch
 
 import requests
-from tests.test_utils.test_helpers import LoginTestCase
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
 from app.models import Repository
+from tests.test_utils.test_helpers import LoginTestCase
 
 
 class MockResponse:
@@ -52,16 +52,14 @@ class TestGetMetadata(LoginTestCase):
             content_type="application/json",
             headers=self.token_header,
         )
-        rjson = json.loads(response.data.decode())
         self.assertEqual(response.status_code, 400)
 
     def test_not_found_repository(self):
         response = self.client.get(
-            f"/api/ENCODE/nonexistantrepo/sampleid/",
+            "/api/ENCODE/nonexistantrepo/sampleid/",
             content_type="application/json",
             headers=self.token_header,
         )
-        rjson = json.loads(response.data.decode())
         self.assertEqual(response.status_code, 404)
 
     @patch("requests.get")

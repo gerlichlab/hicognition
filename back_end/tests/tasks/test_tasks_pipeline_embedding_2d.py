@@ -1,13 +1,14 @@
 """Module with the tests for the 2D-data embedding preprocessing realted tasks."""
 
 import unittest
+
 import numpy as np
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app.pipeline_worker_functions import _do_embedding_2d
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestEmbedding2DWorkerFunction(LoginTestCase, TempDirTestCase):

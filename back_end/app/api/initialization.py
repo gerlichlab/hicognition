@@ -2,20 +2,22 @@
 
 import json
 from pathlib import Path
-from flask.globals import current_app
+
 import pandas as pd
+from flask.globals import current_app
+
+from .. import db
 from ..models import (
-    Repository,
-    User,
-    Organism,
     Assembly,
     Dataset,
-    dataset_preprocessing_table,
-    collections_preprocessing_table,
+    Organism,
+    Repository,
     Task,
+    User,
+    collections_preprocessing_table,
+    dataset_preprocessing_table,
 )
 from . import api
-from .. import db
 
 
 def add_path(value, path):

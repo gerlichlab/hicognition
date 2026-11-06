@@ -55,10 +55,10 @@ def main():
     # the configuration reads the log paths when app is first imported
     os.environ.setdefault("LOG_FILE_NAME", os.path.join(work_dir, "application.logs"))
     os.environ.setdefault("ERROR_LOG_FILE_NAME", os.path.join(work_dir, "error.logs"))
+    import numpy as np
+
     from .harness import compute
     from .test_reference import kind
-
-    import numpy as np
 
     results = compute(os.path.join(work_dir, "upload"))
     arrays = {

@@ -1,8 +1,9 @@
 """Pydantic models to validate integrity of Forms for the HiCognition API."""
 
 from typing import Any, Optional
-from pydantic import BaseModel, Field, validator, constr, AnyHttpUrl
+
 from flask import current_app
+from pydantic import AnyHttpUrl, BaseModel, Field, constr, validator
 
 
 class UserRegistrationModel(BaseModel):
@@ -99,7 +100,7 @@ class DatasetPostModel(DatasetModel):
                 f"sizeType only allowed for regions. {values['filetype']} is a feature"
             )
         if is_region and not has_sizeType:
-            raise ValueError(f"sizeType required for regions.")
+            raise ValueError("sizeType required for regions.")
         return None
 
 

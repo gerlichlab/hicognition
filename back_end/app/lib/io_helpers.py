@@ -1,11 +1,11 @@
 """Helper functions to read and convert common
 data formats."""
 
-import pandas as pd
-import numpy as np
-import os
 import logging
+import os
 from functools import partial
+
+import pandas as pd
 
 
 def clean_bedpe(input_file, output_file, chromosome_names=[]):

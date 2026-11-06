@@ -2,25 +2,26 @@
 
 import os
 import uuid
-import logging
 from datetime import datetime
-from flask.globals import current_app
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+from flask.globals import current_app
 from rq import get_current_job
+
 from . import db
 from . import pipeline_worker_functions as worker_funcs
-from .notifications import NotificationHandler
 from .models import (
-    Dataset,
     Collection,
+    Dataset,
     Intervals,
     Task,
-    dataset_preprocessing_table,
-    dataset_failed_table,
     collections_failed_table,
     collections_preprocessing_table,
+    dataset_failed_table,
+    dataset_preprocessing_table,
 )
+from .notifications import NotificationHandler
 
 # set up notification handler
 

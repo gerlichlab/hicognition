@@ -1,8 +1,6 @@
 """Collection of data structures"""
 
 from collections import defaultdict
-from collections.abc import Iterable
-import logging
 
 
 def recDict():

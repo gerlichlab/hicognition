@@ -1,22 +1,22 @@
 """Tests for deletion of datasets."""
 
 import os
-from pathlib import Path
 import unittest
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
+from pathlib import Path
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
 from app.models import (
-    Dataset,
-    Intervals,
     AverageIntervalData,
-    IndividualIntervalData,
-    Session,
     Collection,
+    Dataset,
+    IndividualIntervalData,
+    Intervals,
+    Session,
 )
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestDeleteDatasets(LoginTestCase, TempDirTestCase):

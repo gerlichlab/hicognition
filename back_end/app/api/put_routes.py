@@ -3,10 +3,10 @@
 from flask import g, request
 from flask.json import jsonify
 
-from ..form_models import DatasetPutModel
-from . import api
 from .. import db
+from ..form_models import DatasetPutModel
 from ..models import Dataset
+from . import api
 from .authentication import auth, check_confirmed
 from .errors import forbidden, invalid, not_found
 

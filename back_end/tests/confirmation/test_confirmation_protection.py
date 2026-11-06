@@ -1,5 +1,3 @@
-import os
-import unittest
 from tests.test_utils.test_helpers import LoginTestCase
 
 

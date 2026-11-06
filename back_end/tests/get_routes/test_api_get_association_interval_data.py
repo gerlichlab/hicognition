@@ -3,14 +3,15 @@
 import os
 import unittest
 from unittest.mock import patch
+
 import numpy as np
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
-from app.models import Collection, Dataset, Intervals, AssociationIntervalData
+from app.models import AssociationIntervalData, Collection, Intervals
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestGetAssociationIntervalData(LoginTestCase, TempDirTestCase):

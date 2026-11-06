@@ -2,13 +2,13 @@
 
 import unittest
 from unittest.mock import patch
-from tests.test_utils.test_helpers import LoginTestCase
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
-from app.models import Organism, Assembly
+from app.models import Assembly, Organism
+from tests.test_utils.test_helpers import LoginTestCase
 
 
 class TestGetAssemblies(LoginTestCase):

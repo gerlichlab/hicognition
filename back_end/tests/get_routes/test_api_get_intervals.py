@@ -1,17 +1,18 @@
 """Tests for /api/intervals route to list intervals."""
 
+import json
+import os
 import unittest
 from unittest.mock import patch
-import os
-import json
+
 import pandas as pd
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, BedFileMetadata, Session
+from app.models import BedFileMetadata, Intervals, Session
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestGetIntervals(LoginTestCase):

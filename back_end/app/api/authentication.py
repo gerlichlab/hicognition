@@ -1,17 +1,16 @@
 """Authenticating credentials of a request and dealing with the tokens."""
 
 from functools import wraps
-from flask import g, request, current_app
+
+from flask import current_app, g, request
 from flask.json import jsonify
 from flask_httpauth import HTTPBasicAuth
 from sqlalchemy.exc import IntegrityError
-from . import api
-from . import errors
-from ..form_models import UserRegistrationModel
-from ..models import User, Session
-from .. import confirmation_handler
-from .. import db
 
+from .. import confirmation_handler, db
+from ..form_models import UserRegistrationModel
+from ..models import Session, User
+from . import api, errors
 
 auth = HTTPBasicAuth()
 

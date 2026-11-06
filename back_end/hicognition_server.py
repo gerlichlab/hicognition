@@ -1,21 +1,15 @@
 """Start hicognition server."""
 
-import os
 import atexit
-import logging
+import os
+from base64 import b64encode
 
 # import json
 from getpass import getpass
-from base64 import b64encode
+
 import click
-from app import create_app, db
-from app.background_tasks import (
-    cleanup_empty_tasks,
-    cleanup_failed_tasks,
-    add_app_context,
-    send_keep_alive_message,
-)
-from app.models import *
+from apscheduler.schedulers.background import BackgroundScheduler
+from flask.cli import AppGroup
 
 # (
 #     User,
@@ -32,8 +26,30 @@ from app.models import *
 #     Assembly,
 # )
 from flask_migrate import Migrate
-from flask.cli import AppGroup
-from apscheduler.schedulers.background import BackgroundScheduler
+
+from app import create_app, db
+from app.background_tasks import (
+    add_app_context,
+    cleanup_empty_tasks,
+    cleanup_failed_tasks,
+    send_keep_alive_message,
+)
+from app.models import (
+    Assembly,
+    AssociationIntervalData,
+    AverageIntervalData,
+    BedFileMetadata,
+    Collection,
+    Dataset,
+    EmbeddingIntervalData,
+    Intervals,
+    Organism,
+    Repository,
+    RepositoryAuth,
+    Session,
+    Task,
+    User,
+)
 
 app = create_app(os.getenv("FLASK_CONFIG") or "default")
 migrate = Migrate(app, db, compare_type=True)

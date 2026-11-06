@@ -2,18 +2,18 @@
 
 import unittest
 from unittest.mock import MagicMock, patch
-from tests.test_utils.test_helpers import LoginTestCase
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
-from app.models import Collection, Dataset, Intervals, Task
 from app.background_tasks import (
     add_app_context,
     cleanup_empty_tasks,
     cleanup_failed_tasks,
 )
+from app.models import Collection, Dataset, Intervals, Task
+from tests.test_utils.test_helpers import LoginTestCase
 
 
 class TestEmptyJobDeletion(LoginTestCase):

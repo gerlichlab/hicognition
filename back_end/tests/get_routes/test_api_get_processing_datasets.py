@@ -1,15 +1,11 @@
 """Tests for /api/datasets/processing route to list processing datasets."""
 
-import unittest
-from unittest.mock import patch
-import pandas as pd
-from tests.test_utils.test_helpers import LoginTestCase
-
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
-from app.models import Dataset, Session, Collection
+from app.models import Collection
+from tests.test_utils.test_helpers import LoginTestCase
 
 
 class TestGetProcessingDatasets(LoginTestCase):

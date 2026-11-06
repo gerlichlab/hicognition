@@ -1,11 +1,11 @@
 """Collection of format checkers for biological data formats."""
 
-import os
-import re
-import cooler
 import logging
+import os
 
-from .io_helpers import clean_bedpe, clean_bed
+import cooler
+
+from .io_helpers import clean_bed, clean_bedpe
 
 
 def is_region_file_correctly_formatted(file_path, chromosome_names, _):

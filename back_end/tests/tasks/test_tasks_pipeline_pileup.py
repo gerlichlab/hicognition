@@ -2,25 +2,25 @@
 
 import os
 import unittest
-from unittest.mock import patch
-from unittest.mock import MagicMock, PropertyMock
+from unittest.mock import MagicMock, PropertyMock, patch
+
+import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal
-import numpy as np
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
-from app.lib.utils import get_optimal_binsize
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, Assembly, Task, ObsExp
-from app.tasks import pipeline_pileup
+from app.lib.utils import get_optimal_binsize
+from app.models import Assembly, Intervals, ObsExp, Task
 from app.pipeline_steps import pileup_pipeline_step
 from app.pipeline_worker_functions import (
     _do_pileup_fixed_size,
     _do_pileup_variable_size,
 )
+from app.tasks import pipeline_pileup
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestPipelinePileup(LoginTestCase, TempDirTestCase):

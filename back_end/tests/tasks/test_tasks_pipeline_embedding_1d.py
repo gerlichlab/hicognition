@@ -3,28 +3,28 @@
 import os
 import unittest
 from unittest.mock import patch
+
 import numpy as np
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
 from app.models import (
-    Dataset,
-    Intervals,
-    Collection,
-    IndividualIntervalData,
-    EmbeddingIntervalData,
     Assembly,
+    Collection,
+    EmbeddingIntervalData,
+    IndividualIntervalData,
+    Intervals,
     Task,
 )
-from app.tasks import pipeline_embedding_1d
 from app.pipeline_steps import embedding_1d_pipeline_step
 from app.pipeline_worker_functions import (
     _do_embedding_1d_fixed_size,
     _do_embedding_1d_variable_size,
 )
+from app.tasks import pipeline_embedding_1d
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):

@@ -2,16 +2,17 @@
 post_routes.add_dataset_from_ENCODE and get_routes.get_ENCODE_metadata.
 """
 
-import os
-import logging
-import json
-import re
-import hashlib
 import gzip
-from werkzeug.utils import secure_filename
-import requests
-from .models import Dataset, Repository
+import hashlib
+import json
+import logging
+import os
+import re
 
+import requests
+from werkzeug.utils import secure_filename
+
+from .models import Dataset, Repository
 
 # get logger
 log = logging.getLogger("rq.worker")

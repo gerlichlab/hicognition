@@ -1,16 +1,18 @@
 """Module testing the download_utils functions, like download and save file."""
 
-from itertools import product
+import gzip
 import json
 import os
 import shutil
 import unittest
+from itertools import product
 from unittest.mock import patch
-import gzip
-from requests.exceptions import HTTPError
+
 import requests
-from app.models import Repository, Dataset
+from requests.exceptions import HTTPError
+
 from app import download_utils
+from app.models import Dataset, Repository
 
 # add path to import app
 # import sys
@@ -196,11 +198,11 @@ class TestDownloadFile(ConcurrentTempDirTest):
                     download_utils.download_file(id)
 
     def test_download_non_existant_urls(self):
-        with self.assertRaises(requests.exceptions.MissingSchema) as context:
+        with self.assertRaises(requests.exceptions.MissingSchema):
             download_utils.download_file("hurrthisisnoturl")
-        with self.assertRaises(requests.exceptions.ConnectionError) as context:
+        with self.assertRaises(requests.exceptions.ConnectionError):
             download_utils.download_file("http://hurrdurthisisadomain.fakedomain")
-        with self.assertRaises(requests.exceptions.MissingSchema) as context:
+        with self.assertRaises(requests.exceptions.MissingSchema):
             download_utils.download_file("a slkd .at")
 
 
@@ -230,13 +232,13 @@ class TestDownloadENCODEMetadata(ConcurrentTempDirTest):
         self.assertEqual(rjson, truth)
 
     def test_download_non_existant_urls(self):  # , mock_http_request):
-        with self.assertRaises(requests.exceptions.MissingSchema) as context:
+        with self.assertRaises(requests.exceptions.MissingSchema):
             download_utils.download_ENCODE_metadata(self.repository, "hurrthisisnoturl")
-        with self.assertRaises(requests.exceptions.ConnectionError) as context:
+        with self.assertRaises(requests.exceptions.ConnectionError):
             download_utils.download_ENCODE_metadata(
                 self.repository, "http://hurrdurthisisadomain.fakedomain"
             )
-        with self.assertRaises(requests.exceptions.MissingSchema) as context:
+        with self.assertRaises(requests.exceptions.MissingSchema):
             download_utils.download_ENCODE_metadata(self.repository, "a slkd .at")
 
 
@@ -325,7 +327,7 @@ class TestDownloadENCODE(ConcurrentTempDirTest):
     @patch("app.download_utils.download_ENCODE_metadata")
     def test_raises_exception_metadatafetch(self, mock_download_ENCODE_metadata):
         mock_download_ENCODE_metadata.side_effect = HTTPError()
-        with self.assertRaises(requests.exceptions.HTTPError) as context:
+        with self.assertRaises(requests.exceptions.HTTPError):
             download_utils.download_encode(self.ds, self.tmp_path)
 
     @patch("app.download_utils.download_file")
@@ -382,7 +384,7 @@ class TestDownloadENCODE(ConcurrentTempDirTest):
             mock_download_file.return_value = content, test_case.get("http_filename")
             mock_download_metadata.return_value = test_case.get("metadata", {})
 
-            with self.assertRaises(download_utils.FileExistsException) as context:
+            with self.assertRaises(download_utils.FileExistsException):
                 download_utils.download_encode(self.ds, self.tmp_path)
 
             os.remove(true_temp_path)  # BAD?!

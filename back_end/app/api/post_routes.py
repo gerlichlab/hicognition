@@ -1,36 +1,35 @@
 """API endpoints for hicognition"""
 
-import os
 import json
-import pandas as pd
+import os
+
 import numpy as np
-from werkzeug.utils import secure_filename
-from flask import g, request, current_app
+import pandas as pd
+from flask import current_app, g, request
 from flask.json import jsonify
+from werkzeug.utils import secure_filename
 
-from ..lib.utils import get_all_interval_ids
-from ..lib.format_checkers import FORMAT_CHECKERS
-from . import api
-from .. import db
-
-from ..models import (
-    Assembly,
-    Repository,
-    Dataset,
-    BedFileMetadata,
-    Organism,
-    Session,
-    Intervals,
-    Collection,
-    EmbeddingIntervalData,
-)
+from .. import db, pipeline_steps
 from ..form_models import (
+    ENCODEDatasetPostModel,
     FileDatasetPostModel,
     URLDatasetPostModel,
-    ENCODEDatasetPostModel,
 )
+from ..lib.format_checkers import FORMAT_CHECKERS
+from ..lib.utils import get_all_interval_ids
+from ..models import (
+    Assembly,
+    BedFileMetadata,
+    Collection,
+    Dataset,
+    EmbeddingIntervalData,
+    Intervals,
+    Organism,
+    Repository,
+    Session,
+)
+from . import api
 from .authentication import auth, check_confirmed
-from .. import pipeline_steps
 from .errors import forbidden, invalid, not_found
 
 

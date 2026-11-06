@@ -100,7 +100,7 @@ class Config:
                 "1d-features": [1000, 5000],
             },
         },
-        50000: {
+        50000: {  # noqa: F601  # Python keeps this entry; #33 asks which one is meant
             "cooler": [1000, 5000],
             "bigwig": [500, 1000, 2000],
             "collections": {

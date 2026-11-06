@@ -1,42 +1,44 @@
 """GET API endpoints for hicognition"""
 
-import json
 import gzip
+import json
 import logging
-import pandas as pd
-from requests import HTTPError, RequestException
+
 import numpy as np
+import pandas as pd
 from flask import g, make_response
-from flask.json import jsonify
 from flask.globals import current_app
-from ..lib import data_structures
-from ..lib.utils import (
-    update_processing_state,
-    flatten_and_clean_array,
-)
-from . import api
+from flask.json import jsonify
+from requests import HTTPError, RequestException
+
 from .. import db
-from ..models import (
-    BedFileMetadata,
-    Repository,
-    IntervalDataTypeEnum,
-    Intervals,
-    Dataset,
-    AverageIntervalData,
-    IndividualIntervalData,
-    AssociationIntervalData,
-    EmbeddingIntervalData,
-    Session,
-    Collection,
-    Organism,
-)
-from .authentication import auth, check_confirmed
-from .errors import forbidden, not_found, invalid
 from ..download_utils import (
     DownloadUtilsException,
-    download_ENCODE_metadata,
     MetadataNotWellformed,
+    download_ENCODE_metadata,
 )
+from ..lib import data_structures
+from ..lib.utils import (
+    flatten_and_clean_array,
+    update_processing_state,
+)
+from ..models import (
+    AssociationIntervalData,
+    AverageIntervalData,
+    BedFileMetadata,
+    Collection,
+    Dataset,
+    EmbeddingIntervalData,
+    IndividualIntervalData,
+    IntervalDataTypeEnum,
+    Intervals,
+    Organism,
+    Repository,
+    Session,
+)
+from . import api
+from .authentication import auth, check_confirmed
+from .errors import forbidden, invalid, not_found
 
 # get logger
 log = logging.getLogger("rq.worker")
@@ -771,7 +773,7 @@ def get_ENCODE_metadata(repo_name: str, sample_id: str):
                 {
                     "status": "error",
                     "http_status_code": err.response.status_code,
-                    "message": f"Access forbidden by ENCODE repository",
+                    "message": "Access forbidden by ENCODE repository",
                 }
             )
         return invalid(

@@ -135,8 +135,7 @@ def stem(file_name):
 def compute(work_dir, input_dir=INPUT_FILES):
     """Runs every step in a fresh in-memory database, with its files in work_dir."""
     # imported here, so that make_reference can set the log paths first
-    from app import create_app, db, tasks
-    from app import pipeline_steps
+    from app import create_app, db, pipeline_steps, tasks
     from app.models import (
         Assembly,
         AssociationIntervalData,

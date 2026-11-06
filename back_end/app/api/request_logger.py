@@ -1,6 +1,7 @@
 # adds logging request handlers
-from . import api
 from flask import current_app, g, request
+
+from . import api
 
 
 @api.after_app_request

@@ -1,13 +1,13 @@
 """Module with tests realted adding and managing sessions."""
 
 import unittest
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
-from app.models import Dataset, Session, Collection
+from app.models import Collection, Session
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestAddSessionObject(LoginTestCase, TempDirTestCase):

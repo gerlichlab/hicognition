@@ -1,11 +1,12 @@
 """DELETE API endpoints for hicognition"""
 
+from flask import current_app, g
 from flask.json import jsonify
-from flask import g, current_app
-from .. import lib as hicognition
-from . import api
+
 from .. import db
+from .. import lib as hicognition
 from ..models import Assembly, Collection, Dataset, Session
+from . import api
 from .authentication import auth, check_confirmed
 from .errors import forbidden, invalid, not_found
 

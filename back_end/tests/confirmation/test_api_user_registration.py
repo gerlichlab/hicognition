@@ -1,15 +1,14 @@
 """Tests user registration"""
 
 import unittest
-from unittest.mock import patch, MagicMock
-from flask import render_template
-from flask_mail import Message
-from tests.test_utils.test_helpers import LoginTestCase
-from werkzeug.security import check_password_hash
-from app.confirmation import ConfirmationHandler
+from unittest.mock import patch
 
-from app import db, confirmation_handler
+from flask_mail import Message
+from werkzeug.security import check_password_hash
+
+from app import confirmation_handler, db
 from app.models import User
+from tests.test_utils.test_helpers import LoginTestCase
 
 
 class TestUserRegistration(LoginTestCase):

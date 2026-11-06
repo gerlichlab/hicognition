@@ -2,33 +2,35 @@
 perform the actual calculations and database state
 changes"""
 
-import os
 import logging
+import os
 import uuid
-import pandas as pd
-import numpy as np
-import umap
-from flask.globals import current_app
-from skimage.transform import resize
-from ngs import HiCTools as HT
-import cooler
+
 import bbi
 import bioframe as bf
-from sklearn.impute import SimpleImputer
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
+import cooler
+import numpy as np
+import pandas as pd
 import pylola
-from . import lib as hicognition
-from .lib import io_helpers, interval_operations, feature_extraction
-from .lib.utils import get_optimal_binsize
+import umap
+from flask.globals import current_app
+from ngs import HiCTools as HT
+from skimage.transform import resize
+from sklearn.cluster import KMeans
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+
 from . import db
+from . import lib as hicognition
+from .lib import feature_extraction, interval_operations, io_helpers
+from .lib.utils import get_optimal_binsize
 from .models import (
     Assembly,
+    AssociationIntervalData,
     AverageIntervalData,
     Collection,
-    IndividualIntervalData,
-    AssociationIntervalData,
     EmbeddingIntervalData,
+    IndividualIntervalData,
     ObsExp,
 )
 
@@ -704,7 +706,7 @@ def _do_embedding_2d(data):
     embedder = umap.UMAP(random_state=42)
     try:
         embedding = embedder.fit_transform(image_features)
-    except:
+    except Exception:
         # TODO: fix nicer
         log.info("      Embedding failed!")
         return {

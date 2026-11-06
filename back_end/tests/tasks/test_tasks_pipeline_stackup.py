@@ -2,23 +2,23 @@
 
 import unittest
 from unittest.mock import patch
-import pandas as pd
+
 import numpy as np
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
-from app.lib import interval_operations
+import pandas as pd
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, Assembly, Task
-from app.tasks import pipeline_stackup
+from app.lib import interval_operations
+from app.models import Assembly, Intervals, Task
 from app.pipeline_steps import stackup_pipeline_step
-
 from app.pipeline_worker_functions import (
     _do_stackup_fixed_size,
     _do_stackup_variable_size,
 )
+from app.tasks import pipeline_stackup
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestPipelineStackup(LoginTestCase):
@@ -294,8 +294,8 @@ class TestStackupWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
                 1: [0, 1000],
                 2: [1000, 2000],
                 3: ["chr2", "chr2"],
-                3: [4000, 5000],
-                4: [6000, 7000],
+                4: [4000, 5000],
+                5: [6000, 7000],
             }
         )
         # dispatch call

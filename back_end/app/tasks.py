@@ -1,27 +1,26 @@
 """Tasks for the redis-queue"""
 
-import os
 import logging
-from typing import Any
+import os
 from datetime import datetime
-from flask import current_app
+from typing import Any
+
 import pandas as pd
+from flask import current_app
 from requests.exceptions import ConnectionError, Timeout
-from .lib import io_helpers
 from rq import get_current_job
-from . import db
-from .models import (
-    Assembly,
-    Dataset,
-    Intervals,
-    IndividualIntervalData,
-    Collection,
-)
-from . import pipeline_steps
-from .notifications import NotificationHandler
 
 # from .file_utils import download_ENCODE_metadata, download_file
-from . import download_utils
+from . import db, download_utils, pipeline_steps
+from .lib import io_helpers
+from .models import (
+    Assembly,
+    Collection,
+    Dataset,
+    IndividualIntervalData,
+    Intervals,
+)
+from .notifications import NotificationHandler
 
 # get logger
 log = logging.getLogger("rq.worker")

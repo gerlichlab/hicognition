@@ -3,15 +3,16 @@
 import unittest
 from unittest.mock import patch
 
+from app import db
+
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app.models import (
-    Dataset,
     Assembly,
+    Dataset,
     Repository,
 )
-from app import db, create_app
 from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 

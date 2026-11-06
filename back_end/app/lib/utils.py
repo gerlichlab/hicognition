@@ -70,7 +70,7 @@ def get_optimal_binsize(regions, target_bin_number, processing_map):
 
 
 def flatten_and_clean_array(array):
-    """takes numpy array and converts it to a list where
+    r"""takes numpy array and converts it to a list where
     numpy.na and +\- np.inf is convert to python None"""
     return [
         entry if not (np.isnan(entry) or np.isinf(entry)) else None

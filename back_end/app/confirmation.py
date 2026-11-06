@@ -2,7 +2,6 @@
 
 from flask import render_template
 from flask_mail import Message
-
 from itsdangerous import URLSafeTimedSerializer
 
 
@@ -39,7 +38,7 @@ class ConfirmationHandler:
         serializer = URLSafeTimedSerializer(self._secret_key)
         try:
             email = serializer.loads(token, salt=self._secret_salt, max_age=expiration)
-        except:
+        except Exception:
             return False
         return email
 

@@ -1,21 +1,22 @@
 """Tests for db manipulation of tasks"""
 
 import unittest
-from tests.test_utils.test_helpers import LoginTestCase
+
+from app.models import (
+    AssociationIntervalData,
+    AverageIntervalData,
+    EmbeddingIntervalData,
+    IndividualIntervalData,
+)
 from app.pipeline_worker_functions import (
-    _add_embedding_2d_to_db,
-    _add_embedding_1d_to_db,
     _add_association_data_to_db,
-    _add_stackup_db,
+    _add_embedding_1d_to_db,
+    _add_embedding_2d_to_db,
     _add_line_db,
     _add_pileup_db,
+    _add_stackup_db,
 )
-from app.models import (
-    EmbeddingIntervalData,
-    AssociationIntervalData,
-    IndividualIntervalData,
-    AverageIntervalData,
-)
+from tests.test_utils.test_helpers import LoginTestCase
 
 
 class TestAddEmbedding2DToDB(LoginTestCase):

@@ -2,16 +2,15 @@
 
 import os
 import unittest
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
 from app.models import (
-    Dataset,
     Assembly,
 )
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestDeleteAssembly(LoginTestCase, TempDirTestCase):

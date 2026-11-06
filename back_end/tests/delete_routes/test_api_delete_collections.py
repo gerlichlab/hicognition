@@ -2,13 +2,13 @@
 
 import os
 import unittest
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
-from app.models import Collection, AssociationIntervalData, Intervals
+from app.models import AssociationIntervalData, Collection, Intervals
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestDeleteCollection(LoginTestCase, TempDirTestCase):
@@ -106,7 +106,7 @@ class TestDeleteCollection(LoginTestCase, TempDirTestCase):
         db.session.add_all([self.collection_user_1, self.assoc_data])
         db.session.commit()
         # make call
-        response = self.client.delete(
+        self.client.delete(
             "/api/collections/1/",
             headers=token_headers,
             content_type="application/json",

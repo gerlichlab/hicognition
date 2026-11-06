@@ -1,18 +1,17 @@
 """Module with tests realted adding datasets."""
 
-import logging
-import os
 import io
-import json
+import os
 import unittest
 from unittest.mock import patch
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
+
+from app import db
 
 # add path to import app
 # import sys
 # sys.path.append("./")
-from app.models import Dataset, Assembly
-from app import db
+from app.models import Assembly, Dataset
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestAddDataSets(LoginTestCase, TempDirTestCase):
@@ -432,7 +431,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "file": (open("tests/testfiles/tad_boundaries.bed", "rb"), "test.bed"),
         }
         # dispatch post request
-        response = self.client.post(
+        self.client.post(
             "/api/datasets/",
             data=data,
             headers=self.token_headers,

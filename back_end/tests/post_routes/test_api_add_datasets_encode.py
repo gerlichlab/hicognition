@@ -1,16 +1,15 @@
 """Module with tests realted adding datasets."""
 
-import json
 import unittest
 from unittest.mock import patch
 
+from app import db
+from app.download_utils import MetadataNotWellformed
 
 # add path to import app
 # import sys
 # sys.path.append("./")
-from app.models import Dataset, Assembly, Repository
-from app import db
-from app.download_utils import MetadataNotWellformed
+from app.models import Assembly, Dataset, Repository
 from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 

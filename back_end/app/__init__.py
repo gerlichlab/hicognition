@@ -1,14 +1,15 @@
 """Init script for HiCognition"""
 
+import rq
 from flask import Flask
+from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from flask_sse import sse
-from flask_mail import Mail
-import rq
 from redis import Redis
-from .logging_utils import create_logging_config
+
 from .config.app_config import config
 from .confirmation import ConfirmationHandler
+from .logging_utils import create_logging_config
 
 db = SQLAlchemy()
 mail = Mail()

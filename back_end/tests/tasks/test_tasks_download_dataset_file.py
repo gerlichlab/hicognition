@@ -4,10 +4,11 @@ TODO more tests?
 
 import unittest
 from unittest.mock import patch
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
+
 from app import db
-from app.models import *
+from app.models import Assembly, Repository, User
 from app.tasks import download_dataset_file
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
@@ -32,13 +33,6 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         db.session.add(self.dataset)
 
         db.session.commit()
-
-    test_cases = {
-        "valid_url": {"preprocessed"},
-        "valid_samples": {"preprocessed"},
-        "valid_url": {"preprocessed"},
-        "valid_url": {"preprocessed"},
-    }
 
     @patch("app.tasks._handle_error")
     def test_dataset_not_found(self, mock_error):

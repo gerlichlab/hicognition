@@ -1,17 +1,17 @@
 """Helper functions and classes for unittesting"""
 
 import logging
-import unittest
 import os
 import shutil
-from base64 import b64encode
 
 # add path to import app
 import sys
+import unittest
+from base64 import b64encode
 
 sys.path.append("./")
 from app import create_app, db
-from app.models import User, Organism, Dataset, Assembly
+from app.models import Assembly, Dataset, User
 
 
 class TempDirTestCase(unittest.TestCase):

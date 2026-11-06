@@ -2,21 +2,20 @@
 
 import unittest
 from unittest.mock import patch
-from tests.test_utils.test_helpers import LoginTestCase
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
 from app.models import (
-    Dataset,
-    Intervals,
-    AverageIntervalData,
-    IndividualIntervalData,
-    Collection,
     AssociationIntervalData,
+    AverageIntervalData,
+    Collection,
     EmbeddingIntervalData,
+    IndividualIntervalData,
+    Intervals,
 )
+from tests.test_utils.test_helpers import LoginTestCase
 
 
 class TestGetProcessedDatasetMap(LoginTestCase):

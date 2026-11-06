@@ -1,14 +1,14 @@
 """Module with tests realted to managing and modifying datasets."""
 
-import logging
 import unittest
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
+
+from app import db
 
 # add path to import app
 # import sys
 # sys.path.append("./")
-from app.models import Dataset, Assembly
-from app import db
+from app.models import Assembly, Dataset
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestModifyDatasets(LoginTestCase, TempDirTestCase):

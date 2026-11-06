@@ -2,16 +2,17 @@
 
 import unittest
 from unittest.mock import patch
-import pandas as pd
+
 import numpy as np
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
+import pandas as pd
 
 # add path to import app
 # sys.path.append("./")
 from app import db
-from app.models import Dataset, Intervals, Assembly
-from app.tasks import pipeline_bed
+from app.models import Assembly, Intervals
 from app.pipeline_steps import bed_preprocess_pipeline_step
+from app.tasks import pipeline_bed
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestPipelineBase(LoginTestCase, TempDirTestCase):

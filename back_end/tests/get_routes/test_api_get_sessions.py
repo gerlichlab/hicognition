@@ -3,13 +3,13 @@
 import datetime
 import unittest
 from unittest.mock import patch
-from tests.test_utils.test_helpers import LoginTestCase
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
 from app.models import Session
+from tests.test_utils.test_helpers import LoginTestCase
 
 
 class TestGetSessions(LoginTestCase):

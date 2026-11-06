@@ -1,9 +1,9 @@
 """Module to extract features from genomic datasets"""
 
 import cv2
-from sklearn.preprocessing import StandardScaler
-from sklearn.impute import SimpleImputer
 import numpy as np
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
 
 
 def _downscale_images(images, pixel_target):

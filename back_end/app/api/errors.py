@@ -1,8 +1,10 @@
 """Convenience functions for handling server errors."""
 
-from http.client import HTTPException
 import logging
+from http.client import HTTPException
+
 from flask.json import jsonify
+
 from . import api
 
 log = logging.getLogger()  # ASK What logger to use?

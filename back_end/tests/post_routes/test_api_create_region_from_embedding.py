@@ -3,16 +3,17 @@
 import os
 import unittest
 from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 # add path to import app
 # import sys
 # sys.path.append("./")
 from app import db
-from app.models import Collection, Dataset, Intervals, EmbeddingIntervalData
+from app.models import Collection, Dataset, EmbeddingIntervalData, Intervals
+from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
 
 
 class TestCreateRegionFrom2DEmbedding(LoginTestCase, TempDirTestCase):
