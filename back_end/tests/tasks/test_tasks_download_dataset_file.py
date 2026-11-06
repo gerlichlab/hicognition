@@ -72,6 +72,8 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
                 self.assertTrue(mock_error.called)
                 mock_error.reset_mock()
 
+    # the notification is published through Redis, which the tests don't run
+    @patch("app.tasks._send_notification")
     @patch("app.models.Dataset.preprocess_dataset")
     @patch("app.models.Dataset.validate_dataset")
     @patch("app.download_utils.download_url")
@@ -84,6 +86,7 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
         mock_download_encode,
         mock_validate,
         mock_preprocess,
+        mock_send_notification,
     ):
         test_cases = {
             "url": {"source_url": "http://urlurl1337url.at"},

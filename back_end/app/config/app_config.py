@@ -3,7 +3,8 @@ import os
 
 # import json
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+# back_end/, which holds data/ and temp/
+basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 class Config:
@@ -324,6 +325,8 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     UPLOAD_DIR = "./tmp_test"
     STACKUP_THRESHOLD = 10  # Threshold of when stackup is downsampled
+    # Flask-Mail needs a sender even when testing suppresses the sending
+    MAIL_DEFAULT_SENDER = "hicognition-tests@localhost"
 
 
 class End2EndConfig(DevelopmentConfig):

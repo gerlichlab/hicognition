@@ -453,7 +453,7 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
         mock_get_expected.assert_not_called()
         expected_pileup_call = ["mock_cooler", returned_regions.dropna()]
         mock_pileup_iccf.assert_called_with(
-            *expected_pileup_call, proc=2, collapse=True
+            *expected_pileup_call, proc=self.app.config["PILEUP_PROCESSES"], collapse=True
         )
         # check whether iccf pileup is not called
         mock_pileup_obs_exp.assert_not_called()
@@ -849,11 +849,21 @@ class TestPileupWorkerFunctionsVariableSize(LoginTestCase, TempDirTestCase):
 class TestGetOptimalBinsize(LoginTestCase):
     """Tests get_optimal_binsize helper function"""
 
+    # the cooler bin sizes these expectations were written for (5, 10, 20 and 50 kb), so the
+    # tests check the function, whatever bin sizes the configuration holds
+    PREPROCESSING_MAP = {
+        50000: {"cooler": [5000]},
+        400000: {"cooler": [10000]},
+        1000000: {"cooler": [20000]},
+        2000000: {"cooler": [50000]},
+        "variable": {"cooler": [1, 2, 5]},
+    }
+
     def test_none_if_regions_too_small(self):
         """tests if none is returned if regions are too small."""
         regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [10]})
         self.assertEqual(
-            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            get_optimal_binsize(regions, 100, self.PREPROCESSING_MAP),
             None,
         )
 
@@ -861,7 +871,7 @@ class TestGetOptimalBinsize(LoginTestCase):
         """tests if none is returned if regions too large"""
         regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [10**9]})
         self.assertEqual(
-            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            get_optimal_binsize(regions, 100, self.PREPROCESSING_MAP),
             None,
         )
 
@@ -869,7 +879,7 @@ class TestGetOptimalBinsize(LoginTestCase):
         """tests correct handling of small regions."""
         regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [10000]})
         self.assertEqual(
-            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            get_optimal_binsize(regions, 100, self.PREPROCESSING_MAP),
             5000,
         )
 
@@ -877,7 +887,7 @@ class TestGetOptimalBinsize(LoginTestCase):
         """tests correct handling of moderately sized regions."""
         regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [500001]})
         self.assertEqual(
-            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            get_optimal_binsize(regions, 100, self.PREPROCESSING_MAP),
             5000,
         )
 
@@ -885,7 +895,7 @@ class TestGetOptimalBinsize(LoginTestCase):
         """tests correct handling of large regions."""
         regions = pd.DataFrame({"chrom": ["chr1"], "start": [0], "end": [1000001]})
         self.assertEqual(
-            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            get_optimal_binsize(regions, 100, self.PREPROCESSING_MAP),
             10000,
         )
 
@@ -899,7 +909,7 @@ class TestGetOptimalBinsize(LoginTestCase):
             }
         )
         self.assertEqual(
-            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            get_optimal_binsize(regions, 100, self.PREPROCESSING_MAP),
             5000,
         )
 
@@ -909,7 +919,7 @@ class TestGetOptimalBinsize(LoginTestCase):
             "tests/testfiles/G2_tads_w_size.bed", sep="\t", header=None
         ).rename(columns={0: "chrom", 1: "start", 2: "end"})
         self.assertEqual(
-            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            get_optimal_binsize(regions, 100, self.PREPROCESSING_MAP),
             10000,
         )
 
@@ -920,7 +930,7 @@ class TestGetOptimalBinsize(LoginTestCase):
         ).rename(columns={0: "chrom1", 1: "start1", 2: "end1",
                                             3: "chrom2", 4:"start2", 5: "end2"})
         self.assertEqual(
-            get_optimal_binsize(regions, 100, self.app.config["PREPROCESSING_MAP"]),
+            get_optimal_binsize(regions, 100, self.PREPROCESSING_MAP),
             None,
         )
 
@@ -930,7 +940,7 @@ class TestGetOptimalBinsize(LoginTestCase):
             "tests/testfiles/G2_tads_w_size.bed", sep="\t", header=None
         ).rename(columns={0: "chrom", 1: "start", 2: "end"})
         self.assertEqual(
-            get_optimal_binsize(regions, 50, self.app.config["PREPROCESSING_MAP"]),
+            get_optimal_binsize(regions, 50, self.PREPROCESSING_MAP),
             20000,
         )
 
