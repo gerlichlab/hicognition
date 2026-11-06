@@ -6,7 +6,7 @@ module.exports = merge(prodEnv, {
     NODE_ENV: '"development"',
     API_URL: '"http://localhost:5000/api/"',
     STATIC_URL: '"http://localhost:5000/static/"',
-    VERSION: "0.7",
+    VERSION: '"0.8.0"',
     NOTIFICATION_URL: '"http://localhost:5000/stream"',
     SHOWCASE: process.env.showcase,
 });

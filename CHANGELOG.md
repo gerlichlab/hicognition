@@ -6,6 +6,9 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
 
 ## [Unreleased]
 
+## [v0.8.0] - 2026-11-06
+The last release on the original stack (Python 3.8, Flask 1.1, Vue 2), as the lab's instance runs it. [#36](https://github.com/gerlichlab/hicognition/issues/36) moves every dependency to its newest release.
+
 ### Added
 * **Datasets carry a Sample ID.** The single upload form, the bulk upload and the form that edits a dataset ask for it and require it, and the dataset table shows it as a column. The `sample_id` column already existed in the database, so no migration runs.
 * **Anyone can register an account.** The "Create user" button of the registration form was disabled, with the tooltip "Public registration will be available soon!"; it now submits the form, and the new account is activated through the confirmation e-mail.

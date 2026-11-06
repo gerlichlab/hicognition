@@ -1,10 +1,10 @@
 {
-    "description": "This is the code for app.hicognition.com submitted with the final version of the manuscript.", 
+    "description": "HiCognition v0.8.0, the last release on its original stack. The version submitted with the final version of the manuscript is v0.7.", 
     "license": "other-open", 
-    "title": "gerlichlab/hicognition: version-0.7", 
-    "version": "v0.7", 
+    "title": "gerlichlab/hicognition: v0.8.0", 
+    "version": "v0.8.0", 
     "upload_type": "software", 
-    "publication_date": "2023-05-26", 
+    "publication_date": "2026-11-06", 
     "creators": [
         {
             "affiliation": "IMBA - Institute of Molecular Biotechnology of the OeAW", 
@@ -26,7 +26,7 @@
     "related_identifiers": [
         {
             "scheme": "url", 
-            "identifier": "https://github.com/gerlichlab/hicognition/tree/v0.7", 
+            "identifier": "https://github.com/gerlichlab/hicognition/tree/v0.8.0", 
             "relation": "isSupplementTo"
         }, 
         {
