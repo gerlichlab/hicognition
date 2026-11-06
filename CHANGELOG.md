@@ -6,6 +6,9 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
 
 ## [Unreleased]
 
+### Added
+* **Reference results of every preprocessing step, and a test that compares a new run with them by value** ([#36](https://github.com/gerlichlab/hicognition/issues/36)). A small synthetic genome in `back_end/tests/testfiles/reference/` goes through the BED pipeline and every pileup, stackup, enrichment and embedding step, at v0.8.0's window and bin sizes. It has two coolers, three BigWigs and six region files, written by `tests/reference/make_inputs.py`. The results that the lab instance's v0.8.0 image computed are stored beside it, with the versions of the libraries. `tests/reference/test_reference.py` runs the steps again and compares, which takes about 5 minutes. The reference includes what today's code gets wrong, such as the BEDPE pileups that fail ([#38](https://github.com/gerlichlab/hicognition/issues/38)), so a fix shows up as a difference to explain.
+
 ## [v0.8.0] - 2026-11-06
 The last release on the original stack (Python 3.8, Flask 1.1, Vue 2), as the lab's instance runs it. [#36](https://github.com/gerlichlab/hicognition/issues/36) moves every dependency to its newest release.
 
