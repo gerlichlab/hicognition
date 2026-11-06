@@ -25,7 +25,7 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
 * **Jenkins pushes images only for the `production` branch:** `hicognition_backend` and `hicognition_nginx`. The `master`, `jenkins-test` and `production_jenkins` targets and the demo (showcase) image are gone.
 
 ### Changed (documentation)
-* The upload documentation describes uploads from 4D Nucleome and ENCODE, and the genome assemblies page has an example. The README links to the app at app.hicognition.com.
+* The upload documentation describes uploads from 4D Nucleome and ENCODE, and the genome assemblies page has an example. The README links to the app at app.hicognition.com. The configuration page lists `REDIS_PASSWORD`, and `REDIS_URL` with the password in it, among the variables to set for a new instance.
 
 ### Fixed
 * **A pileup of a cooler without balancing weights at the requested resolution finishes with an all-NaN result instead of failing the job.** Calculating the expected raised `KeyError` ("Balancing weight ... not found") and the ICCF pileup `ValueError` (no `bins/weight` column).
@@ -33,6 +33,7 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
 
 ### Security
 * **Redis is no longer published on the host, and MySQL and the Flask server only on `127.0.0.1`.** `docker-compose.yml` published all three on every network interface, so anyone who could reach the host could use Redis, which has no password and whose queued jobs the workers unpickle and run, connect to MySQL, and call the API without going through nginx. The containers reach each other on the Docker network as before. For diagnostics, use `docker exec`, or an SSH tunnel to the two localhost ports.
+* **Redis requires a password.** `docker-compose.yml` starts Redis with `REDIS_PASSWORD` from `.env` and does not start without it; `REDIS_URL` must contain the same password. Not publishing Redis is not enough on Docker versions before 28.0, where hosts on the same network segment can route to container addresses. The workers now take the URL from the `RQ_REDIS_URL` variable instead of their command line, which every user of the host can read.
 
 ## [v0.7] - 2023-05-26
 The version submitted with the final version of the manuscript and run at app.hicognition.com ([release](https://github.com/gerlichlab/hicognition/releases/tag/v0.7)).

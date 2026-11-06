@@ -34,6 +34,8 @@ These environment variables should be redefined if you deploy a new HiCognition 
 - `SECRET_KEY` | Secret key of flask app that is used to sign the generated token
 - `DATABASE_URI` | Connection string to the HiCogntion MySQL database (including username and password)
 - `MYSQL_PASSWORD` | Password for MySQL database
+- `REDIS_PASSWORD` | Password of the Redis server; `docker-compose.yml` does not start without it. It is also part of `REDIS_URL`, so use a value without URL special characters, for example the output of `openssl rand -hex 32`.
+- `REDIS_URL` | URL of the Redis server, including the password: `redis://:${REDIS_PASSWORD}@redis-server:6379/0`
 
 ##### Take from example `.env` file
 
@@ -42,7 +44,6 @@ These environment variables can likely be taken from our example `.env` file and
 - `UPLOAD_DIR` | Directory that is used to store uploaded datasets. This filepath is used inside the Docker container and should therefore be in relation to the mounted folder with code and data.
 - `CHROM_SIZES` | Path to the chromosome sizes file on the server filesystem that is needed for the `hicognition` module. This filepath is used inside the Docker container and should therefore be in relation to the mounted folder with code and data. 
 - `CHROM_ARMS` | Path to the file harboring genomic locations of chromosomal arms on the server filesystem that is needed for pileups in the `tasks.py` file containing different background tasks. This filepath is used inside the Docker container and should therefore be in relation to the mounted folder with code and data.
-- `REDIS_URL` | URL of Redis server
 - `DIR_FRONT_END` | Relative path to the front_end files.
 - `DIR_STATIC` | Static directory for the Nginx server
 - `MYSQL_DATA_DIR` | Relative directory to persist MySQL database to

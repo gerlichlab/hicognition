@@ -78,12 +78,14 @@ services:
             - "/bin/bash"
         command: -c "cd /front_end && npm install && npm run build"
 
-    # not published on the host, reachable only from containers on hicognition-net
+    # not published on the host, reachable only from containers on hicognition-net;
+    # REDIS_URL must contain the password: redis://:<REDIS_PASSWORD>@redis-server:6379/0
     redis-server:
         <<: *service-defaults
         container_name: redis-server
         build:
             context: "./redis"
+        command: ["redis-server", "/usr/local/etc/redis/redis.conf", "--requirepass", "${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}"]
         networks:
             hicognition-net:
                 ipv4_address: 172.18.0.5
@@ -102,6 +104,7 @@ services:
             - SECRET_KEY=${SECRET_KEY}
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
+            - RQ_REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
@@ -121,7 +124,8 @@ services:
         networks:
             - hicognition-net
         # sleeps to wait for redis-server. TODO: make this check nicer!
-        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-long"
+        # rq takes the Redis URL from RQ_REDIS_URL, which keeps its password out of the process list
+        command: -c "sleep 5 && cd /code/ && rq worker hicognition-tasks-long"
 
     redis-worker-medium:
         <<: *service-defaults
@@ -136,6 +140,7 @@ services:
             - SECRET_KEY=${SECRET_KEY}
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
+            - RQ_REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
@@ -155,7 +160,8 @@ services:
         networks:
             - hicognition-net
         # sleeps to wait for redis-server. TODO: make this check nicer!
-        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-medium"
+        # rq takes the Redis URL from RQ_REDIS_URL, which keeps its password out of the process list
+        command: -c "sleep 5 && cd /code/ && rq worker hicognition-tasks-medium"
 
     redis-worker-short:
         <<: *service-defaults
@@ -170,6 +176,7 @@ services:
             - SECRET_KEY=${SECRET_KEY}
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
+            - RQ_REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
             - CHROM_ARMS=${CHROM_ARMS}
@@ -189,7 +196,8 @@ services:
         networks:
             - hicognition-net
         # sleeps to wait for redis-server. TODO: make this check nicer!
-        command: -c "sleep 5 && cd /code/ && rq worker -u ${REDIS_URL} hicognition-tasks-short"
+        # rq takes the Redis URL from RQ_REDIS_URL, which keeps its password out of the process list
+        command: -c "sleep 5 && cd /code/ && rq worker hicognition-tasks-short"
 
     mysql:
         <<: *service-defaults
