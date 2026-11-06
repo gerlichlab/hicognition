@@ -1,4 +1,5 @@
 """Module with tests realted adding datasets."""
+
 import logging
 import os
 import io
@@ -74,7 +75,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "upload_state": "uploaded",
             "description": "test-description",
             "perturbation": "No perturbation",
-            "cell_type": 'undefined',
+            "cell_type": "undefined",
             "file_path": "./tmp_test/1_test.mcool",
             "assembly": 1,
             "public": False,
@@ -107,7 +108,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         data = {
             "dataset_name": "test",
             "assembly": "1",
-            "cell_type": 'undefined',
+            "cell_type": "undefined",
             "perturbation": "No perturbation",
             "description": "test-description",
             "public": "false",
@@ -134,7 +135,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "upload_state": "uploaded",
             "description": "test-description",
             "perturbation": "No perturbation",
-            "cell_type": 'undefined',
+            "cell_type": "undefined",
             "file_path": "./tmp_test/1_test.bw",
             "processing_datasets": [],
             "failed_datasets": [],
@@ -168,7 +169,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "assembly": "1",
             "perturbation": "No perturbation",
             "description": "test-description",
-            "cell_type": 'undefined',
+            "cell_type": "undefined",
             "public": "false",
             "filetype": "bigwig",
             "file": (open("tests/testfiles/test.bigwig", "rb"), "test.bigwig"),
@@ -192,7 +193,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "description": "test-description",
             "perturbation": "No perturbation",
             "file_path": "./tmp_test/1_test.bigwig",
-            "cell_type": 'undefined',
+            "cell_type": "undefined",
             "upload_state": "uploaded",
             "processing_state": "new",
             "processing_datasets": [],
@@ -217,9 +218,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             self.assertEqual(expected_file.read(), actual_file.read())
 
     @patch("app.models.User.launch_task")
-    def test_dataset_added_correctly_cooler_wo_description(
-        self, mock_launch
-    ):
+    def test_dataset_added_correctly_cooler_wo_description(self, mock_launch):
         """Tests whether a cooler dataset is added
         correctly to the Dataset table following
         a post request."""
@@ -251,7 +250,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dimension": "1d",
             "description": "No description provided",
             "perturbation": "No perturbation",
-            "cell_type": 'undefined',
+            "cell_type": "undefined",
             "file_path": "./tmp_test/1_test.mcool",
             "assembly": 1,
             "public": False,
@@ -301,7 +300,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "dataset_name": "test",
             "dimension": "1d",
             "processing_state": "processing",
-            "cell_type": 'undefined',
+            "cell_type": "undefined",
             "upload_state": "uploaded",
             "description": "test-description",
             "sizeType": "interval",
@@ -324,7 +323,9 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # test whether uploaded file exists
         self.assertTrue(os.path.exists(dataset.file_path))
         # test whether uploaded file is equal to expected file
-        with open(dataset.file_path, "rb") as actual_file, open("tests/testfiles/tad_boundaries.bed", "rb") as expected_file:
+        with open(dataset.file_path, "rb") as actual_file, open(
+            "tests/testfiles/tad_boundaries.bed", "rb"
+        ) as expected_file:
             self.assertEqual(expected_file.read(), actual_file.read())
 
     @patch("app.models.User.launch_task")
@@ -342,7 +343,10 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             "public": "false",
             "SizeType": "interval",
             "filetype": "bedfile",
-            "file": (open("tests/testfiles/test_small.bedpe", "rb"), "test_small.bedpe"),
+            "file": (
+                open("tests/testfiles/test_small.bedpe", "rb"),
+                "test_small.bedpe",
+            ),
         }
         # dispatch post request
         response = self.client.post(
@@ -382,7 +386,9 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # test whether uploaded file exists
         self.assertTrue(os.path.exists(dataset.file_path))
         # test whether uploaded file is equal to expected file
-        with open(dataset.file_path, "rb") as actual_file, open("tests/testfiles/test_small.bedpe", "rb") as expected_file:
+        with open(dataset.file_path, "rb") as actual_file, open(
+            "tests/testfiles/test_small.bedpe", "rb"
+        ) as expected_file:
             self.assertEqual(expected_file.read(), actual_file.read())
 
     @patch("app.models.User.launch_task")
@@ -408,7 +414,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
             content_type="multipart/form-data",
         )
         self.assertEqual(response.status_code, 400)
-        
+
     @patch("app.models.Dataset.validate_dataset")
     @patch("app.models.User.launch_task")
     def test_bed_pipeline_launched_correctly(self, mock_launch, mock_prepr):
@@ -438,6 +444,7 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
         # )
         # check whether launch task has been called with the right arguments
         import app.tasks
+
         mock_launch.assert_called_with(
             self.app.queues["short"], app.tasks.pipeline_bed, "run bed preprocessing", 1
         )
@@ -623,7 +630,9 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
     @patch("app.models.Dataset.validate_dataset")
     @patch("app.models.Dataset.preprocess_dataset")
     @patch("app.models.User.launch_task")
-    def test_public_flag_set_correctly_if_true(self, mock_launch_task, mock_prep, mock_validate):
+    def test_public_flag_set_correctly_if_true(
+        self, mock_launch_task, mock_prep, mock_validate
+    ):
         """Tests whether form with file without ending is rejected."""
         # construct form data
         data = {
@@ -652,7 +661,9 @@ class TestAddDataSets(LoginTestCase, TempDirTestCase):
     @patch("app.models.Dataset.validate_dataset")
     @patch("app.models.Dataset.preprocess_dataset")
     @patch("app.models.User.launch_task")
-    def test_public_flag_set_correctly_if_false(self, mock_launch_task, mock_preprocess, mock_validate):
+    def test_public_flag_set_correctly_if_false(
+        self, mock_launch_task, mock_preprocess, mock_validate
+    ):
         """Tests whether form with file without ending is rejected."""
         # construct form data
         data = {

@@ -1,4 +1,5 @@
-""" Authenticating credentials of a request and dealing with the tokens. """
+"""Authenticating credentials of a request and dealing with the tokens."""
+
 from functools import wraps
 from flask import g, request, current_app
 from flask.json import jsonify

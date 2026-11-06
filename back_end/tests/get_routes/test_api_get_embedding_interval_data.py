@@ -1,4 +1,5 @@
 """Tests for get route of embedding interval data."""
+
 import os
 import gzip
 import json
@@ -20,13 +21,21 @@ class TestGetEmbeddingIntervalData(LoginTestCase, TempDirTestCase):
     def setUp(self):
         super().setUp()
         # add owned collection
-        self.owned_cooler = self.create_dataset(id=1, dataset_name="test1", user_id=1, filetype="cooler")
+        self.owned_cooler = self.create_dataset(
+            id=1, dataset_name="test1", user_id=1, filetype="cooler"
+        )
         # add unowned collection
-        self.unowned_cooler = self.create_dataset(id=2, dataset_name="test2", user_id=2, filetype="cooler")
+        self.unowned_cooler = self.create_dataset(
+            id=2, dataset_name="test2", user_id=2, filetype="cooler"
+        )
         # add owned bedfile
-        self.owned_bedfile = self.create_dataset(id=3, dataset_name="test3", filetype="bedfile", user_id=1)
+        self.owned_bedfile = self.create_dataset(
+            id=3, dataset_name="test3", filetype="bedfile", user_id=1
+        )
         # add unowned bedfile
-        self.unowned_bedfile = self.create_dataset(id=4, dataset_name="test4", filetype="bedfile", user_id=2)
+        self.unowned_bedfile = self.create_dataset(
+            id=4, dataset_name="test4", filetype="bedfile", user_id=2
+        )
         # add intervals for owned bedfile
         self.owned_intervals = Intervals(
             id=1, dataset_id=self.owned_bedfile.id, windowsize=200000

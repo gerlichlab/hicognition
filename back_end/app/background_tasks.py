@@ -1,4 +1,5 @@
 """Background tasks"""
+
 from flask.globals import current_app
 from .pipeline_steps import set_dataset_failed, set_collection_failed
 from .models import Task

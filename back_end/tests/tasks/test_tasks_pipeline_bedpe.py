@@ -1,4 +1,5 @@
 """Module with the tests for all bed-file preprocessing realted tasks."""
+
 import unittest
 from unittest.mock import patch
 import pandas as pd
@@ -11,6 +12,7 @@ from app import db
 from app.models import Dataset, Intervals, Assembly
 from app.tasks import pipeline_bed
 from app.pipeline_steps import bed_preprocess_pipeline_step
+
 
 class TestPipelineBase(LoginTestCase, TempDirTestCase):
     def setUp(self):
@@ -48,6 +50,7 @@ class TestPipelineBase(LoginTestCase, TempDirTestCase):
         db.session.add(self.dataset_point)
         db.session.add(self.dataset_interval)
         db.session.commit()
+
 
 class TestPipelineBedPE(TestPipelineBase):
     """Tests whether pipelin_bed task calls
@@ -118,7 +121,14 @@ class TestBedpePreprocessPipelineStep(TestPipelineBase):
     def test_interval_features_add_correctly(self, mock_read_csv):
         """Tests whether intervals are added correclty if windowsize is variable"""
         mock_frame = pd.DataFrame(
-            {0: ["chr1", "chr1", "chr1"], 1: [0, 1, 2], 2: [1, 2, 3], 3: ["chr1", "chr1", "chr1"], 4: [4,5,6], 5: [5,6,7]}
+            {
+                0: ["chr1", "chr1", "chr1"],
+                1: [0, 1, 2],
+                2: [1, 2, 3],
+                3: ["chr1", "chr1", "chr1"],
+                4: [4, 5, 6],
+                5: [5, 6, 7],
+            }
         )
         mock_read_csv.return_value = mock_frame
         bed_preprocess_pipeline_step(2, "variable")
@@ -130,7 +140,14 @@ class TestBedpePreprocessPipelineStep(TestPipelineBase):
     def test_point_features_add_correctly(self, mock_read_csv):
         """Tests whether intervals are added correclty if windowsize is constant"""
         mock_frame = pd.DataFrame(
-            {0: ["chr1", "chr1", "chr1"], 1: [0, 1, 2], 2: [1, 2, 3], 3: ["chr1", "chr1", "chr1"], 4: [4,5,6], 5: [5,6,7]}
+            {
+                0: ["chr1", "chr1", "chr1"],
+                1: [0, 1, 2],
+                2: [1, 2, 3],
+                3: ["chr1", "chr1", "chr1"],
+                4: [4, 5, 6],
+                5: [5, 6, 7],
+            }
         )
         mock_read_csv.return_value = mock_frame
         bed_preprocess_pipeline_step(2, 200000)
@@ -143,7 +160,14 @@ class TestBedpePreprocessPipelineStep(TestPipelineBase):
         """Tests that if bed preprocess pipeline step is called with small
         regions, they are not downsampled."""
         mock_frame = pd.DataFrame(
-            {0: ["chr1", "chr1", "chr1"], 1: [0, 1, 2], 2: [1, 2, 3], 3: ["chr1", "chr1", "chr1"], 4: [4,5,6], 5: [5,6,7]}
+            {
+                0: ["chr1", "chr1", "chr1"],
+                1: [0, 1, 2],
+                2: [1, 2, 3],
+                3: ["chr1", "chr1", "chr1"],
+                4: [4, 5, 6],
+                5: [5, 6, 7],
+            }
         )
         mock_read_csv.return_value = mock_frame
         # call function
@@ -159,7 +183,16 @@ class TestBedpePreprocessPipelineStep(TestPipelineBase):
         """Tests that if bed preprocess pipeline step is called with large
         regions (larger than indicated in config['STACKUP_THRESHOLD']),
         they are downsampled to have length config['STACKUP_THRESHOLD']."""
-        mock_frame = pd.DataFrame({0: ["chr1"] * 20, 1: [0] * 20, 2: [1] * 20, 3: ["chr1"] * 20, 4: [0] * 20, 5: [1] * 20})
+        mock_frame = pd.DataFrame(
+            {
+                0: ["chr1"] * 20,
+                1: [0] * 20,
+                2: [1] * 20,
+                3: ["chr1"] * 20,
+                4: [0] * 20,
+                5: [1] * 20,
+            }
+        )
         mock_read_csv.return_value = mock_frame
         # call function
         window = 400000

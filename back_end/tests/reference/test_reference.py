@@ -15,6 +15,7 @@ versions.txt beside it lists the libraries. The comparison is by value:
 
 A change that moves results on purpose loosens a tolerance here and says why in the changelog.
 """
+
 import json
 import os
 import tempfile
@@ -24,7 +25,9 @@ import numpy as np
 
 from .harness import compute
 
-EXPECTED_DIR = os.path.join(os.path.dirname(__file__), "..", "testfiles", "reference", "expected")
+EXPECTED_DIR = os.path.join(
+    os.path.dirname(__file__), "..", "testfiles", "reference", "expected"
+)
 RTOL = 1e-6
 ATOL = 1e-12
 MIN_ADJUSTED_RAND_INDEX = 0.9
@@ -58,9 +61,17 @@ class TestReferenceResults(unittest.TestCase):
 
     def test_same_results_are_stored(self):
         stored = set(self.results)
-        expected = set(self.expected_arrays) | set(self.expected_shapes) | set(self.expected_text)
-        self.assertEqual(sorted(stored - expected), [], "stored, but not in the reference")
-        self.assertEqual(sorted(expected - stored), [], "in the reference, but not stored")
+        expected = (
+            set(self.expected_arrays)
+            | set(self.expected_shapes)
+            | set(self.expected_text)
+        )
+        self.assertEqual(
+            sorted(stored - expected), [], "stored, but not in the reference"
+        )
+        self.assertEqual(
+            sorted(expected - stored), [], "in the reference, but not stored"
+        )
 
     def test_cleaned_files_and_errors(self):
         for key, text in self.expected_text.items():
@@ -86,15 +97,20 @@ class TestReferenceResults(unittest.TestCase):
                 self.assertEqual(actual.shape, expected.shape)
                 how = kind(key)
                 if how == "values" or np.isnan(expected).all():
-                    np.testing.assert_allclose(actual, expected, rtol=RTOL, atol=ATOL, equal_nan=True)
+                    np.testing.assert_allclose(
+                        actual, expected, rtol=RTOL, atol=ATOL, equal_nan=True
+                    )
                 elif how == "clusters":
                     self.assertGreaterEqual(
-                        adjusted_rand_score(expected.ravel(), actual.ravel()), MIN_ADJUSTED_RAND_INDEX
+                        adjusted_rand_score(expected.ravel(), actual.ravel()),
+                        MIN_ADJUSTED_RAND_INDEX,
                     )
                 elif how == "embedding":
                     np.testing.assert_array_equal(np.isnan(actual), np.isnan(expected))
                     rows = ~np.isnan(expected).any(axis=1)
-                    correlation = spearmanr(pdist(expected[rows]), pdist(actual[rows])).correlation
+                    correlation = spearmanr(
+                        pdist(expected[rows]), pdist(actual[rows])
+                    ).correlation
                     self.assertGreaterEqual(correlation, MIN_DISTANCE_CORRELATION)
 
 

@@ -1,4 +1,5 @@
 """Pipeline steps for redis queue"""
+
 import os
 import uuid
 import logging
@@ -72,7 +73,7 @@ def pileup_pipeline_step(cooler_dataset_id, interval_id, binsize, arms, pileup_t
     """Performs pileup [either ICCF or Obs/Exp; parameter passed to pileup_type] of cooler_dataset on
     intervals with resolution binsize."""
     current_app.logger.info(
-        f"  Doing pileup on cooler {cooler_dataset_id} with intervals { interval_id} on binsize {binsize} with {pileup_type}"
+        f"  Doing pileup on cooler {cooler_dataset_id} with intervals {interval_id} on binsize {binsize} with {pileup_type}"
     )
     cooler_dataset = Dataset.query.get(cooler_dataset_id)
     intervals = Intervals.query.get(interval_id)

@@ -1,4 +1,5 @@
 """Module with the tests for the stackup creation realted tasks."""
+
 import unittest
 from unittest.mock import patch
 import pandas as pd
@@ -35,9 +36,25 @@ class TestPipelineStackup(LoginTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # make datasets
-        self.bedfile = self.create_dataset(id=1, user_id=1, assembly=1, dataset_name="test", filetype="bedfile", dimension="1d")
-        self.bigwigfile = self.create_dataset(id=2, user_id=1, assembly=1, dataset_name="test", filetype="bigwig")
-        self.bedfile2d = self.create_dataset(id=3, user_id=1, assembly=1, dataset_name="test", filetype="bedfile", dimension="2d")
+        self.bedfile = self.create_dataset(
+            id=1,
+            user_id=1,
+            assembly=1,
+            dataset_name="test",
+            filetype="bedfile",
+            dimension="1d",
+        )
+        self.bigwigfile = self.create_dataset(
+            id=2, user_id=1, assembly=1, dataset_name="test", filetype="bigwig"
+        )
+        self.bedfile2d = self.create_dataset(
+            id=3,
+            user_id=1,
+            assembly=1,
+            dataset_name="test",
+            filetype="bedfile",
+            dimension="2d",
+        )
         # make intervals
         self.intervals1 = Intervals(id=1, dataset_id=1)
         self.intervals2 = Intervals(id=1, dataset_id=1)
@@ -55,9 +72,7 @@ class TestPipelineStackup(LoginTestCase):
 
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.stackup_pipeline_step")
-    def test_1d_sequence_called_with_1d_dataset(
-        self, mock_stackup, mock_set_progress
-    ):
+    def test_1d_sequence_called_with_1d_dataset(self, mock_stackup, mock_set_progress):
         """tests whether dataset state is left unchanged if it is not the last task for
         this dataset/intervals combination."""
         # set up database
@@ -69,27 +84,24 @@ class TestPipelineStackup(LoginTestCase):
         pipeline_stackup(2, 1, 10000)
         # check whether processing has finished
         self.assertEqual(1, mock_stackup.call_count)
-        self.assertTrue('region_side' not in mock_stackup.call_args[0])
+        self.assertTrue("region_side" not in mock_stackup.call_args[0])
 
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.stackup_pipeline_step")
-    def test_2d_sequence_called_with_2d_dataset(
-        self, mock_stackup, mock_set_progress
-    ):
+    def test_2d_sequence_called_with_2d_dataset(self, mock_stackup, mock_set_progress):
         """tests whether dataset state is left unchanged if it is not the last task for
         this dataset/intervals combination."""
         # set up database
         self.bedfile.processing_features = [self.bigwigfile]
         db.session.add_all(
-            [self.bedfile2d, self.bigwigfile, self.intervals3,self.unfinished_task2]
+            [self.bedfile2d, self.bigwigfile, self.intervals3, self.unfinished_task2]
         )
         # call pipeline
         pipeline_stackup(2, 3, 10000)
         # check whether processing has finished
         self.assertEqual(2, mock_stackup.call_count)
-        self.assertEqual(mock_stackup.call_args_list[0][1]['region_side'], 'left')
-        self.assertEqual(mock_stackup.call_args_list[1][1]['region_side'], 'right')
-
+        self.assertEqual(mock_stackup.call_args_list[0][1]["region_side"], "left")
+        self.assertEqual(mock_stackup.call_args_list[1][1]["region_side"], "right")
 
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.stackup_pipeline_step")
@@ -276,10 +288,20 @@ class TestStackupWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
         BIN_NUMBER = 40
         mock_chromsizes.return_value = {"chr1": "test"}
         mock_stackup.return_value = np.empty((2, BIN_NUMBER))
-        regions = pd.DataFrame({0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000], 
-                                3: ["chr2", "chr2"], 3: [4000, 5000], 4: [6000, 7000]})
+        regions = pd.DataFrame(
+            {
+                0: ["chr1", "chr1"],
+                1: [0, 1000],
+                2: [1000, 2000],
+                3: ["chr2", "chr2"],
+                3: [4000, 5000],
+                4: [6000, 7000],
+            }
+        )
         # dispatch call
-        _do_stackup_fixed_size(self.dataset.file_path, regions, 200000, 10000, region_side="left")
+        _do_stackup_fixed_size(
+            self.dataset.file_path, regions, 200000, 10000, region_side="left"
+        )
         # check whether stackup was called correctly
         mock_stackup.assert_called_with(
             self.dataset.file_path,
@@ -297,10 +319,20 @@ class TestStackupWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
         BIN_NUMBER = 40
         mock_chromsizes.return_value = {"chr2": "test"}
         mock_stackup.return_value = np.empty((2, BIN_NUMBER))
-        regions = pd.DataFrame({0: ["chr1", "chr1"], 1: [0, 1000], 2: [1000, 2000], 
-                                3: ["chr2", "chr2"], 4: [4000, 5000], 5: [6000, 7000]})
+        regions = pd.DataFrame(
+            {
+                0: ["chr1", "chr1"],
+                1: [0, 1000],
+                2: [1000, 2000],
+                3: ["chr2", "chr2"],
+                4: [4000, 5000],
+                5: [6000, 7000],
+            }
+        )
         # dispatch call
-        _do_stackup_fixed_size(self.dataset.file_path, regions, 200000, 10000, region_side="right")
+        _do_stackup_fixed_size(
+            self.dataset.file_path, regions, 200000, 10000, region_side="right"
+        )
         # check whether stackup was called correctly
         mock_stackup.assert_called_with(
             self.dataset.file_path,

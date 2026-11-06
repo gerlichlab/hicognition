@@ -8,12 +8,15 @@ The arrays go into arrays.npz, except those compared only by their shape, whose 
 shapes.json. The cleaned region files and the errors steps raised go into text.json, and the
 versions of the libraries that computed them into versions.txt.
 """
+
 import json
 import os
 import sys
 import tempfile
 
-EXPECTED_DIR = os.path.join(os.path.dirname(__file__), "..", "testfiles", "reference", "expected")
+EXPECTED_DIR = os.path.join(
+    os.path.dirname(__file__), "..", "testfiles", "reference", "expected"
+)
 LIBRARIES = [
     "numpy",
     "pandas",
@@ -77,7 +80,9 @@ def main():
         json.dump(text, f, indent=1, sort_keys=True)
     with open(os.path.join(EXPECTED_DIR, "versions.txt"), "w", encoding="utf-8") as f:
         f.write("\n".join(library_versions()) + "\n")
-    print(f"{len(arrays)} arrays, {len(shapes)} shapes and {len(text)} texts written to {os.path.abspath(EXPECTED_DIR)}")
+    print(
+        f"{len(arrays)} arrays, {len(shapes)} shapes and {len(text)} texts written to {os.path.abspath(EXPECTED_DIR)}"
+    )
 
 
 if __name__ == "__main__":

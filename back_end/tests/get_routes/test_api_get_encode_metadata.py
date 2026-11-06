@@ -1,4 +1,5 @@
 """Test getting genome assemblies."""
+
 import unittest
 import json
 from unittest.mock import patch

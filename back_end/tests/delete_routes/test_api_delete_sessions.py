@@ -1,4 +1,5 @@
 """Tests for deletion of sessions."""
+
 import datetime
 import unittest
 from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase

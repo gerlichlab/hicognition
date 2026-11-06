@@ -1,4 +1,5 @@
 """Helpers to populate database"""
+
 import json
 from pathlib import Path
 from flask.globals import current_app

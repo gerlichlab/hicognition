@@ -1,4 +1,5 @@
 """Tests for /api/datasets/<dataset_id>/processedDatasetMap/ route to list and query sessions."""
+
 import unittest
 from unittest.mock import patch
 from tests.test_utils.test_helpers import LoginTestCase
@@ -94,13 +95,13 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             filetype="bedfile",
             dataset_name="testfile8",
             processing_state="finished",
-            dimension="2d"
+            dimension="2d",
         )
         self.owned_datasets = [
             self.owned_bedfile,
             self.owned_coolerfile,
             self.owned_bigwig,
-            self.owned_bedfile_interval
+            self.owned_bedfile_interval,
         ]
         self.not_owned_datasets = [self.not_owned_bigwig, self.not_owned_cooler]
         # add bedfile with interval sizetype
@@ -162,15 +163,25 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             ),
             AverageIntervalData(
                 id=9, binsize=5, dataset_id=4, intervals_id=7, value_type="line"
-            )
+            ),
         ]
         self.lineprofiles_2d = [
             AverageIntervalData(
-                id=10, binsize=2000, dataset_id=4, intervals_id=8, value_type="line", region_side="left"
+                id=10,
+                binsize=2000,
+                dataset_id=4,
+                intervals_id=8,
+                value_type="line",
+                region_side="left",
             ),
             AverageIntervalData(
-                id=11, binsize=2000, dataset_id=4, intervals_id=8, value_type="line", region_side="right"
-            )
+                id=11,
+                binsize=2000,
+                dataset_id=4,
+                intervals_id=8,
+                value_type="line",
+                region_side="right",
+            ),
         ]
         # create stackup
         self.stackups = [
@@ -180,8 +191,12 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             IndividualIntervalData(id=4, binsize=10, dataset_id=4, intervals_id=7),
         ]
         self.stackups_2d = [
-            IndividualIntervalData(id=5, binsize=2000, dataset_id=5, intervals_id=8, region_side="left"),
-            IndividualIntervalData(id=6, binsize=2000, dataset_id=5, intervals_id=8, region_side="right"),
+            IndividualIntervalData(
+                id=5, binsize=2000, dataset_id=5, intervals_id=8, region_side="left"
+            ),
+            IndividualIntervalData(
+                id=6, binsize=2000, dataset_id=5, intervals_id=8, region_side="right"
+            ),
         ]
         # create association data
         self.association_data = [
@@ -198,10 +213,14 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         ]
         self.association_data_2d = [
             AssociationIntervalData(
-                id=1, binsize=20000, collection_id=1, intervals_id=8, region_side='left'
+                id=1, binsize=20000, collection_id=1, intervals_id=8, region_side="left"
             ),
             AssociationIntervalData(
-                id=2, binsize=20000, collection_id=1, intervals_id=8, region_side="right"
+                id=2,
+                binsize=20000,
+                collection_id=1,
+                intervals_id=8,
+                region_side="right",
             ),
         ]
         # create embedding data
@@ -265,7 +284,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 intervals_id=8,
                 value_type="1d-embedding",
                 cluster_number="small",
-                region_side="left"
+                region_side="left",
             ),
             EmbeddingIntervalData(
                 id=2,
@@ -274,7 +293,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                 intervals_id=8,
                 value_type="1d-embedding",
                 cluster_number="small",
-                region_side="right"
+                region_side="right",
             ),
         ]
 
@@ -551,21 +570,13 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "lineprofile": {
                 "4": {
                     "name": "testfile4",
-                    "data_ids": {
-                        "100000": {
-                            "2000": {
-                                "right": '11',
-                                "left": '10'
-                                }
-                            }
-                    },
+                    "data_ids": {"100000": {"2000": {"right": "11", "left": "10"}}},
                 },
             },
             "embedding1d": {},
             "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
-
 
     def test_structure_of_mapping_lineprofiles_variable_intervals(self):
         """Test whether the structure of the returned object is correct for
@@ -665,14 +676,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "stackup": {
                 "5": {
                     "name": "testfile5",
-                    "data_ids": {
-                            '100000':{
-                                "2000": {
-                                    "right": '6',
-                                    "left": '5'
-                                    }
-                            }
-                            }
+                    "data_ids": {"100000": {"2000": {"right": "6", "left": "5"}}},
                 },
             },
             "lineprofile": {},
@@ -681,8 +685,6 @@ class TestGetProcessedDatasetMap(LoginTestCase):
             "embedding2d": {},
         }
         self.assertEqual(response.json, expected)
-
-
 
     def test_structure_of_mapping_stackups_variable_intervals(self):
         """Test whether the structure of the returned object is correct for
@@ -790,10 +792,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
                     "data_ids": {
                         "100000": {
-                            "20000": {
-                                "left": "1",
-                                "right": "2"
-                            },
+                            "20000": {"left": "1", "right": "2"},
                         }
                     },
                 }
@@ -891,10 +890,9 @@ class TestGetProcessedDatasetMap(LoginTestCase):
         }
         self.assertEqual(response.json, expected)
 
-
     def test_structure_of_mapping_w_intervals_w_embedding_data_2d(self):
         """Test whether the structure of the returned object is correct for
-        2d bedfile associated with embedding data """
+        2d bedfile associated with embedding data"""
         # authenticate
         token = self.add_and_authenticate("test", "asdf")
         # create token header
@@ -924,14 +922,7 @@ class TestGetProcessedDatasetMap(LoginTestCase):
                     "name": "test_collection",
                     "collection_dataset_names": ["testfile", "testfile7", "testfile8"],
                     "data_ids": {
-                        "100000": {
-                            "10000": {
-                                "small": {
-                                    "left": "1",
-                                    "right": "2"
-                                }
-                                }
-                            },
+                        "100000": {"10000": {"small": {"left": "1", "right": "2"}}},
                     },
                 }
             },

@@ -1,4 +1,5 @@
 """Module with tests realted adding datasets."""
+
 import json
 import unittest
 from unittest.mock import patch
@@ -113,7 +114,7 @@ class TestAddDataSetsEncode(LoginTestCase, TempDirTestCase):
                 "code": 400,
                 "msg": "Form is not valid",
                 "return_value": {"status_code": 400},
-            }
+            },
         }
 
         for key, test_case in test_cases.items():

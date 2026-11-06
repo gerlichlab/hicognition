@@ -1,4 +1,5 @@
 """Tasks for the redis-queue"""
+
 import os
 import logging
 from typing import Any

@@ -1,4 +1,5 @@
 """Tests for /api/intervals route to list intervals."""
+
 import unittest
 from unittest.mock import patch
 import os

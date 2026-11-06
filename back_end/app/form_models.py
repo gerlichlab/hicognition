@@ -1,4 +1,5 @@
 """Pydantic models to validate integrity of Forms for the HiCognition API."""
+
 from typing import Any, Optional
 from pydantic import BaseModel, Field, validator, constr, AnyHttpUrl
 from flask import current_app

@@ -1,4 +1,5 @@
 """Tests for get route of features associated with embedding interval data."""
+
 import os
 import gzip
 import json
@@ -24,9 +25,13 @@ class TestGetEmbeddingIntervalDataFeatures(LoginTestCase, TempDirTestCase):
         # add unowned collection
         self.unowned_collection = Collection(id=2, user_id=2)
         # add owned bedfile
-        self.owned_bedfile = self.create_dataset(id=3, dataset_name="test3", filetype="bedfile", user_id=1)
+        self.owned_bedfile = self.create_dataset(
+            id=3, dataset_name="test3", filetype="bedfile", user_id=1
+        )
         # add unowned bedfile
-        self.unowned_bedfile = self.create_dataset(id=4, dataset_name="test4", filetype="bedfile", user_id=2)
+        self.unowned_bedfile = self.create_dataset(
+            id=4, dataset_name="test4", filetype="bedfile", user_id=2
+        )
         # add intervals for owned bedfile
         self.owned_intervals = Intervals(
             id=1, dataset_id=self.owned_bedfile.id, windowsize=200000

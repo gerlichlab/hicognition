@@ -1,4 +1,5 @@
 """Test to check whether retrieving of individualIntervalData data works."""
+
 import os
 import unittest
 from unittest.mock import patch
@@ -21,13 +22,21 @@ class TestGetIndividualIntervalData(LoginTestCase, TempDirTestCase):
     def setUp(self):
         super().setUp()
         # add unowned bigwig
-        self.unowned_bigwig = self.create_dataset(id=1, dataset_name="test1", filetype="bigwig", user_id=5)
+        self.unowned_bigwig = self.create_dataset(
+            id=1, dataset_name="test1", filetype="bigwig", user_id=5
+        )
         # add owned bigwig
-        self.owned_bigwig = self.create_dataset(id=2, dataset_name="test2", filetype="bigwig", user_id=1)
+        self.owned_bigwig = self.create_dataset(
+            id=2, dataset_name="test2", filetype="bigwig", user_id=1
+        )
         # add owned bedfile
-        self.owned_bedfile = self.create_dataset(id=3, dataset_name="test3", filetype="bedfile", user_id=1)
+        self.owned_bedfile = self.create_dataset(
+            id=3, dataset_name="test3", filetype="bedfile", user_id=1
+        )
         # add unowned bedfile
-        self.unowned_bedfile = self.create_dataset(id=4, dataset_name="test4", filetype="bedfile", user_id=2)
+        self.unowned_bedfile = self.create_dataset(
+            id=4, dataset_name="test4", filetype="bedfile", user_id=2
+        )
         # add unowned, public bigwig
         self.unowned_public_bigwig = self.create_dataset(
             id=5, dataset_name="test5", filetype="bigwig", user_id=5, public=True
@@ -337,13 +346,21 @@ class TestGetStackupMetadata(LoginTestCase, TempDirTestCase):
     def setUp(self):
         super().setUp()
         # add unowned bigwig
-        self.unowned_bigwig = self.create_dataset(id=1, dataset_name="test", filetype="bigwig", user_id=5)
+        self.unowned_bigwig = self.create_dataset(
+            id=1, dataset_name="test", filetype="bigwig", user_id=5
+        )
         # add owned bigwig
-        self.owned_bigwig = self.create_dataset(id=2, dataset_name="test", filetype="bigwig", user_id=1)
+        self.owned_bigwig = self.create_dataset(
+            id=2, dataset_name="test", filetype="bigwig", user_id=1
+        )
         # add owned bedfile
-        self.owned_bedfile = self.create_dataset(id=3, dataset_name="test", filetype="bedfile", user_id=1)
+        self.owned_bedfile = self.create_dataset(
+            id=3, dataset_name="test", filetype="bedfile", user_id=1
+        )
         # add unowned bedfile
-        self.unowned_bedfile = self.create_dataset(id=4, dataset_name="test", filetype="bedfile", user_id=2)
+        self.unowned_bedfile = self.create_dataset(
+            id=4, dataset_name="test", filetype="bedfile", user_id=2
+        )
         # add owned intervals
         self.indices_1 = np.array([0, 2])
         index_file = os.path.join(TempDirTestCase.TEMP_PATH, "indices.npy")

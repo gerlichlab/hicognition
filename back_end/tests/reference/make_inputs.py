@@ -18,6 +18,7 @@ balancing weights are NaN there, and regions on chr3 lie outside the genome.
 - Region sets: anchors as points, TADs, larger overlapping domains and loops as BEDPE, plus two
   point sets for the region collection.
 """
+
 import os
 import subprocess
 import sys
@@ -69,12 +70,12 @@ def make_anchors(rng, tads):
                 anchors.append((chrom, int(boundary + rng.integers(-10_000, 10_001))))
     for _ in range(len(anchors)):
         chrom = "chr1" if rng.random() < 0.6 else "chr2"
-        anchors.append(
-            (chrom, int(rng.integers(50_000, CHROMSIZES[chrom] - 50_000)))
-        )
+        anchors.append((chrom, int(rng.integers(50_000, CHROMSIZES[chrom] - 50_000))))
     anchors = pd.DataFrame(anchors, columns=["chrom", "pos"])
     order = anchors["chrom"].map({chrom: i for i, chrom in enumerate(CHROMSIZES)})
-    return anchors.assign(order=order).sort_values(["order", "pos"]).drop(columns="order")
+    return (
+        anchors.assign(order=order).sort_values(["order", "pos"]).drop(columns="order")
+    )
 
 
 def make_loops(rng, anchors, number=40):
@@ -114,7 +115,9 @@ def cis_contacts(rng, tads, number):
         )
         keep = inside & (same_tad | (rng.random(2 * count) < 0.4))
         pos1, pos2 = pos1[keep][:count], pos2[keep][:count]
-        contacts.append(pd.DataFrame({"chrom1": chrom, "pos1": pos1, "chrom2": chrom, "pos2": pos2}))
+        contacts.append(
+            pd.DataFrame({"chrom1": chrom, "pos1": pos1, "chrom2": chrom, "pos2": pos2})
+        )
     return pd.concat(contacts, ignore_index=True)
 
 
@@ -127,7 +130,12 @@ def loop_contacts(rng, loops):
         pos2 = np.clip(loop.pos2 + rng.normal(0, 2_000, CONTACTS_PER_LOOP), 0, size - 1)
         contacts.append(
             pd.DataFrame(
-                {"chrom1": loop.chrom, "pos1": pos1.astype(np.int64), "chrom2": loop.chrom, "pos2": pos2.astype(np.int64)}
+                {
+                    "chrom1": loop.chrom,
+                    "pos1": pos1.astype(np.int64),
+                    "chrom2": loop.chrom,
+                    "pos2": pos2.astype(np.int64),
+                }
             )
         )
     return pd.concat(contacts, ignore_index=True)
@@ -150,20 +158,30 @@ def pixels_from_contacts(contacts):
     gap_chrom, gap_start, gap_end = CONTACT_GAP
     in_gap = np.zeros(len(contacts), dtype=bool)
     for side in ("1", "2"):
-        in_gap |= (contacts["chrom" + side] == gap_chrom) & contacts["pos" + side].between(
-            gap_start, gap_end - 1
-        )
+        in_gap |= (contacts["chrom" + side] == gap_chrom) & contacts[
+            "pos" + side
+        ].between(gap_start, gap_end - 1)
     contacts = contacts[~in_gap]
     offsets, total = {}, 0
     for chrom, size in CHROMSIZES.items():
         offsets[chrom] = total
         total += -(-size // BASE_RESOLUTION)
-    bin1 = contacts["chrom1"].map(offsets).to_numpy() + contacts["pos1"].to_numpy() // BASE_RESOLUTION
-    bin2 = contacts["chrom2"].map(offsets).to_numpy() + contacts["pos2"].to_numpy() // BASE_RESOLUTION
+    bin1 = (
+        contacts["chrom1"].map(offsets).to_numpy()
+        + contacts["pos1"].to_numpy() // BASE_RESOLUTION
+    )
+    bin2 = (
+        contacts["chrom2"].map(offsets).to_numpy()
+        + contacts["pos2"].to_numpy() // BASE_RESOLUTION
+    )
     low, high = np.minimum(bin1, bin2), np.maximum(bin1, bin2)
     keys, counts = np.unique(low * total + high, return_counts=True)
     return pd.DataFrame(
-        {"bin1_id": keys // total, "bin2_id": keys % total, "count": counts.astype(np.int32)}
+        {
+            "bin1_id": keys // total,
+            "bin2_id": keys % total,
+            "count": counts.astype(np.int32),
+        }
     )
 
 
@@ -173,7 +191,10 @@ def write_coolers(out_dir, pixels):
     base = os.path.join(out_dir, "base.cool")
     cooler.create_cooler(base, bins, pixels, ordered=True, dtypes={"count": np.int32})
     cooler_cli = os.path.join(os.path.dirname(sys.executable), "cooler")
-    for name, resolutions in (("cooler_a.mcool", RESOLUTIONS_A), ("cooler_b.mcool", RESOLUTIONS_B)):
+    for name, resolutions in (
+        ("cooler_a.mcool", RESOLUTIONS_A),
+        ("cooler_b.mcool", RESOLUTIONS_B),
+    ):
         subprocess.run(
             [
                 cooler_cli,
@@ -199,8 +220,12 @@ def peak_values(rng, anchors, baseline, amplitude):
     shape = amplitude * np.exp(-0.5 * (offsets / 3) ** 2)
     for chrom, size in CHROMSIZES.items():
         steps = size // BIGWIG_STEP
-        values = np.repeat(baseline * (1 + 0.3 * rng.random(steps // 50 + 1)), 50)[:steps]
-        for center in anchors.loc[anchors["chrom"] == chrom, "pos"].to_numpy() // BIGWIG_STEP:
+        values = np.repeat(baseline * (1 + 0.3 * rng.random(steps // 50 + 1)), 50)[
+            :steps
+        ]
+        for center in (
+            anchors.loc[anchors["chrom"] == chrom, "pos"].to_numpy() // BIGWIG_STEP
+        ):
             index = center + offsets
             inside = (index >= 0) & (index < steps)
             values[index[inside]] += shape[inside]
@@ -242,7 +267,9 @@ def write_bigwig(path, tracks):
 
 
 def write_bigwigs(out_dir, rng, anchors, tads):
-    write_bigwig(os.path.join(out_dir, "peaks.bw"), peak_values(rng, anchors, 1.0, 20.0))
+    write_bigwig(
+        os.path.join(out_dir, "peaks.bw"), peak_values(rng, anchors, 1.0, 20.0)
+    )
     write_bigwig(os.path.join(out_dir, "domains.bw"), domain_values(rng, tads))
     dips = peak_values(rng, anchors, 5.0, -4.0)
     dips["chr1"][9_500_000 // BIGWIG_STEP :] = np.nan
@@ -254,7 +281,11 @@ def peaks(frame, column="pos"):
     """500 bp intervals centred on the positions in column."""
     half = PEAK_WIDTH // 2
     return pd.DataFrame(
-        {"chrom": frame["chrom"], "start": frame[column] - half, "end": frame[column] + half}
+        {
+            "chrom": frame["chrom"],
+            "start": frame[column] - half,
+            "end": frame[column] + half,
+        }
     )
 
 
@@ -264,7 +295,12 @@ def write_regions(out_dir, rng, anchors, tads, loops):
 
     # points, with one near the start of chr1, one across chr1's arm boundary and two outside the genome
     edge_cases = pd.DataFrame(
-        [("chr1", 500, 1000), ("chr1", 3_999_800, 4_000_300), ("chr3", 100_000, 100_500), ("chr3", 200_000, 200_500)],
+        [
+            ("chr1", 500, 1000),
+            ("chr1", 3_999_800, 4_000_300),
+            ("chr3", 100_000, 100_500),
+            ("chr3", 200_000, 200_500),
+        ],
         columns=["chrom", "start", "end"],
     )
     write("points.bed", pd.concat([peaks(anchors), edge_cases], ignore_index=True))
@@ -278,25 +314,41 @@ def write_regions(out_dir, rng, anchors, tads, loops):
         domains.append((chrom, start, start + length))
     domains = pd.DataFrame(domains, columns=["chrom", "start", "end"])
     order = domains["chrom"].map({chrom: i for i, chrom in enumerate(CHROMSIZES)})
-    write("domains.bed", domains.assign(order=order).sort_values(["order", "start"]).drop(columns="order"))
+    write(
+        "domains.bed",
+        domains.assign(order=order)
+        .sort_values(["order", "start"])
+        .drop(columns="order"),
+    )
     first, second = peaks(loops, "pos1"), peaks(loops, "pos2")
     write(
         "loops.bedpe",
         pd.concat([first.add_suffix("1"), second.add_suffix("2")], axis=1),
     )
-    shifted = anchors.assign(pos=np.minimum(anchors["pos"] + 50_000, anchors["chrom"].map(CHROMSIZES) - PEAK_WIDTH))
+    shifted = anchors.assign(
+        pos=np.minimum(
+            anchors["pos"] + 50_000, anchors["chrom"].map(CHROMSIZES) - PEAK_WIDTH
+        )
+    )
     write("shifted.bed", peaks(shifted))
     random_points = []
     for _ in range(80):
         chrom = "chr1" if rng.random() < 0.6 else "chr2"
-        random_points.append((chrom, int(rng.integers(PEAK_WIDTH, CHROMSIZES[chrom] - PEAK_WIDTH))))
+        random_points.append(
+            (chrom, int(rng.integers(PEAK_WIDTH, CHROMSIZES[chrom] - PEAK_WIDTH)))
+        )
     random_points = pd.DataFrame(random_points, columns=["chrom", "pos"])
     order = random_points["chrom"].map({chrom: i for i, chrom in enumerate(CHROMSIZES)})
-    write("random.bed", peaks(random_points.assign(order=order).sort_values(["order", "pos"])))
+    write(
+        "random.bed",
+        peaks(random_points.assign(order=order).sort_values(["order", "pos"])),
+    )
 
 
 def write_assembly(out_dir):
-    pd.Series(CHROMSIZES).to_csv(os.path.join(out_dir, "synthetic.chrom.sizes"), sep="\t", header=False)
+    pd.Series(CHROMSIZES).to_csv(
+        os.path.join(out_dir, "synthetic.chrom.sizes"), sep="\t", header=False
+    )
     pd.DataFrame(ARMS, columns=["chrom", "start", "end"]).to_csv(
         os.path.join(out_dir, "arms.synthetic"), index=False
     )
@@ -309,7 +361,11 @@ def main(out_dir):
     anchors = make_anchors(rng, tads)
     loops = make_loops(rng, anchors)
     contacts = pd.concat(
-        [cis_contacts(rng, tads, CIS_CONTACTS), loop_contacts(rng, loops), trans_contacts(rng)],
+        [
+            cis_contacts(rng, tads, CIS_CONTACTS),
+            loop_contacts(rng, loops),
+            trans_contacts(rng),
+        ],
         ignore_index=True,
     )
     write_coolers(out_dir, pixels_from_contacts(contacts))

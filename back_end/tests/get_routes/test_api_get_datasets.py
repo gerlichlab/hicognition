@@ -1,4 +1,5 @@
 """Tests for /api/datasets route to list datasets."""
+
 import unittest
 from unittest.mock import patch
 import pandas as pd
@@ -315,11 +316,18 @@ class TestGetBedFile(LoginTestCase):
         """adds test datasets to db"""
         super().setUp()
         # create test datasets
-        self.unowned_dataset = self.create_dataset(id=1, dataset_name="test", user_id=2, filetype="bedfile")
-        self.owned_dataset_not_bed = self.create_dataset(id=2, dataset_name="test", user_id=1, filetype="cooler")
-        self.owned_dataset_wo_file = self.create_dataset(id=3, dataset_name="test", user_id=1, filetype="bedfile")
+        self.unowned_dataset = self.create_dataset(
+            id=1, dataset_name="test", user_id=2, filetype="bedfile"
+        )
+        self.owned_dataset_not_bed = self.create_dataset(
+            id=2, dataset_name="test", user_id=1, filetype="cooler"
+        )
+        self.owned_dataset_wo_file = self.create_dataset(
+            id=3, dataset_name="test", user_id=1, filetype="bedfile"
+        )
         self.owned_dataset_w_file = self.create_dataset(
-            id=4, dataset_name="test",
+            id=4,
+            dataset_name="test",
             user_id=1,
             file_path="tests/testfiles/tad_boundaries.bed",
             filetype="bedfile",

@@ -1,4 +1,5 @@
 """Generate and check email confirmation tokens"""
+
 from flask import render_template
 from flask_mail import Message
 

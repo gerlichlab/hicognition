@@ -1,4 +1,5 @@
 """Tests for deletion of assemblies."""
+
 import os
 import unittest
 from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
@@ -46,7 +47,9 @@ class TestDeleteAssembly(LoginTestCase, TempDirTestCase):
             chrom_arms=self._create_empty_file_in_tempdir("arms38.txt"),
         )
         # define associted datasets
-        self.dataset1 = self.create_dataset(id=1, dataset_name="test1", assembly=2, user_id=1)
+        self.dataset1 = self.create_dataset(
+            id=1, dataset_name="test1", assembly=2, user_id=1
+        )
         # aut
         token = self.add_and_authenticate("test", "asdf")
         # create token_headers
@@ -71,7 +74,7 @@ class TestDeleteAssembly(LoginTestCase, TempDirTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.get_json()['message'], 'Unconfirmed')
+        self.assertEqual(response.get_json()["message"], "Unconfirmed")
 
     def test_delete_wo_id(self):
         """Should return 405 since delete is not allowed for /api/assemblies"""

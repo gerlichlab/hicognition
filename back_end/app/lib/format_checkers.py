@@ -1,4 +1,5 @@
-"""Collection of format checkers for biological data formats. """
+"""Collection of format checkers for biological data formats."""
+
 import os
 import re
 import cooler

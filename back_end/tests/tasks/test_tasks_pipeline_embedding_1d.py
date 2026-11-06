@@ -1,4 +1,5 @@
 """Module with the tests for the 1D-data embedding preprocessing realted tasks."""
+
 import os
 import unittest
 from unittest.mock import patch
@@ -52,15 +53,26 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
             id=1, user_id=1, filetype="bedfile", assembly=1, dataset_name="test"
         )
         self.bed_file_2d = self.create_dataset(
-            id=5, user_id=1, filetype="bedfile", assembly=1, dataset_name="test2d", dimension="2d"
+            id=5,
+            user_id=1,
+            filetype="bedfile",
+            assembly=1,
+            dataset_name="test2d",
+            dimension="2d",
         )
         # create intervals
         self.intervals_1 = Intervals(id=1, windowsize=100000, dataset_id=1)
         self.intervals_2d = Intervals(id=2, windowsize=100000, dataset_id=5)
         # create feature datasets
-        self.feature_1 = self.create_dataset(id=2, dataset_name="test", user_id=1, filetype="bigwig", assembly=1)
-        self.feature_2 = self.create_dataset(id=3, dataset_name="test", user_id=1, filetype="bigwig", assembly=1)
-        self.feature_3 = self.create_dataset(id=4, dataset_name="test", user_id=1, filetype="bigwig", assembly=1)
+        self.feature_1 = self.create_dataset(
+            id=2, dataset_name="test", user_id=1, filetype="bigwig", assembly=1
+        )
+        self.feature_2 = self.create_dataset(
+            id=3, dataset_name="test", user_id=1, filetype="bigwig", assembly=1
+        )
+        self.feature_3 = self.create_dataset(
+            id=4, dataset_name="test", user_id=1, filetype="bigwig", assembly=1
+        )
         # create collection
         self.collection_1 = Collection(
             id=1,
@@ -145,7 +157,7 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
                 self.feature_1,
                 self.feature_2,
                 self.feature_3,
-                self.collection_1
+                self.collection_1,
             ]
         )
         # trigger embedding
@@ -153,14 +165,15 @@ class TestPipelineEmbedding1d(LoginTestCase, TempDirTestCase):
         # assert that perform stackup was called with right parameters
         for side in ["left", "right"]:
             expected_calls = [
-                ((ds_id, self.intervals_2d.id, 10000), {"region_side":side}) for ds_id in [self.feature_1.id, self.feature_2.id, self.feature_3.id]
+                ((ds_id, self.intervals_2d.id, 10000), {"region_side": side})
+                for ds_id in [self.feature_1.id, self.feature_2.id, self.feature_3.id]
             ]
-            for args,kwargs in expected_calls:
+            for args, kwargs in expected_calls:
                 mock_stackup.assert_any_call(*args, **kwargs)
             # check whether perform embedding is called correctly
             mock_embedding.assert_any_call(
                 self.collection_1.id, self.intervals_2d.id, 10000, region_side=side
-        )
+            )
 
     @patch("app.pipeline_steps.set_task_progress")
     @patch("app.pipeline_steps.stackup_pipeline_step")
@@ -243,16 +256,26 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
         np.save(data_path_3, self.test_data_3)
         # add database entries
         # create bed dataset
-        self.bed_file = self.create_dataset(id=1, dataset_name="test", user_id=1, filetype="bedfile")
-        self.bed_file_2d = self.create_dataset(id=5, dataset_name="test", user_id=1, filetype="bedfile", dimension="2d")
+        self.bed_file = self.create_dataset(
+            id=1, dataset_name="test", user_id=1, filetype="bedfile"
+        )
+        self.bed_file_2d = self.create_dataset(
+            id=5, dataset_name="test", user_id=1, filetype="bedfile", dimension="2d"
+        )
         # create intervals
         self.intervals_1 = Intervals(id=1, windowsize=100000, dataset_id=1)
         self.intervals_2 = Intervals(id=2, windowsize=None, dataset_id=1)
         self.intervals_2d = Intervals(id=3, windowsize=100000, dataset_id=5)
         # create feature datasets
-        self.feature_1 = self.create_dataset(id=2, dataset_name="test", user_id=1, filetype="bigwig")
-        self.feature_2 = self.create_dataset(id=3, dataset_name="test", user_id=1, filetype="bigwig")
-        self.feature_3 = self.create_dataset(id=4, dataset_name="test", user_id=1, filetype="bigwig")
+        self.feature_1 = self.create_dataset(
+            id=2, dataset_name="test", user_id=1, filetype="bigwig"
+        )
+        self.feature_2 = self.create_dataset(
+            id=3, dataset_name="test", user_id=1, filetype="bigwig"
+        )
+        self.feature_3 = self.create_dataset(
+            id=4, dataset_name="test", user_id=1, filetype="bigwig"
+        )
         # create collection
         self.collection_1 = Collection(
             id=1, datasets=[self.feature_1, self.feature_2, self.feature_3]
@@ -285,7 +308,7 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
             intervals_id=self.intervals_2d.id,
             binsize=10000,
             file_path=data_path_1,
-            region_side="left"
+            region_side="left",
         )
         self.ind_data_5 = IndividualIntervalData(
             id=5,
@@ -293,7 +316,7 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
             intervals_id=self.intervals_2d.id,
             binsize=10000,
             file_path=data_path_2,
-            region_side="left"
+            region_side="left",
         )
         self.ind_data_6 = IndividualIntervalData(
             id=6,
@@ -301,7 +324,7 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
             intervals_id=self.intervals_2d.id,
             binsize=10000,
             file_path=data_path_3,
-            region_side="left"
+            region_side="left",
         )
 
     @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_variable_size")
@@ -372,7 +395,9 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
 
     @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_variable_size")
     @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_fixed_size")
-    def test_database_entry_added_correctly_2d(self, mock_fixed_size, mock_variable_size):
+    def test_database_entry_added_correctly_2d(
+        self, mock_fixed_size, mock_variable_size
+    ):
         """Tests whether database entry is added correctly"""
         # add return values
         mock_fixed_size.return_value = {
@@ -420,8 +445,10 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
         # test
         # test
         # test whether database entry has been added
-        for side in ['left', 'right']:
-            embedding_1d_pipeline_step(self.collection_1.id, self.intervals_2d.id, 10000, region_side=side)
+        for side in ["left", "right"]:
+            embedding_1d_pipeline_step(
+                self.collection_1.id, self.intervals_2d.id, 10000, region_side=side
+            )
             embeddings = EmbeddingIntervalData.query.filter_by(region_side=side).all()
             self.assertEqual(len(embeddings), 2)
             self.assertEqual(
@@ -440,7 +467,6 @@ class TestEmbedding1DPipelineStep(LoginTestCase, TempDirTestCase):
             self.assertEqual(embedding.collection_id, self.collection_1.id)
             self.assertEqual(embedding.intervals_id, self.intervals_2d.id)
             self.assertEqual(embedding.region_side, side)
-
 
     @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_variable_size")
     @patch("app.pipeline_steps.worker_funcs._do_embedding_1d_fixed_size")
@@ -574,13 +600,21 @@ class TestEmbedding1DWorkerFunctionFixedSize(LoginTestCase, TempDirTestCase):
         np.save(data_path_3, self.test_data_3)
         # add database entries
         # create bed dataset
-        self.bed_file = self.create_dataset(id=1, dataset_name="test", user_id=1, filetype="bedfile")
+        self.bed_file = self.create_dataset(
+            id=1, dataset_name="test", user_id=1, filetype="bedfile"
+        )
         # create intervals
         self.intervals_1 = Intervals(id=1, windowsize=100000, dataset_id=1)
         # create feature datasets
-        self.feature_1 = self.create_dataset(id=2, dataset_name="test", user_id=1, filetype="bigwig")
-        self.feature_2 = self.create_dataset(id=3, dataset_name="test", user_id=1, filetype="bigwig")
-        self.feature_3 = self.create_dataset(id=4, dataset_name="test", user_id=1, filetype="bigwig")
+        self.feature_1 = self.create_dataset(
+            id=2, dataset_name="test", user_id=1, filetype="bigwig"
+        )
+        self.feature_2 = self.create_dataset(
+            id=3, dataset_name="test", user_id=1, filetype="bigwig"
+        )
+        self.feature_3 = self.create_dataset(
+            id=4, dataset_name="test", user_id=1, filetype="bigwig"
+        )
         # create collection
         self.collection_1 = Collection(
             id=1, datasets=[self.feature_1, self.feature_2, self.feature_3]
@@ -681,13 +715,21 @@ class TestEmbedding1DWorkerFunctionVariableSize(LoginTestCase, TempDirTestCase):
         np.save(data_path_3, self.test_data_3)
         # add database entries
         # create bed dataset
-        self.bed_file = self.create_dataset(id=1, dataset_name="test", user_id=1, filetype="bedfile")
+        self.bed_file = self.create_dataset(
+            id=1, dataset_name="test", user_id=1, filetype="bedfile"
+        )
         # create intervals
         self.intervals_1 = Intervals(id=1, windowsize=None, dataset_id=1)
         # create feature datasets
-        self.feature_1 = self.create_dataset(id=2, dataset_name="test", user_id=1, filetype="bigwig")
-        self.feature_2 = self.create_dataset(id=3, dataset_name="test", user_id=1, filetype="bigwig")
-        self.feature_3 = self.create_dataset(id=4, dataset_name="test", user_id=1, filetype="bigwig")
+        self.feature_1 = self.create_dataset(
+            id=2, dataset_name="test", user_id=1, filetype="bigwig"
+        )
+        self.feature_2 = self.create_dataset(
+            id=3, dataset_name="test", user_id=1, filetype="bigwig"
+        )
+        self.feature_3 = self.create_dataset(
+            id=4, dataset_name="test", user_id=1, filetype="bigwig"
+        )
         # create collection
         self.collection_1 = Collection(
             id=1, datasets=[self.feature_1, self.feature_2, self.feature_3]

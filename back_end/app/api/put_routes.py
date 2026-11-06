@@ -1,4 +1,5 @@
 """API endpoints for hicognition"""
+
 from flask import g, request
 from flask.json import jsonify
 

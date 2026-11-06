@@ -1,4 +1,5 @@
 """Tests for deletion of collections."""
+
 import os
 import unittest
 from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
@@ -29,8 +30,9 @@ class TestDeleteCollection(LoginTestCase, TempDirTestCase):
         # define associated data
         self.assoc_path = self._create_empty_file_in_tempdir("test.npy")
         self.assoc_data = AssociationIntervalData(
-            file_path=self.assoc_path, collection_id=self.collection_user_1.id,
-            intervals_id=1
+            file_path=self.assoc_path,
+            collection_id=self.collection_user_1.id,
+            intervals_id=1,
         )
 
     def test_no_auth(self):

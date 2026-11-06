@@ -1,4 +1,5 @@
 """Test getting genome assemblies."""
+
 import unittest
 from unittest.mock import patch
 from tests.test_utils.test_helpers import LoginTestCase

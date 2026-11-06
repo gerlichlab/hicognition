@@ -1,4 +1,5 @@
 """Convenience functions for hicognition"""
+
 import numpy as np
 
 

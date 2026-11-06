@@ -1,4 +1,5 @@
 """Module with tests realted adding and managing metadata."""
+
 import os
 import json
 import io
@@ -29,7 +30,9 @@ class TestAddMetadata(LoginTestCase, TempDirTestCase):
             {"id": [0, 1, 2, 3, 4, 5], "start": [0] * 6, "end": [10] * 6}
         )
         test_data_len_6.to_csv(test_filepath_len_6, sep="\t", header=None)
-        self.dataset_len_6 = self.create_dataset(id=1, dataset_name="test", user_id=1, file_path=test_filepath_len_6)
+        self.dataset_len_6 = self.create_dataset(
+            id=1, dataset_name="test", user_id=1, file_path=test_filepath_len_6
+        )
 
     def test_access_denied_without_token(self):
         """Test whether post request results in 401 error

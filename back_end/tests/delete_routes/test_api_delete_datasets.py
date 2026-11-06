@@ -1,4 +1,5 @@
 """Tests for deletion of datasets."""
+
 import os
 from pathlib import Path
 import unittest
@@ -60,18 +61,32 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         """adds test datasets to db"""
         super().setUp()
         # create owned data_set cooler
-        self.owned_cooler = self.create_dataset(id=1, dataset_name="ds1", filetype="cooler", user_id=1)
+        self.owned_cooler = self.create_dataset(
+            id=1, dataset_name="ds1", filetype="cooler", user_id=1
+        )
         # create not owned data_set
-        self.unowned_cooler = self.create_dataset(id=2, dataset_name="ds1", filetype="cooler", user_id=2)
+        self.unowned_cooler = self.create_dataset(
+            id=2, dataset_name="ds1", filetype="cooler", user_id=2
+        )
         # create owned data_set bed
-        self.owned_bedfile = self.create_dataset(id=3, dataset_name="ds1", filetype="bedfile", user_id=1)
+        self.owned_bedfile = self.create_dataset(
+            id=3, dataset_name="ds1", filetype="bedfile", user_id=1
+        )
         # create not owned data_set bed
-        self.unowned_bedfile = self.create_dataset(id=4, dataset_name="ds1", filetype="bedfile", user_id=2)
+        self.unowned_bedfile = self.create_dataset(
+            id=4, dataset_name="ds1", filetype="bedfile", user_id=2
+        )
         # create owned data_set bigwig
-        self.owned_bigwig = self.create_dataset(id=5, dataset_name="ds1", filetype="bigwig", user_id=1)
+        self.owned_bigwig = self.create_dataset(
+            id=5, dataset_name="ds1", filetype="bigwig", user_id=1
+        )
         # create cooler that is in processing state
         self.owned_cooler_w_wrong_path = self.create_dataset(
-            id=7, dataset_name="ds1", filetype="cooler", file_path="/code/tmp/bad_file_path", user_id=1
+            id=7,
+            dataset_name="ds1",
+            filetype="cooler",
+            file_path="/code/tmp/bad_file_path",
+            user_id=1,
         )
         # create public, unowned cooler
         self.unowned_public_cooler = self.create_dataset(
@@ -152,7 +167,7 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
             "/api/datasets/500/", headers=token_headers, content_type="application/json"
         )
         self.assertEqual(response.status_code, 404)
- 
+
     def test_delete_dataset_wo_permission(self):
         """Should return 403 since dataset is not owned."""
         token = self.add_and_authenticate("test", "asdf")
@@ -282,7 +297,11 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         token_headers = self.get_token_header(token)
         # create processing dataset
         owned_cooler_processing = self.create_dataset(
-            id=6, dataset_name="test", filetype="cooler", user_id=1, processing_regions=[self.owned_bedfile]
+            id=6,
+            dataset_name="test",
+            filetype="cooler",
+            user_id=1,
+            processing_regions=[self.owned_bedfile],
         )
         # add dataset that is processing
         db.session.add_all([owned_cooler_processing, self.owned_bedfile])
@@ -303,7 +322,11 @@ class TestDeleteDatasets(LoginTestCase, TempDirTestCase):
         token_headers = self.get_token_header(token)
         # create processing dataset
         owned_bedfile_processing = self.create_dataset(
-            id=6, dataset_name="test", filetype="bedfile", user_id=1, processing_features=[self.owned_cooler]
+            id=6,
+            dataset_name="test",
+            filetype="bedfile",
+            user_id=1,
+            processing_features=[self.owned_cooler],
         )
         # add dataset that is processing
         db.session.add_all([owned_bedfile_processing, self.owned_cooler])

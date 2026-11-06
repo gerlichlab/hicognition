@@ -1,4 +1,5 @@
 """Handling of notifications"""
+
 from datetime import datetime
 from pydantic import BaseModel, validate_arguments
 from . import sse

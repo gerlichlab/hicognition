@@ -1,4 +1,5 @@
 """Start hicognition server."""
+
 import os
 import atexit
 import logging
@@ -64,7 +65,7 @@ def create_user(name, password):
     else:
         # otherwise make a new one
         # and confirm email, email address stays empty form manual created users
-        user = User(username=name, email_confirmed = True)
+        user = User(username=name, email_confirmed=True)
     # prompt for password if not defined
     if password is None:
         password = getpass(f"Enter password for {name}: ")

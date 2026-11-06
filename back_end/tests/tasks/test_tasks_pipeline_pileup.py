@@ -1,4 +1,5 @@
 """Module with the tests for the pileup creation realted tasks."""
+
 import os
 import unittest
 from unittest.mock import patch
@@ -40,8 +41,12 @@ class TestPipelinePileup(LoginTestCase, TempDirTestCase):
         db.session.add(self.hg19)
         db.session.commit()
         # add dataset
-        self.bedfile = self.create_dataset(id=1, dataset_name="test", filetype="bedfile", user_id=1, assembly=1)
-        self.coolerfile = self.create_dataset(id=2, dataset_name="test", filetype="cooler", user_id=1, assembly=1)
+        self.bedfile = self.create_dataset(
+            id=1, dataset_name="test", filetype="bedfile", user_id=1, assembly=1
+        )
+        self.coolerfile = self.create_dataset(
+            id=2, dataset_name="test", filetype="cooler", user_id=1, assembly=1
+        )
         # add intervals
         self.intervals1 = Intervals(
             id=1, name="testRegion1", dataset_id=1, windowsize=200000
@@ -201,7 +206,7 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
             processing_state="finished",
             user_id=1,
             assembly=1,
-            dimension="2d"
+            dimension="2d",
         )
         # add intervals
         self.intervals1 = Intervals(name="testRegion1", dataset_id=1, windowsize=200000)
@@ -254,9 +259,8 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
         # check whether pileup with fixed size was called and with variable size was not called
         mock_pileup_fixed_size.assert_called_once()
         # check whether the pileup function was called with the 2d parameter
-        self.assertEqual(mock_pileup_fixed_size.call_args[1]['dimension'], '2d')
+        self.assertEqual(mock_pileup_fixed_size.call_args[1]["dimension"], "2d")
         mock_pileup_variable_size.assert_not_called()
-
 
     @patch("app.pipeline_steps.worker_funcs._do_pileup_fixed_size")
     @patch("app.pipeline_steps.worker_funcs._do_pileup_variable_size")
@@ -293,9 +297,8 @@ class TestPileupPipelineStep(LoginTestCase, TempDirTestCase):
         # check whether pileup with fixed size was called and with variable size was not called
         mock_pileup_variable_size.assert_called_once()
         # check whether the pileup function was called with the 2d parameter
-        self.assertEqual(mock_pileup_variable_size.call_args[1]['dimension'], '2d')
+        self.assertEqual(mock_pileup_variable_size.call_args[1]["dimension"], "2d")
         mock_pileup_fixed_size.assert_not_called()
-
 
     @patch("app.pipeline_steps.uuid.uuid4")
     @patch("app.pipeline_steps.worker_funcs._add_embedding_2d_to_db")
@@ -453,7 +456,9 @@ class TestPileupWorkerFunctionsFixedSize(LoginTestCase, TempDirTestCase):
         mock_get_expected.assert_not_called()
         expected_pileup_call = ["mock_cooler", returned_regions.dropna()]
         mock_pileup_iccf.assert_called_with(
-            *expected_pileup_call, proc=self.app.config["PILEUP_PROCESSES"], collapse=True
+            *expected_pileup_call,
+            proc=self.app.config["PILEUP_PROCESSES"],
+            collapse=True,
         )
         # check whether iccf pileup is not called
         mock_pileup_obs_exp.assert_not_called()
@@ -927,8 +932,16 @@ class TestGetOptimalBinsize(LoginTestCase):
         """tests correct handling of small regions with rare lare regions"""
         regions = pd.read_csv(
             "tests/testfiles/4kloops.bedpe", sep="\t", header=None
-        ).rename(columns={0: "chrom1", 1: "start1", 2: "end1",
-                                            3: "chrom2", 4:"start2", 5: "end2"})
+        ).rename(
+            columns={
+                0: "chrom1",
+                1: "start1",
+                2: "end1",
+                3: "chrom2",
+                4: "start2",
+                5: "end2",
+            }
+        )
         self.assertEqual(
             get_optimal_binsize(regions, 100, self.PREPROCESSING_MAP),
             None,

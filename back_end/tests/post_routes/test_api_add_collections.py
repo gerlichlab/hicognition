@@ -16,11 +16,19 @@ class TestAddCollection(LoginTestCase):
     def setUp(self):
         super().setUp()
         # add datasets
-        self.empty_owned_dataset_1 = self.create_dataset(id=1, dataset_name="test", user_id=1)
-        self.empty_owned_dataset_2 = self.create_dataset(id=2, dataset_name="test", user_id=1)
+        self.empty_owned_dataset_1 = self.create_dataset(
+            id=1, dataset_name="test", user_id=1
+        )
+        self.empty_owned_dataset_2 = self.create_dataset(
+            id=2, dataset_name="test", user_id=1
+        )
         self.owned_datasets = [self.empty_owned_dataset_1, self.empty_owned_dataset_2]
-        self.empty_unowned_dataset = self.create_dataset(id=1, dataset_name="test", user_id=2)
-        self.dataset_2d = self.create_dataset(id=3, dataset_name="test", user_id=1, dimension="2d")
+        self.empty_unowned_dataset = self.create_dataset(
+            id=1, dataset_name="test", user_id=2
+        )
+        self.dataset_2d = self.create_dataset(
+            id=3, dataset_name="test", user_id=1, dimension="2d"
+        )
 
     def test_access_denied_without_token(self):
         """Tests whether post request results in 401 error

@@ -1,4 +1,5 @@
-""" Convenience functions for handling server errors."""
+"""Convenience functions for handling server errors."""
+
 from http.client import HTTPException
 import logging
 from flask.json import jsonify

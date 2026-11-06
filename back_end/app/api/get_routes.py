@@ -1,4 +1,5 @@
 """GET API endpoints for hicognition"""
+
 import json
 import gzip
 import logging

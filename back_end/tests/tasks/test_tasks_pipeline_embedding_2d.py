@@ -1,4 +1,5 @@
 """Module with the tests for the 2D-data embedding preprocessing realted tasks."""
+
 import unittest
 import numpy as np
 from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase

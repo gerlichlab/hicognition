@@ -1,4 +1,5 @@
 """Tests for db manipulation of tasks"""
+
 import unittest
 from tests.test_utils.test_helpers import LoginTestCase
 from app.pipeline_worker_functions import (
@@ -121,7 +122,7 @@ class TestAddEmbedding1DToDB(LoginTestCase):
             intervals_id=1,
             collection_id=1,
             cluster_number=10,
-            region_side=None
+            region_side=None,
         )
         self.assertEqual(len(EmbeddingIntervalData.query.all()), 1)
         entry = EmbeddingIntervalData.query.first()
@@ -146,7 +147,7 @@ class TestAddEmbedding1DToDB(LoginTestCase):
             intervals_id=1,
             collection_id=1,
             cluster_number=10,
-            region_side=None
+            region_side=None,
         )
         first_id = EmbeddingIntervalData.query.first().id
         # add second entry
@@ -156,7 +157,7 @@ class TestAddEmbedding1DToDB(LoginTestCase):
             intervals_id=1,
             collection_id=1,
             cluster_number=10,
-            region_side=None
+            region_side=None,
         )
         self.assertEqual(len(EmbeddingIntervalData.query.all()), 1)
         entry = EmbeddingIntervalData.query.first()

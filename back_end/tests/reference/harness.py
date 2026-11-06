@@ -16,6 +16,7 @@ such as "error/pileup/cooler_a/query_loops/10000/1000/ICCF/None" to the type and
 the exception a step raised. A step that fails stores nothing, as on a worker, and the
 remaining steps still run.
 """
+
 import os
 import shutil
 
@@ -26,10 +27,26 @@ INPUT_FILES = os.path.join(os.path.dirname(__file__), "..", "testfiles", "refere
 
 # v0.8.0's PREPROCESSING_MAP; app_config.py defines 50000 twice, and Python keeps the second
 PREPROCESSING_MAP = {
-    1000: {"cooler": [], "bigwig": [100, 500], "collections": {"regions": [1000], "1d-features": [100, 500]}},
-    2000: {"cooler": [], "bigwig": [100, 500], "collections": {"regions": [1000], "1d-features": [100, 500]}},
-    5000: {"cooler": [], "bigwig": [100, 500], "collections": {"regions": [1000], "1d-features": [100, 500]}},
-    10000: {"cooler": [1000], "bigwig": [100, 500], "collections": {"regions": [1000], "1d-features": [100, 500]}},
+    1000: {
+        "cooler": [],
+        "bigwig": [100, 500],
+        "collections": {"regions": [1000], "1d-features": [100, 500]},
+    },
+    2000: {
+        "cooler": [],
+        "bigwig": [100, 500],
+        "collections": {"regions": [1000], "1d-features": [100, 500]},
+    },
+    5000: {
+        "cooler": [],
+        "bigwig": [100, 500],
+        "collections": {"regions": [1000], "1d-features": [100, 500]},
+    },
+    10000: {
+        "cooler": [1000],
+        "bigwig": [100, 500],
+        "collections": {"regions": [1000], "1d-features": [100, 500]},
+    },
     20000: {
         "cooler": [1000],
         "bigwig": [200, 500, 1000],
@@ -53,12 +70,18 @@ PREPROCESSING_MAP = {
     1000000: {
         "cooler": [20000, 25000],
         "bigwig": [10000, 20000, 50000, 100000],
-        "collections": {"regions": [20000, 50000], "1d-features": [20000, 50000, 100000]},
+        "collections": {
+            "regions": [20000, 50000],
+            "1d-features": [20000, 50000, 100000],
+        },
     },
     2000000: {
         "cooler": [50000],
         "bigwig": [20000, 50000, 100000, 200000],
-        "collections": {"regions": [50000, 100000, 200000], "1d-features": [50000, 100000, 200000]},
+        "collections": {
+            "regions": [50000, 100000, 200000],
+            "1d-features": [50000, 100000, 200000],
+        },
     },
     "variable": {
         "cooler": [5],
@@ -148,7 +171,9 @@ def compute(work_dir, input_dir=INPUT_FILES):
         db.session.commit()
         arms = pd.read_csv(assembly.chrom_arms)
 
-        def add_dataset(name, filetype, file_path, size_type="undefined", dimension="1d"):
+        def add_dataset(
+            name, filetype, file_path, size_type="undefined", dimension="1d"
+        ):
             dataset = Dataset(
                 dataset_name=name,
                 filetype=filetype,
@@ -170,7 +195,9 @@ def compute(work_dir, input_dir=INPUT_FILES):
             copy = os.path.join(work_dir, label + "_" + file_name)
             shutil.copy(os.path.join(input_dir, file_name), copy)
             dimension = "2d" if file_name.endswith(".bedpe") else "1d"
-            dataset = add_dataset(label + "_" + stem(file_name), "bedfile", copy, size_type, dimension)
+            dataset = add_dataset(
+                label + "_" + stem(file_name), "bedfile", copy, size_type, dimension
+            )
             tasks.pipeline_bed(dataset.id)
             with open(dataset.file_path, encoding="utf-8") as f:
                 results["cleaned/" + label + "/" + file_name] = f.read()
@@ -183,32 +210,52 @@ def compute(work_dir, input_dir=INPUT_FILES):
             except Exception as error:
                 db.session.rollback()
                 message = str(error).replace(work_dir, "<work_dir>")
-                results["error/" + "/".join(str(part) for part in key)] = type(error).__name__ + ": " + message
+                results["error/" + "/".join(str(part) for part in key)] = (
+                    type(error).__name__ + ": " + message
+                )
 
-        coolers = [add_dataset(stem(f), "cooler", os.path.join(input_dir, f)) for f in COOLERS]
-        bigwigs = [add_dataset(stem(f), "bigwig", os.path.join(input_dir, f)) for f in BIGWIGS]
-        queries = [add_region_set(f, size_type, "query") for f, size_type in QUERY_REGIONS]
+        coolers = [
+            add_dataset(stem(f), "cooler", os.path.join(input_dir, f)) for f in COOLERS
+        ]
+        bigwigs = [
+            add_dataset(stem(f), "bigwig", os.path.join(input_dir, f)) for f in BIGWIGS
+        ]
+        queries = [
+            add_region_set(f, size_type, "query") for f, size_type in QUERY_REGIONS
+        ]
         region_collection = Collection(
             name="regions",
             kind="regions",
             user_id=user.id,
-            datasets=[add_region_set(f, "Point", "collection") for f in COLLECTION_REGIONS],
+            datasets=[
+                add_region_set(f, "Point", "collection") for f in COLLECTION_REGIONS
+            ],
         )
-        feature_collection = Collection(name="features", kind="1d-features", user_id=user.id, datasets=bigwigs)
+        feature_collection = Collection(
+            name="features", kind="1d-features", user_id=user.id, datasets=bigwigs
+        )
         db.session.add_all([region_collection, feature_collection])
         db.session.commit()
 
         for query in queries:
             sides = [None] if query.dimension == "1d" else ["left", "right"]
-            for intervals in Intervals.query.filter(Intervals.dataset_id == query.id).order_by(Intervals.id):
-                window = intervals.windowsize if intervals.windowsize is not None else "variable"
+            for intervals in Intervals.query.filter(
+                Intervals.dataset_id == query.id
+            ).order_by(Intervals.id):
+                window = (
+                    intervals.windowsize
+                    if intervals.windowsize is not None
+                    else "variable"
+                )
                 binsizes = PREPROCESSING_MAP[window]
                 where = (query.dataset_name, window)
                 for cooler_dataset in coolers:
                     for binsize in binsizes["cooler"]:
                         for pileup_type in ("ICCF", "Obs/Exp"):
                             run(
-                                ("pileup", cooler_dataset.dataset_name) + where + (binsize, pileup_type, None),
+                                ("pileup", cooler_dataset.dataset_name)
+                                + where
+                                + (binsize, pileup_type, None),
                                 pipeline_steps.pileup_pipeline_step,
                                 cooler_dataset.id,
                                 intervals.id,
@@ -220,7 +267,9 @@ def compute(work_dir, input_dir=INPUT_FILES):
                     for bigwig in bigwigs:
                         for side in sides:
                             run(
-                                ("stackup", bigwig.dataset_name) + where + (binsize, side),
+                                ("stackup", bigwig.dataset_name)
+                                + where
+                                + (binsize, side),
                                 pipeline_steps.stackup_pipeline_step,
                                 bigwig.id,
                                 intervals.id,
@@ -230,7 +279,9 @@ def compute(work_dir, input_dir=INPUT_FILES):
                 for binsize in binsizes["collections"]["regions"]:
                     for side in sides:
                         run(
-                            ("enrichment", region_collection.name) + where + (binsize, side),
+                            ("enrichment", region_collection.name)
+                            + where
+                            + (binsize, side),
                             pipeline_steps.enrichment_pipeline_step,
                             region_collection.id,
                             intervals.id,
@@ -248,7 +299,9 @@ def compute(work_dir, input_dir=INPUT_FILES):
                             ).first()
                             if exists is None:
                                 run(
-                                    ("stackup", bigwig.dataset_name) + where + (binsize, side),
+                                    ("stackup", bigwig.dataset_name)
+                                    + where
+                                    + (binsize, side),
                                     pipeline_steps.stackup_pipeline_step,
                                     bigwig.id,
                                     intervals.id,
@@ -256,7 +309,9 @@ def compute(work_dir, input_dir=INPUT_FILES):
                                     region_side=side,
                                 )
                         run(
-                            ("embedding_1d", feature_collection.name) + where + (binsize, side),
+                            ("embedding_1d", feature_collection.name)
+                            + where
+                            + (binsize, side),
                             pipeline_steps.embedding_1d_pipeline_step,
                             feature_collection.id,
                             intervals.id,
@@ -265,8 +320,13 @@ def compute(work_dir, input_dir=INPUT_FILES):
                         )
 
         names = {dataset.id: dataset.dataset_name for dataset in Dataset.query.all()}
-        collection_names = {collection.id: collection.name for collection in Collection.query.all()}
-        windows = {intervals.id: (names[intervals.dataset_id], intervals.windowsize) for intervals in Intervals.query.all()}
+        collection_names = {
+            collection.id: collection.name for collection in Collection.query.all()
+        }
+        windows = {
+            intervals.id: (names[intervals.dataset_id], intervals.windowsize)
+            for intervals in Intervals.query.all()
+        }
         tables = {
             "AverageIntervalData": AverageIntervalData,
             "IndividualIntervalData": IndividualIntervalData,
@@ -294,7 +354,9 @@ def compute(work_dir, input_dir=INPUT_FILES):
                 for column in TABLE_FILES[table_name]:
                     path = getattr(row, column, None)
                     if path:
-                        results["/".join(parts + [column])] = np.load(path, allow_pickle=False)
+                        results["/".join(parts + [column])] = np.load(
+                            path, allow_pickle=False
+                        )
         db.session.remove()
         db.drop_all()
     return results

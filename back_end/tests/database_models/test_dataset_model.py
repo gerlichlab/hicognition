@@ -1,4 +1,5 @@
 """Tests whether preprocessing states for datasets are set correctly."""
+
 from unittest.mock import patch
 from tests.test_utils.test_helpers import LoginTestCase
 
@@ -14,7 +15,7 @@ class TestSetProcessingState(LoginTestCase):
     does its job."""
 
     def add_test_datasets(self, state):
-        """adds test datasets to db"""       
+        """adds test datasets to db"""
         self.hg19 = Assembly(
             id=1,
             name="hg19",
@@ -28,7 +29,7 @@ class TestSetProcessingState(LoginTestCase):
             filetype="cooler",
             processing_state=state,
             user_id=1,
-            assembly=1
+            assembly=1,
         )
         db.session.add(dataset1)
         db.session.commit()

@@ -1,4 +1,5 @@
 """Tests the io helpers in the hicognition library."""
+
 import unittest
 from unittest.mock import patch
 import os
@@ -143,7 +144,9 @@ class TestCleanBedPe(TempDirTestCase):
         )
         # load expected data
         expected = pd.read_csv(
-            "tests/testfiles/real_data_tricky_header_cleaned.bedpe", sep="\t", header=None
+            "tests/testfiles/real_data_tricky_header_cleaned.bedpe",
+            sep="\t",
+            header=None,
         )
         # load result
         result = pd.read_csv(
@@ -166,7 +169,9 @@ class TestCleanBedPe(TempDirTestCase):
         )
         # load expected data
         expected = pd.read_csv(
-            "tests/testfiles/real_data_tricky_header_cleaned.bedpe", sep="\t", header=None
+            "tests/testfiles/real_data_tricky_header_cleaned.bedpe",
+            sep="\t",
+            header=None,
         )
         # load result
         result = pd.read_csv(
@@ -189,7 +194,9 @@ class TestCleanBedPe(TempDirTestCase):
         )
         # load expected data
         expected = pd.read_csv(
-            "tests/testfiles/real_data_tricky_header_cleaned.bedpe", sep="\t", header=None
+            "tests/testfiles/real_data_tricky_header_cleaned.bedpe",
+            sep="\t",
+            header=None,
         )
         # load result
         result = pd.read_csv(
@@ -212,7 +219,9 @@ class TestCleanBedPe(TempDirTestCase):
         )
         # load expected data
         expected = pd.read_csv(
-            "tests/testfiles/real_data_tricky_header_cleaned.bedpe", sep="\t", header=None
+            "tests/testfiles/real_data_tricky_header_cleaned.bedpe",
+            sep="\t",
+            header=None,
         )
         # load result
         result = pd.read_csv(
@@ -236,7 +245,9 @@ class TestCleanBedPe(TempDirTestCase):
         )
         # load expected data
         expected = pd.read_csv(
-            "tests/testfiles/real_data_tricky_header_cleaned.bedpe", sep="\t", header=None
+            "tests/testfiles/real_data_tricky_header_cleaned.bedpe",
+            sep="\t",
+            header=None,
         )
         # load result
         result = pd.read_csv(

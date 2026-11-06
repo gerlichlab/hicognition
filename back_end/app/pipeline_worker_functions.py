@@ -1,6 +1,7 @@
 """Worker functions for pipeline steps that
 perform the actual calculations and database state
 changes"""
+
 import os
 import logging
 import uuid

@@ -1,4 +1,4 @@
-""" fix cross-origin problems. From https://gist.github.com/davidadamojr/465de1f5f66334c91a4c"""
+"""fix cross-origin problems. From https://gist.github.com/davidadamojr/465de1f5f66334c91a4c"""
 
 from . import api
 

@@ -1,4 +1,5 @@
 """DELETE API endpoints for hicognition"""
+
 from flask.json import jsonify
 from flask import g, current_app
 from .. import lib as hicognition

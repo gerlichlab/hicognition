@@ -1,4 +1,5 @@
 """Module with tests realted to managing and modifying datasets."""
+
 import logging
 import unittest
 from tests.test_utils.test_helpers import LoginTestCase, TempDirTestCase
@@ -97,11 +98,11 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "datasetName": "changedName",
             "description": "test",
             "cell_type": "asdf",
-            "public": "false"
+            "public": "false",
         }
         response = self.client.put(
             "/api/datasets/500/",
-            data = data,
+            data=data,
             headers=self.token_headers,
             content_type="multipart/form-data",
         )
@@ -287,7 +288,6 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
         self.assertEqual(dataset.assembly, 1)
         self.assertEqual(dataset.filetype, "bedfile")
 
-
     def test_public_flag_set_correctly(self):
         """Test if public flag is set correctly."""
         # add datasets
@@ -334,7 +334,7 @@ class TestModifyDatasets(LoginTestCase, TempDirTestCase):
             "datasetName": "test",
             "cell_type": "changedCellType",
             "perturbation": "No perturbation",
-            "public": "false"
+            "public": "false",
         }
         # put datasets
         response = self.client.put(

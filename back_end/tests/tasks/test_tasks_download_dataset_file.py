@@ -22,9 +22,7 @@ class TestDownloadDatasetFile(LoginTestCase, TempDirTestCase):
             chrom_arms=self.app.config["CHROM_ARMS"],
         )
         db.session.add(self.assembly)
-        self.repository = Repository(
-            file_url="{id}", url="{href}", name="repo_name"
-        )
+        self.repository = Repository(file_url="{id}", url="{href}", name="repo_name")
         db.session.add(self.repository)
 
         self.dataset = self.create_dataset(id=1, dataset_name="ds1", filetype="bedfile")

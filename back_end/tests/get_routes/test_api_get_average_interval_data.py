@@ -1,4 +1,5 @@
 """Test to check whether retrieving of averageIntervalData data works."""
+
 import os
 import unittest
 from unittest.mock import patch

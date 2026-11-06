@@ -1,4 +1,5 @@
 """Helper functions and classes for unittesting"""
+
 import logging
 import unittest
 import os
@@ -58,7 +59,7 @@ class LoginTestCase(unittest.TestCase):
         user_id: int = None,
         assembly_id: int = None,
         id: int = None,
-        **key_value_pairs: dict
+        **key_value_pairs: dict,
     ) -> Dataset:
         dataset = self.create_default_dataset(user_id, assembly_id, id=id)
         # fill with data

@@ -1,4 +1,5 @@
 """Module with tests realted to preprocessign collections."""
+
 import unittest
 import pandas as pd
 from unittest.mock import patch, MagicMock
@@ -29,19 +30,34 @@ class TestPreprocessCollections(LoginTestCase, TempDirTestCase):
             current_app.config["UPLOAD_DIR"] + "/test.bed", index=False, sep="\t"
         )
         # create datasets
-        dataset1 = self.create_dataset(id=1, dataset_name="test", filetype="bedfile", user_id=1)
-        dataset2 = self.create_dataset(id=2, dataset_name="test", filetype="bedfile", user_id=1)
+        dataset1 = self.create_dataset(
+            id=1, dataset_name="test", filetype="bedfile", user_id=1
+        )
+        dataset2 = self.create_dataset(
+            id=2, dataset_name="test", filetype="bedfile", user_id=1
+        )
         dataset3 = self.create_dataset(
-            id=3, dataset_name="test",
+            id=3,
+            dataset_name="test",
             filetype="bedfile",
             user_id=1,
             file_path=current_app.config["UPLOAD_DIR"] + "/test.bed",
         )
-        dataset4 = self.create_dataset(id=4, dataset_name="test", filetype="bedfile", user_id=2)
-        dataset5 = self.create_dataset(id=5, dataset_name="test", filetype="bigwig", user_id=1)
-        dataset6 = self.create_dataset(id=6, dataset_name="test", filetype="bigwig", user_id=1)
-        dataset7 = self.create_dataset(id=7, dataset_name="test", filetype="cooler", user_id=1)
-        dataset8 = self.create_dataset(id=8, dataset_name="test", filetype="cooler", user_id=1)
+        dataset4 = self.create_dataset(
+            id=4, dataset_name="test", filetype="bedfile", user_id=2
+        )
+        dataset5 = self.create_dataset(
+            id=5, dataset_name="test", filetype="bigwig", user_id=1
+        )
+        dataset6 = self.create_dataset(
+            id=6, dataset_name="test", filetype="bigwig", user_id=1
+        )
+        dataset7 = self.create_dataset(
+            id=7, dataset_name="test", filetype="cooler", user_id=1
+        )
+        dataset8 = self.create_dataset(
+            id=8, dataset_name="test", filetype="cooler", user_id=1
+        )
         interval1 = Intervals(id=1, name="interval1", windowsize=100000, dataset_id=3)
         interval2 = Intervals(id=2, name="interval2", windowsize=50000, dataset_id=3)
         interval3 = Intervals(id=3, name="interval3", windowsize=400000, dataset_id=3)
