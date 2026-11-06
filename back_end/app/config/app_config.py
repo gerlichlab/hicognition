@@ -123,7 +123,7 @@ class Config:
             },
         },
         1000000: {
-            "cooler": [20000],
+            "cooler": [20000, 25000],  # 25 kb for coolers zoomified without a 20 kb level
             "bigwig": [10000, 20000, 50000, 100000],
             "collections": {
                 "regions": [20000, 50000],
@@ -139,7 +139,7 @@ class Config:
             },
         },
         "variable": {
-            "cooler": [1, 2, 5],
+            "cooler": [5],  # 1% and 2% pileups exceed the 10 h job timeout on large coolers
             "bigwig": [1, 2, 5],
             "collections": {"regions": [1, 2, 5], "1d-features": [1, 2, 5]},
         },  # binsize for variable sizetype is in percent
@@ -171,7 +171,7 @@ class Config:
             },
         },
         "variable": {
-            "cooler": [1, 2, 5],
+            "cooler": [5],  # 1% and 2% pileups exceed the 10 h job timeout on large coolers
             "bigwig": [1, 2, 5],
             "collections": {
                 "regions": [1, 2, 5],
