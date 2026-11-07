@@ -43,6 +43,9 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
 * **conda, and the packages nothing imported** ([#36](https://github.com/gerlichlab/hicognition/issues/36)): matplotlib, seaborn, statsmodels, pairtools, pybedtools, pysam, pyensembl, pyarrow, flask-cors, pyhumps, PyJWT, the Flask-Babel, Flask-Bootstrap, Flask-Moment and Flask-WTF extensions, black, pylama and pylint. The image no longer installs anything from GitHub.
 * **The frontend's webpack and babel configuration** (`front_end/build/`, `front_end/config/`, `.babelrc`, `.postcssrc.js`, `jest.config.js`) **and the packages it didn't use:** gulp and its plugins, ajv, the direct dependency on pixi.js beside pixi.js-legacy, and fsevents.
 
+### Security
+* **The app doesn't start without `SECRET_KEY` and `SECRET_SALT`, and in production not with the example `.env`'s values.** It fell back to `eieieiei` and `blblblbl`, the values in the repository's `.env`, so anyone could sign login tokens for an instance that didn't set its own. Tests use fixed secrets of their own; development may keep the example values. An instance without its own secrets has to set them before it upgrades; new secrets log everyone out and invalidate links to shared sessions.
+
 ### Fixed
 * **A new database can be built again.** One migration passed `type` to `drop_constraint`, which Alembic 1.20 refuses; it is `type_`.
 * **The default paths of the chromosome sizes and arms, the upload folder and the development databases point into `back_end/` again.** Since the configuration file moved into `back_end/app/config/`, they pointed there, where none of these files are. It went unnoticed because deployments set the paths in `.env`, but the backend tests failed without them.

@@ -31,7 +31,8 @@ We expose a wide array of environment variables, some of which you don't need to
 
 These environment variables should be redefined if you deploy a new HiCognition instance.
 
-- `SECRET_KEY` | Secret key of flask app that is used to sign the generated token
+- `SECRET_KEY` | Secret key of the flask app, which signs the login and session tokens. The app doesn't start without it, and in production not with the example `.env`'s value. Use a random value, for example the output of `openssl rand -hex 32`; changing it logs everyone out and invalidates links to shared sessions.
+- `SECRET_SALT` | Salt of the links in confirmation e-mails, with the same rules as `SECRET_KEY`
 - `DATABASE_URI` | Connection string to the HiCogntion MySQL database (including username and password)
 - `MYSQL_PASSWORD` | Password for MySQL database
 - `REDIS_PASSWORD` | Password of the Redis server; `docker-compose.yml` does not start without it. It is also part of `REDIS_URL`, so use a value without URL special characters, for example the output of `openssl rand -hex 32`.
@@ -85,7 +86,7 @@ Note that some of the configuration variables are initialized from environment v
 
 The following configuration variables are related to how the flask server is set up and are most likely not candidates for tuning since they refer to simple paths, flags are secrets:
 
-- `SECTRET_KEY` | Secret key of flask app that is used to sign the generated token
+- `SECRET_KEY` and `SECRET_SALT` | Secrets that sign the tokens and the confirmation links, see above
 - `SQLALCHEMY_TRACK_MODIFICATIONS` | Flag that specifies whether database modifications should be tracked
 - `UPLOAD_DIR` | Directory that is used to store uploaded datasets. This filepath is used inside the Docker container and should therefore be in relation to the mounted folder with code and data.
 - `CHROM_SIZES` | Path to the chromosome sizes file on the server filesystem that is needed for the `hicognition` module. This filepath is used inside the Docker container and should therefore be in relation to the mounted folder with code and data. 

@@ -11,8 +11,10 @@ basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 class Config:
     """Config class for hicognition server."""
 
-    SECRET_KEY = os.environ.get("SECRET_KEY") or "eieieiei"
-    SECRET_SALT = os.environ.get("SECRET_SALT") or "blblblbl"
+    # sign the login and session tokens and the confirmation links; create_app refuses to
+    # start without them outside testing
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+    SECRET_SALT = os.environ.get("SECRET_SALT")
     DEBUG = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Log file
@@ -326,6 +328,8 @@ class TestingConfig(Config):
 
     TESTING = True
     DEBUG = True
+    SECRET_KEY = "hicognition-tests"
+    SECRET_SALT = "hicognition-tests"
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     UPLOAD_DIR = "./tmp_test"
     STACKUP_THRESHOLD = 10  # Threshold of when stackup is downsampled
