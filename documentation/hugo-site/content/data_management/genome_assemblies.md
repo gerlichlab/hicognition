@@ -63,6 +63,6 @@ This will open a dialogue that lets you view all available genome assemblies:
 
 Here, you can look at all the genomes and check how many datasets depend on them.
 
-{{% notice warning %}}
+{{% callout style="warning" %}}
 If you want to delete a genome, first delete all dependent datasets, then you can delete it from the genome table.
-{{% /notice %}}
+{{% /callout %}}

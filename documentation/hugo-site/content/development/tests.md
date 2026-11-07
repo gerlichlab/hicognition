@@ -48,9 +48,9 @@ Alternatively, you can run a specific test file using python (all test files hav
 python tests/get_routes/test_api_auth.py
 ```
 
-{{% notice note %}}
+{{% callout style="note" %}}
 The code is mounted into the container, so the tests see your changes. After a change to `back_end/pyproject.toml` or `back_end/poetry.lock`, rebuild the image.
-{{% /notice %}}
+{{% /callout %}}
 
 `tests/reference` compares a run of every preprocessing step with stored results; it takes a few minutes. If a change moves results on purpose, `python -m tests.reference.make_reference` writes new ones, and the changelog says why they moved.
 

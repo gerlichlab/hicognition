@@ -17,7 +17,7 @@ or
 git clone https://github.com/gerlichlab/HiCognition
 git submodule init && git submodule update
 ```
-the submodule is needed for the documentary template.
+The submodule is the theme of the documentation, [relearn](https://mcshelby.github.io/hugo-theme-relearn/). It is cloned with only the pinned commit, since its history is large.
 
 ## Build docker images
 
@@ -50,6 +50,6 @@ flask user define dummy -p 1234
 ```
 This will create the user `dummy` with the password `1234`.
 
-{{% notice warning %}}
+{{% callout style="warning" %}}
 The HiCognition repository contains an example environment file that specifies all the needed environment variables. You must change these to ensure that you use non-public passwords and secrets! See the [configuration](/installation/configuration) section for details. 
-{{% /notice %}}
+{{% /callout %}}

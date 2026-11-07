@@ -13,9 +13,9 @@ Genomic features are an essential part of the [region-set focus approach](/conce
 Bigwig files should conform to the [Bigwig-standard](https://genome.ucsc.edu/goldenpath/help/bigWig.html#:~:text=BigWig%20files%20are%20created%20from,to%20the%20Genome%20Browser%20server.), which translates to being readable by bigwig interface libraries (in our case, this is [pybbi](https://github.com/nvictus/pybbi)). In addition, your bigwig file should contain data that were aligned against the selected genome assembly. But as for [BED-files](/data_management/regions/#data-requirements), this is a requirement we can only check to a limited degree.
 
 
-{{% notice warning %}}
+{{% callout style="warning" %}}
 Always check that your bigwig file was derived from data that were aligned against the selected genome assembly!
-{{% /notice %}}
+{{% /callout %}}
 
 ### Multiresolution Cooler files (2D-features)
 
@@ -27,9 +27,9 @@ HiCognition can load 2D-genomic features from [multiresolution cooler files](htt
 
 Note that we consciously don't try to search for the nearest fitting resolution as this would compromise comparability between genomic features. If you need a primer on how to create mcool files and what strategies for data normalization are available, see the [cooler documentation](https://cooler.readthedocs.io/en/latest/quickstart.html). 
 
-{{% notice tip %}}
+{{% callout style="tip" %}}
 Always check that your cooler file is compatible with the defined resolution restrictions!
-{{% /notice %}}
+{{% /callout %}}
 
 
 ## Description of genomic features
@@ -82,9 +82,9 @@ The addition of genomic features can be started by clicking on the `Add genomic 
 
 This will open a dialogue that follows the same principles as the dialogue described for [addition of genomic regions](/data_management/regions/#adding-genomic-regions).
 
-{{% notice tip %}}
+{{% callout style="tip" %}}
 Genomic features are typically much larger in size than genomic regions. This will cause the upload to take longer!
-{{% /notice %}}
+{{% /callout %}}
 
 ## Managing genomic features
 

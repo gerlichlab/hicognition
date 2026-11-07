@@ -122,9 +122,9 @@ The `/login` route defines a form that sends the user credentials to the `/api/t
 
 All routes that are children of `/main` require authentication. Authentication is checked by verifying that a token resides in the main `vuex` store. If no token is found, the user is redirected to `/login`.
 
-{{% notice note %}}
+{{% callout style="note" %}}
 Note that this routing step does not check the validity of the token. Validity is only checked when data is retrieved from the back-end.
-{{% /notice %}}
+{{% /callout %}}
 
 
 ### Vuex-Store

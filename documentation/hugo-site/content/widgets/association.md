@@ -30,9 +30,9 @@ In this preprocessing step, the universe is defined to be all bins of the select
 
 Preprocessing for interval regions works the same as for point-regions except that the query bins have different sizes, and the universe is the union of all query regions.
 
-{{% notice note %}}
+{{% callout style="note" %}}
 The particular selection of the enrichment universe for interval-regions means that enrichment is relative to the selected region-sets! This means that uniform enrichments across all selected regions may be lower in magnitude.
-{{% /notice %}}
+{{% /callout %}}
 
 ## Visualization
 

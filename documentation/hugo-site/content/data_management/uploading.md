@@ -8,9 +8,9 @@ In general, HiCognition allows two different types of uploads:
 - either directly from your computer (this is explained in the [regions](/data_management/regions/) and [features](/data_management/features/) section in more detail)
 - or by providing it via an online location.
 
-{{% notice tip %}}
+{{% callout style="tip" %}}
 We highly recommend direct ingestion via online locations with big files; not only do you not need to wait (HiCognition will inform you once the download is finished), but it also avoids time-out errors with very big files.
-{{% /notice %}}
+{{% /callout %}}
 
 ## Online repositories
 HiCognition can deal with multiple repositories and their unique API interfaces. Hicognition was developed to be extendable with more repositories and special login schemes they provide.

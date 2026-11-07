@@ -25,9 +25,9 @@ git pull # assuming this is not a new branch
 
 ### Rebuild containers
 
-{{% notice note %}}
+{{% callout style="note" %}}
 We are currently in the process of migrating all containers to Docker Hub. Once this is done, you can then just pull the relevant images from there. Stay tuned!
-{{% /notice %}}
+{{% /callout %}}
 
 In order to integrate all code changes into your local containers, you need to rebuild them via:
 

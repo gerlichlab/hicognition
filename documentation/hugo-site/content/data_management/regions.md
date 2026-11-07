@@ -11,9 +11,9 @@ A requirement that you are responsible for yourself is that the BED- and BEDPE-f
 HiCognition won't crash when preprocessing assembly-incompatible BED- or BEDPE-files, but will emit blank data for those regions. 
 HiCognition won't check whether positions within the bounds of a given assembly are actually derived from that assembly!
 
-{{% notice warning %}}
+{{% callout style="warning" %}}
 Always check that your BED- and BEDPE-files contain coordinates that fit the selected genome assemblies!
-{{% /notice %}}
+{{% /callout %}}
 
 ### BED-Files
 BED-files should conform to the [BED-standard](https://genome.ucsc.edu/FAQ/FAQformat.html), meaning that they should contain all __required__ BED fields with __tab-separated__ entries:
@@ -91,9 +91,9 @@ This also means that we interpolate genomic features to fit the target binsize.
 This is convenient to exclude size effects but can introduce artifacts.
 So always have that in mind when exploring interval features!
 
-{{% notice warning %}}
+{{% callout style="warning" %}}
 Interval regions will cause genomic features to be scaled to a common size. This can introduce artifacts!
-{{% /notice %}}
+{{% /callout %}}
 
 Interval regions are displayed with a little expansion left and right to be able to compare them to a potential baseline:
 
@@ -205,15 +205,15 @@ This will display the edit dialogue:
 
 <!-- Here you can edit most description fields, and once you are finished, you can hit `Submit Dataset` to save your changes. -->
 
-{{% notice tip %}}
+{{% callout style="tip" %}}
 The only parameter you cannot edit is the `SizeType` field, which would invalidate prior preprocessing on the dataset.
-{{% /notice %}}
+{{% /callout %}}
 
 ### Deleting
 
 You can delete datasets by selecting them in the table and then hitting the `Delete` button.
 Note that you can only delete a dataset when you are its owner, not when it has been shared (see the [dataset sharing section](/sessions/) for more information) with you.
 
-{{% notice warning %}}
+{{% callout style="warning" %}}
 Deleting a dataset will cause all preprocessing data to be lost. Be careful!
-{{% /notice %}}
+{{% /callout %}}

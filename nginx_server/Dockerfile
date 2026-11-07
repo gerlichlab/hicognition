@@ -1,4 +1,4 @@
-# Resolve learn submodule
+# fetch the docs theme, a submodule
 FROM ubuntu:24.04 AS theme-resolver
 
 # Install git
@@ -8,16 +8,16 @@ RUN apt-get update -y &&\
 
 ADD . /code
 
-# resolve learn submodule
+# only the pinned commit: the theme's history is 1.5 GB
 
-RUN cd /code && git submodule update --init --recursive
+RUN cd /code && git submodule update --init --recursive --depth 1
 
 # build documentation
-FROM klakegg/hugo as hugo-builder
+FROM ghcr.io/gohugoio/hugo:v0.169.0 AS hugo-builder
 
-# copy files into container
+# copy files into container, for the image's user, which writes public/
 
-COPY --from=theme-resolver /code/documentation/hugo-site/ /docs/
+COPY --from=theme-resolver --chown=hugo:hugo /code/documentation/hugo-site/ /docs/
 
 
 # build hugo

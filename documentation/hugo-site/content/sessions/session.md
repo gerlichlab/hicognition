@@ -23,9 +23,9 @@ After you create a session, you can restore your session by clicking on the `My 
 
 <img src="/session_table_with_context.png" class="half-width">
 
-{{% notice warning %}}
+{{% callout style="warning" %}}
 Restoring a session with delete your current workspace configuration!
-{{% /notice %}}
+{{% /callout %}}
 
 ## Sharing a session with others
 
@@ -35,6 +35,6 @@ To share a session with other users of HiCognition, you can click on `Get Url` i
 
 When a user of HiCognition visits this URL, the session will be automatically restored.
 
-{{% notice warning %}}
+{{% callout style="warning" %}}
 If you share a particular dataset using a session, other users will have access to it!
-{{% /notice %}}
+{{% /callout %}}

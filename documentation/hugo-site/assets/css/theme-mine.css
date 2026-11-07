@@ -1,0 +1,26 @@
+/* HiCognition's colours, with the variable names relearn kept from the learn theme. */
+:root {
+    
+    --MAIN-TEXT-color:#323232; /* Color of text by default */
+    --MAIN-TITLES-TEXT-color: #323232; /* Color of titles h2-h3-h4-h5 */
+    --MAIN-LINK-color:#87b4d4; /* Color of links */
+    --MAIN-LINK-HOVER-color:#87b4d4; /* Color of hovered links */
+    --MAIN-ANCHOR-color: #264d69; /* color of anchors on titles */
+    --MENU-HEADER-BG-color:#87b4d4; /* Background color of menu header */
+    --MENU-HEADER-BORDER-color:#87b4d4; /*Color of menu header border */ 
+
+    --MENU-SEARCH-BG-color:#264d69; /* Search field background color (by default borders + icons) */
+    --MENU-SEARCH-BOX-color: #87b4d4; /* Override search field border color */
+    --MENU-SEARCH-BOX-ICONS-color: #87b4d4; /* Override search field icons color */
+
+    --MENU-SECTIONS-ACTIVE-BG-color:rgba(196, 196, 196, 0.54); /* Background color of the active section and its childs */
+    --MENU-SECTIONS-BG-color:#264d69; /* Background color of other sections */
+    --MENU-SECTIONS-LINK-color: #ccc; /* Color of links in menu */
+    --MENU-SECTIONS-LINK-HOVER-color: #e6e6e6;  /* Color of links in menu, when hovered */
+    --MENU-SECTION-ACTIVE-CATEGORY-color: #777; /* Color of active category text */
+    --MENU-SECTION-ACTIVE-CATEGORY-BG-color: #fff; /* Color of background for the active category (only) */
+
+    --MENU-VISITED-color: #33a1ff; /* Color of 'page visited' icons in menu */
+    --MENU-SECTION-HR-color: rgba(196, 196, 196, 0.54); /* Color of <hr> separator in menu */
+    
+}

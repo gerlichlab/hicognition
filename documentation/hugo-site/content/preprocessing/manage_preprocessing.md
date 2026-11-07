@@ -36,12 +36,12 @@ Pressing `Submit Job` will queue the preprocessing tasks.
 <img src="/preprocessing_both_things_selected.png" class="three-quarter-width">
 
 
-{{% notice note %}}
+{{% callout style="note" %}}
 Currently, there is a one-to-one mapping between preprocessing tasks and types of datasets.
 E.g., there is only one possible task for a 2D feature.
 Therefore, the preprocessing dialogue does not require the selection of the task type.
 In the future, this might change, and the dialogue will become more complex.
-{{% /notice %}}
+{{% /callout %}}
 
 ## Check tasks
 
@@ -81,7 +81,7 @@ If you click on the notification symbol, a side-drawer opens, where you can see 
 If you click on the envelope symbol, you can acknowledge the notifications and mark them as read.
 
 
-{{% notice note %}}
+{{% callout style="note" %}}
 We don't persist notifications in the database, so notifications are only visible in one viewing session.
 So, if you reload the browser or log out, the notifications will not be visible anymore.
-{{% /notice %}}
+{{% /callout %}}

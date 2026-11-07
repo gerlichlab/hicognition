@@ -225,7 +225,10 @@ services:
 
     hugo-builder:
         container_name: hugo-builder
-        image: klakegg/hugo
+        # Hugo's official image; it runs as uid 1000 unless told otherwise, and the folder it
+        # replaces, public/, was written as root by the image used before
+        image: ghcr.io/gohugoio/hugo:v0.169.0
+        user: root
         volumes:
             - ${DOC_PATH}:/doc
         entrypoint: "/bin/sh"

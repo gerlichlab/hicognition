@@ -15,9 +15,9 @@ Configuring your HiCognition instance can be done using two approaches:
 
 The most convenient way of setting your environment variables is using a `.env` file that specifies them as key-value pairs. `docker-compose` will use this file - if it is in the same directory -  and inject the variables during start-up.
 
-{{% notice warning %}}
+{{% callout style="warning" %}}
 Never commit a `.env` file for your production server to version control!
-{{% /notice %}}
+{{% /callout %}}
 
 Alternatively, you can inject the environment variables in your deploy pipeline. This is probably the cleanest approach and can be easily done with, for example, [github actions](https://docs.github.com/en/actions).
 
@@ -54,9 +54,9 @@ These environment variables can likely be taken from our example `.env` file and
 
 #### Development instance
 
-{{% notice tip%}}
+{{% callout style="tip" %}}
 If you are thinking about setting up a development instance of HiCognition, be sure to check out the [development section](/development).
-{{% /notice %}}
+{{% /callout %}}
 
 In the development instance, the entire HiCognition backend repository is mounted through into the flask server to facilitate hot-reload. You can specify the location of the repository using the following environment variable:
 
@@ -73,15 +73,15 @@ If you need to dive deeper into the configuration of HiCognition, you can edit t
 - `TestingConfig` | Config file for flask unittests
 - `End2EndConfig` | Config file for integration tests
 
-{{% notice tip%}}
+{{% callout style="tip" %}}
 Be sure to rebuild the HiCognition container after you change this config file!
-{{% /notice %}}
+{{% /callout %}}
 
 ### Configuration variables related to server setup
 
-{{% notice warning%}}
+{{% callout style="warning" %}}
 Note that some of the configuration variables are initialized from environment variables. So if you change them, be sure that environment variables do not override these changes!
-{{% /notice %}}
+{{% /callout %}}
 
 The following configuration variables are related to how the flask server is set up and are most likely not candidates for tuning since they refer to simple paths, flags are secrets:
 

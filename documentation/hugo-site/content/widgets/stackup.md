@@ -7,9 +7,9 @@ weight: 4
 
 The stacked line profile widget can be used to display individual examples of 1D-genomic features over a specific region set. It is a heatmap representation, where each row corresponds to one genomic region.
 
-{{% notice note %}}
+{{% callout style="note" %}}
 The stacked line profile widget does not show the entirety of the selected region-set, but only a subset. The down-sampling ratio can be defined as configuration variable (see the [configuration section](/installation/configuration) for details)
-{{% /notice %}}
+{{% /callout %}}
 
 ![Stackup](/stackup.png)
 

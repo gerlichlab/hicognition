@@ -1,20 +1,17 @@
 baseURL = "/docs/"
 title = "HiCognition"
-theme = "learn"
+theme = "relearn"
 
 canonifyURLs = true
 
-# For search functionality
-[outputs]
-home = [ "HTML", "RSS", "JSON"]
-
 [params]
-  # Change default color scheme with a variant one. Can be "red", "blue", "green".
+  # HiCognition's colours, in assets/css/theme-mine.css
   themeVariant = "mine"
   disableLandingPageButton = true
   disableNextPrev = true
   disableInlineCopyToClipBoard = true
-  custom_css = ["css/custom.css"]
+  # the dates in the pages' front matter are when they were created, not changed
+  hideAuthorDate = true
 
 [[menu.shortcuts]]
 name = "<i class='fas fa-tags'></i> Tags"

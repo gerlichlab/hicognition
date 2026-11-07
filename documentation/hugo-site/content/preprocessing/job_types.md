@@ -75,9 +75,9 @@ The following table gives a rough estimate of how long different preprocessing s
 
 __\*__ *For the "Aggregate a 2D-feature at a genomic region set" task, the first time you preprocess that particular region, you should expect that it runs ~2x as long as we calculate the Observed/expected values the first time and then cache them for future runs.*
 
-{{% notice warning %}}
+{{% callout style="warning" %}}
 If you change the [configuration for windowsizes and binsizes](/installation/configuration/#preprocessing_map), the jobs may take much longer and require more memory.
-{{% /notice %}}
+{{% /callout %}}
 
 That being said, on-demand preprocessing is just one of the potential user flows.
 We think many preprocessing steps can be submitted in bulk as a large part of exploration tasks involve common "dataset ingredients".

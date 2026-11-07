@@ -1,3 +1,4 @@
-[submodule "documentation/hugo-site/themes/learn"]
-	path = documentation/hugo-site/themes/learn
-	url = https://github.com/matcornic/hugo-theme-learn.git
+[submodule "documentation/hugo-site/themes/relearn"]
+	path = documentation/hugo-site/themes/relearn
+	url = https://github.com/McShelby/hugo-theme-relearn.git
+	shallow = true

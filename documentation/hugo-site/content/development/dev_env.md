@@ -14,9 +14,9 @@ When you start a development HiCognition instance, the front-end files will be s
 
 To get information about how to configure the environment variables for the development instance, see the [configuration](/installation/configuration) chapter.
 
-{{% notice note %}}
+{{% callout style="note" %}}
 The production HiCognition container copies the server code into the container during the build process and runs the server from there. In contrast, the development setup mounts the local code repository into the container to enable fast editing and hot-reload.
-{{% /notice %}}
+{{% /callout %}}
 
 You can start the development instance with the following command inside the cloned HiCognition repository:
 

@@ -44,9 +44,9 @@ You can resize the widget collection with all of its containing widgets using th
 
 <img src="/widget_collection_context_bar.png" class="quarter-width">
 
-{{% notice note %}}
+{{% callout style="note" %}}
 Note that widget collections have a set minimum size beyond which you cannot shrink the widget collection.
-{{% /notice %}}
+{{% /callout %}}
 
 If you want to delete a widget collection, you can click on the garbage can at the top right.
 
@@ -97,10 +97,10 @@ To change the genomic resolution at which you want to look at the data, you can 
 
 <img src="/changing_binsize.png" class="one-quarter-width">
 
-{{% notice note %}}
+{{% callout style="note" %}}
 For point features, binsize will be in genomic coordinates, whereas for interval features, binsize will be in the percentage of the respective region size.
 See this [section](/data_management/regions/#types-of-genomic-regions) for a more detailed explanation.
-{{% /notice %}}
+{{% /callout %}}
 
 ### Off-diagonal region sets (BEDPE): Visualizing supports
 

@@ -35,9 +35,9 @@ To upload the files, follow our [upload instructions for genomic regions](/data_
 - `Method` | HiC
 - `Normalization` | ICCF
 
-{{% notice note %}}
+{{% callout style="note" %}}
 The .mcool files are quite big, and you should expect them to take a few minutes to upload (depending on your internet connection).
-{{% /notice %}}
+{{% /callout %}}
 
 Once the files are uploaded, start preprocessing the two 2D features at TAD-boundaries by following our [preprocessing guide](/preprocessing/manage_preprocessing/). Once preprocessing is finished, you can create a widget collection by clicking on the <img src="/plus_button.png" class="inline-picture"> at the bottom right of the HiCognition start page. This will create an empty widget collection:
 

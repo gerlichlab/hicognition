@@ -30,10 +30,14 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
   * **The app looks exactly as before:** the screenshots of both builds are identical, pixel for pixel, for the login, the compare view with each of the six widget types, the session and data management dialogs and the drawers. To keep it so, Vue's templates keep the whitespace between tags and vue-material's styles come after the components', as with webpack.
   * **Two pins have their reasons:** Vite stays on 7, since `@vitejs/plugin-vue2` supports no later version, and vue-apexcharts on 1.6, since 1.7 needs apexcharts 4. The widgets' libraries keep their majors (d3 6, pixi.js 6, apexcharts 3, mathjs 8.1.0); they move with Vue 3.
   * Dart Sass refuses the `/deep/` combinator, so the dialogs' scoped styles use `::v-deep`.
+* **The documentation is built with Hugo's official image, v0.169, and the relearn theme** ([#36](https://github.com/gerlichlab/hicognition/issues/36)), in place of `klakegg/hugo`, whose last image dates from June 2023, and the learn theme, which its author retired in favour of relearn and which builds only up to Hugo 0.135. The colours, the logo, the menu, the search and the pages carry over.
+  * **The notices are relearn's callouts** (`{{% callout style="note" %}}`). Their colours follow relearn: a note is yellow, where learn showed it blue.
+  * **Pages no longer show a date:** the dates in their front matter are when they were written, not changed. Chapter pages carry relearn's "Chapter" heading.
+  * **The theme's submodule is shallow,** and the server and demo images fetch only its pinned commit: its history is 1.5 GB.
 * **New passwords are hashed with PBKDF2-SHA256 at 1,000,000 iterations,** Werkzeug 3's setting for it. Werkzeug 3's default, scrypt, writes hashes longer than the database column; existing hashes still verify.
 
 ### Changed (documentation)
-* The developer documentation names ruff and pre-commit in place of black, pylama and pyright, Valkey in place of Redis 6, and the testing page the reference results. It describes the frontend's Vite build, its settings and its development server, and the frontend tests with Vitest.
+* The developer documentation names ruff and pre-commit in place of black, pylama and pyright, Valkey in place of Redis 6, and the testing page the reference results. It describes the frontend's Vite build, its settings and its development server, and the frontend tests with Vitest. The installation page explains the documentation's theme submodule.
 
 ### Removed
 * **conda, and the packages nothing imported** ([#36](https://github.com/gerlichlab/hicognition/issues/36)): matplotlib, seaborn, statsmodels, pairtools, pybedtools, pysam, pyensembl, pyarrow, flask-cors, pyhumps, PyJWT, the Flask-Babel, Flask-Bootstrap, Flask-Moment and Flask-WTF extensions, black, pylama and pylint. The image no longer installs anything from GitHub.
