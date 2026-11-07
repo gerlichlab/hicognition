@@ -61,7 +61,7 @@ The frontend tests test common utility functions that are used throughout the vu
 
 ### Structure
 
-The tests are written using `jest` and are located in `front_end\src\tests` relative to the HiCognition repository.
+The tests are written for [Vitest](https://vitest.dev/) and are located in `front_end\src\tests` relative to the HiCognition repository.
 
 
 ### Running the tests

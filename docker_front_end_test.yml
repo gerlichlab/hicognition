@@ -3,7 +3,7 @@ version: "3.9"
 services:
     node:
         container_name: node
-        image: node:14-buster
+        image: node:24.22.2-trixie-slim
         ports:
             # only map localhost-port
             - "8080:8080"
@@ -11,4 +11,4 @@ services:
             - ${DIR_FRONT_END}:/front_end
         entrypoint: 
             - "/bin/bash"
-        command: -c "cd /front_end && npm install && npm run test"
+        command: -c "cd /front_end && npm ci --no-audit --no-fund && npm test"

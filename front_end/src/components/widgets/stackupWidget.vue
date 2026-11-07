@@ -246,7 +246,7 @@ import {
     valueScaleSharingMixin
 } from "../../mixins";
 import EventBus from "../../eventBus";
-import * as seedrandom from "seedrandom";
+import seedrandom from "seedrandom";
 import valueInfoTooltip from "../visualizations/valueInfoTooltip.vue";
 
 const EXPANSION_FACTOR = 0.2;

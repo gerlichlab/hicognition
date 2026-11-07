@@ -125,14 +125,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.md-dialog /deep/.md-dialog-container {
+.md-dialog ::v-deep .md-dialog-container {
     max-width: 90vw;
     min-width: 90vw;
     min-height: 90vh;
 }
 
 @media only screen and (min-width: 2400px) {
-    .md-dialog /deep/.md-dialog-container {
+    .md-dialog ::v-deep .md-dialog-container {
         max-width: 90vw;
         min-width: 50vw;
         min-height: 50vh;

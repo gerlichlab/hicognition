@@ -49,12 +49,12 @@ services:
     # container to build front-end
     node:
         container_name: node-builder
-        image: node:14-buster
+        image: node:24.22.2-trixie-slim
         volumes:
             - ${DIR_FRONT_END}:/front_end
         entrypoint: 
             - "/bin/bash"
-        command: -c "cd /front_end; [ -e ./dist/static/finished.json ] && rm ./dist/static/finished.json; npm install && npm run build && touch ./dist/static/finished.json"
+        command: -c "cd /front_end; [ -e ./dist/static/finished.json ] && rm ./dist/static/finished.json; npm ci --no-audit --no-fund && npm run build && touch ./dist/static/finished.json"
 
     redis-server:
         container_name: redis-server

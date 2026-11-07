@@ -42,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       # the image the frontend is built with (docker-compose.yml)
-      - name: Run the frontend tests
+      - name: Run the frontend tests and build it
         run: >
-          docker run --rm -v "$PWD/front_end":/front_end -w /front_end node:14-buster
-          bash -c "npm ci --no-audit --no-fund && npm test"
+          docker run --rm -v "$PWD/front_end":/front_end -w /front_end node:24.22.2-trixie-slim
+          bash -c "npm ci --no-audit --no-fund && npm test && npm run build"

@@ -56,7 +56,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.md-dialog /deep/.md-dialog-container {
+.md-dialog ::v-deep .md-dialog-container {
     max-width: 1000px;
 }
 

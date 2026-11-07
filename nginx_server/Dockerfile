@@ -25,11 +25,11 @@ COPY --from=theme-resolver /code/documentation/hugo-site/ /docs/
 RUN cd /docs/ && hugo
 
 # build frontend
-FROM node:14-buster as frontend-builder
+FROM node:24.22.2-trixie-slim AS frontend-builder
 
 ADD ./front_end /front_end
 
-RUN cd /front_end && npm install && npm run build
+RUN cd /front_end && npm ci --no-audit --no-fund && npm run build
 
 # copy everything into nginx container
 # nginx's stable line, pinned so that a build repeats

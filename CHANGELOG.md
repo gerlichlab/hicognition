@@ -26,13 +26,18 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
   * **`mysql/mysql.cnf` follows the image's own file.** `host-cache-size=0` replaces `skip-host-cache`, which 8.4 no longer knows, and errors go to `docker logs mysql` instead of a file inside the container.
   * `MYSQL_ROOT_HOST=localhost` keeps root reachable only from inside the container, as the old image set it up.
 * **nginx is pinned to 1.30.6, its stable release,** in the three nginx Dockerfiles, which took whatever `nginx` was newest when they were built. The stage that fetches the docs theme for the server and demo images runs on Ubuntu 24.04 instead of 20.04.
+* **The frontend is built with Vite on Node 24 and tested with Vitest** ([#36](https://github.com/gerlichlab/hicognition/issues/36)), in place of webpack 3, babel 6, node-sass 4 and Jest 23 on Node 14, which reached end of life in April 2023. Vue moves to 2.7.16, the last Vue 2 release, with vue-router 3.6 and axios 1.21, and vue-material is pinned to 1.0.0-beta-16, its last release, instead of `latest`. The lock holds 292 packages, where it held 1,917.
+  * **The app looks exactly as before:** the screenshots of both builds are identical, pixel for pixel, for the login, the compare view with each of the six widget types, the session and data management dialogs and the drawers. To keep it so, Vue's templates keep the whitespace between tags and vue-material's styles come after the components', as with webpack.
+  * **Two pins have their reasons:** Vite stays on 7, since `@vitejs/plugin-vue2` supports no later version, and vue-apexcharts on 1.6, since 1.7 needs apexcharts 4. The widgets' libraries keep their majors (d3 6, pixi.js 6, apexcharts 3, mathjs 8.1.0); they move with Vue 3.
+  * Dart Sass refuses the `/deep/` combinator, so the dialogs' scoped styles use `::v-deep`.
 * **New passwords are hashed with PBKDF2-SHA256 at 1,000,000 iterations,** Werkzeug 3's setting for it. Werkzeug 3's default, scrypt, writes hashes longer than the database column; existing hashes still verify.
 
 ### Changed (documentation)
-* The developer documentation names ruff and pre-commit in place of black, pylama and pyright, Valkey in place of Redis 6, and the testing page the reference results.
+* The developer documentation names ruff and pre-commit in place of black, pylama and pyright, Valkey in place of Redis 6, and the testing page the reference results. It describes the frontend's Vite build, its settings and its development server, and the frontend tests with Vitest.
 
 ### Removed
 * **conda, and the packages nothing imported** ([#36](https://github.com/gerlichlab/hicognition/issues/36)): matplotlib, seaborn, statsmodels, pairtools, pybedtools, pysam, pyensembl, pyarrow, flask-cors, pyhumps, PyJWT, the Flask-Babel, Flask-Bootstrap, Flask-Moment and Flask-WTF extensions, black, pylama and pylint. The image no longer installs anything from GitHub.
+* **The frontend's webpack and babel configuration** (`front_end/build/`, `front_end/config/`, `.babelrc`, `.postcssrc.js`, `jest.config.js`) **and the packages it didn't use:** gulp and its plugins, ajv, the direct dependency on pixi.js beside pixi.js-legacy, and fsevents.
 
 ### Fixed
 * **A new database can be built again.** One migration passed `type` to `drop_constraint`, which Alembic 1.20 refuses; it is `type_`.

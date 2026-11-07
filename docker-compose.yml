@@ -69,14 +69,14 @@ services:
     # container to build front-end
     node:
         container_name: node-builder
-        image: node:14-buster
+        image: node:24.22.2-trixie-slim
         environment:
             - showcase=false
         volumes:
             - ${DIR_FRONT_END}:/front_end
         entrypoint: 
             - "/bin/bash"
-        command: -c "cd /front_end && npm install && npm run build"
+        command: -c "cd /front_end && npm ci --no-audit --no-fund && npm run build"
 
     # Valkey (redis/Dockerfile); not published on the host, reachable only from containers on
     # hicognition-net;

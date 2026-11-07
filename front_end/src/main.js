@@ -60,5 +60,5 @@ new Vue({
     beforeDestroy: function() {
         store.commit("releaseNotificationSource");
     },
-    template: "<App/>"
+    render: h => h(App)
 });

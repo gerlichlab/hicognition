@@ -151,26 +151,24 @@ Currently no format checking logic is implemented for bigwig files.
 
 ## Front-end
 
-We use vue.js in the front-end to manage routing, interactivity and fetching data from the back-end. Here, we employ a template-based design, where each vue-component resides in its own `.vue` file that is included in the distribution build by `webpack`.
+We use vue.js in the front-end to manage routing, interactivity and fetching data from the back-end. Here, we employ a template-based design, where each vue-component resides in its own `.vue` file that is included in the distribution build by Vite.
 
 ### Build
 
-Front-end files (`index.html`, `app.js`, `vendor.js`, `app.css`, `manifest.js`) are built using [webpack](https://webpack.js.org/) with configs set in `frontend/build/build.js` and `frontend/build/webpack.prod.conf.js` and `frontend/build/webpack.dev.conf.js` (these both use `frontend/build/webpack.base.conf.js`). 
+The front-end is built with [Vite](https://vite.dev/) on Node 24, configured in `front_end/vite.config.js`. `npm ci` installs the versions in `front_end/package-lock.json`, and `npm run build` writes `index.html` and, in `static/`, the app's script and styles and the libraries' script to `front_end/dist/`, which nginx serves.
 
-Babel is first used to transpile js-files to support all browsers with > 1% market share and support the last 2 versions (config settings `"browsers": ["> 1%", "last 2 versions", "not ie <= 8"]`). Then, js-files are minified and both js- and css-files are included in the generated `index.html` file and copied to the `./dist` directory.
+The settings the code reads as `process.env.VARIABLE` are defined in `vite.config.js`:
 
-Environment variables for development and production are defined using `frontend/config/dev.env.js` and `frontend/config/prod.env.js` respectively. Variables are:
+- `API_URL` - The URL of the flask API: `http://localhost:5000/api/` for the development server, `/flask/api/` for a build
+- `NOTIFICATION_URL` - The URL of the notification stream
+- `VERSION` - The version of HiCognition, from `front_end/package.json`
+- `SHOWCASE` - Whether the build is the demo, set by `showcase=true` in the environment of the build
 
-- `API_URL` - The URL of the flask-api
-- `STATIC_URL` - The URL of the static directory.
-
-These variables are accessed in js-files using `process.env.VARIABLE` and resolved by webpack during build.
-
-Modules for build are imported using the "import"-syntax rather than the "require"-syntax (more [info](https://insights.untapt.com/webpack-import-require-and-you-3fd7f5ea93c0)). This allows webpack to only bundle the actually used parts of a module, making the bundle smaller.
+Vue's templates keep the whitespace between tags, as the earlier webpack build did, since the spaces between inline elements such as icon buttons are part of the layout. For the same reason, vue-material's styles come after the components' styles.
 
 ### Development server
 
-A webpack development server is started using `webpack-dev-server --inline --progress --config build/webpack.dev.conf.js --host 0.0.0.0` with the alias `npm run dev`. This enables hot-reload, real-time linting and the usage of front-end debugging using the [vue-development chrome extension](https://chrome.google.com/webstore/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd?hl=en).
+`npm run dev` starts Vite's development server on port 8080, which updates the page when a file changes. It answers only requests addressed to `localhost` or an IP address; to reach it under another host name, add the name to `server.allowedHosts` in `vite.config.js`. The [Vue devtools](https://devtools.vuejs.org/) work with it.
 
 ### Vue set-up
 
@@ -205,7 +203,7 @@ The api-calls are defined as a mixin in `frontend/src/mixins.js` in `apiMixin`. 
 
 ### Testing
 
-Front-end tests are implemented via `jest`. Currently, we only test stand-alone functions that are not dependent on a `Vue` instance. In the future we want to extend testing the `Vue` components.
+Front-end tests are implemented with [Vitest](https://vitest.dev/) (`npm test`), which provides `describe`, `test` and `expect` as globals, as jest did. Currently, we only test stand-alone functions that are not dependent on a `Vue` instance. In the future we want to extend testing the `Vue` components.
 
 
 ## Git actions and Code tests
