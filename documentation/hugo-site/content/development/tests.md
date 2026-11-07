@@ -52,6 +52,8 @@ python tests/get_routes/test_api_auth.py
 The code is mounted into the container, so the tests see your changes. After a change to `back_end/pyproject.toml` or `back_end/poetry.lock`, rebuild the image.
 {{% /callout %}}
 
+The tests use a SQLite database in memory. CI runs them on MySQL, as instances run it, after it has built a database with the migrations and compared it with the models (`flask db check`). To run them on MySQL yourself, set `TEST_DATABASE_URL` to an empty MySQL database, for example `mysql+pymysql://hicognition:<password>@mysql/hicognition_test`. They run there without foreign-key checks, since many tests add rows that refer to rows they never add.
+
 `tests/reference` compares a run of every preprocessing step with stored results; it takes a few minutes. If a change moves results on purpose, `python -m tests.reference.make_reference` writes new ones, and the changelog says why they moved.
 
 

@@ -15,6 +15,7 @@ import redis
 import rq
 from flask.globals import current_app
 from flask_login import UserMixin
+from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.orm import declared_attr
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -1202,7 +1203,8 @@ class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    session_object = db.Column(db.Text(10**9))
+    # LONGTEXT on MySQL, as the migrations create it; Text(10**9) compiled to the same
+    session_object = db.Column(db.Text().with_variant(LONGTEXT(), "mysql"))
     created_utc = db.Column(
         db.DateTime, nullable=False, default=datetime.datetime.utcnow
     )

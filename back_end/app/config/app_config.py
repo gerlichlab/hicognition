@@ -330,7 +330,14 @@ class TestingConfig(Config):
     DEBUG = True
     SECRET_KEY = "hicognition-tests"
     SECRET_SALT = "hicognition-tests"
-    SQLALCHEMY_DATABASE_URI = "sqlite://"
+    # SQLite in memory unless set; CI sets it to a MySQL database
+    SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL") or "sqlite://"
+    # Many tests add rows that refer to rows they never add, which SQLite, not checking foreign
+    # keys, lets pass; MySQL checks them unless told not to
+    if SQLALCHEMY_DATABASE_URI.startswith("mysql"):
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            "connect_args": {"init_command": "SET SESSION foreign_key_checks = 0"}
+        }
     UPLOAD_DIR = "./tmp_test"
     STACKUP_THRESHOLD = 10  # Threshold of when stackup is downsampled
     # Flask-Mail needs a sender even when testing suppresses the sending

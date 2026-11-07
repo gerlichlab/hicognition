@@ -1,7 +1,7 @@
 name: CI
 
-# On every push to master and every pull request: ruff, the backend tests with the comparison
-# against the reference results, and the frontend tests.
+# On every push to master and every pull request: ruff, the migrations and the backend tests on
+# MySQL with the comparison against the reference results, and the frontend tests.
 on:
   push:
     branches: [master]
@@ -26,14 +26,44 @@ jobs:
 
   backend:
     runs-on: ubuntu-latest
+    # MySQL as the instances run it: SQLite, the tests' default, doesn't enforce foreign keys
+    # and accepts migrations that MySQL refuses
+    services:
+      mysql:
+        image: mysql:8.4.13
+        env:
+          MYSQL_ROOT_PASSWORD: root-ci
+          MYSQL_DATABASE: hicognition
+          MYSQL_USER: hicognition
+          MYSQL_PASSWORD: hicognition-ci
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot-ci"
+          --health-interval 5s --health-timeout 5s --health-retries 30
+    env:
+      MYSQL: mysql+pymysql://hicognition:hicognition-ci@mysql
     steps:
       - uses: actions/checkout@v7
       # the image docker-compose.yml runs, from back_end/poetry.lock
       - name: Build the backend image
         run: docker build -t hicognition:ci back_end
-      - name: Run the backend tests and the reference comparison
+      - name: Create the tests' database
         run: >
-          docker run --rm -v "$PWD/back_end":/code -w /code -e HOME=/tmp
+          docker exec ${{ job.services.mysql.id }} mysql -uroot -proot-ci
+          -e "CREATE DATABASE hicognition_test; GRANT ALL ON hicognition_test.* TO 'hicognition'@'%';"
+      # alembic logs to the app's log file, so its findings are printed when the check fails
+      - name: Build a database with the migrations and compare it with the models
+        run: >
+          docker run --rm --network ${{ job.services.mysql.network }}
+          -v "$PWD/back_end":/code -w /code -e HOME=/tmp
+          -e FLASK_APP=hicognition_server.py -e FLASK_CONFIG=production
+          -e DATABASE_URL=$MYSQL/hicognition -e SECRET_KEY=ci-secret-key -e SECRET_SALT=ci-secret-salt
+          hicognition:ci
+          bash -c "mkdir -p /logs && flask db upgrade && { flask db check || { tail -n 30 /logs/*.logs; exit 1; }; }"
+      - name: Run the backend tests on MySQL and the reference comparison
+        run: >
+          docker run --rm --network ${{ job.services.mysql.network }}
+          -v "$PWD/back_end":/code -w /code -e HOME=/tmp
+          -e TEST_DATABASE_URL=$MYSQL/hicognition_test
           hicognition:ci
           bash -c "mkdir -p /logs && python -m pytest tests -q -p no:cacheprovider"
 

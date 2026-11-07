@@ -34,10 +34,12 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
   * **The notices are relearn's callouts** (`{{% callout style="note" %}}`). Their colours follow relearn: a note is yellow, where learn showed it blue.
   * **Pages no longer show a date:** the dates in their front matter are when they were written, not changed. Chapter pages carry relearn's "Chapter" heading.
   * **The theme's submodule is shallow,** and the server and demo images fetch only its pinned commit: its history is 1.5 GB.
+* **CI tests on MySQL 8.4, as instances run it:** it builds an empty database with the migrations, checks that they match the models (`flask db check`), and runs the backend tests and the reference comparison on MySQL. Until now, the migrations ran nowhere before a deployment, and the one fixed below failed only on MySQL. The tests keep SQLite in memory for local runs unless `TEST_DATABASE_URL` is set. On MySQL they run without foreign-key checks: 210 of them add rows that refer to rows they never add, which SQLite doesn't check. With the checks off, all of them pass.
+  * `session.session_object` is declared as `LONGTEXT` on MySQL, as the migrations create it, so that `flask db check` finds no difference; the column is unchanged.
 * **New passwords are hashed with PBKDF2-SHA256 at 1,000,000 iterations,** Werkzeug 3's setting for it. Werkzeug 3's default, scrypt, writes hashes longer than the database column; existing hashes still verify.
 
 ### Changed (documentation)
-* The developer documentation names ruff and pre-commit in place of black, pylama and pyright, Valkey in place of Redis 6, and the testing page the reference results. It describes the frontend's Vite build, its settings and its development server, and the frontend tests with Vitest. The installation page explains the documentation's theme submodule.
+* The developer documentation names ruff and pre-commit in place of black, pylama and pyright, Valkey in place of Redis 6, and the testing page the reference results. It describes the frontend's Vite build, its settings and its development server, and the frontend tests with Vitest. The installation page explains the documentation's theme submodule, and the testing page how to run the tests on MySQL.
 
 ### Removed
 * **conda, and the packages nothing imported** ([#36](https://github.com/gerlichlab/hicognition/issues/36)): matplotlib, seaborn, statsmodels, pairtools, pybedtools, pysam, pyensembl, pyarrow, flask-cors, pyhumps, PyJWT, the Flask-Babel, Flask-Bootstrap, Flask-Moment and Flask-WTF extensions, black, pylama and pylint. The image no longer installs anything from GitHub.
