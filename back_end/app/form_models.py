@@ -15,11 +15,13 @@ from pydantic import (
     field_validator,
 )
 
+_ANY_HTTP_URL = TypeAdapter(AnyHttpUrl)
+
 
 def _http_url(url: str) -> str:
     """Checks that url is an HTTP(S) URL and keeps it as it was given: pydantic 2's AnyHttpUrl
     would return a URL object, and normalise it, where pydantic 1's was the string."""
-    TypeAdapter(AnyHttpUrl).validate_python(url)
+    _ANY_HTTP_URL.validate_python(url)
     return url
 
 
