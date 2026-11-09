@@ -45,7 +45,9 @@ services:
             - "5000:5000"
         build:
             context: "./back_end"
-        image: hicognition:latest
+            # with pytest, which the development docs run inside flask-server
+            target: test
+        image: hicognition:dev
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
@@ -88,8 +90,9 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+            target: test
         scale: 3
-        image: hicognition:latest
+        image: hicognition:dev
         entrypoint: "/bin/bash"
         networks:
             - hicognition-net
@@ -121,8 +124,9 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+            target: test
         scale: 10
-        image: hicognition:latest
+        image: hicognition:dev
         entrypoint: "/bin/bash"
         networks:
             - hicognition-net
@@ -154,8 +158,9 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+            target: test
         scale: 3
-        image: hicognition:latest
+        image: hicognition:dev
         entrypoint: "/bin/bash"
         networks:
             - hicognition-net

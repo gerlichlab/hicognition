@@ -57,9 +57,9 @@ jobs:
       MYSQL: mysql+pymysql://hicognition:hicognition-ci@mysql
     steps:
       - uses: actions/checkout@v7
-      # the image docker-compose.yml runs, from back_end/poetry.lock
+      # the image docker-compose.yml runs, from back_end/poetry.lock, plus pytest (the test stage)
       - name: Build the backend image
-        run: docker build -t hicognition:ci back_end
+        run: docker build --target test -t hicognition:ci back_end
       - name: Create the tests' database
         run: >
           docker exec ${{ job.services.mysql.id }} mysql -uroot -proot-ci

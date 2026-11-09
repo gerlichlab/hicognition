@@ -36,6 +36,7 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
   * **The theme's submodule is shallow,** and the server and demo images fetch only its pinned commit: its history is 1.5 GB.
 * **CI tests on MySQL 8.4, as instances run it:** it builds an empty database with the migrations, checks that they match the models (`flask db check`), and runs the backend tests and the reference comparison on MySQL. Until now, the migrations ran nowhere before a deployment, and the one fixed below failed only on MySQL. The tests keep SQLite in memory for local runs unless `TEST_DATABASE_URL` is set. On MySQL they run without foreign-key checks: 210 of them add rows that refer to rows they never add, which SQLite doesn't check. With the checks off, all of them pass.
   * `session.session_object` is declared as `LONGTEXT` on MySQL, as the migrations create it, so that `flask db check` finds no difference; the column is unchanged.
+* **The image the instances run leaves out pytest.** The backend's Dockerfile has a `test` stage that adds it, which CI and the development stacks build (`docker_dev.yml` and `docker_dev_hicog_lib.yml`, tagged `hicognition:dev`, so that they no longer replace the production stack's `hicognition:latest`). A build without a target, as in `docker-compose.yml`, gets the production image.
 * **New passwords are hashed with PBKDF2-SHA256 at 1,000,000 iterations,** Werkzeug 3's setting for it. Werkzeug 3's default, scrypt, writes hashes longer than the database column; existing hashes still verify.
 
 ### Changed (documentation)
