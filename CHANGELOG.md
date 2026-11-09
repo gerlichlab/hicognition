@@ -50,6 +50,7 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
 * **The app doesn't start without `SECRET_KEY` and `SECRET_SALT`, and in production not with the example `.env`'s values.** It fell back to `eieieiei` and `blblblbl`, the values in the repository's `.env`, so anyone could sign login tokens for an instance that didn't set its own. Tests use fixed secrets of their own; development may keep the example values. Every compose file passes both to the backend and its workers, and compose stops if `.env` lacks one; the demo stack runs on the production configuration, so it needs values of its own. An instance without its own secrets has to set them before it upgrades; new secrets log everyone out and invalidate links to shared sessions.
 
 ### Fixed
+* **A login token passed as `sessionToken` is ignored, as an invalid session token is,** instead of failing the request with a 500. Both kinds of token are signed with the same key, and the session token's check looked up a `session_id` that a login token doesn't carry.
 * **A new database can be built again.** One migration passed `type` to `drop_constraint`, which Alembic 1.20 refuses; it is `type_`.
 * **The default paths of the chromosome sizes and arms, the upload folder and the development databases point into `back_end/` again.** Since the configuration file moved into `back_end/app/config/`, they pointed there, where none of these files are. It went unnoticed because deployments set the paths in `.env`, but the backend tests failed without them.
 

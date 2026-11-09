@@ -1239,6 +1239,9 @@ class Session(db.Model):
             data = tokens.loads(token, current_app.config["SECRET_KEY"])
         except tokens.BadToken:
             return None
+        # a login token, signed with the same key, carries a user id instead
+        if not isinstance(data, dict) or not isinstance(data.get("session_id"), int):
+            return None
         return db.session.get(Session, data["session_id"])
 
     def to_json(self):
