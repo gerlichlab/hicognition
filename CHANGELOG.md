@@ -52,7 +52,7 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
 ### Fixed
 * **A login token passed as `sessionToken` is ignored, as an invalid session token is,** instead of failing the request with a 500. Both kinds of token are signed with the same key, and the session token's check looked up a `session_id` that a login token doesn't carry.
 * **A new database can be built again.** One migration passed `type` to `drop_constraint`, which Alembic 1.20 refuses; it is `type_`.
-* **The default paths of the chromosome sizes and arms, the upload folder and the development databases point into `back_end/` again.** Since the configuration file moved into `back_end/app/config/`, they pointed there, where none of these files are. It went unnoticed because deployments set the paths in `.env`, but the backend tests failed without them.
+* **The default paths of the chromosome sizes and arms, the upload folder and the development databases point into `back_end/` again.** Since the configuration file moved into `back_end/app/config/`, they pointed there, where none of these files are. It went unnoticed because deployments set the paths in `.env`, but the backend tests failed without them. A SQLite database that a run without `DATABASE_URL` created in `back_end/app/config/` (`app.db`, or `data.sqlite` in production) has to move to `back_end/` to be found again.
 
 ## [v0.8.0] - 2026-11-06
 The last release on the original stack (Python 3.8, Flask 1.1, Vue 2), as the lab's instance runs it. [#36](https://github.com/gerlichlab/hicognition/issues/36) moves every dependency to its newest release.
