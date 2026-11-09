@@ -43,7 +43,13 @@ def verify_password(username_or_token, password):
         return False
     g.current_user = user
     g.token_used = False
-    return user.check_password(password)
+    if not user.check_password(password):
+        return False
+    # the password is known now, so a hash written with older settings moves to the current ones
+    if user.password_needs_rehash():
+        user.set_password(password)
+        db.session.commit()
+    return True
 
 
 @api.route("/tokens/", methods=["POST"])
