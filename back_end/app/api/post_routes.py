@@ -48,7 +48,7 @@ def add_dataset_from_ENCODE():
     except ValueError as err:
         return invalid(f"Form is not valid: {str(err)}")
 
-    repository = db.session.query(Repository).get(data.repository_name)
+    repository = db.session.get(Repository, data.repository_name)
     if not repository:
         return invalid(f"Repository {data.repository_name} not found.")
 

@@ -751,7 +751,7 @@ def get_ENCODE_metadata(repo_name: str, sample_id: str):
     """fetches metadata from an ENCODE repository about a file
     to auto-fill form when user wants import from it
     """
-    repository = db.session.query(Repository).get(repo_name)
+    repository = db.session.get(Repository, repo_name)
     if repository is None:
         return not_found(f"ENCODE repository {repo_name} not in our database.")
 
