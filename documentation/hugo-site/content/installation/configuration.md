@@ -31,7 +31,7 @@ We expose a wide array of environment variables, some of which you don't need to
 
 These environment variables should be redefined if you deploy a new HiCognition instance.
 
-- `SECRET_KEY` | Secret key of the flask app, which signs the login and session tokens. The app doesn't start without it, and in production not with the example `.env`'s value. Use a random value, for example the output of `openssl rand -hex 32`; changing it logs everyone out and invalidates links to shared sessions.
+- `SECRET_KEY` | Secret key of the flask app, which signs the login and session tokens. The app doesn't start without it, and in production, which includes the demo stack `docker_demo.yml`, not with the example `.env`'s value. Use a random value, for example the output of `openssl rand -hex 32`; changing it logs everyone out and invalidates links to shared sessions.
 - `SECRET_SALT` | Salt of the links in confirmation e-mails, with the same rules as `SECRET_KEY`
 - `DATABASE_URI` | Connection string to the HiCogntion MySQL database (including username and password)
 - `MYSQL_PASSWORD` | Password for MySQL database

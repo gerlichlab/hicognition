@@ -23,6 +23,20 @@ jobs:
         run: ruff format --check back_end
       - name: Lint with ruff
         run: ruff check back_end
+      # The backend refuses to start without both; the unit tests can't see what compose passes
+      - name: Check that every compose file passes both secrets to the backend
+        env:
+          REDIS_PASSWORD: placeholder  # docker-compose.yml requires one
+        # with pipefail, so that a compose file compose can't read fails the step too
+        shell: bash
+        run: |
+          for f in docker*.yml; do
+            docker compose -f "$f" config --format json | jq -e --arg f "$f" '
+              [.services | to_entries[] | select((.value.image // "") | startswith("hicognition:"))
+               | select((.value.environment.SECRET_KEY // "") == "" or (.value.environment.SECRET_SALT // "") == "")
+               | .key]
+              | if length > 0 then error("\($f): \(join(", ")) lack SECRET_KEY or SECRET_SALT") else true end' > /dev/null
+          done
 
   backend:
     runs-on: ubuntu-latest

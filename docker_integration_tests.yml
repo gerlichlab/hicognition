@@ -11,6 +11,8 @@ services:
             - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
+            - SECRET_KEY=${SECRET_KEY:?set SECRET_KEY in .env}
+            - SECRET_SALT=${SECRET_SALT:?set SECRET_SALT in .env}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -74,6 +76,8 @@ services:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
+            - SECRET_KEY=${SECRET_KEY:?set SECRET_KEY in .env}
+            - SECRET_SALT=${SECRET_SALT:?set SECRET_SALT in .env}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -98,6 +102,8 @@ services:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
+            - SECRET_KEY=${SECRET_KEY:?set SECRET_KEY in .env}
+            - SECRET_SALT=${SECRET_SALT:?set SECRET_SALT in .env}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -122,6 +128,8 @@ services:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
+            - SECRET_KEY=${SECRET_KEY:?set SECRET_KEY in .env}
+            - SECRET_SALT=${SECRET_SALT:?set SECRET_SALT in .env}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}

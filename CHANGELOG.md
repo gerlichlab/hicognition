@@ -46,7 +46,7 @@ and this project will adhere to [Semantic Versioning](https://semver.org/spec/v2
 * **The frontend's webpack and babel configuration** (`front_end/build/`, `front_end/config/`, `.babelrc`, `.postcssrc.js`, `jest.config.js`) **and the packages it didn't use:** gulp and its plugins, ajv, the direct dependency on pixi.js beside pixi.js-legacy, and fsevents.
 
 ### Security
-* **The app doesn't start without `SECRET_KEY` and `SECRET_SALT`, and in production not with the example `.env`'s values.** It fell back to `eieieiei` and `blblblbl`, the values in the repository's `.env`, so anyone could sign login tokens for an instance that didn't set its own. Tests use fixed secrets of their own; development may keep the example values. An instance without its own secrets has to set them before it upgrades; new secrets log everyone out and invalidate links to shared sessions.
+* **The app doesn't start without `SECRET_KEY` and `SECRET_SALT`, and in production not with the example `.env`'s values.** It fell back to `eieieiei` and `blblblbl`, the values in the repository's `.env`, so anyone could sign login tokens for an instance that didn't set its own. Tests use fixed secrets of their own; development may keep the example values. Every compose file passes both to the backend and its workers, and compose stops if `.env` lacks one; the demo stack runs on the production configuration, so it needs values of its own. An instance without its own secrets has to set them before it upgrades; new secrets log everyone out and invalidate links to shared sessions.
 
 ### Fixed
 * **A new database can be built again.** One migration passed `type` to `drop_constraint`, which Alembic 1.20 refuses; it is `type_`.

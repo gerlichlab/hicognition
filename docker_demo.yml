@@ -8,8 +8,12 @@ services:
             - ${LOG_DIR}:/logs/
         environment:
             - FLASK_DEBUG=1
+            # a public instance: refuses the example .env's secrets
+            - FLASK_CONFIG=production
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=mysql+pymysql://hicognition:${MYSQL_PASSWORD}@mysql/hicognition
+            - SECRET_KEY=${SECRET_KEY:?set SECRET_KEY in .env}
+            - SECRET_SALT=${SECRET_SALT:?set SECRET_SALT in .env}
             - SHOWCASE=1
             - LOG_FILE_NAME=/logs/dev_application.logs
             - ERROR_LOG_FILE_NAME=/logs/dev_error.logs
