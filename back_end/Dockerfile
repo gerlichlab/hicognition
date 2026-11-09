@@ -1,5 +1,5 @@
 # One release behind the newest Python: pybbi has no wheels for 3.14 yet (pyproject.toml).
-FROM python:3.13-slim-trixie
+FROM python:3.13-slim-trixie AS base
 
 # The dependencies go into /opt/venv, which comes first on PATH: /code, where docker-compose
 # mounts the checkout, would hide them.
@@ -25,10 +25,20 @@ RUN python -m venv /opt/poetry && /opt/poetry/bin/pip install poetry==2.5.1 \
 
 WORKDIR /code
 COPY pyproject.toml poetry.lock ./
-# the runtime dependencies and pytest, as locked; ruff and pre-commit stay out
-RUN /opt/poetry/bin/poetry sync --no-root --with test
+# the runtime dependencies, as locked; pytest, ruff and pre-commit stay out (Poetry installs
+# every group that isn't optional, the test group too, unless told --only main)
+RUN /opt/poetry/bin/poetry sync --no-root --only main
 
+# For CI and the development stacks: the same, plus pytest as locked. It is installed before the
+# code is copied, so that a change to the code doesn't install it again.
+FROM base AS test
+RUN /opt/poetry/bin/poetry sync --no-root --with test
+COPY . /code
+CMD ["/bin/bash"]
+
+# The image the instances run. It is the last stage, so that a build without --target, as in
+# docker-compose.yml, gets it.
+FROM base AS production
 # the code, so that the image runs without the checkout mounted
 COPY . /code
-
 CMD ["/bin/bash"]

@@ -422,10 +422,10 @@ def get_pileup_data(entry_id):
     """returns pileup data for the specified pileup id if it exists and
     access is allowed."""
     # Check for existence
-    if db.session.get(AverageIntervalData, entry_id) is None:
+    pileup = db.session.get(AverageIntervalData, entry_id)
+    if pileup is None:
         return not_found("Pileup does not exist!")
     # Check whether datasets are owned
-    pileup = db.session.get(AverageIntervalData, entry_id)
     cooler_ds = pileup.source_dataset
     bed_ds = pileup.source_intervals.source_dataset
     if cooler_ds.is_access_denied(g) or bed_ds.is_access_denied(g):
@@ -450,10 +450,10 @@ def get_association_data(entry_id):
     """returns data for the specified association data id if it exists and
     access is allowed."""
     # Check for existence
-    if db.session.get(AssociationIntervalData, entry_id) is None:
+    association_data = db.session.get(AssociationIntervalData, entry_id)
+    if association_data is None:
         return not_found("Association data does not exist!")
     # Check whether datasets are owned
-    association_data = db.session.get(AssociationIntervalData, entry_id)
     collection = association_data.source_collection
     bed_ds = association_data.source_intervals.source_dataset
     if collection.is_access_denied(g) or bed_ds.is_access_denied(g):
@@ -476,10 +476,10 @@ def get_embedding_data(entry_id):
     """returns data for the specified embedding data id if it exists and
     access is allowed."""
     # Check for existence
-    if db.session.get(EmbeddingIntervalData, entry_id) is None:
+    embedding_data = db.session.get(EmbeddingIntervalData, entry_id)
+    if embedding_data is None:
         return not_found("Embedding data does not exist!")
     # Check whether datasets are 1d or 2d
-    embedding_data = db.session.get(EmbeddingIntervalData, entry_id)
     if embedding_data.value_type == "2d-embedding":
         # Check whether datasets are owned
         feature_dataset = embedding_data.source_dataset
@@ -570,10 +570,10 @@ def get_embedding_data(entry_id):
 def get_embedding_feature(entry_id, feature_index):
     """Gets feature vector with feature_index for entry_id"""
     # Check for existence
-    if db.session.get(EmbeddingIntervalData, entry_id) is None:
+    embedding_data = db.session.get(EmbeddingIntervalData, entry_id)
+    if embedding_data is None:
         return not_found("Embedding data does not exist!")
     # Check whether datasets are owned
-    embedding_data = db.session.get(EmbeddingIntervalData, entry_id)
     collection = embedding_data.source_collection
     bed_ds = embedding_data.source_intervals.source_dataset
     if collection.is_access_denied(g) or bed_ds.is_access_denied(g):
@@ -601,9 +601,9 @@ def get_stackup_data(entry_id):
     """returns stackup data for the specified stackup id if it exists and
     access is allowed."""
     # Check for existence
-    if db.session.get(IndividualIntervalData, entry_id) is None:
-        return not_found("Stackup does not exist!")
     stackup = db.session.get(IndividualIntervalData, entry_id)
+    if stackup is None:
+        return not_found("Stackup does not exist!")
     bigwig_ds = stackup.source_dataset
     bed_ds = stackup.source_intervals.source_dataset
     if bigwig_ds.is_access_denied(g) or bed_ds.is_access_denied(g):
@@ -630,13 +630,11 @@ def get_stackup_metadata_small(entry_id):
     Note: stackups use the original dataset, so subsetting on interval indices
     is not required."""
     # Check for existence
-    if db.session.get(IndividualIntervalData, entry_id) is None:
-        return not_found("Stackup does not exist!")
     stackup = db.session.get(IndividualIntervalData, entry_id)
+    if stackup is None:
+        return not_found("Stackup does not exist!")
     # get downsample index from associated intervals
-    down_sample_index = db.session.get(
-        Intervals, stackup.intervals_id
-    ).file_path_sub_sample_index
+    down_sample_index = stackup.source_intervals.file_path_sub_sample_index
     bigwig_ds = stackup.source_dataset
     bed_ds = stackup.source_intervals.source_dataset
     if bigwig_ds.is_access_denied(g) or bed_ds.is_access_denied(g):
@@ -753,7 +751,7 @@ def get_ENCODE_metadata(repo_name: str, sample_id: str):
     """fetches metadata from an ENCODE repository about a file
     to auto-fill form when user wants import from it
     """
-    repository = db.session.query(Repository).get(repo_name)
+    repository = db.session.get(Repository, repo_name)
     if repository is None:
         return not_found(f"ENCODE repository {repo_name} not in our database.")
 

@@ -28,6 +28,8 @@ services:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
+            - SECRET_KEY=${SECRET_KEY:?set SECRET_KEY in .env}
+            - SECRET_SALT=${SECRET_SALT:?set SECRET_SALT in .env}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -37,7 +39,9 @@ services:
             - "5000:5000"
         build:
             context: "./back_end"
-        image: hicognition:latest
+            # with pytest, which the development docs run inside flask-server
+            target: test
+        image: hicognition:dev
         entrypoint: "/bin/bash"
         networks:
             hicognition-net:
@@ -64,6 +68,8 @@ services:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
+            - SECRET_KEY=${SECRET_KEY:?set SECRET_KEY in .env}
+            - SECRET_SALT=${SECRET_SALT:?set SECRET_SALT in .env}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -72,8 +78,9 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+            target: test
         scale: 3
-        image: hicognition:latest
+        image: hicognition:dev
         entrypoint: "/bin/bash"
         networks:
             - hicognition-net
@@ -89,6 +96,8 @@ services:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
+            - SECRET_KEY=${SECRET_KEY:?set SECRET_KEY in .env}
+            - SECRET_SALT=${SECRET_SALT:?set SECRET_SALT in .env}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -97,8 +106,9 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+            target: test
         scale: 10
-        image: hicognition:latest
+        image: hicognition:dev
         entrypoint: "/bin/bash"
         networks:
             - hicognition-net
@@ -114,6 +124,8 @@ services:
             - FLASK_DEBUG=1
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
+            - SECRET_KEY=${SECRET_KEY:?set SECRET_KEY in .env}
+            - SECRET_SALT=${SECRET_SALT:?set SECRET_SALT in .env}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -122,8 +134,9 @@ services:
                 - redis-server
         build:
             context: "./back_end"
+            target: test
         scale: 3
-        image: hicognition:latest
+        image: hicognition:dev
         entrypoint: "/bin/bash"
         networks:
             - hicognition-net

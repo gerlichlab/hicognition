@@ -48,7 +48,7 @@ def add_dataset_from_ENCODE():
     except ValueError as err:
         return invalid(f"Form is not valid: {str(err)}")
 
-    repository = db.session.query(Repository).get(data.repository_name)
+    repository = db.session.get(Repository, data.repository_name)
     if not repository:
         return invalid(f"Repository {data.repository_name} not found.")
 
@@ -220,7 +220,8 @@ def preprocess_dataset():
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
     for interval_id in interval_ids:
-        windowsize = db.session.get(Intervals, interval_id).windowsize
+        interval = db.session.get(Intervals, interval_id)
+        windowsize = interval.windowsize
         if windowsize is None:
             windowsize = "variable"
         # check whether windowsize is in preprocessing map
@@ -237,13 +238,8 @@ def preprocess_dataset():
                     intervals_id=interval_id,
                     binsize=binsize,
                 )
-                if (
-                    db.session.get(Intervals, interval_id).source_dataset
-                    not in dataset.processing_regions
-                ):
-                    dataset.processing_regions.append(
-                        db.session.get(Intervals, interval_id).source_dataset
-                    )
+                if interval.source_dataset not in dataset.processing_regions:
+                    dataset.processing_regions.append(interval.source_dataset)
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 
@@ -316,7 +312,8 @@ def preprocess_collections():
     interval_ids = get_all_interval_ids(region_datasets)
     # dispatch appropriate pipelines
     for interval_id in interval_ids:
-        windowsize = db.session.get(Intervals, interval_id).windowsize
+        interval = db.session.get(Intervals, interval_id)
+        windowsize = interval.windowsize
         if windowsize is None:
             windowsize = "variable"
         # check whether windowsize is in preprocessing map
@@ -337,13 +334,8 @@ def preprocess_collections():
                     intervals_id=interval_id,
                     binsize=binsize,
                 )
-                if (
-                    db.session.get(Intervals, interval_id).source_dataset
-                    not in collection.processing_for_datasets
-                ):
-                    collection.processing_for_datasets.append(
-                        db.session.get(Intervals, interval_id).source_dataset
-                    )
+                if interval.source_dataset not in collection.processing_for_datasets:
+                    collection.processing_for_datasets.append(interval.source_dataset)
     db.session.commit()
     return jsonify({"message": "success! Preprocessing triggered."})
 
@@ -384,12 +376,12 @@ def add_bedfile_metadata():
     file_object = request.files["file"]
     dataset_id = json.loads(data["datasetID"])
     # check whether dataset exists and user is allowed to access
-    if db.session.get(Dataset, dataset_id) is None:
+    dataset = db.session.get(Dataset, dataset_id)
+    if dataset is None:
         return not_found("Dataset does not exist!")
-    if db.session.get(Dataset, dataset_id).is_access_denied(g):
+    if dataset.is_access_denied(g):
         return forbidden("Dataset is not owned by logged in user!")
     # check whether row-number is correct
-    dataset = db.session.get(Dataset, dataset_id)
     dataset_file = pd.read_csv(
         dataset.file_path, sep="\t", header=None
     )  # during upload process, the header of bedfiles is removed
@@ -441,14 +433,12 @@ def add_bedfile_metadata_fields(metadata_id):
     data = request.form
     field_map = json.loads(data["fields"])
     # check whether dataset exists and user is allowed to access
-    if db.session.get(BedFileMetadata, metadata_id) is None:
+    metadata = db.session.get(BedFileMetadata, metadata_id)
+    if metadata is None:
         return not_found("Metadataset does not exist!")
-    if db.session.get(BedFileMetadata, metadata_id).associated_dataset.is_access_denied(
-        g
-    ):
+    if metadata.associated_dataset.is_access_denied(g):
         return forbidden("Associated dataset is not owned by logged in user!")
     # check whether field_names are correct
-    metadata = db.session.get(BedFileMetadata, metadata_id)
     metadata_file = pd.read_csv(metadata.file_path)
     if not all(key in metadata_file.columns for key in field_map):
         return invalid("Field names not understood!")
@@ -648,10 +638,9 @@ def create_region_from_cluster_id(entry_id):
         return False
 
     # Check for existence
-    if db.session.get(EmbeddingIntervalData, entry_id) is None:
-        return not_found("Embedding data does not exist!")
-    # Check whether datasets are owned
     embedding_data = db.session.get(EmbeddingIntervalData, entry_id)
+    if embedding_data is None:
+        return not_found("Embedding data does not exist!")
     # Check whehter dataset/collections are owned
     if embedding_data.value_type == "1d-embedding":
         features = embedding_data.source_collection

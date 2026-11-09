@@ -11,7 +11,7 @@ services:
             - FLASK_CONFIG=production
             - FLASK_APP=/code/hicognition_server.py
             - DATABASE_URL=${DATABASE_URL}
-            - SECRET_KEY=${SECRET_KEY}
+            - SECRET_KEY=${SECRET_KEY:?set SECRET_KEY in .env}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
             - CHROM_SIZES=${CHROM_SIZES}
@@ -21,7 +21,7 @@ services:
             - MAIL_USERNAME=${MAIL_USERNAME}
             - MAIL_PASSWORD=${MAIL_PASSWORD}
             - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
-            - SECRET_SALT=${SECRET_SALT}
+            - SECRET_SALT=${SECRET_SALT:?set SECRET_SALT in .env}
         # might not work on my machine, but also not strictly required?
         ports:
             # only map localhost-port
@@ -70,7 +70,7 @@ services:
             - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
             - FLASK_CONFIG=production
-            - SECRET_KEY=${SECRET_KEY}
+            - SECRET_KEY=${SECRET_KEY:?set SECRET_KEY in .env}
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
@@ -81,7 +81,7 @@ services:
             - MAIL_USERNAME=${MAIL_USERNAME}
             - MAIL_PASSWORD=${MAIL_PASSWORD}
             - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
-            - SECRET_SALT=${SECRET_SALT}
+            - SECRET_SALT=${SECRET_SALT:?set SECRET_SALT in .env}
         depends_on:
                 - redis-server
         build:
@@ -102,7 +102,7 @@ services:
             - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
             - FLASK_CONFIG=production
-            - SECRET_KEY=${SECRET_KEY}
+            - SECRET_KEY=${SECRET_KEY:?set SECRET_KEY in .env}
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
@@ -113,7 +113,7 @@ services:
             - MAIL_USERNAME=${MAIL_USERNAME}
             - MAIL_PASSWORD=${MAIL_PASSWORD}
             - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
-            - SECRET_SALT=${SECRET_SALT}
+            - SECRET_SALT=${SECRET_SALT:?set SECRET_SALT in .env}
         depends_on:
                 - redis-server
         build:
@@ -134,7 +134,7 @@ services:
             - FLASK_DEBUG=0
             - FLASK_APP=/code/hicognition_server.py
             - FLASK_CONFIG=production
-            - SECRET_KEY=${SECRET_KEY}
+            - SECRET_KEY=${SECRET_KEY:?set SECRET_KEY in .env}
             - DATABASE_URL=${DATABASE_URL}
             - REDIS_URL=${REDIS_URL}
             - UPLOAD_DIR=${UPLOAD_DIR}
@@ -145,7 +145,7 @@ services:
             - MAIL_USERNAME=${MAIL_USERNAME}
             - MAIL_PASSWORD=${MAIL_PASSWORD}
             - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
-            - SECRET_SALT=${SECRET_SALT}
+            - SECRET_SALT=${SECRET_SALT:?set SECRET_SALT in .env}
         depends_on:
                 - redis-server
         build:

@@ -286,6 +286,21 @@ class TestGetDatasets(LoginTestCase):
         expected = [dataset.to_json() for dataset in self.owned_datasets]
         self.assertEqual(response.json, expected)
 
+    def test_login_token_as_session_token_is_ignored(self):
+        """A login token is signed with the same key as a session token, but carries a
+        user id; as a session token it counts as invalid."""
+        token1 = self.add_and_authenticate("test", "asdf")
+        db.session.add_all(self.all_datasets)
+        db.session.commit()
+        response = self.client.get(
+            f"/api/datasets/?sessionToken={token1}",
+            headers=self.get_token_header(token1),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        expected = [dataset.to_json() for dataset in self.owned_datasets]
+        self.assertEqual(response.json, expected)
+
     def test_user_gets_public_dataset(self):
         """Tests whether user is able to access public dataset."""
         token1 = self.add_and_authenticate("test", "asdf")

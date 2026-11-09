@@ -117,13 +117,19 @@ collections_failed_table = db.Table(
 )
 
 
+# scrypt with 32 MiB per hash and the parallelisation OWASP recommends at that size; Werkzeug's
+# default has p=1. A hash written with other settings is replaced at the user's next login.
+PASSWORD_HASH_METHOD = "scrypt:32768:8:3"
+
+
 class User(db.Model, UserMixin):
     """User database model"""
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
-    password_hash = db.Column(db.String(128))
+    # an scrypt hash takes 162 characters
+    password_hash = db.Column(db.String(255))
     email_confirmed = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     datasets = db.relationship(
@@ -148,13 +154,18 @@ class User(db.Model, UserMixin):
 
     def set_password(self, password):
         """set password helper."""
-        # PBKDF2, as before Werkzeug 3: its default, scrypt, writes hashes longer than the
-        # column's 128 characters
-        self.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
+        self.password_hash = generate_password_hash(
+            password, method=PASSWORD_HASH_METHOD
+        )
 
     def check_password(self, password):
         """check password helper."""
         return check_password_hash(self.password_hash, password)
+
+    def password_needs_rehash(self):
+        """Whether the hash was written with other settings than set_password's, such as
+        the PBKDF2 of HiCognition up to v0.8.0."""
+        return self.password_hash.split("$", 1)[0] != PASSWORD_HASH_METHOD
 
     def generate_auth_token(self, expiration):
         """generates authentication token"""
@@ -1227,6 +1238,9 @@ class Session(db.Model):
         try:
             data = tokens.loads(token, current_app.config["SECRET_KEY"])
         except tokens.BadToken:
+            return None
+        # a login token, signed with the same key, carries a user id instead
+        if not isinstance(data, dict) or not isinstance(data.get("session_id"), int):
             return None
         return db.session.get(Session, data["session_id"])
 

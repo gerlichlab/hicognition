@@ -43,7 +43,13 @@ def verify_password(username_or_token, password):
         return False
     g.current_user = user
     g.token_used = False
-    return user.check_password(password)
+    if not user.check_password(password):
+        return False
+    # the password is known now, so a hash written with older settings moves to the current ones
+    if user.password_needs_rehash():
+        user.set_password(password)
+        db.session.commit()
+    return True
 
 
 @api.route("/tokens/", methods=["POST"])
@@ -52,10 +58,8 @@ def get_token():
     """Returns a token for a logged-in user."""
     if g.current_user.is_anonymous or g.token_used:
         return errors.forbidden("Invalid credentials")
-    if db.session.get(User, g.current_user.id) is None:
-        user_name = "Anonymous"
-    else:
-        user_name = db.session.get(User, g.current_user.id).username
+    user = db.session.get(User, g.current_user.id)
+    user_name = "Anonymous" if user is None else user.username
     return jsonify(
         {
             "token": g.current_user.generate_auth_token(expiration=3600 * 24),
